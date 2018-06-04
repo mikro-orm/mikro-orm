@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - '6'
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - 'node'
+script: yarn test
+after_success: yarn coveralls
