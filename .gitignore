@@ -1,0 +1,7 @@
+/node_modules
+/coverage
+/.idea
+/yarn.lock
+/yarn-error.log
+/.coveralls.yml
+!.gitkeep

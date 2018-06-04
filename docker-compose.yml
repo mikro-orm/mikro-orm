@@ -1,0 +1,13 @@
+version: "3.4"
+
+services:
+  mongo1:
+    container_name: mongo1
+    image: mongo:3.4
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo1:/data/db
+
+volumes:
+  mongo1:
