@@ -1,8 +1,6 @@
 language: node_js
 
 node_js:
-  - '6'
-  - '7'
   - '8'
   - '9'
   - '10'
@@ -13,7 +11,7 @@ services:
 
 cache:
   directories:
-    - "node_modules"
+    - 'node_modules'
 
 script: yarn test
 
