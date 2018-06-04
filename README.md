@@ -112,5 +112,13 @@ for (const author of authors) {
     console.log(book.publisher.name); // undefined
   }
 }
-
 ```
+
+## TODO
+
+- lifecycle hooks
+- cascade persist in collections
+- immediate flush issue when persisting new entities with references
+- sorting and pagination support
+- aggregate support?
+- improve populating in EM#find() method
