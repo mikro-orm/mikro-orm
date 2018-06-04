@@ -1,4 +1,4 @@
-import { Collection as MongoCollection, Db } from 'mongodb';
+import { Collection as MongoCollection, Db, FilterQuery } from 'mongodb';
 import { BaseEntity, EntityMetadata } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
@@ -42,8 +42,22 @@ export class EntityManager {
     return this.repositoryMap[entityName] as EntityRepository<T>;
   }
 
-  async find<T extends BaseEntity>(entityName: string, where = {} as any, populate: string[] = []): Promise<T[]> {
-    const results = await this.getCollection(entityName).find(where).toArray();
+  async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset = 0): Promise<T[]> {
+    const resultSet = this.getCollection(entityName).find(where);
+
+    if (Object.keys(orderBy).length > 0) {
+      resultSet.sort(orderBy);
+    }
+
+    if (limit !== null) {
+      resultSet.limit(limit);
+    }
+
+    if (offset !== null) {
+      resultSet.skip(offset);
+    }
+
+    const results = await resultSet.toArray();
     const ret: T[] = [];
 
     for (const data of results) {
@@ -55,7 +69,7 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: any, populate: string[] = []): Promise<T> {
+  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = []): Promise<T> {
     if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`]) {
       // TODO populate missing references
       return this.identityMap[`${entityName}-${where}`] as T;

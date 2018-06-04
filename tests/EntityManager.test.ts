@@ -69,6 +69,26 @@ describe('EntityManager', () => {
           expect(book.publisher.isInitialized()).toBe(false);
         }
       }
+
+      const booksRepository = orm.em.getRepository<Book>(Book.name);
+      const booksByTitleAsc = await booksRepository.find({}, [], { title: 1 });
+      expect(booksByTitleAsc[0].title).toBe('My Life on The Wall, part 1');
+      expect(booksByTitleAsc[1].title).toBe('My Life on The Wall, part 2');
+      expect(booksByTitleAsc[2].title).toBe('My Life on The Wall, part 3');
+
+      const booksByTitleDesc = await booksRepository.find({}, [], { title: -1 });
+      expect(booksByTitleDesc[0].title).toBe('My Life on The Wall, part 3');
+      expect(booksByTitleDesc[1].title).toBe('My Life on The Wall, part 2');
+      expect(booksByTitleDesc[2].title).toBe('My Life on The Wall, part 1');
+
+      const twoBooks = await booksRepository.find({}, [], { title: -1 }, 2);
+      expect(twoBooks.length).toBe(2);
+      expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
+      expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
+
+      const lastBook = await booksRepository.find({}, [], { title: -1 }, 2, 2);
+      expect(lastBook.length).toBe(1);
+      expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     });
   });
 

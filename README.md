@@ -112,6 +112,11 @@ for (const author of authors) {
     console.log(book.publisher.name); // undefined
   }
 }
+
+// filtering and pagination
+const booksRepository = orm.em.getRepository<Author>(Author.name);
+const books = await booksRepository.find({ author: jon.id }, [], { title: -1 }, 2, 1);
+console.log(books);
 ```
 
 ## TODO
@@ -119,6 +124,5 @@ for (const author of authors) {
 - lifecycle hooks
 - cascade persist in collections
 - immediate flush issue when persisting new entities with references
-- sorting and pagination support
 - aggregate support?
 - improve populating in EM#find() method
