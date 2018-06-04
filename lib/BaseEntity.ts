@@ -26,7 +26,7 @@ export abstract class BaseEntity {
   }
 
   async init(em: EntityManager): Promise<BaseEntity> {
-    await em.findOne(this.constructor.name, this.id);
+    await em.findOne(this.constructor.name, this._id);
 
     return this;
   }

@@ -54,8 +54,6 @@
     "lodash.merge": "^4.6.1",
     "mongodb": "^3.0.4",
     "reflect-metadata": "^0.1.12",
-    "ts-node": "^6.0.5",
-    "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   },
   "devDependencies": {
@@ -63,7 +61,6 @@
     "@types/clone": "^0.1.30",
     "@types/jest": "^22.2.3",
     "@types/lodash": "^4.14.109",
-    "@types/mocha": "^5.2.0",
     "@types/mongodb": "^3.0.18",
     "@types/node": "^10.1.2",
     "chai": "^4.1.2",
@@ -71,7 +68,8 @@
     "git-pre-commit": "^2.1.4",
     "jest": "^23.0.0",
     "mikro-config": "^1.2.2",
-    "mocha": "^5.2.0",
-    "ts-jest": "^22.4.6"
+    "ts-jest": "^22.4.6",
+    "ts-node": "^6.0.5",
+    "tslint": "^5.10.0"
   }
 }

@@ -41,7 +41,7 @@ export class MikroORM {
     }
 
     if (!this.options.logger) {
-      this.options.logger = () => null;
+      this.options.logger = (): void => null;
     }
 
     if (!this.options.baseDir) {
