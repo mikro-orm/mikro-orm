@@ -27,6 +27,10 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.remove(this.entityName, where);
   }
 
+  create(data: any): T {
+    return this.em.create<T>(this.entityName, data);
+  }
+
   async count(where: any): Promise<number> {
     return this.em.count(this.entityName, where);
   }

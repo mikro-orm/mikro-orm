@@ -35,8 +35,13 @@ export class EntityManager {
 
   getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T> {
     if (!this.repositoryMap[entityName]) {
-      // TODO customRepository support
-      this.repositoryMap[entityName] = new EntityRepository<T>(this, entityName);
+      const meta = this.metadata[entityName];
+
+      if (meta.customRepository) {
+        this.repositoryMap[entityName] = new meta.customRepository(this, entityName);
+      } else {
+        this.repositoryMap[entityName] = new EntityRepository<T>(this, entityName);
+      }
     }
 
     return this.repositoryMap[entityName] as EntityRepository<T>;
@@ -154,6 +159,13 @@ export class EntityManager {
         await (entity[field] as BaseEntity).init(this);
       }
     }
+  }
+
+  create<T extends BaseEntity>(entityName: string, data: any): T {
+    const entity = this.entityFactory.create<T>(entityName, data);
+    entity['_initialized'] = false;
+
+    return entity;
   }
 
 }

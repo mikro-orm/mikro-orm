@@ -18,8 +18,9 @@ Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 import { BaseEntity, Entity, ManyToOne, Property } from 'mikro-orm';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
+import { BookRepository } from './BookRepository';
 
-@Entity({ collection: 'books-table' })
+@Entity({ collection: 'books-table', customRepository: BookRepository })
 export class Book extends BaseEntity {
 
   @Property()

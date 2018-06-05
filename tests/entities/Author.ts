@@ -1,7 +1,8 @@
 import { BaseEntity, Collection, Entity, OneToMany, Property } from '../../lib';
 import { Book } from './Book';
+import { AuthorRepository } from '../repositories/AuthorRepository';
 
-@Entity()
+@Entity({ customRepository: AuthorRepository })
 export class Author extends BaseEntity {
 
   @Property()

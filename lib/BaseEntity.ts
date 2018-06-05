@@ -82,4 +82,5 @@ export interface EntityMetadata {
   path: string;
   constructorParams: string[];
   properties: { [property: string]: EntityProperty };
+  customRepository: any;
 }

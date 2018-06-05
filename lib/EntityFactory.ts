@@ -50,6 +50,13 @@ export class EntityFactory {
     return entity;
   }
 
+  createReference<T extends BaseEntity>(entityName: string, id: string): T {
+    const ref = this.create<T>(entityName, { id });
+    (ref as any)['_initialized'] = false;
+
+    return ref;
+  }
+
   private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = []): void {
     // process base entity properties first
     ['_id', 'createdAt', 'updatedAt'].forEach(k => {
@@ -85,13 +92,6 @@ export class EntityFactory {
     });
 
     delete entity['_initialized'];
-  }
-
-  createReference<T extends BaseEntity>(entityName: string, id: string): T {
-    const ref = this.create<T>(entityName, { id });
-    (ref as any)['_initialized'] = false;
-
-    return ref;
   }
 
   private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {

@@ -4,6 +4,7 @@ import { MikroORM, EntityManager, Collection } from '../lib';
 import { Author } from './entities/Author';
 import { Publisher } from './entities/Publisher';
 import { Book } from './entities/Book';
+import { AuthorRepository } from './repositories/AuthorRepository';
 
 let orm: MikroORM;
 
@@ -89,6 +90,13 @@ describe('EntityManager', () => {
       const lastBook = await booksRepository.find({}, [], { title: -1 }, 2, 2);
       expect(lastBook.length).toBe(1);
       expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
+    });
+
+    test('should provide custom repository', async () => {
+      const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+      expect(repo).toBeInstanceOf(AuthorRepository);
+      expect(repo.magic).toBeInstanceOf(Function);
+      expect(repo.magic('test')).toBe('111 test 222');
     });
   });
 
