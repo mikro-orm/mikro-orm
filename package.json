@@ -38,7 +38,7 @@
     "collectCoverage": true,
     "globalSetup": "<rootDir>/tests/bootstrap.ts",
     "collectCoverageFrom": [
-      "lib/*.ts"
+      "lib/**/*.ts"
     ]
   },
   "scripts": {
