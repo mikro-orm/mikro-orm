@@ -17,7 +17,7 @@ export function Property(options: PropertyOptions = {}): Function {
     options.array = type === Array;
 
     meta.properties = meta.properties || {};
-    meta.properties[propertyName] = { ...options } as EntityProperty;
+    meta.properties[propertyName] = Object.assign({}, options, { reference: false, collection: false }) as EntityProperty;
   };
 }
 

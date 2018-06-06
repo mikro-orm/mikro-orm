@@ -80,7 +80,7 @@ export interface EntityProperty {
   type: string;
   reference: boolean;
   collection: boolean;
-  attributes: { [attribute: string]: any };
+  attributes?: { [attribute: string]: any };
 }
 
 export interface EntityMetadata {

@@ -27,6 +27,10 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.remove(this.entityName, where);
   }
 
+  canPopulate(property: string): boolean {
+    return this.em.canPopulate(this.entityName, property);
+  }
+
   create(data: any): T {
     return this.em.create<T>(this.entityName, data);
   }

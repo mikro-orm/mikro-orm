@@ -177,6 +177,11 @@ export class EntityManager {
     this.unitOfWork.addToIdentityMap(entity);
   }
 
+  canPopulate(entityName: string, property: string): boolean {
+    const props = this.metadata[entityName].properties;
+    return property in props && props[property].reference;
+  }
+
   /**
    * @todo improve this for find() operations
    */

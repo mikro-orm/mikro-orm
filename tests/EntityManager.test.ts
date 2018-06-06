@@ -159,6 +159,14 @@ describe('EntityManager', () => {
       expect(Author.beforeDestroyCalled).toBe(2);
       expect(Author.afterDestroyCalled).toBe(2);
     });
+
+    test('catPopulate', async () => {
+      const repo = orm.em.getRepository<Author>(Author.name);
+      expect(repo.canPopulate('test')).toBe(false);
+      expect(repo.canPopulate('name')).toBe(false);
+      expect(repo.canPopulate('favouriteBook')).toBe(true);
+      expect(repo.canPopulate('books')).toBe(true);
+    });
   });
 
   afterAll(async () => {
