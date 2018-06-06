@@ -1,5 +1,8 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
+import { BaseEntity } from './BaseEntity';
+import { Collection } from './Collection';
+import { getMetadataStorage } from './MikroORM';
 
 export class Utils {
 
@@ -40,6 +43,41 @@ export class Utils {
       }
 
       ret[k] = Utils.isObject(v) ? Utils.diff(a[k], v) : v;
+    });
+
+    return ret;
+  }
+
+  /**
+   * Process references first so we do not have to deal with cycles
+   */
+  static diffEntities(a: BaseEntity, b: BaseEntity): any {
+    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
+  };
+
+  static prepareEntity(e: BaseEntity): any {
+    const metadata = getMetadataStorage();
+    const meta = metadata[e.constructor.name];
+    const ret = Utils.copy(e);
+
+    // remove collections and references
+    Object.keys(meta.properties).forEach(prop => {
+      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop].isInitialized())) {
+        return delete ret[prop];
+      }
+
+      if (ret[prop] instanceof BaseEntity) {
+        return ret[prop] = ret[prop].id;
+      }
+
+      ret[prop] = ret[prop];
+    });
+
+    // remove unknown properties
+    Object.keys(e).forEach(prop => {
+      if (!meta.properties[prop]) {
+        return delete ret[prop];
+      }
     });
 
     return ret;

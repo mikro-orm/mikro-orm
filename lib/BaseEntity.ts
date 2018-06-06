@@ -31,26 +31,34 @@ export abstract class BaseEntity {
     return this;
   }
 
-  toObject(): object {
-    const meta = getMetadataStorage();
-    const props = meta[this.constructor.name].properties;
-    const ret = {} as any;
+  toObject(parent: BaseEntity = null): any {
+    const metadata = getMetadataStorage();
+    const meta = metadata[this.constructor.name];
+    const props = meta.properties;
+    const ret = { id: this.id, createdAt: this.createdAt, updatedAt: this.updatedAt } as any;
 
     if (!this.isInitialized()) {
       return { id: this.id } as any;
     }
 
     Object.keys(props).forEach(prop => {
-      if (this['_' + prop] instanceof Collection) {
-        if (this['_' + prop].isInitialized()) {
-          return ret[prop] = (this['_' + prop] as Collection<BaseEntity>).getItems().map(item => item.toObject());
+      if (this[prop] instanceof Collection) {
+        if (this[prop].isInitialized()) {
+          const collection = (this[prop] as Collection<BaseEntity>).getItems();
+          ret[prop] = collection.map(item => {
+            return item.isInitialized() ? item.toObject(this) : item.id;
+          });
         }
 
         return;
       }
 
       if (this[prop] instanceof BaseEntity) {
-        return ret[prop] = (this[prop] as BaseEntity).toObject();
+        if (this[prop].isInitialized() && this[prop] !== parent) {
+          return ret[prop] = (this[prop] as BaseEntity).toObject(this);
+        }
+
+        return ret[prop] = this[prop].id;
       }
 
       ret[prop] = this[prop];
@@ -59,7 +67,7 @@ export abstract class BaseEntity {
     return ret;
   }
 
-  toJSON(): object {
+  toJSON(): any {
     return this.toObject();
   }
 
@@ -83,4 +91,5 @@ export interface EntityMetadata {
   constructorParams: string[];
   properties: { [property: string]: EntityProperty };
   customRepository: any;
+  hooks: { [type: string]: string[] };
 }

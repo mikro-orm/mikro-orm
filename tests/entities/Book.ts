@@ -27,9 +27,6 @@ export class Book extends BaseEntity {
     super();
     this.title = title;
     this.author = author;
-    this.metaObject = {};
-    this.metaArray = [{test: 123, lol: true}];
-    this.metaArrayOfStrings = ['test'];
   }
 
 }

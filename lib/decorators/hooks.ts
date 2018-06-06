@@ -1,3 +1,5 @@
+import { getMetadataStorage } from '../MikroORM';
+
 export function BeforeCreate() {
   return hook('beforeCreate');
 }
@@ -14,25 +16,33 @@ export function AfterUpdate() {
   return hook('afterUpdate');
 }
 
+/**
+ * Called before deleting entity, but only when providing initialized entity to EM#remove()
+ */
 export function BeforeDelete() {
   return hook('beforeDelete');
 }
 
+/**
+ * Called after deleting entity, but only when providing initialized entity to EM#remove()
+ */
 export function AfterDelete() {
   return hook('afterDelete');
 }
 
 function hook(type: string) {
-  return function (target: any, propertyKey: string) {
-    if (!target._odm) {
-      target._odm = {hooks: {type: []}};
-    } else if (!target._odm.hooks) {
-      target._odm.hooks = {};
-      target._odm.hooks[type] = [];
-    } else if (!target._odm.hooks[type]) {
-      target._odm.hooks[type] = [];
+  return function (target: any, method: string) {
+    const storage = getMetadataStorage(target.constructor.name);
+    const meta = storage[target.constructor.name];
+
+    if (!meta.hooks) {
+      meta.hooks = {};
     }
 
-    target._odm.hooks[type].push(propertyKey);
+    if (!meta.hooks[type]) {
+      meta.hooks[type] = [];
+    }
+
+    meta.hooks[type].push(method);
   };
 }

@@ -122,8 +122,16 @@ console.log(books);
 
 ## TODO
 
-- lifecycle hooks
 - cascade persist in collections
 - immediate flush issue when persisting new entities with references
 - aggregate support?
 - improve populating in EM#find() method
+- rehydrate and populate missing references when fetching already loaded entities from db
+- support for string id (now we require object id) in EM/repositories
+
+## TODO docs
+
+- custom repository
+- cascading
+- identity map
+- lifecycle hooks

@@ -75,8 +75,9 @@ export class EntityManager {
   }
 
   async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = []): Promise<T> {
+    // TODO support also where: ObjectID
     if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`]) {
-      // TODO populate missing references
+      // TODO populate missing references and rehydrate
       return this.identityMap[`${entityName}-${where}`] as T;
     }
 
@@ -92,10 +93,21 @@ export class EntityManager {
   }
 
   merge<T extends BaseEntity>(entityName: string, data: any): T {
-    const entity = this.entityFactory.create<T>(entityName, data);
+    const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data);
+
+    if (this.identityMap[`${entityName}-${entity.id}`]) {
+      // TODO populate missing references and rehydrate
+      // something like Object.assign, but we need to handle references properly
+      // entity = Object.assign(this.identityMap[`${entityName}-${entity.id}`] as T, data);
+
+      if (this.identityMap[`${entityName}-${entity.id}`].isInitialized()) {
+        delete entity['_initialized'];
+      }
+    }
+
     this.addToIdentityMap(entity);
 
-    return entity;
+    return entity as T;
   }
 
   getReference<T extends BaseEntity>(entityName: string, id: string): T {
@@ -109,8 +121,20 @@ export class EntityManager {
     return entity;
   }
 
-  async remove(entityName: string, where: any): Promise<number> {
+  async remove(entityName: string, where: BaseEntity | any): Promise<number> {
+    if (where instanceof BaseEntity) {
+      return this.removeEntity(where);
+    }
+
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
+    return result.deletedCount as number;
+  }
+
+  async removeEntity(entity: BaseEntity): Promise<number> {
+    this.runHooks('beforeDelete', entity);
+    const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
+    this.runHooks('afterDelete', entity);
+
     return result.deletedCount as number;
   }
 
@@ -141,7 +165,14 @@ export class EntityManager {
     this.unitOfWork.clear();
   }
 
-  private addToIdentityMap(entity: BaseEntity) {
+  create<T extends BaseEntity>(entityName: string, data: any): T {
+    const entity = this.entityFactory.create<T>(entityName, data);
+    entity['_initialized'] = false;
+
+    return entity;
+  }
+
+  addToIdentityMap(entity: BaseEntity) {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
     this.unitOfWork.addToIdentityMap(entity);
   }
@@ -151,8 +182,8 @@ export class EntityManager {
    */
   private async processPopulate(entity: BaseEntity, populate: string[]): Promise<void> {
     for (const field of populate) {
-      if (entity['_' + field] instanceof Collection && !entity['_' + field].isInitialized()) {
-        await (entity['_' + field] as Collection<BaseEntity>).init(this);
+      if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
+        await (entity[field] as Collection<BaseEntity>).init(this);
       }
 
       if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
@@ -161,11 +192,12 @@ export class EntityManager {
     }
   }
 
-  create<T extends BaseEntity>(entityName: string, data: any): T {
-    const entity = this.entityFactory.create<T>(entityName, data);
-    entity['_initialized'] = false;
+  private runHooks(type: string, entity: BaseEntity) {
+    const hooks = this.metadata[entity.constructor.name].hooks;
 
-    return entity;
+    if (hooks && hooks[type] && hooks[type].length > 0) {
+      hooks[type].forEach(hook => entity[hook]());
+    }
   }
 
 }

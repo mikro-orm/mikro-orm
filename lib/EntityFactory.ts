@@ -51,13 +51,17 @@ export class EntityFactory {
   }
 
   createReference<T extends BaseEntity>(entityName: string, id: string): T {
+    if (this.em.identityMap[`${entityName}-${id}`]) {
+      return this.em.identityMap[`${entityName}-${id}`] as T;
+    }
+
     const ref = this.create<T>(entityName, { id });
-    (ref as any)['_initialized'] = false;
+    ref['_initialized'] = false;
 
     return ref;
   }
 
-  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = []): void {
+  initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = []): void {
     // process base entity properties first
     ['_id', 'createdAt', 'updatedAt'].forEach(k => {
       if (data[k]) {
@@ -73,18 +77,12 @@ export class EntityFactory {
         return;
       }
 
-      if (prop.collection && !entity['_' + p]) {
-        entity['_' + p] = new Collection<T>(prop, entity);
-        Object.defineProperty(entity, p, {get: function () {
-          if (!entity['_' + p].isInitialized()) {
-            throw new Error(`Entity reference '${entity.constructor.name}.${p}' not initialized, call 'entity.init(em)' first!`);
-          }
-
-          return entity['_' + p];
-        }});
+      if (prop.collection && !entity[p]) {
+        entity[p] = new Collection<T>(prop, entity);
       } else if (prop.reference && !prop.collection) {
         if (data[p] instanceof ObjectID) {
           entity[p] = this.createReference(prop.type, data[p]);
+          this.em.addToIdentityMap(entity[p]);
         }
       } else if (data[p] && !prop.reference) {
         entity[p] = data[p];
@@ -94,9 +92,13 @@ export class EntityFactory {
     delete entity['_initialized'];
   }
 
+  /**
+   * returns parameters for entity constructor, creating references from plain ids
+   */
   private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
+    // TODO support for reference parameters based on type, not variable name
     return meta.constructorParams.map((k: string) => {
-      if (meta.properties[k].reference && !meta.properties[k].collection) {
+      if (meta.properties[k].reference && !meta.properties[k].collection && data[k]) {
         return this.em.getReference<T>(meta.properties[k].type, data[k]);
       }
 

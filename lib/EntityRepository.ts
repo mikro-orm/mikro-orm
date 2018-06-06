@@ -23,7 +23,7 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 
-  async remove(where: any): Promise<number> {
+  async remove(where: T | any): Promise<number> {
     return this.em.remove(this.entityName, where);
   }
 

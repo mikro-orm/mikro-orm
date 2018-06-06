@@ -1,4 +1,7 @@
 import { Utils } from'../lib/Utils';
+import { Collection, EntityProperty, MikroORM } from '../lib';
+import { Book } from './entities/Book';
+import { Author } from './entities/Author';
 
 class Test {}
 
@@ -6,6 +9,16 @@ class Test {}
  * @class UtilsTest
  */
 describe('Utils', () => {
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entitiesDirs: ['entities'],
+      dbName: 'mikro-orm-test',
+      baseDir: __dirname,
+    });
+  });
 
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
@@ -70,6 +83,14 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b'});
   });
 
+  test('diffEntities ignores collections', () => {
+    const author1 = new Author('Name 1', 'e-mail');
+    author1.books = new Collection<Book>({} as EntityProperty, author1);
+    const author2 = new Author('Name 2', 'e-mail');
+    author2.books = new Collection<Book>({} as EntityProperty, author2);
+    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2' });
+  });
+
   test('copy', () => {
     const a = {a: 'a', b: 'c'};
     const b = Utils.copy(a);
@@ -82,6 +103,10 @@ describe('Utils', () => {
     d.inner.lol = 'new';
     expect(c.inner.lol).toBeUndefined();
     expect(d.inner.lol).toBe('new');
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
   });
 
 });

@@ -49,7 +49,7 @@
     "tslint": "tslint -c tslint.json -p tsconfig.json"
   },
   "dependencies": {
-    "clone": "latest",
+    "clone": "^2.1.1",
     "fast-deep-equal": "^2.0.1",
     "lodash.merge": "^4.6.1",
     "mongodb": "^3.0.4",
