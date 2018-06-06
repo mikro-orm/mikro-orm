@@ -1,5 +1,6 @@
 import { BaseEntity, EntityProperty } from './BaseEntity';
 import { EntityManager } from './EntityManager';
+import { ObjectID } from 'bson';
 
 export class Collection<T extends BaseEntity> {
 
@@ -27,6 +28,10 @@ export class Collection<T extends BaseEntity> {
     }
 
     return this.items;
+  }
+
+  getIdentifiers(): ObjectID[] {
+    return this.getItems().map(i => i._id);
   }
 
   *[Symbol.iterator](): IterableIterator<T> {

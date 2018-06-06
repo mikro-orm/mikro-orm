@@ -1,5 +1,4 @@
-'use strict';
-
+import { ObjectID } from 'bson';
 import { MikroORM, EntityManager, Collection } from '../lib';
 import { Author } from './entities/Author';
 import { Publisher } from './entities/Publisher';
@@ -82,6 +81,8 @@ describe('EntityManager', () => {
         name: 'Jon Snow',
       });
       expect(jon.toJSON()).toEqual(o);
+      expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
+      expect(jon.books.getIdentifiers()[0]).toBeInstanceOf(ObjectID);
 
       for (const author of authors) {
         expect(author.books).toBeInstanceOf(Collection);
