@@ -1,6 +1,6 @@
 import { MikroORM, Options, EntityManager } from '../lib';
 
-describe.only('MikroORM', () => {
+describe('MikroORM', () => {
 
   test('should throw when no db name provided', async () => {
     await expect(MikroORM.init({ entitiesDirs: ['entities'] } as Options)).rejects.toEqual(new Error('No database specified, please fill in `dbName` option'));

@@ -188,11 +188,11 @@ export class EntityManager {
   private async processPopulate(entity: BaseEntity, populate: string[]): Promise<void> {
     for (const field of populate) {
       if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
-        await (entity[field] as Collection<BaseEntity>).init(this);
+        await (entity[field] as Collection<BaseEntity>).init();
       }
 
       if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
-        await (entity[field] as BaseEntity).init(this);
+        await (entity[field] as BaseEntity).init();
       }
     }
   }
