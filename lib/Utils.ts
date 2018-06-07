@@ -32,17 +32,23 @@ export class Utils {
         return;
       }
 
-      const v = b[k];
+      if (a[k] === undefined && b !== undefined) {
+        return ret[k] = b[k];
+      }
 
-      if (Utils.equals(a[k], v)) {
+      if (a[k] !== undefined && b === undefined) {
+        return ret[k] = a[k];
+      }
+
+      if (Utils.equals(a[k], b[k])) {
         return;
       }
 
-      if (Utils.isArray(v) && Utils.isArray(a[k])) {
-        return ret[k] = v;
+      if (Utils.isArray(a[k]) && Utils.isArray(b[k])) {
+        return ret[k] = b[k]; // right-hand side has priority
       }
 
-      ret[k] = Utils.isObject(v) ? Utils.diff(a[k], v) : v;
+      ret[k] = Utils.isObject(b[k]) ? Utils.diff(a[k], b[k]) : b[k];
     });
 
     return ret;
