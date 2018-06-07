@@ -4,8 +4,8 @@ import { BaseEntity } from './BaseEntity';
 
 export class EntityRepository<T extends BaseEntity> {
 
-  constructor(private em: EntityManager,
-              private entityName: string) { }
+  constructor(protected em: EntityManager,
+              protected entityName: string) { }
 
   async persist(entity: T, flush = false): Promise<void> {
     return this.em.persist(entity, flush);
