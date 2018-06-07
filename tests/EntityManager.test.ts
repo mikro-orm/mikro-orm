@@ -63,6 +63,8 @@ describe('EntityManager', () => {
       orm.em.clear();
 
       const authorRepository = orm.em.getRepository<Author>(Author.name);
+      const notFound = await authorRepository.findOne({ name: 'Not found' });
+      expect(notFound).toBeNull();
       const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
       const authors = await authorRepository.findAll(['books', 'favouriteBook']);
 

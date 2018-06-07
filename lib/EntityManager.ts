@@ -86,6 +86,11 @@ export class EntityManager {
     }
 
     const data = await this.getCollection(entityName).find(where).limit(1).next();
+
+    if (!data) {
+      return null;
+    }
+
     const entity = this.merge(entityName, data) as T;
     await this.processPopulate(entity, populate);
 
@@ -93,7 +98,7 @@ export class EntityManager {
   }
 
   merge<T extends BaseEntity>(entityName: string, data: any): T {
-    if (!data.id && !data._id) {
+    if (!data || (!data.id && !data._id)) {
       throw new Error('You cannot merge entity without id!');
     }
 
