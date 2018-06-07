@@ -97,6 +97,13 @@ export class Utils {
       return [];
     }
 
+    // strip default values
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === '=') {
+        result.splice(i, 2);
+      }
+    }
+
     return result;
   }
 

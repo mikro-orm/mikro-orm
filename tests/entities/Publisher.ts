@@ -13,7 +13,7 @@ export class Publisher extends BaseEntity {
   @Property()
   type: PublisherType = PublisherType.LOCAL;
 
-  constructor(name: string, type: PublisherType) {
+  constructor(name: string = 'asd', type: PublisherType = PublisherType.LOCAL) {
     super();
     this.name = name;
     this.type = type;
