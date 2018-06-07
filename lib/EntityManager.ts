@@ -149,7 +149,7 @@ export class EntityManager {
     return this.getCollection(this.metadata[entityName].collection).count(where);
   }
 
-  async persist(entity: BaseEntity, flush = false): Promise<void> {
+  async persist(entity: BaseEntity, flush = true): Promise<void> {
     await this.unitOfWork.persist(entity);
 
     if (flush) {

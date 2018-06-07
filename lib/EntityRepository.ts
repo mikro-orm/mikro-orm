@@ -7,7 +7,7 @@ export class EntityRepository<T extends BaseEntity> {
   constructor(protected em: EntityManager,
               protected entityName: string) { }
 
-  async persist(entity: T, flush = false): Promise<void> {
+  async persist(entity: T, flush = true): Promise<void> {
     return this.em.persist(entity, flush);
   }
 

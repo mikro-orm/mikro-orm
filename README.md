@@ -90,9 +90,9 @@ book2.publisher = publisher;
 const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
-await orm.em.persist(book1);
-await orm.em.persist(book2);
-await orm.em.persist(book3, true); // flush everything to database
+await orm.em.persist(book1, false);
+await orm.em.persist(book2, false);
+await orm.em.persist(book3); // flush everything to database
 
 const authorRepository = orm.em.getRepository<Author>(Author.name);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);

@@ -35,7 +35,7 @@ describe('EntityManager', () => {
 
       const god = new Author('God', 'hello@heaven.god');
       const bible = new Book('Bible', god);
-      await orm.em.persist(bible, true);
+      await orm.em.persist(bible);
 
       const author = new Author('Jon Snow', 'snow@wall.st');
       author.born = new Date();
@@ -54,9 +54,9 @@ describe('EntityManager', () => {
       book3.publisher = publisher;
 
       const repo = orm.em.getRepository<Book>(Book.name);
-      await repo.persist(book1);
-      await repo.persist(book2);
-      await repo.persist(book3);
+      await repo.persist(book1, false);
+      await repo.persist(book2, false);
+      await repo.persist(book3, false);
       await repo.flush();
 
       // clear EM so we do not have author and publisher loaded in identity map
@@ -153,9 +153,9 @@ describe('EntityManager', () => {
       book2.tags.add(tag1, tag2, tag5);
       book3.tags.add(tag2, tag4, tag5);
 
-      await orm.em.persist(book1);
-      await orm.em.persist(book2);
-      await orm.em.persist(book3, true);
+      await orm.em.persist(book1, false);
+      await orm.em.persist(book2, false);
+      await orm.em.persist(book3);
 
       expect(tag1._id).toBeDefined();
       expect(tag2._id).toBeDefined();
@@ -208,14 +208,14 @@ describe('EntityManager', () => {
       // remove
       expect(book.tags.count()).toBe(2);
       book.tags.remove(tag1);
-      await orm.em.persist(book, true);
+      await orm.em.persist(book);
       orm.em.clear();
       book = await orm.em.findOne<Book>(Book.name, book._id);
       expect(book.tags.count()).toBe(1);
 
       // add
       book.tags.add(tag1);
-      await orm.em.persist(book, true);
+      await orm.em.persist(book);
       orm.em.clear();
       book = await orm.em.findOne<Book>(Book.name, book._id);
       expect(book.tags.count()).toBe(2);
@@ -229,7 +229,7 @@ describe('EntityManager', () => {
 
       // removeAll
       book.tags.removeAll();
-      await orm.em.persist(book, true);
+      await orm.em.persist(book);
       orm.em.clear();
       book = await orm.em.findOne<Book>(Book.name, book._id);
       expect(book.tags.count()).toBe(0);
@@ -244,13 +244,13 @@ describe('EntityManager', () => {
       expect(author.version).toBeUndefined();
       expect(author.versionAsString).toBeUndefined();
 
-      await repo.persist(author, true);
+      await repo.persist(author);
       expect(author.id).not.toBeNull();
       expect(author.version).toBe(1);
       expect(author.versionAsString).toBe('v1');
 
       author.name = 'John Snow';
-      await repo.persist(author, true);
+      await repo.persist(author);
       expect(author.version).toBe(2);
       expect(author.versionAsString).toBe('v2');
 
@@ -261,7 +261,7 @@ describe('EntityManager', () => {
       expect(Author.afterDestroyCalled).toBe(1);
 
       const author2 = new Author('Johny Cash', 'johny@cash.com');
-      await repo.persist(author2, true);
+      await repo.persist(author2);
       await repo.remove(author2);
       expect(Author.beforeDestroyCalled).toBe(2);
       expect(Author.afterDestroyCalled).toBe(2);
