@@ -2,7 +2,7 @@ import { getMetadataStorage, getEntityManager } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 
-export abstract class BaseEntity {
+export class BaseEntity {
 
   public _id: ObjectID;
   public createdAt = new Date();
@@ -11,7 +11,7 @@ export abstract class BaseEntity {
 
   private _initialized = false;
 
-  protected constructor() {
+  constructor() {
     const metadata = getMetadataStorage();
     const meta = metadata[this.constructor.name];
     const props = meta.properties;
