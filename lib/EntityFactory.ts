@@ -144,7 +144,6 @@ export class EntityFactory {
       }
 
       this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
-      this.logger(`- processing entity ${file}`);
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
       require(path);
