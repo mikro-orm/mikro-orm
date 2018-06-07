@@ -63,8 +63,6 @@ describe('EntityManager', () => {
       orm.em.clear();
 
       const authorRepository = orm.em.getRepository<Author>(Author.name);
-      const notFound = await authorRepository.findOne({ name: 'Not found' });
-      expect(notFound).toBeNull();
       const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
       const authors = await authorRepository.findAll(['books', 'favouriteBook']);
 
@@ -139,6 +137,22 @@ describe('EntityManager', () => {
       expect(repo).toBeInstanceOf(AuthorRepository);
       expect(repo.magic).toBeInstanceOf(Function);
       expect(repo.magic('test')).toBe('111 test 222');
+    });
+
+    test('findOne by id', async () => {
+      const authorRepository = orm.em.getRepository<Author>(Author.name);
+      const jon = new Author('Jon Snow', 'snow@wall.st');
+      await authorRepository.persist(jon);
+
+      orm.em.clear();
+      let author = await authorRepository.findOne(jon._id);
+      expect(author).not.toBeNull();
+      expect(author.name).toBe('Jon Snow');
+
+      orm.em.clear();
+      author = await authorRepository.findOne(jon.id);
+      expect(author).not.toBeNull();
+      expect(author.name).toBe('Jon Snow');
     });
 
     test('many to many relation', async () => {

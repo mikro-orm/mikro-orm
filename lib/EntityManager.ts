@@ -1,4 +1,4 @@
-import { Collection as MongoCollection, Db, FilterQuery } from 'mongodb';
+import { Collection as MongoCollection, Db, FilterQuery, ObjectID } from 'mongodb';
 import { BaseEntity, EntityMetadata } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
@@ -74,18 +74,21 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = []): Promise<T> {
-    // TODO support also where: ObjectID
+  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
+    if (where instanceof ObjectID) {
+      where = where.toHexString();
+    }
+
     if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`]) {
       // TODO populate missing references and rehydrate
       return this.identityMap[`${entityName}-${where}`] as T;
     }
 
     if (Utils.isString(where)) {
-      where = { _id: where };
+      where = { _id: new ObjectID(where as string) };
     }
 
-    const data = await this.getCollection(entityName).find(where).limit(1).next();
+    const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
 
     if (!data) {
       return null;

@@ -125,11 +125,9 @@ console.log(books);
 ## TODO
 
 - cascade persist in collections
-- immediate flush issue when persisting new entities with references
 - aggregate support?
 - improve populating in EM#find() method
 - rehydrate and populate missing references when fetching already loaded entities from db
-- support for string id (now we require object id) in EM/repositories
 - add query logging
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - remove references on other entities when deleting entity (e.g. from M:N collection)

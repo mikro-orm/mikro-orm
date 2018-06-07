@@ -11,7 +11,7 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.persist(entity, flush);
   }
 
-  async findOne(where: FilterQuery<T>, populate: string[] = []): Promise<T> {
+  async findOne(where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
     return this.em.findOne<T>(this.entityName, where, populate);
   }
 
