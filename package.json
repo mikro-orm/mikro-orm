@@ -30,13 +30,8 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/tests/.*\\.(test|spec))\\.(js|ts)$",
-    "moduleFileExtensions": [
-      "ts",
-      "js",
-      "json"
-    ],
+    "moduleFileExtensions": ["ts", "js", "json"],
     "collectCoverage": true,
-    "globalSetup": "<rootDir>/tests/bootstrap.ts",
     "collectCoverageFrom": [
       "lib/**/*.ts"
     ]

@@ -1,11 +1,21 @@
 import { ObjectID } from 'bson';
 import { Author } from './entities/Author';
-import { BaseEntity } from '../lib';
+import { MikroORM } from '../lib';
 
 /**
  * @class BaseEntityTest
  */
 describe('BaseEntity', () => {
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entitiesDirs: ['entities'],
+      dbName: 'mikro-orm-test',
+      baseDir: __dirname,
+    });
+  });
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -28,6 +38,10 @@ describe('BaseEntity', () => {
 
     author.id = '5b0d19b28b21c648c2c8a600';
     expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
   });
 
 });

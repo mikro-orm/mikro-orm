@@ -3,6 +3,8 @@ import { Db, MongoClient } from 'mongodb';
 import { EntityManager } from './EntityManager';
 import { EntityMetadata } from './BaseEntity';
 
+let em: EntityManager;
+
 export function getMetadataStorage(entity?: string): { [entity: string]: EntityMetadata } {
   if (!(global as any)['MIKRO-ORM-STORAGE']) {
     (global as any)['MIKRO-ORM-STORAGE'] = {} as any;
@@ -17,6 +19,14 @@ export function getMetadataStorage(entity?: string): { [entity: string]: EntityM
   return storage;
 }
 
+export function getEntityManager(): EntityManager {
+  if (!em) {
+    throw new Error('Call MikroORM.init() first!');
+  }
+
+  return em;
+}
+
 export class MikroORM {
 
   public em: EntityManager;
@@ -26,7 +36,7 @@ export class MikroORM {
   static async init(options: Options): Promise<MikroORM> {
     const orm = new MikroORM(options);
     const db = await orm.connect();
-    orm.em = new EntityManager(db, orm.options);
+    em = orm.em = new EntityManager(db, orm.options);
 
     return orm;
   }

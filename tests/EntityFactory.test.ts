@@ -1,7 +1,7 @@
 import { EntityFactory } from '../lib/EntityFactory';
 import { Book } from './entities/Book';
 import { Author } from './entities/Author';
-import { ReferenceType, EntityManager } from '../lib';
+import { ReferenceType, EntityManager, MikroORM } from '../lib';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -21,6 +21,16 @@ em.entityFactory = factory;
  * @class EntityFactoryTest
  */
 describe('EntityFactory', () => {
+
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entitiesDirs: ['entities'],
+      dbName: 'mikro-orm-test',
+      baseDir: __dirname,
+    });
+  });
 
   test('should load entities', async () => {
     const metadata = factory.getMetadata();
@@ -48,6 +58,10 @@ describe('EntityFactory', () => {
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
     expect(entity.email).toBe('mail@test.com');
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
   });
 
 });

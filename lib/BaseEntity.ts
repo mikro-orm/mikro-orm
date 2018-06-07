@@ -1,7 +1,5 @@
+import { getMetadataStorage, getEntityManager } from './MikroORM';
 import { ObjectID } from 'bson';
-
-import { getMetadataStorage } from './MikroORM';
-import { EntityManager } from './EntityManager';
 import { Collection } from './Collection';
 
 export abstract class BaseEntity {
@@ -37,7 +35,8 @@ export abstract class BaseEntity {
     return this._initialized !== false;
   }
 
-  async init(em: EntityManager): Promise<BaseEntity> {
+  async init(): Promise<BaseEntity> {
+    const em = getEntityManager();
     await em.findOne(this.constructor.name, this._id);
 
     return this;

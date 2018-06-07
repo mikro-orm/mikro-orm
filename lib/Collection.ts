@@ -1,6 +1,6 @@
-import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
-import { EntityManager } from './EntityManager';
 import { ObjectID } from 'bson';
+import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
+import { getEntityManager } from './MikroORM';
 
 export class Collection<T extends BaseEntity> {
 
@@ -25,7 +25,7 @@ export class Collection<T extends BaseEntity> {
     return this.dirty;
   }
 
-  async init(em: EntityManager): Promise<Collection<T>> {
+  async init(): Promise<Collection<T>> {
     const cond = {} as any;
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
@@ -39,6 +39,7 @@ export class Collection<T extends BaseEntity> {
     }
 
     this.items.length = 0;
+    const em = getEntityManager();
     const items = await em.find<T>(this.property.type, cond);
     this.items.push(...items);
     this.initialized = true;

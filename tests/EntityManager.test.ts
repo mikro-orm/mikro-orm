@@ -6,12 +6,12 @@ import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookTag } from './entities/BookTag';
 
-let orm: MikroORM;
-
 /**
  * @class EntityManagerTest
  */
 describe('EntityManager', () => {
+
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -185,7 +185,7 @@ describe('EntityManager', () => {
 
       // test M:N lazy init
       orm.em.clear();
-      await tags[0].books.init(orm.em);
+      await tags[0].books.init();
       expect(tags[0].books.count()).toBe(2);
       expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book);
       expect(tags[0].books.getItems()[0]._id).toBeDefined();
@@ -199,7 +199,7 @@ describe('EntityManager', () => {
       expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
       expect(book.tags.getItems()[0]._id).toBeDefined();
       expect(book.tags.getItems()[0].isInitialized()).toBe(false);
-      await book.tags.init(orm.em);
+      await book.tags.init();
       expect(book.tags.getItems()[0].isInitialized()).toBe(true);
 
       // test collection CRUD
