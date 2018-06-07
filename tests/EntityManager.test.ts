@@ -157,6 +157,30 @@ describe('EntityManager', () => {
       expect(author.name).toBe('Jon Snow');
     });
 
+    test('populate ManyToOne relation', async () => {
+      const authorRepository = orm.em.getRepository<Author>(Author.name);
+      const god = new Author('God', 'hello@heaven.god');
+      const bible = new Book('Bible', god);
+      await orm.em.persist(bible);
+
+      let jon = new Author('Jon Snow', 'snow@wall.st');
+      jon.born = new Date();
+      jon.favouriteBook = bible;
+      await orm.em.persist(jon);
+      orm.em.clear();
+
+      jon = await authorRepository.findOne(jon.id);
+      expect(jon).not.toBeNull();
+      expect(jon.name).toBe('Jon Snow');
+      expect(jon.favouriteBook).toBeInstanceOf(Book);
+      expect(jon.favouriteBook.isInitialized()).toBe(false);
+
+      await jon.favouriteBook.init();
+      expect(jon.favouriteBook).toBeInstanceOf(Book);
+      expect(jon.favouriteBook.isInitialized()).toBe(true);
+      expect(jon.favouriteBook.title).toBe('Bible');
+    });
+
     test('many to many relation', async () => {
       const author = new Author('Jon Snow', 'snow@wall.st');
       const book1 = new Book('My Life on The Wall, part 1', author);
@@ -285,7 +309,7 @@ describe('EntityManager', () => {
       expect(Author.afterDestroyCalled).toBe(2);
     });
 
-    test('catPopulate', async () => {
+    test('canPopulate', async () => {
       const repo = orm.em.getRepository<Author>(Author.name);
       expect(repo.canPopulate('test')).toBe(false);
       expect(repo.canPopulate('name')).toBe(false);

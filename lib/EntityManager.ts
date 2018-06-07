@@ -79,8 +79,7 @@ export class EntityManager {
       where = where.toHexString();
     }
 
-    if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`]) {
-      // TODO populate missing references and rehydrate
+    if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`] && this.identityMap[`${entityName}-${where}`].isInitialized()) {
       return this.identityMap[`${entityName}-${where}`] as T;
     }
 
