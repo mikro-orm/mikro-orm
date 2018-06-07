@@ -21,7 +21,7 @@ export class Author extends BaseEntity {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book.name, fk: 'author', cascade: ['persist', 'remove'] })
+  @OneToMany({ entity: () => Book.name, fk: 'author' })
   books: Collection<Book>;
 
   @ManyToOne({ entity: () => Book.name })

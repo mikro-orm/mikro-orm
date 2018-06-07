@@ -4,6 +4,7 @@ import { Author } from './entities/Author';
 import { Publisher } from './entities/Publisher';
 import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
+import { BookTag } from './entities/BookTag';
 
 let orm: MikroORM;
 
@@ -18,9 +19,12 @@ describe('EntityManager', () => {
       dbName: 'mikro-orm-test',
       baseDir: __dirname,
     });
+  });
 
+  beforeEach(async () => {
     await orm.em.getRepository<Author>(Author.name).remove({});
     await orm.em.getRepository<Book>(Book.name).remove({});
+    await orm.em.getRepository<BookTag>(BookTag.name).remove({});
     await orm.em.getRepository<Publisher>(Publisher.name).remove({});
   });
 
@@ -60,6 +64,10 @@ describe('EntityManager', () => {
       const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
       const authors = await authorRepository.findAll(['books', 'favouriteBook']);
 
+      // count test
+      const count = await authorRepository.count();
+      expect(count).toBe(authors.length);
+
       // identity map test
       authors.shift(); // shift the god away, as that entity is detached from IM
       expect(jon).toBe(authors[0]);
@@ -75,7 +83,7 @@ describe('EntityManager', () => {
           { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
           { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
         ],
-        favouriteBook: { author: god.toObject(jon), title: 'Bible' },
+        favouriteBook: { author: { name: 'God' }, title: 'Bible' },
         born: jon.born,
         email: 'snow@wall.st',
         name: 'Jon Snow',
@@ -127,6 +135,102 @@ describe('EntityManager', () => {
       expect(repo).toBeInstanceOf(AuthorRepository);
       expect(repo.magic).toBeInstanceOf(Function);
       expect(repo.magic('test')).toBe('111 test 222');
+    });
+
+    test('many to many relation', async () => {
+      const author = new Author('Jon Snow', 'snow@wall.st');
+      const book1 = new Book('My Life on The Wall, part 1', author);
+      const book2 = new Book('My Life on The Wall, part 2', author);
+      const book3 = new Book('My Life on The Wall, part 3', author);
+      const tag1 = new BookTag('silly');
+      const tag2 = new BookTag('funny');
+      const tag3 = new BookTag('sick');
+      const tag4 = new BookTag('strange');
+      const tag5 = new BookTag('sexy');
+      book1.tags.add(tag1, tag3);
+      book2.tags.add(tag1, tag2, tag5);
+      book3.tags.add(tag2, tag4, tag5);
+
+      await orm.em.persist(book1);
+      await orm.em.persist(book2);
+      await orm.em.persist(book3, true);
+
+      expect(tag1._id).toBeDefined();
+      expect(tag2._id).toBeDefined();
+      expect(tag3._id).toBeDefined();
+      expect(tag4._id).toBeDefined();
+      expect(tag5._id).toBeDefined();
+
+      // test inverse side
+      const tagRepository = orm.em.getRepository<BookTag>(BookTag.name);
+      let tags = await tagRepository.findAll();
+      expect(tags).toBeInstanceOf(Array);
+      expect(tags.length).toBe(5);
+      expect(tags[0]).toBeInstanceOf(BookTag);
+      expect(tags[0].name).toBe('silly');
+      expect(tags[0].books).toBeInstanceOf(Collection);
+      expect(tags[0].books.isInitialized()).toBe(true);
+      expect(tags[0].books.isDirty()).toBe(false);
+      expect(tags[0].books.count()).toBe(2);
+
+      orm.em.clear();
+      tags = await tagRepository.findAll();
+      expect(tags[0].books.isInitialized()).toBe(false);
+      expect(tags[0].books.isDirty()).toBe(false);
+      expect(() => tags[0].books.getItems()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+      expect(() => tags[0].books.add(book1)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+      expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+      expect(() => tags[0].books.removeAll()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+      expect(() => tags[0].books.contains(book1)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+
+      // test M:N lazy init
+      orm.em.clear();
+      await tags[0].books.init(orm.em);
+      expect(tags[0].books.count()).toBe(2);
+      expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book);
+      expect(tags[0].books.getItems()[0]._id).toBeDefined();
+      expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+
+      // test M:N lazy init
+      orm.em.clear();
+      let book = await orm.em.findOne<Book>(Book.name, { tags: tag1._id });
+      expect(book.tags.isInitialized()).toBe(true); // owning side is always initialized
+      expect(book.tags.count()).toBe(2);
+      expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
+      expect(book.tags.getItems()[0]._id).toBeDefined();
+      expect(book.tags.getItems()[0].isInitialized()).toBe(false);
+      await book.tags.init(orm.em);
+      expect(book.tags.getItems()[0].isInitialized()).toBe(true);
+
+      // test collection CRUD
+      // remove
+      expect(book.tags.count()).toBe(2);
+      book.tags.remove(tag1);
+      await orm.em.persist(book, true);
+      orm.em.clear();
+      book = await orm.em.findOne<Book>(Book.name, book._id);
+      expect(book.tags.count()).toBe(1);
+
+      // add
+      book.tags.add(tag1);
+      await orm.em.persist(book, true);
+      orm.em.clear();
+      book = await orm.em.findOne<Book>(Book.name, book._id);
+      expect(book.tags.count()).toBe(2);
+
+      // contains
+      expect(book.tags.contains(tag1)).toBe(true);
+      expect(book.tags.contains(tag2)).toBe(false);
+      expect(book.tags.contains(tag3)).toBe(true);
+      expect(book.tags.contains(tag4)).toBe(false);
+      expect(book.tags.contains(tag5)).toBe(false);
+
+      // removeAll
+      book.tags.removeAll();
+      await orm.em.persist(book, true);
+      orm.em.clear();
+      book = await orm.em.findOne<Book>(Book.name, book._id);
+      expect(book.tags.count()).toBe(0);
     });
 
     test('hooks', async () => {

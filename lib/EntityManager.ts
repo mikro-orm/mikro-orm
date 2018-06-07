@@ -93,7 +93,11 @@ export class EntityManager {
   }
 
   merge<T extends BaseEntity>(entityName: string, data: any): T {
-    const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data);
+    if (!data.id && !data._id) {
+      throw new Error('You cannot merge entity without id!');
+    }
+
+    const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data, true);
 
     if (this.identityMap[`${entityName}-${entity.id}`]) {
       // TODO populate missing references and rehydrate
@@ -165,13 +169,6 @@ export class EntityManager {
     this.unitOfWork.clear();
   }
 
-  create<T extends BaseEntity>(entityName: string, data: any): T {
-    const entity = this.entityFactory.create<T>(entityName, data);
-    entity['_initialized'] = false;
-
-    return entity;
-  }
-
   addToIdentityMap(entity: BaseEntity) {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
     this.unitOfWork.addToIdentityMap(entity);
@@ -179,7 +176,7 @@ export class EntityManager {
 
   canPopulate(entityName: string, property: string): boolean {
     const props = this.metadata[entityName].properties;
-    return property in props && props[property].reference;
+    return property in props && !!props[property].reference;
   }
 
   /**

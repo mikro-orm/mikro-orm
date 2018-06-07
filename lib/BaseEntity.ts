@@ -13,6 +13,18 @@ export abstract class BaseEntity {
 
   private _initialized = false;
 
+  protected constructor() {
+    const metadata = getMetadataStorage();
+    const meta = metadata[this.constructor.name];
+    const props = meta.properties;
+
+    Object.keys(props).forEach(prop => {
+      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
+        this[prop] = new Collection(props[prop], this, []);
+      }
+    });
+  }
+
   get id(): string {
     return this._id ? this._id.toHexString() : null;
   }
@@ -31,7 +43,7 @@ export abstract class BaseEntity {
     return this;
   }
 
-  toObject(parent: BaseEntity = null): any {
+  toObject(parent: BaseEntity = this): any {
     const metadata = getMetadataStorage();
     const meta = metadata[this.constructor.name];
     const props = meta.properties;
@@ -73,14 +85,23 @@ export abstract class BaseEntity {
 
 }
 
+export enum ReferenceType {
+  SCALAR = 0,
+  MANY_TO_ONE = 1,
+  ONE_TO_MANY = 2,
+  MANY_TO_MANY = 3,
+}
+
 export interface EntityProperty {
   name: string;
   fk: string;
   entity: () => string;
   type: string;
-  reference: boolean;
-  collection: boolean;
+  reference: ReferenceType;
   attributes?: { [attribute: string]: any };
+  owner?: boolean;
+  inversedBy: string;
+  mappedBy: string;
 }
 
 export interface EntityMetadata {

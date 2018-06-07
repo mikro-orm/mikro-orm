@@ -6,6 +6,7 @@ export * from './Collection';
 export * from './decorators/Entity';
 export * from './decorators/OneToMany';
 export * from './decorators/ManyToOne';
+export * from './decorators/ManyToMany';
 export * from './decorators/Property';
 export * from './decorators/hooks';
 export { ObjectID } from 'bson';

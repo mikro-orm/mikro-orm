@@ -1,6 +1,7 @@
-import { BaseEntity, Entity, ManyToOne, Property } from '../../lib';
+import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
+import { BookTag } from './BookTag';
 
 @Entity({ collection: 'books-table' })
 export class Book extends BaseEntity {
@@ -13,6 +14,9 @@ export class Book extends BaseEntity {
 
   @ManyToOne({ entity: () => Publisher.name })
   publisher: Publisher;
+
+  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  tags: Collection<BookTag>;
 
   @Property()
   metaObject: object;

@@ -1,7 +1,6 @@
 import { Utils } from './Utils';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata } from './BaseEntity';
-import { Collection } from './Collection';
+import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 
 export class UnitOfWork {
 
@@ -64,18 +63,47 @@ export class UnitOfWork {
     for (const p of properties) {
       const prop = meta.properties[p];
 
-      if (prop.collection) {
-        // TODO cascade persist...
-        delete changeSet.payload[prop.name];
-      } else if (prop.reference && changeSet.entity[prop.name]) {
-        // when new entity found in reference, cascade persist it first so we have its id
-        if (!changeSet.entity[prop.name]._id) {
-          const propChangeSet = await this.persist(changeSet.entity[prop.name]);
-          await this.immediateCommit(propChangeSet);
-        }
-
-        changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+      if (prop.reference === ReferenceType.ONE_TO_MANY) {
+        await this.processOneToMany(changeSet, prop);
+      } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
+        await this.processManyToMany(changeSet, prop);
+      } else if (prop.reference === ReferenceType.MANY_TO_ONE && changeSet.entity[prop.name]) {
+        await this.processManyToOne(changeSet, prop);
       }
+    }
+  }
+
+  private async processManyToOne(changeSet: ChangeSet, prop: EntityProperty) {
+    // when new entity found in reference, cascade persist it first so we have its id
+    if (!changeSet.entity[prop.name]._id) {
+      const propChangeSet = await this.persist(changeSet.entity[prop.name]);
+      await this.immediateCommit(propChangeSet);
+    }
+
+    changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+  }
+
+  private async processOneToMany(changeSet: ChangeSet, prop: EntityProperty) {
+    if (changeSet.entity[prop.name].isDirty()) {
+      // TODO cascade persist...
+    }
+
+    delete changeSet.payload[prop.name];
+  }
+
+  private async processManyToMany(changeSet: ChangeSet, prop: EntityProperty) {
+    if (prop.owner && changeSet.entity[prop.name].isDirty()) {
+      for (const item of changeSet.entity[prop.name].getItems()) {
+        // when new entity found in reference, cascade persist it first so we have its id
+        if (!item._id) {
+          const itemChangeSet = await this.persist(item);
+          await this.immediateCommit(itemChangeSet);
+        }
+      }
+
+      changeSet.payload[prop.name] = changeSet.entity[prop.name].getIdentifiers();
+    } else {
+      delete changeSet.payload[prop.name];
     }
   }
 
@@ -99,23 +127,29 @@ export class UnitOfWork {
     // process references first
     for (const p of properties) {
       const prop = meta.properties[p];
+      const reference = changeSet.entity[prop.name];
 
-      if (prop.reference && !prop.collection && changeSet.entity[prop.name]) {
-        if (!changeSet.entity[prop.name]._id) {
-          const propChangeSet = await this.persist(changeSet.entity[prop.name]);
+      if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
+        if (!reference._id) {
+          const propChangeSet = await this.persist(reference);
           await this.immediateCommit(propChangeSet);
         }
 
-        changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+        changeSet.payload[prop.name] = reference._id;
       }
 
-      if (prop.reference && prop.collection) {
-        if (!changeSet.entity[prop.name]) { // create collection when missing (e.g. when persisting new entity)
-          changeSet.entity[prop.name] = new Collection(prop, changeSet.entity);
-        }
-
-        // TODO many to one collection cascade support
+      if (prop.reference === ReferenceType.ONE_TO_MANY) {
+        // TODO one to many collection cascade support
         // ...
+
+        reference.dirty = false;
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
+        // TODO many to many collection cascade support
+        // ...
+
+        reference.dirty = false;
       }
     }
 

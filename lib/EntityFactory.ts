@@ -4,7 +4,8 @@ import { ObjectID } from 'bson';
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata } from './BaseEntity';
+import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { Utils } from './Utils';
 
 export class EntityFactory {
 
@@ -20,9 +21,10 @@ export class EntityFactory {
     return this.metadata;
   }
 
-  create<T extends BaseEntity>(entityName: string, data: any): T {
+  create<T extends BaseEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
     const exclude = [];
+    let found = false;
     let entity;
 
     // TODO test those conditions if we really need them both
@@ -38,6 +40,7 @@ export class EntityFactory {
 
     if (this.em.identityMap[`${entityName}-${data._id}`]) {
       entity = this.em.identityMap[`${entityName}-${data._id}`];
+      found = true;
     } else {
       const params = this.extractConstructorParams<T>(meta, data);
       const Entity = require(meta.path)[entityName];
@@ -45,7 +48,13 @@ export class EntityFactory {
       exclude.push(...meta.constructorParams);
     }
 
-    this.initEntity(entity, meta.properties, data, exclude);
+    this.initEntity(entity, meta.properties, data, exclude, found);
+
+    if (initialized) {
+      delete entity['_initialized'];
+    } else {
+      entity['_initialized'] = initialized;
+    }
 
     return entity;
   }
@@ -55,13 +64,10 @@ export class EntityFactory {
       return this.em.identityMap[`${entityName}-${id}`] as T;
     }
 
-    const ref = this.create<T>(entityName, { id });
-    ref['_initialized'] = false;
-
-    return ref;
+    return this.create<T>(entityName, { id }, false);
   }
 
-  initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = []): void {
+  initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = [], found = false): void {
     // process base entity properties first
     ['_id', 'createdAt', 'updatedAt'].forEach(k => {
       if (data[k]) {
@@ -71,25 +77,38 @@ export class EntityFactory {
 
     // then process user defined properties (ignore not defined keys in `data`)
     Object.keys(properties).forEach(p => {
-      const prop = properties[p];
+      const prop = properties[p] as EntityProperty;
 
       if (exclude.includes(p)) {
         return;
       }
 
-      if (prop.collection && !entity[p]) {
-        entity[p] = new Collection<T>(prop, entity);
-      } else if (prop.reference && !prop.collection) {
+      if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
+        return entity[p] = new Collection<T>(prop, entity);
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !found && (!entity[p] || !data[p])) {
+        return entity[p] = new Collection<T>(prop, entity);
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && Utils.isArray(data[p])) {
+        const items = data[p].map((id: ObjectID) => this.createReference(prop.type, id.toHexString()));
+        return entity[p] = new Collection<T>(prop, entity, items);
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_ONE) {
         if (data[p] instanceof ObjectID) {
-          entity[p] = this.createReference(prop.type, data[p]);
+          entity[p] = this.createReference(prop.type, data[p].toHexString());
           this.em.addToIdentityMap(entity[p]);
         }
-      } else if (data[p] && !prop.reference) {
+
+        return;
+      }
+
+      if (prop.reference === ReferenceType.SCALAR && data[p]) {
         entity[p] = data[p];
       }
     });
-
-    delete entity['_initialized'];
   }
 
   /**
@@ -98,7 +117,7 @@ export class EntityFactory {
   private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
     // TODO support for reference parameters based on type, not variable name
     return meta.constructorParams.map((k: string) => {
-      if (meta.properties[k].reference && !meta.properties[k].collection && data[k]) {
+      if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         return this.em.getReference<T>(meta.properties[k].type, data[k]);
       }
 

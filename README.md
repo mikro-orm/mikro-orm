@@ -56,12 +56,14 @@ export class Book extends BaseEntity {
 ## Installation
 
 `$ yarn add mikro-orm`
- 
-or 
+
+or
 
 `$ npm install mikro-orm`
 
 ## Usage
+
+For more examples, take a look at `tests/EntityManager.test.ts`.
 
 ```typescript
 import { MikroORM, Collection } from 'mikro-orm';
@@ -128,9 +130,14 @@ console.log(books);
 - improve populating in EM#find() method
 - rehydrate and populate missing references when fetching already loaded entities from db
 - support for string id (now we require object id) in EM/repositories
+- add query logging
+- add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
+- remove references on other entities when deleting entity (e.g. from M:N collection)
 
 ## TODO docs
 
+- 1:M / M:1 collections
+- many to many collections
 - custom repository
 - cascading
 - identity map

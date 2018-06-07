@@ -1,7 +1,7 @@
 import { EntityFactory } from '../lib/EntityFactory';
 import { Book } from './entities/Book';
 import { Author } from './entities/Author';
-import { EntityManager } from '../lib';
+import { ReferenceType, EntityManager } from '../lib';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -30,11 +30,9 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].path).toBe(__dirname + '/entities/Author.ts');
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties['books'].type).toBe(Book.name);
-    expect(metadata[Author.name].properties['books'].reference).toBe(true);
-    expect(metadata[Author.name].properties['books'].collection).toBe(true);
+    expect(metadata[Author.name].properties['books'].reference).toBe(ReferenceType.ONE_TO_MANY);
     expect(metadata[Book.name].properties['author'].type).toBe(Author.name);
-    expect(metadata[Book.name].properties['author'].reference).toBe(true);
-    expect(metadata[Book.name].properties['author'].collection).toBe(false);
+    expect(metadata[Book.name].properties['author'].reference).toBe(ReferenceType.MANY_TO_ONE);
   });
 
   test('should return reference', async () => {
