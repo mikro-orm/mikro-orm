@@ -131,15 +131,18 @@ export class EntityManager {
     }
 
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
-    return result.deletedCount as number;
+
+    return result.deletedCount;
   }
 
   async removeEntity(entity: BaseEntity): Promise<number> {
     this.runHooks('beforeDelete', entity);
     const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
+    delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
+    this.unitOfWork.remove(entity);
     this.runHooks('afterDelete', entity);
 
-    return result.deletedCount as number;
+    return result.deletedCount;
   }
 
   async count(entityName: string, where: any): Promise<number> {

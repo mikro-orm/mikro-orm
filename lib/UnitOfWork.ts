@@ -34,6 +34,10 @@ export class UnitOfWork {
     Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
   }
 
+  remove(entity: BaseEntity): void {
+    delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
+  }
+
   private async computeChangeSet(entity: BaseEntity): Promise<ChangeSet> {
     const ret = { entity } as ChangeSet;
     const metadata = this.em.entityFactory.getMetadata();
