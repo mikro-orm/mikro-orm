@@ -53,9 +53,11 @@ describe('EntityManager', () => {
       const book3 = new Book('My Life on The Wall, part 3', author);
       book3.publisher = publisher;
 
-      await orm.em.persist(book1);
-      await orm.em.persist(book2);
-      await orm.em.persist(book3, true);
+      const repo = orm.em.getRepository<Book>(Book.name);
+      await repo.persist(book1);
+      await repo.persist(book2);
+      await repo.persist(book3);
+      await repo.flush();
 
       // clear EM so we do not have author and publisher loaded in identity map
       orm.em.clear();

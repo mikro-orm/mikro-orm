@@ -27,6 +27,10 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.remove(this.entityName, where);
   }
 
+  async flush(): Promise<void> {
+    return this.em.flush();
+  }
+
   canPopulate(property: string): boolean {
     return this.em.canPopulate(this.entityName, property);
   }
