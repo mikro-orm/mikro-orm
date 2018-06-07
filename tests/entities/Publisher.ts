@@ -22,6 +22,6 @@ export class Publisher extends BaseEntity {
 }
 
 export enum PublisherType {
-  LOCAL = 1,
-  GLOBAL = 2,
+  LOCAL = 'local',
+  GLOBAL = 'global',
 }

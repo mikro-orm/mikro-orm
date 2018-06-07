@@ -136,12 +136,14 @@ export class EntityFactory {
 
   private discover(basePath: string) {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
+    this.logger(`- processing ${files.length} files from directory ${basePath}`);
 
     files.forEach(file => {
-      if (file.lastIndexOf('.ts') === -1 || file.startsWith('.')) {
+      if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.')) {
         return;
       }
 
+      this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
       this.logger(`- processing entity ${file}`);
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
