@@ -10,9 +10,18 @@ export class Publisher extends BaseEntity {
   @OneToMany({ entity: () => Book.name, fk: 'publisher' })
   books: Collection<Book>;
 
-  constructor(name: string) {
+  @Property()
+  type: PublisherType = PublisherType.LOCAL;
+
+  constructor(name: string, type: PublisherType) {
     super();
     this.name = name;
+    this.type = type;
   }
 
+}
+
+export enum PublisherType {
+  LOCAL = 1,
+  GLOBAL = 2,
 }

@@ -1,7 +1,7 @@
 import { ObjectID } from 'bson';
-import { MikroORM, EntityManager, Collection } from '../lib';
+import { Collection, EntityManager, MikroORM } from '../lib';
 import { Author } from './entities/Author';
-import { Publisher } from './entities/Publisher';
+import { Publisher, PublisherType } from './entities/Publisher';
 import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookTag } from './entities/BookTag';
@@ -41,7 +41,7 @@ describe('EntityManager', () => {
       author.born = new Date();
       author.favouriteBook = bible;
 
-      const publisher = new Publisher('7K publisher');
+      const publisher = new Publisher('7K publisher', PublisherType.GLOBAL);
 
       const book1 = new Book('My Life on The Wall, part 1', author);
       book1.publisher = publisher;
@@ -58,8 +58,10 @@ describe('EntityManager', () => {
       await repo.persist(book2, false);
       await repo.persist(book3, false);
       await repo.flush();
+      orm.em.clear();
 
-      // clear EM so we do not have author and publisher loaded in identity map
+      const publisher7k = await orm.em.getRepository<Publisher>(Publisher.name).findOne({ name: '7K publisher' });
+      expect(publisher7k).not.toBeNull();
       orm.em.clear();
 
       const authorRepository = orm.em.getRepository<Author>(Author.name);
