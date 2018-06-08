@@ -40,8 +40,9 @@ describe('BaseEntity', () => {
     await orm.em.persist(book);
     expect(book.title).toBe('Book');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book 1', author: god });
+    book.assign({ title: 'Better Book 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
+    expect(book.notExisting).toBe(true);
     await orm.em.persist(god);
     book.assign({ title: 'Better Book 2', author: god.id });
     expect(book.author).toBe(god);

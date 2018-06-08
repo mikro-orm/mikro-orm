@@ -50,7 +50,7 @@ export class BaseEntity {
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
-      if (props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
+      if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
         if (data[prop] instanceof BaseEntity) {
           return this[prop] = data[prop];
         }
@@ -66,7 +66,7 @@ export class BaseEntity {
         }
       }
 
-      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
+      const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
       if (isCollection && Utils.isArray(data[prop])) {
         const items = data[prop].map((item: any) => {
