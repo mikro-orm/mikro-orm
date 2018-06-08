@@ -61,8 +61,10 @@ export class Collection<T extends BaseEntity> {
     this.checkInitialized();
 
     for (const item of items) {
-      this.handleInverseSide(item, 'add');
-      this.items.push(item);
+      if (!this.contains(item)) {
+        this.handleInverseSide(item, 'add');
+        this.items.push(item);
+      }
     }
 
     this.dirty = this.property.owner; // set dirty flag only to owning side
@@ -96,7 +98,7 @@ export class Collection<T extends BaseEntity> {
 
   contains(item: T): boolean {
     this.checkInitialized();
-    return !!this.items.find(i => i.id === item.id);
+    return !!this.items.find(i => i.id !== null && i.id === item.id);
   }
 
   count(): number {

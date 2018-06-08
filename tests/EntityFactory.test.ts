@@ -3,6 +3,7 @@ import { Book } from './entities/Book';
 import { Author } from './entities/Author';
 import { ReferenceType, EntityManager, MikroORM } from '../lib';
 import { Test } from './entities/Test';
+import { Publisher } from './entities/Publisher';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -45,6 +46,7 @@ describe('EntityFactory', () => {
     expect(metadata[Book.name].properties['author'].type).toBe(Author.name);
     expect(metadata[Book.name].properties['author'].reference).toBe(ReferenceType.MANY_TO_ONE);
     expect(metadata[Test.name].constructorParams).toEqual([]);
+    expect(metadata[Publisher.name].properties['tests'].owner).toBe(true);
   });
 
   test('should return reference', async () => {

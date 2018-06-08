@@ -5,6 +5,7 @@ import { Publisher, PublisherType } from './entities/Publisher';
 import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookTag } from './entities/BookTag';
+import { Test } from './entities/Test';
 
 /**
  * @class EntityManagerTest
@@ -26,6 +27,7 @@ describe('EntityManager', () => {
     await orm.em.getRepository<Book>(Book.name).remove({});
     await orm.em.getRepository<BookTag>(BookTag.name).remove({});
     await orm.em.getRepository<Publisher>(Publisher.name).remove({});
+    await orm.em.getRepository<Test>(Test.name).remove({});
   });
 
   describe('Container', () => {
@@ -62,6 +64,8 @@ describe('EntityManager', () => {
 
       const publisher7k = await orm.em.getRepository<Publisher>(Publisher.name).findOne({ name: '7K publisher' });
       expect(publisher7k).not.toBeNull();
+      expect(publisher7k.tests).toBeInstanceOf(Collection);
+      expect(publisher7k.tests.isInitialized()).toBe(true);
       orm.em.clear();
 
       const authorRepository = orm.em.getRepository<Author>(Author.name);

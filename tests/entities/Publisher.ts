@@ -1,5 +1,6 @@
-import { BaseEntity, Collection, Entity, OneToMany, Property } from '../../lib';
+import { BaseEntity, Collection, Entity, ManyToMany, OneToMany, Property } from '../../lib';
 import { Book } from './Book';
+import { Test } from './Test';
 
 @Entity()
 export class Publisher extends BaseEntity {
@@ -9,6 +10,9 @@ export class Publisher extends BaseEntity {
 
   @OneToMany({ entity: () => Book.name, fk: 'publisher' })
   books: Collection<Book>;
+
+  @ManyToMany({ entity: () => Test.name, owner: true })
+  tests: Collection<Test>;
 
   @Property()
   type: PublisherType = PublisherType.LOCAL;

@@ -131,6 +131,7 @@ console.log(books);
 - add query logging
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - remove references on other entities when deleting entity (e.g. from M:N collection)
+- support for string ids in find query
 
 ## TODO docs
 
