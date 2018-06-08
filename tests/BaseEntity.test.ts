@@ -19,6 +19,12 @@ describe('BaseEntity', () => {
     });
   });
 
+  beforeEach(async () => {
+    await orm.em.getRepository<Author>(Author.name).remove({});
+    await orm.em.getRepository<Book>(Book.name).remove({});
+    await orm.em.getRepository<BookTag>(BookTag.name).remove({});
+  });
+
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = new Date();
