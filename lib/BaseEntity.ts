@@ -1,6 +1,7 @@
 import { getMetadataStorage, getEntityManager } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
+import { Utils } from './Utils';
 
 export class BaseEntity {
 
@@ -40,6 +41,51 @@ export class BaseEntity {
     await em.findOne(this.constructor.name, this._id);
 
     return this;
+  }
+
+  assign(data: any) {
+    const em = getEntityManager();
+    const metadata = getMetadataStorage();
+    const meta = metadata[this.constructor.name];
+    const props = meta.properties;
+
+    Object.keys(data).forEach(prop => {
+      if (props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
+        if (data[prop] instanceof BaseEntity) {
+          return this[prop] = data[prop];
+        }
+
+        if (data[prop] instanceof ObjectID) {
+          return this[prop] = em.getReference(props[prop].type, data[prop].toHexString());
+        }
+
+        const id = typeof data[prop] === 'object' ? data[prop].id : data[prop];
+
+        if (id) {
+          return this[prop] = em.getReference(props[prop].type, id);
+        }
+      }
+
+      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
+
+      if (isCollection && Utils.isArray(data[prop])) {
+        const items = data[prop].map((item: any) => {
+          if (item instanceof ObjectID) {
+            return em.getReference(props[prop].type, item.toHexString());
+          }
+
+          if (item instanceof BaseEntity) {
+            return item;
+          }
+
+          return em.getReference(props[prop].type, item);
+        });
+
+        return this[prop] = new Collection(props[prop], this, items);
+      }
+
+      this[prop] = data[prop];
+    });
   }
 
   toObject(parent: BaseEntity = this): any {

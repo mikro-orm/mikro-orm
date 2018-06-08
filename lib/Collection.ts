@@ -53,8 +53,8 @@ export class Collection<T extends BaseEntity> {
     return this.items;
   }
 
-  getIdentifiers(): ObjectID[] {
-    return this.getItems().map(i => i._id);
+  getIdentifiers(field = '_id'): ObjectID[] {
+    return this.getItems().map(i => i[field]);
   }
 
   add(...items: T[]): void {
