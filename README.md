@@ -128,7 +128,6 @@ console.log(books);
 - aggregate support?
 - improve populating in EM#find() method
 - rehydrate and populate missing references when fetching already loaded entities from db
-- add query logging
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - remove references on other entities when deleting entity (e.g. from M:N collection)
 - support for string ids in find query

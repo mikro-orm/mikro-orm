@@ -66,6 +66,7 @@ export class MikroORM {
   async connect(): Promise<Db> {
     this.client = await MongoClient.connect(this.options.clientUrl as string);
     this.db = this.client.db(this.options.dbName);
+    this.options.logger(`MikroORM: successfully connected to database ${this.options.dbName} on ${this.options.clientUrl}`);
 
     return this.db;
   }
