@@ -2,6 +2,7 @@ import { Utils } from'../lib/Utils';
 import { Collection, EntityProperty, MikroORM } from '../lib';
 import { Book } from './entities/Book';
 import { Author } from './entities/Author';
+import { initORM, wipeDatabase } from './bootstrap';
 
 class Test {}
 
@@ -12,13 +13,8 @@ describe('Utils', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
-      dbName: 'mikro-orm-test',
-      baseDir: __dirname,
-    });
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
@@ -108,8 +104,6 @@ describe('Utils', () => {
     expect(d.inner.lol).toBe('new');
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });

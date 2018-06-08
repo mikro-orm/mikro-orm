@@ -4,6 +4,7 @@ import { Author } from './entities/Author';
 import { ReferenceType, EntityManager, MikroORM } from '../lib';
 import { Test } from './entities/Test';
 import { Publisher } from './entities/Publisher';
+import { initORM, wipeDatabase } from './bootstrap';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -26,13 +27,8 @@ describe('EntityFactory', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
-      dbName: 'mikro-orm-test',
-      baseDir: __dirname,
-    });
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {
     const metadata = factory.getMetadata();
@@ -64,8 +60,6 @@ describe('EntityFactory', () => {
     expect(entity.email).toBe('mail@test.com');
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });

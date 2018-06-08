@@ -3,6 +3,7 @@ import { Author } from './entities/Author';
 import { MikroORM } from '../lib';
 import { Book } from './entities/Book';
 import { BookTag } from './entities/BookTag';
+import { initORM, wipeDatabase } from './bootstrap';
 
 /**
  * @class BaseEntityTest
@@ -11,13 +12,8 @@ describe('BaseEntity', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
-      dbName: 'mikro-orm-test',
-      baseDir: __dirname,
-    });
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   beforeEach(async () => {
     await orm.em.getRepository<Author>(Author.name).remove({});
@@ -89,8 +85,6 @@ describe('BaseEntity', () => {
     expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });

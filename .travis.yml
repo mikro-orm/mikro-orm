@@ -13,6 +13,6 @@ cache:
   directories:
     - 'node_modules'
 
-script: yarn test
+script: ORM_PARALLEL=1 yarn test
 
 after_success: yarn coveralls

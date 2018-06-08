@@ -1,6 +1,7 @@
 import { UnitOfWork } from '../lib/UnitOfWork';
 import { Author } from './entities/Author';
 import { EntityManager, MikroORM } from '../lib';
+import { initORM, wipeDatabase } from './bootstrap';
 
 /**
  * @class UnitOfWorkTest
@@ -9,13 +10,8 @@ describe('UnitOfWork', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
-      dbName: 'mikro-orm-test',
-      baseDir: __dirname,
-    });
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {
     const Mock = jest.fn<EntityManager>(() => ({
@@ -28,8 +24,6 @@ describe('UnitOfWork', () => {
     uow.addToIdentityMap(a);
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });

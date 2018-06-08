@@ -5,7 +5,7 @@ import { Publisher, PublisherType } from './entities/Publisher';
 import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookTag } from './entities/BookTag';
-import { Test } from './entities/Test';
+import { initORM, wipeDatabase } from './bootstrap';
 
 /**
  * @class EntityManagerTest
@@ -14,21 +14,8 @@ describe('EntityManager', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
-      dbName: 'mikro-orm-test',
-      baseDir: __dirname,
-    });
-  });
-
-  beforeEach(async () => {
-    await orm.em.getRepository<Author>(Author.name).remove({});
-    await orm.em.getRepository<Book>(Book.name).remove({});
-    await orm.em.getRepository<BookTag>(BookTag.name).remove({});
-    await orm.em.getRepository<Publisher>(Publisher.name).remove({});
-    await orm.em.getRepository<Test>(Test.name).remove({});
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   describe('Container', () => {
     test('should load entities', async () => {
@@ -322,8 +309,6 @@ describe('EntityManager', () => {
     });
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });
