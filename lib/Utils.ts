@@ -103,6 +103,11 @@ export class Utils {
       return [];
     }
 
+    // handle class with no constructor
+    if (result.length > 0 && result[0] === 'class') {
+      return [];
+    }
+
     // strip default values
     for (let i = 0; i < result.length; i++) {
       if (result[i] === '=') {
