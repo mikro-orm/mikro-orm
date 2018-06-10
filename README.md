@@ -13,7 +13,6 @@ Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 
 ## Defining entity
 
-
 ```typescript
 import { BaseEntity, Entity, ManyToOne, Property } from 'mikro-orm';
 import { Publisher } from './Publisher';
@@ -67,17 +66,23 @@ For more examples, take a look at `tests/EntityManager.test.ts`.
 
 ```typescript
 import { MikroORM, Collection } from 'mikro-orm';
-import { Author } from './entities/Author';
-import { Published } from './entities/Published';
-import { Book } from './entities/Book';
 
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
   baseDir: __dirname,
 });
+console.log(orm.em); // EntityManager
+```
 
-// use constructors in your entities
+## Persisting and cascading
+
+To save entity state to database, you need to persist it. Persist takes care or deciding 
+whether to use `insert` or `update` and computes appropriate change-set. Entity references
+that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
+
+```typescript
+// use constructors in your entities for required parameters
 const author = new Author('Jon Snow', 'snow@wall.st');
 author.born = new Date();
 
@@ -90,16 +95,23 @@ book2.publisher = publisher;
 const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
+// just persist books, author and publisher will be automatically cascade persisted
+await orm.em.persist([book1, book2, book3]);
+
+// or one by one
 await orm.em.persist(book1, false);
 await orm.em.persist(book2, false);
-await orm.em.persist(book3); // flush everything to database
+await orm.em.persist(book3); // flush everything to database at once
 
-const authorRepository = orm.em.getRepository<Author>(Author.name);
-const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
-const authors = await authorRepository.findAll(['books']);
+```
 
-// identity map in action
-console.log(jon === authors[0]); // true
+## Fetching entities with `EntityManager`
+
+To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`. 
+
+```typescript
+const author = orm.em.findOne(Author.name, '...id...');
+const books = orm.em.find(Book.name, {});
 
 for (const author of authors) {
   console.log(author.name); // Jon Snow
@@ -116,10 +128,96 @@ for (const author of authors) {
   }
 }
 
-// filtering and pagination
-const booksRepository = orm.em.getRepository<Author>(Author.name);
-const books = await booksRepository.find({ author: jon.id }, [], { title: -1 }, 2, 1);
-console.log(books);
+```
+
+## Using `EntityRepository` instead of `EntityManager`
+
+More convenient way of fetching entities from database is by using `EntityRepository`:
+
+```typescript
+// with sorting, limit and offset parameters, populating author references
+const booksRepository = orm.em.getRepository<Book>(Book.name);
+const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 }, 2, 1);
+console.log(books); // Book[]
+```
+
+### Custom repository
+
+TODO
+
+## Identity Map
+
+`MikroORM` uses identity map in background so you will always get the same instance of 
+one entity.
+
+```typescript
+const authorRepository = orm.em.getRepository<Author>(Author.name);
+const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
+const authors = await authorRepository.findAll(['books']);
+
+// identity map in action
+console.log(jon === authors[0]); // true
+```
+
+## Using references
+
+Every single entity relation is mapped to an entity reference. Reference is an entity that has
+only its identifier. This reference is stored in identity map so you will get the same object 
+reference when fetching the same document from database.
+
+You can call `await entity.init()` to initialize the entity. This will trigger database call 
+and populate itself, keeping the same reference in identity map. 
+
+```typescript
+const author = await orm.em.getReference('...id...');
+console.log(author.id); // accessing the id will not trigger any db call
+console.log(author.isInitialized()); // false
+console.log(author.name); // undefined
+
+await author.init(); // this will trigger db call
+console.log(author.isInitialized()); // true
+console.log(author.name); // defined
+```
+
+## Collections
+
+`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
+iterator so you can use `for of` loop to iterate through it. 
+
+```typescript
+const author = orm.em.findOne(Author.name, '...');
+
+for (const author of authors) {
+  console.log(author.name); // Jon Snow
+
+  await author.books.init(); // init all books
+  
+  for (const book of author.books) {
+    console.log(book.title); // initialized
+    console.log(book.author.isInitialized()); // true
+    console.log(book.author.id);
+    console.log(book.author.name); // Jon Snow
+    console.log(book.publisher); // just reference
+    console.log(book.publisher.isInitialized()); // false
+    console.log(book.publisher.id);
+    console.log(book.publisher.name); // undefined
+  }
+  
+  // collection needs to be initialized before you can work with it
+  author.books.add(book);
+  console.log(author.books.contains(book)); // true
+  author.books.remove(book);
+  console.log(author.books.contains(book)); // false
+  author.books.add(book);
+  console.log(author.books.count()); // 1
+  author.books.removeAll();
+  console.log(author.books.contains(book)); // false
+  console.log(author.books.count()); // 0
+  console.log(author.books.getItems()); // 0
+  console.log(author.books.getIdentifiers()); // array of ObjectID
+  console.log(author.books.getIdentifiers('id')); // array of string
+}
+
 ```
 
 ## TODO
@@ -127,16 +225,12 @@ console.log(books);
 - cascade persist in collections
 - aggregate support?
 - improve populating in EM#find() method
-- rehydrate and populate missing references when fetching already loaded entities from db
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - remove references on other entities when deleting entity (e.g. from M:N collection)
-- support for string ids in find query
 
 ## TODO docs
 
 - 1:M / M:1 collections
 - many to many collections
 - custom repository
-- cascading
-- identity map
 - lifecycle hooks

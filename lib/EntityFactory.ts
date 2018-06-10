@@ -115,7 +115,6 @@ export class EntityFactory {
    * returns parameters for entity constructor, creating references from plain ids
    */
   private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
-    // TODO support for reference parameters based on type, not variable name
     return meta.constructorParams.map((k: string) => {
       if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         return this.em.getReference<T>(meta.properties[k].type, data[k]);
