@@ -58,6 +58,7 @@ describe('EntityManager', () => {
       const authorRepository = orm.em.getRepository<Author>(Author.name);
       const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
       const authors = await authorRepository.findAll(['books', 'favouriteBook']);
+      expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
       // count test
       const count = await authorRepository.count();
@@ -66,6 +67,8 @@ describe('EntityManager', () => {
       // identity map test
       authors.shift(); // shift the god away, as that entity is detached from IM
       expect(jon).toBe(authors[0]);
+      expect(jon).toBe(await authorRepository.findOne(jon.id));
+      expect(jon).toBe(await authorRepository.findOne(jon._id));
 
       // serialization test
       const o = jon.toObject();
@@ -108,7 +111,7 @@ describe('EntityManager', () => {
       expect(booksByTitleAsc[1].title).toBe('My Life on The Wall, part 2');
       expect(booksByTitleAsc[2].title).toBe('My Life on The Wall, part 3');
 
-      const booksByTitleDesc = await booksRepository.find({ author: jon._id }, [], { title: -1 });
+      const booksByTitleDesc = await booksRepository.find({ author: jon.id }, [], { title: -1 });
       expect(booksByTitleDesc[0].title).toBe('My Life on The Wall, part 3');
       expect(booksByTitleDesc[1].title).toBe('My Life on The Wall, part 2');
       expect(booksByTitleDesc[2].title).toBe('My Life on The Wall, part 1');
@@ -118,11 +121,12 @@ describe('EntityManager', () => {
       expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
       expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
 
-      const lastBook = await booksRepository.find({ author: jon._id }, ['author'], { title: -1 }, 2, 2);
+      const lastBook = await booksRepository.find({ author: jon.id }, ['author'], { title: -1 }, 2, 2);
       expect(lastBook.length).toBe(1);
       expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
       expect(lastBook[0].author).toBeInstanceOf(Author);
       expect(lastBook[0].author.isInitialized()).toBe(true);
+      await orm.em.getRepository<Book>(Book.name).remove(lastBook[0]);
     });
 
     test('should provide custom repository', async () => {
@@ -130,6 +134,29 @@ describe('EntityManager', () => {
       expect(repo).toBeInstanceOf(AuthorRepository);
       expect(repo.magic).toBeInstanceOf(Function);
       expect(repo.magic('test')).toBe('111 test 222');
+    });
+
+    test('should throw when trying to merge entity without id', async () => {
+      const author = new Author('test', 'test');
+      expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
+    });
+
+    test('findOne should initialize entity that is already in IM', async () => {
+      const god = new Author('God', 'hello@heaven.god');
+      const bible = new Book('Bible', god);
+      await orm.em.persist(bible);
+      orm.em.clear();
+
+      const ref = orm.em.getReference(Author.name, god.id);
+      expect(ref.isInitialized()).toBe(false);
+      const newGod = await orm.em.findOne(Author.name, god.id);
+      expect(ref).toBe(newGod);
+      expect(ref.isInitialized()).toBe(true);
+    });
+
+    test('should return mongo collection', async () => {
+      expect(orm.em.getCollection(Author.name).collectionName).toBe('author');
+      expect(orm.em.getCollection(Book.name).collectionName).toBe('books-table');
     });
 
     test('findOne by id', async () => {
@@ -144,6 +171,16 @@ describe('EntityManager', () => {
 
       orm.em.clear();
       author = await authorRepository.findOne(jon.id);
+      expect(author).not.toBeNull();
+      expect(author.name).toBe('Jon Snow');
+
+      orm.em.clear();
+      author = await authorRepository.findOne({ id: jon.id });
+      expect(author).not.toBeNull();
+      expect(author.name).toBe('Jon Snow');
+
+      orm.em.clear();
+      author = await authorRepository.findOne({ _id: jon._id });
       expect(author).not.toBeNull();
       expect(author.name).toBe('Jon Snow');
     });
@@ -209,7 +246,7 @@ describe('EntityManager', () => {
       expect(tags[0].books.count()).toBe(2);
 
       orm.em.clear();
-      tags = await tagRepository.findAll();
+      tags = await orm.em.find<BookTag>(BookTag.name);
       expect(tags[0].books.isInitialized()).toBe(false);
       expect(tags[0].books.isDirty()).toBe(false);
       expect(() => tags[0].books.getItems()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);

@@ -80,6 +80,7 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
     expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
+    expect(Utils.diff({_id: 'a', createdAt: 1, updatedAt: 1}, {_id: 'b', createdAt: 2, updatedAt: 2})).toEqual({}); // ignored fields
   });
 
   test('diffEntities ignores collections', () => {
@@ -90,12 +91,23 @@ describe('Utils', () => {
     expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2' });
   });
 
+  test('prepareEntity changes entity to string id', async () => {
+    const author1 = new Author('Name 1', 'e-mail');
+    const book = new Book('test', author1);
+    const author2 = new Author('Name 2', 'e-mail');
+    author2.favouriteBook = book;
+    author2.version = 123;
+    await orm.em.persist([author1, author2, book]);
+    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2', favouriteBook: book.id });
+  });
+
   /**
    * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
    */
   test('getParamNames', () => {
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
     expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
+    expect(Utils.getParamNames('')).toEqual([]);
   });
 
   test('copy', () => {

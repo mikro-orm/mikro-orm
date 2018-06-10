@@ -16,20 +16,12 @@ export class EntityManager {
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
 
-  constructor(private db: Db, public options = {} as Options) {
+  constructor(private db: Db, public options: Options) {
     this.metadata = getMetadataStorage();
   }
 
   getCollection(entityName: string): MongoCollection {
-    let col;
-
-    if (Utils.isString(entityName)) {
-      col = this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
-    } else {
-      entityName = entityName.constructor.name;
-      col = this.metadata[entityName].collection;
-    }
-
+    const col = this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
     return this.db.collection(col);
   }
 
@@ -47,7 +39,8 @@ export class EntityManager {
     return this.repositoryMap[entityName] as EntityRepository<T>;
   }
 
-  async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset = 0): Promise<T[]> {
+  async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+    Utils.prepareQuery(where);
     let query = `db.getCollection('${this.metadata[entityName].collection}').find(${JSON.stringify(where)})`;
     const resultSet = this.getCollection(entityName).find(where);
 
@@ -92,6 +85,8 @@ export class EntityManager {
       where = { _id: new ObjectID(where as string) };
     }
 
+    Utils.prepareQuery(where);
+
     const query = `db.getCollection('${this.metadata[entityName].collection}').find(${JSON.stringify(where)}).limit(1).next();`;
     this.options.logger(`[query-logger] ${query}`);
     const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
@@ -114,13 +109,7 @@ export class EntityManager {
     const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data, true);
 
     if (this.identityMap[`${entityName}-${entity.id}`]) {
-      // TODO populate missing references and rehydrate
-      // something like Object.assign, but we need to handle references properly
-      // entity = Object.assign(this.identityMap[`${entityName}-${entity.id}`] as T, data);
-
-      if (this.identityMap[`${entityName}-${entity.id}`].isInitialized()) {
-        delete entity['_initialized'];
-      }
+      entity.assign(data);
     }
 
     this.addToIdentityMap(entity);
@@ -169,8 +158,14 @@ export class EntityManager {
     return this.getCollection(this.metadata[entityName].collection).count(where);
   }
 
-  async persist(entity: BaseEntity, flush = true): Promise<void> {
-    await this.unitOfWork.persist(entity);
+  async persist(entity: BaseEntity | BaseEntity[], flush = true): Promise<void> {
+    if (entity instanceof BaseEntity) {
+      await this.unitOfWork.persist(entity);
+    } else {
+      for (const e of entity) {
+        await this.unitOfWork.persist(e);
+      }
+    }
 
     if (flush) {
       await this.flush();

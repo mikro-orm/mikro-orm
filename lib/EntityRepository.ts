@@ -15,11 +15,11 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.findOne<T>(this.entityName, where, populate);
   }
 
-  async find(where: FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset = 0): Promise<T[]> {
+  async find(where: FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
     return this.em.find<T>(this.entityName, where, populate, orderBy, limit, offset);
   }
 
-  async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset = 0): Promise<T[]> {
+  async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 

@@ -1,5 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
+import { ObjectID } from 'bson';
 import { BaseEntity } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
@@ -91,6 +92,36 @@ export class Utils {
 
   static copy(entity: any): any {
     return clone(entity);
+  }
+
+  static prepareQuery(query: any): any {
+    Utils.renameKey(query, 'id', '_id');
+    Utils.convertObjectIds(query);
+  }
+
+  static renameKey(payload: any, from: string, to: string): void {
+    if (payload[from] && !payload[to]) {
+      payload[to] = payload[from];
+      delete payload[from];
+    }
+  }
+
+  static convertObjectIds(payload: any): void {
+    Object.keys(payload).forEach(k => {
+      const v = payload[k];
+
+      if (Utils.isString(v) && v.match(/^[0-9a-f]{24}$/i)) {
+        return payload[k] = new ObjectID(v);
+      }
+
+      if (Utils.isArray(v)) {
+        return payload[k] = v.map((id: string) => new ObjectID(id));
+      }
+
+      if (Utils.isObject(payload[k])) {
+        return Utils.convertObjectIds(v);
+      }
+    });
   }
 
   static getParamNames(func: Function | string): string[] {

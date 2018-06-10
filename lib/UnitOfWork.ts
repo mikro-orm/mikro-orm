@@ -122,7 +122,8 @@ export class UnitOfWork {
   }
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
-    this.runHooks(`before${changeSet.entity._id ? 'Update' : 'Create'}`, changeSet.entity);
+    const type = changeSet.entity._id ? 'Update' : 'Create';
+    this.runHooks(`before${type}`, changeSet.entity);
 
     const metadata = this.em.entityFactory.getMetadata();
     const meta = metadata[changeSet.entity.constructor.name];
@@ -172,7 +173,7 @@ export class UnitOfWork {
       this.em.merge(changeSet.name, changeSet.entity);
     }
 
-    this.runHooks(`after${changeSet.entity._id ? 'Update' : 'Create'}`, changeSet.entity);
+    this.runHooks(`after${type}`, changeSet.entity);
 
     if (removeFromStack) {
       this.persistStack.splice(changeSet.index, 1);
