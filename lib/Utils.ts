@@ -93,7 +93,7 @@ export class Utils {
     return clone(entity);
   }
 
-  static getParamNames(func: Function): string[] {
+  static getParamNames(func: Function | string): string[] {
     const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
     const ARGUMENT_NAMES = /([^\s,]+)/g;
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
@@ -112,6 +112,9 @@ export class Utils {
     for (let i = 0; i < result.length; i++) {
       if (result[i] === '=') {
         result.splice(i, 2);
+      } else if (result[i].includes('=')) {
+        result[i] = result[i].split('=')[0];
+        result.splice(i + 1, 1);
       }
     }
 

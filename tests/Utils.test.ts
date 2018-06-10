@@ -90,6 +90,14 @@ describe('Utils', () => {
     expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2' });
   });
 
+  /**
+   * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
+   */
+  test('getParamNames', () => {
+    const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
+    expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
+  });
+
   test('copy', () => {
     const a = {a: 'a', b: 'c'};
     const b = Utils.copy(a);

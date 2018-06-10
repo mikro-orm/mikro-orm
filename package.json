@@ -10,6 +10,8 @@
   },
   "keywords": [
     "ORM",
+    "mongo",
+    "mongodb",
     "ts",
     "typescript",
     "entity",
