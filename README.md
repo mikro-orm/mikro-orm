@@ -135,8 +135,9 @@ for (const author of authors) {
 More convenient way of fetching entities from database is by using `EntityRepository`:
 
 ```typescript
-// with sorting, limit and offset parameters, populating author references
 const booksRepository = orm.em.getRepository<Book>(Book.name);
+
+// with sorting, limit and offset parameters, populating author references
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 }, 2, 1);
 console.log(books); // Book[]
 ```
@@ -187,36 +188,34 @@ iterator so you can use `for of` loop to iterate through it.
 ```typescript
 const author = orm.em.findOne(Author.name, '...');
 
-for (const author of authors) {
-  console.log(author.name); // Jon Snow
+console.log(author.name); // Jon Snow
 
-  await author.books.init(); // init all books
-  
-  for (const book of author.books) {
-    console.log(book.title); // initialized
-    console.log(book.author.isInitialized()); // true
-    console.log(book.author.id);
-    console.log(book.author.name); // Jon Snow
-    console.log(book.publisher); // just reference
-    console.log(book.publisher.isInitialized()); // false
-    console.log(book.publisher.id);
-    console.log(book.publisher.name); // undefined
-  }
-  
-  // collection needs to be initialized before you can work with it
-  author.books.add(book);
-  console.log(author.books.contains(book)); // true
-  author.books.remove(book);
-  console.log(author.books.contains(book)); // false
-  author.books.add(book);
-  console.log(author.books.count()); // 1
-  author.books.removeAll();
-  console.log(author.books.contains(book)); // false
-  console.log(author.books.count()); // 0
-  console.log(author.books.getItems()); // 0
-  console.log(author.books.getIdentifiers()); // array of ObjectID
-  console.log(author.books.getIdentifiers('id')); // array of string
+await author.books.init(); // init all books
+
+for (const book of author.books) {
+  console.log(book.title); // initialized
+  console.log(book.author.isInitialized()); // true
+  console.log(book.author.id);
+  console.log(book.author.name); // Jon Snow
+  console.log(book.publisher); // just reference
+  console.log(book.publisher.isInitialized()); // false
+  console.log(book.publisher.id);
+  console.log(book.publisher.name); // undefined
 }
+
+// collection needs to be initialized before you can work with it
+author.books.add(book);
+console.log(author.books.contains(book)); // true
+author.books.remove(book);
+console.log(author.books.contains(book)); // false
+author.books.add(book);
+console.log(author.books.count()); // 1
+author.books.removeAll();
+console.log(author.books.contains(book)); // false
+console.log(author.books.count()); // 0
+console.log(author.books.getItems()); // 0
+console.log(author.books.getIdentifiers()); // array of ObjectID
+console.log(author.books.getIdentifiers('id')); // array of string
 
 ```
 
@@ -226,7 +225,7 @@ for (const author of authors) {
 - aggregate support?
 - improve populating in EM#find() method
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
-- remove references on other entities when deleting entity (e.g. from M:N collection)
+- cascade remove references on other entities when deleting entity (e.g. from M:N collection)
 
 ## TODO docs
 
