@@ -72,7 +72,7 @@ export class MikroORM {
   }
 
   isConnected(): boolean {
-    return this.client.isConnected(this.options.dbName);
+    return this.client.isConnected();
   }
 
   async close(force = false): Promise<void> {
