@@ -41,7 +41,7 @@ export class EntityManager {
 
   async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
     Utils.prepareQuery(where);
-    let query = `db.getCollection('${this.metadata[entityName].collection}').find(${JSON.stringify(where)})`;
+    let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
     const resultSet = this.getCollection(entityName).find(where);
 
     if (Object.keys(orderBy).length > 0) {
@@ -88,7 +88,7 @@ export class EntityManager {
 
     Utils.prepareQuery(where);
 
-    const query = `db.getCollection('${this.metadata[entityName].collection}').find(${JSON.stringify(where)}).limit(1).next();`;
+    const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
     this.options.logger(`[query-logger] ${query}`);
     const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
 
@@ -134,7 +134,7 @@ export class EntityManager {
       return this.removeEntity(where);
     }
 
-    const query = `db.getCollection('${this.metadata[entityName].collection}').deleteMany(${JSON.stringify(where)});`;
+    const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
 
@@ -143,7 +143,7 @@ export class EntityManager {
 
   async removeEntity(entity: BaseEntity): Promise<number> {
     this.runHooks('beforeDelete', entity);
-    const query = `db.getCollection('${this.metadata[entity.constructor.name].collection}').deleteOne({ _id: ${entity._id} });`;
+    const query = `db.getCollection("${this.metadata[entity.constructor.name].collection}").deleteOne({ _id: ${entity._id} });`;
     this.options.logger(`[query-logger] ${query}`);
     const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
@@ -154,7 +154,7 @@ export class EntityManager {
   }
 
   async count(entityName: string, where: any): Promise<number> {
-    const query = `db.getCollection('${this.metadata[entityName].collection}').count(${JSON.stringify(where)});`;
+    const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
     return this.getCollection(this.metadata[entityName].collection).count(where);
   }

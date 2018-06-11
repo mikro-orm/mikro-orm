@@ -161,11 +161,11 @@ export class UnitOfWork {
     // persist the entity itself
     if (changeSet.entity._id) {
       changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
-      const query = `db.getCollection('${changeSet.collection}').updateOne({ _id: ${changeSet.entity._id} }, { $set: ${JSON.stringify(changeSet.payload)} });`;
+      const query = `db.getCollection("${changeSet.collection}").updateOne({ _id: ${changeSet.entity._id} }, { $set: ${JSON.stringify(changeSet.payload)} });`;
       this.em.options.logger(`[query-logger] ${query}`);
       await this.em.getCollection(changeSet.collection).updateOne({ _id: changeSet.entity._id }, { $set: changeSet.payload });
     } else {
-      const query = `db.getCollection('${changeSet.collection}').insertOne(${JSON.stringify(changeSet.payload)});`;
+      const query = `db.getCollection("${changeSet.collection}").insertOne(${JSON.stringify(changeSet.payload)});`;
       this.em.options.logger(`[query-logger] ${query}`);
       const result = await this.em.getCollection(changeSet.collection).insertOne(changeSet.payload);
       changeSet.entity._id = result.insertedId;
