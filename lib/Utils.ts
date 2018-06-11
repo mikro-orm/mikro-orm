@@ -73,15 +73,13 @@ export class Utils {
 
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {
-      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop].isInitialized())) {
+      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop]._id)) {
         return delete ret[prop];
       }
 
       if (ret[prop] instanceof BaseEntity) {
         return ret[prop] = ret[prop].id;
       }
-
-      ret[prop] = ret[prop];
     });
 
     // remove unknown properties

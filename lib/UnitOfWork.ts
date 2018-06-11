@@ -16,6 +16,11 @@ export class UnitOfWork {
 
   async persist(entity: BaseEntity): Promise<ChangeSet> {
     const changeSet = await this.computeChangeSet(entity);
+
+    if (!changeSet) {
+      return null;
+    }
+
     changeSet.index = this.persistStack.length;
     this.persistStack.push(changeSet);
 
@@ -58,6 +63,10 @@ export class UnitOfWork {
     await this.processReferences(ret, meta);
     this.removeUnknownProperties(ret, meta);
 
+    if (Object.keys(ret.payload).length === 0) {
+      return null;
+    }
+
     return ret;
   }
 
@@ -84,7 +93,9 @@ export class UnitOfWork {
       await this.immediateCommit(propChangeSet);
     }
 
-    changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+    if (changeSet.payload[prop.name] instanceof BaseEntity) {
+      changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+    }
   }
 
   private async processOneToMany(changeSet: ChangeSet, prop: EntityProperty) {

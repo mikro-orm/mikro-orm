@@ -25,4 +25,5 @@ export async function wipeDatabase(em: EntityManager) {
   await em.getRepository<BookTag>(BookTag.name).remove({});
   await em.getRepository<Publisher>(Publisher.name).remove({});
   await em.getRepository<Test>(Test.name).remove({});
+  em.clear();
 }

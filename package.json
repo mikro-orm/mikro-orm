@@ -45,7 +45,7 @@
   "scripts": {
     "build": "tsc",
     "precommit": "yarn lint",
-    "test": "node node_modules/.bin/jest",
+    "test": "node node_modules/.bin/jest --runInBand",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
     "lint": "tslint -c tslint.json -p tsconfig.json"
   },
