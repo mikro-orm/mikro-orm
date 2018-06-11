@@ -75,6 +75,10 @@ export class EntityManager {
   }
 
   async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
+    if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
+      return null;
+    }
+
     if (where instanceof ObjectID) {
       where = where.toHexString();
     }

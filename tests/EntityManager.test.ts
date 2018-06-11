@@ -150,6 +150,14 @@ describe('EntityManager', () => {
       expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
     });
 
+    test('findOne with empty where will return null', async () => {
+      expect(await orm.em.findOne<Author>(Author.name, '')).toBeNull();
+      expect(await orm.em.findOne<Author>(Author.name, {})).toBeNull();
+      expect(await orm.em.findOne<Author>(Author.name, [])).toBeNull();
+      expect(await orm.em.findOne<Author>(Author.name, undefined)).toBeNull();
+      expect(await orm.em.findOne<Author>(Author.name, null)).toBeNull();
+    });
+
     test('findOne should initialize entity that is already in IM', async () => {
       const god = new Author('God', 'hello@heaven.god');
       const bible = new Book('Bible', god);
