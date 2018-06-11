@@ -223,7 +223,7 @@ console.log(author.books.getIdentifiers('id')); // array of string
 
 - cascade persist in collections
 - aggregate support?
-- improve populating in EM#find() method
+- improve populating of collections in EM#find() method
 - add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - cascade remove references on other entities when deleting entity (e.g. from M:N collection)
 

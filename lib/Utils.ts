@@ -25,6 +25,10 @@ export class Utils {
     return fastEqual(a, b);
   }
 
+  static unique<T = string>(items: T[]): T[] {
+    return [...new Set(items)];
+  }
+
   static diff(a: any, b: any): any {
     const ret = {} as any;
 

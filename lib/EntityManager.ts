@@ -65,9 +65,10 @@ export class EntityManager {
 
     for (const data of results) {
       const entity = this.merge<T>(entityName, data);
-      await this.processPopulate(entity, populate);
       ret.push(entity);
     }
+
+    await this.processPopulate(ret, populate);
 
     return ret;
   }
@@ -197,19 +198,50 @@ export class EntityManager {
     return property in props && !!props[property].reference;
   }
 
-  /**
-   * @todo improve this for find() operations
-   */
-  private async processPopulate(entity: BaseEntity, populate: string[]): Promise<void> {
-    for (const field of populate) {
-      if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
-        await (entity[field] as Collection<BaseEntity>).init();
+  private async processPopulate(entity: BaseEntity | BaseEntity[], populate: string[]): Promise<void> {
+    if (entity instanceof BaseEntity) {
+      for (const field of populate) {
+        if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
+          await (entity[field] as Collection<BaseEntity>).init();
+        }
+
+        if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
+          await (entity[field] as BaseEntity).init();
+        }
       }
 
-      if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
-        await (entity[field] as BaseEntity).init();
-      }
+      return;
     }
+
+    if (entity.length === 0) {
+      return;
+    }
+
+    for (const field of populate) {
+      await this.populateMany(entity, field);
+    }
+  }
+
+  private async populateMany(entities: BaseEntity[], field: string): Promise<void> {
+    if (entities[0][field] instanceof Collection) {
+      for (const entity of entities) {
+        if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
+          await (entity[field] as Collection<BaseEntity>).init();
+        }
+      }
+
+      return;
+    }
+
+    const children = entities.filter(e => e[field] instanceof BaseEntity && !e[field].isInitialized());
+
+    if (children.length === 0) {
+      return;
+    }
+
+    // preload everything in one call (this will update already existing references in IM)
+    const ids = Utils.unique(children.map(e => e[field].id));
+    await this.find<BaseEntity>(entities[0][field].constructor.name, { _id: { $in: ids } });
   }
 
   private runHooks(type: string, entity: BaseEntity) {

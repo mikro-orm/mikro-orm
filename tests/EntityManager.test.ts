@@ -56,6 +56,15 @@ describe('EntityManager', () => {
       orm.em.clear();
 
       const authorRepository = orm.em.getRepository<Author>(Author.name);
+      const booksRepository = orm.em.getRepository<Book>(Book.name);
+      const books = await booksRepository.findAll(['author']);
+      expect(books[0].author.isInitialized()).toBe(true);
+      orm.em.clear();
+
+      const noBooks = await booksRepository.find({ title: 'not existing' }, ['author']);
+      expect(noBooks.length).toBe(0);
+      orm.em.clear();
+
       const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
       const authors = await authorRepository.findAll(['books', 'favouriteBook']);
       expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
@@ -105,7 +114,6 @@ describe('EntityManager', () => {
         }
       }
 
-      const booksRepository = orm.em.getRepository<Book>(Book.name);
       const booksByTitleAsc = await booksRepository.find({ author: jon._id }, [], { title: 1 });
       expect(booksByTitleAsc[0].title).toBe('My Life on The Wall, part 1');
       expect(booksByTitleAsc[1].title).toBe('My Life on The Wall, part 2');
