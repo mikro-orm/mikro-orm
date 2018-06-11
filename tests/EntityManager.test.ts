@@ -59,6 +59,7 @@ describe('EntityManager', () => {
       const booksRepository = orm.em.getRepository<Book>(Book.name);
       const books = await booksRepository.findAll(['author']);
       expect(books[0].author.isInitialized()).toBe(true);
+      expect(await authorRepository.findOne({ favouriteBook: bible._id })).not.toBe(null);
       orm.em.clear();
 
       const noBooks = await booksRepository.find({ title: 'not existing' }, ['author']);

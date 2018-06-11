@@ -10,7 +10,7 @@ export class Utils {
   private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized', 'createdAt', 'updatedAt'];
 
   static isObject(o: any): boolean {
-    return typeof o === 'object';
+    return typeof o === 'object' && o !== null;
   }
 
   static isArray(arr: any): boolean {
@@ -96,11 +96,6 @@ export class Utils {
     return clone(entity);
   }
 
-  static prepareQuery(query: any): any {
-    Utils.renameKey(query, 'id', '_id');
-    Utils.convertObjectIds(query);
-  }
-
   static renameKey(payload: any, from: string, to: string): void {
     if (payload[from] && !payload[to]) {
       payload[to] = payload[from];
@@ -108,22 +103,26 @@ export class Utils {
     }
   }
 
-  static convertObjectIds(payload: any): void {
-    Object.keys(payload).forEach(k => {
-      const v = payload[k];
+  static convertObjectIds(payload: any): any {
+    if (payload instanceof ObjectID) {
+      return payload;
+    }
 
-      if (Utils.isString(v) && v.match(/^[0-9a-f]{24}$/i)) {
-        return payload[k] = new ObjectID(v);
-      }
+    if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
+      return new ObjectID(payload);
+    }
 
-      if (Utils.isArray(v)) {
-        return payload[k] = v.map((id: string) => new ObjectID(id));
-      }
+    if (Utils.isArray(payload)) {
+      return payload.map((item: any) => Utils.convertObjectIds(item));
+    }
 
-      if (Utils.isObject(payload[k])) {
-        return Utils.convertObjectIds(v);
-      }
-    });
+    if (Utils.isObject(payload)) {
+      Object.keys(payload).forEach(k => {
+        payload[k] = Utils.convertObjectIds(payload[k]);
+      });
+    }
+
+    return payload;
   }
 
   static getParamNames(func: Function | string): string[] {

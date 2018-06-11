@@ -40,8 +40,9 @@ export class EntityManager {
   }
 
   async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
-    Utils.prepareQuery(where);
+    Utils.renameKey(where, 'id', '_id');
     let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
+    where = Utils.convertObjectIds(where);
     const resultSet = this.getCollection(entityName).find(where);
 
     if (Object.keys(orderBy).length > 0) {
@@ -86,10 +87,10 @@ export class EntityManager {
       where = { _id: new ObjectID(where as string) };
     }
 
-    Utils.prepareQuery(where);
-
+    Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
     this.options.logger(`[query-logger] ${query}`);
+    where = Utils.convertObjectIds(where);
     const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
 
     if (!data) {

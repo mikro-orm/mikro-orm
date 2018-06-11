@@ -23,7 +23,7 @@ describe('Utils', () => {
     expect(Utils.isObject(5)).toBe(false);
     expect(Utils.isObject(5.3)).toBe(false);
     expect(Utils.isObject(['a'])).toBe(true);
-    expect(Utils.isObject(null)).toBe(true);
+    expect(Utils.isObject(null)).toBe(false);
     expect(Utils.isObject(() => 1)).toBe(false);
     expect(Utils.isObject(function() { return 1; })).toBe(false);
     expect(Utils.isObject({})).toBe(true);
