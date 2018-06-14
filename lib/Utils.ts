@@ -125,32 +125,4 @@ export class Utils {
     return payload;
   }
 
-  static getParamNames(func: Function | string): string[] {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-    const ARGUMENT_NAMES = /([^\s,]+)/g;
-    const fnStr = func.toString().replace(STRIP_COMMENTS, '');
-    const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
-
-    if (result === null) {
-      return [];
-    }
-
-    // handle class with no constructor
-    if (result.length > 0 && result[0] === 'class') {
-      return [];
-    }
-
-    // strip default values
-    for (let i = 0; i < result.length; i++) {
-      if (result[i] === '=') {
-        result.splice(i, 2);
-      } else if (result[i].includes('=')) {
-        result[i] = result[i].split('=')[0];
-        result.splice(i + 1, 1);
-      }
-    }
-
-    return result;
-  }
-
 }

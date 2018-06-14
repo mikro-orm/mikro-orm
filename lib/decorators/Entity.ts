@@ -1,6 +1,5 @@
 import { merge } from 'lodash';
 import { getMetadataStorage } from '../MikroORM';
-import { Utils } from '../Utils';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): {} }>(target: T) {
@@ -13,10 +12,9 @@ export function Entity(options: EntityOptions = {}): Function {
 
     if (!meta.collection) {
       meta.collection = target.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-      meta.entity = target.name;
     }
 
-    meta.constructorParams = Utils.getParamNames(target);
+    meta.name = target.name;
 
     return target;
   };

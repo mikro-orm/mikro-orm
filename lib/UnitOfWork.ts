@@ -48,11 +48,11 @@ export class UnitOfWork {
     const metadata = this.em.entityFactory.getMetadata();
     const meta = metadata[entity.constructor.name];
 
-    ret.name = meta.entity;
+    ret.name = meta.name;
     ret.collection = meta.collection;
 
-    if (entity.id && this.identityMap[`${entity.constructor.name}-${entity.id}`]) {
-      ret.payload = Utils.diffEntities(this.identityMap[`${entity.constructor.name}-${entity.id}`], entity);
+    if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
+      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity);
     } else {
       ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy? or no copy at all?
     }

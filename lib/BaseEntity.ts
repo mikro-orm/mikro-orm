@@ -151,10 +151,8 @@ export interface EntityProperty {
 
 export interface EntityMetadata {
   name: string;
-  entity: string;
   collection: string;
   path: string;
-  constructorParams: string[];
   properties: { [property: string]: EntityProperty };
   customRepository: any;
   hooks: { [type: string]: string[] };
