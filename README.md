@@ -10,8 +10,45 @@ Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 [![Build Status](https://travis-ci.org/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.org/B4nan/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
 
+## Installation & Usage
 
-## Defining entity
+Fist install the module via `yarn` or `npm`:
+
+`$ yarn add mikro-orm`
+
+or
+
+`$ npm install mikro-orm --save`
+
+Then call `MikroORM.init` as part of bootstrapping your app:
+
+```typescript
+import { MikroORM, Collection } from 'mikro-orm';
+
+const orm = await MikroORM.init({
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  dbName: 'my-db-name',
+  clientUrl: 'mongodb://localhost:27017',
+  baseDir: __dirname,
+});
+console.log(orm.em); // EntityManager
+```
+
+And do not forget to clear entity manager before each request if you do not want
+to store all loaded entities in memory:
+
+```typescript
+const app = express();
+
+app.use(function (req, res, next) {
+  orm.em.clear();
+  next();
+});
+```
+
+Now you can define your entities (in one of the `entitiesDirs` folders):
+
+### Defining entity
 
 ```typescript
 import { BaseEntity, Entity, ManyToOne, Property } from 'mikro-orm';
@@ -52,28 +89,8 @@ export class Book extends BaseEntity {
 }
 ```
 
-## Installation
-
-`$ yarn add mikro-orm`
-
-or
-
-`$ npm install mikro-orm`
-
-## Usage
-
+Now you can start using entity manager and repositories as described in following section. 
 For more examples, take a look at `tests/EntityManager.test.ts`.
-
-```typescript
-import { MikroORM, Collection } from 'mikro-orm';
-
-const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
-  dbName: 'my-db-name',
-  baseDir: __dirname,
-});
-console.log(orm.em); // EntityManager
-```
 
 ## Persisting and cascading
 
@@ -107,7 +124,27 @@ await orm.em.persist(book3); // flush everything to database at once
 
 ## Fetching entities with `EntityManager`
 
-To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`. 
+To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
+
+API:
+
+```typescript
+EntityManager.getCollection(entityName: string): Collection; // returns mongodb Collection for given entity
+EntityManager.getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T>;
+EntityManager.find<T extends BaseEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<T[]>;
+EntityManager.findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
+EntityManager.merge<T extends BaseEntity>(entityName: string, data: any): T;
+EntityManager.getReference<T extends BaseEntity>(entityName: string, id: string): T;
+EntityManager.remove(entityName: string, where: BaseEntity | any): Promise<number>;
+EntityManager.removeEntity(entity: BaseEntity): Promise<number>;
+EntityManager.count(entityName: string, where: any): Promise<number>;
+EntityManager.persist(entity: BaseEntity | BaseEntity[], flush?: boolean): Promise<void>;
+EntityManager.flush(): Promise<void>;
+EntityManager.clear(): void;
+EntityManager.canPopulate(entityName: string, property: string): boolean;
+```
+
+Example:
 
 ```typescript
 const author = orm.em.findOne(Author.name, '...id...');
@@ -132,7 +169,23 @@ for (const author of authors) {
 
 ## Using `EntityRepository` instead of `EntityManager`
 
-More convenient way of fetching entities from database is by using `EntityRepository`:
+More convenient way of fetching entities from database is by using `EntityRepository`, that
+carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
+
+API:
+
+```typescript
+EntityRepository.persist(entity: BaseEntity, flush?: boolean): Promise<void>;
+EntityRepository.findOne(where: FilterQuery<BaseEntity> | string, populate?: string[]): Promise<BaseEntity>;
+EntityRepository.find(where: FilterQuery<BaseEntity>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<BaseEntity[]>;
+EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<BaseEntity[]>;
+EntityRepository.remove(where: BaseEntity | any): Promise<number>;
+EntityRepository.flush(): Promise<void>;
+EntityRepository.canPopulate(property: string): boolean;
+EntityRepository.count(where?: any): Promise<number>;
+```
+
+Example:
 
 ```typescript
 const booksRepository = orm.em.getRepository<Book>(Book.name);
@@ -146,7 +199,9 @@ console.log(books); // Book[]
 
 TODO
 
-## Identity Map
+## Core features
+
+### Identity Map
 
 `MikroORM` uses identity map in background so you will always get the same instance of 
 one entity.
@@ -160,7 +215,13 @@ const authors = await authorRepository.findAll(['books']);
 console.log(jon === authors[0]); // true
 ```
 
-## Using references
+If you want to clear this identity map cache, you can do so via `EntityManager.clear()` method:
+
+```typescript
+orm.em.clear();
+```
+
+### Entity references
 
 Every single entity relation is mapped to an entity reference. Reference is an entity that has
 only its identifier. This reference is stored in identity map so you will get the same object 
@@ -180,7 +241,66 @@ console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
 
-## Collections
+### Using entity constructors
+
+Internally, `MikroORM` never calls entity constructor, so you are free to use it as you wish.
+The constructor will be called only when you instantiate the class yourself via `new` operator,
+so it is a handy place to require your data when creating new entity.
+
+For example following `Book` entity definition will always require to set `title` and `author`, 
+but `publisher` will be optional:
+
+```typescript
+import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, Property } from 'mikro-orm';
+import { Author } from './Author';
+import { BookTag } from './BookTag';
+import { Publisher } from './Publisher';
+
+@Entity()
+export class Book extends BaseEntity {
+
+  @Property()
+  title: string;
+
+  @ManyToOne({ entity: () => Author.name })
+  author: Author;
+
+  @ManyToOne({ entity: () => Publisher.name })
+  publisher: Publisher;
+
+  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  tags: Collection<BookTag>;
+
+  constructor(title: string, author: Author) {
+    super();
+    this.title = title;
+    this.author = author;
+  }
+
+}
+```
+
+### `ObjectID` and `string` duality
+
+Every entity has both `ObjectID` and `string` id available, also all methods of `EntityManager` 
+and `EntityRepository` supports querying by both of them. 
+
+```typescript
+const author = await orm.em.getReference('...id...');
+console.log(author.id);  // returns '...id...'
+console.log(author._id); // returns ObjectID('...id...')
+
+// all of those will return the same results
+const article = '...article id...'; // string id
+const book = '...book id...'; // string id
+const repo = orm.em.getRepository<Author>(Author.name);
+const foo1 = await repo.find({ id: { $in: [article] }, favouriteBook: book });
+const bar1 = await repo.find({ id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
+const foo2 = await repo.find({ _id: { $in: [article] }, favouriteBook: book });
+const bar2 = await repo.find({ _id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
+```
+
+### Collections
 
 `OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
 iterator so you can use `for of` loop to iterate through it. 
@@ -216,13 +336,26 @@ console.log(author.books.count()); // 0
 console.log(author.books.getItems()); // 0
 console.log(author.books.getIdentifiers()); // array of ObjectID
 console.log(author.books.getIdentifiers('id')); // array of string
-
 ```
 
-## Using entity constructors
+### Updating entity values with `BaseEntity.assign()`
 
-Internally, `MikroORM` never calls entity constructor, so you are free to use it as you wish.
-The constructor will be called only when you instantiate the class yourself via `new` operator.
+When you want to update entity based on user input, you will usually have just plain
+string ids of entity relations as user input. Normally you would need to use 
+`EntityManager.getReference()` to create references from each id first, and then
+use those references to update entity relations:
+
+```typescript
+const jon = new Author('Jon Snow', 'snow@wall.st');
+const book = new Book('Book', jon);
+book.assign({ 
+  title: 'Better Book 1', 
+  author: '...id...',
+});
+console.log(book.title); // 'Better Book 1'
+console.log(book.author); // instnace of Author with id: '...id...'
+console.log(book.author.id); // '...id...'
+```
 
 ## TODO
 
