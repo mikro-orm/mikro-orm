@@ -401,7 +401,7 @@ const book = new Book('Book', jon);
 book.author = orm.em.getReference<Author>(Author.name, '...id...');
 ```
 
-Same result can be easily achiever with `BaseEntity.assign()`:
+Same result can be easily achieved with `BaseEntity.assign()`:
 
 ```typescript
 book.assign({ 
@@ -409,7 +409,7 @@ book.assign({
   author: '...id...',
 });
 console.log(book.title); // 'Better Book 1'
-console.log(book.author); // instnace of Author with id: '...id...'
+console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
