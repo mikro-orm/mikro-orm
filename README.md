@@ -18,18 +18,16 @@ Fist install the module via `yarn` or `npm`:
 
 or
 
-`$ npm install mikro-orm --save`
+`$ npm i -s mikro-orm`
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
-import { MikroORM, Collection } from 'mikro-orm';
-
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
-  clientUrl: 'mongodb://localhost:27017',
-  baseDir: __dirname,
+  clientUrl: '...', // defaults to 'mongodb://localhost:27017' 
+  baseDir: __dirname, // defaults to `process.cwd()`
 });
 console.log(orm.em); // EntityManager
 ```
@@ -40,7 +38,7 @@ to store all loaded entities in memory:
 ```typescript
 const app = express();
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   orm.em.clear();
   next();
 });
@@ -51,12 +49,7 @@ Now you can define your entities (in one of the `entitiesDirs` folders):
 ### Defining entity
 
 ```typescript
-import { BaseEntity, Entity, ManyToOne, Property } from 'mikro-orm';
-import { Publisher } from './Publisher';
-import { Author } from './Author';
-import { BookRepository } from './BookRepository';
-
-@Entity({ collection: 'books-table', customRepository: BookRepository })
+@Entity({ collection: 'books-table' })
 export class Book extends BaseEntity {
 
   @Property()
@@ -68,29 +61,17 @@ export class Book extends BaseEntity {
   @ManyToOne({ entity: () => Publisher.name })
   publisher: Publisher;
 
-  @Property()
-  metaObject: object;
-
-  @Property()
-  metaArray: any[];
-
-  @Property()
-  metaArrayOfStrings: string[];
-
   constructor(title: string, author: Author) {
     super();
     this.title = title;
     this.author = author;
-    this.metaObject = {};
-    this.metaArray = [{test: 123, lol: true}];
-    this.metaArrayOfStrings = ['test'];
   }
 
 }
 ```
 
-Now you can start using entity manager and repositories as described in following section. 
-For more examples, take a look at `tests/EntityManager.test.ts`.
+With your entities set up, you can start using entity manager and repositories as described 
+in following section. For more examples, take a look at `tests/EntityManager.test.ts`.
 
 ## Persisting and cascading
 
@@ -197,7 +178,29 @@ console.log(books); // Book[]
 
 ### Custom repository
 
-TODO
+To use custom repository, just extend `EntityRepository<T>` class:
+
+```typescript
+export class CustomAuthorRepository extends EntityRepository<Author> {
+
+  // your custom methods...
+  public findAndUpdate(...) {
+    // ...
+  }
+
+}
+```
+
+And register your repository as `@Entity` decorator:
+
+```typescript
+@Entity({ customRepository: CustomAuthorRepository })
+export class Publisher extends BaseEntity {
+  // ...
+}
+```
+
+Then your custom repository can be accessed via `EntityManager.getRepository()` method.
 
 ## Core features
 
@@ -251,11 +254,6 @@ For example following `Book` entity definition will always require to set `title
 but `publisher` will be optional:
 
 ```typescript
-import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, Property } from 'mikro-orm';
-import { Author } from './Author';
-import { BookTag } from './BookTag';
-import { Publisher } from './Publisher';
-
 @Entity()
 export class Book extends BaseEntity {
 
@@ -306,11 +304,10 @@ const bar2 = await repo.find({ _id: { $in: [new ObjectID(article)] }, favouriteB
 iterator so you can use `for of` loop to iterate through it. 
 
 ```typescript
-const author = orm.em.findOne(Author.name, '...');
+const author = orm.em.findOne(Author.name, '...', ['books']); // populating books collection
 
-console.log(author.name); // Jon Snow
-
-await author.books.init(); // init all books
+// or we could lazy load books collection later via `init()` method
+await author.books.init();
 
 for (const book of author.books) {
   console.log(book.title); // initialized
@@ -338,6 +335,59 @@ console.log(author.books.getIdentifiers()); // array of ObjectID
 console.log(author.books.getIdentifiers('id')); // array of string
 ```
 
+### `OneToMany` collections
+
+`OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
+ 
+```typescript
+@Entity()
+export class Book extends BaseEntity {
+
+  @ManyToOne({ entity: () => Author.name })
+  author: Author;
+
+}
+
+@Entity()
+export class BookTag extends BaseEntity {
+
+  @OneToMany({ entity: () => Book.name, fk: 'author' })
+  books: Collection<Book>;
+
+}
+```
+
+### `ManyToMany` collections
+
+As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
+All references are stored as an array of `ObjectID`s on owning entity. 
+
+#### Unidirectional
+
+Unidirectional `ManyToMany` relations are defined only on one side, and marked explicitly as `owner`:
+
+```typescript
+@ManyToMany({ entity: () => Book.name, owner: true })
+books: Collection<Book>;
+```
+
+#### Bidirectional
+
+Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), 
+marked by `inversedBy` attribute pointing to the inverse side:
+
+```typescript
+@ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+tags: Collection<BookTag>;
+```
+
+And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
+
+```typescript
+@ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
+books: Collection<Book>;
+```
+
 ### Updating entity values with `BaseEntity.assign()`
 
 When you want to update entity based on user input, you will usually have just plain
@@ -348,6 +398,12 @@ use those references to update entity relations:
 ```typescript
 const jon = new Author('Jon Snow', 'snow@wall.st');
 const book = new Book('Book', jon);
+book.author = orm.em.getReference<Author>(Author.name, '...id...');
+```
+
+Same result can be easily achiever with `BaseEntity.assign()`:
+
+```typescript
 book.assign({ 
   title: 'Better Book 1', 
   author: '...id...',
@@ -367,7 +423,4 @@ console.log(book.author.id); // '...id...'
 
 ## TODO docs
 
-- 1:M / M:1 collections
-- many to many collections
-- custom repository
 - lifecycle hooks
