@@ -70,6 +70,11 @@ export class Collection<T extends BaseEntity> {
     this.dirty = this.property.owner; // set dirty flag only to owning side
   }
 
+  set(items: T[]): void {
+    this.removeAll();
+    this.add(...items);
+  }
+
   remove(...items: T[]): void {
     this.checkInitialized();
 

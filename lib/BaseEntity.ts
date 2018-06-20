@@ -81,7 +81,7 @@ export class BaseEntity {
           return em.getReference(props[prop].type, item);
         });
 
-        return this[prop] = new Collection(props[prop], this, items);
+        return (this[prop] as Collection<BaseEntity>).set(items);
       }
 
       this[prop] = data[prop];
