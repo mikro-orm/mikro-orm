@@ -27,12 +27,14 @@ export class Collection<T extends BaseEntity> {
 
   async init(): Promise<Collection<T>> {
     const cond = {} as any;
+    const order = [] as ObjectID[];
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk] = this.owner._id;
     } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
       if (this.property.owner) {
-        cond._id = { $in: this.items.map(item => item._id) };
+        const order = this.items.map(item => item._id);
+        cond._id = { $in: order };
       } else {
         cond[this.property.mappedBy] = this.owner._id;
       }
@@ -41,6 +43,14 @@ export class Collection<T extends BaseEntity> {
     this.items.length = 0;
     const em = getEntityManager();
     const items = await em.find<T>(this.property.type, cond);
+
+    // re-order items when searching with `$in` operator
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
+      items.sort((a: BaseEntity, b: BaseEntity) => {
+        return order.indexOf(a._id) - order.indexOf(b._id);
+      });
+    }
+
     this.items.push(...items);
     this.initialized = true;
     this.dirty = false;
