@@ -246,7 +246,8 @@ export class EntityManager {
 
     // preload everything in one call (this will update already existing references in IM)
     const ids = Utils.unique(children.map(e => e[field].id));
-    await this.find<BaseEntity>(entities[0][field].constructor.name, { _id: { $in: ids } });
+    const meta = this.metadata[entities[0].constructor.name].properties[field];
+    await this.find<BaseEntity>(meta.type, { _id: { $in: ids } });
   }
 
   private runHooks(type: string, entity: BaseEntity) {
