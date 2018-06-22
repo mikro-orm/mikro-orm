@@ -7,6 +7,10 @@ export class EntityRepository<T extends BaseEntity> {
   constructor(protected em: EntityManager,
               protected entityName: string) { }
 
+  getReference<T extends BaseEntity>(id: string): T {
+    return this.em.getReference(this.entityName, id);
+  }
+
   async persist(entity: T, flush = true): Promise<void> {
     return this.em.persist(entity, flush);
   }

@@ -19,7 +19,7 @@ export class BaseEntity {
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
-        this[prop] = new Collection(props[prop], this, []);
+        this[prop] = new Collection(this, props[prop], []);
       }
     });
   }

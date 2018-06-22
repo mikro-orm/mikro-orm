@@ -40,28 +40,14 @@ export class EntityManager {
   }
 
   async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
-    Utils.renameKey(where, 'id', '_id');
-    let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
-    where = Utils.convertObjectIds(where);
-    const resultSet = this.getCollection(entityName).find(where);
-
-    if (Object.keys(orderBy).length > 0) {
-      query += `.sort(${JSON.stringify(orderBy)})`;
-      resultSet.sort(orderBy);
-    }
-
-    if (limit !== null) {
-      query += `.limit(${limit})`;
-      resultSet.limit(limit);
-    }
-
-    if (offset !== null) {
-      query += `.skip(${offset})`;
-      resultSet.skip(offset);
-    }
-
+    const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
     this.options.logger(`[query-logger] ${query}.toArray();`);
     const results = await resultSet.toArray();
+
+    if (results.length === 0) {
+      return [];
+    }
+
     const ret: T[] = [];
 
     for (const data of results) {
@@ -69,14 +55,16 @@ export class EntityManager {
       ret.push(entity);
     }
 
-    await this.processPopulate(ret, populate);
+    for (const field of populate) {
+      await this.populateMany(entityName, ret, field);
+    }
 
     return ret;
   }
 
   async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
-      return null;
+      throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
 
     if (where instanceof ObjectID) {
@@ -84,6 +72,7 @@ export class EntityManager {
     }
 
     if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`] && this.identityMap[`${entityName}-${where}`].isInitialized()) {
+      await this.populateOne(entityName, this.identityMap[`${entityName}-${where}`], populate);
       return this.identityMap[`${entityName}-${where}`] as T;
     }
 
@@ -102,7 +91,7 @@ export class EntityManager {
     }
 
     const entity = this.merge(entityName, data) as T;
-    await this.processPopulate(entity, populate);
+    await this.populateOne(entityName, entity, populate);
 
     return entity;
   }
@@ -116,13 +105,17 @@ export class EntityManager {
 
     if (this.identityMap[`${entityName}-${entity.id}`]) {
       entity.assign(data);
+      this.unitOfWork.addToIdentityMap(entity);
+    } else {
+      this.addToIdentityMap(entity);
     }
-
-    this.addToIdentityMap(entity);
 
     return entity as T;
   }
 
+  /**
+   * gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
   getReference<T extends BaseEntity>(entityName: string, id: string): T {
     if (this.identityMap[`${entityName}-${id}`]) {
       return this.identityMap[`${entityName}-${id}`] as T;
@@ -203,36 +196,35 @@ export class EntityManager {
     return property in props && !!props[property].reference;
   }
 
-  private async processPopulate(entity: BaseEntity | BaseEntity[], populate: string[]): Promise<void> {
-    if (entity instanceof BaseEntity) {
-      for (const field of populate) {
-        if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
-          await (entity[field] as Collection<BaseEntity>).init();
-        }
-
-        if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
-          await (entity[field] as BaseEntity).init();
-        }
+  private async populateOne(entityName: string, entity: BaseEntity, populate: string[]): Promise<void> {
+    for (const field of populate) {
+      if (!this.canPopulate(entityName, field)) {
+        throw new Error(`Entity '${entityName}' does not have property '${field}'`);
       }
 
-      return;
-    }
+      if (entity[field] instanceof Collection && !entity[field].isInitialized(true)) {
+        await (entity[field] as Collection<BaseEntity>).init();
+      }
 
-    if (entity.length === 0) {
-      return;
-    }
-
-    for (const field of populate) {
-      await this.populateMany(entity, field);
+      if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
+        await (entity[field] as BaseEntity).init();
+      }
     }
   }
 
-  private async populateMany(entities: BaseEntity[], field: string): Promise<void> {
-    const meta = this.metadata[entities[0].constructor.name].properties[field];
+  /**
+   * preload everything in one call (this will update already existing references in IM)
+   */
+  private async populateMany(entityName: string, entities: BaseEntity[], field: string): Promise<void> {
+    if (!this.canPopulate(entityName, field)) {
+      throw new Error(`Entity '${entityName}' does not have property '${field}'`);
+    }
 
-    if (entities[0][field] instanceof Collection) {
+    const meta = this.metadata[entityName].properties[field];
+
+    if (meta.reference === ReferenceType.MANY_TO_MANY && !meta.owner) {
       for (const entity of entities) {
-        if (entity[field] instanceof Collection && !entity[field].isInitialized(true)) {
+        if (!entity[field].isInitialized()) {
           await (entity[field] as Collection<BaseEntity>).init();
         }
       }
@@ -240,15 +232,58 @@ export class EntityManager {
       return;
     }
 
-    const children = entities.filter(e => e[field] instanceof BaseEntity && !e[field].isInitialized());
+    const children: BaseEntity[] = [];
+    let fk = '_id';
+
+    if (meta.reference === ReferenceType.ONE_TO_MANY) {
+      const filtered = entities.filter(e => e[field] instanceof Collection);
+      children.push(...filtered.map(e => e[field].owner));
+      fk = meta.fk;
+    } else if (meta.reference === ReferenceType.MANY_TO_MANY) {
+      const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
+      children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
+    } else {
+      children.push(...entities.filter(e => e[field] instanceof BaseEntity && !e[field].isInitialized()).map(e => e[field]));
+    }
 
     if (children.length === 0) {
       return;
     }
 
-    // preload everything in one call (this will update already existing references in IM)
-    const ids = Utils.unique(children.map(e => e[field].id));
-    await this.find<BaseEntity>(meta.type, { _id: { $in: ids } });
+    const ids = Utils.unique(children.map(e => e.id));
+    const data = await this.find<BaseEntity>(meta.type, { [fk]: { $in: ids } });
+
+    // initialize collections for one to many
+    if (meta.reference === ReferenceType.ONE_TO_MANY) {
+      for (const entity of entities) {
+        const items = data.filter(child => child[fk] === entity);
+        (entity[field] as Collection<BaseEntity>).set(items, true);
+      }
+    }
+  }
+
+  private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
+    Utils.renameKey(where, 'id', '_id');
+    let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
+    where = Utils.convertObjectIds(where);
+    const resultSet = this.getCollection(entityName).find(where);
+
+    if (Object.keys(orderBy).length > 0) {
+      query += `.sort(${JSON.stringify(orderBy)})`;
+      resultSet.sort(orderBy);
+    }
+
+    if (limit !== null) {
+      query += `.limit(${limit})`;
+      resultSet.limit(limit);
+    }
+
+    if (offset !== null) {
+      query += `.skip(${offset})`;
+      resultSet.skip(offset);
+    }
+
+    return { query, resultSet };
   }
 
   private runHooks(type: string, entity: BaseEntity) {

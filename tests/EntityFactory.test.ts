@@ -31,7 +31,6 @@ describe('EntityFactory', () => {
 
   test('should load entities', async () => {
     const metadata = factory.getMetadata();
-    // console.log(require('util').inspect(metadata, true, 5, true));
     expect(metadata).toBeInstanceOf(Object);
     expect(metadata[Author.name]).toBeInstanceOf(Object);
     expect(metadata[Author.name].path).toBe(__dirname + '/entities/Author.ts');

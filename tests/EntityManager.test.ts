@@ -100,6 +100,8 @@ describe('EntityManager', () => {
       expect(jon.toJSON()).toEqual(o);
       expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
       expect(jon.books.getIdentifiers()[0]).toBeInstanceOf(ObjectID);
+      expect(jon.books.getIdentifiers('id')).toBeInstanceOf(Array);
+      expect(typeof jon.books.getIdentifiers('id')[0]).toBe('string');
 
       for (const author of authors) {
         expect(author.books).toBeInstanceOf(Collection);
@@ -151,12 +153,12 @@ describe('EntityManager', () => {
       expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
     });
 
-    test('findOne with empty where will return null', async () => {
-      expect(await orm.em.findOne<Author>(Author.name, '')).toBeNull();
-      expect(await orm.em.findOne<Author>(Author.name, {})).toBeNull();
-      expect(await orm.em.findOne<Author>(Author.name, [])).toBeNull();
-      expect(await orm.em.findOne<Author>(Author.name, undefined)).toBeNull();
-      expect(await orm.em.findOne<Author>(Author.name, null)).toBeNull();
+    test('findOne with empty where will throw', async () => {
+      await expect(orm.em.findOne<Author>(Author.name, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+      await expect(orm.em.findOne<Author>(Author.name, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+      await expect(orm.em.findOne<Author>(Author.name, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+      await expect(orm.em.findOne<Author>(Author.name, undefined)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+      await expect(orm.em.findOne<Author>(Author.name, null)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     });
 
     test('findOne should initialize entity that is already in IM', async () => {
@@ -334,9 +336,8 @@ describe('EntityManager', () => {
       await orm.em.persist([p1, p2]);
       const repo = orm.em.getRepository<Publisher>(Publisher.name);
 
-      // empty many to many on owning side should not make db calls
       orm.em.clear();
-      let publishers = await repo.findAll(['tests']);
+      const publishers = await repo.findAll(['tests']);
       expect(publishers).toBeInstanceOf(Array);
       expect(publishers.length).toBe(2);
       expect(publishers[0]).toBeInstanceOf(Publisher);
@@ -344,19 +345,36 @@ describe('EntityManager', () => {
       expect(publishers[0].tests.isInitialized()).toBe(true);
       expect(publishers[0].tests.isDirty()).toBe(false);
       expect(publishers[0].tests.count()).toBe(0);
-      await publishers[0].tests.init();
-
-      // test optimized calls when populating many to many
-      orm.em.clear();
-      publishers = await repo.findAll(['tests']);
-      expect(publishers).toBeInstanceOf(Array);
-      expect(publishers.length).toBe(2);
-      expect(publishers[1]).toBeInstanceOf(Publisher);
-      expect(publishers[1].tests).toBeInstanceOf(Collection);
-      expect(publishers[1].tests.isInitialized()).toBe(true);
-      expect(publishers[1].tests.isDirty()).toBe(false);
-      expect(publishers[1].tests.count()).toBe(2);
+      await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
       expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
+    });
+
+    test('populating many to many relation on inverse side', async () => {
+      const author = new Author('Jon Snow', 'snow@wall.st');
+      const book1 = new Book('My Life on The Wall, part 1', author);
+      const book2 = new Book('My Life on The Wall, part 2', author);
+      const book3 = new Book('My Life on The Wall, part 3', author);
+      const tag1 = new BookTag('silly');
+      const tag2 = new BookTag('funny');
+      const tag3 = new BookTag('sick');
+      const tag4 = new BookTag('strange');
+      const tag5 = new BookTag('sexy');
+      book1.tags.add(tag1, tag3);
+      book2.tags.add(tag1, tag2, tag5);
+      book3.tags.add(tag2, tag4, tag5);
+      await orm.em.persist([book1, book2, book3]);
+      const repo = orm.em.getRepository<BookTag>(BookTag.name);
+
+      orm.em.clear();
+      const tags = await repo.findAll(['books']);
+      expect(tags).toBeInstanceOf(Array);
+      expect(tags.length).toBe(5);
+      expect(tags[0]).toBeInstanceOf(BookTag);
+      expect(tags[0].books).toBeInstanceOf(Collection);
+      expect(tags[0].books.isInitialized()).toBe(true);
+      expect(tags[0].books.isDirty()).toBe(false);
+      expect(tags[0].books.count()).toBe(2);
+      expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
     });
 
     test('hooks', async () => {
@@ -397,6 +415,16 @@ describe('EntityManager', () => {
       expect(repo.canPopulate('name')).toBe(false);
       expect(repo.canPopulate('favouriteBook')).toBe(true);
       expect(repo.canPopulate('books')).toBe(true);
+    });
+
+     test('trying to populate non-existing or non-reference property will throw', async () => {
+      const repo = orm.em.getRepository<Author>(Author.name);
+      const author = new Author('Johny Cash', 'johny@cash.com');
+      await repo.persist(author);
+      orm.em.clear();
+
+      await expect(repo.findAll(['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+      await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
     });
   });
 

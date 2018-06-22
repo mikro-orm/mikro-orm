@@ -8,8 +8,8 @@ export class Collection<T extends BaseEntity> {
   private dirty = false;
   private readonly items: T[] = [];
 
-  constructor(private readonly property: EntityProperty,
-              private readonly owner: BaseEntity,
+  constructor(public readonly owner: BaseEntity,
+              private readonly property: EntityProperty,
               items: T[] = null) {
     if (items) {
       this.initialized = true;
@@ -81,9 +81,17 @@ export class Collection<T extends BaseEntity> {
     this.dirty = this.property.owner; // set dirty flag only to owning side
   }
 
-  set(items: T[]): void {
+  set(items: T[], initialize = false): void {
+    if (initialize) {
+      this.initialized = true;
+    }
+
     this.removeAll();
     this.add(...items);
+
+    if (initialize) {
+      this.dirty = false;
+    }
   }
 
   remove(...items: T[]): void {
@@ -147,8 +155,7 @@ export class Collection<T extends BaseEntity> {
       cond[this.property.fk] = this.owner._id;
     } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
       if (this.property.owner) {
-        const order = this.items.map(item => item._id);
-        cond._id = { $in: order };
+        cond._id = { $in: this.items.map(item => item._id) };
       } else {
         cond[this.property.mappedBy] = this.owner._id;
       }

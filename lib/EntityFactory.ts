@@ -23,7 +23,6 @@ export class EntityFactory {
 
   create<T extends BaseEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
-    const exclude: string[] = [];
     let entity: T;
 
     data._id = new ObjectID(data.id || data._id);
@@ -35,9 +34,10 @@ export class EntityFactory {
       // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
       const Entity = require(meta.path)[meta.name];
       entity = Object.create(Entity.prototype);
+      this.em.identityMap[`${entityName}-${data._id}`] = entity;
     }
 
-    this.initEntity(entity, meta.properties, data, exclude);
+    this.initEntity(entity, meta.properties, data);
 
     if (initialized) {
       delete entity['_initialized'];
@@ -56,7 +56,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[] = []): void {
+  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any): void {
     // process base entity properties first
     ['_id', 'createdAt', 'updatedAt'].forEach(k => {
       if (data[k]) {
@@ -68,20 +68,16 @@ export class EntityFactory {
     Object.keys(properties).forEach(p => {
       const prop = properties[p] as EntityProperty;
 
-      if (exclude.includes(p)) {
-        return;
-      }
-
       if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
-        return entity[p] = new Collection<T>(prop, entity);
+        return entity[p] = new Collection<T>(entity, prop);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Utils.isArray(data[p])) {
           const items = data[p].map((id: ObjectID) => this.createReference(prop.type, id.toHexString()));
-          return entity[p] = new Collection<T>(prop, entity, items);
+          return entity[p] = new Collection<T>(entity, prop, items);
         } else if (!entity[p]) {
-          return entity[p] = new Collection<T>(prop, entity, prop.owner ? [] : null);
+          return entity[p] = new Collection<T>(entity, prop, prop.owner ? [] : null);
         }
       }
 
