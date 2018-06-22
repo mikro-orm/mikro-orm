@@ -26,19 +26,16 @@ export class Collection<T extends BaseEntity> {
   }
 
   async init(): Promise<Collection<T>> {
-    const cond = {} as any;
-    const order = [] as ObjectID[];
+    // do not make db call if we know we will get no results
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
+      this.initialized = true;
+      this.dirty = false;
 
-    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.fk] = this.owner._id;
-    } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
-      if (this.property.owner) {
-        const order = this.items.map(item => item._id);
-        cond._id = { $in: order };
-      } else {
-        cond[this.property.mappedBy] = this.owner._id;
-      }
+      return this;
     }
+
+    const cond = this.createCondition();
+    const order = this.items.map(item => item._id);
 
     this.items.length = 0;
     const em = getEntityManager();
@@ -133,10 +130,27 @@ export class Collection<T extends BaseEntity> {
     }
   }
 
-  private handleInverseSide(item: T, method: string) {
+  private handleInverseSide(item: T, method: string): void {
     if (this.property.owner && this.property.inversedBy && item[this.property.inversedBy].isInitialized()) {
       item[this.property.inversedBy][method](this.owner);
     }
+  }
+
+  private createCondition(): any {
+    const cond: any = {};
+
+    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      cond[this.property.fk] = this.owner._id;
+    } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+      if (this.property.owner) {
+        const order = this.items.map(item => item._id);
+        cond._id = { $in: order };
+      } else {
+        cond[this.property.mappedBy] = this.owner._id;
+      }
+    }
+
+    return cond;
   }
 
 }

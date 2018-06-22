@@ -6,6 +6,7 @@ import { Book } from './entities/Book';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookTag } from './entities/BookTag';
 import { initORM, wipeDatabase } from './bootstrap';
+import { Test } from './entities/Test';
 
 /**
  * @class EntityManagerTest
@@ -320,6 +321,41 @@ describe('EntityManager', () => {
       orm.em.clear();
       book = await orm.em.findOne<Book>(Book.name, book._id);
       expect(book.tags.count()).toBe(0);
+    });
+
+    test('populating many to many relation', async () => {
+      const p1 = new Publisher('foo');
+      expect(p1.tests).toBeInstanceOf(Collection);
+      expect(p1.tests.isInitialized()).toBe(true);
+      expect(p1.tests.isDirty()).toBe(false);
+      expect(p1.tests.count()).toBe(0);
+      const p2 = new Publisher('bar');
+      p2.tests.add(new Test(), new Test());
+      await orm.em.persist([p1, p2]);
+      const repo = orm.em.getRepository<Publisher>(Publisher.name);
+
+      // empty many to many on owning side should not make db calls
+      orm.em.clear();
+      let publishers = await repo.findAll(['tests']);
+      expect(publishers).toBeInstanceOf(Array);
+      expect(publishers.length).toBe(2);
+      expect(publishers[0]).toBeInstanceOf(Publisher);
+      expect(publishers[0].tests).toBeInstanceOf(Collection);
+      expect(publishers[0].tests.isInitialized()).toBe(true);
+      expect(publishers[0].tests.isDirty()).toBe(false);
+      expect(publishers[0].tests.count()).toBe(0);
+      await publishers[0].tests.init();
+
+      // test optimized calls when populating many to many
+      orm.em.clear();
+      publishers = await repo.findAll(['tests']);
+      expect(publishers).toBeInstanceOf(Array);
+      expect(publishers.length).toBe(2);
+      expect(publishers[1]).toBeInstanceOf(Publisher);
+      expect(publishers[1].tests).toBeInstanceOf(Collection);
+      expect(publishers[1].tests.isInitialized()).toBe(true);
+      expect(publishers[1].tests.isDirty()).toBe(false);
+      expect(publishers[1].tests.count()).toBe(2);
     });
 
     test('hooks', async () => {
