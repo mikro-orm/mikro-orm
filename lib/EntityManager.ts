@@ -1,5 +1,5 @@
 import { Collection as MongoCollection, Db, FilterQuery, ObjectID } from 'mongodb';
-import { BaseEntity, EntityMetadata } from './BaseEntity';
+import { BaseEntity, EntityMetadata, ReferenceType } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
@@ -228,9 +228,11 @@ export class EntityManager {
   }
 
   private async populateMany(entities: BaseEntity[], field: string): Promise<void> {
+    const meta = this.metadata[entities[0].constructor.name].properties[field];
+
     if (entities[0][field] instanceof Collection) {
       for (const entity of entities) {
-        if (entity[field] instanceof Collection && !entity[field].isInitialized()) {
+        if (entity[field] instanceof Collection && !entity[field].isInitialized(true)) {
           await (entity[field] as Collection<BaseEntity>).init();
         }
       }
@@ -246,7 +248,6 @@ export class EntityManager {
 
     // preload everything in one call (this will update already existing references in IM)
     const ids = Utils.unique(children.map(e => e[field].id));
-    const meta = this.metadata[entities[0].constructor.name].properties[field];
     await this.find<BaseEntity>(meta.type, { _id: { $in: ids } });
   }
 

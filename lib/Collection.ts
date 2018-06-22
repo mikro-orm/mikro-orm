@@ -17,7 +17,11 @@ export class Collection<T extends BaseEntity> {
     }
   }
 
-  isInitialized(): boolean {
+  isInitialized(fully = false): boolean {
+    if (fully) {
+      return this.initialized && this.items.every(i => i.isInitialized());
+    }
+
     return this.initialized;
   }
 

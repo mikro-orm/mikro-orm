@@ -356,6 +356,7 @@ describe('EntityManager', () => {
       expect(publishers[1].tests.isInitialized()).toBe(true);
       expect(publishers[1].tests.isDirty()).toBe(false);
       expect(publishers[1].tests.count()).toBe(2);
+      expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
     });
 
     test('hooks', async () => {
