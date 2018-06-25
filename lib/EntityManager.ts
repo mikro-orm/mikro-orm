@@ -132,8 +132,10 @@ export class EntityManager {
       return this.removeEntity(where);
     }
 
+    Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
+    where = Utils.convertObjectIds(where);
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
 
     return result.deletedCount;
@@ -152,8 +154,10 @@ export class EntityManager {
   }
 
   async count(entityName: string, where: any): Promise<number> {
+    Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
+    where = Utils.convertObjectIds(where);
     return this.getCollection(this.metadata[entityName].collection).count(where);
   }
 
