@@ -89,16 +89,17 @@ export class BaseEntity {
   }
 
   toObject(parent: BaseEntity = this): any {
-    const metadata = getMetadataStorage();
-    const meta = metadata[this.constructor.name];
-    const props = meta.properties;
     const ret = { id: this.id, createdAt: this.createdAt, updatedAt: this.updatedAt } as any;
 
     if (!this.isInitialized()) {
       return { id: this.id } as any;
     }
 
-    Object.keys(props).forEach(prop => {
+    Object.keys(this).forEach(prop => {
+      if (['id', '_id', 'createdAt', 'updatedAt'].includes(prop)) {
+        return;
+      }
+
       if (this[prop] instanceof Collection) {
         if (this[prop].isInitialized()) {
           const collection = (this[prop] as Collection<BaseEntity>).getItems();
