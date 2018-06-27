@@ -34,6 +34,11 @@ describe('UnitOfWork', () => {
     expect(typeof changeSet.payload.email).toBe('string');
     expect(changeSet.payload.born instanceof Date).toBe(true);
 
+    // Date object will be ok
+    Object.assign(author, { born: new Date() });
+    changeSet = await uow.persist(author);
+    expect(changeSet.payload.born instanceof Date).toBe(true);
+
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
     changeSet = await uow.persist(author);

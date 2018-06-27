@@ -28,6 +28,7 @@ describe('Utils', () => {
     expect(Utils.isObject(function() { return 1; })).toBe(false);
     expect(Utils.isObject({})).toBe(true);
     expect(Utils.isObject(new Test())).toBe(true);
+    expect(Utils.isObject(new Date())).toBe(true);
     expect(Utils.isObject(Test)).toBe(false);
   });
 
@@ -74,20 +75,21 @@ describe('Utils', () => {
 
   test('diff', () => {
     expect(Utils.diff({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toEqual({a: 'b'});
-    expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', c: {f: ['g', 'h']}});
+    expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', c: {d: 'e', f: ['g', 'h']}});
     expect(Utils.diff({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toEqual({});
     expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b'});
     expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
     expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
     expect(Utils.diff({_id: 'a', createdAt: 1, updatedAt: 1}, {_id: 'b', createdAt: 2, updatedAt: 2})).toEqual({}); // ignored fields
+    expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
   });
 
   test('diffEntities ignores collections', () => {
     const author1 = new Author('Name 1', 'e-mail');
-    author1.books = new Collection<Book>({} as EntityProperty, author1);
+    author1.books = new Collection<Book>(author1, {} as EntityProperty);
     const author2 = new Author('Name 2', 'e-mail');
-    author2.books = new Collection<Book>({} as EntityProperty, author2);
+    author2.books = new Collection<Book>(author2, {} as EntityProperty);
     expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2' });
   });
 

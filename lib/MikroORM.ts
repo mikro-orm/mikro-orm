@@ -85,6 +85,7 @@ export class MikroORM {
 export interface Options {
   dbName: string;
   entitiesDirs: string[];
+  entitiesDirsTs?: string[];
   strict?: boolean;
   logger?: Function;
   baseDir?: string;

@@ -53,7 +53,7 @@ export class Utils {
         return ret[k] = b[k]; // right-hand side has priority
       }
 
-      ret[k] = Utils.isObject(b[k]) ? Utils.diff(a[k], b[k]) : b[k];
+      ret[k] = b[k];
     });
 
     return ret;

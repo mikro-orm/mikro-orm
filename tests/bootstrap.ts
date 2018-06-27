@@ -14,6 +14,7 @@ export async function initORM() {
 
   return MikroORM.init({
     entitiesDirs: ['entities'],
+    entitiesDirsTs: ['entities'], // just to raise coverage :]
     dbName: `mikro-orm-test${hash}`,
     baseDir: __dirname,
   });

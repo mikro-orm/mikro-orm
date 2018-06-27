@@ -1,5 +1,6 @@
 import { readdirSync } from 'fs';
 import { ObjectID } from 'bson';
+import { SourceFile } from 'ts-simple-ast';
 import Project from 'ts-simple-ast';
 
 import { getMetadataStorage, Options } from './MikroORM';
@@ -100,19 +101,27 @@ export class EntityFactory {
   }
 
   private loadMetadata(): any {
-    const project = new Project();
     const startTime = Date.now();
     this.logger(`ORM entity discovery started`);
+    const project = new Project();
+    const sources: SourceFile[] = [];
 
-    this.options.entitiesDirs.forEach(dir => this.discover(project, dir));
+    if (!this.em.options.entitiesDirsTs) {
+      this.em.options.entitiesDirsTs = this.em.options.entitiesDirs;
+    }
+
+    this.em.options.entitiesDirsTs.forEach(dir => {
+      sources.push(...project.addExistingSourceFiles(`${this.em.options.baseDir}/${dir}/**/*.ts`));
+    });
+
+    this.options.entitiesDirs.forEach(dir => this.discover(sources, dir));
     const diff = Date.now() - startTime;
     this.logger(`- entity discovery finished after ${diff} ms`);
   }
 
-  private discover(project: Project, basePath: string) {
+  private discover(sources: SourceFile[], basePath: string) {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
     this.logger(`- processing ${files.length} files from directory ${basePath}`);
-    const sources = project.addExistingSourceFiles('**/entities/**/*.ts');
 
     files.forEach(file => {
       if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.')) {
