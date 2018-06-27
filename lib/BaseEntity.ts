@@ -84,6 +84,10 @@ export class BaseEntity {
         return (this[prop] as Collection<BaseEntity>).set(items);
       }
 
+      if (props[prop] && props[prop].reference === ReferenceType.SCALAR) {
+        this[prop] = em.validator.validateProperty(props[prop], this[prop], this)
+      }
+
       this[prop] = data[prop];
     });
   }

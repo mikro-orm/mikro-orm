@@ -6,11 +6,13 @@ import { UnitOfWork } from './UnitOfWork';
 import { Utils } from './Utils';
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
+import { Validator } from './Validator';
 
 export class EntityManager {
 
   public entityFactory = new EntityFactory(this);
   public readonly identityMap: { [k: string]: BaseEntity } = {};
+  public readonly validator = new Validator(this.options.strict);
 
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};

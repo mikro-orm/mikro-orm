@@ -62,6 +62,7 @@ export class UnitOfWork {
 
     await this.processReferences(ret, meta);
     this.removeUnknownProperties(ret, meta);
+    this.em.validator.validate(ret.entity, ret.payload, meta);
 
     if (Object.keys(ret.payload).length === 0) {
       return null;

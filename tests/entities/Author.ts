@@ -19,6 +19,9 @@ export class Author extends BaseEntity {
   email: string;
 
   @Property()
+  age: number;
+
+  @Property()
   born: Date;
 
   @OneToMany({ entity: () => Book.name, fk: 'author' })

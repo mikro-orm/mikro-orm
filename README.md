@@ -424,3 +424,4 @@ console.log(book.author.id); // '...id...'
 ## TODO docs
 
 - lifecycle hooks
+- property type validation
