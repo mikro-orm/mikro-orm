@@ -2,6 +2,7 @@ import { getMetadataStorage, getEntityManager } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { Utils } from './Utils';
+import { SCALAR_TYPES } from './EntityFactory';
 
 export class BaseEntity {
 
@@ -84,8 +85,8 @@ export class BaseEntity {
         return (this[prop] as Collection<BaseEntity>).set(items);
       }
 
-      if (props[prop] && props[prop].reference === ReferenceType.SCALAR) {
-        this[prop] = em.validator.validateProperty(props[prop], this[prop], this)
+      if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
+        this[prop] = em.validator.validateProperty(props[prop], data[prop], this)
       }
 
       this[prop] = data[prop];

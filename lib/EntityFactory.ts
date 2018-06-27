@@ -1,11 +1,14 @@
 import { readdirSync } from 'fs';
 import { ObjectID } from 'bson';
+import Project from 'ts-simple-ast';
 
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { Utils } from './Utils';
+
+export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 export class EntityFactory {
 
@@ -97,15 +100,16 @@ export class EntityFactory {
   }
 
   private loadMetadata(): any {
+    const project = new Project();
     const startTime = Date.now();
     this.logger(`ORM entity discovery started`);
 
-    this.options.entitiesDirs.forEach(dir => this.discover(dir));
+    this.options.entitiesDirs.forEach(dir => this.discover(project, dir));
     const diff = Date.now() - startTime;
     this.logger(`- entity discovery finished after ${diff} ms`);
   }
 
-  private discover(basePath: string) {
+  private discover(project: Project, basePath: string) {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
     this.logger(`- processing ${files.length} files from directory ${basePath}`);
 
@@ -117,15 +121,22 @@ export class EntityFactory {
       this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
-      require(path);
-
+      require(path); // include the file to trigger loading of metadata
+      const source = project.addExistingSourceFile(path);
       this.metadata[name].path = path;
+      const properties = source.getClass(name).getInstanceProperties();
 
       // init types
       const props = this.metadata[name].properties;
       Object.keys(props).forEach(p => {
         if (props[p].entity) {
-          this.metadata[name].properties[p].type = props[p].entity();
+          props[p].type = props[p].entity();
+        }
+
+        if (props[p].reference === ReferenceType.SCALAR) {
+          // const property = classMetadata.getInstanceProperty(p);
+          const property = properties.find(v => v.getName() === p);
+          props[p].type = property.getType().getText();
         }
       });
     });

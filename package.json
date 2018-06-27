@@ -55,6 +55,7 @@
     "lodash.merge": "^4.6.1",
     "mongodb": "^3.0.10",
     "reflect-metadata": "^0.1.12",
+    "ts-simple-ast": "^12.4.0",
     "typescript": "^2.9.1"
   },
   "devDependencies": {

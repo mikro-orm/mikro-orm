@@ -1,4 +1,5 @@
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { SCALAR_TYPES } from './EntityFactory';
 
 export class Validator {
 
@@ -6,11 +7,13 @@ export class Validator {
 
   validate(entity: BaseEntity, payload: any, meta: EntityMetadata): void {
     Object.keys(payload).forEach(prop => {
-      if (!meta.properties[prop] || meta.properties[prop].reference !== ReferenceType.SCALAR) {
+      const property = meta.properties[prop];
+
+      if (!property || property.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(property.type)) {
         return;
       }
 
-      payload[prop] = entity[prop] = this.validateProperty(meta.properties[prop], payload[prop], entity);
+      payload[prop] = entity[prop] = this.validateProperty(property, payload[prop], entity);
     });
   }
 
