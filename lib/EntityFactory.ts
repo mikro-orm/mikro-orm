@@ -112,6 +112,7 @@ export class EntityFactory {
   private discover(project: Project, basePath: string) {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
     this.logger(`- processing ${files.length} files from directory ${basePath}`);
+    const sources = project.addExistingSourceFiles('**/entities/**/*.ts');
 
     files.forEach(file => {
       if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.')) {
@@ -122,7 +123,7 @@ export class EntityFactory {
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
       require(path); // include the file to trigger loading of metadata
-      const source = project.addExistingSourceFile(path);
+      const source = sources.find(s => !!s.getFilePath().match(new RegExp(name + '.ts')));
       this.metadata[name].path = path;
       const properties = source.getClass(name).getInstanceProperties();
 
