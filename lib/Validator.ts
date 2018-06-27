@@ -18,6 +18,10 @@ export class Validator {
   }
 
   validateProperty(prop: EntityProperty, givenValue: any, entity: BaseEntity) {
+    if (givenValue === null) {
+      return givenValue;
+    }
+
     const expectedType = prop.type.toLowerCase();
     const objectType = Object.prototype.toString.call(givenValue);
     let givenType = objectType.match(/\[object (\w+)]/)[1].toLowerCase();

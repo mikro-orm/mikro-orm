@@ -39,6 +39,11 @@ describe('UnitOfWork', () => {
     changeSet = await uow.persist(author);
     expect(changeSet.payload.born instanceof Date).toBe(true);
 
+    // null will be ok
+    Object.assign(author, { born: null });
+    changeSet = await uow.persist(author);
+    expect(changeSet.payload.born).toBeNull();
+
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
     changeSet = await uow.persist(author);
