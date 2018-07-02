@@ -45,6 +45,7 @@ export class BaseEntity {
   async init(): Promise<BaseEntity> {
     const em = getEntityManager();
     await em.findOne(this.constructor.name, this._id);
+    this._shouldPopulate = true;
 
     return this;
   }

@@ -216,7 +216,9 @@ export class EntityManager {
         await (entity[field] as BaseEntity).init();
       }
 
-      entity[field]['_shouldPopulate'] = true;
+      if (entity[field]) {
+        entity[field]['_shouldPopulate'] = true;
+      }
     }
   }
 
@@ -270,7 +272,11 @@ export class EntityManager {
     }
 
     // set populate flag
-    entities.forEach(entity => entity[field]['_shouldPopulate'] = true)
+    entities.forEach(entity => {
+      if (entity[field]) {
+        entity[field]['_shouldPopulate'] = true;
+      }
+    })
   }
 
   private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {

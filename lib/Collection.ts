@@ -38,6 +38,7 @@ export class Collection<T extends BaseEntity> {
     // do not make db call if we know we will get no results
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
       this.initialized = true;
+      this._shouldPopulate = true;
       this.dirty = false;
 
       return this;
