@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Simple typescript mongo ORM for node.js based on data-mapper, unit-of-work and identity-map patterns",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
