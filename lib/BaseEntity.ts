@@ -42,8 +42,8 @@ export class BaseEntity {
     return this._populated;
   }
 
-  populated(): void {
-    this._populated = true;
+  populated(populated = true): void {
+    this._populated = populated;
   }
 
   async init(): Promise<BaseEntity> {
