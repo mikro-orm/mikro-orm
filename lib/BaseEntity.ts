@@ -12,6 +12,7 @@ export class BaseEntity {
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
 
   private _initialized = false;
+  private _shouldPopulate = false;
 
   constructor() {
     const metadata = getMetadataStorage();
@@ -35,6 +36,10 @@ export class BaseEntity {
 
   isInitialized(): boolean {
     return this._initialized !== false;
+  }
+
+  shouldPopulate(): boolean {
+    return this._shouldPopulate;
   }
 
   async init(): Promise<BaseEntity> {
@@ -101,7 +106,7 @@ export class BaseEntity {
     }
 
     Object.keys(this).forEach(prop => {
-      if (['id', '_id', 'createdAt', 'updatedAt'].includes(prop)) {
+      if (['id', '_id', 'createdAt', 'updatedAt', '_shouldPopulate'].includes(prop)) {
         return;
       }
 
@@ -109,7 +114,7 @@ export class BaseEntity {
         if (this[prop].isInitialized()) {
           const collection = (this[prop] as Collection<BaseEntity>).getItems();
           ret[prop] = collection.map(item => {
-            return item.isInitialized() ? item.toObject(this) : item.id;
+            return item.isInitialized() && this[prop].shouldPopulate() ? item.toObject(this) : item.id;
           });
         }
 
@@ -117,7 +122,7 @@ export class BaseEntity {
       }
 
       if (this[prop] instanceof BaseEntity) {
-        if (this[prop].isInitialized() && this[prop] !== parent) {
+        if (this[prop].isInitialized() && this[prop].shouldPopulate() && this[prop] !== parent) {
           return ret[prop] = (this[prop] as BaseEntity).toObject(this);
         }
 

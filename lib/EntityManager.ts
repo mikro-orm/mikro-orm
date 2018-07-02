@@ -215,6 +215,8 @@ export class EntityManager {
       if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
         await (entity[field] as BaseEntity).init();
       }
+
+      entity[field]['_shouldPopulate'] = true;
     }
   }
 
@@ -266,6 +268,9 @@ export class EntityManager {
         (entity[field] as Collection<BaseEntity>).set(items, true);
       }
     }
+
+    // set populate flag
+    entities.forEach(entity => entity[field]['_shouldPopulate'] = true)
   }
 
   private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {

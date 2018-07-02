@@ -92,7 +92,7 @@ describe('EntityManager', () => {
           { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
           { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
         ],
-        favouriteBook: { author: { name: 'God' }, title: 'Bible' },
+        favouriteBook: { author: god.id, title: 'Bible' },
         born: jon.born,
         email: 'snow@wall.st',
         name: 'Jon Snow',

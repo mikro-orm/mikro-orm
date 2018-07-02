@@ -6,6 +6,7 @@ export class Collection<T extends BaseEntity> {
 
   private initialized = false;
   private dirty = false;
+  private _shouldPopulate = false;
   private readonly items: T[] = [];
 
   constructor(public readonly owner: BaseEntity,
@@ -23,6 +24,10 @@ export class Collection<T extends BaseEntity> {
     }
 
     return this.initialized;
+  }
+
+  shouldPopulate(): boolean {
+    return this._shouldPopulate;
   }
 
   isDirty(): boolean {
