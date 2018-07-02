@@ -6,7 +6,7 @@ export class Collection<T extends BaseEntity> {
 
   private initialized = false;
   private dirty = false;
-  private _shouldPopulate = false;
+  private _populated = false;
   private readonly items: T[] = [];
 
   constructor(public readonly owner: BaseEntity,
@@ -27,7 +27,11 @@ export class Collection<T extends BaseEntity> {
   }
 
   shouldPopulate(): boolean {
-    return this._shouldPopulate;
+    return this._populated;
+  }
+
+  populated(): void {
+    this._populated = true;
   }
 
   isDirty(): boolean {
@@ -38,8 +42,8 @@ export class Collection<T extends BaseEntity> {
     // do not make db call if we know we will get no results
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
       this.initialized = true;
-      this._shouldPopulate = true;
       this.dirty = false;
+      this.populated();
 
       return this;
     }
@@ -61,6 +65,7 @@ export class Collection<T extends BaseEntity> {
     this.items.push(...items);
     this.initialized = true;
     this.dirty = false;
+    this.populated();
 
     return this;
   }

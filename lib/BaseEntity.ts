@@ -12,7 +12,7 @@ export class BaseEntity {
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
 
   private _initialized = false;
-  private _shouldPopulate = false;
+  private _populated = false;
 
   constructor() {
     const metadata = getMetadataStorage();
@@ -39,13 +39,17 @@ export class BaseEntity {
   }
 
   shouldPopulate(): boolean {
-    return this._shouldPopulate;
+    return this._populated;
+  }
+
+  populated(): void {
+    this._populated = true;
   }
 
   async init(): Promise<BaseEntity> {
     const em = getEntityManager();
     await em.findOne(this.constructor.name, this._id);
-    this._shouldPopulate = true;
+    this._populated = true;
 
     return this;
   }
@@ -107,7 +111,7 @@ export class BaseEntity {
     }
 
     Object.keys(this).forEach(prop => {
-      if (['id', '_id', 'createdAt', 'updatedAt', '_shouldPopulate'].includes(prop)) {
+      if (['id', '_id', 'createdAt', 'updatedAt', '_populated'].includes(prop)) {
         return;
       }
 

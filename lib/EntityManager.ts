@@ -217,7 +217,7 @@ export class EntityManager {
       }
 
       if (entity[field]) {
-        entity[field]['_shouldPopulate'] = true;
+        entity[field].populated();
       }
     }
   }
@@ -229,6 +229,13 @@ export class EntityManager {
     if (!this.canPopulate(entityName, field)) {
       throw new Error(`Entity '${entityName}' does not have property '${field}'`);
     }
+
+    // set populate flag
+    entities.forEach(entity => {
+      if (entity[field] instanceof BaseEntity || entity[field] instanceof Collection) {
+        entity[field].populated();
+      }
+    });
 
     const meta = this.metadata[entityName].properties[field];
 
@@ -270,13 +277,6 @@ export class EntityManager {
         (entity[field] as Collection<BaseEntity>).set(items, true);
       }
     }
-
-    // set populate flag
-    entities.forEach(entity => {
-      if (entity[field]) {
-        entity[field]['_shouldPopulate'] = true;
-      }
-    })
   }
 
   private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
