@@ -144,7 +144,6 @@ export class EntityFactory {
         }
 
         if (props[p].reference === ReferenceType.SCALAR) {
-          // const property = classMetadata.getInstanceProperty(p);
           const property = properties.find(v => v.getName() === p);
           props[p].type = property.getType().getText();
         }

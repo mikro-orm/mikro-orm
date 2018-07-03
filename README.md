@@ -194,13 +194,16 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
 And register your repository as `@Entity` decorator:
 
 ```typescript
-@Entity({ customRepository: CustomAuthorRepository })
+@Entity({ customRepository: () => CustomAuthorRepository })
 export class Publisher extends BaseEntity {
   // ...
 }
 ```
 
-Then your custom repository can be accessed via `EntityManager.getRepository()` method.
+Note that we need to pass that repository reference inside a callback so we will not run
+into circular dependency issues when using entity references inside that repository.
+
+Now you can access your custom repository via `EntityManager.getRepository()` method.
 
 ## Core features
 

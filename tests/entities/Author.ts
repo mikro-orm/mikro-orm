@@ -6,7 +6,7 @@ import {
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 
-@Entity({ customRepository: AuthorRepository })
+@Entity({ customRepository: () => AuthorRepository })
 export class Author extends BaseEntity {
 
   static beforeDestroyCalled = 0;
