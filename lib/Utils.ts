@@ -64,7 +64,7 @@ export class Utils {
    */
   static diffEntities(a: BaseEntity, b: BaseEntity): any {
     return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
-  };
+  }
 
   static prepareEntity(e: BaseEntity): any {
     const metadata = getMetadataStorage();

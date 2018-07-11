@@ -147,12 +147,8 @@ export class UnitOfWork {
       const reference = changeSet.entity[prop.name];
 
       if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
-        if (!reference._id) {
-          const propChangeSet = await this.persist(reference);
-          await this.immediateCommit(propChangeSet);
-        }
-
-        changeSet.payload[prop.name] = reference._id;
+        // TODO many to one cascade support
+        // ...
       }
 
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
