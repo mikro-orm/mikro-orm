@@ -124,10 +124,7 @@ export class EntityManager {
       return this.identityMap[`${entityName}-${id}`] as T;
     }
 
-    const entity = this.entityFactory.createReference(entityName, id) as T;
-    this.addToIdentityMap(entity);
-
-    return entity;
+    return this.entityFactory.createReference<T>(entityName, id);
   }
 
   async remove(entityName: string, where: BaseEntity | any): Promise<number> {

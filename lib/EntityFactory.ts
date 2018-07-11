@@ -88,7 +88,6 @@ export class EntityFactory {
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
         if (data[p] instanceof ObjectID) {
           entity[p] = this.createReference(prop.type, data[p].toHexString());
-          this.em.addToIdentityMap(entity[p]);
         }
 
         return;
