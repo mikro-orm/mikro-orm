@@ -57,6 +57,27 @@ describe('EntityFactory', () => {
     expect(entity.email).toBe('mail@test.com');
   });
 
+  test('should return entity without id', async () => {
+    const author = factory.create<Author>(Author.name, { name: 'test', favouriteBook: '5b0d19b28b21c648c2c8a600', email: 'mail@test.com' });
+    expect(author).toBeInstanceOf(Author);
+    expect(author.id).toBeNull();
+    expect(author.name).toBe('test');
+    expect(author.email).toBe('mail@test.com');
+    expect(author.favouriteBook).toBeInstanceOf(Book);
+    expect(author.favouriteBook.id).toBe('5b0d19b28b21c648c2c8a600');
+  });
+
+  test('should return entity without id [reference as constructor parameter]', async () => {
+    // we need to use normal entity manager to have working identity map
+    const author = orm.em.entityFactory.createReference<Author>(Author.name, '5b0d19b28b21c648c2c8a600');
+    expect(author.id).toBe('5b0d19b28b21c648c2c8a600');
+    const book = orm.em.create<Book>(Book.name, { title: 'book title', author: author.id });
+    expect(book).toBeInstanceOf(Book);
+    expect(book.id).toBeNull();
+    expect(book.title).toBe('book title');
+    expect(book.author).toBe(author);
+  });
+
   test('create should create entity without calling constructor', async () => {
     const p1 = new Publisher(); // calls constructor, so uses default name
     expect(p1.name).toBe('asd');

@@ -117,7 +117,14 @@ export class EntityManager {
   }
 
   /**
-   * gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   * Creates new instance of given entity and populates it with given data
+   */
+  create<T extends BaseEntity>(entityName: string, data: any): T {
+    return this.entityFactory.create(entityName, data, false);
+  }
+
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<T extends BaseEntity>(entityName: string, id: string): T {
     if (this.identityMap[`${entityName}-${id}`]) {
@@ -158,7 +165,8 @@ export class EntityManager {
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
     where = Utils.convertObjectIds(where);
-    return this.getCollection(this.metadata[entityName].collection).count(where);
+
+    return this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
   }
 
   async persist(entity: BaseEntity | BaseEntity[], flush = true): Promise<void> {

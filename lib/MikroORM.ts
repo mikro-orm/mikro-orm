@@ -64,7 +64,7 @@ export class MikroORM {
   }
 
   async connect(): Promise<Db> {
-    this.client = await MongoClient.connect(this.options.clientUrl as string);
+    this.client = await MongoClient.connect(this.options.clientUrl as string, { useNewUrlParser: true });
     this.db = this.client.db(this.options.dbName);
     const clientUrl = this.options.clientUrl.replace(/\/\/(\w+):(\w+)@/, '//$1:*****@');
     this.options.logger(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);

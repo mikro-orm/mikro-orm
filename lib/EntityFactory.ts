@@ -27,12 +27,20 @@ export class EntityFactory {
 
   create<T extends BaseEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
+    const exclude = [];
     let entity: T;
 
-    data._id = new ObjectID(data.id || data._id);
-    delete data.id;
+    if (data.id || data._id) {
+      data._id = new ObjectID(data.id || data._id);
+      delete data.id;
+    }
 
-    if (this.em.identityMap[`${entityName}-${data._id}`]) {
+    if (!data._id) {
+      const params = this.extractConstructorParams<T>(meta, data);
+      const Entity = require(meta.path)[entityName];
+      entity = new Entity(...params);
+      exclude.push(...meta.constructorParams);
+    } else if (this.em.identityMap[`${entityName}-${data._id}`]) {
       entity = this.em.identityMap[`${entityName}-${data._id}`] as T;
     } else {
       // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
@@ -41,7 +49,7 @@ export class EntityFactory {
       this.em.identityMap[`${entityName}-${data._id}`] = entity;
     }
 
-    this.initEntity(entity, meta.properties, data);
+    this.initEntity(entity, meta.properties, data, exclude);
 
     if (initialized) {
       delete entity['_initialized'];
@@ -60,7 +68,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any): void {
+  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
     ['_id', 'createdAt', 'updatedAt'].forEach(k => {
       if (data[k]) {
@@ -70,6 +78,10 @@ export class EntityFactory {
 
     // then process user defined properties (ignore not defined keys in `data`)
     Object.keys(properties).forEach(p => {
+      if (exclude.includes(p)) {
+        return;
+      }
+
       const prop = properties[p] as EntityProperty;
 
       if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
@@ -86,8 +98,9 @@ export class EntityFactory {
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
-        if (data[p] instanceof ObjectID) {
-          entity[p] = this.createReference(prop.type, data[p].toHexString());
+        if (data[p] && !(data[p] instanceof BaseEntity)) {
+          const id = data[p] instanceof ObjectID ? data[p].toHexString() : '' + data[p];
+          entity[p] = this.createReference(prop.type, id);
         }
 
         return;
@@ -96,6 +109,19 @@ export class EntityFactory {
       if (prop.reference === ReferenceType.SCALAR && data[p]) {
         entity[p] = data[p];
       }
+    });
+  }
+
+  /**
+   * returns parameters for entity constructor, creating references from plain ids
+   */
+  private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
+    return meta.constructorParams.map((k: string) => {
+      if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
+        return this.em.getReference<T>(meta.properties[k].type, data[k]);
+      }
+
+      return data[k];
     });
   }
 

@@ -11,6 +11,7 @@ const methods = {
   flush: jest.fn(),
   canPopulate: jest.fn(),
   count: jest.fn(),
+  create: jest.fn(),
 };
 const Mock = jest.fn<EntityManager>(() => methods);
 const em = new Mock();
@@ -33,6 +34,8 @@ describe('EntityRepository', () => {
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher.name, 'bar', []]);
     await repo.remove('bar');
     expect(methods.remove.mock.calls[0]).toEqual([Publisher.name, 'bar']);
+    await repo.create({ name: 'bar' });
+    expect(methods.create.mock.calls[0]).toEqual([Publisher.name, { name: 'bar' }]);
   });
 
 });

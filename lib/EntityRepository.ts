@@ -7,10 +7,6 @@ export class EntityRepository<T extends BaseEntity> {
   constructor(protected em: EntityManager,
               protected entityName: string) { }
 
-  getReference<T extends BaseEntity>(id: string): T {
-    return this.em.getReference(this.entityName, id);
-  }
-
   async persist(entity: T, flush = true): Promise<void> {
     return this.em.persist(entity, flush);
   }
@@ -35,8 +31,22 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.flush();
   }
 
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
+  getReference<T extends BaseEntity>(id: string): T {
+    return this.em.getReference(this.entityName, id);
+  }
+
   canPopulate(property: string): boolean {
     return this.em.canPopulate(this.entityName, property);
+  }
+
+  /**
+   * Creates new instance of given entity and populates it with given data
+   */
+  create(data: any): T {
+    return this.em.create<T>(this.entityName, data);
   }
 
   async count(where: any = {}): Promise<number> {

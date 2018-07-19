@@ -111,7 +111,7 @@ export class BaseEntity {
     }
 
     Object.keys(this).forEach(prop => {
-      if (['id', '_id', 'createdAt', 'updatedAt', '_populated'].includes(prop)) {
+      if (['id', 'createdAt', 'updatedAt'].includes(prop) || prop.startsWith('_')) {
         return;
       }
 
@@ -167,6 +167,7 @@ export interface EntityProperty {
 
 export interface EntityMetadata {
   name: string;
+  constructorParams: string[];
   collection: string;
   path: string;
   properties: { [property: string]: EntityProperty };

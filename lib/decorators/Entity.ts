@@ -1,5 +1,6 @@
 import { merge } from 'lodash';
 import { getMetadataStorage } from '../MikroORM';
+import { Utils } from '../Utils';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): {} }>(target: T) {
@@ -15,6 +16,7 @@ export function Entity(options: EntityOptions = {}): Function {
     }
 
     meta.name = target.name;
+    meta.constructorParams = Utils.getParamNames(target);
 
     return target;
   };
