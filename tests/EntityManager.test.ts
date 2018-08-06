@@ -137,7 +137,7 @@ describe('EntityManager', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository<Book>(Book.name).remove(lastBook[0]);
+    await orm.em.getRepository<Book>(Book.name).remove(lastBook[0]._id);
   });
 
   test('should provide custom repository', async () => {

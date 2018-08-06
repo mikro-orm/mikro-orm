@@ -139,6 +139,10 @@ export class EntityManager {
       return this.removeEntity(where);
     }
 
+    if (Utils.isString(where) || where instanceof ObjectID) {
+      where = { _id: new ObjectID(where as string) };
+    }
+
     Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
     this.options.logger(`[query-logger] ${query}`);
