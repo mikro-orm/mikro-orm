@@ -44,7 +44,7 @@ export class EntityManager {
 
   async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
     const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
-    this.options.logger(`[query-logger] ${query}.toArray();`);
+    this.logQuery(`${query}.toArray();`);
     const results = await resultSet.toArray();
 
     if (results.length === 0) {
@@ -85,7 +85,7 @@ export class EntityManager {
 
     Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
-    this.options.logger(`[query-logger] ${query}`);
+    this.logQuery(query);
     where = Utils.convertObjectIds(where);
     const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
 
@@ -145,7 +145,7 @@ export class EntityManager {
 
     Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    this.options.logger(`[query-logger] ${query}`);
+    this.logQuery(query);
     where = Utils.convertObjectIds(where);
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
 
@@ -155,7 +155,7 @@ export class EntityManager {
   async removeEntity(entity: BaseEntity): Promise<number> {
     this.runHooks('beforeDelete', entity);
     const query = `db.getCollection("${this.metadata[entity.constructor.name].collection}").deleteOne({ _id: ${entity._id} });`;
-    this.options.logger(`[query-logger] ${query}`);
+    this.logQuery(query);
     const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
     this.unitOfWork.remove(entity);
@@ -167,7 +167,7 @@ export class EntityManager {
   async count(entityName: string, where: any): Promise<number> {
     Utils.renameKey(where, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
-    this.options.logger(`[query-logger] ${query}`);
+    this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
     return this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
@@ -210,6 +210,12 @@ export class EntityManager {
   canPopulate(entityName: string, property: string): boolean {
     const props = this.metadata[entityName].properties;
     return property in props && !!props[property].reference;
+  }
+
+  logQuery(query: string) {
+    if (this.options.debug) {
+      this.options.logger(`[query-logger] ${query}`);
+    }
   }
 
   private async populateOne(entityName: string, entity: BaseEntity, populate: string[]): Promise<void> {

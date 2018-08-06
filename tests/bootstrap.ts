@@ -17,6 +17,7 @@ export async function initORM() {
     entitiesDirsTs: ['entities'], // just to raise coverage :]
     dbName: `mikro-orm-test${hash}`,
     baseDir: __dirname,
+    debug: true,
   });
 }
 

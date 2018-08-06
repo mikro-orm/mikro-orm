@@ -88,6 +88,7 @@ export interface Options {
   entitiesDirsTs?: string[];
   strict?: boolean;
   logger?: Function;
+  debug?: boolean;
   baseDir?: string;
   clientUrl?: string;
 }
