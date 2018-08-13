@@ -1,7 +1,7 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import { ObjectID } from 'bson';
-import { BaseEntity } from './BaseEntity';
+import { BaseEntity, ReferenceType } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
@@ -63,7 +63,18 @@ export class Utils {
    * Process references first so we do not have to deal with cycles
    */
   static diffEntities(a: BaseEntity, b: BaseEntity): any {
-    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
+    const diff = Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
+
+    // convert string ids back to object ids
+    const metadata = getMetadataStorage();
+    const meta = metadata[a.constructor.name];
+    Object.keys(diff).forEach(prop => {
+      if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
+        diff[prop] = new ObjectID(diff[prop]);
+      }
+    });
+
+    return diff;
   }
 
   static prepareEntity(e: BaseEntity): any {

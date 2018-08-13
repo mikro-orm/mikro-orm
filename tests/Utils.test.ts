@@ -100,7 +100,7 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2', favouriteBook: book.id });
+    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2', favouriteBook: book._id });
   });
 
   test('copy', () => {
