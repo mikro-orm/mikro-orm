@@ -127,7 +127,11 @@ export class EntityFactory {
 
   private loadMetadata(): any {
     const startTime = Date.now();
-    this.logger(`ORM entity discovery started`);
+
+    if (this.options.debug) {
+      this.logger(`ORM entity discovery started`);
+    }
+
     const project = new Project();
     const sources: SourceFile[] = [];
 
@@ -141,19 +145,28 @@ export class EntityFactory {
 
     this.options.entitiesDirs.forEach(dir => this.discover(sources, dir));
     const diff = Date.now() - startTime;
-    this.logger(`- entity discovery finished after ${diff} ms`);
+
+    if (this.options.debug) {
+      this.logger(`- entity discovery finished after ${diff} ms`);
+    }
   }
 
   private discover(sources: SourceFile[], basePath: string) {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
-    this.logger(`- processing ${files.length} files from directory ${basePath}`);
+
+    if (this.options.debug) {
+      this.logger(`- processing ${files.length} files from directory ${basePath}`);
+    }
 
     files.forEach(file => {
       if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.')) {
         return;
       }
 
-      this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
+      if (this.options.debug) {
+        this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
+      }
+
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
       require(path); // include the file to trigger loading of metadata
