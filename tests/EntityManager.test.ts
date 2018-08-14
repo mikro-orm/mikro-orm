@@ -445,6 +445,23 @@ describe('EntityManager', () => {
     await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
   });
 
+  test('EM supports native insert/update/delete/aggregate', async () => {
+    const res1 = await orm.em.nativeInsert(Publisher.name, { name: 'native name' });
+    expect(res1.insertedCount).toBe(1);
+
+    const res2 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name' }, { name: 'new native name' });
+    expect(res2.matchedCount).toBe(1);
+    expect(res2.modifiedCount).toBe(1);
+
+    const res3 = await orm.em.aggregate(Publisher.name, [{ $match: { name: 'new native name' } }]);
+    expect(res3.length).toBe(1);
+    expect(res3[0]).toMatchObject({ name: 'new native name' });
+
+    const res4 = await orm.em.nativeDelete(Publisher.name, { name: 'new native name' });
+    expect(res4.deletedCount).toBe(1);
+    expect(res4.deletedCount).toBe(1);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -1,4 +1,4 @@
-import { FilterQuery } from 'mongodb';
+import { DeleteWriteOpResultObject, FilterQuery, InsertOneWriteOpResult, UpdateWriteOpResult } from 'mongodb';
 import { EntityManager } from './EntityManager';
 import { BaseEntity } from './BaseEntity';
 
@@ -29,6 +29,22 @@ export class EntityRepository<T extends BaseEntity> {
 
   async flush(): Promise<void> {
     return this.em.flush();
+  }
+
+  async nativeInsert(data: any): Promise<InsertOneWriteOpResult> {
+    return this.em.nativeInsert(this.entityName, data)
+  }
+
+  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult> {
+    return this.em.nativeUpdate(this.entityName, where, data)
+  }
+
+  async nativeDelete(where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject> {
+    return this.em.nativeDelete(this.entityName, where)
+  }
+
+  async aggregate(pipeline: any[]): Promise<any[]> {
+    return this.em.aggregate(this.entityName, pipeline)
   }
 
   /**

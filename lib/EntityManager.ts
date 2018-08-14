@@ -1,4 +1,7 @@
-import { Collection as MongoCollection, Db, FilterQuery, ObjectID } from 'mongodb';
+import {
+  Collection as MongoCollection, Db, FilterQuery, ObjectID,
+  InsertOneWriteOpResult, UpdateWriteOpResult, DeleteWriteOpResultObject,
+} from 'mongodb';
 import { BaseEntity, EntityMetadata, ReferenceType } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
@@ -99,6 +102,56 @@ export class EntityManager {
     return entity;
   }
 
+  async nativeInsert(entityName: string, data: any): Promise<InsertOneWriteOpResult> {
+    if (!data.createdAt) {
+      data.createdAt = new Date();
+    }
+
+    if (!data.updatedAt) {
+      data.updatedAt = new Date();
+    }
+
+    Utils.renameKey(data, 'id', '_id');
+    const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
+    this.logQuery(query);
+    data = Utils.convertObjectIds(data);
+
+    return this.getCollection(entityName).insertOne(data);
+  }
+
+  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<UpdateWriteOpResult> {
+    if (!data.updatedAt) {
+      data.updatedAt = new Date();
+    }
+
+    Utils.renameKey(where, 'id', '_id');
+    const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
+    this.logQuery(query);
+    where = Utils.convertObjectIds(where);
+
+    return this.getCollection(entityName).updateMany(where, { $set: data });
+  }
+
+  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | any): Promise<DeleteWriteOpResultObject> {
+    if (Utils.isString(where) || where instanceof ObjectID) {
+      where = { _id: new ObjectID(where as string) };
+    }
+
+    Utils.renameKey(where, 'id', '_id');
+    const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
+    this.logQuery(query);
+    where = Utils.convertObjectIds(where);
+
+    return this.getCollection(this.metadata[entityName].collection).deleteMany(where);
+  }
+
+  async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
+    const query = `db.getCollection("${this.metadata[entityName].collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
+    this.logQuery(query);
+
+    return this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
+  }
+
   merge<T extends BaseEntity>(entityName: string, data: any): T {
     if (!data || (!data.id && !data._id)) {
       throw new Error('You cannot merge entity without id!');
@@ -139,16 +192,7 @@ export class EntityManager {
       return this.removeEntity(where);
     }
 
-    if (Utils.isString(where) || where instanceof ObjectID) {
-      where = { _id: new ObjectID(where as string) };
-    }
-
-    Utils.renameKey(where, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    this.logQuery(query);
-    where = Utils.convertObjectIds(where);
-    const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where);
-
+    const result = await this.nativeDelete(entityName, where);
     return result.deletedCount;
   }
 

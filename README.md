@@ -416,12 +416,40 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
+## Native collection methods
+
+Sometimes you need to perform some bulk operation, or you just want to populate your
+database with initial fixtures. Using ORM for such operations can bring unnecessary
+boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete`
+methods:
+
+```typescript
+EntityManager.nativeInsert<T extends BaseEntity>(entityName: string, data: any): Promise<InsertOneWriteOpResult>;
+EntityManager.nativeUpdate<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult>;
+EntityManager.nativeDelete<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject>;
+```
+
+Those methods execute `insertOne/updateMany/deleteMany/aggregate` collection methods respectively. 
+Keep in mind that they do not hydrate results to entities, and they do not trigger lifecycle hooks. 
+
+They are also available as `EntityRepository` shortcuts:
+
+```typescript
+EntityRepository.nativeInsert(data: any): Promise<InsertOneWriteOpResult>;
+EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult>;
+EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject>;
+```
+
+There is also shortcut for calling `aggregate` method:
+
+```typescript
+EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
+EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
+```
+
 ## TODO
 
 - cascade persist in collections
-- aggregate support?
-- improve populating of collections in EM#find() method
-- add nativeUpdate and nativeDelete (without hooks support), allow only entities in EM#remove
 - cascade remove references on other entities when deleting entity (e.g. from M:N collection)
 
 ## TODO docs

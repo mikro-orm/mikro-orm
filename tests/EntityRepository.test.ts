@@ -12,6 +12,10 @@ const methods = {
   canPopulate: jest.fn(),
   count: jest.fn(),
   create: jest.fn(),
+  nativeInsert: jest.fn(),
+  nativeUpdate: jest.fn(),
+  nativeDelete: jest.fn(),
+  aggregate: jest.fn(),
 };
 const Mock = jest.fn<EntityManager>(() => methods);
 const em = new Mock();
@@ -36,6 +40,15 @@ describe('EntityRepository', () => {
     expect(methods.remove.mock.calls[0]).toEqual([Publisher.name, 'bar']);
     await repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher.name, { name: 'bar' }]);
+
+    await repo.nativeInsert({ foo: 'bar' });
+    expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }]);
+    await repo.nativeUpdate({ foo: 'bar' }, { foo: 'baz' });
+    expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }, { foo: 'baz' }]);
+    await repo.nativeDelete({ foo: 'bar' });
+    expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }]);
+    await repo.aggregate([{ foo: 'bar' }]);
+    expect(methods.aggregate.mock.calls[0]).toEqual([Publisher.name, [{ foo: 'bar' }]]);
   });
 
 });
