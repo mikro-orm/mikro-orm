@@ -1,6 +1,5 @@
-import { EntityRepository } from '../lib';
-import { EntityManager } from '../lib';
-import { Publisher } from './entities/Publisher';
+import { EntityRepository, EntityManager } from '../lib';
+import { Publisher } from './entities';
 
 const methods = {
   getReference: jest.fn(),

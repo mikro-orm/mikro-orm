@@ -159,7 +159,7 @@ export class EntityFactory {
     }
 
     files.forEach(file => {
-      if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.')) {
+      if (!file.match(/\.[jt]s$/) || file.lastIndexOf('.js.map') !== -1 || file.startsWith('.') || file.match(/index\.[jt]s$/)) {
         return;
       }
 

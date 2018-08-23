@@ -1,8 +1,6 @@
 import { ObjectID } from 'bson';
-import { Author } from './entities/Author';
+import { Author, Book, BookTag } from './entities';
 import { MikroORM } from '../lib';
-import { Book } from './entities/Book';
-import { BookTag } from './entities/BookTag';
 import { initORM, wipeDatabase } from './bootstrap';
 
 /**

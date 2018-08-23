@@ -1,12 +1,8 @@
 import { ObjectID } from 'bson';
 import { Collection, EntityManager, MikroORM } from '../lib';
-import { Author } from './entities/Author';
-import { Publisher, PublisherType } from './entities/Publisher';
-import { Book } from './entities/Book';
+import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
-import { BookTag } from './entities/BookTag';
 import { initORM, wipeDatabase } from './bootstrap';
-import { Test } from './entities/Test';
 
 /**
  * @class EntityManagerTest

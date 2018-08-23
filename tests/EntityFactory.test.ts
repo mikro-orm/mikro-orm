@@ -1,8 +1,6 @@
 import { EntityFactory } from '../lib/EntityFactory';
-import { Book } from './entities/Book';
-import { Author } from './entities/Author';
+import { Book, Author, Publisher } from './entities';
 import { ReferenceType, EntityManager, MikroORM, Collection } from '../lib';
-import { Publisher } from './entities/Publisher';
 import { initORM, wipeDatabase } from './bootstrap';
 
 const Mock = jest.fn<EntityManager>(() => ({

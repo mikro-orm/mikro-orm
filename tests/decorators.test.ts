@@ -1,5 +1,5 @@
 import { ManyToMany, ManyToOne, OneToMany } from '../lib';
-import { Test } from './entities/Test';
+import { Test } from './entities';
 
 describe('decorators', () => {
 

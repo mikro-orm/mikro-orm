@@ -1,9 +1,5 @@
 import { EntityManager, MikroORM } from '../lib';
-import { BookTag } from './entities/BookTag';
-import { Publisher } from './entities/Publisher';
-import { Test } from './entities/Test';
-import { Book } from './entities/Book';
-import { Author } from './entities/Author';
+import { BookTag, Publisher, Test, Book, Author } from './entities';
 
 export async function initORM() {
   let hash = '';

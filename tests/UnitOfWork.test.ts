@@ -1,5 +1,5 @@
 import { UnitOfWork } from '../lib/UnitOfWork';
-import { Author } from './entities/Author';
+import { Author } from './entities';
 import { MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 

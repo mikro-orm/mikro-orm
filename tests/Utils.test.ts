@@ -1,7 +1,6 @@
 import { Utils } from'../lib/Utils';
 import { Collection, EntityProperty, MikroORM } from '../lib';
-import { Book } from './entities/Book';
-import { Author } from './entities/Author';
+import { Book, Author } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
 
 class Test {}

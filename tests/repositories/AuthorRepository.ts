@@ -1,5 +1,5 @@
 import { EntityRepository } from '../../lib';
-import { Author } from '../entities/Author';
+import { Author } from '../entities';
 
 export class AuthorRepository extends EntityRepository<Author> {
 
