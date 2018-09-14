@@ -72,7 +72,8 @@ export class Collection<T extends BaseEntity> {
 
   getItems(): T[] {
     this.checkInitialized();
-    return this.items;
+
+    return [...this.items];
   }
 
   getIdentifiers(field = '_id'): ObjectID[] {
