@@ -169,6 +169,51 @@ describe('EntityManager', () => {
     expect(ref.isInitialized()).toBe(true);
   });
 
+  test('stable results of serialization', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
+    await orm.em.persist([bible, bible2, bible3]);
+    orm.em.clear();
+
+    const newGod = await orm.em.findOne(Author.name, god.id);
+    const books = await orm.em.find(Book.name, {});
+    await newGod.init(false);
+
+    for (const book of books) {
+      expect(book.toObject()).toMatchObject({
+        author: book.author.id,
+      });
+    }
+  });
+
+  test('stable results of serialization (collection)', async () => {
+    const pub = new Publisher('Publisher');
+    await orm.em.persist(pub);
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    bible.publisher = pub;
+    const bible2 = new Book('Bible pt. 2', god);
+    bible2.publisher = pub;
+    const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
+    bible3.publisher = pub;
+    await orm.em.persist([bible, bible2, bible3]);
+    orm.em.clear();
+
+    const newGod = await orm.em.getReference(Author.name, god.id);
+    const publisher = await orm.em.findOne(Publisher.name, pub.id, ['books']);
+    await newGod.init();
+
+    const json = publisher.toObject().books;
+
+    for (const book of publisher.books) {
+      expect(json.find((b: Book) => b.id === book.id)).toMatchObject({
+        author: book.author.id,
+      });
+    }
+  });
+
   test('should return mongo collection', async () => {
     expect(orm.em.getCollection(Author.name).collectionName).toBe('author');
     expect(orm.em.getCollection(Book.name).collectionName).toBe('books-table');
@@ -259,6 +304,7 @@ describe('EntityManager', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(tags[0].books.count()).toBe(2);
+    expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
     tags = await orm.em.find<BookTag>(BookTag.name);

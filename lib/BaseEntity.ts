@@ -1,4 +1,4 @@
-import { getMetadataStorage, getEntityManager } from './MikroORM';
+import { getEntityManager, getMetadataStorage } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { Utils } from './Utils';
@@ -38,18 +38,18 @@ export class BaseEntity {
     return this._initialized !== false;
   }
 
-  shouldPopulate(): boolean {
-    return this._populated;
+  shouldPopulate(collection: Collection<BaseEntity> = null): boolean {
+    return this._populated && !collection;
   }
 
   populated(populated = true): void {
     this._populated = populated;
   }
 
-  async init(): Promise<BaseEntity> {
+  async init(populated = true): Promise<BaseEntity> {
     const em = getEntityManager();
     await em.findOne(this.constructor.name, this._id);
-    this._populated = true;
+    this._populated = populated;
 
     return this;
   }
@@ -103,7 +103,7 @@ export class BaseEntity {
     });
   }
 
-  toObject(parent: BaseEntity = this): any {
+  toObject(parent: BaseEntity = this, collection: Collection<BaseEntity> = null): any {
     const ret = { id: this.id, createdAt: this.createdAt, updatedAt: this.updatedAt } as any;
 
     if (!this.isInitialized()) {
@@ -116,18 +116,19 @@ export class BaseEntity {
       }
 
       if (this[prop] instanceof Collection) {
-        if (this[prop].isInitialized()) {
-          const collection = (this[prop] as Collection<BaseEntity>).getItems();
-          ret[prop] = collection.map(item => {
-            return item.isInitialized() && this[prop].shouldPopulate() ? item.toObject(this) : item.id;
-          });
+        const col = this[prop] as Collection<BaseEntity>;
+
+        if (col.isInitialized(true) && col.shouldPopulate()) {
+          ret[prop] = col.toArray(this);
+        } else if (col.isInitialized() && !col.shouldPopulate()) {
+          ret[prop] = col.getIdentifiers('id');
         }
 
         return;
       }
 
       if (this[prop] instanceof BaseEntity) {
-        if (this[prop].isInitialized() && this[prop].shouldPopulate() && this[prop] !== parent) {
+        if (this[prop].isInitialized() && this[prop].shouldPopulate(collection) && this[prop] !== parent) {
           return ret[prop] = (this[prop] as BaseEntity).toObject(this);
         }
 

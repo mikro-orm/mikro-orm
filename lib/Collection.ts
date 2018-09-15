@@ -4,6 +4,8 @@ import { getEntityManager } from './MikroORM';
 
 export class Collection<T extends BaseEntity> {
 
+  [k: number]: T;
+
   private initialized = false;
   private dirty = false;
   private _populated = false;
@@ -15,6 +17,7 @@ export class Collection<T extends BaseEntity> {
     if (items) {
       this.initialized = true;
       this.items = items;
+      Object.assign(this, items);
     }
   }
 
@@ -38,7 +41,7 @@ export class Collection<T extends BaseEntity> {
     return this.dirty;
   }
 
-  async init(): Promise<Collection<T>> {
+  async init(populate: string[] = []): Promise<Collection<T>> {
     // do not make db call if we know we will get no results
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
       this.initialized = true;
@@ -53,7 +56,7 @@ export class Collection<T extends BaseEntity> {
 
     this.items.length = 0;
     const em = getEntityManager();
-    const items = await em.find<T>(this.property.type, cond);
+    const items = await em.find<T>(this.property.type, cond, populate);
 
     // re-order items when searching with `$in` operator
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
@@ -63,6 +66,7 @@ export class Collection<T extends BaseEntity> {
     }
 
     this.items.push(...items);
+    Object.assign(this, items);
     this.initialized = true;
     this.dirty = false;
     this.populated();
@@ -74,6 +78,10 @@ export class Collection<T extends BaseEntity> {
     this.checkInitialized();
 
     return [...this.items];
+  }
+
+  toArray(parent: BaseEntity = this.owner): any[] {
+    return this.getItems().map(item => item.toObject(parent, this));
   }
 
   getIdentifiers(field = '_id'): ObjectID[] {
@@ -90,6 +98,7 @@ export class Collection<T extends BaseEntity> {
       }
     }
 
+    Object.assign(this, items);
     this.dirty = this.property.owner; // set dirty flag only to owning side
   }
 
@@ -114,7 +123,9 @@ export class Collection<T extends BaseEntity> {
       const idx = this.items.findIndex(i => i.id === item.id);
 
       if (idx !== -1) {
+        delete this[this.items.length]; // remove last item
         this.items.splice(idx, 1);
+        Object.assign(this, this.items); // reassign array access
       }
     }
 
@@ -122,14 +133,7 @@ export class Collection<T extends BaseEntity> {
   }
 
   removeAll(): void {
-    this.checkInitialized();
-
-    if (this.property.owner && this.property.inversedBy && this.items.length > 0) {
-      this.items[0][this.property.inversedBy].length = 0;
-    }
-
-    this.items.length = 0;
-    this.dirty = this.property.owner; // set dirty flag only to owning side
+    this.remove(...this.items);
   }
 
   contains(item: T): boolean {
@@ -140,6 +144,10 @@ export class Collection<T extends BaseEntity> {
   count(): number {
     this.checkInitialized();
     return this.items.length;
+  }
+
+  get length(): number {
+    return this.count();
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
