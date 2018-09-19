@@ -1,6 +1,6 @@
-import { Utils } from'../lib/Utils';
+import { Utils } from '../lib/Utils';
 import { Collection, EntityProperty, MikroORM } from '../lib';
-import { Book, Author } from './entities';
+import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
 
 class Test {}
@@ -29,21 +29,6 @@ describe('Utils', () => {
     expect(Utils.isObject(new Test())).toBe(true);
     expect(Utils.isObject(new Date())).toBe(true);
     expect(Utils.isObject(Test)).toBe(false);
-  });
-
-  test('isArray', () => {
-    expect(Utils.isArray(undefined)).toBe(false);
-    expect(Utils.isArray('a')).toBe(false);
-    expect(Utils.isArray(0)).toBe(false);
-    expect(Utils.isArray(5)).toBe(false);
-    expect(Utils.isArray(5.3)).toBe(false);
-    expect(Utils.isArray(['a'])).toBe(true);
-    expect(Utils.isArray(null)).toBe(false);
-    expect(Utils.isArray(() => 1)).toBe(false);
-    expect(Utils.isArray(function() { return 1; })).toBe(false);
-    expect(Utils.isArray({})).toBe(false);
-    expect(Utils.isArray(new Test())).toBe(false);
-    expect(Utils.isArray(Test)).toBe(false);
   });
 
   test('isString', () => {

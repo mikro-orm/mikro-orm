@@ -1,13 +1,11 @@
 import { readdirSync } from 'fs';
 import { ObjectID } from 'bson';
-import { SourceFile } from 'ts-simple-ast';
-import Project from 'ts-simple-ast';
+import Project, { SourceFile } from 'ts-simple-ast';
 
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
-import { Utils } from './Utils';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -89,7 +87,7 @@ export class EntityFactory {
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
-        if (prop.owner && Utils.isArray(data[p])) {
+        if (prop.owner && Array.isArray(data[p])) {
           const items = data[p].map((id: ObjectID) => this.createReference(prop.type, id.toHexString()));
           return entity[p] = new Collection<T>(entity, prop, items);
         } else if (!entity[p]) {

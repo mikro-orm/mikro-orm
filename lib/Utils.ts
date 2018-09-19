@@ -13,10 +13,6 @@ export class Utils {
     return typeof o === 'object' && o !== null;
   }
 
-  static isArray(arr: any): boolean {
-    return Object.prototype.toString.call(arr) === '[object Array]';
-  }
-
   static isString(s: any): boolean {
     return typeof s === 'string';
   }
@@ -49,7 +45,7 @@ export class Utils {
         return;
       }
 
-      if (Utils.isArray(a[k]) && Utils.isArray(b[k])) {
+      if (Array.isArray(a[k]) && Array.isArray(b[k])) {
         return ret[k] = b[k]; // right-hand side has priority
       }
 
@@ -68,7 +64,7 @@ export class Utils {
     // convert string ids back to object ids
     const metadata = getMetadataStorage();
     const meta = metadata[a.constructor.name];
-    Object.keys(diff).forEach(prop => {
+    Object.keys(diff).forEach((prop: string) => {
       if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
         diff[prop] = new ObjectID(diff[prop]);
       }
@@ -123,7 +119,7 @@ export class Utils {
       return new ObjectID(payload);
     }
 
-    if (Utils.isArray(payload)) {
+    if (Array.isArray(payload)) {
       return payload.map((item: any) => Utils.convertObjectIds(item));
     }
 

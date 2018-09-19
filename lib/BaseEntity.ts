@@ -1,7 +1,6 @@
 import { getEntityManager, getMetadataStorage } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
-import { Utils } from './Utils';
 import { SCALAR_TYPES } from './EntityFactory';
 
 export class BaseEntity {
@@ -79,7 +78,7 @@ export class BaseEntity {
 
       const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
-      if (isCollection && Utils.isArray(data[prop])) {
+      if (isCollection && Array.isArray(data[prop])) {
         const items = data[prop].map((item: any) => {
           if (item instanceof ObjectID) {
             return em.getReference(props[prop].type, item.toHexString());
