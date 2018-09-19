@@ -43,12 +43,13 @@ export class BaseEntity {
 
   populated(populated = true): void {
     this._populated = populated;
+    delete this._initialized;
   }
 
   async init(populated = true): Promise<BaseEntity> {
     const em = getEntityManager();
     await em.findOne(this.constructor.name, this._id);
-    this._populated = populated;
+    this.populated(populated);
 
     return this;
   }
