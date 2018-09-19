@@ -43,10 +43,6 @@ export class BaseEntity {
 
   populated(populated = true): void {
     this._populated = populated;
-
-    if (populated) {
-      delete this._initialized;
-    }
   }
 
   async init(populated = true): Promise<BaseEntity> {

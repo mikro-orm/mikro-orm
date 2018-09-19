@@ -33,13 +33,6 @@ describe('BaseEntity', () => {
     expect(author.toJSON()).toBeInstanceOf(Object);
   });
 
-  test('#populated(true) should mark entity as initialized', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
-    expect(author.isInitialized()).toBe(false);
-    author.populated(true);
-    expect(author.isInitialized()).toBe(true);
-  });
-
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');
