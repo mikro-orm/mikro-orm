@@ -456,3 +456,4 @@ EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 
 - lifecycle hooks
 - property type validation
+- multiple entity managers (one identity map per request)

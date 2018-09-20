@@ -148,6 +148,19 @@ describe('EntityManager', () => {
     expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
   });
 
+  test('fork', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    await orm.em.persist(bible);
+    const fork = orm.em.fork();
+
+    expect(fork).not.toBe(orm.em);
+    expect(fork.identityMap).not.toBe(orm.em.identityMap);
+    expect(fork.entityFactory).not.toBe(orm.em.entityFactory);
+    expect(fork['metadata']).toBe(orm.em['metadata']);
+    expect(fork.identityMap).toEqual({});
+  });
+
   test('findOne with empty where will throw', async () => {
     await expect(orm.em.findOne<Author>(Author.name, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     await expect(orm.em.findOne<Author>(Author.name, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
@@ -488,10 +501,11 @@ describe('EntityManager', () => {
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
-    const res1 = await orm.em.nativeInsert(Publisher.name, { name: 'native name' });
+    orm.em.options.debug = false;
+    const res1 = await orm.em.nativeInsert(Publisher.name, { name: 'native name 1' });
     expect(res1.insertedCount).toBe(1);
 
-    const res2 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name' }, { name: 'new native name' });
+    const res2 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 1' }, { name: 'new native name' });
     expect(res2.matchedCount).toBe(1);
     expect(res2.modifiedCount).toBe(1);
 
@@ -502,6 +516,13 @@ describe('EntityManager', () => {
     const res4 = await orm.em.nativeDelete(Publisher.name, { name: 'new native name' });
     expect(res4.deletedCount).toBe(1);
     expect(res4.deletedCount).toBe(1);
+
+    const res5 = await orm.em.nativeInsert(Publisher.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
+    expect(res5.insertedCount).toBe(1);
+
+    const res6 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    expect(res6.matchedCount).toBe(1);
+    expect(res6.modifiedCount).toBe(1);
   });
 
   afterAll(async () => orm.close(true));

@@ -83,6 +83,17 @@ describe('BaseEntity', () => {
     expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
   });
 
+  test('should have entitny manager getter and setter', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    expect(() => author.getEntityManager()).toThrowError('This entity is not attached to EntityManager, please provide one!');
+    expect(author.getEntityManager(orm.em)).toBe(orm.em);
+
+    const fork = orm.em.fork();
+    expect(author.getEntityManager()).toBe(orm.em);
+    author.setEntityManager(fork);
+    expect(author.getEntityManager()).toBe(fork);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

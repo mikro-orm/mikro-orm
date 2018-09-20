@@ -1,7 +1,8 @@
-import { getEntityManager, getMetadataStorage } from './MikroORM';
+import { getMetadataStorage } from './MikroORM';
 import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
+import { EntityManager } from './EntityManager';
 
 export class BaseEntity {
 
@@ -45,16 +46,34 @@ export class BaseEntity {
     this._populated = populated;
   }
 
-  async init(populated = true): Promise<BaseEntity> {
-    const em = getEntityManager();
-    await em.findOne(this.constructor.name, this._id);
+  setEntityManager(em: EntityManager): void {
+    Object.defineProperty(this, '_em', {
+      value: em,
+      enumerable: false,
+      writable: true,
+    });
+  }
+
+  getEntityManager(em: EntityManager = null): EntityManager {
+    if (em) {
+      this.setEntityManager(em);
+    }
+
+    if (!this._em) {
+      throw new Error('This entity is not attached to EntityManager, please provide one!');
+    }
+
+    return this._em;
+  }
+
+  async init(populated = true, em: EntityManager = null): Promise<BaseEntity> {
+    await (em || this.getEntityManager(em)).findOne(this.constructor.name, this._id);
     this.populated(populated);
 
     return this;
   }
 
-  assign(data: any) {
-    const em = getEntityManager();
+  assign(data: any, em: EntityManager = null) {
     const metadata = getMetadataStorage();
     const meta = metadata[this.constructor.name];
     const props = meta.properties;
@@ -66,13 +85,13 @@ export class BaseEntity {
         }
 
         if (data[prop] instanceof ObjectID) {
-          return this[prop] = em.getReference(props[prop].type, data[prop].toHexString());
+          return this[prop] = this.getEntityManager(em).getReference(props[prop].type, data[prop].toHexString());
         }
 
         const id = typeof data[prop] === 'object' ? data[prop].id : data[prop];
 
         if (id) {
-          return this[prop] = em.getReference(props[prop].type, id);
+          return this[prop] = this.getEntityManager(em).getReference(props[prop].type, id);
         }
       }
 
@@ -81,21 +100,21 @@ export class BaseEntity {
       if (isCollection && Array.isArray(data[prop])) {
         const items = data[prop].map((item: any) => {
           if (item instanceof ObjectID) {
-            return em.getReference(props[prop].type, item.toHexString());
+            return this.getEntityManager(em).getReference(props[prop].type, item.toHexString());
           }
 
           if (item instanceof BaseEntity) {
             return item;
           }
 
-          return em.getReference(props[prop].type, item);
+          return this.getEntityManager(em).getReference(props[prop].type, item);
         });
 
         return (this[prop] as Collection<BaseEntity>).set(items);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        this[prop] = em.validator.validateProperty(props[prop], data[prop], this)
+        this[prop] = this.getEntityManager(em).validator.validateProperty(props[prop], data[prop], this)
       }
 
       this[prop] = data[prop];

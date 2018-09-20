@@ -158,6 +158,7 @@ export class EntityManager {
     }
 
     const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data, true);
+    entity.setEntityManager(this);
 
     if (this.identityMap[`${entityName}-${entity.id}`]) {
       entity.assign(data);
@@ -219,9 +220,11 @@ export class EntityManager {
 
   async persist(entity: BaseEntity | BaseEntity[], flush = true): Promise<void> {
     if (entity instanceof BaseEntity) {
+      entity.setEntityManager(this);
       await this.unitOfWork.persist(entity);
     } else {
       for (const e of entity) {
+        e.setEntityManager(this);
         await this.unitOfWork.persist(e);
       }
     }
@@ -260,6 +263,31 @@ export class EntityManager {
     if (this.options.debug) {
       this.options.logger(`[query-logger] ${query}`);
     }
+  }
+
+  fork(): EntityManager {
+    const em = Object.create(EntityManager.prototype);
+    const ef = Object.create(EntityFactory.prototype);
+
+    Object.assign(ef, {
+      em,
+      options: this.options,
+      metadata: this.metadata,
+      logger: this.options.logger,
+    });
+
+    Object.assign(em, {
+      db: this.db,
+      options: this.options,
+      entityFactory: ef,
+      identityMap: {},
+      validator: this.validator,
+      repositoryMap: {},
+      metadata: this.metadata,
+      unitOfWork: new UnitOfWork(em),
+    });
+
+    return em;
   }
 
   private async populateOne(entityName: string, entity: BaseEntity, populate: string[]): Promise<void> {

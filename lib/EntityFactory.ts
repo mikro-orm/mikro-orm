@@ -47,6 +47,7 @@ export class EntityFactory {
       this.em.identityMap[`${entityName}-${data._id}`] = entity;
     }
 
+    entity.setEntityManager(this.em);
     this.initEntity(entity, meta.properties, data, exclude);
 
     if (initialized) {

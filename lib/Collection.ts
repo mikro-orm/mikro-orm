@@ -1,6 +1,5 @@
 import { ObjectID } from 'bson';
 import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
-import { getEntityManager } from './MikroORM';
 
 export class Collection<T extends BaseEntity> {
 
@@ -55,8 +54,7 @@ export class Collection<T extends BaseEntity> {
     const order = this.items.map(item => item.id);
 
     this.items.length = 0;
-    const em = getEntityManager();
-    const items = await em.find<T>(this.property.type, cond, populate);
+    const items = await this.owner.getEntityManager().find<T>(this.property.type, cond, populate);
 
     // re-order items when searching with `$in` operator
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {

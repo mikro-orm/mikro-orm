@@ -1,13 +1,9 @@
-import { MikroORM, Options, EntityManager, getEntityManager } from '../lib';
+import { MikroORM, Options, EntityManager } from '../lib';
 
 /**
  * @class MikroORMTest
  */
 describe('MikroORM', () => {
-
-  test('should throw when trying to get EM before initialisation', async () => {
-    await expect(() => getEntityManager()).toThrowError('Call MikroORM.init() first!');
-  });
 
   test('should throw when not enough options provided', async () => {
     await expect(() => new MikroORM({ entitiesDirs: ['entities'] } as Options)).toThrowError('No database specified, please fill in `dbName` option');
