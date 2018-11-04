@@ -38,13 +38,13 @@ export class EntityFactory {
       const Entity = require(meta.path)[entityName];
       entity = new Entity(...params);
       exclude.push(...meta.constructorParams);
-    } else if (this.em.identityMap[`${entityName}-${data._id}`]) {
-      entity = this.em.identityMap[`${entityName}-${data._id}`] as T;
+    } else if (this.em.getIdentity(entityName, data._id)) {
+      entity = this.em.getIdentity<T>(entityName, data._id);
     } else {
       // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
       const Entity = require(meta.path)[meta.name];
       entity = Object.create(Entity.prototype);
-      this.em.identityMap[`${entityName}-${data._id}`] = entity;
+      this.em.setIdentity(entity, data._id);
     }
 
     entity.setEntityManager(this.em);
@@ -60,8 +60,8 @@ export class EntityFactory {
   }
 
   createReference<T extends BaseEntity>(entityName: string, id: string): T {
-    if (this.em.identityMap[`${entityName}-${id}`]) {
-      return this.em.identityMap[`${entityName}-${id}`] as T;
+    if (this.em.getIdentity(entityName, id)) {
+      return this.em.getIdentity<T>(entityName, id);
     }
 
     return this.create<T>(entityName, { id }, false);

@@ -155,10 +155,10 @@ describe('EntityManager', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
-    expect(fork.identityMap).not.toBe(orm.em.identityMap);
+    expect(fork.getIdentityMap()).not.toBe(orm.em.getIdentityMap());
     expect(fork.entityFactory).not.toBe(orm.em.entityFactory);
     expect(fork['metadata']).toBe(orm.em['metadata']);
-    expect(fork.identityMap).toEqual({});
+    expect(fork.getIdentityMap()).toEqual({});
   });
 
   test('findOne with empty where will throw', async () => {

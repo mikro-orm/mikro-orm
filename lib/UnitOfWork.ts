@@ -6,7 +6,7 @@ export class UnitOfWork {
 
   // holds copy of entity manager's identity map so we can compute changes when persisting
   private readonly identityMap = {} as any;
-  private readonly persistStack: any[] = [];
+  private readonly persistStack: ChangeSet[] = [];
 
   constructor(private em: EntityManager) { }
 

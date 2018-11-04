@@ -12,6 +12,8 @@ const Mock = jest.fn<EntityManager>(() => ({
     logger: jest.fn(),
   },
   getReference: jest.fn(),
+  getIdentity: jest.fn(),
+  setIdentity: jest.fn(),
 }));
 const em = new Mock();
 const factory = new EntityFactory(em);

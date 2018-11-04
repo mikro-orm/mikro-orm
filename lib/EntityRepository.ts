@@ -1,10 +1,11 @@
 import { DeleteWriteOpResultObject, FilterQuery, InsertOneWriteOpResult, UpdateWriteOpResult } from 'mongodb';
 import { EntityManager } from './EntityManager';
 import { BaseEntity } from './BaseEntity';
+import { RequestContext } from './RequestContext';
 
 export class EntityRepository<T extends BaseEntity> {
 
-  constructor(protected em: EntityManager,
+  constructor(private _em: EntityManager,
               protected entityName: string) { }
 
   async persist(entity: T, flush = true): Promise<void> {
@@ -67,6 +68,10 @@ export class EntityRepository<T extends BaseEntity> {
 
   async count(where: any = {}): Promise<number> {
     return this.em.count(this.entityName, where);
+  }
+
+  protected get em(): EntityManager {
+    return RequestContext.getEntityManager() || this._em;
   }
 
 }

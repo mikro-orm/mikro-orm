@@ -10,19 +10,44 @@ import { Utils } from './Utils';
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { Validator } from './Validator';
+import { RequestContext } from './RequestContext';
 
 export class EntityManager {
 
   public entityFactory = new EntityFactory(this);
-  public readonly identityMap: { [k: string]: BaseEntity } = {};
   public readonly validator = new Validator(this.options.strict);
 
-  private readonly unitOfWork = new UnitOfWork(this);
+  private readonly identityMap: { [k: string]: BaseEntity } = {};
+  private readonly _unitOfWork = new UnitOfWork(this);
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
 
   constructor(private db: Db, public options: Options) {
     this.metadata = getMetadataStorage();
+  }
+
+  getIdentity<T extends BaseEntity>(entityName: string, id: string | ObjectID): T {
+    const em = RequestContext.getEntityManager() || this;
+    const token = `${entityName}-${id}`;
+
+    return em.identityMap[token] as T;
+  }
+
+  setIdentity(entity: BaseEntity, id: string | ObjectID = null): void {
+    const em = RequestContext.getEntityManager() || this;
+    const token = `${entity.constructor.name}-${id || entity.id}`;
+    em.identityMap[token] = entity;
+  }
+
+  unsetIdentity(entity: BaseEntity): void {
+    const em = RequestContext.getEntityManager() || this;
+    const token = `${entity.constructor.name}-${entity.id}`;
+    delete em.identityMap[token];
+  }
+
+  getIdentityMap(): { [k: string]: BaseEntity } {
+    const em = RequestContext.getEntityManager() || this;
+    return em.identityMap;
   }
 
   getCollection(entityName: string): MongoCollection {
@@ -77,13 +102,13 @@ export class EntityManager {
       where = where.toHexString();
     }
 
-    if (Utils.isString(where) && this.identityMap[`${entityName}-${where}`] && this.identityMap[`${entityName}-${where}`].isInitialized()) {
-      await this.populateOne(entityName, this.identityMap[`${entityName}-${where}`], populate);
-      return this.identityMap[`${entityName}-${where}`] as T;
+    if (typeof where === 'string' && this.getIdentity(entityName, where) && this.getIdentity(entityName, where).isInitialized()) {
+      await this.populateOne(entityName, this.getIdentity(entityName, where), populate);
+      return this.getIdentity<T>(entityName, where);
     }
 
-    if (Utils.isString(where)) {
-      where = { _id: new ObjectID(where as string) };
+    if (typeof where === 'string') {
+      where = { _id: new ObjectID(where) };
     }
 
     Utils.renameKey(where, 'id', '_id');
@@ -132,9 +157,9 @@ export class EntityManager {
     return this.getCollection(entityName).updateMany(where, { $set: data });
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | any): Promise<DeleteWriteOpResultObject> {
-    if (Utils.isString(where) || where instanceof ObjectID) {
-      where = { _id: new ObjectID(where as string) };
+  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<DeleteWriteOpResultObject> {
+    if (typeof where === 'string' || where instanceof ObjectID) {
+      where = { _id: new ObjectID(where) };
     }
 
     Utils.renameKey(where, 'id', '_id');
@@ -160,7 +185,7 @@ export class EntityManager {
     const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data, true);
     entity.setEntityManager(this);
 
-    if (this.identityMap[`${entityName}-${entity.id}`]) {
+    if (this.getIdentity(entityName, entity.id)) {
       entity.assign(data);
       this.unitOfWork.addToIdentityMap(entity);
     } else {
@@ -181,8 +206,8 @@ export class EntityManager {
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<T extends BaseEntity>(entityName: string, id: string): T {
-    if (this.identityMap[`${entityName}-${id}`]) {
-      return this.identityMap[`${entityName}-${id}`] as T;
+    if (this.getIdentity(entityName, id)) {
+      return this.getIdentity<T>(entityName, id);
     }
 
     return this.entityFactory.createReference<T>(entityName, id);
@@ -202,7 +227,7 @@ export class EntityManager {
     const query = `db.getCollection("${this.metadata[entity.constructor.name].collection}").deleteOne({ _id: ${entity._id} });`;
     this.logQuery(query);
     const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
-    delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
+    this.unsetIdentity(entity);
     this.unitOfWork.remove(entity);
     this.runHooks('afterDelete', entity);
 
@@ -245,12 +270,13 @@ export class EntityManager {
    * clear identity map, detaching all entities
    */
   clear(): void {
-    Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
+    const map = this.getIdentityMap();
+    Object.keys(map).forEach(key => delete map[key]);
     this.unitOfWork.clear();
   }
 
   addToIdentityMap(entity: BaseEntity) {
-    this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
+    this.setIdentity(entity);
     this.unitOfWork.addToIdentityMap(entity);
   }
 
@@ -284,7 +310,7 @@ export class EntityManager {
       validator: this.validator,
       repositoryMap: {},
       metadata: this.metadata,
-      unitOfWork: new UnitOfWork(em),
+      _unitOfWork: new UnitOfWork(em),
     });
 
     return em;
@@ -397,6 +423,11 @@ export class EntityManager {
     if (hooks && hooks[type] && hooks[type].length > 0) {
       hooks[type].forEach(hook => entity[hook]());
     }
+  }
+
+  private get unitOfWork(): UnitOfWork {
+    const em = RequestContext.getEntityManager() || this;
+    return em._unitOfWork;
   }
 
 }
