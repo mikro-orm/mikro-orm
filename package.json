@@ -54,10 +54,10 @@
     "fast-deep-equal": "^2.0.1",
     "lodash.merge": "^4.6.1",
     "mongodb": "^3.1.8",
+    "node-request-context": "^1.0.5",
     "reflect-metadata": "^0.1.12",
     "ts-simple-ast": "^18.0.0",
-    "typescript": "^3.1.6",
-    "zone.js": "^0.8.26"
+    "typescript": "^3.1.6"
   },
   "devDependencies": {
     "@types/clone": "^0.1.30",
