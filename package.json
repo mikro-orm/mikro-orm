@@ -57,7 +57,8 @@
     "node-request-context": "^1.0.5",
     "reflect-metadata": "^0.1.12",
     "ts-simple-ast": "^18.0.0",
-    "typescript": "^3.1.6"
+    "typescript": "^3.1.6",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/clone": "^0.1.30",
