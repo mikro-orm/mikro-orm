@@ -183,7 +183,8 @@ export class EntityFactory {
       const props = this.metadata[name].properties;
       Object.keys(props).forEach(p => {
         if (props[p].entity) {
-          props[p].type = props[p].entity();
+          const type = props[p].entity();
+          props[p].type = type instanceof Function ? type.name : type;
         }
 
         if (props[p].reference === ReferenceType.SCALAR) {

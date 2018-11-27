@@ -16,7 +16,7 @@ export function ManyToOne(options: ManyToOneOptions): Function {
     }
 
     if (!options.entity) {
-      throw new Error(`'@ManyToOne({ entity: string })' is required in '${target.constructor.name}.${propertyName}'`);
+      throw new Error(`'@ManyToOne({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
     if (!options.fk) {
@@ -29,6 +29,6 @@ export function ManyToOne(options: ManyToOneOptions): Function {
 }
 
 export interface ManyToOneOptions extends PropertyOptions {
-  entity: () => string,
+  entity: () => string | Function,
   fk?: string;
 }

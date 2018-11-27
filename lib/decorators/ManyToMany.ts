@@ -10,7 +10,7 @@ export function ManyToMany(options: ManyToManyOptions): Function {
     meta.properties = meta.properties || {};
 
     if (!options.entity) {
-      throw new Error(`'@ManyToMany({ entity: string })' is required in '${target.constructor.name}.${propertyName}'`);
+      throw new Error(`'@ManyToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY, owner: !!options.inversedBy };
@@ -19,7 +19,7 @@ export function ManyToMany(options: ManyToManyOptions): Function {
 }
 
 export interface ManyToManyOptions extends PropertyOptions {
-  entity: () => string;
+  entity: () => string | Function;
   owner?: boolean;
   inversedBy?: string;
   mappedBy?: string;

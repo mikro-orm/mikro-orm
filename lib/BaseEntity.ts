@@ -175,7 +175,7 @@ export enum ReferenceType {
 export interface EntityProperty {
   name: string;
   fk: string;
-  entity: () => string;
+  entity: () => string | Function;
   type: string;
   reference: ReferenceType;
   attributes?: { [attribute: string]: any };

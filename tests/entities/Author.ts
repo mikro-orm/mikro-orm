@@ -30,10 +30,10 @@ export class Author extends BaseEntity {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book.name, fk: 'author' })
+  @OneToMany({ entity: () => Book, fk: 'author' })
   books: Collection<Book>;
 
-  @ManyToOne({ entity: () => Book.name })
+  @ManyToOne({ entity: () => Book })
   favouriteBook: Book;
 
   version: number;

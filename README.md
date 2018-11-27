@@ -55,10 +55,10 @@ export class Book extends BaseEntity {
   @Property()
   title: string;
 
-  @ManyToOne({ entity: () => Author.name })
+  @ManyToOne({ entity: () => Author }) // you can pass the entity as class reference
   author: Author;
 
-  @ManyToOne({ entity: () => Publisher.name })
+  @ManyToOne({ entity: () => Publisher.name }) // or you can pass the string name directly
   publisher: Publisher;
 
   constructor(title: string, author: Author) {
