@@ -44,11 +44,13 @@
   },
   "scripts": {
     "build": "tsc",
-    "precommit": "yarn lint",
     "test": "node node_modules/.bin/jest --runInBand",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
     "lint": "tslint -c tslint.json -p tsconfig.json"
   },
+  "pre-commit": [
+    "lint"
+  ],
   "dependencies": {
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
@@ -67,8 +69,8 @@
     "@types/mongodb": "^3.1.14",
     "@types/node": "^10.12.2",
     "coveralls": "^3.0.2",
-    "git-pre-commit": "^2.1.4",
     "jest": "^23.6.0",
+    "pre-commit": "^1.2.2",
     "ts-jest": "^23.10.4",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0"
