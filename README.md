@@ -478,6 +478,7 @@ EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 
 - cascade persist in collections
 - cascade remove references on other entities when deleting entity (e.g. from M:N collection)
+- extract db specific code to drivers, allow other dbs like mysql 
 
 ## TODO docs
 
