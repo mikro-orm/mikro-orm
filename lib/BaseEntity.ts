@@ -3,10 +3,11 @@ import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
+import { IPrimaryKey } from './decorators/PrimaryKey';
 
-export class BaseEntity {
+export abstract class BaseEntity {
 
-  public _id: ObjectID;
+  public id: IPrimaryKey;
   public createdAt = new Date();
   public updatedAt = new Date();
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
@@ -24,14 +25,6 @@ export class BaseEntity {
         this[prop] = new Collection(this, props[prop], []);
       }
     });
-  }
-
-  get id(): string {
-    return this._id ? this._id.toHexString() : null;
-  }
-
-  set id(id: string) {
-    this._id = id ? new ObjectID(id) : null;
   }
 
   isInitialized(): boolean {
@@ -67,7 +60,7 @@ export class BaseEntity {
   }
 
   async init(populated = true, em: EntityManager = null): Promise<BaseEntity> {
-    await (em || this.getEntityManager(em)).findOne(this.constructor.name, this._id);
+    await (em || this.getEntityManager(em)).findOne(this.constructor.name, this.id);
     this.populated(populated);
 
     return this;
@@ -180,8 +173,9 @@ export interface EntityProperty {
   reference: ReferenceType;
   attributes?: { [attribute: string]: any };
   owner?: boolean;
-  inversedBy: string;
-  mappedBy: string;
+  inversedBy?: string;
+  mappedBy?: string;
+  pivotTable?: string;
 }
 
 export interface EntityMetadata {

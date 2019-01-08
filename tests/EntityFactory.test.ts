@@ -1,6 +1,6 @@
-import { EntityFactory } from '../lib/EntityFactory';
 import { Book, Author, Publisher } from './entities';
-import { ReferenceType, EntityManager, MikroORM, Collection } from '../lib';
+import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver } from '../lib';
+import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
 
 const Mock = jest.fn<EntityManager>(() => ({
@@ -12,6 +12,10 @@ const Mock = jest.fn<EntityManager>(() => ({
     logger: jest.fn(),
   },
   getReference: jest.fn(),
+  getDriver: () => new MongoDriver({
+    dbName: 'mikro-orm-test',
+    entitiesDirs: ['entities'],
+  }),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
 }));

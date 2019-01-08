@@ -12,7 +12,7 @@
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "lib": ["es2015", "es7"]
+    "lib": ["es2017", "es7"]
   },
   "files": [
     "lib/index.ts"

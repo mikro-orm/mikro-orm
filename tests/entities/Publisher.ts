@@ -1,9 +1,12 @@
-import { BaseEntity, Collection, Entity, ManyToMany, OneToMany, Property } from '../../lib';
+import { BaseEntity, Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, ObjectID } from '../../lib';
 import { Book } from './Book';
 import { Test } from './Test';
 
 @Entity()
 export class Publisher extends BaseEntity {
+
+  @PrimaryKey()
+  _id: ObjectID;
 
   @Property()
   name: string;

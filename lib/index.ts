@@ -1,13 +1,20 @@
+import { ObjectID } from 'bson';
+
 export * from './MikroORM';
 export * from './EntityRepository';
 export * from './EntityManager';
 export * from './RequestContext';
 export * from './BaseEntity';
 export * from './Collection';
+export * from './drivers/IDatabaseDriver';
+export * from './drivers/DatabaseDriver';
+export * from './drivers/MongoDriver';
+export * from './drivers/MySqlDriver';
 export * from './decorators/Entity';
 export * from './decorators/OneToMany';
 export * from './decorators/ManyToOne';
 export * from './decorators/ManyToMany';
 export * from './decorators/Property';
+export * from './decorators/PrimaryKey';
 export * from './decorators/hooks';
 export { ObjectID } from 'bson';

@@ -1,6 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { ObjectID } from 'bson';
+import { IPrimaryKey, ObjectID } from '.';
 import { BaseEntity, ReferenceType } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
@@ -158,6 +158,22 @@ export class Utils {
     }
 
     return result;
+  }
+
+  static isPrimaryKey(key: any): boolean {
+    return typeof key === 'string' || typeof key === 'number' || key instanceof ObjectID;
+  }
+
+  static extractPK(data: any): IPrimaryKey {
+    if (Utils.isPrimaryKey(data)) {
+      return data;
+    }
+
+    if (Utils.isObject(data)) {
+      return data.id || data._id;
+    }
+
+    return null;
   }
 
 }

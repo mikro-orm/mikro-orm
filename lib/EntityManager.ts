@@ -1,7 +1,3 @@
-import {
-  Collection as MongoCollection, Db, FilterQuery, ObjectID,
-  InsertOneWriteOpResult, UpdateWriteOpResult, DeleteWriteOpResultObject,
-} from 'mongodb';
 import { BaseEntity, EntityMetadata, ReferenceType } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
@@ -11,10 +7,14 @@ import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { Validator } from './Validator';
 import { RequestContext } from './RequestContext';
+import { FilterQuery } from './drivers/DatabaseDriver';
+import { IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { IPrimaryKey } from './decorators/PrimaryKey';
+import { QueryBuilder } from './QueryBuilder';
 
 export class EntityManager {
 
-  public entityFactory = new EntityFactory(this);
+  public entityFactory: EntityFactory = new EntityFactory(this);
   public readonly validator = new Validator(this.options.strict);
 
   private readonly identityMap: { [k: string]: BaseEntity } = {};
@@ -22,18 +22,18 @@ export class EntityManager {
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
 
-  constructor(private db: Db, public options: Options) {
+  constructor(private driver: IDatabaseDriver, public options: Options) {
     this.metadata = getMetadataStorage();
   }
 
-  getIdentity<T extends BaseEntity>(entityName: string, id: string | ObjectID): T {
+  getIdentity<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entityName}-${id}`;
 
     return em.identityMap[token] as T;
   }
 
-  setIdentity(entity: BaseEntity, id: string | ObjectID = null): void {
+  setIdentity(entity: BaseEntity, id: IPrimaryKey = null): void {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${id || entity.id}`;
     em.identityMap[token] = entity;
@@ -50,9 +50,8 @@ export class EntityManager {
     return em.identityMap;
   }
 
-  getCollection(entityName: string): MongoCollection {
-    const col = this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
-    return this.db.collection(col);
+  getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
+    return this.driver as D;
   }
 
   getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T> {
@@ -70,10 +69,12 @@ export class EntityManager {
     return this.repositoryMap[entityName] as EntityRepository<T>;
   }
 
+  createQueryBuilder(entityName: string): QueryBuilder {
+    return new QueryBuilder(entityName, this.metadata);
+  }
+
   async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
-    const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
-    this.logQuery(`${query}.toArray();`);
-    const results = await resultSet.toArray();
+    const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
 
     if (results.length === 0) {
       return [];
@@ -93,29 +94,19 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
+  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
 
-    if (where instanceof ObjectID) {
-      where = where.toHexString();
-    }
+    where = this.driver.normalizePrimaryKey(where);
 
-    if (typeof where === 'string' && this.getIdentity(entityName, where) && this.getIdentity(entityName, where).isInitialized()) {
+    if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where) && this.getIdentity(entityName, where).isInitialized()) {
       await this.populateOne(entityName, this.getIdentity(entityName, where), populate);
       return this.getIdentity<T>(entityName, where);
     }
 
-    if (typeof where === 'string') {
-      where = { _id: new ObjectID(where) };
-    }
-
-    Utils.renameKey(where, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
-    this.logQuery(query);
-    where = Utils.convertObjectIds(where);
-    const data = await this.getCollection(entityName).find(where as FilterQuery<T>).limit(1).next();
+    const data = await this.driver.findOne(entityName, where, populate);
 
     if (!data) {
       return null;
@@ -127,7 +118,7 @@ export class EntityManager {
     return entity;
   }
 
-  async nativeInsert(entityName: string, data: any): Promise<InsertOneWriteOpResult> {
+  async nativeInsert(entityName: string, data: any): Promise<any> {
     if (!data.createdAt) {
       data.createdAt = new Date();
     }
@@ -136,45 +127,26 @@ export class EntityManager {
       data.updatedAt = new Date();
     }
 
-    Utils.renameKey(data, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
-    this.logQuery(query);
-    data = Utils.convertObjectIds(data);
-
-    return this.getCollection(entityName).insertOne(data);
+    return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<UpdateWriteOpResult> {
+  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<any> {
     if (!data.updatedAt) {
       data.updatedAt = new Date();
     }
 
-    Utils.renameKey(where, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
-    this.logQuery(query);
-    where = Utils.convertObjectIds(where);
-
-    return this.getCollection(entityName).updateMany(where, { $set: data });
+    return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<DeleteWriteOpResultObject> {
-    if (typeof where === 'string' || where instanceof ObjectID) {
-      where = { _id: new ObjectID(where) };
-    }
-
-    Utils.renameKey(where, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    this.logQuery(query);
-    where = Utils.convertObjectIds(where);
-
-    return this.getCollection(this.metadata[entityName].collection).deleteMany(where);
+  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<any> {
+    return this.driver.nativeDelete(entityName, where);
   }
 
+  /**
+   * Shortcut to driver's aggregate method. Available in MongoDriver only.
+   */
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
-    const query = `db.getCollection("${this.metadata[entityName].collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
-    this.logQuery(query);
-
-    return this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
+    return this.driver.aggregate(entityName, pipeline);
   }
 
   merge<T extends BaseEntity>(entityName: string, data: any): T {
@@ -182,7 +154,7 @@ export class EntityManager {
       throw new Error('You cannot merge entity without id!');
     }
 
-    const entity = data instanceof BaseEntity ? data : this.entityFactory.create<T>(entityName, data, true);
+    const entity = data instanceof BaseEntity ? data : this.entityFactory.create(entityName, data, true);
     entity.setEntityManager(this);
 
     if (this.getIdentity(entityName, entity.id)) {
@@ -205,12 +177,12 @@ export class EntityManager {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends BaseEntity>(entityName: string, id: string): T {
+  getReference<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
     if (this.getIdentity(entityName, id)) {
       return this.getIdentity<T>(entityName, id);
     }
 
-    return this.entityFactory.createReference<T>(entityName, id);
+    return this.entityFactory.createReference(entityName, id);
   }
 
   async remove(entityName: string, where: BaseEntity | any): Promise<number> {
@@ -218,29 +190,20 @@ export class EntityManager {
       return this.removeEntity(where);
     }
 
-    const result = await this.nativeDelete(entityName, where);
-    return result.deletedCount;
+    return this.nativeDelete(entityName, where);
   }
 
   async removeEntity(entity: BaseEntity): Promise<number> {
     this.runHooks('beforeDelete', entity);
-    const query = `db.getCollection("${this.metadata[entity.constructor.name].collection}").deleteOne({ _id: ${entity._id} });`;
-    this.logQuery(query);
-    const result = await this.getCollection(this.metadata[entity.constructor.name].collection).deleteOne({ _id: entity._id });
-    this.unsetIdentity(entity);
-    this.unitOfWork.remove(entity);
+    const entityName = entity.constructor.name;
+    const count = await this.driver.nativeDelete(entityName, entity.id);
     this.runHooks('afterDelete', entity);
 
-    return result.deletedCount;
+    return count;
   }
 
   async count(entityName: string, where: any): Promise<number> {
-    Utils.renameKey(where, 'id', '_id');
-    const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
-    this.logQuery(query);
-    where = Utils.convertObjectIds(where);
-
-    return this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
+    return this.driver.count(entityName, where);
   }
 
   async persist(entity: BaseEntity | BaseEntity[], flush = true): Promise<void> {
@@ -285,12 +248,6 @@ export class EntityManager {
     return property in props && !!props[property].reference;
   }
 
-  logQuery(query: string) {
-    if (this.options.debug) {
-      this.options.logger(`[query-logger] ${query}`);
-    }
-  }
-
   fork(): EntityManager {
     const em = Object.create(EntityManager.prototype);
     const ef = Object.create(EntityFactory.prototype);
@@ -303,13 +260,16 @@ export class EntityManager {
     });
 
     Object.assign(em, {
-      db: this.db,
+      driver: this.driver,
       options: this.options,
       entityFactory: ef,
       identityMap: {},
       validator: this.validator,
       repositoryMap: {},
       metadata: this.metadata,
+    });
+
+    Object.assign(em, {
       _unitOfWork: new UnitOfWork(em),
     });
 
@@ -353,7 +313,8 @@ export class EntityManager {
 
     const meta = this.metadata[entityName].properties[field];
 
-    if (meta.reference === ReferenceType.MANY_TO_MANY && !meta.owner) {
+    // TODO we could probably improve M:N owner collection init for mysql driver
+    if (meta.reference === ReferenceType.MANY_TO_MANY && (!meta.owner || this.driver.usesPivotTable())) {
       for (const entity of entities) {
         if (!entity[field].isInitialized()) {
           await (entity[field] as Collection<BaseEntity>).init();
@@ -364,7 +325,7 @@ export class EntityManager {
     }
 
     const children: BaseEntity[] = [];
-    let fk = '_id';
+    let fk = this.driver.getDefaultForeignKey();
 
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection);
@@ -391,30 +352,6 @@ export class EntityManager {
         (entity[field] as Collection<BaseEntity>).set(items, true);
       }
     }
-  }
-
-  private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
-    Utils.renameKey(where, 'id', '_id');
-    let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
-    where = Utils.convertObjectIds(where);
-    const resultSet = this.getCollection(entityName).find(where);
-
-    if (Object.keys(orderBy).length > 0) {
-      query += `.sort(${JSON.stringify(orderBy)})`;
-      resultSet.sort(orderBy);
-    }
-
-    if (limit !== null) {
-      query += `.limit(${limit})`;
-      resultSet.limit(limit);
-    }
-
-    if (offset !== null) {
-      query += `.skip(${offset})`;
-      resultSet.skip(offset);
-    }
-
-    return { query, resultSet };
   }
 
   private runHooks(type: string, entity: BaseEntity) {

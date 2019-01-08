@@ -1,11 +1,11 @@
 import { readdirSync } from 'fs';
-import { ObjectID } from 'bson';
 import Project, { SourceFile } from 'ts-simple-ast';
 
 import { getMetadataStorage, Options } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { IPrimaryKey } from './decorators/PrimaryKey';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -29,22 +29,22 @@ export class EntityFactory {
     let entity: T;
 
     if (data.id || data._id) {
-      data._id = new ObjectID(data.id || data._id);
-      delete data.id;
+      data.id = this.em.getDriver().normalizePrimaryKey(data.id || data._id);
+      delete data._id;
     }
 
-    if (!data._id) {
+    if (!data.id) {
       const params = this.extractConstructorParams<T>(meta, data);
       const Entity = require(meta.path)[entityName];
       entity = new Entity(...params);
       exclude.push(...meta.constructorParams);
-    } else if (this.em.getIdentity(entityName, data._id)) {
-      entity = this.em.getIdentity<T>(entityName, data._id);
+    } else if (this.em.getIdentity(entityName, data.id)) {
+      entity = this.em.getIdentity<T>(entityName, data.id);
     } else {
       // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
       const Entity = require(meta.path)[meta.name];
       entity = Object.create(Entity.prototype);
-      this.em.setIdentity(entity, data._id);
+      this.em.setIdentity(entity, data.id);
     }
 
     entity.setEntityManager(this.em);
@@ -59,7 +59,7 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends BaseEntity>(entityName: string, id: string): T {
+  createReference<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
     if (this.em.getIdentity(entityName, id)) {
       return this.em.getIdentity<T>(entityName, id);
     }
@@ -69,7 +69,7 @@ export class EntityFactory {
 
   private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
-    ['_id', 'createdAt', 'updatedAt'].forEach(k => {
+    ['_id', 'id', 'createdAt', 'updatedAt'].forEach(k => {
       if (data[k]) {
         entity[k] = data[k];
       }
@@ -89,16 +89,18 @@ export class EntityFactory {
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[p])) {
-          const items = data[p].map((id: ObjectID) => this.createReference(prop.type, id.toHexString()));
+          const driver = this.em.getDriver();
+          const items = data[p].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
           return entity[p] = new Collection<T>(entity, prop, items);
         } else if (!entity[p]) {
-          return entity[p] = new Collection<T>(entity, prop, prop.owner ? [] : null);
+          const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
+          return entity[p] = new Collection<T>(entity, prop, items);
         }
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
         if (data[p] && !(data[p] instanceof BaseEntity)) {
-          const id = data[p] instanceof ObjectID ? data[p].toHexString() : '' + data[p];
+          const id = this.em.getDriver().normalizePrimaryKey(data[p]);
           entity[p] = this.createReference(prop.type, id);
         }
 

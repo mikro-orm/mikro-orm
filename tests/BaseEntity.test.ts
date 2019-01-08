@@ -2,6 +2,7 @@ import { ObjectID } from 'bson';
 import { Author, Book, BookTag } from './entities';
 import { MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 /**
  * @class BaseEntityTest
@@ -36,18 +37,18 @@ describe('BaseEntity', () => {
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    const book = new Book('Book', jon);
+    const book = new Book('Book2', jon);
     await orm.em.persist(book);
-    expect(book.title).toBe('Book');
+    expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book 1', author: god, notExisting: true });
+    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect(book.notExisting).toBe(true);
     await orm.em.persist(god);
-    book.assign({ title: 'Better Book 2', author: god.id });
+    book.assign({ title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
-    book.assign({ title: 'Better Book 3', author: jon._id });
-    expect(book.title).toBe('Better Book 3');
+    book.assign({ title: 'Better Book2 3', author: jon._id });
+    expect(book.title).toBe('Better Book2 3');
     expect(book.author).toBe(jon);
   });
 
@@ -56,7 +57,7 @@ describe('BaseEntity', () => {
     other.id = null;
     await orm.em.persist(other);
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    const book = new Book('Book', jon);
+    const book = new Book('Book2', jon);
     const tag1 = new BookTag('tag 1');
     const tag2 = new BookTag('tag 2');
     const tag3 = new BookTag('tag 3');

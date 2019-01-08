@@ -1,7 +1,10 @@
-import { BaseEntity, Entity, Property } from '../../lib';
+import { BaseEntity, Entity, PrimaryKey, Property, ObjectID } from '../../lib';
 
 @Entity()
 export class Test extends BaseEntity {
+
+  @PrimaryKey()
+  _id: ObjectID;
 
   @Property()
   name: string;

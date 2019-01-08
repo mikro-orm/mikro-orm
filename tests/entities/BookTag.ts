@@ -1,8 +1,11 @@
-import { BaseEntity, Collection, Entity, ManyToMany, Property } from '../../lib';
+import { BaseEntity, Collection, Entity, ManyToMany, PrimaryKey, Property, ObjectID } from '../../lib';
 import { Book } from './Book';
 
 @Entity()
 export class BookTag extends BaseEntity {
+
+  @PrimaryKey()
+  _id: ObjectID;
 
   @Property()
   name: string;

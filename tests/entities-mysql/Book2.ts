@@ -1,0 +1,30 @@
+import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Publisher2 } from './Publisher2';
+import { Author2 } from './Author2';
+import { BookTag2 } from './BookTag2';
+
+@Entity()
+export class Book2 extends BaseEntity {
+
+  @PrimaryKey()
+  id: number;
+
+  @Property()
+  title: string;
+
+  @ManyToOne({ entity: () => Author2.name })
+  author: Author2;
+
+  @ManyToOne({ entity: () => Publisher2.name })
+  publisher: Publisher2;
+
+  @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books', pivotTable: 'book_to_tag2' })
+  tags: Collection<BookTag2>;
+
+  constructor(title: string, author: Author2) {
+    super();
+    this.title = title;
+    this.author = author;
+  }
+
+}

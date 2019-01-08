@@ -1,13 +1,25 @@
 version: "3.4"
 
 services:
-  mongo1:
-    container_name: mongo1
+  mongo:
+    container_name: mongo
     image: mongo:3.4
     ports:
       - 27017:27017
     volumes:
-      - mongo1:/data/db
+      - mongo:/data/db
+
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - mysql:/var/lib/mysql
 
 volumes:
-  mongo1:
+  mongo:
+  mysql:

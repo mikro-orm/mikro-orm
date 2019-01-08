@@ -6,3 +6,4 @@
 /yarn-error.log
 /.coveralls.yml
 !.gitkeep
+.DS_Store

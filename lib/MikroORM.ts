@@ -1,7 +1,9 @@
 import 'reflect-metadata';
-import { Db, MongoClient } from 'mongodb';
+
 import { EntityManager } from './EntityManager';
 import { EntityMetadata } from './BaseEntity';
+import { MongoDriver } from './drivers/MongoDriver';
+import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 
 export function getMetadataStorage(entity?: string): { [entity: string]: EntityMetadata } {
   if (!(global as any)['MIKRO-ORM-STORAGE']) {
@@ -20,13 +22,12 @@ export function getMetadataStorage(entity?: string): { [entity: string]: EntityM
 export class MikroORM {
 
   public em: EntityManager;
-  private client: MongoClient;
-  private db: Db;
+  private readonly driver: IDatabaseDriver;
 
   static async init(options: Options): Promise<MikroORM> {
     const orm = new MikroORM(options);
-    const db = await orm.connect();
-    orm.em = new EntityManager(db, orm.options);
+    const driver = await orm.connect();
+    orm.em = new EntityManager(driver, orm.options);
 
     return orm;
   }
@@ -40,6 +41,12 @@ export class MikroORM {
       throw new Error('No directories for entity discovery specified, please fill in `entitiesDirs` option');
     }
 
+    if (!this.options.driver) {
+      this.options.driver = MongoDriver;
+    }
+
+    this.driver = new this.options.driver(this.options);
+
     if (!this.options.logger) {
       this.options.logger = (): void => null;
     }
@@ -49,25 +56,24 @@ export class MikroORM {
     }
 
     if (!this.options.clientUrl) {
-      this.options.clientUrl = 'mongodb://localhost:27017';
+      this.options.clientUrl = this.driver.getDefaultClientUrl();
     }
   }
 
-  async connect(): Promise<Db> {
-    this.client = await MongoClient.connect(this.options.clientUrl as string, { useNewUrlParser: true });
-    this.db = this.client.db(this.options.dbName);
+  async connect(): Promise<IDatabaseDriver> {
+    await this.driver.connect();
     const clientUrl = this.options.clientUrl.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
     this.options.logger(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
 
-    return this.db;
+    return this.driver;
   }
 
   isConnected(): boolean {
-    return this.client.isConnected();
+    return this.driver.isConnected();
   }
 
   async close(force = false): Promise<void> {
-    return this.client.close(force);
+    return this.driver.close(force);
   }
 
 }
@@ -77,6 +83,7 @@ export interface Options {
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
   strict?: boolean;
+  driver?: { new (options: Options): IDatabaseDriver };
   logger?: Function;
   debug?: boolean;
   baseDir?: string;
