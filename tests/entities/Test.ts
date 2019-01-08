@@ -4,7 +4,7 @@ import { BaseEntity, Entity, Property } from '../../lib';
 export class Test extends BaseEntity {
 
   @Property()
-  name: string;
+  name: string = '';
 
   static create(name: string) {
     const t = new Test();

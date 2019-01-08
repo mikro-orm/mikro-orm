@@ -80,8 +80,6 @@ describe('EntityManager', () => {
     const o = jon.toObject();
     expect(o).toMatchObject({
       id: jon.id,
-      createdAt: jon.createdAt,
-      updatedAt: jon.updatedAt,
       books: [
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 1' },
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },

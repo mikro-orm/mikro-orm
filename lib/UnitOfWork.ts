@@ -127,7 +127,7 @@ export class UnitOfWork {
     const properties = Object.keys(changeSet.payload);
 
     for (const p of properties) {
-      if (!meta.properties[p] && !['_id', 'createdAt', 'updatedAt'].includes(p)) {
+      if (!meta.properties[p] && !['_id'].includes(p)) {
         delete changeSet.payload[p];
       }
     }
@@ -168,7 +168,6 @@ export class UnitOfWork {
 
     // persist the entity itself
     if (changeSet.entity._id) {
-      changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
       const query = `db.getCollection("${changeSet.collection}").updateOne({ _id: ${changeSet.entity._id} }, { $set: ${JSON.stringify(changeSet.payload)} });`;
       this.em.logQuery(query);
       await this.em.getCollection(changeSet.collection).updateOne({ _id: changeSet.entity._id }, { $set: changeSet.payload });

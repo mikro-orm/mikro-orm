@@ -36,6 +36,12 @@ export class Author extends BaseEntity {
   @ManyToOne({ entity: () => Book })
   favouriteBook: Book;
 
+  @Property()
+  createdAt: Date;
+
+  @Property()
+  updatedAt: Date;
+
   version: number;
   versionAsString: string;
 
@@ -43,6 +49,8 @@ export class Author extends BaseEntity {
     super();
     this.name = name;
     this.email = email;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 
   @BeforeCreate()
@@ -58,6 +66,7 @@ export class Author extends BaseEntity {
   @BeforeUpdate()
   beforeUpdate() {
     this.version += 1;
+    this.updatedAt = new Date();
   }
 
   @AfterUpdate()

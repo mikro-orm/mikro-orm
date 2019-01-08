@@ -7,7 +7,7 @@ import { getMetadataStorage } from './MikroORM';
 
 export class Utils {
 
-  private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized', 'createdAt', 'updatedAt'];
+  private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized'];
 
   static isObject(o: any): boolean {
     return typeof o === 'object' && o !== null;

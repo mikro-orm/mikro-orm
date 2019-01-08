@@ -69,7 +69,7 @@ export class EntityFactory {
 
   private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
-    ['_id', 'createdAt', 'updatedAt'].forEach(k => {
+    ['_id'].forEach(k => {
       if (data[k]) {
         entity[k] = data[k];
       }

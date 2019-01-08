@@ -7,8 +7,6 @@ import { EntityManager } from './EntityManager';
 export class BaseEntity {
 
   public _id: ObjectID;
-  public createdAt = new Date();
-  public updatedAt = new Date();
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
 
   private _initialized = false;
@@ -122,14 +120,14 @@ export class BaseEntity {
   }
 
   toObject(parent: BaseEntity = this, collection: Collection<BaseEntity> = null): any {
-    const ret = { id: this.id, createdAt: this.createdAt, updatedAt: this.updatedAt } as any;
+    const ret = { id: this.id } as any;
 
     if (!this.isInitialized()) {
       return { id: this.id } as any;
     }
 
     Object.keys(this).forEach(prop => {
-      if (['id', 'createdAt', 'updatedAt'].includes(prop) || prop.startsWith('_')) {
+      if (['id'].includes(prop) || prop.startsWith('_')) {
         return;
       }
 

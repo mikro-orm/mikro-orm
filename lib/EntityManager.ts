@@ -128,14 +128,6 @@ export class EntityManager {
   }
 
   async nativeInsert(entityName: string, data: any): Promise<InsertOneWriteOpResult> {
-    if (!data.createdAt) {
-      data.createdAt = new Date();
-    }
-
-    if (!data.updatedAt) {
-      data.updatedAt = new Date();
-    }
-
     Utils.renameKey(data, 'id', '_id');
     const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
     this.logQuery(query);
