@@ -79,12 +79,11 @@ describe('Utils', () => {
 
   test('prepareEntity changes entity to string id', async () => {
     const author1 = new Author('Name 1', 'e-mail');
-    const book = new Book('test', author1);
     const author2 = new Author('Name 2', 'e-mail');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persist([author1, author2, book]);
-    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2', favouriteBook: book._id, updatedAt: author2.updatedAt });
+    const book1 = new Book('Book 1', author1);
+    const book2 = new Book('Book 2', author2);
+    await orm.em.persist([book1, book2, author1, author2]);
+    expect(Utils.diffEntities(book1, book2)).toEqual({ title: 'Book 2', author: author2._id });
   });
 
   test('copy', () => {
