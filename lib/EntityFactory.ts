@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import Project, { SourceFile } from 'ts-simple-ast';
 
-import { getMetadataStorage, Options } from './MikroORM';
+import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
@@ -12,7 +12,7 @@ export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 export class EntityFactory {
 
   private metadata = getMetadataStorage();
-  private options: Options = this.em.options;
+  private options: MikroORMOptions = this.em.options;
   private logger = this.em.options.logger as Function;
 
   constructor(private em: EntityManager) {

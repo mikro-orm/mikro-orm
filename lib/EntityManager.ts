@@ -3,7 +3,7 @@ import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
 import { Utils } from './Utils';
-import { getMetadataStorage, Options } from './MikroORM';
+import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { Validator } from './Validator';
 import { RequestContext } from './RequestContext';
@@ -24,7 +24,7 @@ export class EntityManager {
   private readonly metadata: { [k: string]: EntityMetadata } = {};
   private readonly namingStrategy: NamingStrategy;
 
-  constructor(private driver: IDatabaseDriver, public options: Options) {
+  constructor(private driver: IDatabaseDriver, public options: MikroORMOptions) {
     this.metadata = getMetadataStorage();
     const NamingStrategy = options.namingStrategy || driver.getDefaultNamingStrategy();
     this.namingStrategy = new NamingStrategy();

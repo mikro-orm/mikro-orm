@@ -20,9 +20,19 @@ export function getMetadataStorage(entity?: string): { [entity: string]: EntityM
   return storage;
 }
 
+const defaultOptions = {
+  entitiesDirs: [],
+  strict: false,
+  driver: MongoDriver,
+  logger: () => undefined,
+  baseDir: process.cwd(),
+  debug: false,
+};
+
 export class MikroORM {
 
   public em: EntityManager;
+  public options: MikroORMOptions;
   private readonly driver: IDatabaseDriver;
 
   static async init(options: Options): Promise<MikroORM> {
@@ -33,7 +43,12 @@ export class MikroORM {
     return orm;
   }
 
-  constructor(public options: Options) {
+  constructor(options: Options) {
+    this.options = {
+      ...defaultOptions,
+      ...options,
+    };
+
     if (!this.options.dbName) {
       throw new Error('No database specified, please fill in `dbName` option');
     }
@@ -42,19 +57,7 @@ export class MikroORM {
       throw new Error('No directories for entity discovery specified, please fill in `entitiesDirs` option');
     }
 
-    if (!this.options.driver) {
-      this.options.driver = MongoDriver;
-    }
-
     this.driver = new this.options.driver(this.options);
-
-    if (!this.options.logger) {
-      this.options.logger = (): void => null;
-    }
-
-    if (!this.options.baseDir) {
-      this.options.baseDir = process.cwd();
-    }
 
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getDefaultClientUrl();
@@ -79,20 +82,22 @@ export class MikroORM {
 
 }
 
-export interface Options {
+export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
-  strict?: boolean;
   driver?: { new (options: Options): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
-  logger?: Function;
-  debug?: boolean;
-  baseDir?: string;
-  clientUrl?: string;
   host?: string;
   port?: number;
   user?: string;
   password?: string;
   multipleStatements?: boolean;
+  strict: boolean;
+  logger: (message: string) => void;
+  debug: boolean;
+  baseDir: string;
+  clientUrl?: string;
 }
+
+export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof defaultOptions>> | MikroORMOptions;
