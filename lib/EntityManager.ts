@@ -7,7 +7,7 @@ import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
 import { Utils } from './Utils';
-import { getMetadataStorage, Options } from './MikroORM';
+import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { Validator } from './Validator';
 import { RequestContext } from './RequestContext';
@@ -22,7 +22,7 @@ export class EntityManager {
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
 
-  constructor(private db: Db, public options: Options) {
+  constructor(private db: Db, public options: MikroORMOptions) {
     this.metadata = getMetadataStorage();
   }
 
