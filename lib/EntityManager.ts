@@ -118,7 +118,7 @@ export class EntityManager {
     return entity;
   }
 
-  async nativeInsert(entityName: string, data: any): Promise<any> {
+  async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {
     if (!data.createdAt) {
       data.createdAt = new Date();
     }
@@ -130,7 +130,7 @@ export class EntityManager {
     return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<any> {
+  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<number> {
     if (!data.updatedAt) {
       data.updatedAt = new Date();
     }
@@ -138,7 +138,7 @@ export class EntityManager {
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<any> {
+  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<number> {
     return this.driver.nativeDelete(entityName, where);
   }
 

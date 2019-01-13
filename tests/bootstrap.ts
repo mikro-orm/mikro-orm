@@ -20,21 +20,27 @@ export async function initORM() {
 }
 
 export async function initORMMySql() {
-  let hash = '';
+  let port = '3307';
 
-  if (process.env.ORM_PARALLEL) {
-    hash = '-' + Math.random().toString(36).substring(6);
+  if (process.env.ORM_PORT) {
+    port = process.env.ORM_PORT;
   }
 
-  return MikroORM.init({
+  const orm = await MikroORM.init({
     entitiesDirs: ['entities-mysql'],
     entitiesDirsTs: ['entities-mysql'], // just to raise coverage :]
-    dbName: `mikro-orm-test${hash}`,
-    clientUrl: `mysql:root//127.0.0.1:3357/mikro-orm-test${hash}`,
+    dbName: `mikro_orm_test`,
+    clientUrl: `mysql://root@127.0.0.1:${port}/mikro_orm_test`,
     baseDir: __dirname,
     driver: MySqlDriver,
     debug: true,
+    multipleStatements: true,
   });
+
+  const driver = orm.em.getDriver<MySqlDriver>();
+  await driver.loadFile(__dirname + '/mysql-schema.sql');
+
+  return orm;
 }
 
 export async function wipeDatabase(em: EntityManager) {

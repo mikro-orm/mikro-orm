@@ -88,4 +88,5 @@ export interface Options {
   debug?: boolean;
   baseDir?: string;
   clientUrl?: string;
+  multipleStatements?: boolean;
 }

@@ -1,5 +1,7 @@
+import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
+import { readFileSync } from 'fs';
+import { URL } from 'url';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
-import { Connection, createConnection } from 'mysql2/promise';
 import { BaseEntity, ReferenceType } from '../BaseEntity';
 import { QueryBuilder } from '../QueryBuilder';
 import { IPrimaryKey } from '..';
@@ -10,14 +12,7 @@ export class MySqlDriver extends DatabaseDriver {
   protected connection: Connection;
 
   async connect(): Promise<void> {
-    // FIXME add support for clientUrl
-    // this.connection = await createConnection(this.options.clientUrl);
-    this.connection = await createConnection({
-      port: 3357,
-      user: 'root',
-      host: 'localhost',
-      database: 'mikro-orm-test',
-    });
+    this.connection = await createConnection(this.getConnectionOptions());
   }
 
   async close(force: boolean): Promise<void> {
@@ -74,7 +69,7 @@ export class MySqlDriver extends DatabaseDriver {
   }
 
   getDefaultClientUrl(): string {
-    return 'mysql://localhost:3306';
+    return 'mysql://root@127.0.0.1:3306';
   }
 
   async nativeInsert(entityName: string, data: any): Promise<number> {
@@ -87,7 +82,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0].insertId;
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<any> {
+  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -121,6 +116,11 @@ export class MySqlDriver extends DatabaseDriver {
     this.logQuery(query);
 
     return this.connection.execute(query, params);
+  }
+
+  async loadFile(path: string): Promise<void> {
+    const file = readFileSync(path);
+    await this.connection.query(file.toString());
   }
 
   private extractManyToMany(entityName: string, data: any): any {
@@ -162,4 +162,22 @@ export class MySqlDriver extends DatabaseDriver {
     }
   }
 
+  private getConnectionOptions(): ConnectionOptions {
+    const ret = {} as any;
+
+    if (this.options.clientUrl) {
+      const url = new URL(this.options.clientUrl);
+      ret.host = url.hostname;
+      ret.port = url.port;
+      ret.user = url.username;
+      ret.password = url.password;
+      ret.database = url.pathname.replace(/^\//, '');
+    }
+
+    if (this.options.multipleStatements) {
+      ret.multipleStatements = this.options.multipleStatements;
+    }
+
+    return ret;
+  }
 }
