@@ -20,17 +20,16 @@ export async function initORM() {
 }
 
 export async function initORMMySql() {
-  let port = '3307';
+  let port = 3307;
 
   if (process.env.ORM_PORT) {
-    port = process.env.ORM_PORT;
+    port = +process.env.ORM_PORT;
   }
 
   const orm = await MikroORM.init({
     entitiesDirs: ['entities-mysql'],
-    entitiesDirsTs: ['entities-mysql'], // just to raise coverage :]
     dbName: `mikro_orm_test`,
-    clientUrl: `mysql://root@127.0.0.1:${port}/mikro_orm_test`,
+    port,
     baseDir: __dirname,
     driver: MySqlDriver,
     debug: true,

@@ -19,20 +19,24 @@ export class MySqlDriver extends DatabaseDriver {
     await this.connection.end({ force });
   }
 
-  isConnected(): boolean {
-    // FIXME we need to test this properly
-    return (this.connection as any).state === 'connected';
+  async isConnected(): Promise<boolean> {
+    try {
+      await this.connection.query('SELECT 1');
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  async begin(savepoint: string = null): Promise<void> {
+  async begin(): Promise<void> {
     await this.connection.beginTransaction();
   }
 
-  async commit(savepoint: string = null): Promise<void> {
+  async commit(): Promise<void> {
     await this.connection.commit();
   }
 
-  async rollback(savepoint: string = null): Promise<void> {
+  async rollback(): Promise<void> {
     await this.connection.rollback();
   }
 
@@ -48,7 +52,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0][0].count;
   }
 
-  async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
+  async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = new QueryBuilder(entityName, this.metadata);
     qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
     const res = await this.execute(qb);
@@ -56,7 +60,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0];
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T> {
+  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -163,16 +167,13 @@ export class MySqlDriver extends DatabaseDriver {
   }
 
   private getConnectionOptions(): ConnectionOptions {
-    const ret = {} as any;
-
-    if (this.options.clientUrl) {
-      const url = new URL(this.options.clientUrl);
-      ret.host = url.hostname;
-      ret.port = url.port;
-      ret.user = url.username;
-      ret.password = url.password;
-      ret.database = url.pathname.replace(/^\//, '');
-    }
+    const ret = {} as ConnectionOptions;
+    const url = new URL(this.options.clientUrl);
+    ret.host = this.options.host || url.hostname;
+    ret.port = this.options.port || +url.port;
+    ret.user = this.options.user || url.username;
+    ret.password = this.options.password || url.password;
+    ret.database = this.options.dbName || url.pathname.replace(/^\//, '');
 
     if (this.options.multipleStatements) {
       ret.multipleStatements = this.options.multipleStatements;

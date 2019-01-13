@@ -19,12 +19,12 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
   /**
    * Are we connected to the database
    */
-  abstract isConnected(): boolean;
+  abstract async isConnected(): Promise<boolean>;
 
   /**
    * Closes the database connection (aka disconnect)
    */
-  abstract close(force: boolean);
+  abstract async close(force: boolean): Promise<void>;
 
   /**
    * Finds selection of entities

@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM } from '../lib';
+import { Collection, EntityManager, MikroORM, MySqlDriver } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
@@ -11,6 +11,31 @@ describe('EntityManagerMySql', () => {
 
   beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
+
+  test('isConnected()', async () => {
+    expect(await orm.isConnected()).toBe(true);
+    await orm.close(true);
+    expect(await orm.isConnected()).toBe(false);
+    await orm.connect();
+    expect(await orm.isConnected()).toBe(true);
+  });
+
+  test('transactions', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    await orm.em.getDriver<MySqlDriver>().begin();
+    await orm.em.persist(god);
+    await orm.em.getDriver<MySqlDriver>().rollback();
+    const res1 = await orm.em.findOne(Author2.name, { name: 'God' });
+    expect(res1).toBeNull();
+    orm.em.unsetIdentity(god);
+
+    await orm.em.getDriver<MySqlDriver>().begin();
+    const god2 = new Author2('God', 'hello@heaven.god');
+    await orm.em.persist(god2);
+    await orm.em.getDriver<MySqlDriver>().commit();
+    const res2 = await orm.em.findOne(Author2.name, { name: 'God' });
+    expect(res2).not.toBeNull();
+  });
 
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);

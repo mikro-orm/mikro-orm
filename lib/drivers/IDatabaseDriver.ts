@@ -12,12 +12,12 @@ export interface IDatabaseDriver {
   /**
    * Are we connected to the database
    */
-  isConnected(): boolean;
+  isConnected(): Promise<boolean>;
 
   /**
    * Closes the database connection (aka disconnect)
    */
-  close(force: boolean);
+  close(force: boolean): Promise<void>;
 
   /**
    * Finds selection of entities

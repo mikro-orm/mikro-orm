@@ -14,11 +14,11 @@ export class MongoDriver extends DatabaseDriver {
     this.db = this.client.db(this.options.dbName);
   }
 
-  close(force: boolean) {
+  async close(force: boolean): Promise<void> {
     return this.client.close(force);
   }
 
-  isConnected(): boolean {
+  async isConnected(): Promise<boolean> {
     return this.client.isConnected();
   }
 

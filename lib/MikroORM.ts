@@ -68,7 +68,7 @@ export class MikroORM {
     return this.driver;
   }
 
-  isConnected(): boolean {
+  async isConnected(): Promise<boolean> {
     return this.driver.isConnected();
   }
 
@@ -88,5 +88,9 @@ export interface Options {
   debug?: boolean;
   baseDir?: string;
   clientUrl?: string;
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
   multipleStatements?: boolean;
 }
