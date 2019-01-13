@@ -90,10 +90,10 @@ describe('EntityManager', () => {
       name: 'Jon Snow',
     });
     expect(jon.toJSON()).toEqual(o);
+    expect(jon.books.getIdentifiers('_id')).toBeInstanceOf(Array);
+    expect(jon.books.getIdentifiers('_id')[0]).toBeInstanceOf(ObjectID);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
-    expect(jon.books.getIdentifiers()[0]).toBeInstanceOf(ObjectID);
-    expect(jon.books.getIdentifiers('id')).toBeInstanceOf(Array);
-    expect(typeof jon.books.getIdentifiers('id')[0]).toBe('string');
+    expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
 
     for (const author of authors) {
       expect(author.books).toBeInstanceOf(Collection);
@@ -490,10 +490,10 @@ describe('EntityManager', () => {
 
     const ent = await repo.findOne(publisher.id);
     await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {

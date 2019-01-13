@@ -88,7 +88,7 @@ export class Collection<T extends BaseEntity> {
     return this.getItems().map(item => item.toObject(parent, this));
   }
 
-  getIdentifiers(field = '_id'): IPrimaryKey[] {
+  getIdentifiers(field = 'id'): IPrimaryKey[] {
     return this.getItems().map(i => i[field]);
   }
 

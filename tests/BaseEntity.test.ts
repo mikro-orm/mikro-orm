@@ -66,13 +66,13 @@ describe('BaseEntity', () => {
     book.tags.add(tag3);
     await orm.em.persist(book);
     book.assign({ tags: [other._id] });
-    expect(book.tags.getIdentifiers()).toMatchObject([other._id]);
+    expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
     book.assign({ tags: [] });
-    expect(book.tags.getIdentifiers()).toMatchObject([]);
+    expect(book.tags.getIdentifiers('_id')).toMatchObject([]);
     book.assign({ tags: [tag1.id, tag3.id] });
-    expect(book.tags.getIdentifiers('id')).toMatchObject([tag1.id, tag3.id]);
+    expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
     book.assign({ tags: [tag2] });
-    expect(book.tags.getIdentifiers()).toMatchObject([tag2._id]);
+    expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
   });
 
   test('should have string id getter and setter', async () => {
