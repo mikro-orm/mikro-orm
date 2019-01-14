@@ -14,7 +14,7 @@ cache:
     - 'node_modules'
 
 script:
-  - yarn run lint
-  - ORM_PARALLEL=1 yarn run test
+  - yarn lint
+  - ORM_PARALLEL=1 yarn test
 
 after_success: yarn coveralls
