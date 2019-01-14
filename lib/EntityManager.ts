@@ -198,7 +198,7 @@ export class EntityManager {
    * Creates new instance of given entity and populates it with given data
    */
   create<T extends BaseEntity>(entityName: string, data: any): T {
-    return this.entityFactory.create(entityName, data, false);
+    return this.entityFactory.create<T>(entityName, data, false);
   }
 
   /**
@@ -209,7 +209,7 @@ export class EntityManager {
       return this.getIdentity<T>(entityName, id);
     }
 
-    return this.entityFactory.createReference(entityName, id);
+    return this.entityFactory.createReference<T>(entityName, id);
   }
 
   async remove(entityName: string, where: BaseEntity | any): Promise<number> {

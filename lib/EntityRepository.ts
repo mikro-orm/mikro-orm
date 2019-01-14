@@ -33,15 +33,15 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.flush();
   }
 
-  async nativeInsert(data: any): Promise<any> {
+  async nativeInsert(data: any): Promise<IPrimaryKey> {
     return this.em.nativeInsert(this.entityName, data)
   }
 
-  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<any> {
+  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<number> {
     return this.em.nativeUpdate(this.entityName, where, data)
   }
 
-  async nativeDelete(where: FilterQuery<T> | any): Promise<any> {
+  async nativeDelete(where: FilterQuery<T> | any): Promise<number> {
     return this.em.nativeDelete(this.entityName, where)
   }
 
@@ -53,7 +53,7 @@ export class EntityRepository<T extends BaseEntity> {
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<T extends BaseEntity>(id: IPrimaryKey): T {
-    return this.em.getReference(this.entityName, id);
+    return this.em.getReference<T>(this.entityName, id);
   }
 
   canPopulate(property: string): boolean {
