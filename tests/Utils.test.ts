@@ -1,3 +1,4 @@
+import { ObjectID } from 'bson';
 import { Utils } from '../lib/Utils';
 import { Collection, EntityProperty, MikroORM } from '../lib';
 import { Author, Book } from './entities';
@@ -107,7 +108,20 @@ describe('Utils', () => {
   test('getParamNames', () => {
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
     expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
+    expect(Utils.getParamNames(Test)).toEqual([]);
     expect(Utils.getParamNames('')).toEqual([]);
+  });
+
+  test('extractPK', () => {
+    expect(Utils.extractPK('abcd')).toBe('abcd');
+    expect(Utils.extractPK(123)).toBe(123);
+    const id = new ObjectID(1);
+    expect(Utils.extractPK(id)).toBe(id);
+    expect(Utils.extractPK({ id })).toBe(id);
+    expect(Utils.extractPK({ _id: id })).toBe(id);
+    expect(Utils.extractPK({ foo: 'bar' })).toBeNull();
+    expect(Utils.extractPK(new Test())).toBeNull();
+    expect(Utils.extractPK(true)).toBeNull();
   });
 
   afterAll(async () => orm.close(true));

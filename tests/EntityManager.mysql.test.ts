@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM, MySqlDriver } from '../lib';
+import { Collection, EntityManager, MikroORM } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
@@ -21,20 +21,40 @@ describe('EntityManagerMySql', () => {
   });
 
   test('transactions', async () => {
-    const god = new Author2('God', 'hello@heaven.god');
-    await orm.em.getDriver<MySqlDriver>().begin();
-    await orm.em.persist(god);
-    await orm.em.getDriver<MySqlDriver>().rollback();
-    const res1 = await orm.em.findOne(Author2.name, { name: 'God' });
+    const god1 = new Author2('God1', 'hello@heaven.god');
+    await orm.em.begin();
+    await orm.em.persist(god1);
+    await orm.em.rollback();
+    const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
     expect(res1).toBeNull();
-    orm.em.unsetIdentity(god);
 
-    await orm.em.getDriver<MySqlDriver>().begin();
-    const god2 = new Author2('God', 'hello@heaven.god');
+    await orm.em.begin();
+    const god2 = new Author2('God2', 'hello@heaven.god');
     await orm.em.persist(god2);
-    await orm.em.getDriver<MySqlDriver>().commit();
-    const res2 = await orm.em.findOne(Author2.name, { name: 'God' });
+    await orm.em.commit();
+    const res2 = await orm.em.findOne(Author2.name, { name: 'God2' });
     expect(res2).not.toBeNull();
+
+    await orm.em.transactional(async () => {
+      const god3 = new Author2('God3', 'hello@heaven.god');
+      await orm.em.persist(god3);
+    });
+    const res3 = await orm.em.findOne(Author2.name, { name: 'God3' });
+    expect(res3).not.toBeNull();
+
+    const err = new Error('Test');
+
+    try {
+      await orm.em.transactional(async () => {
+        const god4 = new Author2('God4', 'hello@heaven.god');
+        await orm.em.persist(god4);
+        throw err;
+      });
+    } catch (e) {
+      expect(e).toBe(err);
+      const res4 = await orm.em.findOne(Author2.name, { name: 'God4' });
+      expect(res4).toBeNull();
+    }
   });
 
   test('should load entities', async () => {

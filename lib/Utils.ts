@@ -170,7 +170,7 @@ export class Utils {
     }
 
     if (Utils.isObject(data)) {
-      return data.id || data._id;
+      return data.id || data._id || null;
     }
 
     return null;

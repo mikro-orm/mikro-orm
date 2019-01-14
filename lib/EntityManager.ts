@@ -43,6 +43,7 @@ export class EntityManager {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${entity.id}`;
     delete em.identityMap[token];
+    this.unitOfWork.remove(entity);
   }
 
   getIdentityMap(): { [k: string]: BaseEntity } {
@@ -116,6 +117,32 @@ export class EntityManager {
     await this.populateOne(entityName, entity, populate);
 
     return entity;
+  }
+
+  async begin(): Promise<void> {
+    await this.getDriver().begin();
+  }
+
+  async commit(): Promise<void> {
+    await this.getDriver().commit();
+  }
+
+  async rollback(): Promise<void> {
+    await this.getDriver().rollback();
+  }
+
+  async transactional(cb: () => Promise<any>): Promise<any> {
+    try {
+      await this.begin();
+      const ret = await cb();
+      await this.flush();
+      await this.commit();
+
+      return ret;
+    } catch (e) {
+      await this.rollback();
+      throw e;
+    }
   }
 
   async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {
@@ -197,6 +224,7 @@ export class EntityManager {
     this.runHooks('beforeDelete', entity);
     const entityName = entity.constructor.name;
     const count = await this.driver.nativeDelete(entityName, entity.id);
+    this.unsetIdentity(entity);
     this.runHooks('afterDelete', entity);
 
     return count;
