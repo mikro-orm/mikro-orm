@@ -57,7 +57,7 @@ export class MySqlDriver extends DatabaseDriver {
     qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
     const res = await this.execute(qb);
 
-    return res[0];
+    return res[0].map(r => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
@@ -69,7 +69,7 @@ export class MySqlDriver extends DatabaseDriver {
     qb.select('*').populate(populate).where(where).limit(1);
     const res = await this.execute(qb);
 
-    return res[0][0];
+    return this.mapResult(res[0][0], this.metadata[entityName]);
   }
 
   getDefaultClientUrl(): string {
@@ -119,7 +119,12 @@ export class MySqlDriver extends DatabaseDriver {
 
     this.logQuery(query);
 
-    return this.connection.execute(query, params);
+    try {
+      return await this.connection.execute(query, params);
+    } catch (e) {
+      e.message += `\n in query: ${query}`;
+      throw e;
+    }
   }
 
   async loadFile(path: string): Promise<void> {
@@ -128,6 +133,10 @@ export class MySqlDriver extends DatabaseDriver {
   }
 
   private extractManyToMany(entityName: string, data: any): any {
+    if (!this.metadata[entityName]) {
+      return {};
+    }
+
     const props = this.metadata[entityName].properties;
     const ret = {} as any;
 
@@ -144,15 +153,15 @@ export class MySqlDriver extends DatabaseDriver {
   }
 
   private async processManyToMany(entityName: string, pk: IPrimaryKey, collections: any) {
-    const fk1 = this.getTableName(entityName);
     const props = this.metadata[entityName].properties;
 
     for (const k of Object.keys(collections)) {
       const prop = props[k];
+      const fk1 = prop.joinColumn;
 
       if (prop && prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
         const qb1 = new QueryBuilder(prop.pivotTable, this.metadata);
-        const fk2 = this.getTableName(prop.type);
+        const fk2 = prop.inverseJoinColumn;
         qb1.delete({ [fk1]: pk });
         await this.execute(qb1);
 
@@ -181,4 +190,5 @@ export class MySqlDriver extends DatabaseDriver {
 
     return ret;
   }
+
 }

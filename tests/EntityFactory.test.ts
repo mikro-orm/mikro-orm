@@ -2,6 +2,7 @@ import { Book, Author, Publisher } from './entities';
 import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver } from '../lib';
 import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MongoNamingStrategy } from '../lib/naming-strategy/MongoNamingStrategy';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -18,10 +19,12 @@ const Mock = jest.fn<EntityManager>(() => ({
   }),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
+  namingStrategy: new MongoNamingStrategy(),
+  getNamingStrategy: () => new MongoNamingStrategy(),
 }));
 const em = new Mock();
 const factory = new EntityFactory(em);
-em.entityFactory = factory;
+Object.assign(em, { entityFactory: factory });
 
 /**
  * @class EntityFactoryTest

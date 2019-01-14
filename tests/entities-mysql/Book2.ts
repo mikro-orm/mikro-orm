@@ -18,7 +18,7 @@ export class Book2 extends BaseEntity {
   @ManyToOne({ entity: () => Publisher2.name })
   publisher: Publisher2;
 
-  @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books', pivotTable: 'book_to_tag2' })
+  @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books' })
   tags: Collection<BookTag2>;
 
   constructor(title: string, author: Author2) {

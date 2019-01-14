@@ -7,7 +7,7 @@ export class UnitOfWork {
   // holds copy of entity manager's identity map so we can compute changes when persisting
   private readonly identityMap = {} as any;
   private readonly persistStack: ChangeSet[] = [];
-  private readonly foreignKey = this.em.getDriver().getDefaultForeignKey();
+  private readonly foreignKey = this.em.getNamingStrategy().referenceColumnName();
 
   constructor(private em: EntityManager) { }
 

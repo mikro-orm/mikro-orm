@@ -11,19 +11,25 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
+import { NamingStrategy } from './naming-strategy/NamingStrategy';
 
 export class EntityManager {
 
-  public entityFactory: EntityFactory = new EntityFactory(this);
+  public readonly entityFactory: EntityFactory;
   public readonly validator = new Validator(this.options.strict);
 
   private readonly identityMap: { [k: string]: BaseEntity } = {};
-  private readonly _unitOfWork = new UnitOfWork(this);
+  private readonly _unitOfWork: UnitOfWork;
   private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
+  private readonly namingStrategy: NamingStrategy;
 
   constructor(private driver: IDatabaseDriver, public options: Options) {
     this.metadata = getMetadataStorage();
+    const NamingStrategy = options.namingStrategy || driver.getDefaultNamingStrategy();
+    this.namingStrategy = new NamingStrategy();
+    this.entityFactory = new EntityFactory(this);
+    this._unitOfWork = new UnitOfWork(this);
   }
 
   getIdentity<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
@@ -53,6 +59,10 @@ export class EntityManager {
 
   getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
     return this.driver as D;
+  }
+
+  getNamingStrategy(): NamingStrategy {
+    return this.namingStrategy;
   }
 
   getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T> {
@@ -288,8 +298,9 @@ export class EntityManager {
     });
 
     Object.assign(em, {
-      driver: this.driver,
       options: this.options,
+      driver: this.driver,
+      namingStrategy: this.namingStrategy,
       entityFactory: ef,
       identityMap: {},
       validator: this.validator,
@@ -353,7 +364,7 @@ export class EntityManager {
     }
 
     const children: BaseEntity[] = [];
-    let fk = this.driver.getDefaultForeignKey();
+    let fk = this.namingStrategy.referenceColumnName();
 
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection);

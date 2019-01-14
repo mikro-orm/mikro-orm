@@ -193,19 +193,18 @@ export class Collection<T extends BaseEntity> {
     const em = this.owner.getEntityManager();
     const driver = em.getDriver();
     const metadata = em.entityFactory.getMetadata();
+    const fk1 = this.property.joinColumn;
+    const fk2 = this.property.inverseJoinColumn;
+    let items = [];
 
     if (this.property.owner) {
-      const fk1 = driver.getTableName(this.owner.constructor.name);
-      const fk2 = driver.getTableName(this.property.type);
-      const items = await driver.find(this.property.pivotTable, { [fk1]: this.owner.id });
-      items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
+      items = await driver.find(this.property.pivotTable, { [fk1]: this.owner.id });
     } else {
       const prop = metadata[this.property.type].properties[this.property.mappedBy];
-      const fk1 = driver.getTableName(prop.type);
-      const fk2 = driver.getTableName(this.property.type);
-      const items = await driver.find(prop.pivotTable, { [fk1]: this.owner.id });
-      items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
+      items = await driver.find(prop.pivotTable, { [fk1]: this.owner.id });
     }
+
+    items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
   }
 
 }

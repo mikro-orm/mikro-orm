@@ -31,14 +31,14 @@ export class QueryBuilder {
 
   insert(data: any): QueryBuilder {
     this.type = QueryType.INSERT;
-    this._data = data;
+    this._data = this.processData(data);
 
     return this;
   }
 
   update(data: any): QueryBuilder {
     this.type = QueryType.UPDATE;
-    this._data = data;
+    this._data = this.processData(data);
 
     return this;
   }
@@ -215,29 +215,56 @@ export class QueryBuilder {
   }
 
   private processWhere(cond: any): any {
+    cond = Object.assign({}, cond); // copy first
+
     Object.keys(cond).forEach(k => {
       if (this.metadata[this.entityName] && this.metadata[this.entityName].properties[k]) {
         const prop = this.metadata[this.entityName].properties[k];
 
-        if (prop.reference === ReferenceType.MANY_TO_MANY) {
-          const alias = `e${this.aliasCounter++}`;
-          const fk1 = this.getTableName(this.entityName);
-          const fk2 = this.getTableName(prop.type);
+        switch (prop.reference) {
+          case ReferenceType.MANY_TO_MANY:
+            const alias1 = `e${this.aliasCounter++}`;
 
-          if (prop.owner) {
-            this._leftJoins.push([prop.pivotTable, alias, fk1]);
-            const fk2 = this.getTableName(prop.type);
-            Utils.renameKey(cond, k, `${alias}.${fk2}`)
-          } else {
-            const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-            this._leftJoins.push([prop2.pivotTable, alias, fk1]);
-            Utils.renameKey(cond, k, `${alias}.${fk2}`);
-          }
+            if (prop.owner) {
+              this._leftJoins.push([prop.pivotTable, alias1, prop.joinColumn]);
+            } else {
+              const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+              this._leftJoins.push([prop2.pivotTable, alias1, prop.joinColumn]);
+            }
+
+            Utils.renameKey(cond, k, `${alias1}.${prop.inverseJoinColumn}`);
+            break;
+
+          case ReferenceType.ONE_TO_MANY:
+            const alias2 = `e${this.aliasCounter++}`;
+            const prop2 = this.metadata[prop.type].properties[prop.fk];
+            this._leftJoins.push([this.getTableName(prop.type), alias2, prop2.fieldName]);
+            Utils.renameKey(cond, k, `${alias2}.${prop.referenceColumnName}`);
+            break;
+
+          default:
+            Utils.renameKey(cond, k, prop.fieldName);
         }
       }
     });
 
     return cond;
+  }
+
+  private processData(data: any): any {
+    data = Object.assign({}, data); // copy first
+
+    Object.keys(data).forEach(k => {
+      if (this.metadata[this.entityName] && this.metadata[this.entityName].properties[k]) {
+        const prop = this.metadata[this.entityName].properties[k];
+
+        if (prop.fieldName) {
+          Utils.renameKey(data, k, prop.fieldName);
+        }
+      }
+    });
+
+    return data;
   }
 
   private processJoins(): string {

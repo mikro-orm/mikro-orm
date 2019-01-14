@@ -27,41 +27,41 @@ DROP TABLE IF EXISTS `author2`;
 
 CREATE TABLE `author2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime DEFAULT NULL,
-  `updatedAt` datetime DEFAULT NULL,
-  `termsAccepted` tinyint(1) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `terms_accepted` tinyint(1) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `born` datetime DEFAULT NULL,
-  `favouriteBook` int(11) DEFAULT NULL,
+  `favourite_book_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 
-# Dump of table book_to_tag2
+# Dump of table book2_to_book_tag2
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `book_to_tag2`;
+DROP TABLE IF EXISTS `book2_to_book_tag2`;
 
-CREATE TABLE `book_to_tag2` (
+CREATE TABLE `book2_to_book_tag2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `book2` int(11) DEFAULT NULL,
-  `book-tag2` int(11) DEFAULT NULL,
+  `book2_id` int(11) DEFAULT NULL,
+  `book_tag2_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 
-# Dump of table book-tag2
+# Dump of table book_tag2
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `book-tag2`;
+DROP TABLE IF EXISTS `book_tag2`;
 
-CREATE TABLE `book-tag2` (
+CREATE TABLE `book_tag2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime DEFAULT NULL,
-  `updatedAt` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -75,25 +75,25 @@ DROP TABLE IF EXISTS `book2`;
 
 CREATE TABLE `book2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime DEFAULT NULL,
-  `updatedAt` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
-  `author` int(11) DEFAULT NULL,
-  `publisher` int(11) DEFAULT NULL,
+  `author_id` int(11) DEFAULT NULL,
+  `publisher_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 
-# Dump of table publisher_to_test2
+# Dump of table publisher2_to_test2
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `publisher_to_test2`;
+DROP TABLE IF EXISTS `publisher2_to_test2`;
 
-CREATE TABLE `publisher_to_test2` (
+CREATE TABLE `publisher2_to_test2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `publisher2` int(11) DEFAULT NULL,
-  `test2` int(11) DEFAULT NULL,
+  `publisher2_id` int(11) DEFAULT NULL,
+  `test2_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -106,8 +106,8 @@ DROP TABLE IF EXISTS `publisher2`;
 
 CREATE TABLE `publisher2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime DEFAULT NULL,
-  `updatedAt` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -122,8 +122,8 @@ DROP TABLE IF EXISTS `test2`;
 
 CREATE TABLE `test2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `createdAt` datetime DEFAULT NULL,
-  `updatedAt` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

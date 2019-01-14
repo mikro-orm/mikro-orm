@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM } from '../lib';
+import { Collection, EntityManager, MikroORM, MySqlDriver } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
@@ -18,6 +18,12 @@ describe('EntityManagerMySql', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+  });
+
+  test('driver appends errored query', async () => {
+    const driver = orm.em.getDriver<MySqlDriver>();
+    const err = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)`;
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err);
   });
 
   test('transactions', async () => {

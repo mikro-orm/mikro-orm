@@ -1,6 +1,7 @@
 import { BaseEntity } from '../BaseEntity';
 import { FilterQuery } from './DatabaseDriver';
 import { IPrimaryKey } from '..';
+import { NamingStrategy } from '../naming-strategy/NamingStrategy';
 
 export interface IDatabaseDriver {
 
@@ -46,6 +47,8 @@ export interface IDatabaseDriver {
    */
   getDefaultClientUrl(): string;
 
+  getDefaultNamingStrategy(): { new (): NamingStrategy };
+
   /**
    * Begins a transaction (if supported)
    */
@@ -65,11 +68,6 @@ export interface IDatabaseDriver {
    * Normalizes primary key wrapper to string value (e.g. mongodb's ObjectID)
    */
   normalizePrimaryKey(where: any): string;
-
-  /**
-   * e.g. `_id` for mongo, `id` for mysql
-   */
-  getDefaultForeignKey(): string;
 
   /**
    * NoSQL databases do require pivot table for M:N

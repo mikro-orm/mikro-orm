@@ -171,11 +171,15 @@ export interface EntityProperty {
   entity: () => string | Function;
   type: string;
   reference: ReferenceType;
+  fieldName?: string;
   attributes?: { [attribute: string]: any };
   owner?: boolean;
   inversedBy?: string;
   mappedBy?: string;
   pivotTable?: string;
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  referenceColumnName?: string;
 }
 
 export interface EntityMetadata {

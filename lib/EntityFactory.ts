@@ -180,9 +180,18 @@ export class EntityFactory {
       const source = sources.find(s => !!s.getFilePath().match(new RegExp(name + '.ts')));
       this.metadata[name].path = path;
       const properties = source.getClass(name).getInstanceProperties();
+      const namingStrategy = this.em.getNamingStrategy();
 
-      // init types
+      if (!this.metadata[name].collection) {
+        this.metadata[name].collection = namingStrategy.classToTableName(this.metadata[name].name);
+      }
+
+      // add createdAt and updatedAt properties
       const props = this.metadata[name].properties;
+      props.createdAt = { name: 'createdAt', type: 'Date', reference: ReferenceType.SCALAR } as EntityProperty;
+      props.updatedAt = { name: 'updatedAt', type: 'Date', reference: ReferenceType.SCALAR } as EntityProperty;
+
+      // init types and column names
       Object.keys(props).forEach(p => {
         if (props[p].entity) {
           const type = props[p].entity();
@@ -191,7 +200,44 @@ export class EntityFactory {
 
         if (props[p].reference === ReferenceType.SCALAR) {
           const property = properties.find(v => v.getName() === p);
-          props[p].type = property.getType().getText();
+          props[p].type = property ? property.getType().getText() : props[p].type;
+        }
+
+        if (props[p].reference === ReferenceType.MANY_TO_ONE && !props[p].fk) {
+          props[p].fk = this.em.getNamingStrategy().referenceColumnName();
+        }
+
+        if (!props[p].fieldName) {
+          switch (props[p].reference) {
+            case ReferenceType.SCALAR:
+              props[p].fieldName = namingStrategy.propertyToColumnName(props[p].name);
+              break;
+            case ReferenceType.MANY_TO_ONE:
+              props[p].fieldName = namingStrategy.joinColumnName(props[p].name);
+              break;
+          }
+        }
+
+        if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[p].reference)) {
+          if (!props[p].pivotTable && props[p].reference === ReferenceType.MANY_TO_MANY && props[p].owner) {
+            props[p].pivotTable = namingStrategy.joinTableName(this.metadata[name].name, props[p].type, props[p].name);
+          }
+
+          if (!props[p].inverseJoinColumn && props[p].reference === ReferenceType.MANY_TO_MANY) {
+            props[p].inverseJoinColumn = namingStrategy.joinKeyColumnName(props[p].type);
+          }
+
+          if (!props[p].joinColumn && props[p].reference === ReferenceType.ONE_TO_MANY) {
+            props[p].joinColumn = namingStrategy.joinColumnName(props[p].name);
+          }
+
+          if (!props[p].joinColumn && props[p].reference === ReferenceType.MANY_TO_MANY) {
+            props[p].joinColumn = namingStrategy.joinKeyColumnName(this.metadata[name].name);
+          }
+
+          if (!props[p].referenceColumnName) {
+            props[p].referenceColumnName = namingStrategy.referenceColumnName();
+          }
         }
       });
     });

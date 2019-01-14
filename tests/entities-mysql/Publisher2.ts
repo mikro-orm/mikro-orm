@@ -14,7 +14,7 @@ export class Publisher2 extends BaseEntity {
   @OneToMany({ entity: () => Book2.name, fk: 'publisher' })
   books: Collection<Book2>;
 
-  @ManyToMany({ entity: () => Test2.name, owner: true, pivotTable: 'publisher_to_test2' })
+  @ManyToMany({ entity: () => Test2.name, owner: true })
   tests: Collection<Test2>;
 
   @Property()

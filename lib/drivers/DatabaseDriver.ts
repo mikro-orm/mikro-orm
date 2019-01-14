@@ -2,6 +2,9 @@ import { getMetadataStorage, Options } from '../MikroORM';
 import { BaseEntity, EntityMetadata } from '../BaseEntity';
 import { IDatabaseDriver } from './IDatabaseDriver';
 import { IPrimaryKey } from '..';
+import { NamingStrategy } from '../naming-strategy/NamingStrategy';
+import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy';
+import { Utils } from '../Utils';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
 
@@ -83,12 +86,30 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     }
   }
 
-  getDefaultForeignKey(): string {
-    return 'id';
-  }
-
   usesPivotTable(): boolean {
     return true;
+  }
+
+  getDefaultNamingStrategy(): { new (): NamingStrategy } {
+    return UnderscoreNamingStrategy;
+  }
+
+  mapResult(result: any, meta: EntityMetadata): any {
+    if (!result || !meta) {
+      return result;
+    }
+
+    const ret = Object.assign({}, result);
+
+    Object.keys(meta.properties).forEach(p => {
+      const prop = meta.properties[p];
+
+      if (prop.fieldName && prop.fieldName in ret) {
+        Utils.renameKey(ret, prop.fieldName, prop.name);
+      }
+    });
+
+    return ret;
   }
 
 }

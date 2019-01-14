@@ -1,8 +1,10 @@
-import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID, UpdateWriteOpResult } from 'mongodb';
+import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { BaseEntity } from '../BaseEntity';
 import { Utils } from '../Utils';
 import { IPrimaryKey } from '..';
+import { NamingStrategy } from '../naming-strategy/NamingStrategy';
+import { MongoNamingStrategy } from '../naming-strategy/MongoNamingStrategy';
 
 export class MongoDriver extends DatabaseDriver {
 
@@ -115,8 +117,8 @@ export class MongoDriver extends DatabaseDriver {
     return 'mongodb://localhost:27017';
   }
 
-  getDefaultForeignKey(): string {
-    return '_id';
+  getDefaultNamingStrategy(): { new (): NamingStrategy } {
+    return MongoNamingStrategy;
   }
 
   usesPivotTable(): boolean {

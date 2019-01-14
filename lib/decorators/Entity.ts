@@ -11,10 +11,6 @@ export function Entity(options: EntityOptions = {}): Function {
       merge(meta, options);
     }
 
-    if (!meta.collection) {
-      meta.collection = target.name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-    }
-
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
 

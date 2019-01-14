@@ -104,7 +104,7 @@ export class Utils {
   }
 
   static renameKey(payload: any, from: string, to: string): void {
-    if (Utils.isObject(payload) && payload[from] && !payload[to]) {
+    if (Utils.isObject(payload) && from in payload && !(to in payload)) {
       payload[to] = payload[from];
       delete payload[from];
     }

@@ -4,6 +4,7 @@ import { EntityManager } from './EntityManager';
 import { EntityMetadata } from './BaseEntity';
 import { MongoDriver } from './drivers/MongoDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { NamingStrategy } from './naming-strategy/NamingStrategy';
 
 export function getMetadataStorage(entity?: string): { [entity: string]: EntityMetadata } {
   if (!(global as any)['MIKRO-ORM-STORAGE']) {
@@ -84,6 +85,7 @@ export interface Options {
   entitiesDirsTs?: string[];
   strict?: boolean;
   driver?: { new (options: Options): IDatabaseDriver };
+  namingStrategy?: { new (): NamingStrategy };
   logger?: Function;
   debug?: boolean;
   baseDir?: string;
