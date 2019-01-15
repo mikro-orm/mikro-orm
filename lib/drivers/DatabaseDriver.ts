@@ -1,4 +1,4 @@
-import { getMetadataStorage, Options } from '../MikroORM';
+import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
 import { BaseEntity, EntityMetadata } from '../BaseEntity';
 import { IDatabaseDriver } from './IDatabaseDriver';
 import { IPrimaryKey } from '..';
@@ -10,7 +10,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   protected readonly metadata: { [k: string]: EntityMetadata } = {};
 
-  constructor(protected options: Options) {
+  constructor(protected options: MikroORMOptions) {
     this.metadata = getMetadataStorage();
   }
 

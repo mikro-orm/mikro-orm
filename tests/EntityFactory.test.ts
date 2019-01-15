@@ -1,5 +1,5 @@
 import { Book, Author, Publisher } from './entities';
-import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver } from '../lib';
+import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver, MikroORMOptions } from '../lib';
 import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MongoNamingStrategy } from '../lib/naming-strategy/MongoNamingStrategy';
@@ -15,8 +15,8 @@ const Mock = jest.fn<EntityManager>(() => ({
   getReference: jest.fn(),
   getDriver: () => new MongoDriver({
     dbName: 'mikro-orm-test',
-    entitiesDirs: ['entities'],
-  }),
+    clientUrl: 'mongo://...',
+  } as MikroORMOptions),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
   namingStrategy: new MongoNamingStrategy(),

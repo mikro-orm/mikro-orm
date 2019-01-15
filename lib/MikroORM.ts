@@ -86,8 +86,9 @@ export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
-  driver?: { new (options: Options): IDatabaseDriver };
+  driver: { new (options: MikroORMOptions): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
+  clientUrl?: string;
   host?: string;
   port?: number;
   user?: string;
@@ -97,7 +98,6 @@ export interface MikroORMOptions {
   logger: (message: string) => void;
   debug: boolean;
   baseDir: string;
-  clientUrl?: string;
 }
 
 export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof defaultOptions>> | MikroORMOptions;
