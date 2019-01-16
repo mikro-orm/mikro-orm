@@ -1,5 +1,5 @@
-import { ObjectID } from 'bson';
 import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
+import { IPrimaryKey } from './decorators/PrimaryKey';
 
 export class Collection<T extends BaseEntity> {
 
@@ -41,6 +41,12 @@ export class Collection<T extends BaseEntity> {
   }
 
   async init(populate: string[] = []): Promise<Collection<T>> {
+    const em = this.owner.getEntityManager();
+
+    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
+      await this.loadFromPivotTable();
+    }
+
     // do not make db call if we know we will get no results
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
       this.initialized = true;
@@ -54,7 +60,7 @@ export class Collection<T extends BaseEntity> {
     const order = this.items.map(item => item.id);
 
     this.items.length = 0;
-    const items = await this.owner.getEntityManager().find<T>(this.property.type, cond, populate);
+    const items = await em.find<T>(this.property.type, cond, populate);
 
     // re-order items when searching with `$in` operator
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
@@ -82,7 +88,7 @@ export class Collection<T extends BaseEntity> {
     return this.getItems().map(item => item.toObject(parent, this));
   }
 
-  getIdentifiers(field = '_id'): ObjectID[] {
+  getIdentifiers(field = 'id'): IPrimaryKey[] {
     return this.getItems().map(i => i[field]);
   }
 
@@ -136,7 +142,7 @@ export class Collection<T extends BaseEntity> {
 
   contains(item: T): boolean {
     this.checkInitialized();
-    return !!this.items.find(i => i.id !== null && i.id === item.id);
+    return item.id && !!this.items.find(i => i.id !== null && i.id === item.id);
   }
 
   count(): number {
@@ -168,18 +174,37 @@ export class Collection<T extends BaseEntity> {
 
   private createCondition(): any {
     const cond: any = {};
+    const em = this.owner.getEntityManager();
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.fk] = this.owner._id;
+      cond[this.property.fk] = this.owner.id;
     } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
-      if (this.property.owner) {
-        cond._id = { $in: this.items.map(item => item._id) };
+      if (this.property.owner || em.getDriver().usesPivotTable()) {
+        cond.id = { $in: this.items.map(item => item.id) };
       } else {
-        cond[this.property.mappedBy] = this.owner._id;
+        cond[this.property.mappedBy] = this.owner.id;
       }
     }
 
     return cond;
+  }
+
+  private async loadFromPivotTable(): Promise<void> {
+    const em = this.owner.getEntityManager();
+    const driver = em.getDriver();
+    const metadata = em.entityFactory.getMetadata();
+    const fk1 = this.property.joinColumn;
+    const fk2 = this.property.inverseJoinColumn;
+    let items = [];
+
+    if (this.property.owner) {
+      items = await driver.find(this.property.pivotTable, { [fk1]: this.owner.id });
+    } else {
+      const prop = metadata[this.property.type].properties[this.property.mappedBy];
+      items = await driver.find(prop.pivotTable, { [fk1]: this.owner.id });
+    }
+
+    items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
   }
 
 }

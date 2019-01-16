@@ -19,10 +19,6 @@ export function ManyToOne(options: ManyToOneOptions): Function {
       throw new Error(`'@ManyToOne({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
-    if (!options.fk) {
-      options.fk = '_id';
-    }
-
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE };
     meta.properties[propertyName] = Object.assign(property, options) as EntityProperty;
   };

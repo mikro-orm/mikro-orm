@@ -23,4 +23,5 @@ export interface ManyToManyOptions extends PropertyOptions {
   owner?: boolean;
   inversedBy?: string;
   mappedBy?: string;
+  pivotTable?: string;
 }

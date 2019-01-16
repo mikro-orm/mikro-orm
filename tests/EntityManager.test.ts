@@ -1,5 +1,5 @@
 import { ObjectID } from 'bson';
-import { Collection, EntityManager, MikroORM } from '../lib';
+import { Collection, EntityManager, MikroORM, MongoDriver } from '../lib';
 import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -30,9 +30,6 @@ describe('EntityManager', () => {
 
     const book1 = new Book('My Life on The Wall, part 1', author);
     book1.publisher = publisher;
-    book1.metaObject = {};
-    book1.metaArray = [{test: 123, lol: true}];
-    book1.metaArrayOfStrings = ['test'];
     const book2 = new Book('My Life on The Wall, part 2', author);
     book2.publisher = publisher;
     const book3 = new Book('My Life on The Wall, part 3', author);
@@ -93,10 +90,10 @@ describe('EntityManager', () => {
       name: 'Jon Snow',
     });
     expect(jon.toJSON()).toEqual(o);
+    expect(jon.books.getIdentifiers('_id')).toBeInstanceOf(Array);
+    expect(jon.books.getIdentifiers('_id')[0]).toBeInstanceOf(ObjectID);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
-    expect(jon.books.getIdentifiers()[0]).toBeInstanceOf(ObjectID);
-    expect(jon.books.getIdentifiers('id')).toBeInstanceOf(Array);
-    expect(typeof jon.books.getIdentifiers('id')[0]).toBe('string');
+    expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
 
     for (const author of authors) {
       expect(author.books).toBeInstanceOf(Collection);
@@ -202,7 +199,7 @@ describe('EntityManager', () => {
   });
 
   test('stable results of serialization (collection)', async () => {
-    const pub = new Publisher('Publisher');
+    const pub = new Publisher('Publisher2');
     await orm.em.persist(pub);
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -228,8 +225,7 @@ describe('EntityManager', () => {
   });
 
   test('should return mongo collection', async () => {
-    expect(orm.em.getCollection(Author.name).collectionName).toBe('author');
-    expect(orm.em.getCollection(Book.name).collectionName).toBe('books-table');
+    expect(orm.em.getDriver<MongoDriver>().getCollection(Book.name).collectionName).toBe('books-table');
   });
 
   test('findOne by id', async () => {
@@ -494,35 +490,32 @@ describe('EntityManager', () => {
 
     const ent = await repo.findOne(publisher.id);
     await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
     orm.em.options.debug = false;
     const res1 = await orm.em.nativeInsert(Publisher.name, { name: 'native name 1' });
-    expect(res1.insertedCount).toBe(1);
+    expect(res1).toBeInstanceOf(ObjectID);
 
     const res2 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 1' }, { name: 'new native name' });
-    expect(res2.matchedCount).toBe(1);
-    expect(res2.modifiedCount).toBe(1);
+    expect(res2).toBe(1);
 
     const res3 = await orm.em.aggregate(Publisher.name, [{ $match: { name: 'new native name' } }]);
     expect(res3.length).toBe(1);
     expect(res3[0]).toMatchObject({ name: 'new native name' });
 
     const res4 = await orm.em.nativeDelete(Publisher.name, { name: 'new native name' });
-    expect(res4.deletedCount).toBe(1);
-    expect(res4.deletedCount).toBe(1);
+    expect(res4).toBe(1);
 
     const res5 = await orm.em.nativeInsert(Publisher.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
-    expect(res5.insertedCount).toBe(1);
+    expect(res5).toBeInstanceOf(ObjectID);
 
     const res6 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
-    expect(res6.matchedCount).toBe(1);
-    expect(res6.modifiedCount).toBe(1);
+    expect(res6).toBe(1);
   });
 
   afterAll(async () => orm.close(true));

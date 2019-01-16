@@ -1,19 +1,18 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID,
+  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey,
 } from '../../lib';
 
-import { Book } from './Book';
-import { AuthorRepository } from '../repositories/AuthorRepository';
+import { Book2 } from './Book2';
 
-@Entity({ customRepository: () => AuthorRepository })
-export class Author extends BaseEntity {
+@Entity()
+export class Author2 extends BaseEntity {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
   @PrimaryKey()
-  _id: ObjectID;
+  id: number;
 
   @Property()
   name: string;
@@ -33,11 +32,11 @@ export class Author extends BaseEntity {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author' })
-  books: Collection<Book>;
+  @OneToMany({ entity: () => Book2, fk: 'author' })
+  books: Collection<Book2>;
 
-  @ManyToOne({ entity: () => Book })
-  favouriteBook: Book;
+  @ManyToOne({ entity: () => Book2 })
+  favouriteBook: Book2;
 
   version: number;
   versionAsString: string;
@@ -70,12 +69,12 @@ export class Author extends BaseEntity {
 
   @BeforeDelete()
   beforeDelete() {
-    Author.beforeDestroyCalled += 1;
+    Author2.beforeDestroyCalled += 1;
   }
 
   @AfterDelete()
   afterDelete() {
-    Author.afterDestroyCalled += 1;
+    Author2.afterDestroyCalled += 1;
   }
 
 }

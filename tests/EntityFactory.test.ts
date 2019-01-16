@@ -1,7 +1,8 @@
-import { EntityFactory } from '../lib/EntityFactory';
 import { Book, Author, Publisher } from './entities';
-import { ReferenceType, EntityManager, MikroORM, Collection } from '../lib';
+import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver, MikroORMOptions } from '../lib';
+import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MongoNamingStrategy } from '../lib/naming-strategy/MongoNamingStrategy';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -12,12 +13,18 @@ const Mock = jest.fn<EntityManager>(() => ({
     logger: jest.fn(),
   },
   getReference: jest.fn(),
+  getDriver: () => new MongoDriver({
+    dbName: 'mikro-orm-test',
+    clientUrl: 'mongo://...',
+  } as MikroORMOptions),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
+  namingStrategy: new MongoNamingStrategy(),
+  getNamingStrategy: () => new MongoNamingStrategy(),
 }));
 const em = new Mock();
 const factory = new EntityFactory(em);
-em.entityFactory = factory;
+Object.assign(em, { entityFactory: factory });
 
 /**
  * @class EntityFactoryTest

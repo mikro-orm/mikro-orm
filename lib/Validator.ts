@@ -45,6 +45,15 @@ export class Validator {
       }
     }
 
+    if (!this.strict && expectedType === 'boolean' && givenType === 'number') {
+      const bool = !!givenValue;
+
+      if (+bool === givenValue) {
+        ret = bool;
+        givenType = 'boolean';
+      }
+    }
+
     if (givenType !== expectedType) {
       throw new Error(`Validation error: trying to set ${entity.constructor.name}.${prop.name} of type '${expectedType}' to '${givenValue}' of type '${givenType}'`);
     }

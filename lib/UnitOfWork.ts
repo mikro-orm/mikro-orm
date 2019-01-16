@@ -7,6 +7,7 @@ export class UnitOfWork {
   // holds copy of entity manager's identity map so we can compute changes when persisting
   private readonly identityMap = {} as any;
   private readonly persistStack: ChangeSet[] = [];
+  private readonly foreignKey = this.em.getNamingStrategy().referenceColumnName();
 
   constructor(private em: EntityManager) { }
 
@@ -57,7 +58,7 @@ export class UnitOfWork {
       ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy? or no copy at all?
     }
 
-    delete ret.payload._id;
+    delete ret.payload[this.foreignKey];
     delete ret.payload._initialized;
 
     await this.processReferences(ret, meta);
@@ -89,13 +90,13 @@ export class UnitOfWork {
 
   private async processManyToOne(changeSet: ChangeSet, prop: EntityProperty) {
     // when new entity found in reference, cascade persist it first so we have its id
-    if (!changeSet.entity[prop.name]._id) {
+    if (!changeSet.entity[prop.name][this.foreignKey]) {
       const propChangeSet = await this.persist(changeSet.entity[prop.name]);
       await this.immediateCommit(propChangeSet);
     }
 
     if (changeSet.payload[prop.name] instanceof BaseEntity) {
-      changeSet.payload[prop.name] = changeSet.entity[prop.name]._id;
+      changeSet.payload[prop.name] = changeSet.entity[prop.name][this.foreignKey];
     }
   }
 
@@ -111,13 +112,13 @@ export class UnitOfWork {
     if (prop.owner && changeSet.entity[prop.name].isDirty()) {
       for (const item of changeSet.entity[prop.name].getItems()) {
         // when new entity found in reference, cascade persist it first so we have its id
-        if (!item._id) {
+        if (!item[this.foreignKey]) {
           const itemChangeSet = await this.persist(item);
           await this.immediateCommit(itemChangeSet);
         }
       }
 
-      changeSet.payload[prop.name] = changeSet.entity[prop.name].getIdentifiers();
+      changeSet.payload[prop.name] = changeSet.entity[prop.name].getIdentifiers(this.foreignKey);
     } else {
       delete changeSet.payload[prop.name];
     }
@@ -134,7 +135,7 @@ export class UnitOfWork {
   }
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
-    const type = changeSet.entity._id ? 'Update' : 'Create';
+    const type = changeSet.entity[this.foreignKey] ? 'Update' : 'Create';
     this.runHooks(`before${type}`, changeSet.entity);
 
     const metadata = this.em.entityFactory.getMetadata();
@@ -167,16 +168,15 @@ export class UnitOfWork {
     }
 
     // persist the entity itself
-    if (changeSet.entity._id) {
+    const entityName = changeSet.entity.constructor.name;
+
+    if (changeSet.entity[this.foreignKey]) {
       changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
-      const query = `db.getCollection("${changeSet.collection}").updateOne({ _id: ${changeSet.entity._id} }, { $set: ${JSON.stringify(changeSet.payload)} });`;
-      this.em.logQuery(query);
-      await this.em.getCollection(changeSet.collection).updateOne({ _id: changeSet.entity._id }, { $set: changeSet.payload });
+      await this.em.getDriver().nativeUpdate(entityName, changeSet.entity[this.foreignKey], changeSet.payload);
     } else {
-      const query = `db.getCollection("${changeSet.collection}").insertOne(${JSON.stringify(changeSet.payload)});`;
-      this.em.logQuery(query);
-      const result = await this.em.getCollection(changeSet.collection).insertOne(changeSet.payload);
-      changeSet.entity._id = result.insertedId;
+      changeSet.entity.createdAt = changeSet.payload.createdAt = new Date();
+      changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
+      changeSet.entity[this.foreignKey] = await this.em.getDriver().nativeInsert(entityName, changeSet.payload);
       delete changeSet.entity['_initialized'];
       this.em.merge(changeSet.name, changeSet.entity);
     }

@@ -1,6 +1,6 @@
 # mikro-orm
 
-Simple typescript mongo ORM for node.js based on data-mapper, unit-of-work and identity-map patterns.
+Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB and MySQL databases. 
 
 Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 
@@ -12,13 +12,19 @@ Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 
 ## Installation & Usage
 
-Fist install the module via `yarn` or `npm`:
+Fist install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
-`$ yarn add mikro-orm`
+```
+$ yarn add mikro-orm mongodb # for mongo
+$ yarn add mikro-orm mysql2 # for mysql
+```
 
 or
 
-`$ npm i -s mikro-orm`
+```
+$ npm i -s mikro-orm mongodb # for mongo
+$ npm i -s mikro-orm mysql2 # for mysql
+```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
@@ -26,7 +32,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
-  clientUrl: '...', // defaults to 'mongodb://localhost:27017' 
+  clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
   baseDir: __dirname, // defaults to `process.cwd()`
 });
 console.log(orm.em); // EntityManager
@@ -43,6 +49,9 @@ app.use((req, res, next) => {
   next();
 });
 ```
+
+Or ideally use the `RequestContext` helper to have dedicated identity maps for each request, 
+as described [here](#request-context).
 
 Now you can define your entities (in one of the `entitiesDirs` folders):
 
@@ -110,7 +119,6 @@ To fetch entities from database you can use `find()` and `findOne()` of `EntityM
 API:
 
 ```typescript
-EntityManager.getCollection(entityName: string): Collection; // returns mongodb Collection for given entity
 EntityManager.getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T>;
 EntityManager.find<T extends BaseEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<T[]>;
 EntityManager.findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
@@ -238,7 +246,7 @@ With `fork()` method you can simply get clean entity manager with its own contex
 const em = orm.em.fork();
 ```
 
-#### `RequestContext` helper for DI containers
+#### <a name="request-context"></a> `RequestContext` helper for DI containers
 
 If you use dependency injection container like `inversify` or the one in `nestjs` framework, it 
 can be hard to achieve this, because you usually want to access your repositories via DI container,
@@ -287,16 +295,19 @@ but `publisher` will be optional:
 @Entity()
 export class Book extends BaseEntity {
 
+  @PrimaryKey()
+  _id: ObjectID;
+
   @Property()
   title: string;
 
-  @ManyToOne({ entity: () => Author.name })
+  @ManyToOne({ entity: () => Author })
   author: Author;
 
-  @ManyToOne({ entity: () => Publisher.name })
+  @ManyToOne({ entity: () => Publisher })
   publisher: Publisher;
 
-  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
   tags: Collection<BookTag>;
 
   constructor(title: string, author: Author) {
@@ -360,9 +371,9 @@ console.log(author.books.count()); // 1
 author.books.removeAll();
 console.log(author.books.contains(book)); // false
 console.log(author.books.count()); // 0
-console.log(author.books.getItems()); // 0
-console.log(author.books.getIdentifiers()); // array of ObjectID
-console.log(author.books.getIdentifiers('id')); // array of string
+console.log(author.books.getItems()); // Book[]
+console.log(author.books.getIdentifiers()); // array of string | number
+console.log(author.books.getIdentifiers('_id')); // array of ObjectID
 ```
 
 ### `OneToMany` collections
@@ -373,7 +384,10 @@ console.log(author.books.getIdentifiers('id')); // array of string
 @Entity()
 export class Book extends BaseEntity {
 
-  @ManyToOne({ entity: () => Author.name })
+  @PrimaryKey()
+  _id: ObjectID;
+
+  @ManyToOne({ entity: () => Author })
   author: Author;
 
 }
@@ -381,7 +395,10 @@ export class Book extends BaseEntity {
 @Entity()
 export class BookTag extends BaseEntity {
 
-  @OneToMany({ entity: () => Book.name, fk: 'author' })
+  @PrimaryKey()
+  _id: ObjectID;
+
+  @OneToMany({ entity: () => Book, fk: 'author' })
   books: Collection<Book>;
 
 }
@@ -397,7 +414,7 @@ All references are stored as an array of `ObjectID`s on owning entity.
 Unidirectional `ManyToMany` relations are defined only on one side, and marked explicitly as `owner`:
 
 ```typescript
-@ManyToMany({ entity: () => Book.name, owner: true })
+@ManyToMany({ entity: () => Book, owner: true })
 books: Collection<Book>;
 ```
 
@@ -407,14 +424,14 @@ Bidirectional `ManyToMany` relations are defined on both sides, while one is own
 marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
-@ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+@ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
 tags: Collection<BookTag>;
 ```
 
 And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
 
 ```typescript
-@ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
+@ManyToMany({ entity: () => Book, mappedBy: 'tags' })
 books: Collection<Book>;
 ```
 
@@ -443,6 +460,104 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
+## Usage with MySQL
+
+To use `mikro-orm` with MySQL database, do not forget to install `mysql2` driver and provide
+`MySqlDriver` class when initializing ORM:
+
+Then call `MikroORM.init` as part of bootstrapping your app:
+
+```typescript
+const orm = await MikroORM.init({
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  dbName: 'my-db-name',
+  driver: MySqlDriver,
+});
+```
+
+Currently you will need to maintain the database schema yourself. 
+
+### `ManyToMany` collections with pivot tables
+
+As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany` relations. 
+You will need to provide the name of pivot table when defining the collection on owning side:
+
+```typescript
+// for unidirectional
+@ManyToMany({ entity: () => Test.name, owner: true, pivotTable: 'publisher_to_test' })
+tests: Collection<Test>;
+
+// for bidirectional
+@ManyToMany({ entity: () => BookTag, inversedBy: 'books', pivotTable: 'book_to_tag' })
+tags: Collection<BookTag>;
+```
+
+### Using `QueryBuilder` to execute native SQL queries
+
+When you need to execute some SQL query without all the ORM stuff involved, you can either
+compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
+
+```typescript
+const qb = orm.em.createQueryBuilder(Author.name);
+qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
+
+console.log(qb.getQuery());
+// 'UPDATE `publisher2` SET `name` = ?, `type` = ? WHERE `id` = ? AND `type` = ?'
+
+console.log(qb.getParams());
+// ['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]
+
+// run the query
+const driver = orm.em.getDriver<MySqlDriver>();
+const res1 = await driver.execute(qb);
+
+// or run query without using QueryBuilder
+const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
+```
+
+`QueryBuilder` provides fluent interface with these methods:
+
+```typescript
+QueryBuilder.select(fields: string | string[]): QueryBuilder;
+QueryBuilder.insert(data: any): QueryBuilder;
+QueryBuilder.update(data: any): QueryBuilder;
+QueryBuilder.delete(cond: any): QueryBuilder;
+QueryBuilder.count(fields: string | string[]): QueryBuilder;
+QueryBuilder.where(cond: any): QueryBuilder;
+QueryBuilder.populate(populate: string[]): QueryBuilder;
+QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
+QueryBuilder.offset(offset: number): QueryBuilder;
+QueryBuilder.getQuery(): string;
+QueryBuilder.getParams(): any;
+```
+
+For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in 
+`tests/QueryBuilder.test.ts`. 
+
+### Transactions
+
+MySQL driver provides basic support for transactions via `begin/commit/rollback` methods on both 
+`MySqlDriver` and their shortcuts on `EntityManager` as well. 
+
+You can also use `EntityManager.transactional(cb)` helper to run callback in transaction:
+
+```typescript
+// if an error occurs inside the callback, all db queries from inside the callback will be rolled back
+await orm.em.transactional(async () => {
+  const god = new Author('God', 'hello@heaven.god');
+  await orm.em.persist(god);
+});
+```
+
+```typescript
+EntityManager.begin(): Promise<void>;
+EntityManager.commit(): Promise<void>;
+EntityManager.rollback(): Promise<void>;
+EntityManager.transactional(cb: () => Promise<any>): Promise<any>;
+```
+
+Keep in mind transactions are supported only in MySQL driver currently. 
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your
@@ -451,23 +566,24 @@ boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/na
 methods:
 
 ```typescript
-EntityManager.nativeInsert<T extends BaseEntity>(entityName: string, data: any): Promise<InsertOneWriteOpResult>;
-EntityManager.nativeUpdate<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult>;
-EntityManager.nativeDelete<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject>;
+EntityManager.nativeInsert<T extends BaseEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+EntityManager.nativeUpdate<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
+EntityManager.nativeDelete<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
-Those methods execute `insertOne/updateMany/deleteMany/aggregate` collection methods respectively. 
+Those methods execute native driver methods like Mongo's `insertOne/updateMany/deleteMany` collection methods respectively. 
+This is common interface for all drivers, so for MySQL driver, it will fire native SQL queries. 
 Keep in mind that they do not hydrate results to entities, and they do not trigger lifecycle hooks. 
 
 They are also available as `EntityRepository` shortcuts:
 
 ```typescript
-EntityRepository.nativeInsert(data: any): Promise<InsertOneWriteOpResult>;
-EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult>;
-EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject>;
+EntityRepository.nativeInsert(data: any): Promise<IPrimaryKey>;
+EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>;
+EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 ```
 
-There is also shortcut for calling `aggregate` method:
+There is also shortcut for calling `aggregate` method (available in `MongoDriver` only):
 
 ```typescript
 EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
@@ -478,7 +594,6 @@ EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 
 - cascade persist in collections
 - cascade remove references on other entities when deleting entity (e.g. from M:N collection)
-- extract db specific code to drivers, allow other dbs like mysql 
 
 ## TODO docs
 

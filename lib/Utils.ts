@@ -1,6 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { ObjectID } from 'bson';
+import { IPrimaryKey, ObjectID } from '.';
 import { BaseEntity, ReferenceType } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
@@ -104,7 +104,7 @@ export class Utils {
   }
 
   static renameKey(payload: any, from: string, to: string): void {
-    if (Utils.isObject(payload) && payload[from] && !payload[to]) {
+    if (Utils.isObject(payload) && from in payload && !(to in payload)) {
       payload[to] = payload[from];
       delete payload[from];
     }
@@ -158,6 +158,22 @@ export class Utils {
     }
 
     return result;
+  }
+
+  static isPrimaryKey(key: any): boolean {
+    return typeof key === 'string' || typeof key === 'number' || key instanceof ObjectID;
+  }
+
+  static extractPK(data: any): IPrimaryKey {
+    if (Utils.isPrimaryKey(data)) {
+      return data;
+    }
+
+    if (Utils.isObject(data)) {
+      return data.id || data._id || null;
+    }
+
+    return null;
   }
 
 }

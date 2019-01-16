@@ -20,10 +20,10 @@ describe('MikroORM', () => {
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
-    expect(orm.isConnected()).toBe(true);
+    expect(await orm.isConnected()).toBe(true);
 
     await orm.close();
-    expect(orm.isConnected()).toBe(false);
+    expect(await orm.isConnected()).toBe(false);
   });
 
 });

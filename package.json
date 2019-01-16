@@ -12,6 +12,7 @@
     "ORM",
     "mongo",
     "mongodb",
+    "mysql",
     "ts",
     "typescript",
     "entity",
@@ -55,24 +56,30 @@
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
     "lodash.merge": "^4.6.1",
-    "mongodb": "^3.1.8",
     "node-request-context": "^1.0.5",
     "reflect-metadata": "^0.1.12",
-    "ts-simple-ast": "^18.0.0",
-    "typescript": "^3.1.6",
+    "ts-simple-ast": "^20.0.0",
+    "typescript": "^3.2.2",
     "uuid": "^3.3.2"
+  },
+  "peerDependencies": {
+    "mongodb": "^3.1.10",
+    "mysql2": "^1.6.4"
   },
   "devDependencies": {
     "@types/clone": "^0.1.30",
-    "@types/jest": "^23.3.9",
-    "@types/lodash": "^4.14.117",
-    "@types/mongodb": "^3.1.14",
-    "@types/node": "^10.12.2",
+    "@types/jest": "^23.3.12",
+    "@types/lodash": "^4.14.119",
+    "@types/mongodb": "^3.1.18",
+    "@types/mysql2": "types/mysql2",
+    "@types/node": "^10.12.18",
     "coveralls": "^3.0.2",
     "jest": "^23.6.0",
+    "mongodb": "^3.1.10",
+    "mysql2": "^1.6.4",
     "pre-commit": "^1.2.2",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^23.10.5",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0"
+    "tslint": "^5.12.0"
   }
 }

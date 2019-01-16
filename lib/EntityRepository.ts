@@ -1,7 +1,8 @@
-import { DeleteWriteOpResultObject, FilterQuery, InsertOneWriteOpResult, UpdateWriteOpResult } from 'mongodb';
 import { EntityManager } from './EntityManager';
 import { BaseEntity } from './BaseEntity';
 import { RequestContext } from './RequestContext';
+import { FilterQuery } from './drivers/DatabaseDriver';
+import { IPrimaryKey } from './decorators/PrimaryKey';
 
 export class EntityRepository<T extends BaseEntity> {
 
@@ -12,12 +13,12 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.persist(entity, flush);
   }
 
-  async findOne(where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
     return this.em.findOne<T>(this.entityName, where, populate);
   }
 
-  async find(where: FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
-    return this.em.find<T>(this.entityName, where, populate, orderBy, limit, offset);
+  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+    return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate, orderBy, limit, offset);
   }
 
   async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
@@ -32,15 +33,15 @@ export class EntityRepository<T extends BaseEntity> {
     return this.em.flush();
   }
 
-  async nativeInsert(data: any): Promise<InsertOneWriteOpResult> {
+  async nativeInsert(data: any): Promise<IPrimaryKey> {
     return this.em.nativeInsert(this.entityName, data)
   }
 
-  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<UpdateWriteOpResult> {
+  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<number> {
     return this.em.nativeUpdate(this.entityName, where, data)
   }
 
-  async nativeDelete(where: FilterQuery<T> | any): Promise<DeleteWriteOpResultObject> {
+  async nativeDelete(where: FilterQuery<T> | any): Promise<number> {
     return this.em.nativeDelete(this.entityName, where)
   }
 
@@ -51,8 +52,8 @@ export class EntityRepository<T extends BaseEntity> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends BaseEntity>(id: string): T {
-    return this.em.getReference(this.entityName, id);
+  getReference<T extends BaseEntity>(id: IPrimaryKey): T {
+    return this.em.getReference<T>(this.entityName, id);
   }
 
   canPopulate(property: string): boolean {
