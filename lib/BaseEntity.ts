@@ -8,8 +8,6 @@ import { IPrimaryKey } from './decorators/PrimaryKey';
 export abstract class BaseEntity {
 
   id: IPrimaryKey;
-  createdAt = new Date();
-  updatedAt = new Date();
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
 
   private _initialized = false;
@@ -115,14 +113,14 @@ export abstract class BaseEntity {
   }
 
   toObject(parent: BaseEntity = this, collection: Collection<BaseEntity> = null): any {
-    const ret = { id: this.id, createdAt: this.createdAt, updatedAt: this.updatedAt } as any;
+    const ret = { id: this.id } as any;
 
     if (!this.isInitialized()) {
-      return { id: this.id } as any;
+      return ret;
     }
 
     Object.keys(this).forEach(prop => {
-      if (['id', 'createdAt', 'updatedAt'].includes(prop) || prop.startsWith('_')) {
+      if (prop === 'id' || prop.startsWith('_')) {
         return;
       }
 
@@ -173,6 +171,7 @@ export interface EntityProperty {
   reference: ReferenceType;
   fieldName?: string;
   attributes?: { [attribute: string]: any };
+  onUpdate?: () => any;
   owner?: boolean;
   inversedBy?: string;
   mappedBy?: string;

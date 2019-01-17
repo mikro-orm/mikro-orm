@@ -156,22 +156,10 @@ export class EntityManager {
   }
 
   async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {
-    if (!data.createdAt) {
-      data.createdAt = new Date();
-    }
-
-    if (!data.updatedAt) {
-      data.updatedAt = new Date();
-    }
-
     return this.driver.nativeInsert(entityName, data);
   }
 
   async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<number> {
-    if (!data.updatedAt) {
-      data.updatedAt = new Date();
-    }
-
     return this.driver.nativeUpdate(entityName, where, data);
   }
 

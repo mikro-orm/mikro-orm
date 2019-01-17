@@ -55,7 +55,7 @@ export class UnitOfWork {
     if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
       ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity);
     } else {
-      ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy? or no copy at all?
+      ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy?
     }
 
     delete ret.payload[this.foreignKey];
@@ -65,7 +65,7 @@ export class UnitOfWork {
     this.removeUnknownProperties(ret, meta);
     this.em.validator.validate(ret.entity, ret.payload, meta);
 
-    if (Object.keys(ret.payload).length === 0) {
+    if (entity.id && Object.keys(ret.payload).length === 0) {
       return null;
     }
 
@@ -128,7 +128,7 @@ export class UnitOfWork {
     const properties = Object.keys(changeSet.payload);
 
     for (const p of properties) {
-      if (!meta.properties[p] && !['_id', 'createdAt', 'updatedAt'].includes(p)) {
+      if (!meta.properties[p]) {
         delete changeSet.payload[p];
       }
     }
@@ -136,7 +136,7 @@ export class UnitOfWork {
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
     const type = changeSet.entity[this.foreignKey] ? 'Update' : 'Create';
-    this.runHooks(`before${type}`, changeSet.entity);
+    this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
 
     const metadata = this.em.entityFactory.getMetadata();
     const meta = metadata[changeSet.entity.constructor.name];
@@ -165,17 +165,18 @@ export class UnitOfWork {
 
         reference.dirty = false;
       }
+
+      if (prop.onUpdate) {
+        changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate();
+      }
     }
 
     // persist the entity itself
     const entityName = changeSet.entity.constructor.name;
 
     if (changeSet.entity[this.foreignKey]) {
-      changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
       await this.em.getDriver().nativeUpdate(entityName, changeSet.entity[this.foreignKey], changeSet.payload);
     } else {
-      changeSet.entity.createdAt = changeSet.payload.createdAt = new Date();
-      changeSet.entity.updatedAt = changeSet.payload.updatedAt = new Date();
       changeSet.entity[this.foreignKey] = await this.em.getDriver().nativeInsert(entityName, changeSet.payload);
       delete changeSet.entity['_initialized'];
       this.em.merge(changeSet.name, changeSet.entity);
@@ -188,12 +189,17 @@ export class UnitOfWork {
     }
   }
 
-  private runHooks(type: string, entity: BaseEntity) {
+  private runHooks(type: string, entity: BaseEntity, payload: any = null) {
     const metadata = this.em.entityFactory.getMetadata();
     const hooks = metadata[entity.constructor.name].hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
+      const copy = Utils.copy(entity);
       hooks[type].forEach(hook => entity[hook]());
+
+      if (payload) {
+        Object.assign(payload, Utils.diffEntities(copy, entity));
+      }
     }
   }
 

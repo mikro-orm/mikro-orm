@@ -27,8 +27,8 @@ DROP TABLE IF EXISTS `author2`;
 
 CREATE TABLE `author2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
+  `created_at` datetime(3) DEFAULT NULL,
+  `updated_at` datetime(3) DEFAULT NULL,
   `terms_accepted` tinyint(1) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
@@ -60,8 +60,6 @@ DROP TABLE IF EXISTS `book_tag2`;
 
 CREATE TABLE `book_tag2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
   `name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -75,8 +73,6 @@ DROP TABLE IF EXISTS `book2`;
 
 CREATE TABLE `book2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `author_id` int(11) DEFAULT NULL,
   `publisher_id` int(11) DEFAULT NULL,
@@ -106,8 +102,6 @@ DROP TABLE IF EXISTS `publisher2`;
 
 CREATE TABLE `publisher2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -122,8 +116,6 @@ DROP TABLE IF EXISTS `test2`;
 
 CREATE TABLE `test2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

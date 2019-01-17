@@ -22,5 +22,6 @@ export function Property(options: PropertyOptions = {}): Function {
 export type PropertyOptions = {
   name?: string;
   type?: any;
+  onUpdate?: () => any;
   [prop: string]: any;
 }

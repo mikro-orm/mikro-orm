@@ -15,6 +15,12 @@ export class Author2 extends BaseEntity {
   id: number;
 
   @Property()
+  createdAt = new Date();
+
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
+
+  @Property()
   name: string;
 
   @Property()

@@ -5,9 +5,9 @@ import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
 
 /**
- * @class EntityManagerTest
+ * @class EntityManagerMongoTest
  */
-describe('EntityManager', () => {
+describe('EntityManagerMongo', () => {
 
   let orm: MikroORM;
 
@@ -496,25 +496,48 @@ describe('EntityManager', () => {
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
+  test('property onUpdate hook (updatedAt field)', async () => {
+    const repo = orm.em.getRepository<Author>(Author.name);
+    const author = new Author('name', 'email');
+    await expect(author.createdAt).not.toBeUndefined();
+    await expect(author.updatedAt).not.toBeUndefined();
+    await expect(author.updatedAt).toEqual(author.createdAt);
+    await repo.persist(author);
+
+    author.name = 'name1';
+    await repo.persist(author);
+    await expect(author.createdAt).not.toBeUndefined();
+    await expect(author.updatedAt).not.toBeUndefined();
+    await expect(author.updatedAt).not.toEqual(author.createdAt);
+    await expect(author.updatedAt > author.createdAt).toBe(true);
+
+    orm.em.clear();
+    const ent = await repo.findOne(author.id);
+    await expect(ent.createdAt).not.toBeUndefined();
+    await expect(ent.updatedAt).not.toBeUndefined();
+    await expect(ent.updatedAt).not.toEqual(ent.createdAt);
+    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+  });
+
   test('EM supports native insert/update/delete/aggregate', async () => {
     orm.em.options.debug = false;
-    const res1 = await orm.em.nativeInsert(Publisher.name, { name: 'native name 1' });
+    const res1 = await orm.em.nativeInsert(Author.name, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectID);
 
-    const res2 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 1' }, { name: 'new native name' });
+    const res2 = await orm.em.nativeUpdate(Author.name, { name: 'native name 1' }, { name: 'new native name' });
     expect(res2).toBe(1);
 
-    const res3 = await orm.em.aggregate(Publisher.name, [{ $match: { name: 'new native name' } }]);
+    const res3 = await orm.em.aggregate(Author.name, [{ $match: { name: 'new native name' } }]);
     expect(res3.length).toBe(1);
     expect(res3[0]).toMatchObject({ name: 'new native name' });
 
-    const res4 = await orm.em.nativeDelete(Publisher.name, { name: 'new native name' });
+    const res4 = await orm.em.nativeDelete(Author.name, { name: 'new native name' });
     expect(res4).toBe(1);
 
-    const res5 = await orm.em.nativeInsert(Publisher.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
+    const res5 = await orm.em.nativeInsert(Author.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
     expect(res5).toBeInstanceOf(ObjectID);
 
-    const res6 = await orm.em.nativeUpdate(Publisher.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    const res6 = await orm.em.nativeUpdate(Author.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
   });
 

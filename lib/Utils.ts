@@ -7,7 +7,7 @@ import { getMetadataStorage } from './MikroORM';
 
 export class Utils {
 
-  private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized', 'createdAt', 'updatedAt'];
+  private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized'];
 
   static isObject(o: any): boolean {
     return typeof o === 'object' && o !== null;
@@ -66,7 +66,7 @@ export class Utils {
     const meta = metadata[a.constructor.name];
     Object.keys(diff).forEach((prop: string) => {
       if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
-        diff[prop] = new ObjectID(diff[prop]);
+        diff[prop] = new ObjectID(diff[prop]); // FIXME
       }
     });
 

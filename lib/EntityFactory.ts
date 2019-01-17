@@ -69,7 +69,7 @@ export class EntityFactory {
 
   private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
-    ['_id', 'id', 'createdAt', 'updatedAt'].forEach(k => {
+    ['_id', 'id'].forEach(k => {
       if (data[k]) {
         entity[k] = data[k];
       }
@@ -186,12 +186,8 @@ export class EntityFactory {
         this.metadata[name].collection = namingStrategy.classToTableName(this.metadata[name].name);
       }
 
-      // add createdAt and updatedAt properties
-      const props = this.metadata[name].properties;
-      props.createdAt = { name: 'createdAt', type: 'Date', reference: ReferenceType.SCALAR } as EntityProperty;
-      props.updatedAt = { name: 'updatedAt', type: 'Date', reference: ReferenceType.SCALAR } as EntityProperty;
-
       // init types and column names
+      const props = this.metadata[name].properties;
       Object.keys(props).forEach(p => {
         if (props[p].entity) {
           const type = props[p].entity();

@@ -66,7 +66,6 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
     expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
-    expect(Utils.diff({_id: 'a', createdAt: 1, updatedAt: 1}, {_id: 'b', createdAt: 2, updatedAt: 2})).toEqual({}); // ignored fields
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
   });
 
@@ -75,7 +74,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1, {} as EntityProperty);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2, {} as EntityProperty);
-    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2' });
+    expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -85,7 +84,7 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    expect(Utils.diffEntities(author1, author2)).toEqual({ name: 'Name 2', favouriteBook: book._id });
+    expect(Utils.diffEntities(author1, author2)).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
   });
 
   test('copy', () => {

@@ -65,6 +65,12 @@ export class Book extends BaseEntity {
   _id: ObjectID;
 
   @Property()
+  createdAt = new Date();
+
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
+
+  @Property()
   title: string;
 
   @ManyToOne({ entity: () => Author }) // you can pass the entity as class reference
@@ -83,7 +89,7 @@ export class Book extends BaseEntity {
 ```
 
 With your entities set up, you can start using entity manager and repositories as described 
-in following section. For more examples, take a look at `tests/EntityManager.test.ts`.
+in following section. For more examples, take a look at `tests/EntityManager.mongo.test.ts`.
 
 ## Persisting and cascading
 
