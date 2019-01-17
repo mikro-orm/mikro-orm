@@ -7,9 +7,9 @@ import { IPrimaryKey } from './decorators/PrimaryKey';
 
 export abstract class BaseEntity {
 
-  public id: IPrimaryKey;
-  public createdAt = new Date();
-  public updatedAt = new Date();
+  id: IPrimaryKey;
+  createdAt = new Date();
+  updatedAt = new Date();
   [property: string]: any | BaseEntity | Collection<BaseEntity>;
 
   private _initialized = false;

@@ -4,10 +4,10 @@ import { EntityManager } from './EntityManager';
 
 export class RequestContext {
 
-  public static readonly NAMESPACE = 'mikro-orm-context';
-  public readonly id = uuid.v4();
+  static readonly NAMESPACE = 'mikro-orm-context';
+  readonly id = uuid.v4();
 
-  constructor(public readonly em: EntityManager) { }
+  constructor(readonly em: EntityManager) { }
 
   static create(em: EntityManager, next: Function) {
     const context = new RequestContext(em.fork());

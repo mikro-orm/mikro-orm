@@ -31,8 +31,8 @@ const defaultOptions = {
 
 export class MikroORM {
 
-  public em: EntityManager;
-  public options: MikroORMOptions;
+  em: EntityManager;
+  options: MikroORMOptions;
   private readonly driver: IDatabaseDriver;
 
   static async init(options: Options): Promise<MikroORM> {

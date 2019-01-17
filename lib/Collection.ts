@@ -10,7 +10,7 @@ export class Collection<T extends BaseEntity> {
   private _populated = false;
   private readonly items: T[] = [];
 
-  constructor(public readonly owner: BaseEntity,
+  constructor(readonly owner: BaseEntity,
               private readonly property: EntityProperty,
               items: T[] = null) {
     if (items) {

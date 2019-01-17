@@ -2,6 +2,7 @@
   "rules": {
     "class-name": true,
     "no-console": true,
+    "member-access": [true, "no-public"],
     "comment-format": [
       true,
       "check-space"

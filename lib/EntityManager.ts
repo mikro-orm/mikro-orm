@@ -15,8 +15,8 @@ import { NamingStrategy } from './naming-strategy/NamingStrategy';
 
 export class EntityManager {
 
-  public readonly entityFactory: EntityFactory;
-  public readonly validator = new Validator(this.options.strict);
+  readonly entityFactory: EntityFactory;
+  readonly validator = new Validator(this.options.strict);
 
   private readonly identityMap: { [k: string]: BaseEntity } = {};
   private readonly _unitOfWork: UnitOfWork;
