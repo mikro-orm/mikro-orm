@@ -61,6 +61,9 @@ Now you can define your entities (in one of the `entitiesDirs` folders):
 @Entity({ collection: 'books-table' })
 export class Book extends BaseEntity {
 
+  @PrimaryKey()
+  _id: ObjectID;
+
   @Property()
   title: string;
 
