@@ -92,12 +92,17 @@ export class MySqlDriver extends DatabaseDriver {
     }
 
     const collections = this.extractManyToMany(entityName, data);
-    const qb = new QueryBuilder(entityName, this.metadata);
-    qb.update(data).where(where);
-    const res = await this.execute(qb);
+    let res: any[];
+
+    if (Object.keys(data).length) {
+      const qb = new QueryBuilder(entityName, this.metadata);
+      qb.update(data).where(where);
+      res = await this.execute(qb);
+    }
+
     await this.processManyToMany(entityName, Utils.extractPK(data.id || where), collections);
 
-    return res[0].affectedRows;
+    return res ? res[0].affectedRows : 0;
   }
 
   async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<number> {
