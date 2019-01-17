@@ -102,7 +102,6 @@ describe('EntityManagerMongo', () => {
       // iterator test
       for (const book of author.books) {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
-
         expect(book.author).toBeInstanceOf(Author);
         expect(book.author.isInitialized()).toBe(true);
         expect(book.publisher).toBeInstanceOf(Publisher);

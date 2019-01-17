@@ -472,7 +472,7 @@ console.log(book.author.id); // '...id...'
 ## Usage with MySQL
 
 To use `mikro-orm` with MySQL database, do not forget to install `mysql2` driver and provide
-`MySqlDriver` class when initializing ORM:
+`MySqlDriver` class when initializing ORM.
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
@@ -488,16 +488,15 @@ Currently you will need to maintain the database schema yourself.
 
 ### `ManyToMany` collections with pivot tables
 
-As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany` relations. 
-You will need to provide the name of pivot table when defining the collection on owning side:
+As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany` relations:
 
 ```typescript
 // for unidirectional
-@ManyToMany({ entity: () => Test.name, owner: true, pivotTable: 'publisher_to_test' })
+@ManyToMany({ entity: () => Test.name, owner: true })
 tests: Collection<Test>;
 
 // for bidirectional
-@ManyToMany({ entity: () => BookTag, inversedBy: 'books', pivotTable: 'book_to_tag' })
+@ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
 tags: Collection<BookTag>;
 ```
 
@@ -567,6 +566,40 @@ EntityManager.transactional(cb: () => Promise<any>): Promise<any>;
 
 Keep in mind transactions are supported only in MySQL driver currently. 
 
+### Naming strategy in MySQL
+
+`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means your all your database tables and
+columns will be lower-cased and words divided by underscored:
+
+```
+CREATE TABLE `author` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(3) DEFAULT NULL,
+  `updated_at` datetime(3) DEFAULT NULL,
+  `terms_accepted` tinyint(1) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `born` datetime DEFAULT NULL,
+  `favourite_book_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+
+You can also provide your own naming strategy, just implement `NamingStrategy` interface and provide 
+your implementation when bootstrapping ORM:
+
+```typescript
+class YourCustomNamingStrategy implements NamingStrategy {
+  ...
+}
+
+const orm = await MikroORM.init({
+  ...
+  namingStrategy: YourCustomNamingStrategy,
+  ...
+});
+```
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your
@@ -599,6 +632,52 @@ EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```
 
+## Property validation
+
+`MirkoORM` will validate your properties before actual persisting happens. It will try to fix wrong 
+data types for you automatically. If automatic conversion fails, it will throw an error. You can 
+enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
+when persisting the entity. 
+
+```typescript
+// number instead of string will throw
+const author = new Author('test', 'test');
+author.assign({ name: 111, email: 222 });
+await orm.em.persist(author); // throws "Validation error: trying to set Author.name of type 'string' to '111' of type 'number'"
+
+// string date with unknown format will throw
+author.assign(author, { name: '333', email: '444', born: 'asd' });
+await orm.em.persist(author); // throws "Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'"
+
+// string date with correct format will be auto-corrected
+author.assign({ name: '333', email: '444', born: '2018-01-01' });
+await orm.em.persist(author);
+console.log(author.born).toBe(true); // instance of Date
+
+// Date object will be ok
+author.assign({ born: new Date() });
+await orm.em.persist(author);
+console.log(author.born).toBe(true); // instance of Date
+
+// null will be ok
+author.assign({ born: null });
+await orm.em.persist(author);
+console.log(author.born); // null
+
+// string number with correct format will be auto-corrected
+author.assign({ age: '21' });
+await orm.em.persist(author);
+console.log(author.age); // number 21
+
+// string instead of number with will throw
+author.assign({ age: 'asd' });
+await orm.em.persist(author); // throws "Validation error: trying to set Author.age of type 'number' to 'asd' of type 'string'"
+author.assign({ age: new Date() });
+await orm.em.persist(author); // throws "Validation error: trying to set Author.age of type 'number' to '2019-01-17T21:14:23.875Z' of type 'date'"
+author.assign({ age: false });
+await orm.em.persist(author); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
+```
+
 ## TODO
 
 - cascade persist in collections
@@ -607,4 +686,3 @@ EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ## TODO docs
 
 - lifecycle hooks
-- property type validation

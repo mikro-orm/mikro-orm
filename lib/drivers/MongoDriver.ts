@@ -31,8 +31,9 @@ export class MongoDriver extends DatabaseDriver {
   async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
     const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
     this.logQuery(`${query}.toArray();`);
+    const res = await resultSet.toArray();
 
-    return resultSet.toArray();
+    return res.map(r => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
@@ -40,16 +41,17 @@ export class MongoDriver extends DatabaseDriver {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
 
-    Utils.renameKey(where, 'id', '_id');
+    where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
+    const res = await this.getCollection(entityName).find<T>(where as FilterQuery<T>).limit(1).next();
 
-    return this.getCollection(entityName).find<T>(where as FilterQuery<T>).limit(1).next();
+    return this.mapResult(res, this.metadata[entityName]);
   }
 
   async count(entityName: string, where: any): Promise<number> {
-    Utils.renameKey(where, 'id', '_id');
+    where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
@@ -58,7 +60,7 @@ export class MongoDriver extends DatabaseDriver {
   }
 
   async nativeInsert(entityName: string, data: any): Promise<ObjectID> {
-    Utils.renameKey(data, 'id', '_id');
+    data = this.renameFields(entityName, data);
     const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
     this.logQuery(query);
     data = Utils.convertObjectIds(data);
@@ -73,7 +75,7 @@ export class MongoDriver extends DatabaseDriver {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
 
-    Utils.renameKey(where, 'id', '_id');
+    where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
@@ -88,7 +90,7 @@ export class MongoDriver extends DatabaseDriver {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
 
-    Utils.renameKey(where, 'id', '_id');
+    where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
@@ -126,7 +128,7 @@ export class MongoDriver extends DatabaseDriver {
   }
 
   private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
-    Utils.renameKey(where, 'id', '_id');
+    where = this.renameFields(entityName, where);
     let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
     where = Utils.convertObjectIds(where);
     const resultSet = this.getCollection(entityName).find(where as FilterQuery<T>);
@@ -147,6 +149,23 @@ export class MongoDriver extends DatabaseDriver {
     }
 
     return { query, resultSet };
+  }
+
+  private renameFields(entityName: string, data: any): any {
+    data = Object.assign({}, data); // copy first
+    Utils.renameKey(data, 'id', '_id');
+
+    Object.keys(data).forEach(k => {
+      if (this.metadata[entityName] && this.metadata[entityName].properties[k]) {
+        const prop = this.metadata[entityName].properties[k];
+
+        if (prop.fieldName) {
+          Utils.renameKey(data, k, prop.fieldName);
+        }
+      }
+    });
+
+    return data;
   }
 
 }

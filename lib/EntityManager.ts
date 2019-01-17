@@ -357,7 +357,8 @@ export class EntityManager {
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection);
       children.push(...filtered.map(e => e[field].owner));
-      fk = meta.fk;
+      const prop = this.metadata[meta.type].properties[meta.fk];
+      fk = prop.fieldName;
     } else if (meta.reference === ReferenceType.MANY_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
       children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
@@ -375,7 +376,7 @@ export class EntityManager {
     // initialize collections for one to many
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
       for (const entity of entities) {
-        const items = data.filter(child => child[fk] === entity);
+        const items = data.filter(child => child[meta.fk] === entity);
         (entity[field] as Collection<BaseEntity>).set(items, true);
       }
     }
