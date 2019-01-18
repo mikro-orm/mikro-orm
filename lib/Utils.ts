@@ -33,20 +33,8 @@ export class Utils {
         return;
       }
 
-      if (a[k] === undefined && b !== undefined) {
-        return ret[k] = b[k];
-      }
-
-      if (a[k] !== undefined && b === undefined) {
-        return ret[k] = a[k];
-      }
-
       if (Utils.equals(a[k], b[k])) {
         return;
-      }
-
-      if (Array.isArray(a[k]) && Array.isArray(b[k])) {
-        return ret[k] = b[k]; // right-hand side has priority
       }
 
       ret[k] = b[k];

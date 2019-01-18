@@ -2,7 +2,6 @@ import { ObjectID } from 'bson';
 import { Author, Book, BookTag } from './entities';
 import { MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 /**
  * @class BaseEntityTest

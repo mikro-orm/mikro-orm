@@ -61,9 +61,9 @@ export class EntityHelper {
 
   toObject(parent?: IEntity, collection: Collection<IEntity> = null): any {
     parent = parent || this.entity;
-    const ret = { id: this.entity.id } as any;
+    const ret = this.entity.id ? { id: this.entity.id } : {} as any;
 
-    if (!this.entity.isInitialized()) {
+    if (!this.entity.isInitialized() && this.entity.id) {
       return ret;
     }
 

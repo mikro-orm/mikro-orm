@@ -1,6 +1,6 @@
 import { ObjectID } from 'bson';
 import { Utils } from '../lib/Utils';
-import { Collection, EntityProperty, MikroORM } from '../lib';
+import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
 
@@ -66,6 +66,7 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
     expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
+    expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
   });
 
