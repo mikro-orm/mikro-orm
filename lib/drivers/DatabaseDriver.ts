@@ -1,7 +1,7 @@
 import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
-import { BaseEntity, EntityMetadata } from '../BaseEntity';
+import { EntityMetadata } from '../BaseEntity';
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey } from '..';
 import { NamingStrategy } from '../naming-strategy/NamingStrategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy';
 import { Utils } from '../Utils';
@@ -32,18 +32,18 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
   /**
    * Finds selection of entities
    */
-  abstract async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]>;
+  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  abstract async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T>;
+  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T>;
 
   abstract async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
 
-  abstract async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey, data: any): Promise<number>;
+  abstract async nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number>;
 
-  abstract async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey): Promise<number>;
+  abstract async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
 
   abstract async aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 

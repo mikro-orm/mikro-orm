@@ -6,6 +6,7 @@ import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
+import { IEntity } from './decorators/Entity';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -23,7 +24,7 @@ export class EntityFactory {
     return this.metadata;
   }
 
-  create<T extends BaseEntity>(entityName: string, data: any, initialized = true): T {
+  create<T extends IEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
     const exclude = [];
     let entity: T;
@@ -59,7 +60,7 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
+  createReference<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
     if (this.em.getIdentity(entityName, id)) {
       return this.em.getIdentity<T>(entityName, id);
     }
@@ -67,7 +68,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
+  private initEntity<T extends IEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
     ['_id', 'id'].forEach(k => {
       if (data[k]) {
@@ -99,7 +100,7 @@ export class EntityFactory {
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
-        if (data[p] && !(data[p] instanceof BaseEntity)) {
+        if (data[p] && !(data[p] instanceof BaseEntity)) { // FIXME
           const id = this.em.getDriver().normalizePrimaryKey(data[p]);
           entity[p] = this.createReference(prop.type, id);
         }
@@ -116,7 +117,7 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
+  private extractConstructorParams<T extends IEntity>(meta: EntityMetadata, data: any): any[] {
     return meta.constructorParams.map((k: string) => {
       if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         return this.em.getReference<T>(meta.properties[k].type, data[k]);

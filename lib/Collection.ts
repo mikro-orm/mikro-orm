@@ -1,7 +1,8 @@
-import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
+import { EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
+import { IEntity } from './decorators/Entity';
 
-export class Collection<T extends BaseEntity> {
+export class Collection<T extends IEntity> {
 
   [k: number]: T;
 
@@ -10,7 +11,7 @@ export class Collection<T extends BaseEntity> {
   private _populated = false;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: BaseEntity,
+  constructor(readonly owner: IEntity,
               private readonly property: EntityProperty,
               items: T[] = null) {
     if (items) {
@@ -64,7 +65,7 @@ export class Collection<T extends BaseEntity> {
 
     // re-order items when searching with `$in` operator
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
-      items.sort((a: BaseEntity, b: BaseEntity) => {
+      items.sort((a: IEntity, b: IEntity) => {
         return order.indexOf(a.id) - order.indexOf(b.id);
       });
     }
@@ -84,7 +85,7 @@ export class Collection<T extends BaseEntity> {
     return [...this.items];
   }
 
-  toArray(parent: BaseEntity = this.owner): any[] {
+  toArray(parent: IEntity = this.owner): any[] {
     return this.getItems().map(item => item.toObject(parent, this));
   }
 

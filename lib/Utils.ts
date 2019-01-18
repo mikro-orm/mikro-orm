@@ -1,7 +1,7 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IPrimaryKey, ObjectID } from '.';
-import { BaseEntity, ReferenceType } from './BaseEntity';
+import { BaseEntity, IEntity, IPrimaryKey, ObjectID } from '.';
+import { ReferenceType } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
@@ -58,7 +58,7 @@ export class Utils {
   /**
    * Process references first so we do not have to deal with cycles
    */
-  static diffEntities(a: BaseEntity, b: BaseEntity): any {
+  static diffEntities(a: IEntity, b: IEntity): any {
     const diff = Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
 
     // convert string ids back to object ids
@@ -73,14 +73,15 @@ export class Utils {
     return diff;
   }
 
-  static prepareEntity(e: BaseEntity): any {
+  static prepareEntity(e: IEntity): any {
     const metadata = getMetadataStorage();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
 
+    // FIXME find a way to check for base entity without the base class itself
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {
-      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop]._id)) {
+      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop].id)) {
         return delete ret[prop];
       }
 

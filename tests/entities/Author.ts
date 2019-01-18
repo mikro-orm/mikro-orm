@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID,
+  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID, IEntity,
 } from '../../lib';
 
 import { Book } from './Book';

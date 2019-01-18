@@ -1,4 +1,14 @@
-import { BaseEntity, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ObjectID } from '../../lib';
+import {
+  BaseEntity,
+  Collection,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  ObjectID,
+  IEntity,
+} from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './BookTag';

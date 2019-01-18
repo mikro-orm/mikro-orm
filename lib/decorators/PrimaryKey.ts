@@ -1,9 +1,9 @@
-import { BaseEntity, EntityProperty, ReferenceType } from '../BaseEntity';
+import { EntityProperty, ReferenceType } from '../BaseEntity';
 import { getMetadataStorage } from '../MikroORM';
-import { ObjectID } from '..';
+import { IEntity, ObjectID } from '..';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
-  return function (target: BaseEntity, propertyName: string) {
+  return function (target: IEntity, propertyName: string) {
     const entity = target.constructor.name;
     const storage = getMetadataStorage(entity);
 

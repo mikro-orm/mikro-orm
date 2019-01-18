@@ -12,15 +12,16 @@ import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
+import { IEntity } from './decorators/Entity';
 
 export class EntityManager {
 
   readonly entityFactory: EntityFactory;
   readonly validator = new Validator(this.options.strict);
 
-  private readonly identityMap: { [k: string]: BaseEntity } = {};
+  private readonly identityMap: { [k: string]: IEntity } = {};
   private readonly _unitOfWork: UnitOfWork;
-  private readonly repositoryMap: { [k: string]: EntityRepository<BaseEntity> } = {};
+  private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
   private readonly namingStrategy: NamingStrategy;
 
@@ -32,27 +33,27 @@ export class EntityManager {
     this._unitOfWork = new UnitOfWork(this);
   }
 
-  getIdentity<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
+  getIdentity<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entityName}-${id}`;
 
     return em.identityMap[token] as T;
   }
 
-  setIdentity(entity: BaseEntity, id: IPrimaryKey = null): void {
+  setIdentity(entity: IEntity, id: IPrimaryKey = null): void {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${id || entity.id}`;
     em.identityMap[token] = entity;
   }
 
-  unsetIdentity(entity: BaseEntity): void {
+  unsetIdentity(entity: IEntity): void {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${entity.id}`;
     delete em.identityMap[token];
     this.unitOfWork.remove(entity);
   }
 
-  getIdentityMap(): { [k: string]: BaseEntity } {
+  getIdentityMap(): { [k: string]: IEntity } {
     const em = RequestContext.getEntityManager() || this;
     return em.identityMap;
   }
@@ -65,7 +66,7 @@ export class EntityManager {
     return this.namingStrategy;
   }
 
-  getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T> {
+  getRepository<T extends IEntity>(entityName: string): EntityRepository<T> {
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata[entityName];
 
@@ -84,7 +85,7 @@ export class EntityManager {
     return new QueryBuilder(entityName, this.metadata);
   }
 
-  async find<T extends BaseEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+  async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
     const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
 
     if (results.length === 0) {
@@ -105,7 +106,7 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
+  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
@@ -159,11 +160,11 @@ export class EntityManager {
     return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<number> {
+  async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<number> {
+  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
     return this.driver.nativeDelete(entityName, where);
   }
 
@@ -174,19 +175,20 @@ export class EntityManager {
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends BaseEntity>(entityName: string, data: any): T {
+  merge<T extends IEntity>(entityName: string, data: any): T {
     if (!data || (!data.id && !data._id)) {
       throw new Error('You cannot merge entity without id!');
     }
 
+    // FIXME find a way to check for base entity without the base class itself
     const entity = data instanceof BaseEntity ? data : this.entityFactory.create(entityName, data, true);
     entity.setEntityManager(this);
 
     if (this.getIdentity(entityName, entity.id)) {
       entity.assign(data);
-      this.unitOfWork.addToIdentityMap(entity);
+      this.unitOfWork.addToIdentityMap(entity as IEntity);
     } else {
-      this.addToIdentityMap(entity);
+      this.addToIdentityMap(entity as IEntity);
     }
 
     return entity as T;
@@ -195,14 +197,14 @@ export class EntityManager {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T extends BaseEntity>(entityName: string, data: any): T {
+  create<T extends IEntity>(entityName: string, data: any): T {
     return this.entityFactory.create<T>(entityName, data, false);
   }
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
+  getReference<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
     if (this.getIdentity(entityName, id)) {
       return this.getIdentity<T>(entityName, id);
     }
@@ -210,15 +212,15 @@ export class EntityManager {
     return this.entityFactory.createReference<T>(entityName, id);
   }
 
-  async remove(entityName: string, where: BaseEntity | any): Promise<number> {
+  async remove(entityName: string, where: IEntity | any): Promise<number> {
     if (where instanceof BaseEntity) {
-      return this.removeEntity(where);
+      return this.removeEntity(where as unknown as IEntity);
     }
 
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: BaseEntity): Promise<number> {
+  async removeEntity(entity: IEntity): Promise<number> {
     this.runHooks('beforeDelete', entity);
     const entityName = entity.constructor.name;
     const count = await this.driver.nativeDelete(entityName, entity.id);
@@ -232,15 +234,15 @@ export class EntityManager {
     return this.driver.count(entityName, where);
   }
 
-  async persist(entity: BaseEntity | BaseEntity[], flush = true): Promise<void> {
-    if (entity instanceof BaseEntity) {
-      entity.setEntityManager(this);
-      await this.unitOfWork.persist(entity);
-    } else {
+  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
+    if (Array.isArray(entity)) {
       for (const e of entity) {
         e.setEntityManager(this);
         await this.unitOfWork.persist(e);
       }
+    } else {
+      entity.setEntityManager(this);
+      await this.unitOfWork.persist(entity);
     }
 
     if (flush) {
@@ -264,7 +266,7 @@ export class EntityManager {
     this.unitOfWork.clear();
   }
 
-  addToIdentityMap(entity: BaseEntity) {
+  addToIdentityMap(entity: IEntity) {
     this.setIdentity(entity);
     this.unitOfWork.addToIdentityMap(entity);
   }
@@ -303,18 +305,18 @@ export class EntityManager {
     return em;
   }
 
-  private async populateOne(entityName: string, entity: BaseEntity, populate: string[]): Promise<void> {
+  private async populateOne(entityName: string, entity: IEntity, populate: string[]): Promise<void> {
     for (const field of populate) {
       if (!this.canPopulate(entityName, field)) {
         throw new Error(`Entity '${entityName}' does not have property '${field}'`);
       }
 
       if (entity[field] instanceof Collection && !entity[field].isInitialized(true)) {
-        await (entity[field] as Collection<BaseEntity>).init();
+        await (entity[field] as Collection<IEntity>).init();
       }
 
       if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
-        await (entity[field] as BaseEntity).init();
+        await (entity[field] as IEntity).init();
       }
 
       if (entity[field]) {
@@ -326,7 +328,7 @@ export class EntityManager {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany(entityName: string, entities: BaseEntity[], field: string): Promise<void> {
+  private async populateMany(entityName: string, entities: IEntity[], field: string): Promise<void> {
     if (!this.canPopulate(entityName, field)) {
       throw new Error(`Entity '${entityName}' does not have property '${field}'`);
     }
@@ -344,14 +346,14 @@ export class EntityManager {
     if (meta.reference === ReferenceType.MANY_TO_MANY && (!meta.owner || this.driver.usesPivotTable())) {
       for (const entity of entities) {
         if (!entity[field].isInitialized()) {
-          await (entity[field] as Collection<BaseEntity>).init();
+          await (entity[field] as Collection<IEntity>).init();
         }
       }
 
       return;
     }
 
-    const children: BaseEntity[] = [];
+    const children: IEntity[] = [];
     let fk = this.namingStrategy.referenceColumnName();
 
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
@@ -371,18 +373,18 @@ export class EntityManager {
     }
 
     const ids = Utils.unique(children.map(e => e.id));
-    const data = await this.find<BaseEntity>(meta.type, { [fk]: { $in: ids } });
+    const data = await this.find<IEntity>(meta.type, { [fk]: { $in: ids } });
 
     // initialize collections for one to many
     if (meta.reference === ReferenceType.ONE_TO_MANY) {
       for (const entity of entities) {
         const items = data.filter(child => child[meta.fk] === entity);
-        (entity[field] as Collection<BaseEntity>).set(items, true);
+        (entity[field] as Collection<IEntity>).set(items, true);
       }
     }
   }
 
-  private runHooks(type: string, entity: BaseEntity) {
+  private runHooks(type: string, entity: IEntity) {
     const hooks = this.metadata[entity.constructor.name].hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {

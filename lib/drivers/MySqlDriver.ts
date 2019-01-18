@@ -2,9 +2,9 @@ import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise'
 import { readFileSync } from 'fs';
 import { URL } from 'url';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
-import { BaseEntity, ReferenceType } from '../BaseEntity';
+import { ReferenceType } from '../BaseEntity';
 import { QueryBuilder } from '../QueryBuilder';
-import { IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey } from '..';
 import { Utils } from '../Utils';
 
 export class MySqlDriver extends DatabaseDriver {
@@ -52,7 +52,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0][0].count;
   }
 
-  async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = new QueryBuilder(entityName, this.metadata);
     qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
     const res = await this.execute(qb);
@@ -60,7 +60,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0].map(r => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
+  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -86,7 +86,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0].insertId;
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity>, data: any): Promise<number> {
+  async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -105,7 +105,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res ? res[0].affectedRows : 0;
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | string | any): Promise<number> {
+  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }

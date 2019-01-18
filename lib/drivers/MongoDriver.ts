@@ -1,8 +1,7 @@
 import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
-import { BaseEntity } from '../BaseEntity';
 import { Utils } from '../Utils';
-import { IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey } from '..';
 import { NamingStrategy } from '../naming-strategy/NamingStrategy';
 import { MongoNamingStrategy } from '../naming-strategy/MongoNamingStrategy';
 
@@ -28,7 +27,7 @@ export class MongoDriver extends DatabaseDriver {
     return this.db.collection(this.getTableName(entityName));
   }
 
-  async find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
+  async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
     const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
     this.logQuery(`${query}.toArray();`);
     const res = await resultSet.toArray();
@@ -36,7 +35,7 @@ export class MongoDriver extends DatabaseDriver {
     return res.map(r => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
+  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
@@ -70,7 +69,7 @@ export class MongoDriver extends DatabaseDriver {
     return result.insertedId;
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey, data: any): Promise<number> {
+  async nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
@@ -80,12 +79,12 @@ export class MongoDriver extends DatabaseDriver {
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
-    const result = await this.getCollection(entityName).updateMany(where as FilterQuery<BaseEntity>, { $set: data });
+    const result = await this.getCollection(entityName).updateMany(where as FilterQuery<IEntity>, { $set: data });
 
     return result.modifiedCount;
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey): Promise<number> {
+  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as IPrimaryKey) };
     }
@@ -95,7 +94,7 @@ export class MongoDriver extends DatabaseDriver {
     this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
-    const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<BaseEntity>);
+    const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<IEntity>);
 
     return result.deletedCount;
   }
@@ -127,7 +126,7 @@ export class MongoDriver extends DatabaseDriver {
     return false;
   }
 
-  private buildQuery<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
+  private buildQuery<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
     where = this.renameFields(entityName, where);
     let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
     where = Utils.convertObjectIds(where);

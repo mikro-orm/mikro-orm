@@ -3,15 +3,9 @@ import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
-import { IPrimaryKey } from './decorators/PrimaryKey';
+import { IEntity } from './decorators/Entity';
 
 export abstract class BaseEntity {
-
-  id: IPrimaryKey;
-  [property: string]: any | BaseEntity | Collection<BaseEntity>;
-
-  private _initialized = false;
-  private _populated = false;
 
   constructor() {
     const metadata = getMetadataStorage();
@@ -20,48 +14,9 @@ export abstract class BaseEntity {
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
-        this[prop] = new Collection(this, props[prop], []);
+        this[prop] = new Collection(this as unknown as IEntity, props[prop], []);
       }
     });
-  }
-
-  isInitialized(): boolean {
-    return this._initialized !== false;
-  }
-
-  shouldPopulate(collection: Collection<BaseEntity> = null): boolean {
-    return this._populated && !collection;
-  }
-
-  populated(populated = true): void {
-    this._populated = populated;
-  }
-
-  setEntityManager(em: EntityManager): void {
-    Object.defineProperty(this, '_em', {
-      value: em,
-      enumerable: false,
-      writable: true,
-    });
-  }
-
-  getEntityManager(em: EntityManager = null): EntityManager {
-    if (em) {
-      this.setEntityManager(em);
-    }
-
-    if (!this._em) {
-      throw new Error('This entity is not attached to EntityManager, please provide one!');
-    }
-
-    return this._em;
-  }
-
-  async init(populated = true, em: EntityManager = null): Promise<BaseEntity> {
-    await (em || this.getEntityManager(em)).findOne(this.constructor.name, this.id);
-    this.populated(populated);
-
-    return this;
   }
 
   assign(data: any, em: EntityManager = null) {
@@ -101,7 +56,7 @@ export abstract class BaseEntity {
           return this.getEntityManager(em).getReference(props[prop].type, item);
         });
 
-        return (this[prop] as Collection<BaseEntity>).set(items);
+        return (this[prop] as Collection<IEntity>).set(items);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
@@ -112,7 +67,7 @@ export abstract class BaseEntity {
     });
   }
 
-  toObject(parent: BaseEntity = this, collection: Collection<BaseEntity> = null): any {
+  toObject(parent: IEntity = this as unknown as IEntity, collection: Collection<IEntity> = null): any {
     const ret = { id: this.id } as any;
 
     if (!this.isInitialized()) {
@@ -125,12 +80,12 @@ export abstract class BaseEntity {
       }
 
       if (this[prop] instanceof Collection) {
-        const col = this[prop] as Collection<BaseEntity>;
+        const col = this[prop] as Collection<IEntity>;
 
         if (col.isInitialized(true) && col.shouldPopulate()) {
-          ret[prop] = col.toArray(this);
+          ret[prop] = col.toArray(this as unknown as IEntity);
         } else if (col.isInitialized() && !col.shouldPopulate()) {
-          ret[prop] = col.getIdentifiers('id');
+          ret[prop] = col.getIdentifiers();
         }
 
         return;
@@ -138,7 +93,7 @@ export abstract class BaseEntity {
 
       if (this[prop] instanceof BaseEntity) {
         if (this[prop].isInitialized() && this[prop].shouldPopulate(collection) && this[prop] !== parent) {
-          return ret[prop] = (this[prop] as BaseEntity).toObject(this);
+          return ret[prop] = (this[prop] as BaseEntity).toObject(this as unknown as IEntity);
         }
 
         return ret[prop] = this[prop].id;
@@ -190,3 +145,5 @@ export interface EntityMetadata {
   customRepository: any;
   hooks: { [type: string]: string[] };
 }
+
+export interface BaseEntity extends IEntity { }
