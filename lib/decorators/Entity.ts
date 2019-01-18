@@ -4,9 +4,10 @@ import { Utils } from '../Utils';
 import { Collection } from '../Collection';
 import { IPrimaryKey } from './PrimaryKey';
 import { EntityManager } from '../EntityManager';
+import { EntityHelper } from '../EntityHelper';
 
 export function Entity(options: EntityOptions = {}): Function {
-  return function <T extends { new(...args: any[]): {} }>(target: T) {
+  return function <T extends { new(...args: any[]): IEntity }>(target: T) {
     const storage = getMetadataStorage(target.name);
     const meta = storage[target.name];
 
@@ -45,6 +46,21 @@ export function Entity(options: EntityOptions = {}): Function {
 
           return this as unknown as IEntity;
         },
+      },
+      assign: {
+        value: function (data: any, em: EntityManager = null) {
+          new EntityHelper(this).assign(data, em);
+        }
+      },
+      toObject: {
+        value: function (parent?: IEntity, collection: Collection<IEntity> = null) {
+          return new EntityHelper(this).toObject(parent, collection);
+        }
+      },
+      toJSON: {
+        value: function () {
+          return new EntityHelper(this).toObject();
+        }
       },
       setEntityManager: {
         value: function (em: EntityManager): void {
@@ -85,8 +101,8 @@ export interface IEntity {
   shouldPopulate(collection?: Collection<IEntity>): boolean;
   populated(populated?: boolean): void;
   init(populated?, em?: EntityManager): Promise<IEntity>;
-  setEntityManager(populated: EntityManager): void;
-  getEntityManager(populated?: EntityManager): EntityManager;
+  setEntityManager(em: EntityManager): void;
+  getEntityManager(em?: EntityManager): EntityManager;
   toJSON(): any;
   toObject(parent?: IEntity, collection?: Collection<IEntity>): any;
   assign(data: any, em?: EntityManager): void;

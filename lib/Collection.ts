@@ -209,4 +209,3 @@ export class Collection<T extends IEntity> {
   }
 
 }
-
