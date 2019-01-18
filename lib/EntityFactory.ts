@@ -86,17 +86,17 @@ export class EntityFactory {
       const prop = properties[p] as EntityProperty;
 
       if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
-        return entity[p] = new Collection<T>(entity, prop.name);
+        return entity[p] = new Collection<T>(entity, null, false);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[p])) {
           const driver = this.em.getDriver();
           const items = data[p].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return entity[p] = new Collection<T>(entity, prop.name, items);
+          return entity[p] = new Collection<T>(entity, items, false);
         } else if (!entity[p]) {
           const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
-          return entity[p] = new Collection<T>(entity, prop.name, items);
+          return entity[p] = new Collection<T>(entity, items, false);
         }
       }
 

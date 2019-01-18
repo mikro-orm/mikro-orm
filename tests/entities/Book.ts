@@ -19,7 +19,7 @@ export class Book {
   publisher: Publisher;
 
   @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
-  tags = new Collection<BookTag>(this, 'tags', []);
+  tags = new Collection<BookTag>(this);
 
   @Property()
   metaObject: object;

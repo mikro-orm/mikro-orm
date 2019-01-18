@@ -71,9 +71,9 @@ describe('Utils', () => {
 
   test('diffEntities ignores collections', () => {
     const author1 = new Author('Name 1', 'e-mail');
-    author1.books = new Collection<Book>(author1, {} as EntityProperty);
+    author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
-    author2.books = new Collection<Book>(author2, {} as EntityProperty);
+    author2.books = new Collection<Book>(author2);
     expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
   });
 

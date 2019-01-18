@@ -12,10 +12,10 @@ export class Publisher {
   name: string;
 
   @OneToMany({ entity: () => Book.name, fk: 'publisher' })
-  books = new Collection<Book>(this, 'books', []);
+  books = new Collection<Book>(this);
 
   @ManyToMany({ entity: () => Test.name, owner: true })
-  tests = new Collection<Test>(this, 'tests', []);
+  tests = new Collection<Test>(this);
 
   @Property()
   type: PublisherType = PublisherType.LOCAL;

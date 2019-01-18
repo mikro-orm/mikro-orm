@@ -13,11 +13,13 @@ export class Collection<T extends IEntity> {
   private _property: EntityProperty;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: IEntity, private readonly propertyName: string, items: T[] = null) {
+  constructor(readonly owner: IEntity, items: T[] = null, initialized = true) {
     if (items) {
       this.initialized = true;
       this.items = items;
       Object.assign(this, items);
+    } else if (initialized) {
+      this.initialized = initialized;
     }
   }
 
@@ -212,7 +214,8 @@ export class Collection<T extends IEntity> {
     if (!this._property) {
       const metadata = getMetadataStorage();
       const meta = metadata[this.owner.constructor.name];
-      this._property = meta.properties[this.propertyName];
+      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      this._property = meta.properties[field];
     }
 
     return this._property;
