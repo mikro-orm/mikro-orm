@@ -1,13 +1,13 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID,
+  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID, IEntity,
 } from '../../lib';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 
 @Entity({ customRepository: () => AuthorRepository })
-export class Author extends BaseEntity {
+export class Author {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
@@ -40,7 +40,7 @@ export class Author extends BaseEntity {
   born: Date;
 
   @OneToMany({ entity: () => Book, fk: 'author' })
-  books: Collection<Book>;
+  books = new Collection<Book>(this, 'books', []);
 
   @ManyToOne({ entity: () => Book })
   favouriteBook: Book;
@@ -49,7 +49,6 @@ export class Author extends BaseEntity {
   versionAsString: string;
 
   constructor(name: string, email: string) {
-    super();
     this.name = name;
     this.email = email;
   }
@@ -85,3 +84,5 @@ export class Author extends BaseEntity {
   }
 
 }
+
+export interface Author extends IEntity { }

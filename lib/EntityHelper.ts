@@ -3,7 +3,8 @@ import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
 import { IEntity } from './decorators/Entity';
-import { BaseEntity, ReferenceType } from './BaseEntity';
+import { ReferenceType } from './BaseEntity';
+import { Utils } from './Utils';
 
 export class EntityHelper {
 
@@ -17,7 +18,7 @@ export class EntityHelper {
 
     Object.keys(data).forEach(prop => {
       if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
-        if (data[prop] instanceof BaseEntity) {
+        if (Utils.isEntity(data[prop])) {
           return this.entity[prop] = data[prop];
         }
 
@@ -40,7 +41,7 @@ export class EntityHelper {
             return em.getReference(props[prop].type, item.toHexString());
           }
 
-          if (item instanceof BaseEntity) {
+          if (Utils.isEntity(item)) {
             return item;
           }
 
@@ -75,7 +76,7 @@ export class EntityHelper {
         const col = this.entity[prop] as Collection<IEntity>;
 
         if (col.isInitialized(true) && col.shouldPopulate()) {
-          ret[prop] = col.toArray(this.entity as unknown as IEntity);
+          ret[prop] = col.toArray(this.entity);
         } else if (col.isInitialized() && !col.shouldPopulate()) {
           ret[prop] = col.getIdentifiers();
         }
@@ -83,9 +84,9 @@ export class EntityHelper {
         return;
       }
 
-      if (this.entity[prop] instanceof BaseEntity) {
+      if (Utils.isEntity(this.entity[prop])) {
         if (this.entity[prop].isInitialized() && this.entity[prop].shouldPopulate(collection) && this.entity[prop] !== parent) {
-          return ret[prop] = (this.entity[prop] as BaseEntity).toObject(this.entity as unknown as IEntity);
+          return ret[prop] = (this.entity[prop] as IEntity).toObject(this.entity);
         }
 
         return ret[prop] = this.entity[prop].id;

@@ -1,8 +1,8 @@
-import { BaseEntity, Collection, Entity, ManyToMany, PrimaryKey, Property, ObjectID } from '../../lib';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
 import { Book } from './Book';
 
 @Entity()
-export class BookTag extends BaseEntity {
+export class BookTag {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -11,11 +11,12 @@ export class BookTag extends BaseEntity {
   name: string;
 
   @ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
-  books: Collection<Book>;
+  books = new Collection<Book>(this, 'books', []);
 
   constructor(name: string) {
-    super();
     this.name = name;
   }
 
 }
+
+export interface BookTag extends IEntity { }

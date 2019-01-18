@@ -1,6 +1,6 @@
 import { Utils } from './Utils';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { IEntity } from './decorators/Entity';
 
 export class UnitOfWork {
@@ -96,8 +96,7 @@ export class UnitOfWork {
       await this.immediateCommit(propChangeSet);
     }
 
-    // FIXME find a way to check for base entity without the base class itself
-    if (changeSet.payload[prop.name] instanceof BaseEntity) {
+    if (Utils.isEntity(changeSet.payload[prop.name])) {
       changeSet.payload[prop.name] = changeSet.entity[prop.name][this.foreignKey];
     }
   }

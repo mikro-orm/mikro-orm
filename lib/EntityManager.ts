@@ -1,4 +1,4 @@
-import { BaseEntity, EntityMetadata, ReferenceType } from './BaseEntity';
+import { EntityMetadata, ReferenceType } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
@@ -180,8 +180,7 @@ export class EntityManager {
       throw new Error('You cannot merge entity without id!');
     }
 
-    // FIXME find a way to check for base entity without the base class itself
-    const entity = data instanceof BaseEntity ? data : this.entityFactory.create(entityName, data, true);
+    const entity = Utils.isEntity(data) ? data : this.entityFactory.create<T>(entityName, data, true);
     entity.setEntityManager(this);
 
     if (this.getIdentity(entityName, entity.id)) {
@@ -213,8 +212,8 @@ export class EntityManager {
   }
 
   async remove(entityName: string, where: IEntity | any): Promise<number> {
-    if (where instanceof BaseEntity) {
-      return this.removeEntity(where as unknown as IEntity);
+    if (Utils.isEntity(where)) {
+      return this.removeEntity(where);
     }
 
     return this.nativeDelete(entityName, where);
@@ -315,7 +314,7 @@ export class EntityManager {
         await (entity[field] as Collection<IEntity>).init();
       }
 
-      if (entity[field] instanceof BaseEntity && !entity[field].isInitialized()) {
+      if (Utils.isEntity(entity[field]) && !entity[field].isInitialized()) {
         await (entity[field] as IEntity).init();
       }
 
@@ -335,7 +334,7 @@ export class EntityManager {
 
     // set populate flag
     entities.forEach(entity => {
-      if (entity[field] instanceof BaseEntity || entity[field] instanceof Collection) {
+      if (Utils.isEntity(entity[field]) || entity[field] instanceof Collection) {
         entity[field].populated();
       }
     });
@@ -365,7 +364,7 @@ export class EntityManager {
       const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
       children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
     } else {
-      children.push(...entities.filter(e => e[field] instanceof BaseEntity && !e[field].isInitialized()).map(e => e[field]));
+      children.push(...entities.filter(e => Utils.isEntity(e[field]) && !e[field].isInitialized()).map(e => e[field]));
     }
 
     if (children.length === 0) {

@@ -1,6 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { BaseEntity, IEntity, IPrimaryKey, ObjectID } from '.';
+import { IEntity, IPrimaryKey, ObjectID } from '.';
 import { ReferenceType } from './BaseEntity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
@@ -78,14 +78,13 @@ export class Utils {
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
 
-    // FIXME find a way to check for base entity without the base class itself
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {
-      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop].id)) {
+      if (ret[prop] instanceof Collection || (Utils.isEntity(ret[prop]) && !ret[prop].id)) {
         return delete ret[prop];
       }
 
-      if (ret[prop] instanceof BaseEntity) {
+      if (Utils.isEntity(ret[prop])) {
         return ret[prop] = ret[prop].id;
       }
     });
@@ -175,6 +174,10 @@ export class Utils {
     }
 
     return null;
+  }
+
+  static isEntity(data: any): boolean {
+    return Utils.isObject(data) && data.__isEntity;
   }
 
 }

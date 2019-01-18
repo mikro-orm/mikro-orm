@@ -18,9 +18,9 @@ export function Entity(options: EntityOptions = {}): Function {
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
 
-    Object.defineProperties(target, {
-      _initialized: { value: false, writable: true, enumerable: false },
-      _populated: { value: false, writable: true, enumerable: false },
+    Object.defineProperties(target.prototype, {
+      _populated: { value: false, writable: true, enumerable: false, configurable: false },
+      __isEntity: { value: true, writable: false, enumerable: false, configurable: false },
     });
 
     Object.defineProperties(target.prototype, {
@@ -44,7 +44,7 @@ export function Entity(options: EntityOptions = {}): Function {
           await (em || this.getEntityManager(em)).findOne(this.constructor.name, this.id);
           this._populated = populated;
 
-          return this as unknown as IEntity;
+          return this;
         },
       },
       assign: {

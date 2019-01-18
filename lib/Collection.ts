@@ -1,6 +1,7 @@
 import { EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { IEntity } from './decorators/Entity';
+import { getMetadataStorage } from './MikroORM';
 
 export class Collection<T extends IEntity> {
 
@@ -9,11 +10,10 @@ export class Collection<T extends IEntity> {
   private initialized = false;
   private dirty = false;
   private _populated = false;
+  private _property: EntityProperty;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: IEntity,
-              private readonly property: EntityProperty,
-              items: T[] = null) {
+  constructor(readonly owner: IEntity, private readonly propertyName: string, items: T[] = null) {
     if (items) {
       this.initialized = true;
       this.items = items;
@@ -206,6 +206,16 @@ export class Collection<T extends IEntity> {
     }
 
     items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
+  }
+
+  private get property() {
+    if (!this._property) {
+      const metadata = getMetadataStorage();
+      const meta = metadata[this.owner.constructor.name];
+      this._property = meta.properties[this.propertyName];
+    }
+
+    return this._property;
   }
 
 }

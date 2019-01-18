@@ -4,9 +4,10 @@ import Project, { SourceFile } from 'ts-simple-ast';
 import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { IEntity } from './decorators/Entity';
+import { Utils } from './Utils';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -85,22 +86,22 @@ export class EntityFactory {
       const prop = properties[p] as EntityProperty;
 
       if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
-        return entity[p] = new Collection<T>(entity, prop);
+        return entity[p] = new Collection<T>(entity, prop.name);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[p])) {
           const driver = this.em.getDriver();
           const items = data[p].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return entity[p] = new Collection<T>(entity, prop, items);
+          return entity[p] = new Collection<T>(entity, prop.name, items);
         } else if (!entity[p]) {
           const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
-          return entity[p] = new Collection<T>(entity, prop, items);
+          return entity[p] = new Collection<T>(entity, prop.name, items);
         }
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
-        if (data[p] && !(data[p] instanceof BaseEntity)) { // FIXME
+        if (data[p] && !Utils.isEntity(data[p])) {
           const id = this.em.getDriver().normalizePrimaryKey(data[p]);
           entity[p] = this.createReference(prop.type, id);
         }

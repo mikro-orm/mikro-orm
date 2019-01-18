@@ -1,20 +1,10 @@
-import {
-  BaseEntity,
-  Collection,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  ObjectID,
-  IEntity,
-} from '../../lib';
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './BookTag';
 
 @Entity({ collection: 'books-table' })
-export class Book extends BaseEntity {
+export class Book {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -29,7 +19,7 @@ export class Book extends BaseEntity {
   publisher: Publisher;
 
   @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
-  tags: Collection<BookTag>;
+  tags = new Collection<BookTag>(this, 'tags', []);
 
   @Property()
   metaObject: object;
@@ -41,9 +31,10 @@ export class Book extends BaseEntity {
   metaArrayOfStrings: string[];
 
   constructor(title: string, author: Author) {
-    super();
     this.title = title;
     this.author = author;
   }
 
 }
+
+export interface Book extends IEntity { }
