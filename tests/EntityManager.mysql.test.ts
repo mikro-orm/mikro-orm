@@ -1,6 +1,7 @@
 import { Collection, EntityManager, MikroORM, MySqlDriver } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { Utils } from '../lib/Utils';
 
 /**
  * @class EntityManagerMySqlTest
@@ -537,6 +538,18 @@ describe('EntityManagerMySql', () => {
 
     const res6 = await orm.em.nativeUpdate(Author2.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
+  });
+
+  test('Utils.prepareEntity changes entity to number id', async () => {
+    const author1 = new Author2('Name 1', 'e-mail');
+    const book = new Book2('test', author1);
+    const author2 = new Author2('Name 2', 'e-mail');
+    author2.favouriteBook = book;
+    author2.version = 123;
+    await orm.em.persist([author1, author2, book]);
+    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
+    expect(typeof diff.favouriteBook).toBe('number');
   });
 
   afterAll(async () => orm.close(true));

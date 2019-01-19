@@ -2,8 +2,7 @@ import { ObjectID } from 'bson';
 import { Utils } from '../lib/Utils';
 import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';
-import { initORM, initORMMySql, wipeDatabase, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2 } from './entities-mysql';
+import { initORM, wipeDatabase } from './bootstrap';
 
 class Test {}
 
@@ -13,16 +12,9 @@ class Test {}
 describe('Utils', () => {
 
   let orm: MikroORM;
-  let ormMySql: MikroORM;
 
-  beforeAll(async () => {
-    orm = await initORM();
-    ormMySql = await initORMMySql();
-  });
-  beforeEach(async () => {
-    await wipeDatabase(orm.em);
-    await wipeDatabaseMySql(ormMySql.em);
-  });
+  beforeAll(async () => orm = await initORM());
+  beforeEach(async () => wipeDatabase(orm.em));
 
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
@@ -98,18 +90,6 @@ describe('Utils', () => {
     expect(diff.favouriteBook instanceof ObjectID).toBe(true);
   });
 
-  test('prepareEntity changes entity to number id [mysql]', async () => {
-    const author1 = new Author2('Name 1', 'e-mail');
-    const book = new Book2('test', author1);
-    const author2 = new Author2('Name 2', 'e-mail');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await ormMySql.em.persist([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, ormMySql.em.getDriver());
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
-    expect(typeof diff.favouriteBook).toBe('number');
-  });
-
   test('copy', () => {
     const a = {a: 'a', b: 'c'};
     const b = Utils.copy(a);
@@ -146,9 +126,6 @@ describe('Utils', () => {
     expect(Utils.extractPK(true)).toBeNull();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    await ormMySql.close(true);
-  });
+  afterAll(async () => orm.close(true));
 
 });
