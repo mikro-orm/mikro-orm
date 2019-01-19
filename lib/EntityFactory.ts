@@ -4,8 +4,9 @@ import Project, { SourceFile } from 'ts-simple-ast';
 import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { Utils } from './Utils';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -23,7 +24,7 @@ export class EntityFactory {
     return this.metadata;
   }
 
-  create<T extends BaseEntity>(entityName: string, data: any, initialized = true): T {
+  create<T extends IEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
     const exclude = [];
     let entity: T;
@@ -59,7 +60,7 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends BaseEntity>(entityName: string, id: IPrimaryKey): T {
+  createReference<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
     if (this.em.getIdentity(entityName, id)) {
       return this.em.getIdentity<T>(entityName, id);
     }
@@ -67,7 +68,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends BaseEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
+  private initEntity<T extends IEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
     // process base entity properties first
     ['_id', 'id'].forEach(k => {
       if (data[k]) {
@@ -84,22 +85,22 @@ export class EntityFactory {
       const prop = properties[p] as EntityProperty;
 
       if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
-        return entity[p] = new Collection<T>(entity, prop);
+        return entity[p] = new Collection<T>(entity, null, false);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[p])) {
           const driver = this.em.getDriver();
           const items = data[p].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return entity[p] = new Collection<T>(entity, prop, items);
+          return entity[p] = new Collection<T>(entity, items, false);
         } else if (!entity[p]) {
           const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
-          return entity[p] = new Collection<T>(entity, prop, items);
+          return entity[p] = new Collection<T>(entity, items, false);
         }
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
-        if (data[p] && !(data[p] instanceof BaseEntity)) {
+        if (data[p] && !Utils.isEntity(data[p])) {
           const id = this.em.getDriver().normalizePrimaryKey(data[p]);
           entity[p] = this.createReference(prop.type, id);
         }
@@ -116,7 +117,7 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends BaseEntity>(meta: EntityMetadata, data: any): any[] {
+  private extractConstructorParams<T extends IEntity>(meta: EntityMetadata, data: any): any[] {
     return meta.constructorParams.map((k: string) => {
       if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         return this.em.getReference<T>(meta.properties[k].type, data[k]);

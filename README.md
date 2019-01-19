@@ -58,8 +58,8 @@ Now you can define your entities (in one of the `entitiesDirs` folders):
 ### Defining entity
 
 ```typescript
-@Entity({ collection: 'books-table' })
-export class Book extends BaseEntity {
+@Entity()
+export class Book {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -80,16 +80,22 @@ export class Book extends BaseEntity {
   publisher: Publisher;
 
   constructor(title: string, author: Author) {
-    super();
     this.title = title;
     this.author = author;
   }
 
 }
+
+export interface Book extends IEntity { }
 ```
 
+You will need to extend Book's interface with `IEntity` or your entity must extend BaseEntity
+which does that for you. `IEntity` interface represents internal methods added to your entity's 
+prototype via `@Entity` decorator.
+
 With your entities set up, you can start using entity manager and repositories as described 
-in following section. For more examples, take a look at `tests/EntityManager.mongo.test.ts`.
+in following section. For more examples, take a look at 
+[`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
 
 ## Persisting and cascading
 
@@ -128,15 +134,15 @@ To fetch entities from database you can use `find()` and `findOne()` of `EntityM
 API:
 
 ```typescript
-EntityManager.getRepository<T extends BaseEntity>(entityName: string): EntityRepository<T>;
-EntityManager.find<T extends BaseEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<T[]>;
-EntityManager.findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
-EntityManager.merge<T extends BaseEntity>(entityName: string, data: any): T;
-EntityManager.getReference<T extends BaseEntity>(entityName: string, id: string): T;
-EntityManager.remove(entityName: string, where: BaseEntity | any): Promise<number>;
-EntityManager.removeEntity(entity: BaseEntity): Promise<number>;
+EntityManager.getRepository<T extends IEntity>(entityName: string): EntityRepository<T>;
+EntityManager.find<T extends IEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<T[]>;
+EntityManager.findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
+EntityManager.merge<T extends IEntity>(entityName: string, data: any): T;
+EntityManager.getReference<T extends IEntity>(entityName: string, id: string): T;
+EntityManager.remove(entityName: string, where: IEntity | any): Promise<number>;
+EntityManager.removeEntity(entity: IEntity): Promise<number>;
 EntityManager.count(entityName: string, where: any): Promise<number>;
-EntityManager.persist(entity: BaseEntity | BaseEntity[], flush?: boolean): Promise<void>;
+EntityManager.persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>;
 EntityManager.flush(): Promise<void>;
 EntityManager.clear(): void;
 EntityManager.canPopulate(entityName: string, property: string): boolean;
@@ -173,11 +179,11 @@ carries the entity name so you do not have to pass it to every `find` and `findO
 API:
 
 ```typescript
-EntityRepository.persist(entity: BaseEntity, flush?: boolean): Promise<void>;
-EntityRepository.findOne(where: FilterQuery<BaseEntity> | string, populate?: string[]): Promise<BaseEntity>;
-EntityRepository.find(where: FilterQuery<BaseEntity>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<BaseEntity[]>;
-EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<BaseEntity[]>;
-EntityRepository.remove(where: BaseEntity | any): Promise<number>;
+EntityRepository.persist(entity: IEntity, flush?: boolean): Promise<void>;
+EntityRepository.findOne(where: FilterQuery<IEntity> | string, populate?: string[]): Promise<IEntity>;
+EntityRepository.find(where: FilterQuery<IEntity>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<IEntity[]>;
+EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<IEntity[]>;
+EntityRepository.remove(where: IEntity | any): Promise<number>;
 EntityRepository.flush(): Promise<void>;
 EntityRepository.canPopulate(property: string): boolean;
 EntityRepository.count(where?: any): Promise<number>;
@@ -212,7 +218,7 @@ And register your repository as `@Entity` decorator:
 
 ```typescript
 @Entity({ customRepository: () => CustomAuthorRepository })
-export class Publisher extends BaseEntity {
+export class Publisher {
   // ...
 }
 ```
@@ -301,8 +307,8 @@ For example following `Book` entity definition will always require to set `title
 but `publisher` will be optional:
 
 ```typescript
-@Entity()
-export class Book extends BaseEntity {
+@Entity({ collection: 'books-table' })
+export class Book {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -317,15 +323,16 @@ export class Book extends BaseEntity {
   publisher: Publisher;
 
   @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
-  tags: Collection<BookTag>;
+  tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
-    super();
     this.title = title;
     this.author = author;
   }
 
 }
+
+export interface Book extends IEntity { }
 ```
 
 ### `ObjectID` and `string` duality
@@ -391,7 +398,7 @@ console.log(author.books.getIdentifiers('_id')); // array of ObjectID
  
 ```typescript
 @Entity()
-export class Book extends BaseEntity {
+export class Book {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -402,13 +409,13 @@ export class Book extends BaseEntity {
 }
 
 @Entity()
-export class BookTag extends BaseEntity {
+export class BookTag {
 
   @PrimaryKey()
   _id: ObjectID;
 
   @OneToMany({ entity: () => Book, fk: 'author' })
-  books: Collection<Book>;
+  books = new Collection<Book>(this);
 
 }
 ```
@@ -424,7 +431,7 @@ Unidirectional `ManyToMany` relations are defined only on one side, and marked e
 
 ```typescript
 @ManyToMany({ entity: () => Book, owner: true })
-books: Collection<Book>;
+books = new Collection<Book>(this);
 ```
 
 #### Bidirectional
@@ -434,17 +441,17 @@ marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
-tags: Collection<BookTag>;
+tags = new Collection<BookTag>(this);
 ```
 
 And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
 
 ```typescript
 @ManyToMany({ entity: () => Book, mappedBy: 'tags' })
-books: Collection<Book>;
+books = new Collection<Book>(this);
 ```
 
-### Updating entity values with `BaseEntity.assign()`
+### Updating entity values with `IEntity.assign()`
 
 When you want to update entity based on user input, you will usually have just plain
 string ids of entity relations as user input. Normally you would need to use 
@@ -457,7 +464,7 @@ const book = new Book('Book', jon);
 book.author = orm.em.getReference<Author>(Author.name, '...id...');
 ```
 
-Same result can be easily achieved with `BaseEntity.assign()`:
+Same result can be easily achieved with `IEntity.assign()`:
 
 ```typescript
 book.assign({ 
@@ -493,11 +500,11 @@ As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany`
 ```typescript
 // for unidirectional
 @ManyToMany({ entity: () => Test.name, owner: true })
-tests: Collection<Test>;
+tests = new Collection<Test>(this);
 
 // for bidirectional
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
-tags: Collection<BookTag>;
+tags = new Collection<BookTag>(this);
 ```
 
 ### Using `QueryBuilder` to execute native SQL queries
@@ -540,7 +547,7 @@ QueryBuilder.getParams(): any;
 ```
 
 For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in 
-`tests/QueryBuilder.test.ts`. 
+[`tests/QueryBuilder.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/QueryBuilder.test.ts).
 
 ### Transactions
 
@@ -608,9 +615,9 @@ boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/na
 methods:
 
 ```typescript
-EntityManager.nativeInsert<T extends BaseEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
-EntityManager.nativeUpdate<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
-EntityManager.nativeDelete<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
+EntityManager.nativeInsert<T extends IEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+EntityManager.nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
+EntityManager.nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
 Those methods execute native driver methods like Mongo's `insertOne/updateMany/deleteMany` collection methods respectively. 

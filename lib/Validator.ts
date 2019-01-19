@@ -1,11 +1,11 @@
-import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { SCALAR_TYPES } from './EntityFactory';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 
 export class Validator {
 
   constructor(private strict: boolean) { }
 
-  validate(entity: BaseEntity, payload: any, meta: EntityMetadata): void {
+  validate(entity: IEntity, payload: any, meta: EntityMetadata): void {
     Object.keys(payload).forEach(prop => {
       const property = meta.properties[prop];
 
@@ -17,7 +17,7 @@ export class Validator {
     });
   }
 
-  validateProperty(prop: EntityProperty, givenValue: any, entity: BaseEntity) {
+  validateProperty(prop: EntityProperty, givenValue: any, entity: IEntity) {
     if (givenValue === null) {
       return givenValue;
     }

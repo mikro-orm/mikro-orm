@@ -1,7 +1,7 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IPrimaryKey, ObjectID } from '.';
-import { BaseEntity, ReferenceType } from './BaseEntity';
+import { IDatabaseDriver, IEntity, IPrimaryKey, ObjectID } from '.';
+import { ReferenceType } from './decorators/Entity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
@@ -33,20 +33,8 @@ export class Utils {
         return;
       }
 
-      if (a[k] === undefined && b !== undefined) {
-        return ret[k] = b[k];
-      }
-
-      if (a[k] !== undefined && b === undefined) {
-        return ret[k] = a[k];
-      }
-
       if (Utils.equals(a[k], b[k])) {
         return;
-      }
-
-      if (Array.isArray(a[k]) && Array.isArray(b[k])) {
-        return ret[k] = b[k]; // right-hand side has priority
       }
 
       ret[k] = b[k];
@@ -58,7 +46,7 @@ export class Utils {
   /**
    * Process references first so we do not have to deal with cycles
    */
-  static diffEntities(a: BaseEntity, b: BaseEntity): any {
+  static diffEntities(a: IEntity, b: IEntity, driver: IDatabaseDriver): any {
     const diff = Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
 
     // convert string ids back to object ids
@@ -66,25 +54,25 @@ export class Utils {
     const meta = metadata[a.constructor.name];
     Object.keys(diff).forEach((prop: string) => {
       if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
-        diff[prop] = new ObjectID(diff[prop]); // FIXME
+        diff[prop] = driver.denormalizePrimaryKey(diff[prop]);
       }
     });
 
     return diff;
   }
 
-  static prepareEntity(e: BaseEntity): any {
+  static prepareEntity(e: IEntity): any {
     const metadata = getMetadataStorage();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
 
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {
-      if (ret[prop] instanceof Collection || (ret[prop] instanceof BaseEntity && !ret[prop]._id)) {
+      if (ret[prop] instanceof Collection || (Utils.isEntity(ret[prop]) && !ret[prop].id)) {
         return delete ret[prop];
       }
 
-      if (ret[prop] instanceof BaseEntity) {
+      if (Utils.isEntity(ret[prop])) {
         return ret[prop] = ret[prop].id;
       }
     });
@@ -174,6 +162,10 @@ export class Utils {
     }
 
     return null;
+  }
+
+  static isEntity(data: any): boolean {
+    return Utils.isObject(data) && data.__entity;
   }
 
 }

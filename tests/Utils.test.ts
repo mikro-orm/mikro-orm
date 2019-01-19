@@ -1,6 +1,6 @@
 import { ObjectID } from 'bson';
 import { Utils } from '../lib/Utils';
-import { Collection, EntityProperty, MikroORM } from '../lib';
+import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
 
@@ -66,15 +66,16 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
     expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
+    expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
   });
 
   test('diffEntities ignores collections', () => {
     const author1 = new Author('Name 1', 'e-mail');
-    author1.books = new Collection<Book>(author1, {} as EntityProperty);
+    author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
-    author2.books = new Collection<Book>(author2, {} as EntityProperty);
-    expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
+    author2.books = new Collection<Book>(author2);
+    expect(Utils.diffEntities(author1, author2, orm.em.getDriver()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -84,7 +85,9 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    expect(Utils.diffEntities(author1, author2)).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
+    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
+    expect(diff.favouriteBook instanceof ObjectID).toBe(true);
   });
 
   test('copy', () => {

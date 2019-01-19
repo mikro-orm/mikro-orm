@@ -1,5 +1,5 @@
 import { Utils } from './Utils';
-import { EntityMetadata, ReferenceType } from './BaseEntity';
+import { EntityMetadata, ReferenceType } from './decorators/Entity';
 
 /**
  * MySQL query builder

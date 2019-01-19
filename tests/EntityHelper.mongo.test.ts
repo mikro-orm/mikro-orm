@@ -2,23 +2,16 @@ import { ObjectID } from 'bson';
 import { Author, Book, BookTag } from './entities';
 import { MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 /**
- * @class BaseEntityTest
+ * @class EntityHelperMongoTest
  */
-describe('BaseEntity', () => {
+describe('EntityHelperMongo', () => {
 
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORM());
   beforeEach(async () => wipeDatabase(orm.em));
-
-  beforeEach(async () => {
-    await orm.em.getRepository<Author>(Author.name).remove({});
-    await orm.em.getRepository<Book>(Book.name).remove({});
-    await orm.em.getRepository<BookTag>(BookTag.name).remove({});
-  });
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -68,11 +61,13 @@ describe('BaseEntity', () => {
     book.assign({ tags: [other._id] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
     book.assign({ tags: [] });
-    expect(book.tags.getIdentifiers('_id')).toMatchObject([]);
+    expect(book.tags.getIdentifiers()).toMatchObject([]);
     book.assign({ tags: [tag1.id, tag3.id] });
     expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
     book.assign({ tags: [tag2] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
+    expect(() => book.assign({ tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => book.assign({ publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('should have string id getter and setter', async () => {

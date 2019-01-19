@@ -54,6 +54,7 @@ describe('EntityFactory', () => {
     expect(ref).toBeInstanceOf(Book);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.name).toBeUndefined();
+    expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
   });
 
   test('should return entity', async () => {

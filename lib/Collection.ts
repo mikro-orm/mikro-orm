@@ -1,22 +1,24 @@
-import { BaseEntity, EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
+import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { getMetadataStorage } from './MikroORM';
 
-export class Collection<T extends BaseEntity> {
+export class Collection<T extends IEntity> {
 
   [k: number]: T;
 
   private initialized = false;
   private dirty = false;
   private _populated = false;
+  private _property: EntityProperty;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: BaseEntity,
-              private readonly property: EntityProperty,
-              items: T[] = null) {
+  constructor(readonly owner: IEntity, items: T[] = null, initialized = true) {
     if (items) {
       this.initialized = true;
       this.items = items;
       Object.assign(this, items);
+    } else if (initialized) {
+      this.initialized = initialized;
     }
   }
 
@@ -64,7 +66,7 @@ export class Collection<T extends BaseEntity> {
 
     // re-order items when searching with `$in` operator
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
-      items.sort((a: BaseEntity, b: BaseEntity) => {
+      items.sort((a: IEntity, b: IEntity) => {
         return order.indexOf(a.id) - order.indexOf(b.id);
       });
     }
@@ -84,7 +86,7 @@ export class Collection<T extends BaseEntity> {
     return [...this.items];
   }
 
-  toArray(parent: BaseEntity = this.owner): any[] {
+  toArray(parent: IEntity = this.owner): any[] {
     return this.getItems().map(item => item.toObject(parent, this));
   }
 
@@ -207,5 +209,15 @@ export class Collection<T extends BaseEntity> {
     items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
   }
 
-}
+  private get property() {
+    if (!this._property) {
+      const metadata = getMetadataStorage();
+      const meta = metadata[this.owner.constructor.name];
+      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      this._property = meta.properties[field];
+    }
 
+    return this._property;
+  }
+
+}

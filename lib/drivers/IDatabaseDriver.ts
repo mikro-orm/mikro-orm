@@ -1,6 +1,5 @@
-import { BaseEntity } from '../BaseEntity';
 import { FilterQuery } from './DatabaseDriver';
-import { IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey } from '..';
 import { NamingStrategy } from '../naming-strategy/NamingStrategy';
 
 export interface IDatabaseDriver {
@@ -23,18 +22,18 @@ export interface IDatabaseDriver {
   /**
    * Finds selection of entities
    */
-  find<T extends BaseEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
+  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends BaseEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
+  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T>;
 
   nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
 
-  nativeUpdate(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey, data: any): Promise<number>;
+  nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number>;
 
-  nativeDelete(entityName: string, where: FilterQuery<BaseEntity> | IPrimaryKey): Promise<number>;
+  nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
@@ -65,9 +64,14 @@ export interface IDatabaseDriver {
   rollback(savepoint?: string): Promise<void>;
 
   /**
-   * Normalizes primary key wrapper to string value (e.g. mongodb's ObjectID)
+   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
    */
-  normalizePrimaryKey(where: any): string;
+  normalizePrimaryKey(data: IPrimaryKey): number | string;
+
+  /**
+   * De-normalizes primary key wrapper to value required by driver (e.g. string to mongodb's ObjectID)
+   */
+  denormalizePrimaryKey(data: any): IPrimaryKey;
 
   /**
    * NoSQL databases do require pivot table for M:N

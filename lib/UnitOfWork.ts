@@ -1,6 +1,6 @@
 import { Utils } from './Utils';
 import { EntityManager } from './EntityManager';
-import { BaseEntity, EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 
 export class UnitOfWork {
 
@@ -11,11 +11,11 @@ export class UnitOfWork {
 
   constructor(private em: EntityManager) { }
 
-  addToIdentityMap(entity: BaseEntity): void {
+  addToIdentityMap(entity: IEntity): void {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = Utils.copy(entity);
   }
 
-  async persist(entity: BaseEntity): Promise<ChangeSet> {
+  async persist(entity: IEntity): Promise<ChangeSet> {
     const changeSet = await this.computeChangeSet(entity);
 
     if (!changeSet) {
@@ -40,11 +40,11 @@ export class UnitOfWork {
     Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
   }
 
-  remove(entity: BaseEntity): void {
+  remove(entity: IEntity): void {
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
   }
 
-  private async computeChangeSet(entity: BaseEntity): Promise<ChangeSet> {
+  private async computeChangeSet(entity: IEntity): Promise<ChangeSet> {
     const ret = { entity } as ChangeSet;
     const metadata = this.em.entityFactory.getMetadata();
     const meta = metadata[entity.constructor.name];
@@ -53,7 +53,7 @@ export class UnitOfWork {
     ret.collection = meta.collection;
 
     if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
-      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity);
+      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity, this.em.getDriver());
     } else {
       ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy?
     }
@@ -95,7 +95,7 @@ export class UnitOfWork {
       await this.immediateCommit(propChangeSet);
     }
 
-    if (changeSet.payload[prop.name] instanceof BaseEntity) {
+    if (Utils.isEntity(changeSet.payload[prop.name])) {
       changeSet.payload[prop.name] = changeSet.entity[prop.name][this.foreignKey];
     }
   }
@@ -189,7 +189,7 @@ export class UnitOfWork {
     }
   }
 
-  private runHooks(type: string, entity: BaseEntity, payload: any = null) {
+  private runHooks(type: string, entity: IEntity, payload: any = null) {
     const metadata = this.em.entityFactory.getMetadata();
     const hooks = metadata[entity.constructor.name].hooks;
 
@@ -198,7 +198,7 @@ export class UnitOfWork {
       hooks[type].forEach(hook => entity[hook]());
 
       if (payload) {
-        Object.assign(payload, Utils.diffEntities(copy, entity));
+        Object.assign(payload, Utils.diffEntities(copy, entity, this.em.getDriver()));
       }
     }
   }
@@ -210,5 +210,5 @@ export interface ChangeSet {
   payload: any;
   collection: string;
   name: string;
-  entity: BaseEntity;
+  entity: IEntity;
 }
