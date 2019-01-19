@@ -108,7 +108,3 @@ export interface IEntity {
   assign(data: any, em?: EntityManager): void;
   [property: string]: any | IEntity | Collection<IEntity>;
 }
-
-export interface Entity extends IEntity {
-
-}

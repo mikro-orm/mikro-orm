@@ -57,17 +57,23 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
   /**
    * Begins a transaction (if supported)
    */
-  async begin(savepoint: string): Promise<void> { }
+  async begin(savepoint: string): Promise<void> {
+    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
+  }
 
   /**
    * Commits statements in a transaction
    */
-  async commit(savepoint: string): Promise<void> { }
+  async commit(savepoint: string): Promise<void> {
+    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
+  }
 
   /**
    * Rollback changes in a transaction
    */
-  async rollback(savepoint: string): Promise<void> { }
+  async rollback(savepoint: string): Promise<void> {
+    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
+  }
 
   /**
    * Normalizes primary key wrapper to string value (e.g. mongodb's ObjectID)

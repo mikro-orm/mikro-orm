@@ -1,9 +1,8 @@
-import { ObjectID } from 'bson';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
 import { IEntity } from './decorators/Entity';
-import { ReferenceType } from './BaseEntity';
+import { EntityProperty, ReferenceType } from './BaseEntity';
 import { Utils } from './Utils';
 
 export class EntityHelper {
@@ -18,37 +17,13 @@ export class EntityHelper {
 
     Object.keys(data).forEach(prop => {
       if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
-        if (Utils.isEntity(data[prop])) {
-          return this.entity[prop] = data[prop];
-        }
-
-        if (data[prop] instanceof ObjectID) {
-          return this.entity[prop] = em.getReference(props[prop].type, data[prop].toHexString());
-        }
-
-        const id = typeof data[prop] === 'object' ? data[prop].id : data[prop];
-
-        if (id) {
-          return this.entity[prop] = em.getReference(props[prop].type, id);
-        }
+        return this.assignReference(data[prop], props[prop], em);
       }
 
       const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
       if (isCollection && Array.isArray(data[prop])) {
-        const items = data[prop].map((item: any) => {
-          if (item instanceof ObjectID) {
-            return em.getReference(props[prop].type, item.toHexString());
-          }
-
-          if (Utils.isEntity(item)) {
-            return item;
-          }
-
-          return em.getReference(props[prop].type, item);
-        });
-
-        return (this.entity[prop] as Collection<IEntity>).set(items);
+        return this.assignCollection(data[prop], props[prop], em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
@@ -96,6 +71,47 @@ export class EntityHelper {
     });
 
     return ret;
+  }
+
+  private assignReference(value: any, prop: EntityProperty, em: EntityManager): void {
+    if (Utils.isEntity(value)) {
+      this.entity[prop.name] = value;
+      return;
+    }
+
+    const id = Utils.extractPK(value);
+
+    if (id) {
+      const normalized = em.getDriver().normalizePrimaryKey(id);
+      this.entity[prop.name] = em.getReference(prop.type, normalized);
+      return;
+    }
+
+    const name = this.entity.constructor.name;
+    throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
+  }
+
+  private assignCollection(value: any, prop: EntityProperty, em: EntityManager): void {
+    const invalid = [];
+    const items = value.map((item: any) => {
+      if (Utils.isEntity(item)) {
+        return item;
+      }
+
+      if (Utils.isPrimaryKey(item)) {
+        const id = em.getDriver().normalizePrimaryKey(item);
+        return em.getReference(prop.type, id);
+      }
+
+      invalid.push(item);
+    });
+
+    if (invalid.length > 0) {
+      const name = this.entity.constructor.name;
+      throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
+    }
+
+    (this.entity[prop.name] as Collection<IEntity>).set(items);
   }
 
 }

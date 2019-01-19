@@ -540,6 +540,12 @@ describe('EntityManagerMongo', () => {
     expect(res6).toBe(1);
   });
 
+  test('EM do not support transactions', async () => {
+    await expect(orm.em.begin()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
+    await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
+    await expect(orm.em.commit()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
+  });
+
   afterAll(async () => orm.close(true));
 
 });
