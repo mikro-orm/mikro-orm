@@ -4,9 +4,8 @@ import Project, { SourceFile } from 'ts-simple-ast';
 import { getMetadataStorage, MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
-import { EntityMetadata, EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { IEntity } from './decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];

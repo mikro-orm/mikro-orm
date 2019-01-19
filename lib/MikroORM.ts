@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { EntityManager } from './EntityManager';
-import { EntityMetadata } from './BaseEntity';
+import { EntityMetadata } from './decorators/Entity';
 import { MongoDriver } from './drivers/MongoDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';

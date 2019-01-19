@@ -1,4 +1,3 @@
-import { EntityMetadata, ReferenceType } from './BaseEntity';
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
@@ -12,7 +11,7 @@ import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
-import { IEntity } from './decorators/Entity';
+import { EntityMetadata, IEntity, ReferenceType } from './decorators/Entity';
 
 export class EntityManager {
 

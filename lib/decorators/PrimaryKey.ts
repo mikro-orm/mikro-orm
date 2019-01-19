@@ -1,6 +1,5 @@
-import { EntityProperty, ReferenceType } from '../BaseEntity';
 import { getMetadataStorage } from '../MikroORM';
-import { IEntity, ObjectID } from '..';
+import { EntityProperty, IEntity, ObjectID, ReferenceType } from '..';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {

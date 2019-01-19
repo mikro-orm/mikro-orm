@@ -19,8 +19,8 @@ export function Entity(options: EntityOptions = {}): Function {
     meta.constructorParams = Utils.getParamNames(target);
 
     Object.defineProperties(target.prototype, {
-      _populated: { value: false, writable: true, enumerable: false, configurable: false },
-      __isEntity: { value: true, writable: false, enumerable: false, configurable: false },
+      __populated: { value: false, writable: true, enumerable: false, configurable: false },
+      __entity: { value: true, writable: false, enumerable: false, configurable: false },
     });
 
     Object.defineProperties(target.prototype, {
@@ -31,20 +31,17 @@ export function Entity(options: EntityOptions = {}): Function {
       },
       shouldPopulate: {
         value: function (collection: Collection<IEntity> = null) {
-          return this._populated && !collection;
+          return this.__populated && !collection;
         },
       },
       populated: {
         value: function (populated = true) {
-          this._populated = populated;
+          this.__populated = populated;
         },
       },
       init: {
         value: async function (populated = true, em: EntityManager = null): Promise<IEntity> {
-          await (em || this.getEntityManager(em)).findOne(this.constructor.name, this.id);
-          this._populated = populated;
-
-          return this;
+          return new EntityHelper(this).init(populated, em);
         },
       },
       assign: {
@@ -64,24 +61,12 @@ export function Entity(options: EntityOptions = {}): Function {
       },
       setEntityManager: {
         value: function (em: EntityManager): void {
-          Object.defineProperty(this, '_em', {
-            value: em,
-            enumerable: false,
-            writable: true,
-          });
+          new EntityHelper(this).setEntityManager(em);
         },
       },
       getEntityManager: {
         value: function (em: EntityManager = null): EntityManager {
-          if (em) {
-            this._em = em;
-          }
-
-          if (!this._em) {
-            throw new Error('This entity is not attached to EntityManager, please provide one!');
-          }
-
-          return this._em;
+          return new EntityHelper(this).getEntityManager(em);
         },
       },
     });
@@ -107,4 +92,39 @@ export interface IEntity {
   toObject(parent?: IEntity, collection?: Collection<IEntity>): any;
   assign(data: any, em?: EntityManager): void;
   [property: string]: any | IEntity | Collection<IEntity>;
+}
+
+export enum ReferenceType {
+  SCALAR = 0,
+  MANY_TO_ONE = 1,
+  ONE_TO_MANY = 2,
+  MANY_TO_MANY = 3,
+}
+
+export interface EntityProperty {
+  name: string;
+  fk: string;
+  entity: () => string | Function;
+  type: string;
+  reference: ReferenceType;
+  fieldName?: string;
+  attributes?: { [attribute: string]: any };
+  onUpdate?: () => any;
+  owner?: boolean;
+  inversedBy?: string;
+  mappedBy?: string;
+  pivotTable?: string;
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  referenceColumnName?: string;
+}
+
+export interface EntityMetadata {
+  name: string;
+  constructorParams: string[];
+  collection: string;
+  path: string;
+  properties: { [property: string]: EntityProperty };
+  customRepository: any;
+  hooks: { [type: string]: string[] };
 }

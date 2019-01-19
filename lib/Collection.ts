@@ -1,6 +1,5 @@
-import { EntityProperty, ReferenceType } from './BaseEntity';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { IEntity } from './decorators/Entity';
+import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { getMetadataStorage } from './MikroORM';
 
 export class Collection<T extends IEntity> {

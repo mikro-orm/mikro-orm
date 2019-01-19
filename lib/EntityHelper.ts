@@ -1,13 +1,39 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
-import { IEntity } from './decorators/Entity';
-import { EntityProperty, ReferenceType } from './BaseEntity';
+import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
 
 export class EntityHelper {
 
   constructor(private readonly entity: IEntity) { }
+
+  async init(populated = true, em: EntityManager = null): Promise<IEntity> {
+    await (em || this.entity.getEntityManager(em)).findOne(this.entity.constructor.name, this.entity.id);
+    this.entity.populated(populated);
+
+    return this.entity;
+  }
+
+  setEntityManager(em: EntityManager): void {
+    Object.defineProperty(this.entity, '_em', {
+      value: em,
+      enumerable: false,
+      writable: true,
+    });
+  }
+
+  getEntityManager(em: EntityManager = null): EntityManager {
+    if (em) {
+      this.entity._em = em;
+    }
+
+    if (!this.entity._em) {
+      throw new Error('This entity is not attached to EntityManager, please provide one!');
+    }
+
+    return this.entity._em;
+  }
 
   assign(data: any, em: EntityManager = null) {
     em = this.entity.getEntityManager(em);

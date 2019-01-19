@@ -2,9 +2,8 @@ import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise'
 import { readFileSync } from 'fs';
 import { URL } from 'url';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
-import { ReferenceType } from '../BaseEntity';
 import { QueryBuilder } from '../QueryBuilder';
-import { IEntity, IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey, ReferenceType } from '..';
 import { Utils } from '../Utils';
 
 export class MySqlDriver extends DatabaseDriver {

@@ -1,7 +1,6 @@
-import { EntityProperty, ReferenceType } from '../BaseEntity';
 import { getMetadataStorage } from '../MikroORM';
 import { PropertyOptions } from './Property';
-import { IEntity } from './Entity';
+import { EntityProperty, IEntity, ReferenceType } from './Entity';
 
 export function ManyToMany(options: ManyToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {

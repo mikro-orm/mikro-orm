@@ -1,7 +1,7 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import { IEntity, IPrimaryKey, ObjectID } from '.';
-import { ReferenceType } from './BaseEntity';
+import { ReferenceType } from './decorators/Entity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
@@ -165,7 +165,7 @@ export class Utils {
   }
 
   static isEntity(data: any): boolean {
-    return Utils.isObject(data) && data.__isEntity;
+    return Utils.isObject(data) && data.__entity;
   }
 
 }

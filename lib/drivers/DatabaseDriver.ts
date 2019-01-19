@@ -1,7 +1,6 @@
 import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
-import { EntityMetadata } from '../BaseEntity';
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey } from '..';
+import { IEntity, IPrimaryKey, EntityMetadata } from '..';
 import { NamingStrategy } from '../naming-strategy/NamingStrategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy';
 import { Utils } from '../Utils';
