@@ -110,7 +110,7 @@ export class EntityManager {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
 
-    where = this.driver.normalizePrimaryKey(where);
+    where = this.driver.normalizePrimaryKey(where as IPrimaryKey);
 
     if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where) && this.getIdentity(entityName, where).isInitialized()) {
       await this.populateOne(entityName, this.getIdentity(entityName, where), populate);

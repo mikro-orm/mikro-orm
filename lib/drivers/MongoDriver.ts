@@ -106,12 +106,16 @@ export class MongoDriver extends DatabaseDriver {
     return this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
   }
 
-  normalizePrimaryKey(data: any): string {
+  normalizePrimaryKey(data: IPrimaryKey): string {
     if (data instanceof ObjectID) {
       return data.toHexString();
     }
 
-    return data;
+    return data as string;
+  }
+
+  denormalizePrimaryKey(data: number | string): ObjectID {
+    return new ObjectID(data);
   }
 
   getDefaultClientUrl(): string {

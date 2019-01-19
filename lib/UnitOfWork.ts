@@ -53,7 +53,7 @@ export class UnitOfWork {
     ret.collection = meta.collection;
 
     if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
-      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity);
+      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity, this.em.getDriver());
     } else {
       ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy?
     }
@@ -198,7 +198,7 @@ export class UnitOfWork {
       hooks[type].forEach(hook => entity[hook]());
 
       if (payload) {
-        Object.assign(payload, Utils.diffEntities(copy, entity));
+        Object.assign(payload, Utils.diffEntities(copy, entity, this.em.getDriver()));
       }
     }
   }

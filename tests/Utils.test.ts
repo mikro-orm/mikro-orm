@@ -2,7 +2,8 @@ import { ObjectID } from 'bson';
 import { Utils } from '../lib/Utils';
 import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORM, initORMMySql, wipeDatabase, wipeDatabaseMySql } from './bootstrap';
+import { Author2, Book2 } from './entities-mysql';
 
 class Test {}
 
@@ -12,9 +13,16 @@ class Test {}
 describe('Utils', () => {
 
   let orm: MikroORM;
+  let ormMySql: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeAll(async () => {
+    orm = await initORM();
+    ormMySql = await initORMMySql();
+  });
+  beforeEach(async () => {
+    await wipeDatabase(orm.em);
+    await wipeDatabaseMySql(ormMySql.em);
+  });
 
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
@@ -75,7 +83,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2);
-    expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
+    expect(Utils.diffEntities(author1, author2, orm.em.getDriver()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -85,7 +93,21 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    expect(Utils.diffEntities(author1, author2)).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
+    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
+    expect(diff.favouriteBook instanceof ObjectID).toBe(true);
+  });
+
+  test('prepareEntity changes entity to number id [mysql]', async () => {
+    const author1 = new Author2('Name 1', 'e-mail');
+    const book = new Book2('test', author1);
+    const author2 = new Author2('Name 2', 'e-mail');
+    author2.favouriteBook = book;
+    author2.version = 123;
+    await ormMySql.em.persist([author1, author2, book]);
+    const diff = Utils.diffEntities(author1, author2, ormMySql.em.getDriver());
+    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
+    expect(typeof diff.favouriteBook).toBe('number');
   });
 
   test('copy', () => {
@@ -124,6 +146,9 @@ describe('Utils', () => {
     expect(Utils.extractPK(true)).toBeNull();
   });
 
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.close(true);
+    await ormMySql.close(true);
+  });
 
 });

@@ -13,29 +13,14 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     this.metadata = getMetadataStorage();
   }
 
-  /**
-   * Establishes connection to database
-   */
   abstract async connect(): Promise<void>;
 
-  /**
-   * Are we connected to the database
-   */
   abstract async isConnected(): Promise<boolean>;
 
-  /**
-   * Closes the database connection (aka disconnect)
-   */
   abstract async close(force: boolean): Promise<void>;
 
-  /**
-   * Finds selection of entities
-   */
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]>;
 
-  /**
-   * Finds single entity (table row, document)
-   */
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T>;
 
   abstract async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
@@ -48,37 +33,26 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   abstract async count(entityName: string, where: any): Promise<number>;
 
-  /**
-   * Returns default client url for given driver (e.g. mongodb://localhost:27017 for mongodb)
-   */
   abstract getDefaultClientUrl(): string;
 
-  /**
-   * Begins a transaction (if supported)
-   */
   async begin(savepoint: string): Promise<void> {
     throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
   }
 
-  /**
-   * Commits statements in a transaction
-   */
   async commit(savepoint: string): Promise<void> {
     throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
   }
 
-  /**
-   * Rollback changes in a transaction
-   */
   async rollback(savepoint: string): Promise<void> {
     throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
   }
 
-  /**
-   * Normalizes primary key wrapper to string value (e.g. mongodb's ObjectID)
-   */
-  normalizePrimaryKey(where: any): string {
-    return where;
+  normalizePrimaryKey(data: IPrimaryKey): number | string {
+    return data as number | string;
+  }
+
+  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+    return data;
   }
 
   getTableName(entityName: string): string {

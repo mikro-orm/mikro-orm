@@ -1,6 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IEntity, IPrimaryKey, ObjectID } from '.';
+import { IDatabaseDriver, IEntity, IPrimaryKey, ObjectID } from '.';
 import { ReferenceType } from './decorators/Entity';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
@@ -46,7 +46,7 @@ export class Utils {
   /**
    * Process references first so we do not have to deal with cycles
    */
-  static diffEntities(a: IEntity, b: IEntity): any {
+  static diffEntities(a: IEntity, b: IEntity, driver: IDatabaseDriver): any {
     const diff = Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
 
     // convert string ids back to object ids
@@ -54,7 +54,7 @@ export class Utils {
     const meta = metadata[a.constructor.name];
     Object.keys(diff).forEach((prop: string) => {
       if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
-        diff[prop] = new ObjectID(diff[prop]); // FIXME
+        diff[prop] = driver.denormalizePrimaryKey(diff[prop]);
       }
     });
 
