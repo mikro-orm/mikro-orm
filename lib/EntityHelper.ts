@@ -6,78 +6,76 @@ import { Utils } from './Utils';
 
 export class EntityHelper {
 
-  constructor(private readonly entity: IEntity) { }
+  static async init(entity: IEntity, populated = true, em: EntityManager = null): Promise<IEntity> {
+    await (em || entity.getEntityManager(em)).findOne(entity.constructor.name, entity.id);
+    entity.populated(populated);
 
-  async init(populated = true, em: EntityManager = null): Promise<IEntity> {
-    await (em || this.entity.getEntityManager(em)).findOne(this.entity.constructor.name, this.entity.id);
-    this.entity.populated(populated);
-
-    return this.entity;
+    return entity;
   }
 
-  setEntityManager(em: EntityManager): void {
-    Object.defineProperty(this.entity, '_em', {
+  static setEntityManager(entity: IEntity, em: EntityManager): void {
+    Object.defineProperty(entity, '_em', {
       value: em,
       enumerable: false,
       writable: true,
     });
   }
 
-  getEntityManager(em: EntityManager = null): EntityManager {
+  static getEntityManager(entity: IEntity, em: EntityManager = null): EntityManager {
     if (em) {
-      this.entity._em = em;
+      entity._em = em;
     }
 
-    if (!this.entity._em) {
+    if (!entity._em) {
       throw new Error('This entity is not attached to EntityManager, please provide one!');
     }
 
-    return this.entity._em;
+    return entity._em;
   }
 
-  assign(data: any, em: EntityManager = null) {
-    em = this.entity.getEntityManager(em);
+  static assign(entity: IEntity, data: any, em: EntityManager = null) {
+    em = entity.getEntityManager(em);
     const metadata = em.entityFactory.getMetadata();
-    const meta = metadata[this.entity.constructor.name];
+    const meta = metadata[entity.constructor.name];
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
       if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
-        return this.assignReference(data[prop], props[prop], em);
+        return EntityHelper.assignReference(entity, data[prop], props[prop], em);
       }
 
       const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
       if (isCollection && Array.isArray(data[prop])) {
-        return this.assignCollection(data[prop], props[prop], em);
+        return EntityHelper.assignCollection(entity, data[prop], props[prop], em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        this.entity[prop] = em.validator.validateProperty(props[prop], data[prop], this.entity)
+        entity[prop] = em.validator.validateProperty(props[prop], data[prop], entity)
       }
 
-      this.entity[prop] = data[prop];
+      entity[prop] = data[prop];
     });
   }
 
-  toObject(parent?: IEntity, collection: Collection<IEntity> = null): any {
-    parent = parent || this.entity;
-    const ret = this.entity.id ? { id: this.entity.id } : {} as any;
+  static toObject(entity: IEntity, parent?: IEntity, collection: Collection<IEntity> = null): any {
+    parent = parent || entity;
+    const ret = entity.id ? { id: entity.id } : {} as any;
 
-    if (!this.entity.isInitialized() && this.entity.id) {
+    if (!entity.isInitialized() && entity.id) {
       return ret;
     }
 
-    Object.keys(this.entity).forEach(prop => {
+    Object.keys(entity).forEach(prop => {
       if (prop === 'id' || prop.startsWith('_')) {
         return;
       }
 
-      if (this.entity[prop] instanceof Collection) {
-        const col = this.entity[prop] as Collection<IEntity>;
+      if (entity[prop] instanceof Collection) {
+        const col = entity[prop] as Collection<IEntity>;
 
         if (col.isInitialized(true) && col.shouldPopulate()) {
-          ret[prop] = col.toArray(this.entity);
+          ret[prop] = col.toArray(entity);
         } else if (col.isInitialized() && !col.shouldPopulate()) {
           ret[prop] = col.getIdentifiers();
         }
@@ -85,23 +83,23 @@ export class EntityHelper {
         return;
       }
 
-      if (Utils.isEntity(this.entity[prop])) {
-        if (this.entity[prop].isInitialized() && this.entity[prop].shouldPopulate(collection) && this.entity[prop] !== parent) {
-          return ret[prop] = (this.entity[prop] as IEntity).toObject(this.entity);
+      if (Utils.isEntity(entity[prop])) {
+        if (entity[prop].isInitialized() && entity[prop].shouldPopulate(collection) && entity[prop] !== parent) {
+          return ret[prop] = (entity[prop] as IEntity).toObject(entity);
         }
 
-        return ret[prop] = this.entity[prop].id;
+        return ret[prop] = entity[prop].id;
       }
 
-      ret[prop] = this.entity[prop];
+      ret[prop] = entity[prop];
     });
 
     return ret;
   }
 
-  private assignReference(value: any, prop: EntityProperty, em: EntityManager): void {
+  private static assignReference(entity: IEntity, value: any, prop: EntityProperty, em: EntityManager): void {
     if (Utils.isEntity(value)) {
-      this.entity[prop.name] = value;
+      entity[prop.name] = value;
       return;
     }
 
@@ -109,15 +107,15 @@ export class EntityHelper {
 
     if (id) {
       const normalized = em.getDriver().normalizePrimaryKey(id);
-      this.entity[prop.name] = em.getReference(prop.type, normalized);
+      entity[prop.name] = em.getReference(prop.type, normalized);
       return;
     }
 
-    const name = this.entity.constructor.name;
+    const name = entity.constructor.name;
     throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
   }
 
-  private assignCollection(value: any, prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection(entity: IEntity, value: any, prop: EntityProperty, em: EntityManager): void {
     const invalid = [];
     const items = value.map((item: any) => {
       if (Utils.isEntity(item)) {
@@ -133,11 +131,63 @@ export class EntityHelper {
     });
 
     if (invalid.length > 0) {
-      const name = this.entity.constructor.name;
+      const name = entity.constructor.name;
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
     }
 
-    (this.entity[prop.name] as Collection<IEntity>).set(items);
+    (entity[prop.name] as Collection<IEntity>).set(items);
+  }
+
+  static decorate(prototype: any) {
+    Object.defineProperties(prototype, {
+      __populated: { value: false, writable: true, enumerable: false, configurable: false },
+      __entity: { value: true, writable: false, enumerable: false, configurable: false },
+      isInitialized: {
+        value: function () {
+          return this._initialized !== false;
+        },
+      },
+      shouldPopulate: {
+        value: function (collection: Collection<IEntity> = null) {
+          return this.__populated && !collection;
+        },
+      },
+      populated: {
+        value: function (populated = true) {
+          this.__populated = populated;
+        },
+      },
+      init: {
+        value: async function (populated = true, em: EntityManager = null): Promise<IEntity> {
+          return EntityHelper.init(this, populated, em);
+        },
+      },
+      assign: {
+        value: function (data: any, em: EntityManager = null) {
+          EntityHelper.assign(this, data, em);
+        }
+      },
+      toObject: {
+        value: function (parent?: IEntity, collection: Collection<IEntity> = null) {
+          return EntityHelper.toObject(this, parent, collection);
+        }
+      },
+      toJSON: {
+        value: function () {
+          return EntityHelper.toObject(this, );
+        }
+      },
+      setEntityManager: {
+        value: function (em: EntityManager): void {
+          EntityHelper.setEntityManager(this, em);
+        },
+      },
+      getEntityManager: {
+        value: function (em: EntityManager = null): EntityManager {
+          return EntityHelper.getEntityManager(this, em);
+        },
+      },
+    });
   }
 
 }

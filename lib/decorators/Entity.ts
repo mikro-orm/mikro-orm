@@ -17,59 +17,7 @@ export function Entity(options: EntityOptions = {}): Function {
 
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
-
-    Object.defineProperties(target.prototype, {
-      __populated: { value: false, writable: true, enumerable: false, configurable: false },
-      __entity: { value: true, writable: false, enumerable: false, configurable: false },
-    });
-
-    Object.defineProperties(target.prototype, {
-      isInitialized: {
-        value: function () {
-          return this._initialized !== false;
-        },
-      },
-      shouldPopulate: {
-        value: function (collection: Collection<IEntity> = null) {
-          return this.__populated && !collection;
-        },
-      },
-      populated: {
-        value: function (populated = true) {
-          this.__populated = populated;
-        },
-      },
-      init: {
-        value: async function (populated = true, em: EntityManager = null): Promise<IEntity> {
-          return new EntityHelper(this).init(populated, em);
-        },
-      },
-      assign: {
-        value: function (data: any, em: EntityManager = null) {
-          new EntityHelper(this).assign(data, em);
-        }
-      },
-      toObject: {
-        value: function (parent?: IEntity, collection: Collection<IEntity> = null) {
-          return new EntityHelper(this).toObject(parent, collection);
-        }
-      },
-      toJSON: {
-        value: function () {
-          return new EntityHelper(this).toObject();
-        }
-      },
-      setEntityManager: {
-        value: function (em: EntityManager): void {
-          new EntityHelper(this).setEntityManager(em);
-        },
-      },
-      getEntityManager: {
-        value: function (em: EntityManager = null): EntityManager {
-          return new EntityHelper(this).getEntityManager(em);
-        },
-      },
-    });
+    EntityHelper.decorate(target.prototype);
 
     return target;
   };
