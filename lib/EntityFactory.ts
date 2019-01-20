@@ -191,13 +191,25 @@ export class EntityFactory {
       // init types and column names
       const props = this.metadata[name].properties;
       Object.keys(props).forEach(p => {
+        const property = properties.find(v => v.getName() === p);
+
         if (props[p].entity) {
           const type = props[p].entity();
           props[p].type = type instanceof Function ? type.name : type;
-        }
+        } else {
+          const old = props[p].type;
 
-        if (props[p].reference === ReferenceType.SCALAR) {
-          props[p].type = properties.find(v => v.getName() === p).getType().getText();
+          if (props[p].reference === ReferenceType.SCALAR) {
+            props[p].type = property.getType().getText();
+          }
+
+          if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(props[p].reference) && property.getType().getSymbol()) {
+            props[p].type = property.getType().getSymbol().getName();
+          }
+
+          if (props[p].type === 'any') {
+            props[p].type = old;
+          }
         }
 
         this.applyNamingStrategy(name, props[p], namingStrategy);

@@ -12,10 +12,10 @@ export class Book2 extends BaseEntity {
   @Property()
   title: string;
 
-  @ManyToOne({ entity: () => Author2.name })
+  @ManyToOne()
   author: Author2;
 
-  @ManyToOne({ entity: () => Publisher2.name })
+  @ManyToOne()
   publisher: Publisher2;
 
   @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books' })

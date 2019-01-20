@@ -41,7 +41,7 @@ export class Author2 extends BaseEntity {
   @OneToMany({ entity: () => Book2, fk: 'author' })
   books: Collection<Book2>;
 
-  @ManyToOne({ entity: () => Book2 })
+  @ManyToOne()
   favouriteBook: Book2;
 
   version: number;

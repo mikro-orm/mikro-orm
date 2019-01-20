@@ -42,7 +42,7 @@ export class Author {
   @OneToMany({ entity: () => Book, fk: 'author' })
   books = new Collection<Book>(this);
 
-  @ManyToOne({ entity: () => Book })
+  @ManyToOne()
   favouriteBook: Book;
 
   version: number;

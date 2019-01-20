@@ -73,10 +73,10 @@ export class Book {
   @Property()
   title: string;
 
-  @ManyToOne({ entity: () => Author }) // you can pass the entity as class reference
+  @ManyToOne() // when you provide correct type hint, ORM will read it for you
   author: Author;
 
-  @ManyToOne({ entity: () => Publisher.name }) // or you can pass the string name directly
+  @ManyToOne({ entity: () => Publisher }) // or you can specify the entity as class reference or string name
   publisher: Publisher;
 
   constructor(title: string, author: Author) {

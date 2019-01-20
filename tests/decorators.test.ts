@@ -22,8 +22,6 @@ describe('decorators', () => {
   });
 
   test('ManyToOne', () => {
-    expect(() => ManyToOne({} as any)(new Test(), 'test')).toThrowError(`@ManyToOne({ entity: string | Function })' is required in 'Test.test`);
-
     const storage = getMetadataStorage();
     ManyToOne({ entity: () => Test })(new Test3(), 'test1');
     expect(storage.Test3.properties.test1).toMatchObject({
