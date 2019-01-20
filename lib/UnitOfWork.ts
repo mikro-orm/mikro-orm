@@ -28,6 +28,28 @@ export class UnitOfWork {
     return changeSet;
   }
 
+  async remove(entity: IEntity): Promise<ChangeSet> {
+    const metadata = this.em.entityFactory.getMetadata();
+    const meta = metadata[entity.constructor.name];
+
+    // clean up persist stack from previous change sets for this entity (in case there was persist call without flushing)
+    this.persistStack.forEach(changeSet => {
+      if (changeSet.entity === entity) {
+        this.persistStack.splice(changeSet.index, 1);
+      }
+    });
+
+    if (!entity.id) {
+      return null;
+    }
+
+    const changeSet = { entity, delete: true, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet;
+    changeSet.index = this.persistStack.length;
+    this.persistStack.push(changeSet);
+
+    return changeSet;
+  }
+
   async commit(): Promise<void> {
     for (const changeSet of this.persistStack) {
       await this.immediateCommit(changeSet, false);
@@ -40,7 +62,7 @@ export class UnitOfWork {
     Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
   }
 
-  remove(entity: IEntity): void {
+  unsetIdentity(entity: IEntity): void {
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
   }
 
@@ -135,7 +157,7 @@ export class UnitOfWork {
   }
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
-    const type = changeSet.entity[this.foreignKey] ? 'Update' : 'Create';
+    const type = changeSet.entity[this.foreignKey] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
     this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
 
     const metadata = this.em.entityFactory.getMetadata();
@@ -174,8 +196,11 @@ export class UnitOfWork {
     // persist the entity itself
     const entityName = changeSet.entity.constructor.name;
 
-    if (changeSet.entity[this.foreignKey]) {
+    if (changeSet.delete) {
+      await this.em.getDriver().nativeDelete(entityName, changeSet.entity[this.foreignKey]);
+    } else if (changeSet.entity[this.foreignKey]) {
       await this.em.getDriver().nativeUpdate(entityName, changeSet.entity[this.foreignKey], changeSet.payload);
+      this.addToIdentityMap(changeSet.entity);
     } else {
       changeSet.entity[this.foreignKey] = await this.em.getDriver().nativeInsert(entityName, changeSet.payload);
       delete changeSet.entity['_initialized'];
@@ -211,4 +236,5 @@ export interface ChangeSet {
   collection: string;
   name: string;
   entity: IEntity;
+  delete: boolean;
 }

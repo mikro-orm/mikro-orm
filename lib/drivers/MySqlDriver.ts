@@ -136,6 +136,22 @@ export class MySqlDriver extends DatabaseDriver {
     await this.connection.query(file.toString());
   }
 
+  getConnectionOptions(): ConnectionOptions {
+    const ret = {} as ConnectionOptions;
+    const url = new URL(this.options.clientUrl);
+    ret.host = this.options.host || url.hostname;
+    ret.port = this.options.port || +url.port;
+    ret.user = this.options.user || url.username;
+    ret.password = this.options.password || url.password;
+    ret.database = this.options.dbName || url.pathname.replace(/^\//, '');
+
+    if (this.options.multipleStatements) {
+      ret.multipleStatements = this.options.multipleStatements;
+    }
+
+    return ret;
+  }
+
   private extractManyToMany(entityName: string, data: any): any {
     if (!this.metadata[entityName]) {
       return {};
@@ -163,7 +179,7 @@ export class MySqlDriver extends DatabaseDriver {
       const prop = props[k];
       const fk1 = prop.joinColumn;
 
-      if (prop && prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
+      if (prop.owner) {
         const qb1 = new QueryBuilder(prop.pivotTable, this.metadata);
         const fk2 = prop.inverseJoinColumn;
         qb1.delete({ [fk1]: pk });
@@ -177,22 +193,6 @@ export class MySqlDriver extends DatabaseDriver {
         }
       }
     }
-  }
-
-  private getConnectionOptions(): ConnectionOptions {
-    const ret = {} as ConnectionOptions;
-    const url = new URL(this.options.clientUrl);
-    ret.host = this.options.host || url.hostname;
-    ret.port = this.options.port || +url.port;
-    ret.user = this.options.user || url.username;
-    ret.password = this.options.password || url.password;
-    ret.database = this.options.dbName || url.pathname.replace(/^\//, '');
-
-    if (this.options.multipleStatements) {
-      ret.multipleStatements = this.options.multipleStatements;
-    }
-
-    return ret;
   }
 
 }

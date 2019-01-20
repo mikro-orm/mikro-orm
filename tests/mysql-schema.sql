@@ -74,6 +74,7 @@ DROP TABLE IF EXISTS `book2`;
 CREATE TABLE `book2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
+  `foo` varchar(255) DEFAULT NULL,
   `author_id` int(11) DEFAULT NULL,
   `publisher_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)

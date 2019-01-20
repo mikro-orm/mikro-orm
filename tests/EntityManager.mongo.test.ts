@@ -139,6 +139,34 @@ describe('EntityManagerMongo', () => {
     expect(repo.magic('test')).toBe('111 test 222');
   });
 
+  test('removing not yet persisted entity will not make db call', async () => {
+    const author = new Author('name', 'email');
+    const author2 = new Author('name2', 'email2');
+    const author3 = new Author('name3', 'email3');
+    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    await repo.persist(author, false);
+    await repo.persist(author2, false);
+    await repo.remove(author);
+    expect(Object.keys(orm.em.getIdentityMap())).toEqual([`Author-${author2.id}`]);
+    author2.name = 'lol';
+    await repo.persist(author2, false);
+    await orm.em.remove(Author.name, author3, false);
+    await repo.flush();
+    await orm.em.remove(Author.name, author3);
+  });
+
+  test('removing persisted entity will remove it from persist stack first', async () => {
+    const author = new Author('name', 'email');
+    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    await repo.persist(author);
+    expect(orm.em.getIdentity(Author.name, author.id)).toBeDefined();
+    author.name = 'new name';
+    await repo.persist(author, false);
+    await orm.em.removeEntity(author);
+    expect(orm.em.getIdentity(Author.name, author.id)).toBeUndefined();
+    expect(orm.em.getIdentityMap()).toEqual({});
+  });
+
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
     expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
@@ -227,7 +255,7 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver<MongoDriver>();
     expect(driver instanceof MongoDriver).toBe(true);
     expect(driver.getCollection(Book.name).collectionName).toBe('books-table');
-    expect(await driver.findOne(Book.name, {})).toBeNull();
+    expect(await driver.findOne(Book.name, { foo: 'bar' })).toBeNull();
   });
 
   test('findOne by id', async () => {

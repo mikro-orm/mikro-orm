@@ -49,7 +49,7 @@ export class EntityManager {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${entity.id}`;
     delete em.identityMap[token];
-    this.unitOfWork.remove(entity);
+    this.unitOfWork.unsetIdentity(entity);
   }
 
   getIdentityMap(): { [k: string]: IEntity } {
@@ -212,22 +212,22 @@ export class EntityManager {
     return this.entityFactory.createReference<T>(entityName, id);
   }
 
-  async remove(entityName: string, where: IEntity | any): Promise<number> {
+  async remove(entityName: string, where: IEntity | any, flush = true): Promise<number> {
     if (Utils.isEntity(where)) {
-      return this.removeEntity(where);
+      await this.removeEntity(where, flush);
+      return 1;
     }
 
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: IEntity): Promise<number> {
-    this.runHooks('beforeDelete', entity);
-    const entityName = entity.constructor.name;
-    const count = await this.driver.nativeDelete(entityName, entity.id);
+  async removeEntity(entity: IEntity, flush = true): Promise<void> {
+    await this.unitOfWork.remove(entity);
     this.unsetIdentity(entity);
-    this.runHooks('afterDelete', entity);
 
-    return count;
+    if (flush) {
+      await this.flush();
+    }
   }
 
   async count(entityName: string, where: any): Promise<number> {
@@ -377,14 +377,6 @@ export class EntityManager {
         const items = data.filter(child => child[prop.fk] === entity);
         (entity[field] as Collection<IEntity>).set(items, true);
       }
-    }
-  }
-
-  private runHooks(type: string, entity: IEntity) {
-    const hooks = this.metadata[entity.constructor.name].hooks;
-
-    if (hooks && hooks[type] && hooks[type].length > 0) {
-      hooks[type].forEach(hook => entity[hook]());
     }
   }
 

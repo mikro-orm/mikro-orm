@@ -25,8 +25,8 @@ export class EntityRepository<T extends IEntity> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 
-  async remove(where: T | any): Promise<number> {
-    return this.em.remove(this.entityName, where);
+  async remove(where: T | any, flush = true): Promise<number> {
+    return this.em.remove(this.entityName, where, flush);
   }
 
   async flush(): Promise<void> {

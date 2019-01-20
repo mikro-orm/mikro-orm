@@ -1,8 +1,6 @@
 import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, EntityMetadata } from '..';
-import { NamingStrategy } from '../naming-strategy/NamingStrategy';
-import { UnderscoreNamingStrategy } from '../naming-strategy/UnderscoreNamingStrategy';
+import { IEntity, IPrimaryKey, EntityMetadata, NamingStrategy, UnderscoreNamingStrategy } from '..';
 import { Utils } from '../Utils';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
@@ -75,7 +73,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   mapResult(result: any, meta: EntityMetadata): any {
     if (!result || !meta) {
-      return result;
+      return result || null;
     }
 
     const ret = Object.assign({}, result);

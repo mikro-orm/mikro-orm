@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM, MySqlDriver } from '../lib';
+import { Collection, EntityManager, MikroORM, MikroORMOptions, MySqlDriver } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Utils } from '../lib/Utils';
@@ -19,6 +19,29 @@ describe('EntityManagerMySql', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+  });
+
+  test('getConnectionOptions()', async () => {
+    const driver = new MySqlDriver({
+      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+    } as MikroORMOptions);
+    expect(driver.getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      port: 3308,
+      user: 'user',
+    });
+  });
+
+  test('should return mysql driver', async () => {
+    const driver = orm.em.getDriver<MySqlDriver>();
+    expect(driver instanceof MySqlDriver).toBe(true);
+    expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
+    expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
   });
 
   test('driver appends errored query', async () => {
