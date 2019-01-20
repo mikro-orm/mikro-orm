@@ -1,8 +1,7 @@
 import { Book, Author, Publisher } from './entities';
-import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver, MikroORMOptions } from '../lib';
+import { ReferenceType, EntityManager, MikroORM, Collection, MongoDriver, MikroORMOptions, MongoNamingStrategy } from '../lib';
 import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MongoNamingStrategy } from '../lib/naming-strategy/MongoNamingStrategy';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),

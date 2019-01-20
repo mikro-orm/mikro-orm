@@ -1,7 +1,8 @@
 import { ObjectID } from 'bson';
 import { Author, Book, BookTag } from './entities';
-import { MikroORM } from '../lib';
+import { EntityManager, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
+import { EntityHelper } from '../lib/EntityHelper';
 
 /**
  * @class EntityHelperMongoTest
@@ -27,6 +28,31 @@ describe('EntityHelperMongo', () => {
     expect(author.toJSON()).toBeInstanceOf(Object);
   });
 
+  test('#shouldPopulate() should return boolean', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    expect(author.shouldPopulate()).toBe(false); // off by default
+    author.populated(true);
+    expect(author.shouldPopulate()).toBe(true);
+  });
+
+  test('#getEntityManager() should return EntityManager', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    expect(() => EntityHelper.getEntityManager(author)).toThrowError(`This entity is not attached to EntityManager, please provide one!`);
+    await orm.em.persist(author);
+    expect(EntityHelper.getEntityManager(author)).toBeInstanceOf(EntityManager);
+  });
+
+  test('#init() should populate the entity', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const jon = orm.em.getReference(Author.name, author.id);
+    expect(jon.isInitialized()).toBe(false);
+    await EntityHelper.init(jon);
+    expect(jon.isInitialized()).toBe(true);
+  });
+
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');
@@ -34,13 +60,13 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
+    EntityHelper.assign(book, { title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect(book.notExisting).toBe(true);
     await orm.em.persist(god);
-    book.assign({ title: 'Better Book2 2', author: god.id });
+    EntityHelper.assign(book, { title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
-    book.assign({ title: 'Better Book2 3', author: jon._id });
+    EntityHelper.assign(book, { title: 'Better Book2 3', author: jon._id });
     expect(book.title).toBe('Better Book2 3');
     expect(book.author).toBe(jon);
   });

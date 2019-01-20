@@ -58,6 +58,11 @@ export class Author {
     this.version = 1;
   }
 
+  @BeforeCreate()
+  beforeCreate2() {
+    // do sth else
+  }
+
   @AfterCreate()
   afterCreate() {
     this.versionAsString = 'v' + this.version;

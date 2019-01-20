@@ -9,12 +9,7 @@ import { EntityHelper } from '../EntityHelper';
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
     const storage = getMetadataStorage(target.name);
-    const meta = storage[target.name];
-
-    if (options) {
-      merge(meta, options);
-    }
-
+    const meta = merge(storage[target.name], options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
     EntityHelper.decorate(target.prototype);

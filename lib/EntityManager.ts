@@ -318,10 +318,6 @@ export class EntityManager {
       if (Utils.isEntity(entity[field]) && !entity[field].isInitialized()) {
         await (entity[field] as IEntity).init();
       }
-
-      if (entity[field]) {
-        entity[field].populated();
-      }
     }
   }
 
@@ -340,10 +336,10 @@ export class EntityManager {
       }
     });
 
-    const meta = this.metadata[entityName].properties[field];
+    const prop = this.metadata[entityName].properties[field];
 
     // TODO we could probably improve M:N owner collection init for mysql driver
-    if (meta.reference === ReferenceType.MANY_TO_MANY && (!meta.owner || this.driver.usesPivotTable())) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && (!prop.owner || this.driver.usesPivotTable())) {
       for (const entity of entities) {
         if (!entity[field].isInitialized()) {
           await (entity[field] as Collection<IEntity>).init();
@@ -356,12 +352,12 @@ export class EntityManager {
     const children: IEntity[] = [];
     let fk = this.namingStrategy.referenceColumnName();
 
-    if (meta.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection);
       children.push(...filtered.map(e => e[field].owner));
-      const prop = this.metadata[meta.type].properties[meta.fk];
-      fk = prop.fieldName;
-    } else if (meta.reference === ReferenceType.MANY_TO_MANY) {
+      const prop2 = this.metadata[prop.type].properties[prop.fk];
+      fk = prop2.fieldName;
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
       const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
       children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
     } else {
@@ -373,12 +369,12 @@ export class EntityManager {
     }
 
     const ids = Utils.unique(children.map(e => e.id));
-    const data = await this.find<IEntity>(meta.type, { [fk]: { $in: ids } });
+    const data = await this.find<IEntity>(prop.type, { [fk]: { $in: ids } });
 
     // initialize collections for one to many
-    if (meta.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
       for (const entity of entities) {
-        const items = data.filter(child => child[meta.fk] === entity);
+        const items = data.filter(child => child[prop.fk] === entity);
         (entity[field] as Collection<IEntity>).set(items, true);
       }
     }

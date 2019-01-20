@@ -1,4 +1,14 @@
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  ObjectID,
+  IEntity,
+  BeforeCreate,
+} from '../../lib';
 import { Book } from './Book';
 import { Test } from './Test';
 
@@ -23,6 +33,11 @@ export class Publisher {
   constructor(name: string = 'asd', type: PublisherType = PublisherType.LOCAL) {
     this.name = name;
     this.type = type;
+  }
+
+  @BeforeCreate()
+  beforeCreate() {
+    // do sth
   }
 
 }

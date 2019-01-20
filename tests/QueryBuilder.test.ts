@@ -71,6 +71,11 @@ describe('QueryBuilder', () => {
     qb2.insert({ name: 'test 123', favouriteBook: 2359, termsAccepted: true });
     expect(qb2.getQuery()).toEqual('INSERT INTO `author2` (`name`, `favourite_book_id`, `terms_accepted`) VALUES (?, ?, ?)');
     expect(qb2.getParams()).toEqual(['test 123', 2359, true]);
+
+    const qb3 = new QueryBuilder(Publisher2.name, orm.em.entityFactory.getMetadata());
+    qb3.insert({ tests: 123 });
+    expect(qb3.getQuery()).toEqual('INSERT INTO `publisher2` (`tests`) VALUES (?)');
+    expect(qb3.getParams()).toEqual([123]);
   });
 
   test('update query', async () => {

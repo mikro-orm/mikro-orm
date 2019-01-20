@@ -223,8 +223,11 @@ describe('EntityManagerMongo', () => {
     }
   });
 
-  test('should return mongo collection', async () => {
-    expect(orm.em.getDriver<MongoDriver>().getCollection(Book.name).collectionName).toBe('books-table');
+  test('should return mongo driver', async () => {
+    const driver = orm.em.getDriver<MongoDriver>();
+    expect(driver instanceof MongoDriver).toBe(true);
+    expect(driver.getCollection(Book.name).collectionName).toBe('books-table');
+    expect(await driver.findOne(Book.name, {})).toBeNull();
   });
 
   test('findOne by id', async () => {
@@ -287,7 +290,7 @@ describe('EntityManagerMongo', () => {
     const tag3 = new BookTag('sick');
     const tag4 = new BookTag('strange');
     const tag5 = new BookTag('sexy');
-    book1.tags.add(tag1, tag3);
+    book1.tags.add(tag1, tag3, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
@@ -300,6 +303,7 @@ describe('EntityManagerMongo', () => {
     expect(tag3._id).toBeDefined();
     expect(tag4._id).toBeDefined();
     expect(tag5._id).toBeDefined();
+    expect(book1.tags.toArray()).toEqual([tag1.toObject(), tag3.toObject()]);
 
     // test inverse side
     const tagRepository = orm.em.getRepository<BookTag>(BookTag.name);
@@ -346,7 +350,7 @@ describe('EntityManagerMongo', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tag1, tag5); // tag5 will be ignored as it is not part of collection
     await orm.em.persist(book);
     orm.em.clear();
     book = await orm.em.findOne<Book>(Book.name, book._id);
@@ -464,6 +468,16 @@ describe('EntityManagerMongo', () => {
     expect(repo.canPopulate('name')).toBe(false);
     expect(repo.canPopulate('favouriteBook')).toBe(true);
     expect(repo.canPopulate('books')).toBe(true);
+  });
+
+   test('trying to populate non-existing or non-reference property will throw', async () => {
+    const repo = orm.em.getRepository<Author>(Author.name);
+    const author = new Author('Johny Cash', 'johny@cash.com');
+    await repo.persist(author);
+    orm.em.clear();
+
+    await expect(repo.findAll(['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
   });
 
    test('trying to populate non-existing or non-reference property will throw', async () => {

@@ -101,9 +101,9 @@ export class UnitOfWork {
   }
 
   private async processOneToMany(changeSet: ChangeSet, prop: EntityProperty) {
-    if (changeSet.entity[prop.name].isDirty()) {
-      // TODO cascade persist...
-    }
+    // if (changeSet.entity[prop.name].isDirty()) {
+    //   // TODO cascade persist...
+    // }
 
     delete changeSet.payload[prop.name];
   }

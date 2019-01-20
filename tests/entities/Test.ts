@@ -1,13 +1,13 @@
-import { Entity, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
+import { Entity, PrimaryKey, Property, IEntity } from '../../lib';
 
 @Entity()
 export class Test {
 
-  @PrimaryKey()
-  _id: ObjectID;
+  @PrimaryKey({ type: 'ObjectID' })
+  _id;
 
-  @Property()
-  name: string;
+  @Property({ type: 'string' })
+  name;
 
   static create(name: string) {
     const t = new Test();

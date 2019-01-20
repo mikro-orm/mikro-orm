@@ -165,7 +165,7 @@ export class Utils {
   }
 
   static isEntity(data: any): boolean {
-    return Utils.isObject(data) && data.__entity;
+    return Utils.isObject(data) && !!data.__entity;
   }
 
 }

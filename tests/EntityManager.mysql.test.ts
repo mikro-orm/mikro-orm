@@ -327,11 +327,20 @@ describe('EntityManagerMySql', () => {
 
     // test M:N lazy init
     orm.em.clear();
+    tags = await tagRepository.findAll();
     await tags[0].books.init();
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book2);
     expect(tags[0].books.getItems()[0].id).toBeDefined();
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    const old = tags[0];
+    expect(tags[1].books.isInitialized()).toBe(false);
+    tags = await tagRepository.findAll(['books']);
+    expect(tags[1].books.isInitialized()).toBe(true);
+    expect(tags[0].id).toBe(old.id);
+    expect(tags[0]).toBe(old);
+    expect(tags[0].books).toBe(old.books);
 
     // test M:N lazy init
     orm.em.clear();

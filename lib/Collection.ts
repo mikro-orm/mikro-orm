@@ -144,7 +144,7 @@ export class Collection<T extends IEntity> {
 
   contains(item: T): boolean {
     this.checkInitialized();
-    return item.id && !!this.items.find(i => i.id !== null && i.id === item.id);
+    return !!this.items.find(i => i === item || (i.id && item.id && i.id === item.id));
   }
 
   count(): number {
@@ -180,7 +180,7 @@ export class Collection<T extends IEntity> {
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk] = this.owner.id;
-    } else if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+    } else { // MANY_TO_MANY
       if (this.property.owner || em.getDriver().usesPivotTable()) {
         cond.id = { $in: this.items.map(item => item.id) };
       } else {

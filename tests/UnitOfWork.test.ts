@@ -27,11 +27,19 @@ describe('UnitOfWork', () => {
     Object.assign(author, { name: '333', email: '444', born: 'asd' });
     await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'`);
 
+    // number bool with other value than 0/1 will throw
+    Object.assign(author, { termsAccepted: 2 });
+    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
+
     // string date with correct format will be auto-corrected
-    Object.assign(author, { name: '333', email: '444', born: '2018-01-01' });
+    Object.assign(author, { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 });
     let changeSet = await uow.persist(author);
     expect(typeof changeSet.payload.name).toBe('string');
+    expect(changeSet.payload.name).toBe('333');
     expect(typeof changeSet.payload.email).toBe('string');
+    expect(changeSet.payload.email).toBe('444');
+    expect(typeof changeSet.payload.termsAccepted).toBe('boolean');
+    expect(changeSet.payload.termsAccepted).toBe(true);
     expect(changeSet.payload.born instanceof Date).toBe(true);
 
     // Date object will be ok

@@ -174,7 +174,7 @@ export class EntityHelper {
       },
       toJSON: {
         value: function () {
-          return EntityHelper.toObject(this, );
+          return EntityHelper.toObject(this);
         }
       },
       setEntityManager: {
