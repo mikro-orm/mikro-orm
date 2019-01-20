@@ -316,10 +316,10 @@ export class Book {
   @Property()
   title: string;
 
-  @ManyToOne({ entity: () => Author })
+  @ManyToOne()
   author: Author;
 
-  @ManyToOne({ entity: () => Publisher })
+  @ManyToOne()
   publisher: Publisher;
 
   @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
@@ -420,7 +420,7 @@ export class Book {
   @PrimaryKey()
   _id: ObjectID;
 
-  @ManyToOne({ entity: () => Author })
+  @ManyToOne()
   author: Author;
 
 }
