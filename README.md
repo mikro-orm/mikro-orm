@@ -335,7 +335,24 @@ export class Book {
 export interface Book extends IEntity { }
 ```
 
-### `ObjectID` and `string` duality
+### Lifecycle hooks
+
+You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
+entity methods with them, you can also mark multiple methods with same hook.
+
+- `@BeforeCreate()` and `@BeforeUpdate()` is fired right before we persist the entity in database
+
+- `@AfterCreate()` and `@AfterUpdate()` is fired right after the entity is updated in database and 
+merged to identity map. Since this event entity will have reference to `EntityManager` and will be 
+enabled to call `entity.init()` method (including all entity references and collections).
+
+- `@BeforeDelete()` is fired right before we delete the record from database. It is fired only when
+removing entity or entity reference, not when deleting records by query. 
+
+- `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from 
+the identity map.
+
+### `ObjectID` and `string` duality (MongoDriver)
 
 Every entity has both `ObjectID` and `string` id available, also all methods of `EntityManager` 
 and `EntityRepository` supports querying by both of them. 
@@ -497,13 +514,25 @@ Currently you will need to maintain the database schema yourself.
 
 As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany` relations:
 
+```sql
+CREATE TABLE `publisher_to_test` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `publisher_id` int(11) DEFAULT NULL,
+  `test_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+
+You can adjust the name of pivot table via `pivotTable` option in `@ManyToMany` decorator
+defined on owning side: 
+
 ```typescript
 // for unidirectional
-@ManyToMany({ entity: () => Test.name, owner: true })
+@ManyToMany({ entity: () => Test.name, owner: true, pivotTable: 'publisher2test' })
 tests = new Collection<Test>(this);
 
 // for bidirectional
-@ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
+@ManyToMany({ entity: () => BookTag, inversedBy: 'books', pivotTable: 'book2tag' })
 tags = new Collection<BookTag>(this);
 ```
 
@@ -554,13 +583,15 @@ For more examples of how to work with `QueryBuilder`, take a look at `QueryBuild
 MySQL driver provides basic support for transactions via `begin/commit/rollback` methods on both 
 `MySqlDriver` and their shortcuts on `EntityManager` as well. 
 
-You can also use `EntityManager.transactional(cb)` helper to run callback in transaction:
+You can also use `EntityManager.transactional(cb)` helper to run callback in transaction. It will
+provide forked `EntityManager` as a parameter with clear clear isolated identity map - please use that
+to make changes. 
 
 ```typescript
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
-await orm.em.transactional(async () => {
+await orm.em.transactional(async (em: EntityManager) => {
   const god = new Author('God', 'hello@heaven.god');
-  await orm.em.persist(god);
+  await em.persist(god);
 });
 ```
 
@@ -568,7 +599,7 @@ await orm.em.transactional(async () => {
 EntityManager.begin(): Promise<void>;
 EntityManager.commit(): Promise<void>;
 EntityManager.rollback(): Promise<void>;
-EntityManager.transactional(cb: () => Promise<any>): Promise<any>;
+EntityManager.transactional(cb: (em: EntityManager) => Promise<any>): Promise<any>;
 ```
 
 Keep in mind transactions are supported only in MySQL driver currently. 
@@ -578,7 +609,7 @@ Keep in mind transactions are supported only in MySQL driver currently.
 `MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means your all your database tables and
 columns will be lower-cased and words divided by underscored:
 
-```
+```sql
 CREATE TABLE `author` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` datetime(3) DEFAULT NULL,
@@ -689,7 +720,3 @@ await orm.em.persist(author); // throws "Validation error: trying to set Author.
 
 - cascade persist in collections
 - cascade remove references on other entities when deleting entity (e.g. from M:N collection)
-
-## TODO docs
-
-- lifecycle hooks

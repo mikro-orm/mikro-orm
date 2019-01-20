@@ -42,9 +42,9 @@ describe('EntityManagerMySql', () => {
     const res2 = await orm.em.findOne(Author2.name, { name: 'God2' });
     expect(res2).not.toBeNull();
 
-    await orm.em.transactional(async () => {
+    await orm.em.transactional(async em => {
       const god3 = new Author2('God3', 'hello@heaven.god');
-      await orm.em.persist(god3);
+      await em.persist(god3);
     });
     const res3 = await orm.em.findOne(Author2.name, { name: 'God3' });
     expect(res3).not.toBeNull();
@@ -52,9 +52,9 @@ describe('EntityManagerMySql', () => {
     const err = new Error('Test');
 
     try {
-      await orm.em.transactional(async () => {
+      await orm.em.transactional(async em => {
         const god4 = new Author2('God4', 'hello@heaven.god');
-        await orm.em.persist(god4);
+        await em.persist(god4);
         throw err;
       });
     } catch (e) {

@@ -141,16 +141,18 @@ export class EntityManager {
     await this.getDriver().rollback();
   }
 
-  async transactional(cb: () => Promise<any>): Promise<any> {
+  async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {
+    const em = this.fork();
+
     try {
-      await this.begin();
-      const ret = await cb();
-      await this.flush();
-      await this.commit();
+      await em.begin();
+      const ret = await cb(em);
+      await em.flush();
+      await em.commit();
 
       return ret;
     } catch (e) {
-      await this.rollback();
+      await em.rollback();
       throw e;
     }
   }
