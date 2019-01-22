@@ -252,7 +252,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.getReference(Author2.name, god.id);
+    const newGod = orm.em.getReference(Author2.name, god.id);
     const publisher = await orm.em.findOne(Publisher2.name, pub.id, ['books']);
     await newGod.init();
 

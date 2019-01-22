@@ -288,7 +288,7 @@ You can call `await entity.init()` to initialize the entity. This will trigger d
 and populate itself, keeping the same reference in identity map. 
 
 ```typescript
-const author = await orm.em.getReference('...id...');
+const author = orm.em.getReference('...id...');
 console.log(author.id); // accessing the id will not trigger any db call
 console.log(author.isInitialized()); // false
 console.log(author.name); // undefined
@@ -359,7 +359,7 @@ Every entity has both `ObjectID` and `string` id available, also all methods of 
 and `EntityRepository` supports querying by both of them. 
 
 ```typescript
-const author = await orm.em.getReference('...id...');
+const author = orm.em.getReference('...id...');
 console.log(author.id);  // returns '...id...'
 console.log(author._id); // returns ObjectID('...id...')
 

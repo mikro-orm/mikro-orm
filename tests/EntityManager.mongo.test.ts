@@ -238,7 +238,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.getReference(Author.name, god.id);
+    const newGod = orm.em.getReference(Author.name, god.id);
     const publisher = await orm.em.findOne(Publisher.name, pub.id, ['books']);
     await newGod.init();
 
