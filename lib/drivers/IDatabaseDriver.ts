@@ -17,7 +17,7 @@ export interface IDatabaseDriver {
   /**
    * Closes the database connection (aka disconnect)
    */
-  close(force: boolean): Promise<void>;
+  close(force?: boolean): Promise<void>;
 
   /**
    * Finds selection of entities

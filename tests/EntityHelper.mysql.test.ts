@@ -1,6 +1,6 @@
 import { MikroORM } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2 } from './entities-mysql';
+import { Author2, Book2, BookTag2 } from './entities-sql';
 
 /**
  * @class EntityHelperMySqlTest

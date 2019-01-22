@@ -1,17 +1,18 @@
-import { Collection, EntityManager, MikroORM, MikroORMOptions, MySqlDriver } from '../lib';
-import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { unlinkSync } from 'fs';
+import { Collection, EntityManager, MikroORM, SqliteDriver } from '../lib';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { Utils } from '../lib/Utils';
 
 /**
- * @class EntityManagerMySqlTest
+ * @class EntityManagerSqliteTest
  */
-describe('EntityManagerMySql', () => {
+describe('EntityManagerSqlite', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeAll(async () => orm = await initORMSqlite());
+  beforeEach(async () => wipeDatabaseSqlite(orm.em));
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -21,36 +22,19 @@ describe('EntityManagerMySql', () => {
     expect(await orm.isConnected()).toBe(true);
   });
 
-  test('getConnectionOptions()', async () => {
-    const driver = new MySqlDriver({
-      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
-      host: '127.0.0.10',
-      password: 'secret',
-      user: 'user',
-    } as MikroORMOptions);
-    expect(driver.getConnectionOptions()).toEqual({
-      database: 'db_name',
-      host: '127.0.0.10',
-      password: 'secret',
-      port: 3308,
-      user: 'user',
-    });
-  });
-
-  test('should return mysql driver', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
-    expect(driver instanceof MySqlDriver).toBe(true);
+  test('should return sqlite driver', async () => {
+    const driver = orm.em.getDriver<SqliteDriver>();
+    expect(driver instanceof SqliteDriver).toBe(true);
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
     expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
-    const res = await driver.execute('SELECT 1 as count');
-    expect(res[0][0]).toEqual({ count: 1 });
+    expect(await driver.execute('SELECT 1 as count', [], 'get')).toEqual({ count: 1 });
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
-    const err1 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)\n with params: ["bar"]`;
+    const driver = orm.em.getDriver<SqliteDriver>();
+    const err1 = `SQLITE_ERROR: no such table: not_existing\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)\n with params: ["bar"]`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: DELETE FROM \`not_existing\``;
+    const err2 = `SQLITE_ERROR: no such table: not_existing\n in query: DELETE FROM \`not_existing\``;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -89,6 +73,22 @@ describe('EntityManagerMySql', () => {
       const res4 = await orm.em.findOne(Author2.name, { name: 'God4' });
       expect(res4).toBeNull();
     }
+  });
+
+  test('transactions with save-points', async () => {
+    const god1 = new Author2('God1', 'hello@heaven.god');
+    await orm.em.begin('s1');
+    await orm.em.persist(god1);
+    await orm.em.rollback('s1');
+    const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
+    expect(res1).toBeNull();
+
+    await orm.em.begin('s2');
+    const god2 = new Author2('God2', 'hello@heaven.god');
+    await orm.em.persist(god2);
+    await orm.em.commit('s2');
+    const res2 = await orm.em.findOne(Author2.name, { name: 'God2' });
+    expect(res2).not.toBeNull();
   });
 
   test('should load entities', async () => {
@@ -564,7 +564,7 @@ describe('EntityManagerMySql', () => {
     const res5 = await orm.em.nativeUpdate(Author2.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
-    await expect(orm.em.aggregate(Author2.name, [])).rejects.toThrowError('Aggregations are not supported by MySqlDriver driver');
+    await expect(orm.em.aggregate(Author2.name, [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {
@@ -579,6 +579,9 @@ describe('EntityManagerMySql', () => {
     expect(typeof diff.favouriteBook).toBe('number');
   });
 
-  afterAll(async () => orm.close(true));
+  afterAll(async () => {
+    await orm.close(true);
+    unlinkSync(orm.options.dbName);
+  });
 
 });

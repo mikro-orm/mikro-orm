@@ -6,8 +6,8 @@ import { EntityMetadata, ReferenceType } from './decorators/Entity';
  */
 export class QueryBuilder {
 
+  type: QueryType;
   private aliasCounter = 1;
-  private type: QueryType;
   private flags: QueryFlag[] = [];
   private _fields: string | string[];
   private _populate: string[] = [];
@@ -43,7 +43,7 @@ export class QueryBuilder {
     return this;
   }
 
-  delete(cond: any): QueryBuilder {
+  delete(cond: any = {}): QueryBuilder {
     this.type = QueryType.DELETE;
     this._cond = this.processWhere(cond);
 

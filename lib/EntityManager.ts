@@ -129,16 +129,16 @@ export class EntityManager {
     return entity;
   }
 
-  async begin(): Promise<void> {
-    await this.getDriver().begin();
+  async begin(savepoint?: string): Promise<void> {
+    await this.getDriver().begin(savepoint);
   }
 
-  async commit(): Promise<void> {
-    await this.getDriver().commit();
+  async commit(savepoint?: string): Promise<void> {
+    await this.getDriver().commit(savepoint);
   }
 
-  async rollback(): Promise<void> {
-    await this.getDriver().rollback();
+  async rollback(savepoint?: string): Promise<void> {
+    await this.getDriver().rollback(savepoint);
   }
 
   async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {

@@ -15,7 +15,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   abstract async isConnected(): Promise<boolean>;
 
-  abstract async close(force: boolean): Promise<void>;
+  abstract async close(force?: boolean): Promise<void>;
 
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]>;
 
@@ -27,9 +27,11 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   abstract async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
 
-  abstract async aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
-
   abstract async count(entityName: string, where: any): Promise<number>;
+
+  async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
+    throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
+  }
 
   abstract getDefaultClientUrl(): string;
 

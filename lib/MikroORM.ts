@@ -93,7 +93,7 @@ export interface MikroORMOptions {
   port?: number;
   user?: string;
   password?: string;
-  multipleStatements?: boolean;
+  multipleStatements?: boolean; // for mysql driver
   strict: boolean;
   logger: (message: string) => void;
   debug: boolean;

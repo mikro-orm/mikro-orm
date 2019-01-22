@@ -1,4 +1,4 @@
-import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-mysql';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { QueryBuilder, QueryOrder } from '../lib/QueryBuilder';
 import { initORMMySql } from './bootstrap';
 import { MikroORM } from '../lib';

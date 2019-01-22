@@ -1,50 +1,45 @@
-import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
+import * as sqlite from 'sqlite';
+import { Database } from 'sqlite';
 import { readFileSync } from 'fs';
-import { URL } from 'url';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
-import { QueryBuilder } from '../QueryBuilder';
+import { QueryBuilder, QueryType } from '../QueryBuilder';
 import { IEntity, IPrimaryKey, ReferenceType } from '..';
 import { Utils } from '../Utils';
 
-export class MySqlDriver extends DatabaseDriver {
+export class SqliteDriver extends DatabaseDriver {
 
-  protected connection: Connection;
+  protected connection: Database;
 
   async connect(): Promise<void> {
-    this.connection = await createConnection(this.getConnectionOptions());
+    this.connection = await sqlite.open(this.options.dbName);
   }
 
   async close(force?: boolean): Promise<void> {
-    await this.connection.end({ force });
+    await this.connection.close();
   }
 
   async isConnected(): Promise<boolean> {
-    try {
-      await this.connection.query('SELECT 1');
-      return true;
-    } catch {
-      return false;
-    }
+    return this.connection['driver']['open'];
   }
 
-  async begin(): Promise<void> {
-    await this.connection.beginTransaction();
+  async begin(savepoint?: string): Promise<void> {
+    await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'BEGIN', [], 'run');
   }
 
-  async commit(): Promise<void> {
-    await this.connection.commit();
+  async commit(savepoint?: string): Promise<void> {
+    await this.execute(savepoint ? `RELEASE SAVEPOINT ${savepoint}` : 'COMMIT', [], 'run');
   }
 
-  async rollback(): Promise<void> {
-    await this.connection.rollback();
+  async rollback(savepoint?: string): Promise<void> {
+    await this.execute(savepoint ? `ROLLBACK TO SAVEPOINT ${savepoint}` : 'ROLLBACK', [], 'run');
   }
 
   async count(entityName: string, where: any): Promise<number> {
     const qb = new QueryBuilder(entityName, this.metadata);
     qb.count('id').where(where);
-    const res = await this.execute(qb);
+    const res = await this.execute(qb, [], 'get');
 
-    return res[0][0].count;
+    return res.count;
   }
 
   async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
@@ -52,7 +47,7 @@ export class MySqlDriver extends DatabaseDriver {
     qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
     const res = await this.execute(qb);
 
-    return res[0].map(r => this.mapResult(r, this.metadata[entityName]));
+    return res.map(r => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
@@ -62,23 +57,28 @@ export class MySqlDriver extends DatabaseDriver {
 
     const qb = new QueryBuilder(entityName, this.metadata);
     qb.select('*').populate(populate).where(where).limit(1);
-    const res = await this.execute(qb);
+    const res = await this.execute(qb, [], 'get');
 
-    return this.mapResult(res[0][0], this.metadata[entityName]);
+    return this.mapResult(res, this.metadata[entityName]);
   }
 
   getDefaultClientUrl(): string {
-    return 'mysql://root@127.0.0.1:3306';
+    return '';
   }
 
   async nativeInsert(entityName: string, data: any): Promise<number> {
     const collections = this.extractManyToMany(entityName, data);
+
+    if (Object.keys(data).length === 0) {
+      data.id = null;
+    }
+
     const qb = new QueryBuilder(entityName, this.metadata);
     qb.insert(data);
-    const res = await this.execute(qb);
-    await this.processManyToMany(entityName, res[0].insertId, collections);
+    const res = await this.execute(qb, [], 'run');
+    await this.processManyToMany(entityName, res.lastID, collections);
 
-    return res[0].insertId;
+    return res.lastID;
   }
 
   async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
@@ -87,17 +87,17 @@ export class MySqlDriver extends DatabaseDriver {
     }
 
     const collections = this.extractManyToMany(entityName, data);
-    let res: any[];
+    let res: any;
 
     if (Object.keys(data).length) {
       const qb = new QueryBuilder(entityName, this.metadata);
       qb.update(data).where(where);
-      res = await this.execute(qb);
+      res = await this.execute(qb, [], 'run');
     }
 
     await this.processManyToMany(entityName, Utils.extractPK(data.id || where), collections);
 
-    return res ? res[0].affectedRows : 0;
+    return res ? res.changes : 0;
   }
 
   async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
@@ -109,23 +109,40 @@ export class MySqlDriver extends DatabaseDriver {
     qb.delete(where);
     const res = await this.execute(qb);
 
-    return res[0].affectedRows;
+    return res.changes;
   }
 
-  async execute(query: string | QueryBuilder, params?: any): Promise<any> {
+  async execute(query: string | QueryBuilder, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<any> {
     if (query instanceof QueryBuilder) {
+      method = method !== 'run' && query.type !== QueryType.SELECT ? 'run' : method;
       params = query.getParams();
       query = query.getQuery();
     }
 
+    params = params.map(p => {
+      if (p instanceof Date) {
+        p = p.toISOString();
+      }
+
+      if (typeof p === 'boolean') {
+        p = +p;
+      }
+
+      return p;
+    });
+
     this.logQuery(query);
 
     try {
-      return await this.connection.execute(query, params);
+      const statement = await this.connection.prepare(query);
+      const res = await statement[method](...params);
+      await statement.finalize();
+
+      return res;
     } catch (e) {
       e.message += `\n in query: ${query}`;
 
-      if (params && params.length) {
+      if (params.length) {
         e.message += `\n with params: ${JSON.stringify(params)}`;
       }
 
@@ -135,23 +152,7 @@ export class MySqlDriver extends DatabaseDriver {
 
   async loadFile(path: string): Promise<void> {
     const file = readFileSync(path);
-    await this.connection.query(file.toString());
-  }
-
-  getConnectionOptions(): ConnectionOptions {
-    const ret = {} as ConnectionOptions;
-    const url = new URL(this.options.clientUrl);
-    ret.host = this.options.host || url.hostname;
-    ret.port = this.options.port || +url.port;
-    ret.user = this.options.user || url.username;
-    ret.password = this.options.password || url.password;
-    ret.database = this.options.dbName || url.pathname.replace(/^\//, '');
-
-    if (this.options.multipleStatements) {
-      ret.multipleStatements = this.options.multipleStatements;
-    }
-
-    return ret;
+    await this.connection.exec(file.toString());
   }
 
   private extractManyToMany(entityName: string, data: any): any {

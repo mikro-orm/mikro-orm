@@ -1,6 +1,6 @@
-import { EntityManager, MikroORM, MySqlDriver } from '../lib';
+import { EntityManager, MikroORM, MySqlDriver, SqliteDriver } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-mysql';
+import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-sql';
 import { QueryBuilder } from '../lib/QueryBuilder';
 
 export async function initORM() {
@@ -27,7 +27,7 @@ export async function initORMMySql() {
   }
 
   const orm = await MikroORM.init({
-    entitiesDirs: ['entities-mysql'],
+    entitiesDirs: ['entities-sql'],
     dbName: `mikro_orm_test`,
     port,
     baseDir: __dirname,
@@ -38,6 +38,21 @@ export async function initORMMySql() {
 
   const driver = orm.em.getDriver<MySqlDriver>();
   await driver.loadFile(__dirname + '/mysql-schema.sql');
+
+  return orm;
+}
+
+export async function initORMSqlite() {
+  const orm = await MikroORM.init({
+    entitiesDirs: ['entities-sql'],
+    dbName: 'tests/mikro_orm_test.db',
+    baseDir: __dirname,
+    driver: SqliteDriver,
+    debug: true,
+  });
+
+  const driver = orm.em.getDriver<SqliteDriver>();
+  await driver.loadFile(__dirname + '/sqlite-schema.sql');
 
   return orm;
 }
@@ -60,5 +75,17 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await driver.execute(em.createQueryBuilder(Test2.name).truncate());
   await driver.execute(new QueryBuilder('book2_to_book_tag2', {}).truncate());
   await driver.execute(new QueryBuilder('publisher2_to_test2', {}).truncate());
+  em.clear();
+}
+
+export async function wipeDatabaseSqlite(em: EntityManager) {
+  const driver = em.getDriver<SqliteDriver>();
+  await driver.execute(em.createQueryBuilder(Author2.name).delete(), null, 'run');
+  await driver.execute(em.createQueryBuilder(Book2.name).delete(), null, 'run');
+  await driver.execute(em.createQueryBuilder(BookTag2.name).delete(), null, 'run');
+  await driver.execute(em.createQueryBuilder(Publisher2.name).delete(), null, 'run');
+  await driver.execute(em.createQueryBuilder(Test2.name).delete(), null, 'run');
+  await driver.execute(new QueryBuilder('book2_to_book_tag2', {}).delete(), null, 'run');
+  await driver.execute(new QueryBuilder('publisher2_to_test2', {}).delete(), null, 'run');
   em.clear();
 }

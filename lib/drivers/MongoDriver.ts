@@ -1,9 +1,7 @@
 import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { Utils } from '../Utils';
-import { IEntity, IPrimaryKey } from '..';
-import { NamingStrategy } from '../naming-strategy/NamingStrategy';
-import { MongoNamingStrategy } from '../naming-strategy/MongoNamingStrategy';
+import { IEntity, IPrimaryKey, NamingStrategy, MongoNamingStrategy } from '..';
 
 export class MongoDriver extends DatabaseDriver {
 
@@ -15,7 +13,7 @@ export class MongoDriver extends DatabaseDriver {
     this.db = this.client.db(this.options.dbName);
   }
 
-  async close(force: boolean): Promise<void> {
+  async close(force?: boolean): Promise<void> {
     return this.client.close(force);
   }
 

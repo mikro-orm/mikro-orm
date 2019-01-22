@@ -1,6 +1,7 @@
 # mikro-orm
 
-Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB and MySQL databases. 
+Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB,
+MySQL and SQLite databases. 
 
 Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 
@@ -17,6 +18,7 @@ Fist install the module via `yarn` or `npm` and do not forget to install the dat
 ```
 $ yarn add mikro-orm mongodb # for mongo
 $ yarn add mikro-orm mysql2 # for mysql
+$ yarn add mikro-orm sqlite # for sqlite
 ```
 
 or
@@ -24,6 +26,7 @@ or
 ```
 $ npm i -s mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm mysql2 # for mysql
+$ npm i -s mikro-orm sqlite # for sqlite
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
@@ -38,22 +41,20 @@ const orm = await MikroORM.init({
 console.log(orm.em); // EntityManager
 ```
 
-And do not forget to clear entity manager before each request if you do not want
-to store all loaded entities in memory:
+Then you will need to fork entity manager for each request so their identity maps will not 
+collide. To do so, use the `RequestContext` helper:
 
 ```typescript
 const app = express();
 
 app.use((req, res, next) => {
-  orm.em.clear();
-  next();
+  RequestContext.create(orm.em, next);
 });
 ```
 
-Or ideally use the `RequestContext` helper to have dedicated identity maps for each request, 
-as described [here](#request-context).
+More info about `RequestContext` is described [here](#request-context).
 
-Now you can define your entities (in one of the `entitiesDirs` folders):
+Now you can start defining your entities (in one of the `entitiesDirs` folders):
 
 ### Defining entity
 
@@ -493,10 +494,12 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
-## Usage with MySQL
+## Usage with MySQL and SQLite
 
-To use `mikro-orm` with MySQL database, do not forget to install `mysql2` driver and provide
+To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and provide
 `MySqlDriver` class when initializing ORM.
+
+Similarly for SQLite install `sqlite` dependency and provide `SqliteDriver`.
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
