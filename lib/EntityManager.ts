@@ -338,10 +338,20 @@ export class EntityManager {
 
     const prop = this.metadata[entityName].properties[field];
 
-    // TODO we could probably improve M:N owner collection init for mysql driver
-    if (prop.reference === ReferenceType.MANY_TO_MANY && (!prop.owner || this.driver.usesPivotTable())) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
+      const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
+      const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
+
       for (const entity of entities) {
         if (!entity[field].isInitialized()) {
+          const items = map[entity.id as number].map(item => this.entityFactory.createReference(prop.type, item));
+          (entity[field] as Collection<IEntity>).set(items, true);
+        }
+      }
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner) {
+      // TODO we could probably improve M:N inversed side collection init for mongo driver
+      for (const entity of entities) {
+        if (!entity[field].isInitialized(true)) {
           await (entity[field] as Collection<IEntity>).init();
         }
       }

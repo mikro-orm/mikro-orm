@@ -46,7 +46,8 @@ export class Collection<T extends IEntity> {
     const em = this.owner.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
-      await this.loadFromPivotTable();
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
+      map[this.owner.id as number].forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item)));
     }
 
     // do not make db call if we know we will get no results
@@ -189,24 +190,6 @@ export class Collection<T extends IEntity> {
     }
 
     return cond;
-  }
-
-  private async loadFromPivotTable(): Promise<void> {
-    const em = this.owner.getEntityManager();
-    const driver = em.getDriver();
-    const metadata = em.entityFactory.getMetadata();
-    const fk1 = this.property.joinColumn;
-    const fk2 = this.property.inverseJoinColumn;
-    let items = [];
-
-    if (this.property.owner) {
-      items = await driver.find(this.property.pivotTable, { [fk1]: this.owner.id });
-    } else {
-      const prop = metadata[this.property.type].properties[this.property.mappedBy];
-      items = await driver.find(prop.pivotTable, { [fk1]: this.owner.id });
-    }
-
-    items.forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item[fk2])));
   }
 
   private get property() {

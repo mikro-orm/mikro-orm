@@ -1,5 +1,5 @@
 import { ObjectID } from 'bson';
-import { Collection, EntityManager, MikroORM, MongoDriver } from '../lib';
+import { Collection, EntityManager, EntityProperty, MikroORM, MongoDriver } from '../lib';
 import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -256,6 +256,8 @@ describe('EntityManagerMongo', () => {
     expect(driver instanceof MongoDriver).toBe(true);
     expect(driver.getCollection(Book.name).collectionName).toBe('books-table');
     expect(await driver.findOne(Book.name, { foo: 'bar' })).toBeNull();
+    expect(driver.usesPivotTable()).toBe(false);
+    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables')
   });
 
   test('findOne by id', async () => {
@@ -447,6 +449,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository<BookTag>(BookTag.name);
 
     orm.em.clear();
+    await repo.findOne(tag5.id, ['books']);
     const tags = await repo.findAll(['books']);
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);

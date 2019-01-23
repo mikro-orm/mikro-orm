@@ -1,9 +1,10 @@
 import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
 import { readFileSync } from 'fs';
 import { URL } from 'url';
+
+import { IEntity, IPrimaryKey, ReferenceType } from '..';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
 import { QueryBuilder } from '../QueryBuilder';
-import { IEntity, IPrimaryKey, ReferenceType } from '..';
 import { Utils } from '../Utils';
 
 export class MySqlDriver extends DatabaseDriver {
@@ -187,7 +188,6 @@ export class MySqlDriver extends DatabaseDriver {
         qb1.delete({ [fk1]: pk });
         await this.execute(qb1);
 
-        // TODO add order column so we do not need to sort by PK?
         for (const item of collections[k]) {
           const qb2 = new QueryBuilder(prop.pivotTable, this.metadata);
           qb2.insert({ [fk1]: pk, [fk2]: item });

@@ -1,6 +1,5 @@
 import { FilterQuery } from './DatabaseDriver';
-import { IEntity, IPrimaryKey } from '..';
-import { NamingStrategy } from '../naming-strategy/NamingStrategy';
+import { EntityProperty, IEntity, IPrimaryKey, NamingStrategy } from '..';
 
 export interface IDatabaseDriver {
 
@@ -77,5 +76,10 @@ export interface IDatabaseDriver {
    * NoSQL databases do require pivot table for M:N
    */
   usesPivotTable(): boolean;
+
+  /**
+   * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
+   */
+  loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: number]: IPrimaryKey[] }>;
 
 }

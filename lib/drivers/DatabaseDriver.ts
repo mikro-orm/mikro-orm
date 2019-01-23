@@ -1,6 +1,6 @@
 import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, EntityMetadata, NamingStrategy, UnderscoreNamingStrategy } from '..';
+import { IEntity, IPrimaryKey, EntityMetadata, NamingStrategy, UnderscoreNamingStrategy, EntityProperty } from '..';
 import { Utils } from '../Utils';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
@@ -17,7 +17,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   abstract async close(force?: boolean): Promise<void>;
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]>;
+  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
 
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T>;
 
@@ -45,6 +45,23 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   async rollback(savepoint: string): Promise<void> {
     throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
+  }
+
+  async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: number]: IPrimaryKey[] }> {
+    if (!this.usesPivotTable()) {
+      throw new Error(`${this.constructor.name} does not use pivot tables`);
+    }
+
+    const fk1 = prop.joinColumn;
+    const fk2 = prop.inverseJoinColumn;
+    const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
+    const items = await this.find(pivotTable, { [fk1]: { $in: owners } });
+
+    const map = {} as any;
+    owners.forEach(owner => map[owner as number] = []);
+    items.forEach(item => map[item[fk1]].push(item[fk2]));
+
+    return map;
   }
 
   normalizePrimaryKey(data: IPrimaryKey): number | string {

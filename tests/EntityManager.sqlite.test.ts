@@ -533,6 +533,7 @@ describe('EntityManagerSqlite', () => {
     await repo.persist(author);
 
     author.name = 'name1';
+    await new Promise(resolve => setTimeout(resolve, 10));
     await repo.persist(author);
     await expect(author.createdAt).not.toBeUndefined();
     await expect(author.updatedAt).not.toBeUndefined();
