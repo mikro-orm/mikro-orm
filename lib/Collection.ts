@@ -51,7 +51,7 @@ export class Collection<T extends IEntity> {
     }
 
     // do not make db call if we know we will get no results
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner && this.items.length === 0) {
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getDriver().usesPivotTable()) && this.items.length === 0) {
       this.initialized = true;
       this.dirty = false;
       this.populated();

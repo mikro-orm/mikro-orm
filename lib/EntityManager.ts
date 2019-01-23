@@ -337,39 +337,28 @@ export class EntityManager {
     });
 
     const prop = this.metadata[entityName].properties[field];
+    const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
-      const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
 
-      for (const entity of entities) {
-        if (!entity[field].isInitialized()) {
-          const items = map[entity.id as number].map(item => this.entityFactory.createReference(prop.type, item));
-          (entity[field] as Collection<IEntity>).set(items, true);
-        }
+      for (const entity of filtered) {
+        const items = map[entity.id as number].map(item => this.entityFactory.createReference(prop.type, item));
+        (entity[field] as Collection<IEntity>).set(items, true);
       }
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner) {
-      // TODO we could probably improve M:N inversed side collection init for mongo driver
-      for (const entity of entities) {
-        if (!entity[field].isInitialized(true)) {
-          await (entity[field] as Collection<IEntity>).init();
-        }
-      }
-
-      return;
     }
 
     const children: IEntity[] = [];
     let fk = this.namingStrategy.referenceColumnName();
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const filtered = entities.filter(e => e[field] instanceof Collection);
       children.push(...filtered.map(e => e[field].owner));
-      const prop2 = this.metadata[prop.type].properties[prop.fk];
-      fk = prop2.fieldName;
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
+      fk = this.metadata[prop.type].properties[prop.fk].fieldName;
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
       children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
+      children.push(...filtered);
+      fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
     } else {
       children.push(...entities.filter(e => Utils.isEntity(e[field]) && !e[field].isInitialized()).map(e => e[field]));
     }
@@ -383,8 +372,15 @@ export class EntityManager {
 
     // initialize collections for one to many
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      for (const entity of entities) {
+      for (const entity of filtered) {
         const items = data.filter(child => child[prop.fk] === entity);
+        (entity[field] as Collection<IEntity>).set(items, true);
+      }
+    }
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.usesPivotTable()) {
+      for (const entity of filtered) {
+        const items = data.filter(child => (child[prop.mappedBy] as Collection<IEntity>).contains(entity));
         (entity[field] as Collection<IEntity>).set(items, true);
       }
     }

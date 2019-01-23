@@ -255,7 +255,7 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver<MongoDriver>();
     expect(driver instanceof MongoDriver).toBe(true);
     expect(driver.getCollection(Book.name).collectionName).toBe('books-table');
-    expect(await driver.findOne(Book.name, { foo: 'bar' })).toBeNull();
+    expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.usesPivotTable()).toBe(false);
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables')
   });
@@ -449,7 +449,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository<BookTag>(BookTag.name);
 
     orm.em.clear();
-    await repo.findOne(tag5.id, ['books']);
+    await repo.findOne(tag5.id, ['books']); // preload one of collections to test it is not re-loaded
     const tags = await repo.findAll(['books']);
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);

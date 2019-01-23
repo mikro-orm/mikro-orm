@@ -231,6 +231,10 @@ export class EntityFactory {
           prop.fieldName = namingStrategy.joinColumnName(prop.name);
           break;
       }
+
+      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
+        prop.fieldName = namingStrategy.propertyToColumnName(prop.name);
+      }
     }
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
