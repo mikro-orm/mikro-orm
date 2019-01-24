@@ -482,7 +482,7 @@ describe('EntityManagerMySql', () => {
     expect(author.versionAsString).toBeUndefined();
 
     await repo.persist(author);
-    expect(author.id).not.toBeUndefined();
+    expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
 
@@ -536,22 +536,23 @@ describe('EntityManagerMySql', () => {
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository<Author2>(Author2.name);
     const author = new Author2('name', 'email');
-    await expect(author.createdAt).not.toBeUndefined();
-    await expect(author.updatedAt).not.toBeUndefined();
-    await expect(author.updatedAt).toEqual(author.createdAt);
+    await expect(author.createdAt).toBeDefined();
+    await expect(author.updatedAt).toBeDefined();
+    // allow 1 ms difference as updated time is recalculated when persisting
+    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
     await repo.persist(author);
 
     author.name = 'name1';
     await repo.persist(author);
-    await expect(author.createdAt).not.toBeUndefined();
-    await expect(author.updatedAt).not.toBeUndefined();
+    await expect(author.createdAt).toBeDefined();
+    await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
     await expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
     const ent = await repo.findOne(author.id);
-    await expect(ent.createdAt).not.toBeUndefined();
-    await expect(ent.updatedAt).not.toBeUndefined();
+    await expect(ent.createdAt).toBeDefined();
+    await expect(ent.updatedAt).toBeDefined();
     await expect(ent.updatedAt).not.toEqual(ent.createdAt);
     await expect(ent.updatedAt > ent.createdAt).toBe(true);
   });

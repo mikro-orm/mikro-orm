@@ -551,22 +551,23 @@ describe('EntityManagerMongo', () => {
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository<Author>(Author.name);
     const author = new Author('name', 'email');
-    await expect(author.createdAt).not.toBeUndefined();
-    await expect(author.updatedAt).not.toBeUndefined();
-    await expect(author.updatedAt).toEqual(author.createdAt);
+    await expect(author.createdAt).toBeDefined();
+    await expect(author.updatedAt).toBeDefined();
+    // allow 1 ms difference as updated time is recalculated when persisting
+    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
     await repo.persist(author);
 
     author.name = 'name1';
     await repo.persist(author);
-    await expect(author.createdAt).not.toBeUndefined();
-    await expect(author.updatedAt).not.toBeUndefined();
+    await expect(author.createdAt).toBeDefined();
+    await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
     await expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
     const ent = await repo.findOne(author.id);
-    await expect(ent.createdAt).not.toBeUndefined();
-    await expect(ent.updatedAt).not.toBeUndefined();
+    await expect(ent.createdAt).toBeDefined();
+    await expect(ent.updatedAt).toBeDefined();
     await expect(ent.updatedAt).not.toEqual(ent.createdAt);
     await expect(ent.updatedAt > ent.createdAt).toBe(true);
   });
