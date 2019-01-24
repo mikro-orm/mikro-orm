@@ -43,14 +43,14 @@ describe('QueryBuilder', () => {
   test('select by m:n', async () => {
     const qb = new QueryBuilder(Book2.name, orm.em.entityFactory.getMetadata());
     qb.select('*').where({ tags: 123 });
-    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` LEFT JOIN `book2_to_book_tag2` AS `e1` ON `e0`.`id` = `e1`.`book2_id` WHERE `e1`.`book_tag2_id` = ?');
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`book2_id`, `e1`.`book_tag2_id` FROM `book2` AS `e0` LEFT JOIN `book2_to_book_tag2` AS `e1` ON `e0`.`id` = `e1`.`book2_id` WHERE `e1`.`book_tag2_id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by m:n inversed', async () => {
     const qb = new QueryBuilder(BookTag2.name, orm.em.entityFactory.getMetadata());
     qb.select('*').where({ books: 123 });
-    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `book_tag2` AS `e0` LEFT JOIN `book2_to_book_tag2` AS `e1` ON `e0`.`id` = `e1`.`book_tag2_id` WHERE `e1`.`book2_id` = ?');
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`book_tag2_id`, `e1`.`book2_id` FROM `book_tag2` AS `e0` LEFT JOIN `book2_to_book_tag2` AS `e1` ON `e0`.`id` = `e1`.`book_tag2_id` WHERE `e1`.`book2_id` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
