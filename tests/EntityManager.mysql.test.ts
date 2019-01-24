@@ -54,6 +54,15 @@ describe('EntityManagerMySql', () => {
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
+  test('should throw when trying to search by entity instead of identifier', async () => {
+    const repo = orm.em.getRepository<Author2>(Author2.name);
+    const author = new Author2('name', 'email');
+    await repo.persist(author);
+    await expect(repo.find(author)).rejects.toThrowError('Author2 entity provided in search condition. Please provide identifier instead.');
+    await expect(repo.find({ author })).rejects.toThrowError(`Author2 entity provided in search condition in field 'author'. Please provide identifier instead.`);
+    expect(await repo.findOne({ termsAccepted: false })).toBeNull();
+  });
+
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven.god');
     await orm.em.begin();
