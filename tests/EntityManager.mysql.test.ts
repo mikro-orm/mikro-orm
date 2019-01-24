@@ -495,7 +495,7 @@ describe('EntityManagerMySql', () => {
     expect(Author2.afterDestroyCalled).toBe(2);
   });
 
-   test('trying to populate non-existing or non-reference property will throw', async () => {
+  test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository<Author2>(Author2.name);
     const author = new Author2('Johny Cash', 'johny@cash.com');
     await repo.persist(author);
@@ -505,7 +505,7 @@ describe('EntityManagerMySql', () => {
     await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
   });
 
-   test('many to many collection does have fixed order', async () => {
+  test('many to many collection does have fixed order', async () => {
     const repo = orm.em.getRepository<Publisher2>(Publisher2.name);
     const publisher = new Publisher2();
     const t1 = Test2.create('t1');

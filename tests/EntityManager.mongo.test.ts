@@ -501,7 +501,7 @@ describe('EntityManagerMongo', () => {
     expect(repo.canPopulate('books')).toBe(true);
   });
 
-   test('trying to populate non-existing or non-reference property will throw', async () => {
+  test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository<Author>(Author.name);
     const author = new Author('Johny Cash', 'johny@cash.com');
     await repo.persist(author);
@@ -511,7 +511,7 @@ describe('EntityManagerMongo', () => {
     await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
   });
 
-   test('trying to populate non-existing or non-reference property will throw', async () => {
+  test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository<Author>(Author.name);
     const author = new Author('Johny Cash', 'johny@cash.com');
     await repo.persist(author);
@@ -521,7 +521,7 @@ describe('EntityManagerMongo', () => {
     await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
   });
 
-   test('many to many collection does have fixed order', async () => {
+  test('many to many collection does have fixed order', async () => {
     const repo = orm.em.getRepository<Publisher>(Publisher.name);
     const publisher = new Publisher();
     const t1 = Test.create('t1');

@@ -27,8 +27,9 @@ export class MongoDriver extends DatabaseDriver {
 
   async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
     const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
-    this.logQuery(`${query}.toArray();`);
+    const now = Date.now();
     const res = await resultSet.toArray();
+    this.logQuery(`${query}.toArray(); [took ${Date.now() - now} ms]`);
 
     return res.map(r => this.mapResult(r, this.metadata[entityName]));
   }
@@ -40,9 +41,10 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
-    this.logQuery(query);
     where = Utils.convertObjectIds(where);
+    const now = Date.now();
     const res = await this.getCollection(entityName).find<T>(where as FilterQuery<T>).limit(1).next();
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
     return this.mapResult(res, this.metadata[entityName]);
   }
@@ -50,19 +52,23 @@ export class MongoDriver extends DatabaseDriver {
   async count(entityName: string, where: any): Promise<number> {
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
-    this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
-    return this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
+    const now = Date.now();
+    const res = await this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+
+    return res;
   }
 
   async nativeInsert(entityName: string, data: any): Promise<ObjectID> {
     data = this.renameFields(entityName, data);
     const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
-    this.logQuery(query);
     data = Utils.convertObjectIds(data);
 
+    const now = Date.now();
     const result = await this.getCollection(entityName).insertOne(data);
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
     return result.insertedId;
   }
@@ -74,10 +80,11 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
-    this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
+    const now = Date.now();
     const result = await this.getCollection(entityName).updateMany(where as FilterQuery<IEntity>, { $set: data });
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
     return result.modifiedCount;
   }
@@ -89,19 +96,23 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    this.logQuery(query);
     where = Utils.convertObjectIds(where);
 
+    const now = Date.now();
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<IEntity>);
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
     return result.deletedCount;
   }
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     const query = `db.getCollection("${this.metadata[entityName].collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
-    this.logQuery(query);
 
-    return this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
+    const now = Date.now();
+    const res = await this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
+    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+
+    return res;
   }
 
   normalizePrimaryKey(data: IPrimaryKey): string {

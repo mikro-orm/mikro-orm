@@ -132,12 +132,12 @@ export class SqliteDriver extends DatabaseDriver {
       return p;
     });
 
-    this.logQuery(query);
-
     try {
+      const now = Date.now();
       const statement = await this.connection.prepare(query);
       const res = await statement[method](...params);
       await statement.finalize();
+      this.logQuery(query + ` [took ${Date.now() - now} ms]`);
 
       return res;
     } catch (e) {

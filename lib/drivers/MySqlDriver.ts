@@ -119,10 +119,12 @@ export class MySqlDriver extends DatabaseDriver {
       query = query.getQuery();
     }
 
-    this.logQuery(query);
-
     try {
-      return await this.connection.execute(query, params);
+      const now = Date.now();
+      const res = await this.connection.execute(query, params);
+      this.logQuery(query + ` [took ${Date.now() - now} ms]`);
+
+      return res;
     } catch (e) {
       e.message += `\n in query: ${query}`;
 
