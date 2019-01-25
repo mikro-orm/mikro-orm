@@ -13,6 +13,7 @@ export class SqliteDriver extends DatabaseDriver {
 
   async connect(): Promise<void> {
     this.connection = await sqlite.open(this.options.dbName);
+    await this.connection.exec('PRAGMA foreign_keys = ON');
   }
 
   async close(force?: boolean): Promise<void> {
