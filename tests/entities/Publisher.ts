@@ -1,14 +1,5 @@
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  ObjectID,
-  IEntity,
-  BeforeCreate,
-} from '../../lib';
+import { ObjectID } from 'mongodb';
+import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, IEntity, BeforeCreate } from '../../lib';
 import { Book } from './Book';
 import { Test } from './Test';
 

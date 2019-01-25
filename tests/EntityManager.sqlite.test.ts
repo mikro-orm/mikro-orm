@@ -1,8 +1,9 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, MikroORM, SqliteDriver } from '../lib';
+import { Collection, EntityManager, MikroORM } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { Utils } from '../lib/Utils';
+import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 
 /**
  * @class EntityManagerSqliteTest

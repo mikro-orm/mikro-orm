@@ -8,6 +8,7 @@ import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
+import { EntityHelper } from './EntityHelper';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -178,7 +179,13 @@ export class EntityFactory {
 
       const name = file.split('.')[0];
       const path = `${this.options.baseDir}/${basePath}/${file}`;
-      require(path); // include the file to trigger loading of metadata
+      const target = require(path)[name]; // include the file to trigger loading of metadata
+
+      // already discovered, do not re-initialize
+      if (Utils.isEntity(target.prototype)) {
+        return;
+      }
+
       const source = sources.find(s => !!s.getFilePath().match(new RegExp(name + '.ts')));
       this.metadata[name].path = path;
       const properties = source.getClass(name).getInstanceProperties();
@@ -214,6 +221,8 @@ export class EntityFactory {
 
         this.applyNamingStrategy(name, props[p], namingStrategy);
       });
+
+      EntityHelper.decorate(target.prototype, this.metadata[name], this.em.getDriver());
     });
   }
 

@@ -1,4 +1,4 @@
-import { ObjectID } from 'bson';
+import { ObjectID } from 'mongodb';
 import { Author, Book, BookTag } from './entities';
 import { EntityManager, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -47,7 +47,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(author);
     orm.em.clear();
 
-    const jon = orm.em.getReference(Author.name, author.id);
+    const jon = orm.em.getReference<Author>(Author.name, author.id);
     expect(jon.isInitialized()).toBe(false);
     await EntityHelper.init(jon);
     expect(jon.isInitialized()).toBe(true);

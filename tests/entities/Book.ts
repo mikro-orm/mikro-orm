@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
+import { ObjectID } from 'mongodb';
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, IEntity } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './BookTag';

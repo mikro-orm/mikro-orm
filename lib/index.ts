@@ -1,5 +1,3 @@
-import { ObjectID } from 'bson';
-
 export * from './MikroORM';
 export * from './EntityRepository';
 export * from './EntityManager';
@@ -8,9 +6,6 @@ export * from './BaseEntity';
 export * from './Collection';
 export * from './drivers/IDatabaseDriver';
 export * from './drivers/DatabaseDriver';
-export * from './drivers/MongoDriver';
-export * from './drivers/MySqlDriver';
-export * from './drivers/SqliteDriver';
 export * from './naming-strategy/NamingStrategy';
 export * from './naming-strategy/MongoNamingStrategy';
 export * from './naming-strategy/UnderscoreNamingStrategy';
@@ -21,4 +16,3 @@ export * from './decorators/ManyToMany';
 export * from './decorators/Property';
 export * from './decorators/PrimaryKey';
 export * from './decorators/hooks';
-export { ObjectID } from 'bson';

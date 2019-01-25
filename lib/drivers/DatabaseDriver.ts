@@ -64,8 +64,12 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     return map;
   }
 
-  normalizePrimaryKey(data: IPrimaryKey): number | string {
-    return data as number | string;
+  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
+    return data as unknown as T;
+  }
+
+  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+    return data;
   }
 
   getTableName(entityName: string): string {

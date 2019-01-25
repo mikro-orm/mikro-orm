@@ -1,8 +1,9 @@
-import { ObjectID } from 'bson';
-import { Collection, EntityManager, EntityProperty, MikroORM, MongoDriver } from '../lib';
+import { ObjectID } from 'mongodb';
+import { Collection, EntityManager, EntityProperty, MikroORM } from '../lib';
 import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 /**
  * @class EntityManagerMongoTest

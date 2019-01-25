@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToMany, PrimaryKey, Property, ObjectID, IEntity } from '../../lib';
+import { ObjectID } from 'mongodb';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property, IEntity } from '../../lib';
 import { Book } from './Book';
 
 @Entity()

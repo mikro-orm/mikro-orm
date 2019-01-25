@@ -1,7 +1,9 @@
-import { EntityManager, MikroORM, MySqlDriver, SqliteDriver } from '../lib';
+import { EntityManager, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-sql';
 import { QueryBuilder } from '../lib/QueryBuilder';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 
 export async function initORM() {
   let hash = '';

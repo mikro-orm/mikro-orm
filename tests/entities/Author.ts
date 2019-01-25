@@ -1,6 +1,7 @@
+import { ObjectID } from 'mongodb';
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, ObjectID, IEntity,
+  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, IEntity,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -33,13 +34,13 @@ export class Author {
   @Property()
   termsAccepted = false;
 
-  @Property()
+  @Property({ fieldName: 'identitiesArray' })
   identities: string[];
 
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author' })
+  @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id' })
   books = new Collection<Book>(this);
 
   @ManyToOne()

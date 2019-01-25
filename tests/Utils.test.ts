@@ -1,4 +1,4 @@
-import { ObjectID } from 'bson';
+import { ObjectID } from 'mongodb';
 import { Utils } from '../lib/Utils';
 import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';

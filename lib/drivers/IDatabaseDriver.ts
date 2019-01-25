@@ -65,7 +65,12 @@ export interface IDatabaseDriver {
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
    */
-  normalizePrimaryKey(data: IPrimaryKey): number | string;
+  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T;
+
+  /**
+   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectID)
+   */
+  denormalizePrimaryKey(data: number | string): IPrimaryKey;
 
   /**
    * NoSQL databases do require pivot table for M:N

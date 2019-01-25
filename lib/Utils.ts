@@ -1,6 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IEntity, IPrimaryKey, ObjectID } from '.';
+import { IEntity, IPrimaryKey } from '.';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
@@ -83,28 +83,6 @@ export class Utils {
     }
   }
 
-  static convertObjectIds(payload: any): any {
-    if (payload instanceof ObjectID) {
-      return payload;
-    }
-
-    if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectID(payload);
-    }
-
-    if (Array.isArray(payload)) {
-      return payload.map((item: any) => Utils.convertObjectIds(item));
-    }
-
-    if (Utils.isObject(payload)) {
-      Object.keys(payload).forEach(k => {
-        payload[k] = Utils.convertObjectIds(payload[k]);
-      });
-    }
-
-    return payload;
-  }
-
   static getParamNames(func: Function | string): string[] {
     const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
     const ARGUMENT_NAMES = /([^\s,]+)/g;
@@ -134,7 +112,7 @@ export class Utils {
   }
 
   static isPrimaryKey(key: any): boolean {
-    return typeof key === 'string' || typeof key === 'number' || key instanceof ObjectID;
+    return typeof key === 'string' || typeof key === 'number' || Utils.isObjectID(key);
   }
 
   static extractPK(data: any): IPrimaryKey {
@@ -151,6 +129,10 @@ export class Utils {
 
   static isEntity(data: any): boolean {
     return Utils.isObject(data) && !!data.__entity;
+  }
+
+  static isObjectID(key: any) {
+    return Utils.isObject(key) && key.constructor.name === 'ObjectID';
   }
 
 }

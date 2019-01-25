@@ -1,7 +1,8 @@
-import { Collection, EntityManager, MikroORM, MikroORMOptions, MySqlDriver } from '../lib';
+import { Collection, EntityManager, MikroORM, MikroORMOptions } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Utils } from '../lib/Utils';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 /**
  * @class EntityManagerMySqlTest
@@ -44,6 +45,8 @@ describe('EntityManagerMySql', () => {
     expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
     const res = await driver.execute('SELECT 1 as count');
     expect(res[0][0]).toEqual({ count: 1 });
+    expect(driver.denormalizePrimaryKey(1)).toBe(1);
+    expect(driver.denormalizePrimaryKey('1')).toBe('1');
   });
 
   test('driver appends errored query', async () => {

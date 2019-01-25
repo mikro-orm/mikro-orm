@@ -9,7 +9,7 @@ import { Utils } from '../Utils';
 
 export class MySqlDriver extends DatabaseDriver {
 
-  protected connection: Connection;
+  private connection: Connection;
 
   async connect(): Promise<void> {
     this.connection = await createConnection(this.getConnectionOptions());

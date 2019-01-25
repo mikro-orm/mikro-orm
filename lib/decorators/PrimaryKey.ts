@@ -1,5 +1,5 @@
 import { getMetadataStorage } from '../MikroORM';
-import { EntityProperty, IEntity, ObjectID, ReferenceType } from '..';
+import { EntityProperty, IEntity, ReferenceType } from '..';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
@@ -15,19 +15,8 @@ export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
 
     options.name = propertyName;
     meta.properties = meta.properties || {};
+    meta.primaryKey = propertyName;
     meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
-
-    // define magic id property getter/setter if the key is `_id: ObjectID`
-    if (options.name === '_id' && options.type === 'ObjectID') {
-      Object.defineProperty(target, 'id', {
-        get(): string {
-          return this._id ? this._id.toHexString() : null;
-        },
-        set(id: string) {
-          this._id = id ? new ObjectID(id) : null;
-        },
-      });
-    }
   };
 }
 
@@ -37,4 +26,4 @@ export type PrimaryKeyOptions = {
   [prop: string]: any;
 }
 
-export type IPrimaryKey = number | string | ObjectID;
+export type IPrimaryKey = number | string | any;

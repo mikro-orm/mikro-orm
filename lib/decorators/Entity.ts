@@ -4,7 +4,6 @@ import { Utils } from '../Utils';
 import { Collection } from '../Collection';
 import { IPrimaryKey } from './PrimaryKey';
 import { EntityManager } from '../EntityManager';
-import { EntityHelper } from '../EntityHelper';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -12,7 +11,6 @@ export function Entity(options: EntityOptions = {}): Function {
     const meta = merge(storage[target.name], options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
-    EntityHelper.decorate(target.prototype);
 
     return target;
   };
@@ -66,6 +64,7 @@ export interface EntityMetadata {
   constructorParams: string[];
   collection: string;
   path: string;
+  primaryKey: string;
   properties: { [property: string]: EntityProperty };
   customRepository: any;
   hooks: { [type: string]: string[] };

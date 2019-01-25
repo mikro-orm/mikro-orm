@@ -113,9 +113,11 @@ export class EntityManager {
 
     where = this.driver.normalizePrimaryKey(where as IPrimaryKey);
 
-    if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where) && this.getIdentity(entityName, where).isInitialized()) {
-      await this.populateOne(entityName, this.getIdentity(entityName, where), populate);
-      return this.getIdentity<T>(entityName, where);
+    if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where as IPrimaryKey) && this.getIdentity(entityName, where as IPrimaryKey).isInitialized()) {
+      const entity = this.getIdentity<T>(entityName, where as IPrimaryKey);
+      await this.populateOne(entityName, entity, populate);
+
+      return entity;
     }
 
     this.validateParams(where);
@@ -318,11 +320,11 @@ export class EntityManager {
         throw new Error(`Entity '${entityName}' does not have property '${field}'`);
       }
 
-      if (entity[field] instanceof Collection && !entity[field].isInitialized(true)) {
+      if (entity[field] instanceof Collection && !(entity[field] as Collection<IEntity>).isInitialized(true)) {
         await (entity[field] as Collection<IEntity>).init();
       }
 
-      if (Utils.isEntity(entity[field]) && !entity[field].isInitialized()) {
+      if (Utils.isEntity(entity[field]) && !(entity[field] as IEntity).isInitialized()) {
         await (entity[field] as IEntity).init();
       }
     }

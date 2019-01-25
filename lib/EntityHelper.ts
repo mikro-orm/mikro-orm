@@ -1,8 +1,9 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
-import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
+import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 
 export class EntityHelper {
 
@@ -138,7 +139,21 @@ export class EntityHelper {
     (entity[prop.name] as Collection<IEntity>).set(items);
   }
 
-  static decorate(prototype: any) {
+  static decorate(prototype: any, meta: EntityMetadata, driver: IDatabaseDriver) {
+    const pk = meta.properties[meta.primaryKey];
+
+    // define magic id property getter/setter if the key is `_id: ObjectID`
+    if (pk.name === '_id' && pk.type === 'ObjectID') {
+      Object.defineProperty(prototype, 'id', {
+        get(): string {
+          return this._id ? driver.normalizePrimaryKey<string>(this._id) : null;
+        },
+        set(id: string) {
+          this._id = id ? driver.denormalizePrimaryKey(id) : null;
+        },
+      });
+    }
+
     Object.defineProperties(prototype, {
       __populated: { value: false, writable: true, enumerable: false, configurable: false },
       __entity: { value: true, writable: false, enumerable: false, configurable: false },

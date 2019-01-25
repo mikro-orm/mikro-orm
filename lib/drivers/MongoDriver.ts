@@ -41,7 +41,7 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
-    where = Utils.convertObjectIds(where);
+    where = this.convertObjectIds(where);
     const now = Date.now();
     const res = await this.getCollection(entityName).find<T>(where as FilterQuery<T>).limit(1).next();
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
@@ -52,7 +52,7 @@ export class MongoDriver extends DatabaseDriver {
   async count(entityName: string, where: any): Promise<number> {
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
-    where = Utils.convertObjectIds(where);
+    where = this.convertObjectIds(where);
 
     const now = Date.now();
     const res = await this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
@@ -64,7 +64,7 @@ export class MongoDriver extends DatabaseDriver {
   async nativeInsert(entityName: string, data: any): Promise<ObjectID> {
     data = this.renameFields(entityName, data);
     const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
-    data = Utils.convertObjectIds(data);
+    data = this.convertObjectIds(data);
 
     const now = Date.now();
     const result = await this.getCollection(entityName).insertOne(data);
@@ -80,7 +80,7 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
-    where = Utils.convertObjectIds(where);
+    where = this.convertObjectIds(where);
 
     const now = Date.now();
     const result = await this.getCollection(entityName).updateMany(where as FilterQuery<IEntity>, { $set: data });
@@ -96,7 +96,7 @@ export class MongoDriver extends DatabaseDriver {
 
     where = this.renameFields(entityName, where);
     const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    where = Utils.convertObjectIds(where);
+    where = this.convertObjectIds(where);
 
     const now = Date.now();
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<IEntity>);
@@ -115,12 +115,16 @@ export class MongoDriver extends DatabaseDriver {
     return res;
   }
 
-  normalizePrimaryKey(data: IPrimaryKey): string {
+  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
     if (data instanceof ObjectID) {
-      return data.toHexString();
+      return data.toHexString() as unknown as T;
     }
 
-    return data as string;
+    return data as unknown as T;
+  }
+
+  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+    return new ObjectID(data);
   }
 
   getDefaultClientUrl(): string {
@@ -138,7 +142,7 @@ export class MongoDriver extends DatabaseDriver {
   private buildQuery<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
     where = this.renameFields(entityName, where);
     let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
-    where = Utils.convertObjectIds(where);
+    where = this.convertObjectIds(where);
     const resultSet = this.getCollection(entityName).find(where as FilterQuery<T>);
 
     if (Object.keys(orderBy).length > 0) {
@@ -174,6 +178,28 @@ export class MongoDriver extends DatabaseDriver {
     });
 
     return data;
+  }
+
+  private convertObjectIds(payload: any): any {
+    if (payload instanceof ObjectID) {
+      return payload;
+    }
+
+    if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
+      return new ObjectID(payload);
+    }
+
+    if (Array.isArray(payload)) {
+      return payload.map((item: any) => this.convertObjectIds(item));
+    }
+
+    if (Utils.isObject(payload)) {
+      Object.keys(payload).forEach(k => {
+        payload[k] = this.convertObjectIds(payload[k]);
+      });
+    }
+
+    return payload;
   }
 
 }

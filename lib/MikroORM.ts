@@ -2,7 +2,6 @@ import 'reflect-metadata';
 
 import { EntityManager } from './EntityManager';
 import { EntityMetadata } from './decorators/Entity';
-import { MongoDriver } from './drivers/MongoDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 
@@ -23,7 +22,6 @@ export function getMetadataStorage(entity?: string): { [entity: string]: EntityM
 const defaultOptions = {
   entitiesDirs: [],
   strict: false,
-  driver: MongoDriver,
   logger: () => undefined,
   baseDir: process.cwd(),
   debug: false,
@@ -57,6 +55,10 @@ export class MikroORM {
       throw new Error('No directories for entity discovery specified, please fill in `entitiesDirs` option');
     }
 
+    if (!this.options.driver) {
+      this.options.driver = require('./drivers/MongoDriver').MongoDriver;
+    }
+
     this.driver = new this.options.driver(this.options);
 
     if (!this.options.clientUrl) {
@@ -86,7 +88,7 @@ export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
-  driver: { new (options: MikroORMOptions): IDatabaseDriver };
+  driver?: { new (options: MikroORMOptions): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   clientUrl?: string;
   host?: string;

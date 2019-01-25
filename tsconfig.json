@@ -17,6 +17,9 @@
   "files": [
     "lib/index.ts"
   ],
+  "include": [
+    "lib/drivers"
+  ],
   "exclude": [
     "node_modules"
   ]
