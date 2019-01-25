@@ -68,6 +68,7 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
+    expect(Utils.diff({a: new ObjectID('00000001885f0a3cc37dc9f0')}, {a: new ObjectID('00000001885f0a3cc37dc9f0')})).toEqual({});
   });
 
   test('diffEntities ignores collections', () => {
@@ -75,7 +76,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2);
-    expect(Utils.diffEntities(author1, author2, orm.em.getDriver()).books).toBeUndefined();
+    expect(Utils.diffEntities(author1, author2, '_id').books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -85,7 +86,7 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    const diff = Utils.diffEntities(author1, author2, '_id');
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
     expect(diff.favouriteBook instanceof ObjectID).toBe(true);
   });

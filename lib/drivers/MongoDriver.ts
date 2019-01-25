@@ -123,10 +123,6 @@ export class MongoDriver extends DatabaseDriver {
     return data as string;
   }
 
-  denormalizePrimaryKey(data: number | string): ObjectID {
-    return new ObjectID(data);
-  }
-
   getDefaultClientUrl(): string {
     return 'mongodb://localhost:27017';
   }

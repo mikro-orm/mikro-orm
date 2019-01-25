@@ -68,11 +68,6 @@ export interface IDatabaseDriver {
   normalizePrimaryKey(data: IPrimaryKey): number | string;
 
   /**
-   * De-normalizes primary key wrapper to value required by driver (e.g. string to mongodb's ObjectID)
-   */
-  denormalizePrimaryKey(data: any): IPrimaryKey;
-
-  /**
    * NoSQL databases do require pivot table for M:N
    */
   usesPivotTable(): boolean;

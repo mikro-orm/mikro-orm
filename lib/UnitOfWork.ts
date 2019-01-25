@@ -75,16 +75,12 @@ export class UnitOfWork {
     ret.collection = meta.collection;
 
     if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
-      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity, this.em.getDriver());
+      ret.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity, this.foreignKey);
     } else {
-      ret.payload = Object.assign({}, entity); // TODO maybe we need deep copy?
+      ret.payload = Utils.prepareEntity(entity, this.foreignKey);
     }
 
-    delete ret.payload[this.foreignKey];
-    delete ret.payload._initialized;
-
     await this.processReferences(ret, meta);
-    this.removeUnknownProperties(ret, meta);
     this.em.validator.validate(ret.entity, ret.payload, meta);
 
     if (entity.id && Object.keys(ret.payload).length === 0) {
@@ -95,9 +91,7 @@ export class UnitOfWork {
   }
 
   private async processReferences(changeSet: ChangeSet, meta: EntityMetadata): Promise<void> {
-    const properties = Object.keys(meta.properties);
-
-    for (const p of properties) {
+    for (const p of Object.keys(meta.properties)) {
       const prop = meta.properties[p];
 
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
@@ -115,9 +109,6 @@ export class UnitOfWork {
     if (!changeSet.entity[prop.name][this.foreignKey]) {
       const propChangeSet = await this.persist(changeSet.entity[prop.name]);
       await this.immediateCommit(propChangeSet);
-    }
-
-    if (Utils.isEntity(changeSet.payload[prop.name])) {
       changeSet.payload[prop.name] = changeSet.entity[prop.name][this.foreignKey];
     }
   }
@@ -143,16 +134,6 @@ export class UnitOfWork {
       changeSet.payload[prop.name] = changeSet.entity[prop.name].getIdentifiers(this.foreignKey);
     } else {
       delete changeSet.payload[prop.name];
-    }
-  }
-
-  private removeUnknownProperties(changeSet: ChangeSet, meta: EntityMetadata): void {
-    const properties = Object.keys(changeSet.payload);
-
-    for (const p of properties) {
-      if (!meta.properties[p]) {
-        delete changeSet.payload[p];
-      }
     }
   }
 
@@ -223,7 +204,7 @@ export class UnitOfWork {
       hooks[type].forEach(hook => entity[hook]());
 
       if (payload) {
-        Object.assign(payload, Utils.diffEntities(copy, entity, this.em.getDriver()));
+        Object.assign(payload, Utils.diffEntities(copy, entity, this.foreignKey));
       }
     }
   }

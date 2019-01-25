@@ -584,7 +584,7 @@ describe('EntityManagerSqlite', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    const diff = Utils.diffEntities(author1, author2, 'id');
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
   });

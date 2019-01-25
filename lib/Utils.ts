@@ -1,13 +1,10 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IDatabaseDriver, IEntity, IPrimaryKey, ObjectID } from '.';
-import { ReferenceType } from './decorators/Entity';
+import { IEntity, IPrimaryKey, ObjectID } from '.';
 import { Collection } from './Collection';
 import { getMetadataStorage } from './MikroORM';
 
 export class Utils {
-
-  private static readonly DIFF_IGNORED_KEYS = ['_id', '_initialized'];
 
   static isObject(o: any): boolean {
     return typeof o === 'object' && o !== null;
@@ -29,10 +26,6 @@ export class Utils {
     const ret = {} as any;
 
     Object.keys(b).forEach(k => {
-      if (Utils.DIFF_IGNORED_KEYS.includes(k)) {
-        return;
-      }
-
       if (Utils.equals(a[k], b[k])) {
         return;
       }
@@ -46,34 +39,26 @@ export class Utils {
   /**
    * Process references first so we do not have to deal with cycles
    */
-  static diffEntities(a: IEntity, b: IEntity, driver: IDatabaseDriver): any {
-    const diff = Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
-
-    // convert string ids back to object ids
-    const metadata = getMetadataStorage();
-    const meta = metadata[a.constructor.name];
-    Object.keys(diff).forEach((prop: string) => {
-      if ((meta.properties[prop]).reference === ReferenceType.MANY_TO_ONE) {
-        diff[prop] = driver.denormalizePrimaryKey(diff[prop]);
-      }
-    });
-
-    return diff;
+  static diffEntities(a: IEntity, b: IEntity, foreignKey: string): any {
+    return Utils.diff(Utils.prepareEntity(a, foreignKey), Utils.prepareEntity(b, foreignKey));
   }
 
-  static prepareEntity(e: IEntity): any {
+  static prepareEntity(e: IEntity, foreignKey: string): any {
     const metadata = getMetadataStorage();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
 
+    delete ret[foreignKey];
+    delete ret._initialized;
+
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {
-      if (ret[prop] instanceof Collection || (Utils.isEntity(ret[prop]) && !ret[prop].id)) {
+      if (e[prop] instanceof Collection || (Utils.isEntity(e[prop]) && !e[prop][foreignKey])) {
         return delete ret[prop];
       }
 
-      if (Utils.isEntity(ret[prop])) {
-        return ret[prop] = ret[prop].id;
+      if (Utils.isEntity(e[prop])) {
+        return ret[prop] = ret[prop][foreignKey];
       }
     });
 

@@ -68,10 +68,6 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     return data as number | string;
   }
 
-  denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return data;
-  }
-
   getTableName(entityName: string): string {
     return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
   }

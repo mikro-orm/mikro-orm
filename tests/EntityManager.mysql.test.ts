@@ -237,8 +237,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.findOne(Author2.name, god.id);
-    const books = await orm.em.find(Book2.name, {});
+    const newGod = await orm.em.findOne<Author2>(Author2.name, god.id);
+    const books = await orm.em.find<Book2>(Book2.name, {});
     await newGod.init(false);
 
     for (const book of books) {
@@ -261,8 +261,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = orm.em.getReference(Author2.name, god.id);
-    const publisher = await orm.em.findOne(Publisher2.name, pub.id, ['books']);
+    const newGod = orm.em.getReference<Author2>(Author2.name, god.id);
+    const publisher = await orm.em.findOne<Publisher2>(Publisher2.name, pub.id, ['books']);
     await newGod.init();
 
     const json = publisher.toObject().books;
@@ -584,7 +584,7 @@ describe('EntityManagerMySql', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.em.getDriver());
+    const diff = Utils.diffEntities(author1, author2, 'id');
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
   });

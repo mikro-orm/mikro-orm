@@ -67,6 +67,14 @@ describe('UnitOfWork', () => {
     await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
   });
 
+  test('changeSet is null for empty payload', async () => {
+    const author = new Author('test', 'test');
+    author.id = '00000001885f0a3cc37dc9f0';
+    uow.addToIdentityMap(author); // add entity to IM first
+    const changeSet = await uow.persist(author); // then try to persist it again
+    expect(changeSet).toBeNull();
+  });
+
   afterAll(async () => orm.close(true));
 
 });
