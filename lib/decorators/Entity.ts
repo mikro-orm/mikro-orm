@@ -34,7 +34,6 @@ export interface IEntity {
   toJSON(): any;
   toObject(parent?: IEntity, collection?: Collection<IEntity>): any;
   assign(data: any, em?: EntityManager): void;
-  [property: string]: any | IEntity | Collection<IEntity>;
 }
 
 export enum ReferenceType {

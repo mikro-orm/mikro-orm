@@ -222,8 +222,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.findOne(Author.name, god.id);
-    const books = await orm.em.find(Book.name, {});
+    const newGod = await orm.em.findOne<Author>(Author.name, god.id);
+    const books = await orm.em.find<Book>(Book.name, {});
     await newGod.init(false);
 
     for (const book of books) {
@@ -246,8 +246,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = orm.em.getReference(Author.name, god.id);
-    const publisher = await orm.em.findOne(Publisher.name, pub.id, ['books']);
+    const newGod = orm.em.getReference<Author>(Author.name, god.id);
+    const publisher = await orm.em.findOne<Publisher>(Publisher.name, pub.id, ['books']);
     await newGod.init();
 
     const json = publisher.toObject().books;

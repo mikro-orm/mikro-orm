@@ -52,7 +52,7 @@ describe('EntityFactory', () => {
     const ref = factory.createReference<Book>(Book.name, '5b0d19b28b21c648c2c8a600');
     expect(ref).toBeInstanceOf(Book);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
-    expect(ref.name).toBeUndefined();
+    expect(ref.title).toBeUndefined();
     expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
   });
 

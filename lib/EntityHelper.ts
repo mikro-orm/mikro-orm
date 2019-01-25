@@ -23,14 +23,14 @@ export class EntityHelper {
 
   static getEntityManager(entity: IEntity, em: EntityManager = null): EntityManager {
     if (em) {
-      entity._em = em;
+      this.setEntityManager(entity, em);
     }
 
-    if (!entity._em) {
+    if (!entity['_em']) {
       throw new Error('This entity is not attached to EntityManager, please provide one!');
     }
 
-    return entity._em;
+    return entity['_em'];
   }
 
   static assign(entity: IEntity, data: any, em: EntityManager = null) {

@@ -21,7 +21,7 @@ describe('EntityHelperMySql', () => {
     expect(book.author).toBe(jon);
     book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
-    expect(book.notExisting).toBe(true);
+    expect((book as any).notExisting).toBe(true);
     await orm.em.persist(god);
     book.assign({ title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
