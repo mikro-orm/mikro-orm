@@ -38,7 +38,7 @@ export class SqliteDriver extends DatabaseDriver {
 
   async count(entityName: string, where: any): Promise<number> {
     const qb = new QueryBuilder(entityName, this.metadata);
-    qb.count('id').where(where);
+    qb.count('id', true).where(where);
     const res = await this.execute(qb, [], 'get');
 
     return res.count;

@@ -79,6 +79,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
+  test('select count distinct query', async () => {
+    const qb = new QueryBuilder(Publisher2.name, orm.em.entityFactory.getMetadata());
+    qb.count('id', true).where({ name: 'test 123', type: PublisherType.GLOBAL });
+    expect(qb.getQuery()).toEqual('SELECT COUNT(DISTINCT `e0`.`id`) AS `count` FROM `publisher2` AS `e0` WHERE `e0`.`name` = ? AND `e0`.`type` = ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
+  });
+
   test('insert query', async () => {
     const qb1 = new QueryBuilder(Publisher2.name, orm.em.entityFactory.getMetadata());
     qb1.insert({ name: 'test 123', type: PublisherType.GLOBAL });

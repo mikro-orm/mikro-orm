@@ -55,9 +55,13 @@ export class QueryBuilder {
     return this;
   }
 
-  count(field: string = 'id'): QueryBuilder {
+  count(field = 'id', distinct = false): QueryBuilder {
     this.select(field);
     this.flags.push(QueryFlag.COUNT);
+
+    if (distinct) {
+      this.flags.push(QueryFlag.DISTINCT);
+    }
 
     return this;
   }
@@ -244,7 +248,11 @@ export class QueryBuilder {
     });
 
     if (this.flags.includes(QueryFlag.COUNT)) {
-      return `COUNT(${ret.join(glue)}) AS \`count\``;
+      if (this.flags.includes(QueryFlag.DISTINCT)) {
+        return `COUNT(DISTINCT ${ret[0]}) AS \`count\``;
+      }
+
+      return `COUNT(${ret[0]}) AS \`count\``;
     }
 
     return ret.join(glue);
