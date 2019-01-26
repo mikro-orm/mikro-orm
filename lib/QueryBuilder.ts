@@ -74,6 +74,14 @@ export class QueryBuilder {
 
   populate(populate: string[]): QueryBuilder {
     this._populate = populate;
+    populate.forEach(field => {
+      if (this.metadata[field]) {
+        const prop = this.metadata[field].properties[this.entityName];
+        const alias = `e${this.aliasCounter++}`;
+        this._leftJoins[field] = [this.metadata[field].collection, alias, prop.joinColumn, prop.inverseJoinColumn];
+      }
+    });
+
     return this;
   }
 
@@ -216,6 +224,14 @@ export class QueryBuilder {
       }
 
       ret.push(this.mapper(f));
+
+      this._populate.forEach(f => {
+        if (this._leftJoins[f]) {
+          ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][2]}`));
+          ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`));
+          Utils.renameKey(this._cond, this._leftJoins[f][3], `${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`);
+        }
+      });
     });
 
     if (this.flags.includes(QueryFlag.COUNT)) {

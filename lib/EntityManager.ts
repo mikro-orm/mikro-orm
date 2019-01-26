@@ -352,9 +352,11 @@ export class EntityManager {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
 
       for (const entity of filtered) {
-        const items = map[entity.id as number].map(item => this.entityFactory.createReference(prop.type, item));
+        const items = map[entity.id as number].map(item => this.merge(prop.type, item));
         (entity[field] as Collection<IEntity>).set(items, true);
       }
+
+      return;
     }
 
     const children: IEntity[] = [];

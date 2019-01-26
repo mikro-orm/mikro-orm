@@ -29,6 +29,7 @@ describe('EntityManagerSqlite', () => {
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
     expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
     expect(await driver.execute('SELECT 1 as count', [], 'get')).toEqual({ count: 1 });
+    expect(await driver.find(BookTag2.name, { books: [1] })).not.toBeNull();
   });
 
   test('driver appends errored query', async () => {

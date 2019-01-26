@@ -224,6 +224,10 @@ export class EntityFactory {
 
       EntityHelper.decorate(target.prototype, this.metadata[name], this.em.getDriver());
     });
+
+    if (this.em.getDriver().usesPivotTable()) {
+      this.definePivotTableEntities();
+    }
   }
 
   private applyNamingStrategy(name: string, prop: EntityProperty, namingStrategy: NamingStrategy): void {
@@ -267,6 +271,34 @@ export class EntityFactory {
         prop.referenceColumnName = namingStrategy.referenceColumnName();
       }
     }
+  }
+
+  private definePivotTableEntities(): void {
+    Object.values(this.metadata).forEach(meta => {
+      Object.values(meta.properties).forEach(prop => {
+        if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable) {
+          this.metadata[prop.pivotTable] = {
+            name: prop.pivotTable,
+            collection: prop.pivotTable,
+            primaryKey: prop.referenceColumnName,
+            properties: {
+              [meta.name]: {
+                name: meta.name,
+                joinColumn: prop.joinColumn,
+                inverseJoinColumn: prop.inverseJoinColumn,
+                reference: ReferenceType.MANY_TO_ONE,
+              } as EntityProperty,
+              [prop.type]: {
+                name: prop.type,
+                joinColumn: prop.inverseJoinColumn,
+                inverseJoinColumn: prop.joinColumn,
+                reference: ReferenceType.MANY_TO_ONE,
+              } as EntityProperty,
+            },
+          } as EntityMetadata;
+        }
+      });
+    });
   }
 
 }

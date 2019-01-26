@@ -47,6 +47,7 @@ describe('EntityManagerMySql', () => {
     expect(res[0][0]).toEqual({ count: 1 });
     expect(driver.denormalizePrimaryKey(1)).toBe(1);
     expect(driver.denormalizePrimaryKey('1')).toBe('1');
+    expect(await driver.find(BookTag2.name, { books: [1] })).not.toBeNull();
   });
 
   test('driver appends errored query', async () => {

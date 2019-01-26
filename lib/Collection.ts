@@ -47,7 +47,9 @@ export class Collection<T extends IEntity> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
-      map[this.owner.id as number].forEach(item => this.items.push(em.entityFactory.createReference(this.property.type, item)));
+      this.set(map[this.owner.id].map(item => em.merge(this.property.type, item)) as T[], true);
+
+      return this;
     }
 
     // do not make db call if we know we will get no results

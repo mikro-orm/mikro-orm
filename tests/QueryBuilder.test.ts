@@ -1,4 +1,4 @@
-import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { QueryBuilder, QueryOrder } from '../lib/QueryBuilder';
 import { initORMMySql } from './bootstrap';
 import { MikroORM } from '../lib';
@@ -52,6 +52,13 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ books: 123 });
     expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`book_tag2_id`, `e1`.`book2_id` FROM `book_tag2` AS `e0` LEFT JOIN `book2_to_book_tag2` AS `e1` ON `e0`.`id` = `e1`.`book_tag2_id` WHERE `e1`.`book2_id` = ?');
     expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by m:n with populate', async () => {
+    const qb = new QueryBuilder(Test2.name, orm.em.entityFactory.getMetadata());
+    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { '$in': [ 1, 2 ] } });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` FROM `test2` AS `e0` LEFT JOIN `publisher2_to_test2` AS `e1` ON `e0`.`id` = `e1`.`test2_id` WHERE `e1`.`publisher2_id` IN (?, ?)');
+    expect(qb.getParams()).toEqual([1, 2]);
   });
 
   test('select count query', async () => {
