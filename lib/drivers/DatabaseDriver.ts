@@ -2,6 +2,7 @@ import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
 import { IDatabaseDriver } from './IDatabaseDriver';
 import { IEntity, IPrimaryKey, EntityMetadata, NamingStrategy, UnderscoreNamingStrategy, EntityProperty } from '..';
 import { Utils } from '../Utils';
+import { QueryOrder } from '../QueryBuilder';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
 
@@ -55,10 +56,11 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     const fk1 = prop.joinColumn;
     const fk2 = prop.inverseJoinColumn;
     const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
-    const items = await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable]);
+    const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
+    const items = await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy);
 
     const map = {} as any;
-    owners.forEach(owner => map[owner as number] = []);
+    owners.forEach(owner => map[owner] = []);
     items.forEach(item => {
       map[item[fk1]].push(item);
       delete item[fk1];
@@ -69,7 +71,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
   }
 
   normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
-    return data as unknown as T;
+    return data as T;
   }
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {

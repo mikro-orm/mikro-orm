@@ -56,9 +56,20 @@ describe('QueryBuilder', () => {
 
   test('select by m:n with populate', async () => {
     const qb = new QueryBuilder(Test2.name, orm.em.entityFactory.getMetadata());
-    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { '$in': [ 1, 2 ] } });
-    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` FROM `test2` AS `e0` LEFT JOIN `publisher2_to_test2` AS `e1` ON `e0`.`id` = `e1`.`test2_id` WHERE `e1`.`publisher2_id` IN (?, ?)');
+    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { '$in': [ 1, 2 ] } }).orderBy({ ['publisher2_to_test2.id']: QueryOrder.ASC });
+    let sql = 'SELECT `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` FROM `test2` AS `e0`';
+    sql += ' LEFT JOIN `publisher2_to_test2` AS `e1` ON `e0`.`id` = `e1`.`test2_id`';
+    sql += ' WHERE `e1`.`publisher2_id` IN (?, ?)';
+    sql += ' ORDER BY `e1`.`id` ASC';
+    expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual([1, 2]);
+  });
+
+  test('select by m:n with unknown populate ignored', async () => {
+    const qb = new QueryBuilder(Test2.name, orm.em.entityFactory.getMetadata());
+    qb.select('*').populate(['not_existing']);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0`');
+    expect(qb.getParams()).toEqual([]);
   });
 
   test('select count query', async () => {

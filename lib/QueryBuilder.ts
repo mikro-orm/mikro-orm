@@ -10,7 +10,7 @@ export class QueryBuilder {
   private aliasCounter = 1;
   private flags: QueryFlag[] = [];
   private _fields: string[];
-  private _populate: string[] = [];
+  private _populate: { [field: string]: string } = {};
   private _leftJoins: { [field: string]: [string, string, string, string] } = {};
   private _cond: { [k: string]: any };
   private _data: { [k: string]: any };
@@ -73,12 +73,12 @@ export class QueryBuilder {
   }
 
   populate(populate: string[]): QueryBuilder {
-    this._populate = populate;
     populate.forEach(field => {
       if (this.metadata[field]) {
         const prop = this.metadata[field].properties[this.entityName];
         const alias = `e${this.aliasCounter++}`;
         this._leftJoins[field] = [this.metadata[field].collection, alias, prop.joinColumn, prop.inverseJoinColumn];
+        this._populate[field] = alias;
       }
     });
 
@@ -131,7 +131,18 @@ export class QueryBuilder {
     }
 
     if (this._orderBy && Object.keys(this._orderBy).length > 0) {
-      sql += ' ORDER BY ' + Object.keys(this._orderBy).map(k => this.mapper(k) + ' ' + QueryOrder[this._orderBy[k]]).join(', ');
+      sql += ' ORDER BY ' + Object.keys(this._orderBy).map(k => {
+        let alias = this.alias;
+        let field = k;
+
+        if (k.includes('.')) {
+          [alias, field] = k.split('.');
+        }
+
+        alias = this._populate[alias] || alias;
+
+        return this.mapper(`${alias}.${field}`) + ' ' + QueryOrder[this._orderBy[k]];
+      }).join(', ');
     }
 
     if (this._limit) {
@@ -225,12 +236,10 @@ export class QueryBuilder {
 
       ret.push(this.mapper(f));
 
-      this._populate.forEach(f => {
-        if (this._leftJoins[f]) {
-          ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][2]}`));
-          ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`));
-          Utils.renameKey(this._cond, this._leftJoins[f][3], `${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`);
-        }
+      Object.keys(this._populate).forEach(f => {
+        ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][2]}`));
+        ret.push(this.mapper(`${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`));
+        Utils.renameKey(this._cond, this._leftJoins[f][3], `${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`);
       });
     });
 
