@@ -85,7 +85,7 @@ export class EntityManager {
   }
 
   async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
-    this.validateParams(where);
+    this.validator.validateParams(where);
     const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
 
     if (results.length === 0) {
@@ -120,7 +120,7 @@ export class EntityManager {
       return entity;
     }
 
-    this.validateParams(where);
+    this.validator.validateParams(where);
     const data = await this.driver.findOne(entityName, where, populate);
 
     if (!data) {
@@ -162,18 +162,18 @@ export class EntityManager {
   }
 
   async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {
-    this.validateParams(data, 'insert data');
+    this.validator.validateParams(data, 'insert data');
     return this.driver.nativeInsert(entityName, data);
   }
 
   async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
-    this.validateParams(data, 'update data');
-    this.validateParams(where, 'update condition');
+    this.validator.validateParams(data, 'update data');
+    this.validator.validateParams(where, 'update condition');
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
   async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
-    this.validateParams(where, 'delete condition');
+    this.validator.validateParams(where, 'delete condition');
     return this.driver.nativeDelete(entityName, where);
   }
 
@@ -239,7 +239,7 @@ export class EntityManager {
   }
 
   async count(entityName: string, where: any): Promise<number> {
-    this.validateParams(where);
+    this.validator.validateParams(where);
     return this.driver.count(entityName, where);
   }
 
@@ -346,7 +346,7 @@ export class EntityManager {
     });
 
     const prop = this.metadata[entityName].properties[field];
-    const filtered = entities.filter(e => e[field] instanceof Collection && !e[field].isInitialized(true));
+    const filtered = entities.filter(e => e[field] instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
@@ -392,30 +392,6 @@ export class EntityManager {
         const items = data.filter(child => (child[prop.mappedBy] as Collection<IEntity>).contains(entity));
         (entity[field] as Collection<IEntity>).set(items, true);
       }
-    }
-  }
-
-  private validateParams(params: any, type = 'search condition', field?: string): void {
-    if (Utils.isPrimaryKey(params)) {
-      return;
-    }
-
-    if (Utils.isEntity(params)) {
-      if (field) {
-        throw new Error(`${params.constructor.name} entity provided in ${type} in field '${field}'. Please provide identifier instead.`);
-      } else {
-        throw new Error(`${params.constructor.name} entity provided in ${type}. Please provide identifier instead.`);
-      }
-    }
-
-    if (Array.isArray(params)) {
-      return params.forEach((item: any) => this.validateParams(item, type), field);
-    }
-
-    if (Utils.isObject(params)) {
-      Object.keys(params).forEach(k => {
-        this.validateParams(params[k], type, k);
-      });
     }
   }
 

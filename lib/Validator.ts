@@ -1,5 +1,6 @@
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { Utils } from './Utils';
 
 export class Validator {
 
@@ -60,4 +61,29 @@ export class Validator {
 
     return ret;
   }
+
+  validateParams(params: any, type = 'search condition', field?: string): void {
+    if (Utils.isPrimaryKey(params)) {
+      return;
+    }
+
+    if (Utils.isEntity(params)) {
+      if (field) {
+        throw new Error(`${params.constructor.name} entity provided in ${type} in field '${field}'. Please provide identifier instead.`);
+      } else {
+        throw new Error(`${params.constructor.name} entity provided in ${type}. Please provide identifier instead.`);
+      }
+    }
+
+    if (Array.isArray(params)) {
+      return params.forEach((item: any) => this.validateParams(item, type), field);
+    }
+
+    if (Utils.isObject(params)) {
+      Object.keys(params).forEach(k => {
+        this.validateParams(params[k], type, k);
+      });
+    }
+  }
+
 }
