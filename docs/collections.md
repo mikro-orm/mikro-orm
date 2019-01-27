@@ -104,7 +104,3 @@ And on the inversed side we define it with `mappedBy` attribute poining back to 
 @ManyToMany({ entity: () => Book, mappedBy: 'tags' })
 books = new Collection<Book>(this);
 ```
-
-ToC:
-
-{% include toc.html html=content %}

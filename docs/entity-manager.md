@@ -27,7 +27,6 @@ await orm.em.persist([book1, book2, book3]);
 await orm.em.persist(book1, false);
 await orm.em.persist(book2, false);
 await orm.em.persist(book3); // flush everything to database at once
-
 ```
 
 ## Fetching entities with `EntityManager`
@@ -72,3 +71,8 @@ for (const author of authors) {
   }
 }
 ```
+
+Although you can use `EntityManager` directly, much more convenient way is to use 
+[`EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/). You can register
+your repositories in dependency injection container like [InversifyJS](http://inversify.io/)
+so you do not need to get them from `EntityManager` each time.
