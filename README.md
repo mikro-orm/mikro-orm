@@ -1,4 +1,4 @@
-# mikro-orm
+# MikroORM
 
 Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB,
 MySQL and SQLite databases. 
