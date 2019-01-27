@@ -1,4 +1,4 @@
-# Using `EntityRepository` instead of `EntityManager`
+# Using EntityRepository instead of EntityManager
 
 More convenient way of fetching entities from database is by using `EntityRepository`, that
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:

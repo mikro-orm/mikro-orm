@@ -1,4 +1,4 @@
-# Using `MikroORM` with NestJS framework
+# Using MikroORM with NestJS framework
 
 ## Installation
 
@@ -18,7 +18,7 @@ $ npm i -s mikro-orm mysql2 # for mysql
 $ npm i -s mikro-orm sqlite # for sqlite
 ```
 
-## `RequestContext` middleware
+## RequestContext middleware
 
 **`mikro-orm.middleware.ts`**
 
@@ -63,7 +63,7 @@ import { MikroOrmMiddleware } from './mikro-orm.middleware';
 export class AppModule {}
 ```
 
-### `@InjectRepository()` decorator
+### @InjectRepository() decorator
 
 ```typescript
 import { Inject } from '@nestjs/common';

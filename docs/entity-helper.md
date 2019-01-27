@@ -1,6 +1,6 @@
-# `EntityHelper` and decorated entities
+# EntityHelper and decorated entities
 
-## Updating entity values with `IEntity.assign()`
+## Updating entity values with IEntity.assign()
 
 When you want to update entity based on user input, you will usually have just plain
 string ids of entity relations as user input. Normally you would need to use 

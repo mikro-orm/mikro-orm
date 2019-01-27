@@ -17,7 +17,7 @@ const orm = await MikroORM.init({
 
 Currently you will need to maintain the database schema yourself. 
 
-## `ManyToMany` collections with pivot tables
+## ManyToMany collections with pivot tables
 
 As opposed to `MongoDriver`, in MySQL we use pivot tables to handle `ManyToMany` relations:
 
@@ -43,7 +43,7 @@ tests = new Collection<Test>(this);
 tags = new Collection<BookTag>(this);
 ```
 
-## Using `QueryBuilder` to execute native SQL queries
+## Using QueryBuilder to execute native SQL queries
 
 When you need to execute some SQL query without all the ORM stuff involved, you can either
 compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:

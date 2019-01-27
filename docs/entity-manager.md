@@ -1,4 +1,4 @@
-# Working with `EntityManager`
+# Working with EntityManager
 
 ## Persisting and cascading
 
@@ -29,7 +29,7 @@ await orm.em.persist(book2, false);
 await orm.em.persist(book3); // flush everything to database at once
 ```
 
-## Fetching entities with `EntityManager`
+## Fetching entities with EntityManager
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 

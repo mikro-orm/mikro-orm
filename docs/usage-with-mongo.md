@@ -22,7 +22,7 @@ When defining entity, do not forget to define primary key like this:
 _id: ObjectID;
 ```
 
-## `ObjectID` and `string` duality
+## ObjectID and string id duality
 
 Every entity has both `ObjectID` and `string` id available, also all methods of `EntityManager` 
 and `EntityRepository` supports querying by both of them. 
@@ -42,7 +42,7 @@ const foo2 = await repo.find({ _id: { $in: [article] }, favouriteBook: book });
 const bar2 = await repo.find({ _id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
 ```
 
-## `ManyToMany` collections with inlined pivot array
+## ManyToMany collections with inlined pivot array
 
 As opposed to SQL drivers that use pivot tables, in mongo we can leverage available array type
 to store array of collection items (identifiers). This approach has two main benefits:

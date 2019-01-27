@@ -46,7 +46,7 @@ console.log(author.books[1]); // Book
 console.log(author.books[12345]); // undefined, even if the collection is not initialized
 ```
 
-## `OneToMany` collections
+## OneToMany collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
  
@@ -74,7 +74,7 @@ export class BookTag {
 }
 ```
 
-## `ManyToMany` collections
+## ManyToMany collections
 
 As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
 All references are stored as an array of `ObjectID`s on owning entity. 

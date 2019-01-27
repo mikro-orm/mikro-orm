@@ -29,7 +29,7 @@ With `fork()` method you can simply get clean entity manager with its own contex
 const em = orm.em.fork();
 ```
 
-## <a name="request-context"></a> `RequestContext` helper for DI containers
+## <a name="request-context"></a> RequestContext helper for DI containers
 
 If you use dependency injection container like `inversify` or the one in `nestjs` framework, it 
 can be hard to achieve this, because you usually want to access your repositories via DI container,
