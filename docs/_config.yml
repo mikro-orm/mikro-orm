@@ -1,1 +1,17 @@
+markdown: kramdown
+title: MikroORM
 theme: jekyll-theme-cayman
+permalink: pretty
+
+kramdown:
+  auto_ids: true
+  toc_levels: 2..4
+
+plugins:
+  - jekyll-redirect-from
+  - jekyll-sitemap
+  - jekyll-toc
+
+toc:
+  min_level: 2
+  max_level: 4
