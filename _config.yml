@@ -1,6 +1,2 @@
 name: MikroORM
 theme: jekyll-theme-cayman
-
-markdown: redcarpet
-redcarpet:
-  extensions: [with_toc_data]
