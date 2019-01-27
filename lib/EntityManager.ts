@@ -336,9 +336,19 @@ export class EntityManager {
       // nested populate
       if (field.includes('.')) {
         const [f, ...parts] = field.split('.');
-        const children = await this.populateMany(entityName, entities, f);
+        await this.populateMany(entityName, entities, f);
+        const children = [];
+        entities.forEach(entity => {
+          if (Utils.isEntity(entity[f])) {
+            children.push(entity[f]);
+          } else if (entity[f] instanceof Collection) {
+            children.push(...entity[f].getItems());
+          }
+        });
+        const filtered = Utils.unique(children);
+
         const prop = this.metadata[entityName].properties[f];
-        await this.populate(prop.type, children, [parts.join('.')], false);
+        await this.populate(prop.type, filtered, [parts.join('.')], false);
       } else {
         await this.populateMany(entityName, entities, field);
       }
@@ -382,7 +392,7 @@ export class EntityManager {
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
       children.push(...filtered);
       fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
-    } else {
+    } else { // MANY_TO_ONE
       children.push(...entities.filter(e => Utils.isEntity(e[field]) && !(e[field] as IEntity).isInitialized()).map(e => e[field]));
     }
 

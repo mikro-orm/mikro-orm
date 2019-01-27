@@ -57,7 +57,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     const fk2 = prop.inverseJoinColumn;
     const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
     const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
-    const items = await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy);
+    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
 
     const map = {} as any;
     owners.forEach(owner => map[owner] = []);

@@ -499,18 +499,36 @@ describe('EntityManagerMySql', () => {
     const repo = orm.em.getRepository<BookTag2>(BookTag2.name);
 
     orm.em.clear();
-    const tags = await repo.findAll(['books.publisher.tests']);
+    const tags = await repo.findAll(['books.publisher.tests', 'books.author']);
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag2);
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(tags[0].books[0].author).toBeInstanceOf(Author2);
+    expect(tags[0].books[0].author.isInitialized()).toBe(true);
+    expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
     expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher.tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher.tests.count()).toBe(2);
     expect(tags[0].books[0].publisher.tests[0].name).toBe('t11');
     expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
+
+    orm.em.clear();
+    const books = await orm.em.find<Book2>(Book2.name, {}, ['publisher.tests', 'author']);
+    expect(books.length).toBe(3);
+    expect(books[0]).toBeInstanceOf(Book2);
+    expect(books[0].isInitialized()).toBe(true);
+    expect(books[0].author).toBeInstanceOf(Author2);
+    expect(books[0].author.isInitialized()).toBe(true);
+    expect(books[0].author.name).toBe('Jon Snow');
+    expect(books[0].publisher).toBeInstanceOf(Publisher2);
+    expect(books[0].publisher.isInitialized()).toBe(true);
+    expect(books[0].publisher.tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher.tests.count()).toBe(2);
+    expect(books[0].publisher.tests[0].name).toBe('t11');
+    expect(books[0].publisher.tests[1].name).toBe('t12');
   });
 
   test('hooks', async () => {
