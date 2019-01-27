@@ -378,6 +378,13 @@ const bar2 = await repo.find({ _id: { $in: [new ObjectID(article)] }, favouriteB
 `OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
 iterator so you can use `for of` loop to iterate through it. 
 
+Another way to access collection items is to use bracket syntax like when you access array items.
+Keep in mind that this approach will not check if the collection is initialed, while using `get`
+method will throw error in this case.
+
+Note that array access in `Collection` is available only for reading already loaded items, you 
+cannot add new items to `Collection` this way. 
+
 ```typescript
 const author = orm.em.findOne(Author.name, '...', ['books']); // populating books collection
 
@@ -408,6 +415,10 @@ console.log(author.books.count()); // 0
 console.log(author.books.getItems()); // Book[]
 console.log(author.books.getIdentifiers()); // array of string | number
 console.log(author.books.getIdentifiers('_id')); // array of ObjectID
+
+// array access works as well
+console.log(author.books[1]); // Book
+console.log(author.books[12345]); // undefined, even if the collection is not initialized
 ```
 
 ### `OneToMany` collections
@@ -492,6 +503,55 @@ book.assign({
 console.log(book.title); // 'Better Book 1'
 console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
+```
+
+## Smart nested populate
+
+`MikroORM` is capable of loading large nested structures while maintaining good 
+performance, querying each database table only once. Imagine you have this nested 
+structure:
+
+- `Book` has one `Publisher` (M:1) and many `BookTag`s (M:N)
+- `Publisher` has many `Test`s (M:N)
+
+When you use nested populate while querying all `BookTag`s, this is what happens in
+the background:
+
+```typescript
+const tags = await orm.em.findAll(BookTag.name, ['books.publisher.tests']);
+console.log(tags[0].books[0].publisher.tests[0].name); // prints name of nested test
+```
+
+1. Load all `BookTag`s
+2. Load all `Book`s associated with previously loaded `BookTag`s
+3. Load all `Publisher`s associated with previously loaded `Book`s
+4. Load all `Test`s associated with previously loaded `Publisher`s
+
+For SQL drivers with pivot tables this means:
+
+```sql
+SELECT `e0`.* FROM `book_tag` AS `e0`;
+
+SELECT `e0`.*, `e1`.`book_id`, `e1`.`book_tag_id`
+  FROM `book` AS `e0` LEFT JOIN `book_to_book_tag` AS `e1` ON `e0`.`id` = `e1`.`book_id`
+  WHERE `e1`.`book_tag_id` IN (?, ?, ?, ?, ?)
+  ORDER BY `e1`.`id` ASC;
+
+SELECT `e0`.* FROM `publisher` AS `e0` WHERE `e0`.`id` IN (?, ?, ?);
+
+SELECT `e0`.*, `e1`.`test_id`, `e1`.`publisher_id`
+  FROM `test` AS `e0` LEFT JOIN `publisher_to_test` AS `e1` ON `e0`.`id` = `e1`.`test_id`
+  WHERE `e1`.`publisher_id` IN (?, ?, ?)
+  ORDER BY `e1`.`id` ASC;
+```
+
+For mongo driver its even simpler as no pivot tables are involved:
+
+```typescript
+db.getCollection("book-tag").find({}).toArray();
+db.getCollection("books-table").find({"tags":{"$in":[...]}}).toArray();
+db.getCollection("publisher").find({"_id":{"$in":[...]}}).toArray();
+db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 ```
 
 ## Usage with MySQL and SQLite

@@ -470,6 +470,86 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
   });
 
+  test('nested populating', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    book1.publisher = new Publisher('B1 publisher');
+    book1.publisher.tests.add(Test.create('t11'), Test.create('t12'));
+    book2.publisher = new Publisher('B2 publisher');
+    book2.publisher.tests.add(Test.create('t21'), Test.create('t22'));
+    book3.publisher = new Publisher('B3 publisher');
+    book3.publisher.tests.add(Test.create('t31'), Test.create('t32'));
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+
+    orm.em.clear();
+    const tags = await repo.findAll(['books.publisher.tests']);
+    expect(tags.length).toBe(5);
+    expect(tags[0]).toBeInstanceOf(BookTag);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    expect(tags[0].books.count()).toBe(2);
+    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher);
+    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher.tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher.tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher.tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
+  });
+
+  test('nested populating with empty collection', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+
+    orm.em.clear();
+    const tags = await repo.findAll(['books.publisher.tests']);
+    expect(tags.length).toBe(5);
+    expect(tags[0]).toBeInstanceOf(BookTag);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    expect(tags[0].books.count()).toBe(2);
+    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher).toBeUndefined();
+  });
+
+  test('populating one to many relation', async () => {
+    let author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    await orm.em.persist([book1, book2, book3]);
+    const repo = orm.em.getRepository<Author>(Author.name);
+
+    orm.em.clear();
+    author = await repo.findOne(author.id);
+    expect(author.books).toBeInstanceOf(Collection);
+    expect(author.books.isInitialized(true)).toBe(false);
+    await author.books.init();
+    expect(author.books.isInitialized(true)).toBe(true);
+    expect(author.books.count()).toBe(3);
+  });
+
   test('hooks', async () => {
     Author.beforeDestroyCalled = 0;
     Author.afterDestroyCalled = 0;
@@ -508,16 +588,6 @@ describe('EntityManagerMongo', () => {
     expect(repo.canPopulate('name')).toBe(false);
     expect(repo.canPopulate('favouriteBook')).toBe(true);
     expect(repo.canPopulate('books')).toBe(true);
-  });
-
-  test('trying to populate non-existing or non-reference property will throw', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name);
-    const author = new Author('Johny Cash', 'johny@cash.com');
-    await repo.persist(author);
-    orm.em.clear();
-
-    await expect(repo.findAll(['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

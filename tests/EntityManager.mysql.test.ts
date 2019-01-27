@@ -476,6 +476,43 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
   });
 
+  test('nested populating', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    book1.publisher = new Publisher2('B1 publisher');
+    book1.publisher.tests.add(Test2.create('t11'), Test2.create('t12'));
+    book2.publisher = new Publisher2('B2 publisher');
+    book2.publisher.tests.add(Test2.create('t21'), Test2.create('t22'));
+    book3.publisher = new Publisher2('B3 publisher');
+    book3.publisher.tests.add(Test2.create('t31'), Test2.create('t32'));
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    const repo = orm.em.getRepository<BookTag2>(BookTag2.name);
+
+    orm.em.clear();
+    const tags = await repo.findAll(['books.publisher.tests']);
+    expect(tags.length).toBe(5);
+    expect(tags[0]).toBeInstanceOf(BookTag2);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    expect(tags[0].books.count()).toBe(2);
+    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
+    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher.tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher.tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher.tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
+  });
+
   test('hooks', async () => {
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;

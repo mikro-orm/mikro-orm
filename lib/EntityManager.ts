@@ -99,9 +99,7 @@ export class EntityManager {
       ret.push(entity);
     }
 
-    for (const field of populate) {
-      await this.populateMany(entityName, ret, field);
-    }
+    await this.populate(entityName, ret, populate);
 
     return ret;
   }
@@ -115,7 +113,7 @@ export class EntityManager {
 
     if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where as IPrimaryKey) && this.getIdentity(entityName, where as IPrimaryKey).isInitialized()) {
       const entity = this.getIdentity<T>(entityName, where as IPrimaryKey);
-      await this.populateOne(entityName, entity, populate);
+      await this.populate(entityName, [entity], populate);
 
       return entity;
     }
@@ -128,7 +126,7 @@ export class EntityManager {
     }
 
     const entity = this.merge(entityName, data) as T;
-    await this.populateOne(entityName, entity, populate);
+    await this.populate(entityName, [entity], populate);
 
     return entity;
   }
@@ -281,8 +279,19 @@ export class EntityManager {
   }
 
   canPopulate(entityName: string, property: string): boolean {
+    const [p, ...parts] = property.split('.');
     const props = this.metadata[entityName].properties;
-    return property in props && !!props[property].reference;
+    const ret = p in props && props[p].reference !== ReferenceType.SCALAR;
+
+    if (!ret) {
+      return false;
+    }
+
+    if (parts.length > 0) {
+      return this.canPopulate(props[p].type, parts.join('.'));
+    }
+
+    return ret;
   }
 
   fork(): EntityManager {
@@ -314,18 +323,24 @@ export class EntityManager {
     return em;
   }
 
-  private async populateOne(entityName: string, entity: IEntity, populate: string[]): Promise<void> {
+  private async populate(entityName: string, entities: IEntity[], populate: string[], validate = true): Promise<void> {
+    if (entities.length === 0) {
+      return;
+    }
+
     for (const field of populate) {
-      if (!this.canPopulate(entityName, field)) {
+      if (validate && !this.canPopulate(entityName, field)) {
         throw new Error(`Entity '${entityName}' does not have property '${field}'`);
       }
 
-      if (entity[field] instanceof Collection && !(entity[field] as Collection<IEntity>).isInitialized(true)) {
-        await (entity[field] as Collection<IEntity>).init();
-      }
-
-      if (Utils.isEntity(entity[field]) && !(entity[field] as IEntity).isInitialized()) {
-        await (entity[field] as IEntity).init();
+      // nested populate
+      if (field.includes('.')) {
+        const [f, ...parts] = field.split('.');
+        const children = await this.populateMany(entityName, entities, f);
+        const prop = this.metadata[entityName].properties[f];
+        await this.populate(prop.type, children, [parts.join('.')], false);
+      } else {
+        await this.populateMany(entityName, entities, field);
       }
     }
   }
@@ -333,11 +348,7 @@ export class EntityManager {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany(entityName: string, entities: IEntity[], field: string): Promise<void> {
-    if (!this.canPopulate(entityName, field)) {
-      throw new Error(`Entity '${entityName}' does not have property '${field}'`);
-    }
-
+  private async populateMany(entityName: string, entities: IEntity[], field: string): Promise<IEntity[]> {
     // set populate flag
     entities.forEach(entity => {
       if (Utils.isEntity(entity[field]) || entity[field] instanceof Collection) {
@@ -347,6 +358,7 @@ export class EntityManager {
 
     const prop = this.metadata[entityName].properties[field];
     const filtered = entities.filter(e => e[field] instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
+    const children: IEntity[] = [];
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
@@ -354,12 +366,12 @@ export class EntityManager {
       for (const entity of filtered) {
         const items = map[entity.id as number].map(item => this.merge(prop.type, item));
         (entity[field] as Collection<IEntity>).set(items, true);
+        children.push(...items);
       }
 
-      return;
+      return children;
     }
 
-    const children: IEntity[] = [];
     let fk = this.namingStrategy.referenceColumnName();
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
@@ -371,11 +383,11 @@ export class EntityManager {
       children.push(...filtered);
       fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
     } else {
-      children.push(...entities.filter(e => Utils.isEntity(e[field]) && !e[field].isInitialized()).map(e => e[field]));
+      children.push(...entities.filter(e => Utils.isEntity(e[field]) && !(e[field] as IEntity).isInitialized()).map(e => e[field]));
     }
 
     if (children.length === 0) {
-      return;
+      return [];
     }
 
     const ids = Utils.unique(children.map(e => e.id));
@@ -395,6 +407,8 @@ export class EntityManager {
         (entity[field] as Collection<IEntity>).set(items, true);
       }
     }
+
+    return data;
   }
 
   private get unitOfWork(): UnitOfWork {
