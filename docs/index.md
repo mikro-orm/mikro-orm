@@ -6,7 +6,7 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 [![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
 
-# Table of contents
+## Table of contents
 
 - Overview
   - [Installation & Usage](installation.md)

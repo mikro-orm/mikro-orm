@@ -1,7 +1,7 @@
 # Naming strategy
 
 When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 2 basic naming strategies you can choose:
+strategy. There are 2 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of `MySqlDriver` and `SqliteDriver`
 - `MongoNamingStrategy` - default of `MongoDriver`
@@ -24,9 +24,9 @@ const orm = await MikroORM.init({
 ## Naming strategy in mongo driver
 
 `MongoNamingStrategy` will simply use all field names as they are defined. Collection names will
-be named by lower-casing entity name while dividing words by dash:
+be translated into lower-cased dashed form:
 
-`MyCoolEntity` will be transformed to `my-cool-entity` collection name.
+`MyCoolEntity` will be translated into `my-cool-entity` collection name.
 
 ## Naming strategy in SQL drivers
 
