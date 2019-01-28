@@ -5,7 +5,7 @@ No real restrictions are made, you do not have to extend any base class, you are
 to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with
 `@PrimaryKey` decorator.
 
-**`./entities/book.ts`**
+**`./entities/Book.ts`**
 
 ```typescript
 @Entity()
@@ -51,7 +51,7 @@ of reference decorators: `@ManyToOne`, `@OneToMany` and `@ManyToMany`.
 
 Here is another example of `Author` entity, that was referenced from the `Book` one:
 
-**`./entities/author.ts`**
+**`./entities/Author.ts`**
 
 ```typescript
 @Entity()
@@ -114,6 +114,8 @@ with 2 main benefits:
 2. you do not have to re-export your entity as interface that extends `IEntity`
 
 Here is third example of entity that extends the `BaseEntity` class:
+
+**`./entities/BookTag.ts`**
 
 ```typescript
 @Entity()
