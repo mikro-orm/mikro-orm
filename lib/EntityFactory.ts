@@ -50,7 +50,6 @@ export class EntityFactory {
       this.em.setIdentity(entity, data.id);
     }
 
-    entity.setEntityManager(this.em);
     this.initEntity(entity, meta.properties, data, exclude);
 
     if (initialized) {
@@ -222,7 +221,7 @@ export class EntityFactory {
         this.applyNamingStrategy(name, props[p], namingStrategy);
       });
 
-      EntityHelper.decorate(target.prototype, this.metadata[name], this.em.getDriver());
+      EntityHelper.decorate(target.prototype, this.metadata[name], this.em);
     });
 
     if (this.em.getDriver().usesPivotTable()) {

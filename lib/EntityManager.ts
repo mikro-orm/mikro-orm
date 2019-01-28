@@ -12,6 +12,7 @@ import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { EntityMetadata, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityHelper } from './EntityHelper';
 
 export class EntityManager {
 
@@ -188,10 +189,9 @@ export class EntityManager {
     }
 
     const entity = Utils.isEntity(data) ? data : this.entityFactory.create<T>(entityName, data, true);
-    entity.setEntityManager(this);
 
     if (this.getIdentity(entityName, entity.id)) {
-      entity.assign(data);
+      EntityHelper.assign(entity, data);
       this.unitOfWork.addToIdentityMap(entity as IEntity);
     } else {
       this.addToIdentityMap(entity as IEntity);
@@ -244,11 +244,9 @@ export class EntityManager {
   async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
     if (Array.isArray(entity)) {
       for (const e of entity) {
-        e.setEntityManager(this);
         await this.unitOfWork.persist(e);
       }
     } else {
-      entity.setEntityManager(this);
       await this.unitOfWork.persist(entity);
     }
 

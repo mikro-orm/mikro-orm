@@ -43,7 +43,7 @@ export class Collection<T extends IEntity> {
   }
 
   async init(populate: string[] = []): Promise<Collection<T>> {
-    const em = this.owner.getEntityManager();
+    const em = this.owner['__em'];
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
@@ -179,12 +179,11 @@ export class Collection<T extends IEntity> {
 
   private createCondition(): any {
     const cond: any = {};
-    const em = this.owner.getEntityManager();
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk] = this.owner.id;
     } else { // MANY_TO_MANY
-      if (this.property.owner || em.getDriver().usesPivotTable()) {
+      if (this.property.owner || this.owner['__em'].getDriver().usesPivotTable()) {
         cond.id = { $in: this.items.map(item => item.id) };
       } else {
         cond[this.property.mappedBy] = this.owner.id;

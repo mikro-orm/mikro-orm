@@ -27,8 +27,6 @@ export interface IEntity {
   shouldPopulate(collection?: Collection<IEntity>): boolean;
   populated(populated?: boolean): void;
   init(populated?, em?: EntityManager): Promise<IEntity>;
-  setEntityManager(em: EntityManager): void;
-  getEntityManager(em?: EntityManager): EntityManager;
   toJSON(): any;
   toObject(parent?: IEntity, collection?: Collection<IEntity>): any;
   assign(data: any, em?: EntityManager): void;

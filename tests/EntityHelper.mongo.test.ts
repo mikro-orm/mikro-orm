@@ -35,13 +35,6 @@ describe('EntityHelperMongo', () => {
     expect(author.shouldPopulate()).toBe(true);
   });
 
-  test('#getEntityManager() should return EntityManager', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
-    expect(() => EntityHelper.getEntityManager(author)).toThrowError(`This entity is not attached to EntityManager, please provide one!`);
-    await orm.em.persist(author);
-    expect(EntityHelper.getEntityManager(author)).toBeInstanceOf(EntityManager);
-  });
-
   test('#init() should populate the entity', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persist(author);
@@ -84,16 +77,16 @@ describe('EntityHelperMongo', () => {
     book.tags.add(tag2);
     book.tags.add(tag3);
     await orm.em.persist(book);
-    book.assign({ tags: [other._id] });
+    EntityHelper.assign(book, { tags: [other._id] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
-    book.assign({ tags: [] });
+    EntityHelper.assign(book, { tags: [] });
     expect(book.tags.getIdentifiers()).toMatchObject([]);
-    book.assign({ tags: [tag1.id, tag3.id] });
+    EntityHelper.assign(book, { tags: [tag1.id, tag3.id] });
     expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
-    book.assign({ tags: [tag2] });
+    EntityHelper.assign(book, { tags: [tag2] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
-    expect(() => book.assign({ tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
-    expect(() => book.assign({ publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => EntityHelper.assign(book, { tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => EntityHelper.assign(book, { publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('should have string id getter and setter', async () => {
@@ -103,17 +96,6 @@ describe('EntityHelperMongo', () => {
 
     author.id = '5b0d19b28b21c648c2c8a600';
     expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
-  });
-
-  test('should have entitny manager getter and setter', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
-    expect(() => author.getEntityManager()).toThrowError('This entity is not attached to EntityManager, please provide one!');
-    expect(author.getEntityManager(orm.em)).toBe(orm.em);
-
-    const fork = orm.em.fork();
-    expect(author.getEntityManager()).toBe(orm.em);
-    author.setEntityManager(fork);
-    expect(author.getEntityManager()).toBe(fork);
   });
 
   afterAll(async () => orm.close(true));
