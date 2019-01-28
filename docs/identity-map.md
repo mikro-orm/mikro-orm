@@ -44,3 +44,5 @@ app.use((req, res, next) => {
   RequestContext.create(orm.em, next);
 });
 ``` 
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

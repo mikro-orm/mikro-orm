@@ -1,9 +1,4 @@
-# MikroORM
-
-Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. 
-Supports MongoDB, MySQL and SQLite databases. 
-
-Heavily inspired by [doctrine](https://www.doctrine-project.org/).
+Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 [![](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
@@ -11,7 +6,7 @@ Heavily inspired by [doctrine](https://www.doctrine-project.org/).
 [![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
 
-## Table of contents
+# Table of contents
 
 - Overview
   - [Installation & Usage](installation.md)

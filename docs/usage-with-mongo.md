@@ -82,3 +82,5 @@ There is also shortcut for calling `aggregate` method:
 EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

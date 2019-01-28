@@ -76,3 +76,5 @@ Although you can use `EntityManager` directly, much more convenient way is to us
 [`EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/). You can register
 your repositories in dependency injection container like [InversifyJS](http://inversify.io/)
 so you do not need to get them from `EntityManager` each time.
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

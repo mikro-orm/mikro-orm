@@ -14,3 +14,5 @@ removing entity or entity reference, not when deleting records by query.
 
 - `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from 
 the identity map.
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

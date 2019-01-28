@@ -42,3 +42,5 @@ app.use((req, res, next) => {
 More info about `RequestContext` is described [here](identity-map.md#request-context).
 
 Now you can start defining your entities (in one of the `entitiesDirs` folders):
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

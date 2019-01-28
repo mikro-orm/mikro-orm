@@ -46,3 +46,5 @@ CREATE TABLE `author` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

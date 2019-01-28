@@ -54,3 +54,5 @@ Note that we need to pass that repository reference inside a callback so we will
 into circular dependency issues when using entity references inside that repository.
 
 Now you can access your custom repository via `EntityManager.getRepository()` method.
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

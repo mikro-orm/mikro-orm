@@ -39,3 +39,5 @@ prototype via `@Entity` decorator.
 With your entities set up, you can start using entity manager and repositories as described
 in following section. For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)

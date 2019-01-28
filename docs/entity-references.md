@@ -17,3 +17,5 @@ await author.init(); // this will trigger db call
 console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
+
+[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
