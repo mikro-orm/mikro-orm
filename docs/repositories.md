@@ -55,4 +55,8 @@ into circular dependency issues when using entity references inside that reposit
 
 Now you can access your custom repository via `EntityManager.getRepository()` method.
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+For more examples, take a look at
+[`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
+or [`tests/EntityManager.mysql.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+
+[&larr; Back to table of contents](index.md#table-of-contents)

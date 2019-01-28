@@ -25,4 +25,4 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

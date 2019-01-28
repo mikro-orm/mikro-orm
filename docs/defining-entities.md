@@ -153,8 +153,7 @@ For SQL drivers, you will want to define your primary key as `id: number` instea
 id: number;
 ```
 
-With your entities set up, you can start using entity manager and repositories as described
-in following section. For more examples, take a look at
-[`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+With your entities set up, you can start [using entity manager](entity-manager.md) and 
+[repositories](repositories.md) as described in following sections. 
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

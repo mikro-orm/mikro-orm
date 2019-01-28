@@ -79,4 +79,4 @@ constructor(
 ) { }
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

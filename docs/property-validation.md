@@ -44,4 +44,4 @@ author.assign({ age: false });
 await orm.em.persist(author); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

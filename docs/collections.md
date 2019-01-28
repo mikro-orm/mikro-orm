@@ -105,4 +105,4 @@ And on the inversed side we define it with `mappedBy` attribute poining back to 
 books = new Collection<Book>(this);
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

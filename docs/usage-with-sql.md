@@ -147,4 +147,4 @@ const res = await em.getDriver<MySqlDriver>().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)

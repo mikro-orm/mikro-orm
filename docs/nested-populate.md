@@ -52,4 +52,4 @@ db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 ```
 
-[&larr; Back to table of contents](https://b4nan.github.io/mikro-orm/#table-of-contents)
+[&larr; Back to table of contents](index.md#table-of-contents)
