@@ -3,6 +3,8 @@
 You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
 entity methods with them, you can also mark multiple methods with same hook.
 
+All hooks support async methods.
+
 - `@BeforeCreate()` and `@BeforeUpdate()` is fired right before we persist the entity in database
 
 - `@AfterCreate()` and `@AfterUpdate()` is fired right after the entity is updated in database and 

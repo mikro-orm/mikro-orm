@@ -72,7 +72,7 @@ More info about `RequestContext` is described [here](https://b4nan.github.io/mik
 
 Now you can start defining your entities (in one of the `entitiesDirs` folders):
 
-**`./entities/book.ts`**
+**`./entities/Book.ts`**
 
 ```typescript
 @Entity()

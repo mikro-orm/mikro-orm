@@ -139,7 +139,7 @@ export class UnitOfWork {
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
     const type = changeSet.entity[this.foreignKey] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
-    this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
+    await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
 
     const metadata = this.em.entityFactory.getMetadata();
     const meta = metadata[changeSet.entity.constructor.name];
@@ -188,20 +188,22 @@ export class UnitOfWork {
       this.em.merge(changeSet.name, changeSet.entity);
     }
 
-    this.runHooks(`after${type}`, changeSet.entity);
+    await this.runHooks(`after${type}`, changeSet.entity);
 
     if (removeFromStack) {
       this.persistStack.splice(changeSet.index, 1);
     }
   }
 
-  private runHooks(type: string, entity: IEntity, payload: any = null) {
+  private async runHooks(type: string, entity: IEntity, payload: any = null) {
     const metadata = this.em.entityFactory.getMetadata();
     const hooks = metadata[entity.constructor.name].hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
       const copy = Utils.copy(entity);
-      hooks[type].forEach(hook => entity[hook]());
+      for (const hook of hooks[type]) {
+        await entity[hook]();
+      }
 
       if (payload) {
         Object.assign(payload, Utils.diffEntities(copy, entity, this.foreignKey));
