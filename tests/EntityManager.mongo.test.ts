@@ -75,7 +75,7 @@ describe('EntityManagerMongo', () => {
     expect(jon).toBe(await authorRepository.findOne(jon._id));
 
     // serialization test
-    const o = jon.toObject();
+    const o = jon.toJSON();
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,
@@ -228,7 +228,7 @@ describe('EntityManagerMongo', () => {
     await newGod.init(false);
 
     for (const book of books) {
-      expect(book.toObject()).toMatchObject({
+      expect(book.toJSON()).toMatchObject({
         author: book.author.id,
       });
     }
@@ -251,7 +251,7 @@ describe('EntityManagerMongo', () => {
     const publisher = await orm.em.findOne<Publisher>(Publisher.name, pub.id, ['books']);
     await newGod.init();
 
-    const json = publisher.toObject().books;
+    const json = publisher.toJSON().books;
 
     for (const book of publisher.books) {
       expect(json.find((b: Book) => b.id === book.id)).toMatchObject({
@@ -342,7 +342,7 @@ describe('EntityManagerMongo', () => {
     expect(tag3._id).toBeDefined();
     expect(tag4._id).toBeDefined();
     expect(tag5._id).toBeDefined();
-    expect(book1.tags.toArray()).toEqual([tag1.toObject(), tag3.toObject()]);
+    expect(book1.tags.toArray()).toEqual([tag1.toJSON(), tag3.toJSON()]);
 
     // test inverse side
     const tagRepository = orm.em.getRepository<BookTag>(BookTag.name);

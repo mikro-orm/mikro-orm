@@ -184,7 +184,7 @@ export class UnitOfWork {
       this.addToIdentityMap(changeSet.entity);
     } else {
       changeSet.entity[this.foreignKey] = await this.em.getDriver().nativeInsert(entityName, changeSet.payload);
-      delete changeSet.entity['_initialized'];
+      delete changeSet.entity['__initialized'];
       this.em.merge(changeSet.name, changeSet.entity);
     }
 

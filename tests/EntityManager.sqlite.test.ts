@@ -160,7 +160,7 @@ describe('EntityManagerSqlite', () => {
     expect(jon).toBe(await authorRepository.findOne(jon.id));
 
     // serialization test
-    const o = jon.toObject();
+    const o = jon.toJSON();
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,
@@ -243,7 +243,7 @@ describe('EntityManagerSqlite', () => {
     await newGod.init(false);
 
     for (const book of books) {
-      expect(book.toObject()).toMatchObject({
+      expect(book.toJSON()).toMatchObject({
         author: book.author.id,
       });
     }
@@ -266,7 +266,7 @@ describe('EntityManagerSqlite', () => {
     const publisher = await orm.em.findOne<Publisher2>(Publisher2.name, pub.id, ['books']);
     await newGod.init();
 
-    const json = publisher.toObject().books;
+    const json = publisher.toJSON().books;
 
     for (const book of publisher.books) {
       expect(json.find((b: Book2) => b.id === book.id)).toMatchObject({

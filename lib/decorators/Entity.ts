@@ -24,11 +24,9 @@ export type EntityOptions = {
 export interface IEntity {
   id: IPrimaryKey;
   isInitialized(): boolean;
-  shouldPopulate(collection?: Collection<IEntity>): boolean;
   populated(populated?: boolean): void;
   init(populated?, em?: EntityManager): Promise<IEntity>;
-  toJSON(): any;
-  toObject(parent?: IEntity, collection?: Collection<IEntity>): any;
+  toJSON(): { [field: string]: any };
   assign(data: any, em?: EntityManager): void;
 }
 

@@ -37,7 +37,7 @@ export class EntityHelper {
     });
   }
 
-  static toObject(entity: IEntity, parent?: IEntity, collection: Collection<IEntity> = null): any {
+  static toObject(entity: IEntity, parent?: IEntity, isCollection = false): { [field: string]: any } {
     parent = parent || entity;
     const ret = entity.id ? { id: entity.id } : {} as any;
 
@@ -63,8 +63,10 @@ export class EntityHelper {
       }
 
       if (Utils.isEntity(entity[prop])) {
-        if (entity[prop].isInitialized() && entity[prop].shouldPopulate(collection) && entity[prop] !== parent) {
-          return ret[prop] = (entity[prop] as IEntity).toObject(entity);
+        const child = entity[prop] as IEntity;
+
+        if (child.isInitialized() && child['__populated'] && !isCollection && child !== parent) {
+          return ret[prop] = EntityHelper.toObject(child, entity);
         }
 
         return ret[prop] = entity[prop].id;
@@ -138,12 +140,7 @@ export class EntityHelper {
       __em: { value: em, writable: false, enumerable: false, configurable: false },
       isInitialized: {
         value: function () {
-          return this._initialized !== false;
-        },
-      },
-      shouldPopulate: {
-        value: function (collection: Collection<IEntity> = null) {
-          return this.__populated && !collection;
+          return this.__initialized !== false;
         },
       },
       populated: {
@@ -159,11 +156,6 @@ export class EntityHelper {
       assign: {
         value: function (data: any) {
           EntityHelper.assign(this, data);
-        }
-      },
-      toObject: {
-        value: function (parent?: IEntity, collection: Collection<IEntity> = null) {
-          return EntityHelper.toObject(this, parent, collection);
         }
       },
       toJSON: {

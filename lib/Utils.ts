@@ -49,7 +49,7 @@ export class Utils {
     const ret = Utils.copy(e);
 
     delete ret[foreignKey];
-    delete ret._initialized;
+    delete ret.__initialized;
 
     // remove collections and references
     Object.keys(meta.properties).forEach(prop => {

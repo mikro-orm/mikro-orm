@@ -53,9 +53,9 @@ export class EntityFactory {
     this.initEntity(entity, meta.properties, data, exclude);
 
     if (initialized) {
-      delete entity['_initialized'];
+      delete entity['__initialized'];
     } else {
-      entity['_initialized'] = initialized;
+      entity['__initialized'] = initialized;
     }
 
     return entity;

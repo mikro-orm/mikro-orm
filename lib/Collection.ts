@@ -1,6 +1,7 @@
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { getMetadataStorage } from './MikroORM';
+import { EntityHelper } from './EntityHelper';
 
 export class Collection<T extends IEntity> {
 
@@ -89,8 +90,8 @@ export class Collection<T extends IEntity> {
     return [...this.items];
   }
 
-  toArray(parent: IEntity = this.owner): any[] {
-    return this.getItems().map(item => item.toObject(parent, this));
+  toArray(parent: IEntity = this.owner): { [field: string]: any }[] {
+    return this.getItems().map(item => EntityHelper.toObject(item, parent, true));
   }
 
   getIdentifiers(field = 'id'): IPrimaryKey[] {

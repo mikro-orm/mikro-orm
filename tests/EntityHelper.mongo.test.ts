@@ -18,7 +18,7 @@ describe('EntityHelperMongo', () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
-    expect(author.toObject()).toBeInstanceOf(Object);
+    expect(author.toJSON()).toBeInstanceOf(Object);
   });
 
   test('#toJSON() should return DTO', async () => {
@@ -26,13 +26,6 @@ describe('EntityHelperMongo', () => {
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
     expect(author.toJSON()).toBeInstanceOf(Object);
-  });
-
-  test('#shouldPopulate() should return boolean', async () => {
-    const author = new Author('Jon Snow', 'snow@wall.st');
-    expect(author.shouldPopulate()).toBe(false); // off by default
-    author.populated(true);
-    expect(author.shouldPopulate()).toBe(true);
   });
 
   test('#init() should populate the entity', async () => {
