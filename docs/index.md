@@ -16,7 +16,7 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 - Fundamentals
   - [Identity Map](identity-map.md)
   - [Entity references](entity-references.md)
-  - [Using entity constructors](using-entity-constructors.md)
+  - [Using entity constructors](entity-constructors.md)
   - [Collections](collections.md)
 - Advanced features
   - [Smart nested populate](nested-populate.md)
