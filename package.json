@@ -58,7 +58,6 @@
     "fast-deep-equal": "^2.0.1",
     "lodash.merge": "^4.6.1",
     "node-request-context": "^1.0.5",
-    "reflect-metadata": "^0.1.13",
     "ts-simple-ast": "^21.0.0",
     "typescript": "^3.2.4",
     "uuid": "^3.3.2"

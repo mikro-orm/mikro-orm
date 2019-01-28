@@ -7,12 +7,6 @@ export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
     const storage = getMetadataStorage(entity);
 
     const meta = storage[entity];
-    const type = Reflect.getMetadata('design:type', target, propertyName);
-
-    if (!options.type && type) {
-      options.type = type.name;
-    }
-
     options.name = propertyName;
     meta.properties = meta.properties || {};
     meta.primaryKey = propertyName;

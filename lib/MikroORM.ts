@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import { EntityManager } from './EntityManager';
 import { EntityMetadata } from './decorators/Entity';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';

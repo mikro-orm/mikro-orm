@@ -7,12 +7,6 @@ export function Property(options: PropertyOptions = {}): Function {
     const storage = getMetadataStorage(entity);
 
     const meta = storage[entity];
-    const type = Reflect.getMetadata('design:type', target, propertyName);
-
-    if (!options.type && type) {
-      options.type = type.name;
-    }
-
     options.name = propertyName;
     meta.properties = meta.properties || {};
     meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;

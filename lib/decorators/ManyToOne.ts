@@ -9,12 +9,6 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
 
     const meta = storage[entity];
     meta.properties = meta.properties || {};
-    const reflectMetadataType = Reflect.getMetadata('design:type', target, propertyName);
-
-    if (!options.type && reflectMetadataType) {
-      options.type = reflectMetadataType;
-    }
-
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE };
     meta.properties[propertyName] = Object.assign(property, options) as EntityProperty;
   };
