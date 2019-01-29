@@ -683,6 +683,27 @@ describe('EntityManagerMongo', () => {
     expect(res6).toBe(1);
   });
 
+  test('1:m collection is initialized when entity loaded from EM', async () => {
+    const author = new Author('name', 'email');
+    const b1 = new Book('b1', author);
+    const b2 = new Book('b2', author);
+    const b3 = new Book('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOne<Author>(Author.name, author.id);
+    expect(a1.books).toBeInstanceOf(Collection);
+    expect(a1.books.isInitialized()).toBe(false);
+
+    await orm.em.nativeUpdate(Author.name, { id: author.id }, { books: [b1.id, b2.id, b3.id] });
+    orm.em.clear();
+
+    const a2 = await orm.em.findOne<Author>(Author.name, author.id);
+    expect(a2.books).toBeInstanceOf(Collection);
+    expect(a2.books.isInitialized()).toBe(true);
+    expect(a2.books.isInitialized(true)).toBe(false);
+  });
+
   test('EM do not support transactions', async () => {
     await expect(orm.em.begin()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
     await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');

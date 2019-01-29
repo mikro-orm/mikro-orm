@@ -31,6 +31,7 @@ export class EntityFactory {
     const exclude = [];
     let entity: T;
 
+    // normalize PK to `id: string`
     if (data.id || data._id) {
       data.id = this.em.getDriver().normalizePrimaryKey(data.id || data._id);
       delete data._id;
@@ -50,7 +51,7 @@ export class EntityFactory {
       this.em.setIdentity(entity, data.id);
     }
 
-    this.initEntity(entity, meta.properties, data, exclude);
+    this.initEntity(entity, meta, data, exclude);
 
     if (initialized) {
       delete entity['__initialized'];
@@ -69,31 +70,26 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends IEntity>(entity: T, properties: any, data: any, exclude: string[]): void {
-    // process base entity properties first
-    ['_id', 'id'].forEach(k => {
-      if (data[k]) {
-        entity[k] = data[k];
-      }
-    });
+  private initEntity<T extends IEntity>(entity: T, meta: EntityMetadata, data: any, exclude: string[]): void {
+    entity.id = data.id; // process PK first
 
     // then process user defined properties (ignore not defined keys in `data`)
-    Object.keys(properties).forEach(p => {
+    Object.keys(meta.properties).forEach(p => {
       if (exclude.includes(p)) {
         return;
       }
 
-      const prop = properties[p] as EntityProperty;
+      const prop = meta.properties[p] as EntityProperty;
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY && !data[p]) {
-        return entity[p] = new Collection<T>(entity, null, false);
+      if (prop.reference === ReferenceType.ONE_TO_MANY) {
+        return entity[p] = new Collection<T>(entity, null, !!data[p]);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[p])) {
           const driver = this.em.getDriver();
           const items = data[p].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return entity[p] = new Collection<T>(entity, items, false);
+          return entity[p] = new Collection<T>(entity, items);
         } else if (!entity[p]) {
           const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
           return entity[p] = new Collection<T>(entity, items, false);
