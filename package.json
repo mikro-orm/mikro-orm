@@ -28,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/B4nan/mikro-orm/issues"
   },
-  "homepage": "https://github.com/B4nan/mikro-orm#readme",
+  "homepage": "https://b4nan.github.io/mikro-orm/",
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
@@ -46,8 +46,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node node_modules/.bin/jest --runInBand",
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "test": "jest --runInBand",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "tslint -c tslint.json -p tsconfig.json"
   },
   "pre-commit": [
