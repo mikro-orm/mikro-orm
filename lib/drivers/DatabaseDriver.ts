@@ -60,7 +60,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
 
     const map = {} as any;
-    owners.forEach(owner => map[owner] = []);
+    owners.forEach(owner => map['' + owner] = []);
     items.forEach(item => {
       map[item[fk1]].push(item);
       delete item[fk1];

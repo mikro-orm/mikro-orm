@@ -201,6 +201,7 @@ export class UnitOfWork {
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
       const copy = Utils.copy(entity);
+
       for (const hook of hooks[type]) {
         await entity[hook]();
       }

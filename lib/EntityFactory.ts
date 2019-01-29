@@ -204,16 +204,9 @@ export class EntityFactory {
           props[p].type = type instanceof Function ? type.name : type;
         } else {
           const old = props[p].type;
+          props[p].type = property.getType().getText(property);
 
-          if (props[p].reference === ReferenceType.SCALAR) {
-            props[p].type = property.getType().getText();
-          }
-
-          if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(props[p].reference) && property.getType().getSymbol()) {
-            props[p].type = property.getType().getSymbol().getName();
-          }
-
-          if (props[p].type === 'any') {
+          if (props[p].type === 'any' && old) {
             props[p].type = old;
           }
         }

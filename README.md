@@ -68,6 +68,11 @@ app.use((req, res, next) => {
 });
 ```
 
+You should register this middleware as the last one just before request handlers and before
+any of your custom middleware that is using the ORM. There might be issues when you register 
+it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
+register the context after them. 
+
 More info about `RequestContext` is described [here](https://b4nan.github.io/mikro-orm/identity-map/#request-context).
 
 Now you can start defining your entities (in one of the `entitiesDirs` folders):

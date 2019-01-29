@@ -122,8 +122,8 @@ export class EntityHelper {
   static decorate(prototype: any, meta: EntityMetadata, em: EntityManager) {
     const pk = meta.properties[meta.primaryKey];
 
-    // define magic id property getter/setter if the key is `_id: ObjectID`
-    if (pk.name === '_id' && pk.type === 'ObjectID') {
+    // define magic id property getter/setter if PK property is `_id` and there is no `id` property defined
+    if (pk.name === '_id' && !meta.properties.id) {
       Object.defineProperty(prototype, 'id', {
         get(): string {
           return this._id ? em.getDriver().normalizePrimaryKey<string>(this._id) : null;

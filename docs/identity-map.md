@@ -45,4 +45,9 @@ app.use((req, res, next) => {
 });
 ``` 
 
+You should register this middleware as the last one just before request handlers and before
+any of your custom middleware that is using the ORM. There might be issues when you register 
+it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
+register the context after them. 
+
 [&larr; Back to table of contents](index.md#table-of-contents)

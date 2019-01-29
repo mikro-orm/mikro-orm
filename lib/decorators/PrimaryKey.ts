@@ -20,4 +20,4 @@ export type PrimaryKeyOptions = {
   [prop: string]: any;
 }
 
-export type IPrimaryKey = number | string | any;
+export type IPrimaryKey = number | string | { toString?(): string, toHexString?(): string };

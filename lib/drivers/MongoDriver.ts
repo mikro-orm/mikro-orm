@@ -36,7 +36,7 @@ export class MongoDriver extends DatabaseDriver {
 
   async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as IPrimaryKey) };
+      where = { _id: new ObjectID(where as any) };
     }
 
     where = this.renameFields(entityName, where);
@@ -75,7 +75,7 @@ export class MongoDriver extends DatabaseDriver {
 
   async nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as IPrimaryKey) };
+      where = { _id: new ObjectID(where as any) };
     }
 
     where = this.renameFields(entityName, where);
@@ -91,7 +91,7 @@ export class MongoDriver extends DatabaseDriver {
 
   async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as IPrimaryKey) };
+      where = { _id: new ObjectID(where as any) };
     }
 
     where = this.renameFields(entityName, where);
