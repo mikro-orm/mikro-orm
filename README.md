@@ -6,6 +6,7 @@ MySQL and SQLite databases.
 Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 [![](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
+[![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
 [![](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Dependency Status](https://david-dm.org/B4nan/mikro-orm.svg)](https://david-dm.org/B4nan/mikro-orm)
 [![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
@@ -15,6 +16,10 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 
 MikroORM's documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://b4nan.github.io/mikro-orm/.
+
+> **Current documentation is for upcoming version 2.**
+>
+> You can install it via `mikro-orm@next` tag.
 
 ## Core features
 

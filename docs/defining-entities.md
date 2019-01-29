@@ -105,7 +105,7 @@ export interface Author extends IEntity { }
 
 More information about how collections work can be found on [collections page](collections.md).
 
-## Using `BaseEntity`
+## Using BaseEntity
 
 MikroORM provides `BaseEntity` abstract class that you can extend your entities from. It comes
 with 2 main benefits:
