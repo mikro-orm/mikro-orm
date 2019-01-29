@@ -1,7 +1,6 @@
 import { merge } from 'lodash';
 import { getMetadataStorage } from '../MikroORM';
 import { Utils } from '../Utils';
-import { Collection } from '../Collection';
 import { IPrimaryKey } from './PrimaryKey';
 import { EntityManager } from '../EntityManager';
 
@@ -64,4 +63,5 @@ export interface EntityMetadata {
   properties: { [property: string]: EntityProperty };
   customRepository: any;
   hooks: { [type: string]: string[] };
+  prototype: Function;
 }

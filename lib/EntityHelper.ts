@@ -119,12 +119,12 @@ export class EntityHelper {
     (entity[prop.name] as Collection<IEntity>).set(items);
   }
 
-  static decorate(prototype: any, meta: EntityMetadata, em: EntityManager) {
+  static decorate(meta: EntityMetadata, em: EntityManager) {
     const pk = meta.properties[meta.primaryKey];
 
     // define magic id property getter/setter if PK property is `_id` and there is no `id` property defined
     if (pk.name === '_id' && !meta.properties.id) {
-      Object.defineProperty(prototype, 'id', {
+      Object.defineProperty(meta.prototype, 'id', {
         get(): string {
           return this._id ? em.getDriver().normalizePrimaryKey<string>(this._id) : null;
         },
@@ -134,7 +134,7 @@ export class EntityHelper {
       });
     }
 
-    Object.defineProperties(prototype, {
+    Object.defineProperties(meta.prototype, {
       __populated: { value: false, writable: true, enumerable: false, configurable: false },
       __entity: { value: true, writable: false, enumerable: false, configurable: false },
       __em: { value: em, writable: false, enumerable: false, configurable: false },

@@ -157,6 +157,7 @@ export class EntityFactory {
       this.logger(`- processing ${files.length} files from directory ${basePath}`);
     }
 
+    const discovered = [];
     files.forEach(file => {
       if (
         !file.match(/\.[jt]s$/) ||
@@ -183,6 +184,7 @@ export class EntityFactory {
 
       const source = sources.find(s => !!s.getFilePath().match(new RegExp(name + '.ts')));
       this.metadata[name].path = path;
+      this.metadata[name].prototype = target.prototype;
       const properties = source.getClass(name).getInstanceProperties();
       const namingStrategy = this.em.getNamingStrategy();
 
@@ -210,7 +212,12 @@ export class EntityFactory {
         this.applyNamingStrategy(name, props[p], namingStrategy);
       });
 
-      EntityHelper.decorate(target.prototype, this.metadata[name], this.em);
+      discovered.push(name);
+    });
+
+    discovered.forEach(name => {
+      this.em.validator.validateEntityDefinition(this.metadata, name);
+      EntityHelper.decorate(this.metadata[name], this.em);
     });
 
     if (this.em.getDriver().usesPivotTable()) {

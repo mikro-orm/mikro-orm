@@ -3,6 +3,7 @@ import { ReferenceType, EntityManager, MikroORM, Collection, MikroORMOptions, Mo
 import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { Validator } from '../lib/Validator';
 
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
@@ -19,6 +20,7 @@ const Mock = jest.fn<EntityManager>(() => ({
   } as MikroORMOptions),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
+  validator: new Validator(false),
   namingStrategy: new MongoNamingStrategy(),
   getNamingStrategy: () => new MongoNamingStrategy(),
 }));
