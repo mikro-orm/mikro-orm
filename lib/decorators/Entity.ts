@@ -25,6 +25,7 @@ export interface IEntity {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?, em?: EntityManager): Promise<IEntity>;
+  toObject(parent?: IEntity, isCollection?: boolean): { [field: string]: any };
   toJSON(): { [field: string]: any };
   assign(data: any, em?: EntityManager): void;
 }
