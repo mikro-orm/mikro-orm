@@ -1,7 +1,6 @@
 import { merge } from 'lodash';
 import { getMetadataStorage } from '../MikroORM';
 import { Utils } from '../Utils';
-import { IPrimaryKey } from './PrimaryKey';
 import { EntityManager } from '../EntityManager';
 
 export function Entity(options: EntityOptions = {}): Function {
@@ -20,8 +19,8 @@ export type EntityOptions = {
   customRepository?: any;
 }
 
-export interface IEntity {
-  id: IPrimaryKey;
+export interface IEntity<T = number | string> {
+  id: T;
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?, em?: EntityManager): Promise<IEntity>;

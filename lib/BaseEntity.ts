@@ -15,11 +15,11 @@ export abstract class BaseEntity {
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
-        this[prop] = new Collection(this);
+        this[prop] = new Collection(this as any);
       }
     });
   }
 
 }
 
-export interface BaseEntity extends IEntity { }
+export interface BaseEntity<T = number | string> extends IEntity<T> { }

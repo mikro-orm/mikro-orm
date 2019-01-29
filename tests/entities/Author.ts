@@ -91,4 +91,4 @@ export class Author {
 
 }
 
-export interface Author extends IEntity { }
+export interface Author extends IEntity<string> { }
