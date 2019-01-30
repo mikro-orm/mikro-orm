@@ -3,7 +3,7 @@ import { Author } from '../entities';
 
 export class AuthorRepository extends EntityRepository<Author> {
 
-  public magic(data: string): string {
+  magic(data: string): string {
     return `111 ${data} 222`;
   }
 

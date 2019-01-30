@@ -16,9 +16,11 @@ cache:
 
 script:
   - yarn lint
-  - ORM_PARALLEL=1 ORM_PORT=3306 yarn test
+  - ORM_PARALLEL=1 ORM_PORT=3306 yarn coverage
 
 before_install:
   - mysql -u root -e 'CREATE DATABASE mikro_orm_test;'
 
-after_success: yarn coveralls
+after_success:
+  - yarn coveralls
+  - yarn codacy-coverage

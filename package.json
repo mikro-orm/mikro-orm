@@ -39,7 +39,7 @@
       "js",
       "json"
     ],
-    "collectCoverage": true,
+    "collectCoverage": false,
     "collectCoverageFrom": [
       "lib/**/*.ts"
     ]
@@ -47,7 +47,9 @@
   "scripts": {
     "build": "tsc",
     "test": "jest --runInBand",
+    "coverage": "jest --runInBand --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "codacy-coverage": "cat ./coverage/lcov.info | codacy-coverage",
     "lint": "tslint -c tslint.json -p tsconfig.json"
   },
   "pre-commit": [
@@ -74,6 +76,7 @@
     "@types/mongodb": "^3.1.19",
     "@types/mysql2": "types/mysql2",
     "@types/node": "^10.12.18",
+    "codacy-coverage": "^3.4.0",
     "coveralls": "^3.0.2",
     "jest": "^23.6.0",
     "mongodb": "^3.1.12",

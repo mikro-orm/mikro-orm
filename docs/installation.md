@@ -1,5 +1,9 @@
 # Installation & Usage
 
+> **Current documentation is for upcoming version 2.**
+>
+> You can install it via `mikro-orm@next` tag.
+
 Fist install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
 ```
