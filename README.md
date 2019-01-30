@@ -5,6 +5,7 @@ MySQL and SQLite databases.
 
 Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4fc24bb70323474180b67bc14838c416)](https://app.codacy.com/app/B4nan/mikro-orm?utm_source=github.com&utm_medium=referral&utm_content=B4nan/mikro-orm&utm_campaign=Badge_Grade_Settings)
 [![](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
 [![](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
