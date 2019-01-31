@@ -1,12 +1,8 @@
 import { getMetadataStorage } from './MikroORM';
 import { Collection } from './Collection';
 import { IEntity, ReferenceType } from './decorators/Entity';
-import { Property } from './decorators/Property';
 
 export abstract class BaseEntity {
-
-  @Property()
-  extraField: string;
 
   constructor() {
     const metadata = getMetadataStorage();
