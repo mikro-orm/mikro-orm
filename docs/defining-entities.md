@@ -110,6 +110,19 @@ export interface Author extends IEntity { }
 
 More information about how collections work can be found on [collections page](collections.md).
 
+## Entity file names
+
+You are free to choose one of those formats for entity filename (for a `BookTag` entity):
+
+- `BookTag.ts`
+- `BookTag.model.ts`
+- `book-tag.ts`
+- `book-tag.model.ts`
+- `book-tag.entity.ts`
+
+Entity name is inferred from the first part of file name before first dot occurs, so you can 
+add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
+
 ## Using BaseEntity
 
 MikroORM provides `BaseEntity` abstract class that you can extend your entities from. It comes

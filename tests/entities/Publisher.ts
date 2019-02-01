@@ -1,7 +1,7 @@
 import { ObjectID } from 'mongodb';
 import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, IEntity, BeforeCreate } from '../../lib';
 import { Book } from './Book';
-import { Test } from './Test';
+import { Test } from './test.model';
 
 @Entity()
 export class Publisher {

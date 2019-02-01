@@ -1,5 +1,5 @@
 export * from './Author';
 export * from './Book';
-export * from './BookTag';
+export * from './book-tag';
 export * from './Publisher';
-export * from './Test';
+export * from './test.model';

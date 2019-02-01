@@ -173,7 +173,7 @@ export class EntityFactory {
         this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
       }
 
-      const name = file.split('.')[0];
+      const name = this.getClassName(file);
       const path = `${this.options.baseDir}/${basePath}/${file}`;
       const target = require(path)[name]; // include the file to trigger loading of metadata
 
@@ -182,7 +182,7 @@ export class EntityFactory {
         return;
       }
 
-      const source = sources.find(s => !!s.getFilePath().match(new RegExp(name + '.ts')));
+      const source = sources.find(s => !!s.getFilePath().match(file.replace(/\.js$/, '.ts')));
       this.metadata[name].path = path;
       this.metadata[name].prototype = target.prototype;
       const properties = source.getClass(name).getInstanceProperties();
@@ -294,6 +294,13 @@ export class EntityFactory {
         }
       });
     });
+  }
+
+  private getClassName(file: string): string {
+    const name = file.split('.')[0];
+    const ret = name.replace(/-(\w)/, m => m[1].toUpperCase());
+
+    return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
 
 }
