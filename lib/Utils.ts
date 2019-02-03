@@ -2,7 +2,7 @@ import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import { IEntity, IPrimaryKey } from '.';
 import { Collection } from './Collection';
-import { getMetadataStorage } from './MikroORM';
+import { MetadataStorage } from './MetadataStorage';
 
 export class Utils {
 
@@ -44,7 +44,7 @@ export class Utils {
   }
 
   static prepareEntity(e: IEntity, foreignKey: string): any {
-    const metadata = getMetadataStorage();
+    const metadata = MetadataStorage.getMetadata();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
 

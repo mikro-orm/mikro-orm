@@ -1,11 +1,10 @@
-import { getMetadataStorage } from './MikroORM';
-import { Collection } from './Collection';
-import { IEntity, ReferenceType } from './decorators/Entity';
+import { Collection, IEntity, ReferenceType } from '../../lib';
+import { MetadataStorage } from '../../lib/MetadataStorage';
 
-export abstract class BaseEntity {
+export abstract class BaseEntity2 {
 
   constructor() {
-    const metadata = getMetadataStorage();
+    const metadata = MetadataStorage.getMetadata();
     const meta = metadata[this.constructor.name];
     const props = meta.properties;
 
@@ -18,4 +17,4 @@ export abstract class BaseEntity {
 
 }
 
-export interface BaseEntity<T = number | string> extends IEntity<T> { }
+export interface BaseEntity2 extends IEntity<number> { }

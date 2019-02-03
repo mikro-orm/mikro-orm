@@ -1,14 +1,15 @@
 import { merge } from 'lodash';
-import { getMetadataStorage } from '../MikroORM';
 import { Utils } from '../Utils';
 import { EntityManager } from '../EntityManager';
+import { MetadataStorage } from '../MetadataStorage';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
-    const storage = getMetadataStorage(target.name);
+    const storage = MetadataStorage.getMetadata(target.name);
     const meta = merge(storage[target.name], options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
+    meta.extends = Object.getPrototypeOf(target).name || undefined;
 
     return target;
   };
@@ -41,6 +42,7 @@ export interface EntityProperty {
   fk: string;
   entity: () => string | Function;
   type: string;
+  primary: boolean;
   reference: ReferenceType;
   fieldName?: string;
   attributes?: { [attribute: string]: any };
@@ -57,6 +59,7 @@ export interface EntityProperty {
 export interface EntityMetadata {
   name: string;
   constructorParams: string[];
+  extends: string;
   collection: string;
   path: string;
   primaryKey: string;

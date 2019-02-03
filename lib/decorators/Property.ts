@@ -1,10 +1,10 @@
-import { getMetadataStorage } from '../MikroORM';
 import { EntityProperty, IEntity, ReferenceType } from './Entity';
+import { MetadataStorage } from '../MetadataStorage';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
     const entity = target.constructor.name;
-    const storage = getMetadataStorage(entity);
+    const storage = MetadataStorage.getMetadata(entity);
 
     const meta = storage[entity];
     options.name = propertyName;

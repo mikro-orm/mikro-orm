@@ -1,4 +1,4 @@
-import { getMetadataStorage } from '../MikroORM';
+import { MetadataStorage } from '../MetadataStorage';
 
 export function BeforeCreate() {
   return hook('beforeCreate');
@@ -32,7 +32,7 @@ export function AfterDelete() {
 
 function hook(type: string) {
   return function (target: any, method: string) {
-    const storage = getMetadataStorage(target.constructor.name);
+    const storage = MetadataStorage.getMetadata(target.constructor.name);
     const meta = storage[target.constructor.name];
 
     if (!meta.hooks) {

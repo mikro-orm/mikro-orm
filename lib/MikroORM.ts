@@ -1,21 +1,6 @@
 import { EntityManager } from './EntityManager';
-import { EntityMetadata } from './decorators/Entity';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
-
-export function getMetadataStorage(entity?: string): { [entity: string]: EntityMetadata } {
-  if (!(global as any)['MIKRO-ORM-STORAGE']) {
-    (global as any)['MIKRO-ORM-STORAGE'] = {} as any;
-  }
-
-  const storage = (global as any)['MIKRO-ORM-STORAGE'];
-
-  if (entity && !storage[entity]) {
-    storage[entity] = {} as EntityMetadata;
-  }
-
-  return storage;
-}
 
 const defaultOptions = {
   entitiesDirs: [],

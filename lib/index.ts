@@ -2,7 +2,6 @@ export * from './MikroORM';
 export * from './EntityRepository';
 export * from './EntityManager';
 export * from './RequestContext';
-export * from './BaseEntity';
 export * from './Collection';
 export * from './drivers/IDatabaseDriver';
 export * from './drivers/DatabaseDriver';

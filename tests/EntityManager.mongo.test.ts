@@ -89,6 +89,7 @@ describe('EntityManagerMongo', () => {
       born: jon.born,
       email: 'snow@wall.st',
       name: 'Jon Snow',
+      foo: 'bar',
     });
     expect(jon.toJSON()).toEqual(o);
     expect(jon.books.getIdentifiers('_id')).toBeInstanceOf(Array);

@@ -1,15 +1,16 @@
-import { getMetadataStorage, MikroORMOptions } from '../MikroORM';
+import { MikroORMOptions } from '../MikroORM';
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, EntityMetadata, NamingStrategy, UnderscoreNamingStrategy, EntityProperty } from '..';
+import { EntityMetadata, EntityProperty, IEntity, IPrimaryKey, NamingStrategy, UnderscoreNamingStrategy } from '..';
 import { Utils } from '../Utils';
 import { QueryOrder } from '../QueryBuilder';
+import { MetadataStorage } from '../MetadataStorage';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
 
   protected readonly metadata: { [k: string]: EntityMetadata } = {};
 
   constructor(protected options: MikroORMOptions) {
-    this.metadata = getMetadataStorage();
+    this.metadata = MetadataStorage.getMetadata();
   }
 
   abstract async connect(): Promise<void>;

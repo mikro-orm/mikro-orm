@@ -1,7 +1,7 @@
-import { Entity, PrimaryKey, Property, BaseEntity } from '../../lib';
+import { Entity, IEntity, PrimaryKey, Property } from '../../lib';
 
 @Entity()
-export class Test extends BaseEntity<string> {
+export class Test {
 
   @PrimaryKey({ type: 'ObjectID' })
   _id;
@@ -17,3 +17,5 @@ export class Test extends BaseEntity<string> {
   }
 
 }
+
+export interface Test extends IEntity<string> { }

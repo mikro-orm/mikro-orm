@@ -1,12 +1,13 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  BaseEntity, Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey,
+  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey,
 } from '../../lib';
 
 import { Book2 } from './Book2';
+import { BaseEntity2 } from './BaseEntity2';
 
 @Entity()
-export class Author2 extends BaseEntity {
+export class Author2 extends BaseEntity2 {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;

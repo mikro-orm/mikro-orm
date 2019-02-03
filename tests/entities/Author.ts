@@ -1,26 +1,17 @@
-import { ObjectID } from 'mongodb';
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey, IEntity,
+  Collection, Entity, OneToMany, Property, ManyToOne,
 } from '../../lib';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
+import { BaseEntity } from './BaseEntity';
 
 @Entity({ customRepository: () => AuthorRepository })
-export class Author {
+export class Author extends BaseEntity {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
-
-  @PrimaryKey()
-  _id: ObjectID;
-
-  @Property()
-  createdAt = new Date();
-
-  @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
 
   @Property()
   name: string;
@@ -50,8 +41,10 @@ export class Author {
   versionAsString: string;
 
   constructor(name: string, email: string) {
+    super();
     this.name = name;
     this.email = email;
+    this.foo = 'bar';
   }
 
   @BeforeCreate()
@@ -90,5 +83,3 @@ export class Author {
   }
 
 }
-
-export interface Author extends IEntity<string> { }

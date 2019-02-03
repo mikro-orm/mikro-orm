@@ -2,7 +2,7 @@ import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
 import { Utils } from './Utils';
-import { getMetadataStorage, MikroORMOptions } from './MikroORM';
+import { MikroORMOptions } from './MikroORM';
 import { Collection } from './Collection';
 import { Validator } from './Validator';
 import { RequestContext } from './RequestContext';
@@ -13,6 +13,7 @@ import { QueryBuilder } from './QueryBuilder';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { EntityMetadata, IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './EntityHelper';
+import { MetadataStorage } from './MetadataStorage';
 
 export class EntityManager {
 
@@ -24,13 +25,15 @@ export class EntityManager {
   private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
   private readonly metadata: { [k: string]: EntityMetadata } = {};
   private readonly namingStrategy: NamingStrategy;
+  private readonly storage: MetadataStorage;
 
   constructor(private driver: IDatabaseDriver, public options: MikroORMOptions) {
-    this.metadata = getMetadataStorage();
     const NamingStrategy = options.namingStrategy || driver.getDefaultNamingStrategy();
     this.namingStrategy = new NamingStrategy();
     this.entityFactory = new EntityFactory(this);
     this._unitOfWork = new UnitOfWork(this);
+    this.storage = new MetadataStorage(this);
+    this.metadata = this.storage.discover();
   }
 
   getIdentity<T extends IEntity>(entityName: string, id: IPrimaryKey): T {

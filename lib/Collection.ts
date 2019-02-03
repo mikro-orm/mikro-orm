@@ -1,7 +1,7 @@
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
-import { getMetadataStorage } from './MikroORM';
 import { EntityHelper } from './EntityHelper';
+import { MetadataStorage } from './MetadataStorage';
 
 export class Collection<T extends IEntity> {
 
@@ -196,7 +196,7 @@ export class Collection<T extends IEntity> {
 
   private get property() {
     if (!this._property) {
-      const metadata = getMetadataStorage();
+      const metadata = MetadataStorage.getMetadata();
       const meta = metadata[this.owner.constructor.name];
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field];

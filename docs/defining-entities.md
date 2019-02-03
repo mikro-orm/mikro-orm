@@ -42,14 +42,13 @@ export class Book {
 export interface Book extends IEntity<string> { }
 ```
 
-You will need to extend Book's interface with `IEntity` or your entity must extend BaseEntity
-which does that for you. `IEntity` interface represents internal methods added to your entity's 
-prototype via `@Entity` decorator.
+You will need to extend Book's interface with `IEntity`. The interface represents internal 
+methods added to your entity's prototype via `@Entity` decorator.
 
 `IEntity` is generic interface, its type parameter depends on data type of normalized primary
 key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
-This type default to union type `number | string`. Keep in mind that you have to worry about this
-only when you define your primary key as `_id` instead of `id`.
+This type default to union type `number | string`. Keep in mind that you have to worry about 
+this only when you define your primary key as `_id` instead of `id`.
 
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany` and `@ManyToMany`. 
@@ -125,39 +124,25 @@ add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 
 ## Using BaseEntity
 
-MikroORM provides `BaseEntity` abstract class that you can extend your entities from. It comes
-with 2 main benefits:
+You can define your own base entity with properties that you require on all entities, like
+primary key and created/updated time. 
 
-1. you do not have to initialize collections yourself
-2. you do not have to re-export your entity as interface that extends `IEntity`
-
-Here is third example of entity that extends the `BaseEntity` class:
-
-**`./entities/BookTag.ts`**
+**`./entities/BaseEntity.ts`**
 
 ```typescript
-@Entity()
-export class BookTag extends BaseEntity {
+export abstract class BaseEntity {
 
   @PrimaryKey()
   _id: ObjectID;
 
   @Property()
-  name: string;
+  createdAt = new Date();
 
-  @ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
-  books: Collection<Book>;
-
-  constructor(name: string) {
-    super();
-    this.name = name;
-  }
+  @Property({ onUpdate: () => new Date() })
+  updatedAt = new Date();
 
 }
 ```
-
-You are free to mix those two approaches as they are equivalent. Although it is generally good 
-idea to stick to one pattern and rather be consistent.
 
 ## Note about SQL drivers and @PrimaryKey
 
