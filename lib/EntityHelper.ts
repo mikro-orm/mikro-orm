@@ -3,6 +3,7 @@ import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from './EntityManager';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
+import { MetadataStorage } from './MetadataStorage';
 
 export class EntityHelper {
 
@@ -14,7 +15,7 @@ export class EntityHelper {
   }
 
   static assign(entity: IEntity, data: any): void {
-    const metadata = entity['__em'].entityFactory.getMetadata();
+    const metadata = MetadataStorage.getMetadata();
     const meta = metadata[entity.constructor.name];
     const props = meta.properties;
 

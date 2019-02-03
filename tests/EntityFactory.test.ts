@@ -42,7 +42,7 @@ describe('EntityFactory', () => {
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {
-    const metadata = factory.getMetadata();
+    const metadata = MetadataStorage.getMetadata();
     expect(metadata).toBeInstanceOf(Object);
     expect(metadata[BaseEntity.name].properties['foo'].type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
@@ -84,7 +84,7 @@ describe('EntityFactory', () => {
 
   test('should return entity without id [reference as constructor parameter]', async () => {
     // we need to use normal entity manager to have working identity map
-    const author = orm.em.entityFactory.createReference<Author>(Author.name, '5b0d19b28b21c648c2c8a600');
+    const author = orm.em['entityFactory'].createReference<Author>(Author.name, '5b0d19b28b21c648c2c8a600');
     expect(author.id).toBe('5b0d19b28b21c648c2c8a600');
     const book = orm.em.create<Book>(Book.name, { title: 'book title', author: author.id });
     expect(book).toBeInstanceOf(Book);

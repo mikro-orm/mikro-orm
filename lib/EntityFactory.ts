@@ -13,10 +13,6 @@ export class EntityFactory {
 
   constructor(private em: EntityManager) { }
 
-  getMetadata(): { [entity: string]: EntityMetadata } {
-    return this.metadata;
-  }
-
   create<T extends IEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
     const exclude = [];
