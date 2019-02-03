@@ -39,33 +39,33 @@ export class Utils {
   /**
    * Process references first so we do not have to deal with cycles
    */
-  static diffEntities(a: IEntity, b: IEntity, foreignKey: string): any {
-    return Utils.diff(Utils.prepareEntity(a, foreignKey), Utils.prepareEntity(b, foreignKey));
+  static diffEntities(a: IEntity, b: IEntity): any {
+    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
   }
 
-  static prepareEntity(e: IEntity, foreignKey: string): any {
+  static prepareEntity(e: IEntity): any {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
-
-    delete ret[foreignKey];
     delete ret.__initialized;
 
     // remove collections and references
-    Object.keys(meta.properties).forEach(prop => {
-      if (e[prop] instanceof Collection || (Utils.isEntity(e[prop]) && !e[prop][foreignKey])) {
-        return delete ret[prop];
+    Object.values(meta.properties).forEach(prop => {
+      const pk = () => metadata[prop.type].primaryKey;
+
+      if (e[prop.name] instanceof Collection || (Utils.isEntity(e[prop.name]) && !e[prop.name][pk()])) {
+        return delete ret[prop.name];
       }
 
-      if (Utils.isEntity(e[prop])) {
-        return ret[prop] = ret[prop][foreignKey];
+      if (Utils.isEntity(e[prop.name])) {
+        return ret[prop.name] = ret[prop.name][pk()];
       }
     });
 
     // remove unknown properties
     Object.keys(e).forEach(prop => {
       if (!meta.properties[prop]) {
-        return delete ret[prop];
+        delete ret[prop];
       }
     });
 
