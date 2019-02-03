@@ -3,37 +3,30 @@ import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
 import { Utils } from './Utils';
 import { MikroORMOptions } from './MikroORM';
-import { Collection } from './Collection';
 import { Validator } from './Validator';
 import { RequestContext } from './RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
-import { NamingStrategy } from './naming-strategy/NamingStrategy';
-import { EntityMetadata, IEntity, ReferenceType } from './decorators/Entity';
+import { IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './EntityHelper';
+import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './MetadataStorage';
 
 export class EntityManager {
 
-  readonly entityFactory: EntityFactory;
   readonly validator = new Validator(this.options.strict);
 
   private readonly identityMap: { [k: string]: IEntity } = {};
-  private readonly _unitOfWork: UnitOfWork;
   private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
-  private readonly metadata: { [k: string]: EntityMetadata } = {};
-  private readonly namingStrategy: NamingStrategy;
-  private readonly storage: MetadataStorage;
+  private readonly entityFactory = new EntityFactory(this);
+  private readonly entityLoader = new EntityLoader(this);
+  private readonly metadata = MetadataStorage.getMetadata();
+  private readonly _unitOfWork = new UnitOfWork(this);
 
-  constructor(private driver: IDatabaseDriver, public options: MikroORMOptions) {
-    const NamingStrategy = options.namingStrategy || driver.getDefaultNamingStrategy();
-    this.namingStrategy = new NamingStrategy();
-    this.entityFactory = new EntityFactory(this);
-    this._unitOfWork = new UnitOfWork(this);
-    this.storage = new MetadataStorage(this);
-    this.metadata = this.storage.discover();
+  constructor(readonly options: MikroORMOptions,
+              private readonly driver: IDatabaseDriver) {
   }
 
   getIdentity<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
@@ -63,10 +56,6 @@ export class EntityManager {
 
   getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
     return this.driver as D;
-  }
-
-  getNamingStrategy(): NamingStrategy {
-    return this.namingStrategy;
   }
 
   getRepository<T extends IEntity>(entityName: string): EntityRepository<T> {
@@ -103,7 +92,7 @@ export class EntityManager {
       ret.push(entity);
     }
 
-    await this.populate(entityName, ret, populate);
+    await this.entityLoader.populate(entityName, ret, populate);
 
     return ret;
   }
@@ -117,7 +106,7 @@ export class EntityManager {
 
     if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where as IPrimaryKey) && this.getIdentity(entityName, where as IPrimaryKey).isInitialized()) {
       const entity = this.getIdentity<T>(entityName, where as IPrimaryKey);
-      await this.populate(entityName, [entity], populate);
+      await this.entityLoader.populate(entityName, [entity], populate);
 
       return entity;
     }
@@ -130,7 +119,7 @@ export class EntityManager {
     }
 
     const entity = this.merge(entityName, data) as T;
-    await this.populate(entityName, [entity], populate);
+    await this.entityLoader.populate(entityName, [entity], populate);
 
     return entity;
   }
@@ -296,130 +285,7 @@ export class EntityManager {
   }
 
   fork(): EntityManager {
-    const em = Object.create(EntityManager.prototype);
-    const ef = Object.create(EntityFactory.prototype);
-
-    Object.assign(ef, {
-      em,
-      options: this.options,
-      metadata: this.metadata,
-      logger: this.options.logger,
-    });
-
-    Object.assign(em, {
-      options: this.options,
-      driver: this.driver,
-      namingStrategy: this.namingStrategy,
-      entityFactory: ef,
-      identityMap: {},
-      validator: this.validator,
-      repositoryMap: {},
-      metadata: this.metadata,
-    });
-
-    Object.assign(em, {
-      _unitOfWork: new UnitOfWork(em),
-    });
-
-    return em;
-  }
-
-  private async populate(entityName: string, entities: IEntity[], populate: string[], validate = true): Promise<void> {
-    if (entities.length === 0) {
-      return;
-    }
-
-    for (const field of populate) {
-      if (validate && !this.canPopulate(entityName, field)) {
-        throw new Error(`Entity '${entityName}' does not have property '${field}'`);
-      }
-
-      // nested populate
-      if (field.includes('.')) {
-        const [f, ...parts] = field.split('.');
-        await this.populateMany(entityName, entities, f);
-        const children = [];
-        entities.forEach(entity => {
-          if (Utils.isEntity(entity[f])) {
-            children.push(entity[f]);
-          } else if (entity[f] instanceof Collection) {
-            children.push(...entity[f].getItems());
-          }
-        });
-        const filtered = Utils.unique(children);
-
-        const prop = this.metadata[entityName].properties[f];
-        await this.populate(prop.type, filtered, [parts.join('.')], false);
-      } else {
-        await this.populateMany(entityName, entities, field);
-      }
-    }
-  }
-
-  /**
-   * preload everything in one call (this will update already existing references in IM)
-   */
-  private async populateMany(entityName: string, entities: IEntity[], field: string): Promise<IEntity[]> {
-    // set populate flag
-    entities.forEach(entity => {
-      if (Utils.isEntity(entity[field]) || entity[field] instanceof Collection) {
-        entity[field].populated();
-      }
-    });
-
-    const prop = this.metadata[entityName].properties[field];
-    const filtered = entities.filter(e => e[field] instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
-    const children: IEntity[] = [];
-
-    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
-      const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
-
-      for (const entity of filtered) {
-        const items = map[entity.id as number].map(item => this.merge(prop.type, item));
-        (entity[field] as Collection<IEntity>).set(items, true);
-        children.push(...items);
-      }
-
-      return children;
-    }
-
-    let fk = this.namingStrategy.referenceColumnName();
-
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      children.push(...filtered.map(e => e[field].owner));
-      fk = this.metadata[prop.type].properties[prop.fk].fieldName;
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...b[field].getItems()], []));
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
-      children.push(...filtered);
-      fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
-    } else { // MANY_TO_ONE
-      children.push(...entities.filter(e => Utils.isEntity(e[field]) && !(e[field] as IEntity).isInitialized()).map(e => e[field]));
-    }
-
-    if (children.length === 0) {
-      return [];
-    }
-
-    const ids = Utils.unique(children.map(e => e.id));
-    const data = await this.find<IEntity>(prop.type, { [fk]: { $in: ids } });
-
-    // initialize collections for one to many
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      for (const entity of filtered) {
-        const items = data.filter(child => child[prop.fk] === entity);
-        (entity[field] as Collection<IEntity>).set(items, true);
-      }
-    }
-
-    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.usesPivotTable()) {
-      for (const entity of filtered) {
-        const items = data.filter(child => (child[prop.mappedBy] as Collection<IEntity>).contains(entity));
-        (entity[field] as Collection<IEntity>).set(items, true);
-      }
-    }
-
-    return data;
+    return new EntityManager(this.options, this.driver);
   }
 
   private get unitOfWork(): UnitOfWork {

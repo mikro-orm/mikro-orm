@@ -6,15 +6,19 @@ import { Utils } from './Utils';
 import { EntityHelper } from './EntityHelper';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { EntityManager } from './EntityManager';
+import { MikroORMOptions } from './MikroORM';
 
 export class MetadataStorage {
 
-  static metadata: { [entity: string]: EntityMetadata } = {};
+  private static readonly metadata: { [entity: string]: EntityMetadata } = {};
 
-  private options = this.em.options;
-  private logger = this.em.options.logger as Function;
+  private readonly namingStrategy: NamingStrategy;
+  private readonly logger = this.options.logger;
 
-  constructor(private em: EntityManager) { }
+  constructor(private em: EntityManager, private readonly options: MikroORMOptions) {
+    const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getDefaultNamingStrategy();
+    this.namingStrategy = new NamingStrategy();
+  }
 
   static getMetadata(entity?: string): { [entity: string]: EntityMetadata } {
     if (entity && !MetadataStorage.metadata[entity]) {
@@ -32,24 +36,16 @@ export class MetadataStorage {
     }
 
     const project = new Project();
-    const sources: SourceFile[] = [];
     const discovered: string[] = [];
 
-    if (!this.em.options.entitiesDirsTs) {
-      this.em.options.entitiesDirsTs = this.em.options.entitiesDirs;
+    if (!this.options.entitiesDirsTs) {
+      this.options.entitiesDirsTs = this.options.entitiesDirs;
     }
 
-    this.em.options.entitiesDirsTs.forEach(dir => {
-      sources.push(...project.addExistingSourceFiles(`${this.em.options.baseDir}/${dir}/**/*.ts`));
-    });
+    const dirs = this.options.entitiesDirsTs.map(dir => `${this.options.baseDir}/${dir}/**/*.ts`);
+    const sources = project.addExistingSourceFiles(dirs);
     this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(sources, dir)));
-
-    discovered.forEach(name => {
-      const meta = MetadataStorage.metadata[name];
-      this.defineBaseEntityProperties(meta);
-      this.validateEntity(meta);
-    });
-
+    discovered.forEach(name => this.processEntity(name));
     const diff = Date.now() - startTime;
 
     if (this.options.debug) {
@@ -108,18 +104,16 @@ export class MetadataStorage {
     meta.path = path;
     meta.prototype = target.prototype;
     const properties = source.getClass(name).getInstanceProperties();
-    const namingStrategy = this.em.getNamingStrategy();
-
     if (!meta.collection && meta.name) {
-      meta.collection = namingStrategy.classToTableName(meta.name);
+      meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    this.initProperties(meta, properties, namingStrategy);
+    this.initProperties(meta, properties);
 
     return meta;
   }
 
-  private initProperties(meta: EntityMetadata, properties: ClassInstancePropertyTypes[], namingStrategy: NamingStrategy) {
+  private initProperties(meta: EntityMetadata, properties: ClassInstancePropertyTypes[]) {
     // init types and column names
     Object.keys(meta.properties).forEach(p => {
       const prop = meta.properties[p];
@@ -137,49 +131,49 @@ export class MetadataStorage {
         }
       }
 
-      this.applyNamingStrategy(meta, prop, namingStrategy);
+      this.applyNamingStrategy(meta, prop);
     });
   }
 
-  private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty, namingStrategy: NamingStrategy): void {
+  private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE && !prop.fk) {
-      prop.fk = this.em.getNamingStrategy().referenceColumnName();
+      prop.fk = this.namingStrategy.referenceColumnName();
     }
 
     if (!prop.fieldName) {
       switch (prop.reference) {
         case ReferenceType.SCALAR:
-          prop.fieldName = namingStrategy.propertyToColumnName(prop.name);
+          prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
           break;
         case ReferenceType.MANY_TO_ONE:
-          prop.fieldName = namingStrategy.joinColumnName(prop.name);
+          prop.fieldName = this.namingStrategy.joinColumnName(prop.name);
           break;
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-        prop.fieldName = namingStrategy.propertyToColumnName(prop.name);
+        prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
       }
     }
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
       if (!prop.pivotTable && prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-        prop.pivotTable = namingStrategy.joinTableName(meta.name, prop.type, prop.name);
+        prop.pivotTable = this.namingStrategy.joinTableName(meta.name, prop.type, prop.name);
       }
 
       if (!prop.inverseJoinColumn && prop.reference === ReferenceType.MANY_TO_MANY) {
-        prop.inverseJoinColumn = namingStrategy.joinKeyColumnName(prop.type);
+        prop.inverseJoinColumn = this.namingStrategy.joinKeyColumnName(prop.type);
       }
 
       if (!prop.joinColumn && prop.reference === ReferenceType.ONE_TO_MANY) {
-        prop.joinColumn = namingStrategy.joinColumnName(prop.name);
+        prop.joinColumn = this.namingStrategy.joinColumnName(prop.name);
       }
 
       if (!prop.joinColumn && prop.reference === ReferenceType.MANY_TO_MANY) {
-        prop.joinColumn = namingStrategy.joinKeyColumnName(meta.name);
+        prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.name);
       }
 
       if (!prop.referenceColumnName) {
-        prop.referenceColumnName = namingStrategy.referenceColumnName();
+        prop.referenceColumnName = this.namingStrategy.referenceColumnName();
       }
     }
   }
@@ -233,7 +227,9 @@ export class MetadataStorage {
     });
   }
 
-  private validateEntity(meta: EntityMetadata): void {
+  private processEntity(name: string): void {
+    const meta = MetadataStorage.metadata[name];
+    this.defineBaseEntityProperties(meta);
     this.em.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
     EntityHelper.decorate(meta, this.em);
 

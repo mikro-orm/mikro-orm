@@ -1,6 +1,7 @@
 import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
+import { MetadataStorage } from './MetadataStorage';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -13,13 +14,15 @@ const defaultOptions = {
 export class MikroORM {
 
   em: EntityManager;
-  options: MikroORMOptions;
+  readonly options: MikroORMOptions;
   private readonly driver: IDatabaseDriver;
 
   static async init(options: Options): Promise<MikroORM> {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
-    orm.em = new EntityManager(driver, orm.options);
+    orm.em = new EntityManager(orm.options, driver);
+    const storage = new MetadataStorage(orm.em, orm.options);
+    storage.discover();
 
     return orm;
   }

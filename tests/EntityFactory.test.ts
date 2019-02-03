@@ -28,7 +28,6 @@ const Mock = jest.fn<EntityManager>(() => ({
 }));
 const em = new Mock();
 const factory = new EntityFactory(em);
-new MetadataStorage(em).discover();
 Object.assign(em, { entityFactory: factory });
 
 /**
@@ -38,7 +37,10 @@ describe('EntityFactory', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => {
+    orm = await initORM();
+    new MetadataStorage(em, orm.options).discover();
+  });
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {

@@ -560,7 +560,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('EM supports native insert/update/delete', async () => {
-    orm.em.options.debug = false;
+    orm.options.debug = false;
     const res1 = await orm.em.nativeInsert(Author2.name, { name: 'native name 1' });
     expect(typeof res1).toBe('number');
 
@@ -586,7 +586,7 @@ describe('EntityManagerSqlite', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, 'id');
+    const diff = Utils.diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
   });

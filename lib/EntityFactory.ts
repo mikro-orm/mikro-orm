@@ -9,7 +9,7 @@ export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 export class EntityFactory {
 
-  private metadata = MetadataStorage.getMetadata();
+  private readonly metadata = MetadataStorage.getMetadata();
 
   constructor(private em: EntityManager) { }
 

@@ -190,7 +190,7 @@ describe('EntityManagerMongo', () => {
 
     expect(fork).not.toBe(orm.em);
     expect(fork.getIdentityMap()).not.toBe(orm.em.getIdentityMap());
-    expect(fork.entityFactory).not.toBe(orm.em.entityFactory);
+    expect(fork['entityFactory']).not.toBe(orm.em['entityFactory']);
     expect(fork['metadata']).toBe(orm.em['metadata']);
     expect(fork.getIdentityMap()).toEqual({});
   });
@@ -663,7 +663,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
-    orm.em.options.debug = false;
+    orm.options.debug = false;
     const res1 = await orm.em.nativeInsert(Author.name, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectID);
 
