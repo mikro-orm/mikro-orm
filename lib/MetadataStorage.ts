@@ -218,13 +218,12 @@ export class MetadataStorage {
       return;
     }
 
-    Object.values(base.properties).forEach(prop => {
-      meta.properties[prop.name] = prop;
+    meta.properties = { ...base.properties, ...meta.properties };
+    const primary = Object.values(base.properties).find(p => p.primary);
 
-      if (prop.primary) {
-        meta.primaryKey = prop.name;
-      }
-    });
+    if (primary && !meta.primaryKey) {
+      meta.primaryKey = primary.name;
+    }
   }
 
   private processEntity(name: string): void {

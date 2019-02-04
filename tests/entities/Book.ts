@@ -1,11 +1,12 @@
 import { ObjectID } from 'mongodb';
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, IEntity } from '../../lib';
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
+import { BaseEntity3 } from './BaseEntity3';
 
 @Entity({ collection: 'books-table' })
-export class Book {
+export class Book extends BaseEntity3 {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -32,10 +33,9 @@ export class Book {
   metaArrayOfStrings: string[];
 
   constructor(title: string, author: Author) {
+    super();
     this.title = title;
     this.author = author;
   }
 
 }
-
-export interface Book extends IEntity { }
