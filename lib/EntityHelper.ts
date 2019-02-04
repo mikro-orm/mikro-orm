@@ -154,22 +154,28 @@ export class EntityHelper {
           return EntityHelper.init(this, populated);
         },
       },
-      assign: {
-        value: function (data: any) {
-          EntityHelper.assign(this, data);
-        }
-      },
       toObject: {
         value: function (parent?: IEntity, isCollection?: boolean) {
           return EntityHelper.toObject(this, parent, isCollection);
         }
       },
-      toJSON: {
+    });
+
+    if (!(meta.prototype as any).assign) {
+      Object.defineProperty(meta.prototype, 'assign', {
+        value: function (data: any) {
+          EntityHelper.assign(this, data);
+        },
+      });
+    }
+
+    if (!(meta.prototype as any).toJSON) {
+      Object.defineProperty(meta.prototype, 'toJSON', {
         value: function () {
           return EntityHelper.toObject(this);
-        }
-      },
-    });
+        },
+      });
+    }
   }
 
 }

@@ -26,6 +26,7 @@ describe('EntityHelperMongo', () => {
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
     expect(author.toJSON()).toBeInstanceOf(Object);
+    expect(author.toJSON()).toMatchObject({ fooBar: 123 });
   });
 
   test('#init() should populate the entity', async () => {

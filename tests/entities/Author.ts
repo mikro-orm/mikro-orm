@@ -6,6 +6,7 @@ import {
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
+import { EntityHelper } from '../../lib/EntityHelper';
 
 @Entity({ customRepository: () => AuthorRepository })
 export class Author extends BaseEntity {
@@ -80,6 +81,17 @@ export class Author extends BaseEntity {
   @AfterDelete()
   afterDelete() {
     Author.afterDestroyCalled += 1;
+  }
+
+  assign(data: any): void {
+    EntityHelper.assign(this, data);
+  }
+
+  toJSON(): { [p: string]: any } {
+    const o = this.toObject();
+    o.fooBar = 123;
+
+    return o;
   }
 
 }

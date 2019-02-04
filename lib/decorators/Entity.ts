@@ -1,6 +1,5 @@
 import { merge } from 'lodash';
 import { Utils } from '../Utils';
-import { EntityManager } from '../EntityManager';
 import { MetadataStorage } from '../MetadataStorage';
 
 export function Entity(options: EntityOptions = {}): Function {
@@ -24,10 +23,10 @@ export interface IEntity<T = number | string> {
   id: T;
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?, em?: EntityManager): Promise<IEntity>;
+  init(populated?): Promise<IEntity>;
   toObject(parent?: IEntity, isCollection?: boolean): { [field: string]: any };
   toJSON(): { [field: string]: any };
-  assign(data: any, em?: EntityManager): void;
+  assign(data: any): void;
 }
 
 export enum ReferenceType {
