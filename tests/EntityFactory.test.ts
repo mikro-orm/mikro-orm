@@ -6,7 +6,9 @@ import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { Validator } from '../lib/Validator';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/MetadataStorage';
+import { Logger } from '../lib/Logger';
 
+const logger = new Logger({ logger: jest.fn() } as any);
 const Mock = jest.fn<EntityManager>(() => ({
   connection: jest.fn(),
   identityMap: jest.fn(),
@@ -19,7 +21,7 @@ const Mock = jest.fn<EntityManager>(() => ({
   getDriver: () => new MongoDriver({
     dbName: 'mikro-orm-test',
     clientUrl: 'mongo://...',
-  } as MikroORMOptions),
+  } as MikroORMOptions, logger),
   getIdentity: jest.fn(),
   setIdentity: jest.fn(),
   validator: new Validator(false),
@@ -39,7 +41,7 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORM();
-    new MetadataStorage(em, orm.options).discover();
+    new MetadataStorage(em, orm.options, logger).discover();
   });
   beforeEach(async () => wipeDatabase(orm.em));
 

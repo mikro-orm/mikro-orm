@@ -3,6 +3,7 @@ import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './en
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Utils } from '../lib/Utils';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { Logger } from '../lib/Logger';
 
 /**
  * @class EntityManagerMySqlTest
@@ -28,7 +29,7 @@ describe('EntityManagerMySql', () => {
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
-    } as MikroORMOptions);
+    } as MikroORMOptions, new Logger({ logger: jest.fn() } as any));
     expect(driver.getConnectionOptions()).toEqual({
       database: 'db_name',
       host: '127.0.0.10',

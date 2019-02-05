@@ -4,12 +4,14 @@ import { EntityMetadata, EntityProperty, IEntity, IPrimaryKey, NamingStrategy, U
 import { Utils } from '../Utils';
 import { QueryOrder } from '../QueryBuilder';
 import { MetadataStorage } from '../MetadataStorage';
+import { Logger } from '../Logger';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
 
   protected readonly metadata: { [k: string]: EntityMetadata } = {};
 
-  constructor(protected options: MikroORMOptions) {
+  constructor(protected readonly options: MikroORMOptions,
+              protected readonly logger: Logger) {
     this.metadata = MetadataStorage.getMetadata();
   }
 
@@ -83,12 +85,6 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
   }
 
-  protected logQuery(query: string): void {
-    if (this.options.debug) {
-      this.options.logger(`[query-logger] ${query}`);
-    }
-  }
-
   usesPivotTable(): boolean {
     return true;
   }
@@ -113,6 +109,10 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     });
 
     return ret;
+  }
+
+  protected logQuery(query: string): void {
+    this.logger.debug(`[query-logger] ${query}`);
   }
 
 }

@@ -4,6 +4,7 @@ import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { MetadataStorage } from './MetadataStorage';
 import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
+import { Logger } from './Logger';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -23,12 +24,13 @@ export class MikroORM {
   em: EntityManager;
   readonly options: MikroORMOptions;
   private readonly driver: IDatabaseDriver;
+  private readonly logger: Logger;
 
   static async init(options: Options): Promise<MikroORM> {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
     orm.em = new EntityManager(orm.options, driver);
-    const storage = new MetadataStorage(orm.em, orm.options);
+    const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
     storage.discover();
 
     return orm;
@@ -52,7 +54,8 @@ export class MikroORM {
       this.options.driver = require('./drivers/MongoDriver').MongoDriver;
     }
 
-    this.driver = new this.options.driver(this.options);
+    this.logger = new Logger(this.options);
+    this.driver = new this.options.driver(this.options, this.logger);
 
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getDefaultClientUrl();
@@ -62,7 +65,7 @@ export class MikroORM {
   async connect(): Promise<IDatabaseDriver> {
     await this.driver.connect();
     const clientUrl = this.options.clientUrl.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
-    this.options.logger(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
+    this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
 
     return this.driver;
   }
@@ -81,7 +84,7 @@ export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
-  driver?: { new (options: MikroORMOptions): IDatabaseDriver };
+  driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   clientUrl?: string;
   host?: string;

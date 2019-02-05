@@ -9,6 +9,7 @@ import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { EntityManager } from './EntityManager';
 import { MikroORMOptions } from './MikroORM';
 import { CacheAdapter } from './cache/CacheAdapter';
+import { Logger } from './Logger';
 
 export class MetadataStorage {
 
@@ -16,9 +17,10 @@ export class MetadataStorage {
 
   private readonly namingStrategy: NamingStrategy;
   private readonly cache: CacheAdapter;
-  private readonly logger = this.options.logger;
 
-  constructor(private em: EntityManager, private readonly options: MikroORMOptions) {
+  constructor(private readonly em: EntityManager,
+              private readonly options: MikroORMOptions,
+              private readonly logger: Logger) {
     const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getDefaultNamingStrategy();
     this.namingStrategy = new NamingStrategy();
     this.cache = new this.options.cache.adapter(this.options.cache.options);
@@ -34,10 +36,7 @@ export class MetadataStorage {
 
   discover(): { [k: string]: EntityMetadata } {
     const startTime = Date.now();
-
-    if (this.options.debug) {
-      this.logger(`ORM entity discovery started`);
-    }
+    this.logger.debug(`ORM entity discovery started`);
 
     const project = new Project();
     const discovered: string[] = [];
@@ -51,20 +50,14 @@ export class MetadataStorage {
     this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(sources, dir)));
     discovered.forEach(name => this.processEntity(name));
     const diff = Date.now() - startTime;
-
-    if (this.options.debug) {
-      this.logger(`- entity discovery finished after ${diff} ms`);
-    }
+    this.logger.debug(`- entity discovery finished after ${diff} ms`);
 
     return MetadataStorage.metadata;
   }
 
   private discoverDirectory(sources: SourceFile[], basePath: string): string[] {
     const files = readdirSync(this.options.baseDir + '/' + basePath);
-
-    if (this.options.debug) {
-      this.logger(`- processing ${files.length} files from directory ${basePath}`);
-    }
+    this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     const discovered = [];
     files.forEach(file => {
@@ -91,10 +84,7 @@ export class MetadataStorage {
 
   private discoverFile(sources: SourceFile[], basePath: string, file: string): EntityMetadata | null {
     const name = this.getClassName(file);
-
-    if (this.options.debug) {
-      this.logger(`- processing entity ${name}`);
-    }
+    this.logger.debug(`- processing entity ${name}`);
 
     const path = `${this.options.baseDir}/${basePath}/${file}`;
     const target = require(path)[name]; // include the file to trigger loading of metadata
@@ -107,10 +97,7 @@ export class MetadataStorage {
     }
 
     if (cache) {
-      if (this.options.debug) {
-        this.logger(`- using cached metadata for entity ${name}`);
-      }
-
+      this.logger.debug(`- using cached metadata for entity ${name}`);
       merge(meta, cache);
       meta.prototype = target.prototype;
 
