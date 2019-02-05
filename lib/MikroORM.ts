@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
@@ -37,10 +38,7 @@ export class MikroORM {
   }
 
   constructor(options: Options) {
-    this.options = {
-      ...defaultOptions,
-      ...options,
-    };
+    this.options = merge({}, defaultOptions, options);
 
     if (!this.options.dbName) {
       throw new Error('No database specified, please fill in `dbName` option');
