@@ -5,6 +5,9 @@ import { QueryBuilder } from '../lib/QueryBuilder';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 
+export const BASE_DIR = __dirname;
+export const TEMP_DIR = process.cwd() + '/temp';
+
 export async function initORM() {
   let hash = '';
 
@@ -16,7 +19,7 @@ export async function initORM() {
     entitiesDirs: ['entities'],
     entitiesDirsTs: ['entities'], // just to raise coverage :]
     dbName: `mikro-orm-test${hash}`,
-    baseDir: __dirname,
+    baseDir: BASE_DIR,
     debug: true,
   });
 }
@@ -32,7 +35,7 @@ export async function initORMMySql() {
     entitiesDirs: ['entities-sql'],
     dbName: `mikro_orm_test`,
     port,
-    baseDir: __dirname,
+    baseDir: BASE_DIR,
     driver: MySqlDriver,
     debug: true,
     multipleStatements: true,
@@ -48,7 +51,7 @@ export async function initORMSqlite() {
   const orm = await MikroORM.init({
     entitiesDirs: ['entities-sql'],
     dbName: 'tests/mikro_orm_test.db',
-    baseDir: __dirname,
+    baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: true,
   });

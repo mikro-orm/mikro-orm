@@ -1,6 +1,7 @@
 /node_modules
 /dist
 /coverage
+/temp
 /.idea
 /yarn.lock
 /yarn-error.log

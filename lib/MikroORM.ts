@@ -2,6 +2,8 @@ import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { MetadataStorage } from './MetadataStorage';
+import { FileCacheAdapter } from './cache/FileCacheAdapter';
+import { CacheAdapter } from './cache/CacheAdapter';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -9,6 +11,11 @@ const defaultOptions = {
   logger: () => undefined,
   baseDir: process.cwd(),
   debug: false,
+  cache: {
+    enabled: true,
+    adapter: FileCacheAdapter,
+    options: { cacheDir: process.cwd() + '/temp' },
+  },
 };
 
 export class MikroORM {
@@ -86,6 +93,11 @@ export interface MikroORMOptions {
   logger: (message: string) => void;
   debug: boolean;
   baseDir: string;
+  cache: {
+    enabled: boolean,
+    adapter: { new (...params: any[]): CacheAdapter },
+    options: { [k: string]: any },
+  },
 }
 
 export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof defaultOptions>> | MikroORMOptions;

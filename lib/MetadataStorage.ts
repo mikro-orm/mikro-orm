@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import { readdirSync } from 'fs';
 import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-simple-ast';
 
@@ -7,17 +8,20 @@ import { EntityHelper } from './EntityHelper';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { EntityManager } from './EntityManager';
 import { MikroORMOptions } from './MikroORM';
+import { CacheAdapter } from './cache/CacheAdapter';
 
 export class MetadataStorage {
 
   private static readonly metadata: { [entity: string]: EntityMetadata } = {};
 
   private readonly namingStrategy: NamingStrategy;
+  private readonly cache: CacheAdapter;
   private readonly logger = this.options.logger;
 
   constructor(private em: EntityManager, private readonly options: MikroORMOptions) {
     const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getDefaultNamingStrategy();
     this.namingStrategy = new NamingStrategy();
+    this.cache = new this.options.cache.adapter(this.options.cache.options);
   }
 
   static getMetadata(entity?: string): { [entity: string]: EntityMetadata } {
@@ -86,29 +90,46 @@ export class MetadataStorage {
   }
 
   private discoverFile(sources: SourceFile[], basePath: string, file: string): EntityMetadata | null {
+    const name = this.getClassName(file);
+
     if (this.options.debug) {
-      this.logger(`- processing entity ${file.replace(/\.[jt]s$/, '')}`);
+      this.logger(`- processing entity ${name}`);
     }
 
-    const name = this.getClassName(file);
     const path = `${this.options.baseDir}/${basePath}/${file}`;
     const target = require(path)[name]; // include the file to trigger loading of metadata
     const meta = MetadataStorage.metadata[name];
+    const cache = this.cache.get(name, path);
 
     // skip already discovered or when properties
     if (Utils.isEntity(target.prototype) || !meta) {
       return null;
     }
 
+    if (cache) {
+      if (this.options.debug) {
+        this.logger(`- using cached metadata for entity ${name}`);
+      }
+
+      merge(meta, cache);
+      meta.prototype = target.prototype;
+
+      return meta;
+    }
+
     const source = sources.find(s => !!s.getFilePath().match(file.replace(/\.js$/, '.ts')));
     meta.path = path;
     meta.prototype = target.prototype;
     const properties = source.getClass(name).getInstanceProperties();
+
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
     this.initProperties(meta, properties);
+    const copy = Object.assign({}, meta);
+    delete copy.prototype;
+    this.cache.set(name, copy, path);
 
     return meta;
   }
