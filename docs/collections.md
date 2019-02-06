@@ -7,8 +7,8 @@ Another way to access collection items is to use bracket syntax like when you ac
 Keep in mind that this approach will not check if the collection is initialed, while using `get`
 method will throw error in this case.
 
-Note that array access in `Collection` is available only for reading already loaded items, you 
-cannot add new items to `Collection` this way. 
+> Note that array access in `Collection` is available only for reading already loaded items, you 
+> cannot add new items to `Collection` this way. 
 
 ```typescript
 const author = orm.em.findOne(Author.name, '...', ['books']); // populating books collection

@@ -45,10 +45,10 @@ export interface Book extends IEntity<string> { }
 You will need to extend Book's interface with `IEntity`. The interface represents internal 
 methods added to your entity's prototype via `@Entity` decorator.
 
-`IEntity` is generic interface, its type parameter depends on data type of normalized primary
-key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
-This type default to union type `number | string`. Keep in mind that you have to worry about 
-this only when you define your primary key as `_id` instead of `id`.
+> `IEntity` is generic interface, its type parameter depends on data type of normalized primary
+> key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
+> This type default to union type `number | string`. Keep in mind that you have to worry about 
+> this only when you define your primary key as `_id` instead of `id`.
 
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany` and `@ManyToMany`. 

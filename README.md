@@ -55,12 +55,17 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
+  entitiesDirsTs: ['./src/entities'], // path to your TS entities (source), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
+
+> Unless you are using `ts-node`, you will need to provide path to both compiled JS and 
+> source TS folders. This is needed for reflection that will sniff types from TS files in 
+> the background. 
 
 Then you will need to fork entity manager for each request so their 
 [identity maps](https://b4nan.github.io/mikro-orm/identity-map/) will not collide. 
@@ -74,10 +79,10 @@ app.use((req, res, next) => {
 });
 ```
 
-You should register this middleware as the last one just before request handlers and before
-any of your custom middleware that is using the ORM. There might be issues when you register 
-it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
-register the context after them. 
+> You should register this middleware as the last one just before request handlers and before
+> any of your custom middleware that is using the ORM. There might be issues when you register 
+> it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
+> register the context after them. 
 
 More info about `RequestContext` is described [here](https://b4nan.github.io/mikro-orm/identity-map/#request-context).
 
