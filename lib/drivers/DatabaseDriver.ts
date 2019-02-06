@@ -2,10 +2,10 @@ import { MikroORMOptions } from '../MikroORM';
 import { IDatabaseDriver } from './IDatabaseDriver';
 import { IEntity, IPrimaryKey, NamingStrategy, UnderscoreNamingStrategy } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators/Entity';
-import { Utils } from '../Utils';
+import { Utils } from '../utils/Utils';
 import { QueryOrder } from '../QueryBuilder';
 import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Logger } from '../Logger';
+import { Logger } from '../utils/Logger';
 
 export abstract class DatabaseDriver implements IDatabaseDriver {
 

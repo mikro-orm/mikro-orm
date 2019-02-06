@@ -1,9 +1,9 @@
-import { Collection } from './Collection';
-import { SCALAR_TYPES } from './EntityFactory';
-import { EntityManager } from './EntityManager';
-import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { Collection } from '../Collection';
+import { SCALAR_TYPES } from '../EntityFactory';
+import { EntityManager } from '../EntityManager';
+import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
 import { Utils } from './Utils';
-import { MetadataStorage } from './metadata/MetadataStorage';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export class EntityHelper {
 

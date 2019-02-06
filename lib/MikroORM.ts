@@ -5,7 +5,7 @@ import { NamingStrategy } from './naming-strategy/NamingStrategy';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
-import { Logger } from './Logger';
+import { Logger } from './utils/Logger';
 
 const defaultOptions = {
   entitiesDirs: [],

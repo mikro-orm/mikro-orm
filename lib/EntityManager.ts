@@ -1,16 +1,16 @@
 import { EntityRepository } from './EntityRepository';
 import { EntityFactory } from './EntityFactory';
 import { UnitOfWork } from './UnitOfWork';
-import { Utils } from './Utils';
+import { Utils } from './utils/Utils';
 import { MikroORMOptions } from './MikroORM';
 import { Validator } from './Validator';
-import { RequestContext } from './RequestContext';
+import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
 import { IEntity, ReferenceType } from './decorators/Entity';
-import { EntityHelper } from './EntityHelper';
+import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
 

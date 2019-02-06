@@ -6,7 +6,7 @@ import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { Validator } from '../lib/Validator';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
-import { Logger } from '../lib/Logger';
+import { Logger } from '../lib/utils/Logger';
 import { ReferenceType } from '../lib/decorators/Entity';
 
 const logger = new Logger({ logger: jest.fn() } as any);

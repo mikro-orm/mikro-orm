@@ -6,7 +6,7 @@ import { IEntity, IPrimaryKey } from '..';
 import { ReferenceType } from '../decorators/Entity';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
 import { QueryBuilder } from '../QueryBuilder';
-import { Utils } from '../Utils';
+import { Utils } from '../utils/Utils';
 
 export class MySqlDriver extends DatabaseDriver {
 

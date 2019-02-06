@@ -2,7 +2,7 @@ import { ObjectID } from 'mongodb';
 import { Author, Book, BookTag } from './entities';
 import { MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
-import { EntityHelper } from '../lib/EntityHelper';
+import { EntityHelper } from '../lib/utils/EntityHelper';
 
 /**
  * @class EntityHelperMongoTest

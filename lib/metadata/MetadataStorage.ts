@@ -4,13 +4,13 @@ import { join } from 'path';
 import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
 
 import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
-import { Utils } from '../Utils';
-import { EntityHelper } from '../EntityHelper';
+import { Utils } from '../utils/Utils';
+import { EntityHelper } from '../utils/EntityHelper';
 import { NamingStrategy } from '..';
 import { EntityManager } from '../EntityManager';
 import { MikroORMOptions } from '../MikroORM';
 import { CacheAdapter } from '../cache/CacheAdapter';
-import { Logger } from '../Logger';
+import { Logger } from '../utils/Logger';
 import { MetadataValidator } from './MetadataValidator';
 
 export class MetadataStorage {

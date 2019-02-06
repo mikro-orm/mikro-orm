@@ -1,6 +1,6 @@
 import { createNamespace, getNamespace } from 'node-request-context';
 import * as uuid from 'uuid';
-import { EntityManager } from './EntityManager';
+import { EntityManager } from '../EntityManager';
 
 export class RequestContext {
 

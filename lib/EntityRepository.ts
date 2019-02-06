@@ -1,5 +1,5 @@
 import { EntityManager } from './EntityManager';
-import { RequestContext } from './RequestContext';
+import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { IEntity } from './decorators/Entity';

@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { Utils } from '../lib/Utils';
+import { Utils } from '../lib/utils/Utils';
 import { Collection, MikroORM } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';

@@ -1,5 +1,5 @@
 import { merge } from 'lodash';
-import { Utils } from '../Utils';
+import { Utils } from '../utils/Utils';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function Entity(options: EntityOptions = {}): Function {

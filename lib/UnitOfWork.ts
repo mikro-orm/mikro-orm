@@ -1,4 +1,4 @@
-import { Utils } from './Utils';
+import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';

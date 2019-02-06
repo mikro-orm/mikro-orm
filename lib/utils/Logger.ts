@@ -1,4 +1,4 @@
-import { MikroORMOptions } from './MikroORM';
+import { MikroORMOptions } from '../MikroORM';
 
 export class Logger {
 

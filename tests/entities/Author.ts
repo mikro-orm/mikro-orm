@@ -6,7 +6,7 @@ import {
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
-import { EntityHelper } from '../../lib/EntityHelper';
+import { EntityHelper } from '../../lib/utils/EntityHelper';
 
 @Entity({ customRepository: () => AuthorRepository })
 export class Author extends BaseEntity {

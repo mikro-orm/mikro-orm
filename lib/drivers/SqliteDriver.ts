@@ -6,7 +6,7 @@ import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
 import { QueryBuilder, QueryType } from '../QueryBuilder';
 import { IEntity, IPrimaryKey } from '..';
 import { ReferenceType } from '../decorators/Entity';
-import { Utils } from '../Utils';
+import { Utils } from '../utils/Utils';
 
 export class SqliteDriver extends DatabaseDriver {
 

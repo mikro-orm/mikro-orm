@@ -1,6 +1,6 @@
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
-import { Utils } from './Utils';
+import { Utils } from './utils/Utils';
 
 export class Validator {
 

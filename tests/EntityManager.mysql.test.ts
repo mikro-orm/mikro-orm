@@ -1,9 +1,9 @@
 import { Collection, EntityManager, MikroORM, MikroORMOptions } from '../lib';
 import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Utils } from '../lib/Utils';
+import { Utils } from '../lib/utils/Utils';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
-import { Logger } from '../lib/Logger';
+import { Logger } from '../lib/utils/Logger';
 
 /**
  * @class EntityManagerMySqlTest

@@ -1,8 +1,8 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
-import { IEntity, IPrimaryKey } from '.';
-import { Collection } from './Collection';
-import { MetadataStorage } from './metadata/MetadataStorage';
+import { IEntity, IPrimaryKey } from '..';
+import { Collection } from '../Collection';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export class Utils {
 
@@ -36,9 +36,6 @@ export class Utils {
     return ret;
   }
 
-  /**
-   * Process references first so we do not have to deal with cycles
-   */
   static diffEntities(a: IEntity, b: IEntity): any {
     return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
   }

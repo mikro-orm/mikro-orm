@@ -1,6 +1,6 @@
 import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
-import { Utils } from '../Utils';
+import { Utils } from '../utils/Utils';
 import { IEntity, IPrimaryKey, NamingStrategy, MongoNamingStrategy } from '..';
 
 export class MongoDriver extends DatabaseDriver {
