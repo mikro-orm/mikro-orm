@@ -1,6 +1,7 @@
 import { merge } from 'lodash';
 import { readdirSync } from 'fs';
-import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-simple-ast';
+import { join } from 'path';
+import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
 
 import { EntityMetadata, EntityProperty, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
@@ -45,7 +46,7 @@ export class MetadataStorage {
       this.options.entitiesDirsTs = this.options.entitiesDirs;
     }
 
-    const dirs = this.options.entitiesDirsTs.map(dir => `${this.options.baseDir}/${dir}/**/*.ts`);
+    const dirs = this.options.entitiesDirsTs.map(dir => join(this.options.baseDir, dir, '**', '*.ts'));
     const sources = project.addExistingSourceFiles(dirs);
     this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(sources, dir)));
     discovered.forEach(name => this.processEntity(name));
@@ -56,7 +57,7 @@ export class MetadataStorage {
   }
 
   private discoverDirectory(sources: SourceFile[], basePath: string): string[] {
-    const files = readdirSync(this.options.baseDir + '/' + basePath);
+    const files = readdirSync(join(this.options.baseDir, basePath));
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     const discovered = [];
@@ -68,6 +69,7 @@ export class MetadataStorage {
         file.startsWith('.') ||
         file.match(/index\.[jt]s$/)
       ) {
+        this.logger.debug(`- ignoring file ${file}`);
         return;
       }
 
