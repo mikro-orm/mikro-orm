@@ -4,7 +4,8 @@ import { readFileSync } from 'fs';
 
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
 import { QueryBuilder, QueryType } from '../QueryBuilder';
-import { IEntity, IPrimaryKey, ReferenceType } from '..';
+import { IEntity, IPrimaryKey } from '..';
+import { ReferenceType } from '../decorators/Entity';
 import { Utils } from '../Utils';
 
 export class SqliteDriver extends DatabaseDriver {

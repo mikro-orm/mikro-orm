@@ -65,6 +65,10 @@ describe('UnitOfWork', () => {
     await expect(uow.persist(author)).rejects.toThrowError(/Validation error: trying to set Author\.age of type 'number' to '.*' of type 'date'/);
     Object.assign(author, { age: false });
     await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
+
+    // missing collection instance in m:n and 1:m relations
+    delete author.books;
+    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
   });
 
   test('changeSet is null for empty payload', async () => {

@@ -1,12 +1,12 @@
-import { Validator } from '../lib/Validator';
-import { ReferenceType } from '../lib';
+import { ReferenceType } from '../lib/decorators/Entity';
+import { MetadataValidator } from '../lib/metadata/MetadataValidator';
 
 /**
- * @class ValidatorTest
+ * @class MetadataValidatorTest
  */
-describe('Validator', () => {
+describe('MetadataValidator', () => {
 
-  const validator = new Validator(false);
+  const validator = new MetadataValidator();
 
   test('validates entity definition', async () => {
     const meta = { Author: { name: 'Author', properties: {} } } as any;

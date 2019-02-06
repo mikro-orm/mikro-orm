@@ -1,6 +1,6 @@
 import { merge } from 'lodash';
 import { Utils } from '../Utils';
-import { MetadataStorage } from '../MetadataStorage';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {

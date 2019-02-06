@@ -1,5 +1,6 @@
-import { Collection, IEntity, ReferenceType } from '../../lib';
-import { MetadataStorage } from '../../lib/MetadataStorage';
+import { Collection, IEntity } from '../../lib';
+import { MetadataStorage } from '../../lib/metadata/MetadataStorage';
+import { ReferenceType } from '../../lib/decorators/Entity';
 
 export abstract class BaseEntity2 {
 

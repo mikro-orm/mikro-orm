@@ -1,5 +1,6 @@
 import { FilterQuery } from './DatabaseDriver';
-import { EntityProperty, IEntity, IPrimaryKey, NamingStrategy } from '..';
+import { IEntity, IPrimaryKey, NamingStrategy } from '..';
+import { EntityProperty } from '../decorators/Entity';
 
 export interface IDatabaseDriver {
 

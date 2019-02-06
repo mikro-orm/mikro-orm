@@ -1,7 +1,7 @@
 import { Utils } from './Utils';
 import { EntityManager } from './EntityManager';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 
 export class UnitOfWork {
 

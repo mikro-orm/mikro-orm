@@ -1,7 +1,7 @@
 import { Utils } from './Utils';
 import { Collection } from './Collection';
 import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 import { EntityManager } from './EntityManager';
 
 export class EntityLoader {

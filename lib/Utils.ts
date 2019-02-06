@@ -2,7 +2,7 @@ import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import { IEntity, IPrimaryKey } from '.';
 import { Collection } from './Collection';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 
 export class Utils {
 

@@ -3,7 +3,7 @@ import { EntityManager } from './EntityManager';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { Utils } from './Utils';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 

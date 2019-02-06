@@ -8,7 +8,7 @@ export * from './drivers/DatabaseDriver';
 export * from './naming-strategy/NamingStrategy';
 export * from './naming-strategy/MongoNamingStrategy';
 export * from './naming-strategy/UnderscoreNamingStrategy';
-export * from './decorators/Entity';
+export { Entity, IEntity, EntityOptions } from './decorators/Entity';
 export * from './decorators/OneToMany';
 export * from './decorators/ManyToOne';
 export * from './decorators/ManyToMany';

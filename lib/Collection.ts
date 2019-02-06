@@ -1,7 +1,7 @@
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './EntityHelper';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 
 export class Collection<T extends IEntity> {
 

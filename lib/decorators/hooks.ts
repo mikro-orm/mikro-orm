@@ -1,4 +1,4 @@
-import { MetadataStorage } from '../MetadataStorage';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function BeforeCreate() {
   return hook('beforeCreate');

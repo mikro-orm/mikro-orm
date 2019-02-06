@@ -2,7 +2,8 @@ import { Connection, ConnectionOptions, createConnection } from 'mysql2/promise'
 import { readFileSync } from 'fs';
 import { URL } from 'url';
 
-import { IEntity, IPrimaryKey, ReferenceType } from '..';
+import { IEntity, IPrimaryKey } from '..';
+import { ReferenceType } from '../decorators/Entity';
 import { DatabaseDriver, FilterQuery } from './DatabaseDriver';
 import { QueryBuilder } from '../QueryBuilder';
 import { Utils } from '../Utils';

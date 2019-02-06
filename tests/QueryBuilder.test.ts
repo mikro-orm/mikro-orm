@@ -2,7 +2,7 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { QueryBuilder, QueryOrder } from '../lib/QueryBuilder';
 import { initORMMySql } from './bootstrap';
 import { MikroORM } from '../lib';
-import { MetadataStorage } from '../lib/MetadataStorage';
+import { MetadataStorage } from '../lib/metadata/MetadataStorage';
 
 /**
  * @class QueryBuilderTest

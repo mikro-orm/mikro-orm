@@ -1,5 +1,5 @@
 import { EntityProperty, IEntity, ReferenceType } from './Entity';
-import { MetadataStorage } from '../MetadataStorage';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {

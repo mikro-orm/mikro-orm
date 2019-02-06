@@ -3,14 +3,15 @@ import { readdirSync } from 'fs';
 import { join } from 'path';
 import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
 
-import { EntityMetadata, EntityProperty, ReferenceType } from './decorators/Entity';
-import { Utils } from './Utils';
-import { EntityHelper } from './EntityHelper';
-import { NamingStrategy } from './naming-strategy/NamingStrategy';
-import { EntityManager } from './EntityManager';
-import { MikroORMOptions } from './MikroORM';
-import { CacheAdapter } from './cache/CacheAdapter';
-import { Logger } from './Logger';
+import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
+import { Utils } from '../Utils';
+import { EntityHelper } from '../EntityHelper';
+import { NamingStrategy } from '..';
+import { EntityManager } from '../EntityManager';
+import { MikroORMOptions } from '../MikroORM';
+import { CacheAdapter } from '../cache/CacheAdapter';
+import { Logger } from '../Logger';
+import { MetadataValidator } from './MetadataValidator';
 
 export class MetadataStorage {
 
@@ -18,6 +19,7 @@ export class MetadataStorage {
 
   private readonly namingStrategy: NamingStrategy;
   private readonly cache: CacheAdapter;
+  private readonly validator = new MetadataValidator();
 
   constructor(private readonly em: EntityManager,
               private readonly options: MikroORMOptions,
@@ -239,7 +241,7 @@ export class MetadataStorage {
   private processEntity(name: string): void {
     const meta = MetadataStorage.metadata[name];
     this.defineBaseEntityProperties(meta);
-    this.em.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
+    this.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
     EntityHelper.decorate(meta, this.em);
 
     if (this.em.getDriver().usesPivotTable()) {

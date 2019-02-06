@@ -12,7 +12,7 @@ import { QueryBuilder } from './QueryBuilder';
 import { IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './EntityHelper';
 import { EntityLoader } from './EntityLoader';
-import { MetadataStorage } from './MetadataStorage';
+import { MetadataStorage } from './metadata/MetadataStorage';
 
 export class EntityManager {
 
