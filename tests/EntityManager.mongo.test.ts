@@ -1,5 +1,6 @@
 import { ObjectID } from 'mongodb';
-import { Collection, EntityManager, EntityProperty, MikroORM } from '../lib';
+import { Collection, EntityManager, MikroORM } from '../lib';
+import { EntityProperty } from '../lib/decorators/Entity';
 import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
