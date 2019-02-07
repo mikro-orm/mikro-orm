@@ -20,6 +20,7 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
   - [Entity references](entity-references.md)
   - [Using entity constructors](entity-constructors.md)
   - [Collections](collections.md)
+  - [Cascading persist and remove](cascading.md)
 - Advanced features
   - [Smart nested populate](nested-populate.md)
   - [Updating entity values with `IEntity.assign()`](entity-helper.md)

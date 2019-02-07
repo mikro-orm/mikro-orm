@@ -1,7 +1,7 @@
 import { ObjectID } from 'mongodb';
 import { Collection, EntityManager, MikroORM } from '../lib';
 import { EntityProperty } from '../lib/decorators/Entity';
-import { Author, Publisher, PublisherType, Book, BookTag, Test } from './entities';
+import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
@@ -470,6 +470,122 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.isDirty()).toBe(false);
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+  });
+
+  test('cascade persist on owning side', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository<Book>(Book.name);
+    let book = await repo.findOne(book1.id, ['author', 'tags']);
+    book.author.name = 'Foo Bar';
+    book.tags[0].name = 'new name 1';
+    book.tags[1].name = 'new name 2';
+    await orm.em.persist(book);
+    orm.em.clear();
+
+    book = await repo.findOne(book1.id, ['author', 'tags']);
+    expect(book.author.name).toBe('Foo Bar');
+    expect(book.tags[0].name).toBe('new name 1');
+    expect(book.tags[1].name).toBe('new name 2');
+  });
+
+  test('cascade persist on inverse side', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+    let tag = await repo.findOne(tag5.id, ['books.author']);
+    tag.books[0].title = 'new title 1';
+    tag.books[1].title = 'new title 2';
+    tag.books[1].author.name = 'Foo Bar';
+    await orm.em.persist(tag);
+    orm.em.clear();
+
+    tag = await repo.findOne(tag5.id, ['books.author']);
+    expect(tag.books[0].title).toBe('new title 1');
+    expect(tag.books[1].title).toBe('new title 2');
+    expect(tag.books[1].author.name).toBe('Foo Bar');
+  });
+
+  test('cascade remove on 1:m collection', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    author.books.add(book1, book2, book3);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository<Book>(Book.name);
+    let books = await repo.findAll(['author', 'tags']);
+    expect(books.length).toBe(3);
+    expect(books[0].tags.count()).toBe(2);
+    await books[0].author.books.init();
+    await orm.em.removeEntity(books[0].author);
+    orm.em.clear();
+
+    books = await repo.findAll();
+    expect(books.length).toBe(0);
+  });
+
+  test('cascade remove on m:1 reference', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    book1.publisher = book2.publisher = book3.publisher = new Publisher('to be removed');
+    author.books.add(book1, book2, book3);
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository<Book>(Book.name);
+    let books = await repo.findAll();
+    expect(books.length).toBe(3);
+    expect(books[0].publisher.id).toBeDefined();
+    expect(await orm.em.count(Publisher.name, {})).toBe(1);
+
+    // by removing one book, publisher will be cascade removed and other books will remain its identifier
+    await orm.em.removeEntity(books[0]);
+    orm.em.clear();
+
+    books = await repo.findAll();
+    expect(books.length).toBe(2);
+    expect(books[0].publisher).not.toBeNull();
+    expect(books[1].publisher).not.toBeNull();
+    expect(await orm.em.count(Publisher.name, {})).toBe(0);
   });
 
   test('nested populating', async () => {

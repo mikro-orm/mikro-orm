@@ -4,6 +4,7 @@ import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
 import { BaseEntity3 } from './BaseEntity3';
+import { Cascade } from '../../lib/decorators/Entity';
 
 @Entity({ collection: 'books-table' })
 export class Book extends BaseEntity3 {
@@ -17,7 +18,7 @@ export class Book extends BaseEntity3 {
   @ManyToOne()
   author: Author;
 
-  @ManyToOne()
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   publisher: Publisher;
 
   @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })

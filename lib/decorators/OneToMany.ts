@@ -1,5 +1,5 @@
 import { PropertyOptions } from './Property';
-import { EntityProperty, IEntity, ReferenceType } from './Entity';
+import { Cascade, EntityProperty, IEntity, ReferenceType } from './Entity';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function OneToMany(options: OneToManyOptions): Function {
@@ -14,7 +14,7 @@ export function OneToMany(options: OneToManyOptions): Function {
       throw new Error(`'@OneToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
-    const property = { name: propertyName, reference: ReferenceType.ONE_TO_MANY };
+    const property = { name: propertyName, reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST] };
     meta.properties[propertyName] = Object.assign(property, options) as EntityProperty;
   };
 }
@@ -22,4 +22,5 @@ export function OneToMany(options: OneToManyOptions): Function {
 export interface OneToManyOptions extends PropertyOptions {
   entity: () => string | Function;
   fk: string;
+  cascade?: Cascade[];
 }

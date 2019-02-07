@@ -36,6 +36,11 @@ export enum ReferenceType {
   MANY_TO_MANY = 3,
 }
 
+export enum Cascade {
+  PERSIST = 0,
+  REMOVE = 1,
+}
+
 export interface EntityProperty {
   name: string;
   fk: string;
@@ -44,7 +49,7 @@ export interface EntityProperty {
   primary: boolean;
   reference: ReferenceType;
   fieldName?: string;
-  attributes?: { [attribute: string]: any };
+  cascade: Cascade[];
   onUpdate?: () => any;
   owner?: boolean;
   inversedBy?: string;

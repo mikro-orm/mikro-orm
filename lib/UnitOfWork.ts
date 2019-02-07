@@ -2,6 +2,7 @@ import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
 import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
+import { Collection } from './Collection';
 
 export class UnitOfWork {
 
@@ -25,6 +26,7 @@ export class UnitOfWork {
 
     changeSet.index = this.persistStack.length;
     this.persistStack.push(changeSet);
+    this.addToIdentityMap(entity);
 
     return changeSet;
   }
@@ -79,8 +81,8 @@ export class UnitOfWork {
       ret.payload = Utils.prepareEntity(entity);
     }
 
-    await this.processReferences(ret, meta);
     this.em.validator.validate(ret.entity, ret.payload, meta);
+    await this.processReferences(ret, meta);
 
     if (entity.id && Object.keys(ret.payload).length === 0) {
       return null;
@@ -90,11 +92,10 @@ export class UnitOfWork {
   }
 
   private async processReferences(changeSet: ChangeSet, meta: EntityMetadata): Promise<void> {
-    for (const p of Object.keys(meta.properties)) {
-      const prop = meta.properties[p];
-
+    for (const prop of Object.values(meta.properties)) {
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        await this.processOneToMany(changeSet, prop);
+        const collection = changeSet.entity[prop.name] as Collection<IEntity>;
+        collection.setDirty(false);
       } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
         await this.processManyToMany(changeSet, prop);
       } else if (prop.reference === ReferenceType.MANY_TO_ONE && changeSet.entity[prop.name]) {
@@ -103,7 +104,7 @@ export class UnitOfWork {
     }
   }
 
-  private async processManyToOne(changeSet: ChangeSet, prop: EntityProperty) {
+  private async processManyToOne(changeSet: ChangeSet, prop: EntityProperty): Promise<void> {
     const pk = this.metadata[prop.type].primaryKey;
 
     // when new entity found in reference, cascade persist it first so we have its id
@@ -114,17 +115,11 @@ export class UnitOfWork {
     }
   }
 
-  private async processOneToMany(changeSet: ChangeSet, prop: EntityProperty) {
-    // if (changeSet.entity[prop.name].isDirty()) {
-    //   // TODO cascade persist...
-    // }
+  private async processManyToMany(changeSet: ChangeSet, prop: EntityProperty): Promise<void> {
+    const collection = changeSet.entity[prop.name] as Collection<IEntity>;
 
-    delete changeSet.payload[prop.name];
-  }
-
-  private async processManyToMany(changeSet: ChangeSet, prop: EntityProperty) {
-    if (prop.owner && changeSet.entity[prop.name].isDirty()) {
-      for (const item of changeSet.entity[prop.name].getItems()) {
+    if (prop.owner && collection.isDirty()) {
+      for (const item of collection.getItems()) {
         const pk = this.metadata[prop.type].primaryKey;
 
         // when new entity found in reference, cascade persist it first so we have its id
@@ -135,44 +130,19 @@ export class UnitOfWork {
       }
 
       const pk = this.metadata[prop.type].primaryKey;
-      changeSet.payload[prop.name] = changeSet.entity[prop.name].getIdentifiers(pk);
-    } else {
-      delete changeSet.payload[prop.name];
+      changeSet.payload[prop.name] = collection.getIdentifiers(pk);
+      collection.setDirty(false);
     }
   }
 
   private async immediateCommit(changeSet: ChangeSet, removeFromStack = true): Promise<void> {
-    const pk = this.metadata[changeSet.name].primaryKey;
+    const meta = this.metadata[changeSet.name];
+    const pk = meta.primaryKey;
     const type = changeSet.entity[pk] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
 
-    const meta = this.metadata[changeSet.entity.constructor.name];
-    const properties = Object.keys(meta.properties);
-
     // process references first
-    for (const p of properties) {
-      const prop = meta.properties[p];
-      const reference = changeSet.entity[prop.name];
-
-      if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
-        // TODO many to one cascade support
-        // ...
-      }
-
-      if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        // TODO one to many collection cascade support
-        // ...
-
-        reference.dirty = false;
-      }
-
-      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-        // TODO many to many collection cascade support
-        // ...
-
-        reference.dirty = false;
-      }
-
+    for (const prop of Object.values(meta.properties)) {
       if (prop.onUpdate) {
         changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate();
       }

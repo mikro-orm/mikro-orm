@@ -79,6 +79,15 @@ describe('UnitOfWork', () => {
     expect(changeSet).toBeNull();
   });
 
+  test('changeSet is null when persisting twice', async () => {
+    const author = new Author('test', 'test');
+    author.id = '00000001885f0a3cc37dc9f0';
+    const changeSet1 = await uow.persist(author);
+    expect(changeSet1).not.toBeNull();
+    const changeSet2 = await uow.persist(author);
+    expect(changeSet2).toBeNull();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -9,10 +9,11 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
-import { IEntity, ReferenceType } from './decorators/Entity';
+import { Cascade, IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
+import { Collection } from './Collection';
 
 export class EntityManager {
 
@@ -220,8 +221,10 @@ export class EntityManager {
   }
 
   async removeEntity(entity: IEntity, flush = true): Promise<void> {
-    await this.unitOfWork.remove(entity);
-    this.unsetIdentity(entity);
+    await this.cascade(entity, Cascade.REMOVE, async (e: IEntity) => {
+      await this.unitOfWork.remove(e);
+      this.unsetIdentity(e);
+    });
 
     if (flush) {
       await this.flush();
@@ -234,12 +237,12 @@ export class EntityManager {
   }
 
   async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
-    if (Array.isArray(entity)) {
-      for (const e of entity) {
+    entity = Array.isArray(entity) ? entity : [entity];
+
+    for (const ent of entity) {
+      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
         await this.unitOfWork.persist(e);
-      }
-    } else {
-      await this.unitOfWork.persist(entity);
+      });
     }
 
     if (flush) {
@@ -286,6 +289,37 @@ export class EntityManager {
 
   fork(): EntityManager {
     return new EntityManager(this.options, this.driver);
+  }
+
+  private async cascade(entity: IEntity, type: Cascade, cb: (e: IEntity) => Promise<void>, visited: IEntity[] = []): Promise<void> {
+    if (visited.includes(entity)) {
+      return;
+    }
+
+    await cb(entity);
+    const meta = this.metadata[entity.constructor.name];
+    visited.push(entity);
+
+    for (const prop of Object.values(meta.properties)) {
+      if (!prop.cascade || !prop.cascade.includes(type)) {
+        continue;
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name]) {
+        await this.cascade(entity[prop.name], type, cb, visited);
+        continue;
+      }
+
+      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+        const collection = entity[prop.name] as Collection<IEntity>;
+
+        if (collection.isInitialized(true)) {
+          for (const item of collection.getItems()) {
+            await this.cascade(item, type, cb, visited);
+          }
+        }
+      }
+    }
   }
 
   private get unitOfWork(): UnitOfWork {

@@ -10,7 +10,7 @@ import { Logger } from '../lib/utils/Logger';
 import { ReferenceType } from '../lib/decorators/Entity';
 
 const logger = new Logger({ logger: jest.fn() } as any);
-const Mock = jest.fn<EntityManager>(() => ({
+const Mock = jest.fn<EntityManager, any>(() => ({
   connection: jest.fn(),
   identityMap: jest.fn(),
   options: {
@@ -28,7 +28,7 @@ const Mock = jest.fn<EntityManager>(() => ({
   validator: new Validator(false),
   namingStrategy: new MongoNamingStrategy(),
   getNamingStrategy: () => new MongoNamingStrategy(),
-}));
+} as any));
 const em = new Mock();
 const factory = new EntityFactory(em);
 Object.assign(em, { entityFactory: factory });

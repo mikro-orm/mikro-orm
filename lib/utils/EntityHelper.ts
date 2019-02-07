@@ -140,22 +140,22 @@ export class EntityHelper {
       __entity: { value: true, writable: false, enumerable: false, configurable: false },
       __em: { value: em, writable: false, enumerable: false, configurable: false },
       isInitialized: {
-        value: function () {
+        value() {
           return this.__initialized !== false;
         },
       },
       populated: {
-        value: function (populated = true) {
+        value(populated = true) {
           this.__populated = populated;
         },
       },
       init: {
-        value: async function (populated = true): Promise<IEntity> {
+        async value(populated = true): Promise<IEntity> {
           return EntityHelper.init(this, populated);
         },
       },
       toObject: {
-        value: function (parent?: IEntity, isCollection?: boolean) {
+        value(parent?: IEntity, isCollection?: boolean) {
           return EntityHelper.toObject(this, parent, isCollection);
         }
       },
@@ -163,7 +163,7 @@ export class EntityHelper {
 
     if (!(meta.prototype as any).assign) {
       Object.defineProperty(meta.prototype, 'assign', {
-        value: function (data: any) {
+        value(data: any) {
           EntityHelper.assign(this, data);
         },
       });
@@ -171,7 +171,7 @@ export class EntityHelper {
 
     if (!(meta.prototype as any).toJSON) {
       Object.defineProperty(meta.prototype, 'toJSON', {
-        value: function () {
+        value() {
           return EntityHelper.toObject(this);
         },
       });

@@ -1,12 +1,12 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne,
+  Collection, Entity, OneToMany, Property, ManyToOne, EntityHelper,
 } from '../../lib';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
-import { EntityHelper } from '../../lib/utils/EntityHelper';
+import { Cascade } from '../../lib/decorators/Entity';
 
 @Entity({ customRepository: () => AuthorRepository })
 export class Author extends BaseEntity {
@@ -32,7 +32,7 @@ export class Author extends BaseEntity {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id' })
+  @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   books = new Collection<Book>(this);
 
   @ManyToOne()

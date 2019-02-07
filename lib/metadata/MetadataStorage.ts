@@ -127,15 +127,13 @@ export class MetadataStorage {
 
   private initProperties(meta: EntityMetadata, properties: ClassInstancePropertyTypes[]) {
     // init types and column names
-    Object.keys(meta.properties).forEach(p => {
-      const prop = meta.properties[p];
-
+    Object.values(meta.properties).forEach(prop => {
       if (prop.entity) {
         const type = prop.entity();
         prop.type = type instanceof Function ? type.name : type;
       } else {
         const old = prop.type;
-        const property = properties.find(v => v.getName() === p);
+        const property = properties.find(v => v.getName() === prop.name);
         prop.type = property.getType().getText(property);
 
         if (prop.type === 'any' && old) {

@@ -16,7 +16,7 @@ const methods = {
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
 };
-const Mock = jest.fn<EntityManager>(() => methods);
+const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
 const repo = new EntityRepository<Publisher>(em, Publisher.name);
 

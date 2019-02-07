@@ -2,6 +2,7 @@ import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { MetadataStorage } from './metadata/MetadataStorage';
+import { EntityManager } from './EntityManager';
 
 export class Collection<T extends IEntity> {
 
@@ -44,7 +45,7 @@ export class Collection<T extends IEntity> {
   }
 
   async init(populate: string[] = []): Promise<Collection<T>> {
-    const em = this.owner['__em'];
+    const em = this.owner['__em'] as EntityManager;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
@@ -109,7 +110,7 @@ export class Collection<T extends IEntity> {
     }
 
     Object.assign(this, items);
-    this.dirty = this.property.owner; // set dirty flag only to owning side
+    this.setDirty();
   }
 
   set(items: T[], initialize = false): void {
@@ -139,7 +140,7 @@ export class Collection<T extends IEntity> {
       }
     }
 
-    this.dirty = this.property.owner; // set dirty flag only to owning side
+    this.setDirty();
   }
 
   removeAll(): void {
@@ -154,6 +155,10 @@ export class Collection<T extends IEntity> {
   count(): number {
     this.checkInitialized();
     return this.items.length;
+  }
+
+  setDirty(dirty = true): void {
+    this.dirty = dirty && this.property.owner; // set dirty flag only to owning side
   }
 
   get length(): number {

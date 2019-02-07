@@ -166,10 +166,11 @@ export class MongoDriver extends DatabaseDriver {
   private renameFields(entityName: string, data: any): any {
     data = Object.assign({}, data); // copy first
     Utils.renameKey(data, 'id', '_id');
+    const meta = this.metadata[entityName];
 
     Object.keys(data).forEach(k => {
-      if (this.metadata[entityName] && this.metadata[entityName].properties[k]) {
-        const prop = this.metadata[entityName].properties[k];
+      if (meta && meta.properties[k]) {
+        const prop = meta.properties[k];
 
         if (prop.fieldName) {
           Utils.renameKey(data, k, prop.fieldName);
