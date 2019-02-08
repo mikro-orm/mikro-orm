@@ -53,7 +53,7 @@ export class MikroORM {
     }
 
     this.logger = new Logger(this.options);
-    this.driver = new this.options.driver(this.options, this.logger);
+    this.driver = new this.options.driver!(this.options, this.logger);
 
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getDefaultClientUrl();
@@ -62,7 +62,7 @@ export class MikroORM {
 
   async connect(): Promise<IDatabaseDriver> {
     await this.driver.connect();
-    const clientUrl = this.options.clientUrl.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
+    const clientUrl = this.options.clientUrl!.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
     this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
 
     return this.driver;

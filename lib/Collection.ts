@@ -14,7 +14,7 @@ export class Collection<T extends IEntity> {
   private _property: EntityProperty;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: IEntity, items: T[] = null, initialized = true) {
+  constructor(readonly owner: IEntity, items?: T[], initialized = true) {
     if (items) {
       this.initialized = true;
       this.items = items;
@@ -149,7 +149,7 @@ export class Collection<T extends IEntity> {
 
   contains(item: T): boolean {
     this.checkInitialized();
-    return !!this.items.find(i => i === item || (i.id && item.id && i.id === item.id));
+    return !!this.items.find(i => i === item || !!(i.id && item.id && i.id === item.id));
   }
 
   count(): number {
@@ -204,7 +204,7 @@ export class Collection<T extends IEntity> {
       const metadata = MetadataStorage.getMetadata();
       const meta = metadata[this.owner.constructor.name];
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
-      this._property = meta.properties[field];
+      this._property = meta.properties[field!];
     }
 
     return this._property;

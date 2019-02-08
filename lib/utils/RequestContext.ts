@@ -19,12 +19,12 @@ export class RequestContext {
     });
   }
 
-  static currentRequestContext(): RequestContext {
+  static currentRequestContext(): RequestContext | null {
     const namespace = getNamespace(RequestContext.NAMESPACE);
     return namespace ? namespace.get(RequestContext.name) : null;
   }
 
-  static getEntityManager(): EntityManager {
+  static getEntityManager(): EntityManager | null {
     const context = RequestContext.currentRequestContext();
     return context ? context.em : null;
   }

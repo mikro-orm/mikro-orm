@@ -51,7 +51,12 @@ export class MySqlDriver extends DatabaseDriver {
 
   async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = new QueryBuilder(entityName, this.metadata);
-    qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
+    qb.select('*').populate(populate).where(where).orderBy(orderBy);
+
+    if (limit !== undefined) {
+      qb.limit(limit, offset);
+    }
+
     const res = await this.execute(qb);
 
     return res[0].map(r => this.mapResult(r, this.metadata[entityName]));
@@ -89,7 +94,7 @@ export class MySqlDriver extends DatabaseDriver {
     }
 
     const collections = this.extractManyToMany(entityName, data);
-    let res: any[];
+    let res: any[] = [];
 
     if (Object.keys(data).length) {
       const qb = new QueryBuilder(entityName, this.metadata);
@@ -97,9 +102,9 @@ export class MySqlDriver extends DatabaseDriver {
       res = await this.execute(qb);
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data.id || where), collections);
+    await this.processManyToMany(entityName, Utils.extractPK(data.id || where)!, collections);
 
-    return res ? res[0].affectedRows : 0;
+    return res[0] ? res[0].affectedRows : 0;
   }
 
   async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
@@ -144,7 +149,7 @@ export class MySqlDriver extends DatabaseDriver {
 
   getConnectionOptions(): ConnectionOptions {
     const ret = {} as ConnectionOptions;
-    const url = new URL(this.options.clientUrl);
+    const url = new URL(this.options.clientUrl!);
     ret.host = this.options.host || url.hostname;
     ret.port = this.options.port || +url.port;
     ret.user = this.options.user || url.username;

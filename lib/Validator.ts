@@ -31,7 +31,7 @@ export class Validator {
 
     const expectedType = prop.type.toLowerCase();
     const objectType = Object.prototype.toString.call(givenValue);
-    let givenType = objectType.match(/\[object (\w+)]/)[1].toLowerCase();
+    let givenType = objectType.match(/\[object (\w+)]/)![1].toLowerCase();
     let ret = givenValue;
 
     if (!this.strict && expectedType === 'date' && givenType === 'string') {

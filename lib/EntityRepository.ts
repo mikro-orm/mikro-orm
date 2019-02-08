@@ -13,15 +13,15 @@ export class EntityRepository<T extends IEntity> {
     return this.em.persist(entity, flush);
   }
 
-  async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
     return this.em.findOne<T>(this.entityName, where, populate);
   }
 
-  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate, orderBy, limit, offset);
   }
 
-  async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+  async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 

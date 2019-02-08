@@ -160,8 +160,8 @@ export class QueryBuilder {
     return sql;
   }
 
-  getParams(): any {
-    let ret = [];
+  getParams(): any[] {
+    let ret: any[] = [];
 
     if (this.type === QueryType.INSERT && this._data) {
       ret = Object.values(this._data);
@@ -184,8 +184,8 @@ export class QueryBuilder {
     return ret;
   }
 
-  private getWhereParams(): any {
-    const ret = [];
+  private getWhereParams(): any[] {
+    const ret: any[] = [];
 
     Object.values(this._cond).forEach(cond => {
       if (Utils.isObject(cond) && cond.$in) {
@@ -206,7 +206,7 @@ export class QueryBuilder {
     return '`' + field + '`';
   }
 
-  private mapper(field: string, value: any = null) {
+  private mapper(field: string, value: any = null): string {
     let ret = this.wrap(field);
 
     if (field.match(/`?\w{2}`?\./)) {
@@ -228,7 +228,7 @@ export class QueryBuilder {
   }
 
   private prepareFields(fields: string[], glue = ', '): string {
-    const ret = [];
+    const ret: string[] = [];
 
     fields.forEach(f => {
       if (this._leftJoins[f]) {

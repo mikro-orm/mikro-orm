@@ -47,7 +47,12 @@ export class SqliteDriver extends DatabaseDriver {
 
   async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = new QueryBuilder(entityName, this.metadata);
-    qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(limit, offset);
+    qb.select('*').populate(populate).where(where).orderBy(orderBy);
+
+    if (limit !== undefined) {
+      qb.limit(limit, offset);
+    }
+
     const res = await this.execute(qb);
 
     return res.map(r => this.mapResult(r, this.metadata[entityName]));
@@ -98,7 +103,7 @@ export class SqliteDriver extends DatabaseDriver {
       res = await this.execute(qb, [], 'run');
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data.id || where), collections);
+    await this.processManyToMany(entityName, Utils.extractPK(data.id || where)!, collections);
 
     return res ? res.changes : 0;
   }

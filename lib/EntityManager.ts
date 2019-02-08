@@ -37,7 +37,7 @@ export class EntityManager {
     return em.identityMap[token] as T;
   }
 
-  setIdentity(entity: IEntity, id: IPrimaryKey = null): void {
+  setIdentity(entity: IEntity, id?: IPrimaryKey): void {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${id || entity.id}`;
     em.identityMap[token] = entity;
@@ -78,7 +78,7 @@ export class EntityManager {
     return new QueryBuilder(entityName, this.metadata);
   }
 
-  async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit: number = null, offset: number = null): Promise<T[]> {
+  async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     this.validator.validateParams(where);
     const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
 
@@ -98,7 +98,7 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
+  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }

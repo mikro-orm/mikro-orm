@@ -62,7 +62,7 @@ export class MetadataStorage {
     const files = readdirSync(join(this.options.baseDir, basePath));
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
-    const discovered = [];
+    const discovered: string[] = [];
     files.forEach(file => {
       if (
         !file.match(/\.[jt]s$/) ||
@@ -111,7 +111,7 @@ export class MetadataStorage {
     const source = sources.find(s => !!s.getFilePath().match(file.replace(/\.js$/, '.ts')));
     meta.path = path;
     meta.prototype = target.prototype;
-    const properties = source.getClass(name).getInstanceProperties();
+    const properties = source!.getClass(name)!.getInstanceProperties();
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
@@ -134,7 +134,7 @@ export class MetadataStorage {
       } else {
         const old = prop.type;
         const property = properties.find(v => v.getName() === prop.name);
-        prop.type = property.getType().getText(property);
+        prop.type = property!.getType().getText(property);
 
         if (prop.type === 'any' && old) {
           prop.type = old;
@@ -151,13 +151,10 @@ export class MetadataStorage {
     }
 
     if (!prop.fieldName) {
-      switch (prop.reference) {
-        case ReferenceType.SCALAR:
-          prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
-          break;
-        case ReferenceType.MANY_TO_ONE:
-          prop.fieldName = this.namingStrategy.joinColumnName(prop.name);
-          break;
+      if (prop.reference === ReferenceType.SCALAR) {
+        prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
+      } else if (prop.reference === ReferenceType.MANY_TO_ONE) {
+        prop.fieldName = this.namingStrategy.joinColumnName(prop.name);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {

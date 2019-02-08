@@ -84,12 +84,12 @@ export async function wipeDatabaseMySql(em: EntityManager) {
 
 export async function wipeDatabaseSqlite(em: EntityManager) {
   const driver = em.getDriver<SqliteDriver>();
-  await driver.execute(em.createQueryBuilder(Author2.name).delete(), null, 'run');
-  await driver.execute(em.createQueryBuilder(Book2.name).delete(), null, 'run');
-  await driver.execute(em.createQueryBuilder(BookTag2.name).delete(), null, 'run');
-  await driver.execute(em.createQueryBuilder(Publisher2.name).delete(), null, 'run');
-  await driver.execute(em.createQueryBuilder(Test2.name).delete(), null, 'run');
-  await driver.execute(new QueryBuilder('book2_to_book_tag2', {}).delete(), null, 'run');
-  await driver.execute(new QueryBuilder('publisher2_to_test2', {}).delete(), null, 'run');
+  await driver.execute(em.createQueryBuilder(Author2.name).delete(), [], 'run');
+  await driver.execute(em.createQueryBuilder(Book2.name).delete(), [], 'run');
+  await driver.execute(em.createQueryBuilder(BookTag2.name).delete(), [], 'run');
+  await driver.execute(em.createQueryBuilder(Publisher2.name).delete(), [], 'run');
+  await driver.execute(em.createQueryBuilder(Test2.name).delete(), [], 'run');
+  await driver.execute(new QueryBuilder('book2_to_book_tag2', {}).delete(), [], 'run');
+  await driver.execute(new QueryBuilder('publisher2_to_test2', {}).delete(), [], 'run');
   em.clear();
 }

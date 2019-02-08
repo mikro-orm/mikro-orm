@@ -32,7 +32,7 @@ describe('EntityRepository', () => {
     await repo.persist(e, false);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);
     await repo.find({ foo: 'bar' });
-    expect(methods.find.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }, [], {}, null, null]);
+    expect(methods.find.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher.name, 'bar', []]);
     await repo.remove('bar');

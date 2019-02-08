@@ -48,16 +48,16 @@ export interface EntityProperty {
   type: string;
   primary: boolean;
   reference: ReferenceType;
-  fieldName?: string;
+  fieldName: string;
   cascade: Cascade[];
   onUpdate?: () => any;
-  owner?: boolean;
-  inversedBy?: string;
-  mappedBy?: string;
-  pivotTable?: string;
-  joinColumn?: string;
-  inverseJoinColumn?: string;
-  referenceColumnName?: string;
+  owner: boolean;
+  inversedBy: string;
+  mappedBy: string;
+  pivotTable: string;
+  joinColumn: string;
+  inverseJoinColumn: string;
+  referenceColumnName: string;
 }
 
 export interface EntityMetadata {

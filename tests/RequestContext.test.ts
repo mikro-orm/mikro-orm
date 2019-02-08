@@ -14,7 +14,7 @@ describe('RequestContext', () => {
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeNull();
     RequestContext.create(orm.em, () => {
-      const em = RequestContext.getEntityManager();
+      const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       expect(em['identityMap']).not.toBe(orm.em['identityMap']);
     });

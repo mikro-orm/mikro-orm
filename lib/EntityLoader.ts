@@ -25,7 +25,7 @@ export class EntityLoader {
       if (field.includes('.')) {
         const [f, ...parts] = field.split('.');
         await this.populateMany(entityName, entities, f);
-        const children = [];
+        const children: IEntity[] = [];
         entities.forEach(entity => {
           if (Utils.isEntity(entity[f])) {
             children.push(entity[f]);
@@ -103,7 +103,7 @@ export class EntityLoader {
       children.push(...filtered.map(e => e[prop.name].owner));
       fk = this.metadata[prop.type].properties[prop.fk].fieldName;
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...b[prop.name].getItems()], []));
+      children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as Collection<IEntity>).getItems()], [] as IEntity[]));
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
       children.push(...filtered);
       fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;

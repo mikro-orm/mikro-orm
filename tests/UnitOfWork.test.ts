@@ -33,7 +33,7 @@ describe('UnitOfWork', () => {
 
     // string date with correct format will be auto-corrected
     Object.assign(author, { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 });
-    let changeSet = await uow.persist(author);
+    let changeSet = (await uow.persist(author))!;
     expect(typeof changeSet.payload.name).toBe('string');
     expect(changeSet.payload.name).toBe('333');
     expect(typeof changeSet.payload.email).toBe('string');
@@ -44,17 +44,17 @@ describe('UnitOfWork', () => {
 
     // Date object will be ok
     Object.assign(author, { born: new Date() });
-    changeSet = await uow.persist(author);
+    changeSet = (await uow.persist(author))!;
     expect(changeSet.payload.born instanceof Date).toBe(true);
 
     // null will be ok
     Object.assign(author, { born: null });
-    changeSet = await uow.persist(author);
+    changeSet = (await uow.persist(author))!;
     expect(changeSet.payload.born).toBeNull();
 
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
-    changeSet = await uow.persist(author);
+    changeSet = (await uow.persist(author))!;
     expect(typeof changeSet.payload.age).toBe('number');
     expect(changeSet.payload.age).toBe(21);
 

@@ -112,7 +112,7 @@ export class Utils {
     return typeof key === 'string' || typeof key === 'number' || Utils.isObjectID(key);
   }
 
-  static extractPK(data: any): IPrimaryKey {
+  static extractPK(data: any): IPrimaryKey | null {
     if (Utils.isPrimaryKey(data)) {
       return data;
     }

@@ -32,7 +32,6 @@ describe('EntityHelperMySql', () => {
 
   test('#assign() should update entity collection [mysql]', async () => {
     const other = new BookTag2('other');
-    other.id = null;
     await orm.em.persist(other);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);

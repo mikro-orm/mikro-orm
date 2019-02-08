@@ -15,7 +15,7 @@ export class EntityFactory {
 
   create<T extends IEntity>(entityName: string, data: any, initialized = true): T {
     const meta = this.metadata[entityName];
-    const exclude = [];
+    const exclude: string[] = [];
     let entity: T;
 
     // normalize PK to `id: string`
@@ -67,7 +67,7 @@ export class EntityFactory {
       }
 
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        return entity[prop.name] = new Collection<T>(entity, null, !!data[prop.name]);
+        return entity[prop.name] = new Collection<T>(entity, undefined, !!data[prop.name]);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
@@ -76,7 +76,7 @@ export class EntityFactory {
           const items = data[prop.name].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
           return entity[prop.name] = new Collection<T>(entity, items);
         } else if (!entity[prop.name]) {
-          const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : null;
+          const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : undefined;
           return entity[prop.name] = new Collection<T>(entity, items, false);
         }
       }

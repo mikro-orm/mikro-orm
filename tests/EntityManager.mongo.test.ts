@@ -44,7 +44,7 @@ describe('EntityManagerMongo', () => {
     await repo.flush();
     orm.em.clear();
 
-    const publisher7k = await orm.em.getRepository<Publisher>(Publisher.name).findOne({ name: '7K publisher' });
+    const publisher7k = (await orm.em.getRepository<Publisher>(Publisher.name).findOne({ name: '7K publisher' }))!;
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(true);
@@ -61,7 +61,7 @@ describe('EntityManagerMongo', () => {
     expect(noBooks.length).toBe(0);
     orm.em.clear();
 
-    const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']);
+    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']))!;
     const authors = await authorRepository.findAll(['books', 'favouriteBook']);
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
@@ -200,8 +200,8 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.findOne<Author>(Author.name, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     await expect(orm.em.findOne<Author>(Author.name, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     await expect(orm.em.findOne<Author>(Author.name, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, undefined)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, null)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author.name, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author.name, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -225,7 +225,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.findOne<Author>(Author.name, god.id);
+    const newGod = (await orm.em.findOne<Author>(Author.name, god.id))!;
     const books = await orm.em.find<Book>(Book.name, {});
     await newGod.init(false);
 
@@ -250,7 +250,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const newGod = orm.em.getReference<Author>(Author.name, god.id);
-    const publisher = await orm.em.findOne<Publisher>(Publisher.name, pub.id, ['books']);
+    const publisher = (await orm.em.findOne<Publisher>(Publisher.name, pub.id, ['books']))!;
     await newGod.init();
 
     const json = publisher.toJSON().books;
@@ -277,22 +277,22 @@ describe('EntityManagerMongo', () => {
     await authorRepository.persist(jon);
 
     orm.em.clear();
-    let author = await authorRepository.findOne(jon._id);
+    let author = (await authorRepository.findOne(jon._id))!;
     expect(author).not.toBeNull();
     expect(author.name).toBe('Jon Snow');
 
     orm.em.clear();
-    author = await authorRepository.findOne(jon.id);
+    author = (await authorRepository.findOne(jon.id))!;
     expect(author).not.toBeNull();
     expect(author.name).toBe('Jon Snow');
 
     orm.em.clear();
-    author = await authorRepository.findOne({ id: jon.id });
+    author = (await authorRepository.findOne({ id: jon.id }))!;
     expect(author).not.toBeNull();
     expect(author.name).toBe('Jon Snow');
 
     orm.em.clear();
-    author = await authorRepository.findOne({ _id: jon._id });
+    author = (await authorRepository.findOne({ _id: jon._id }))!;
     expect(author).not.toBeNull();
     expect(author.name).toBe('Jon Snow');
   });
@@ -309,7 +309,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(jon);
     orm.em.clear();
 
-    jon = await authorRepository.findOne(jon.id);
+    jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
     expect(jon.favouriteBook).toBeInstanceOf(Book);
@@ -379,7 +379,7 @@ describe('EntityManagerMongo', () => {
 
     // test M:N lazy init
     orm.em.clear();
-    let book = await orm.em.findOne<Book>(Book.name, { tags: tag1._id });
+    let book = (await orm.em.findOne<Book>(Book.name, { tags: tag1._id }))!;
     expect(book.tags.isInitialized()).toBe(true); // owning side is always initialized
     expect(book.tags.count()).toBe(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
@@ -394,14 +394,14 @@ describe('EntityManagerMongo', () => {
     book.tags.remove(tag1, tag5); // tag5 will be ignored as it is not part of collection
     await orm.em.persist(book);
     orm.em.clear();
-    book = await orm.em.findOne<Book>(Book.name, book._id);
+    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tag1);
     await orm.em.persist(book);
     orm.em.clear();
-    book = await orm.em.findOne<Book>(Book.name, book._id);
+    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -415,7 +415,7 @@ describe('EntityManagerMongo', () => {
     book.tags.removeAll();
     await orm.em.persist(book);
     orm.em.clear();
-    book = await orm.em.findOne<Book>(Book.name, book._id);
+    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -489,14 +489,14 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository<Book>(Book.name);
-    let book = await repo.findOne(book1.id, ['author', 'tags']);
+    let book = (await repo.findOne(book1.id, ['author', 'tags']))!;
     book.author.name = 'Foo Bar';
     book.tags[0].name = 'new name 1';
     book.tags[1].name = 'new name 2';
     await orm.em.persist(book);
     orm.em.clear();
 
-    book = await repo.findOne(book1.id, ['author', 'tags']);
+    book = (await repo.findOne(book1.id, ['author', 'tags']))!;
     expect(book.author.name).toBe('Foo Bar');
     expect(book.tags[0].name).toBe('new name 1');
     expect(book.tags[1].name).toBe('new name 2');
@@ -519,14 +519,14 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository<BookTag>(BookTag.name);
-    let tag = await repo.findOne(tag5.id, ['books.author']);
+    let tag = (await repo.findOne(tag5.id, ['books.author']))!;
     tag.books[0].title = 'new title 1';
     tag.books[1].title = 'new title 2';
     tag.books[1].author.name = 'Foo Bar';
     await orm.em.persist(tag);
     orm.em.clear();
 
-    tag = await repo.findOne(tag5.id, ['books.author']);
+    tag = (await repo.findOne(tag5.id, ['books.author']))!;
     expect(tag.books[0].title).toBe('new title 1');
     expect(tag.books[1].title).toBe('new title 2');
     expect(tag.books[1].author.name).toBe('Foo Bar');
@@ -678,7 +678,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository<Author>(Author.name);
 
     orm.em.clear();
-    author = await repo.findOne(author.id);
+    author = (await repo.findOne(author.id))!;
     expect(author.books).toBeInstanceOf(Collection);
     expect(author.books.isInitialized(true)).toBe(false);
     await author.books.init();
@@ -747,7 +747,7 @@ describe('EntityManagerMongo', () => {
     await repo.persist(publisher);
     orm.em.clear();
 
-    const ent = await repo.findOne(publisher.id);
+    const ent = (await repo.findOne(publisher.id))!;
     await expect(ent.tests.count()).toBe(3);
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 
@@ -772,7 +772,7 @@ describe('EntityManagerMongo', () => {
     await expect(author.updatedAt > author.createdAt).toBe(true);
 
     orm.em.clear();
-    const ent = await repo.findOne(author.id);
+    const ent = (await repo.findOne(author.id))!;
     await expect(ent.createdAt).toBeDefined();
     await expect(ent.updatedAt).toBeDefined();
     await expect(ent.updatedAt).not.toEqual(ent.createdAt);
@@ -809,14 +809,14 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([b1, b2, b3]);
     orm.em.clear();
 
-    const a1 = await orm.em.findOne<Author>(Author.name, author.id);
+    const a1 = (await orm.em.findOne<Author>(Author.name, author.id))!;
     expect(a1.books).toBeInstanceOf(Collection);
     expect(a1.books.isInitialized()).toBe(false);
 
     await orm.em.nativeUpdate(Author.name, { id: author.id }, { books: [b1.id, b2.id, b3.id] });
     orm.em.clear();
 
-    const a2 = await orm.em.findOne<Author>(Author.name, author.id);
+    const a2 = (await orm.em.findOne<Author>(Author.name, author.id))!;
     expect(a2.books).toBeInstanceOf(Collection);
     expect(a2.books.isInitialized()).toBe(true);
     expect(a2.books.isInitialized(true)).toBe(false);

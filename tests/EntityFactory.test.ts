@@ -27,7 +27,6 @@ const Mock = jest.fn<EntityManager, any>(() => ({
   setIdentity: jest.fn(),
   validator: new Validator(false),
   namingStrategy: new MongoNamingStrategy(),
-  getNamingStrategy: () => new MongoNamingStrategy(),
 } as any));
 const em = new Mock();
 const factory = new EntityFactory(em);

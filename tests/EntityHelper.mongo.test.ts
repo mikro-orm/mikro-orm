@@ -1,8 +1,7 @@
 import { ObjectID } from 'mongodb';
 import { Author, Book, BookTag } from './entities';
-import { MikroORM } from '../lib';
+import { EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
-import { EntityHelper } from '../lib/utils/EntityHelper';
 
 /**
  * @class EntityHelperMongoTest
@@ -34,7 +33,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(author);
     orm.em.clear();
 
-    const jon = orm.em.getReference<Author>(Author.name, author.id);
+    const jon = orm.em.getReference<Author>(Author.name, author.id!);
     expect(jon.isInitialized()).toBe(false);
     await EntityHelper.init(jon);
     expect(jon.isInitialized()).toBe(true);
@@ -60,7 +59,6 @@ describe('EntityHelperMongo', () => {
 
   test('#assign() should update entity collection', async () => {
     const other = new BookTag('other');
-    other.id = null;
     await orm.em.persist(other);
     const jon = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('Book2', jon);

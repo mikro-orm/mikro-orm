@@ -102,7 +102,7 @@ export class MongoDriver extends DatabaseDriver {
     const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<IEntity>);
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
-    return result.deletedCount;
+    return result.deletedCount || 0;
   }
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
@@ -150,12 +150,12 @@ export class MongoDriver extends DatabaseDriver {
       resultSet.sort(orderBy);
     }
 
-    if (limit !== null) {
+    if (limit !== undefined) {
       query += `.limit(${limit})`;
       resultSet.limit(limit);
     }
 
-    if (offset !== null) {
+    if (offset !== undefined) {
       query += `.skip(${offset})`;
       resultSet.skip(offset);
     }

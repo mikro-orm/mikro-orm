@@ -17,7 +17,7 @@ export class UnitOfWork {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = Utils.copy(entity);
   }
 
-  async persist(entity: IEntity): Promise<ChangeSet> {
+  async persist(entity: IEntity): Promise<ChangeSet | null> {
     const changeSet = await this.computeChangeSet(entity);
 
     if (!changeSet) {
@@ -31,7 +31,7 @@ export class UnitOfWork {
     return changeSet;
   }
 
-  async remove(entity: IEntity): Promise<ChangeSet> {
+  async remove(entity: IEntity): Promise<ChangeSet | null> {
     const meta = this.metadata[entity.constructor.name];
 
     // clean up persist stack from previous change sets for this entity (in case there was persist call without flushing)
@@ -68,7 +68,7 @@ export class UnitOfWork {
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
   }
 
-  private async computeChangeSet(entity: IEntity): Promise<ChangeSet> {
+  private async computeChangeSet(entity: IEntity): Promise<ChangeSet | null> {
     const ret = { entity } as ChangeSet;
     const meta = this.metadata[entity.constructor.name];
 
@@ -110,7 +110,7 @@ export class UnitOfWork {
     // when new entity found in reference, cascade persist it first so we have its id
     if (!changeSet.entity[prop.name][pk]) {
       const propChangeSet = await this.persist(changeSet.entity[prop.name]);
-      await this.immediateCommit(propChangeSet);
+      await this.immediateCommit(propChangeSet!);
       changeSet.payload[prop.name] = changeSet.entity[prop.name][pk];
     }
   }
@@ -125,7 +125,7 @@ export class UnitOfWork {
         // when new entity found in reference, cascade persist it first so we have its id
         if (!item[pk]) {
           const itemChangeSet = await this.persist(item);
-          await this.immediateCommit(itemChangeSet);
+          await this.immediateCommit(itemChangeSet!);
         }
       }
 

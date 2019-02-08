@@ -97,8 +97,8 @@ export class EntityHelper {
     throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
   }
 
-  private static assignCollection(entity: IEntity, value: any, prop: EntityProperty, em: EntityManager): void {
-    const invalid = [];
+  private static assignCollection(entity: IEntity, value: any[], prop: EntityProperty, em: EntityManager): void {
+    const invalid: any[] = [];
     const items = value.map((item: any) => {
       if (Utils.isEntity(item)) {
         return item;
@@ -126,10 +126,10 @@ export class EntityHelper {
     // define magic id property getter/setter if PK property is `_id` and there is no `id` property defined
     if (pk.name === '_id' && !meta.properties.id) {
       Object.defineProperty(meta.prototype, 'id', {
-        get(): string {
+        get(): string | null {
           return this._id ? em.getDriver().normalizePrimaryKey<string>(this._id) : null;
         },
-        set(id: string) {
+        set(id: string): void {
           this._id = id ? em.getDriver().denormalizePrimaryKey(id) : null;
         },
       });
