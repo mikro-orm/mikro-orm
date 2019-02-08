@@ -1,44 +1,44 @@
 import { Collection } from '../Collection';
 import { SCALAR_TYPES } from '../EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
 import { Utils } from './Utils';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export class EntityHelper {
 
   static async init(entity: IEntity, populated = true): Promise<IEntity> {
-    await entity['__em'].findOne(entity.constructor.name, entity.id);
+    await entity.__em.findOne(entity.constructor.name, entity.id);
     entity.populated(populated);
 
     return entity;
   }
 
-  static assign(entity: IEntity, data: any): void {
+  static assign<T extends IEntityType<T>>(entity: T, data: any): void {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[entity.constructor.name];
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
       if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
-        return EntityHelper.assignReference(entity, data[prop], props[prop], entity['__em']);
+        return EntityHelper.assignReference<T>(entity, data[prop], props[prop], entity.__em);
       }
 
       const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
       if (isCollection && Array.isArray(data[prop])) {
-        return EntityHelper.assignCollection(entity, data[prop], props[prop], entity['__em']);
+        return EntityHelper.assignCollection<T>(entity, data[prop], props[prop], entity.__em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        entity[prop] = entity['__em'].validator.validateProperty(props[prop], data[prop], entity)
+        entity[prop as keyof T] = entity.__em.validator.validateProperty(props[prop], data[prop], entity)
       }
 
-      entity[prop] = data[prop];
+      entity[prop as keyof T] = data[prop];
     });
   }
 
-  static toObject(entity: IEntity, parent?: IEntity, isCollection = false): { [field: string]: any } {
+  static toObject<T extends IEntityType<T>>(entity: T, parent?: IEntity, isCollection = false): { [field: string]: any } {
     parent = parent || entity;
     const ret = entity.id ? { id: entity.id } : {} as any;
 
@@ -51,8 +51,8 @@ export class EntityHelper {
         return;
       }
 
-      if (entity[prop] instanceof Collection) {
-        const col = entity[prop] as Collection<IEntity>;
+      if (entity[prop as keyof T] as any instanceof Collection) {
+        const col = entity[prop as keyof T] as Collection<IEntity>;
 
         if (col.isInitialized(true) && col.shouldPopulate()) {
           ret[prop] = col.toArray(entity);
@@ -63,25 +63,25 @@ export class EntityHelper {
         return;
       }
 
-      if (Utils.isEntity(entity[prop])) {
-        const child = entity[prop] as IEntity;
+      if (Utils.isEntity(entity[prop as keyof T])) {
+        const child = entity[prop as keyof T] as IEntity;
 
-        if (child.isInitialized() && child['__populated'] && !isCollection && child !== parent) {
+        if (child.isInitialized() && child.__populated && !isCollection && child !== parent) {
           return ret[prop] = EntityHelper.toObject(child, entity);
         }
 
-        return ret[prop] = entity[prop].id;
+        return ret[prop] = entity[prop as keyof T].id;
       }
 
-      ret[prop] = entity[prop];
+      ret[prop] = entity[prop as keyof T];
     });
 
     return ret;
   }
 
-  private static assignReference(entity: IEntity, value: any, prop: EntityProperty, em: EntityManager): void {
+  private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
     if (Utils.isEntity(value)) {
-      entity[prop.name] = value;
+      entity[prop.name as keyof T] = value;
       return;
     }
 
@@ -89,7 +89,7 @@ export class EntityHelper {
 
     if (id) {
       const normalized = em.getDriver().normalizePrimaryKey(id);
-      entity[prop.name] = em.getReference(prop.type, normalized);
+      entity[prop.name as keyof T] = em.getReference(prop.type, normalized);
       return;
     }
 
@@ -97,7 +97,7 @@ export class EntityHelper {
     throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
   }
 
-  private static assignCollection(entity: IEntity, value: any[], prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection<T extends IEntityType<T>>(entity: T, value: any[], prop: EntityProperty, em: EntityManager): void {
     const invalid: any[] = [];
     const items = value.map((item: any) => {
       if (Utils.isEntity(item)) {
@@ -117,7 +117,7 @@ export class EntityHelper {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
     }
 
-    (entity[prop.name] as Collection<IEntity>).set(items);
+    (entity[prop.name as keyof T] as Collection<IEntity>).set(items);
   }
 
   static decorate(meta: EntityMetadata, em: EntityManager) {

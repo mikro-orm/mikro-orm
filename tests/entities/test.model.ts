@@ -4,10 +4,10 @@ import { Entity, IEntity, PrimaryKey, Property } from '../../lib';
 export class Test {
 
   @PrimaryKey({ type: 'ObjectID' })
-  _id;
+  _id: any;
 
   @Property({ type: 'string' })
-  name;
+  name: any;
 
   static create(name: string) {
     const t = new Test();

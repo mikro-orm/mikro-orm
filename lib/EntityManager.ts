@@ -9,7 +9,7 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
-import { Cascade, IEntity, ReferenceType } from './decorators/Entity';
+import { Cascade, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
@@ -291,7 +291,7 @@ export class EntityManager {
     return new EntityManager(this.options, this.driver);
   }
 
-  private async cascade(entity: IEntity, type: Cascade, cb: (e: IEntity) => Promise<void>, visited: IEntity[] = []): Promise<void> {
+  private async cascade<T>(entity: IEntityType<T>, type: Cascade, cb: (e: IEntity) => Promise<void>, visited: IEntity[] = []): Promise<void> {
     if (visited.includes(entity)) {
       return;
     }
@@ -305,13 +305,13 @@ export class EntityManager {
         continue;
       }
 
-      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name]) {
-        await this.cascade(entity[prop.name], type, cb, visited);
+      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
+        await this.cascade(entity[prop.name as keyof T], type, cb, visited);
         continue;
       }
 
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
-        const collection = entity[prop.name] as Collection<IEntity>;
+        const collection = entity[prop.name as keyof T] as Collection<IEntity>;
 
         if (collection.isInitialized(true)) {
           for (const item of collection.getItems()) {

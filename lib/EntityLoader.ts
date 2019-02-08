@@ -1,6 +1,6 @@
 import { Utils } from './utils/Utils';
 import { Collection } from './Collection';
-import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { EntityManager } from './EntityManager';
 
@@ -11,7 +11,7 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate(entityName: string, entities: IEntity[], populate: string[], validate = true): Promise<void> {
+  async populate<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], populate: string[], validate = true): Promise<void> {
     if (entities.length === 0) {
       return;
     }
@@ -24,13 +24,13 @@ export class EntityLoader {
       // nested populate
       if (field.includes('.')) {
         const [f, ...parts] = field.split('.');
-        await this.populateMany(entityName, entities, f);
+        await this.populateMany<T>(entityName, entities, f as keyof T);
         const children: IEntity[] = [];
         entities.forEach(entity => {
-          if (Utils.isEntity(entity[f])) {
-            children.push(entity[f]);
-          } else if (entity[f] instanceof Collection) {
-            children.push(...entity[f].getItems());
+          if (Utils.isEntity(entity[f as keyof T])) {
+            children.push(entity[f as keyof T]);
+          } else if (entity[f as keyof T] as any instanceof Collection) {
+            children.push(...entity[f as keyof T].getItems());
           }
         });
         const filtered = Utils.unique(children);
@@ -38,7 +38,7 @@ export class EntityLoader {
         const prop = this.metadata[entityName].properties[f];
         await this.populate(prop.type, filtered, [parts.join('.')], false);
       } else {
-        await this.populateMany(entityName, entities, field);
+        await this.populateMany<T>(entityName, entities, field as keyof T);
       }
     }
   }
@@ -46,16 +46,16 @@ export class EntityLoader {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany(entityName: string, entities: IEntity[], field: string): Promise<IEntity[]> {
+  private async populateMany<T extends IEntityType<T>>(entityName: string, entities: T[], field: keyof T): Promise<IEntity[]> {
     // set populate flag
     entities.forEach(entity => {
-      if (Utils.isEntity(entity[field]) || entity[field] instanceof Collection) {
+      if (Utils.isEntity(entity[field]) || entity[field] as any instanceof Collection) {
         (entity[field] as IEntity).populated();
       }
     });
 
-    const prop = this.metadata[entityName].properties[field];
-    const filtered = entities.filter(e => e[field] instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
+    const prop = this.metadata[entityName].properties[field as string];
+    const filtered = entities.filter(e => e[field] as any instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
@@ -70,7 +70,7 @@ export class EntityLoader {
       return children;
     }
 
-    const data = await this.findChildren(entities, prop);
+    const data = await this.findChildren<T>(entities, prop);
 
     if (data.length === 0) {
       return [];
@@ -94,21 +94,22 @@ export class EntityLoader {
     return data;
   }
 
-  private async findChildren(entities: IEntity[], prop: EntityProperty): Promise<IEntity[]> {
-    const filtered = entities.filter(e => e[prop.name] instanceof Collection && !(e[prop.name] as Collection<IEntity>).isInitialized(true));
+  private async findChildren<T extends IEntityType<T>>(entities: T[], prop: EntityProperty): Promise<IEntityType<any>[]> {
+    const name = prop.name as keyof T;
+    const filtered = entities.filter(e => e[name] as any instanceof Collection && !(e[name] as any as Collection<IEntity>).isInitialized(true));
     const children: IEntity[] = [];
     let fk = this.metadata[prop.type].primaryKey;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      children.push(...filtered.map(e => e[prop.name].owner));
+      children.push(...filtered.map(e => e[name].owner));
       fk = this.metadata[prop.type].properties[prop.fk].fieldName;
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as Collection<IEntity>).getItems()], [] as IEntity[]));
+      children.push(...filtered.reduce((a, b) => [...a, ...(b[name] as Collection<IEntity>).getItems()], [] as IEntity[]));
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
       children.push(...filtered);
       fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
     } else { // MANY_TO_ONE
-      children.push(...entities.filter(e => Utils.isEntity(e[prop.name]) && !(e[prop.name] as IEntity).isInitialized()).map(e => e[prop.name]));
+      children.push(...entities.filter(e => Utils.isEntity(e[name]) && !(e[name] as IEntity).isInitialized()).map(e => e[name]));
     }
 
     if (children.length === 0) {

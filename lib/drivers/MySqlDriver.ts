@@ -59,7 +59,7 @@ export class MySqlDriver extends DatabaseDriver {
 
     const res = await this.execute(qb);
 
-    return res[0].map(r => this.mapResult(r, this.metadata[entityName]));
+    return res[0].map((r: any) => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {
@@ -119,7 +119,7 @@ export class MySqlDriver extends DatabaseDriver {
     return res[0].affectedRows;
   }
 
-  async execute(query: string | QueryBuilder, params?: any): Promise<any> {
+  async execute(query: string | QueryBuilder, params?: any): Promise<any[]> {
     if (query instanceof QueryBuilder) {
       params = query.getParams();
       query = query.getQuery();

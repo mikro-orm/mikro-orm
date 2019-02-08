@@ -52,7 +52,7 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: number]: IPrimaryKey[] }> {
+  async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }> {
     if (!this.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -65,8 +65,8 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
     const map = {} as any;
     owners.forEach(owner => map['' + owner] = []);
-    items.forEach(item => {
-      map[item[fk1]].push(item);
+    items.forEach((item: any) => {
+      map['' + item[fk1]].push(item);
       delete item[fk1];
       delete item[fk2];
     });

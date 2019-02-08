@@ -7,7 +7,6 @@
     "sourceMap": false,
     "outDir": "./dist",
     "strict": true,
-    "noImplicitAny": false,
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

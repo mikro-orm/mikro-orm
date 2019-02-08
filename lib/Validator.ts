@@ -1,12 +1,12 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { Utils } from './utils/Utils';
 
 export class Validator {
 
   constructor(private strict: boolean) { }
 
-  validate(entity: IEntity, payload: any, meta: EntityMetadata): void {
+  validate<T>(entity: IEntityType<T>, payload: any, meta: EntityMetadata): void {
     Object.values(meta.properties).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
@@ -20,7 +20,7 @@ export class Validator {
         return;
       }
 
-      payload[prop] = entity[prop] = this.validateProperty(property, payload[prop], entity);
+      payload[prop] = entity[prop as keyof T] = this.validateProperty(property, payload[prop], entity);
     });
   }
 
@@ -92,8 +92,8 @@ export class Validator {
     }
   }
 
-  private validateCollection(entity: IEntity, prop: EntityProperty): void {
-    if (!entity[prop.name]) {
+  private validateCollection<T>(entity: IEntityType<T>, prop: EntityProperty): void {
+    if (!entity[prop.name as keyof T]) {
       throw new Error(`Validation error: ${entity.constructor.name}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`);
     }
   }

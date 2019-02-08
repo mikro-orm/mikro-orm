@@ -1,10 +1,10 @@
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { EntityManager } from './EntityManager';
 
-export class Collection<T extends IEntity> {
+export class Collection<T extends IEntityType<T>> {
 
   [k: number]: T;
 
@@ -14,7 +14,7 @@ export class Collection<T extends IEntity> {
   private _property: EntityProperty;
   private readonly items: T[] = [];
 
-  constructor(readonly owner: IEntity, items?: T[], initialized = true) {
+  constructor(readonly owner: IEntityType<any>, items?: T[], initialized = true) {
     if (items) {
       this.initialized = true;
       this.items = items;
@@ -45,7 +45,7 @@ export class Collection<T extends IEntity> {
   }
 
   async init(populate: string[] = []): Promise<Collection<T>> {
-    const em = this.owner['__em'] as EntityManager;
+    const em = this.owner.__em as EntityManager;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
@@ -96,7 +96,7 @@ export class Collection<T extends IEntity> {
   }
 
   getIdentifiers(field = 'id'): IPrimaryKey[] {
-    return this.getItems().map(i => i[field]);
+    return this.getItems().map(i => i[field as keyof T]);
   }
 
   add(...items: T[]): void {
@@ -178,8 +178,8 @@ export class Collection<T extends IEntity> {
   }
 
   private handleInverseSide(item: T, method: string): void {
-    if (this.property.owner && this.property.inversedBy && item[this.property.inversedBy].isInitialized()) {
-      item[this.property.inversedBy][method](this.owner);
+    if (this.property.owner && this.property.inversedBy && item[this.property.inversedBy as keyof T].isInitialized()) {
+      item[this.property.inversedBy as keyof T][method](this.owner);
     }
   }
 
@@ -189,7 +189,7 @@ export class Collection<T extends IEntity> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk] = this.owner.id;
     } else { // MANY_TO_MANY
-      if (this.property.owner || this.owner['__em'].getDriver().usesPivotTable()) {
+      if (this.property.owner || this.owner.__em.getDriver().usesPivotTable()) {
         cond.id = { $in: this.items.map(item => item.id) };
       } else {
         cond[this.property.mappedBy] = this.owner.id;

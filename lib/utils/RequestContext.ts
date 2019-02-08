@@ -1,11 +1,12 @@
+// @ts-ignore
 import { createNamespace, getNamespace } from 'node-request-context';
-import * as uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 
 export class RequestContext {
 
   static readonly NAMESPACE = 'mikro-orm-context';
-  readonly id = uuid.v4();
+  readonly id = uuid();
 
   constructor(readonly em: EntityManager) { }
 

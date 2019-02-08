@@ -1,7 +1,7 @@
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { EntityMetadata, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { Utils } from './utils/Utils';
 import { MetadataStorage } from './metadata/MetadataStorage';
 
@@ -41,9 +41,9 @@ export class EntityFactory {
     this.initEntity(entity, meta, data, exclude);
 
     if (initialized) {
-      delete entity['__initialized'];
+      delete entity.__initialized;
     } else {
-      entity['__initialized'] = initialized;
+      entity.__initialized = initialized;
     }
 
     return entity;
@@ -57,7 +57,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { id }, false);
   }
 
-  private initEntity<T extends IEntity>(entity: T, meta: EntityMetadata, data: any, exclude: string[]): void {
+  private initEntity<T extends IEntityType<T>>(entity: T, meta: EntityMetadata, data: any, exclude: string[]): void {
     entity.id = data.id; // process PK first
 
     // then process user defined properties (ignore not defined keys in `data`)
@@ -67,31 +67,31 @@ export class EntityFactory {
       }
 
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        return entity[prop.name] = new Collection<T>(entity, undefined, !!data[prop.name]);
+        return (entity as any)[prop.name] = new Collection<IEntity>(entity, undefined, !!data[prop.name]);
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
         if (prop.owner && Array.isArray(data[prop.name])) {
           const driver = this.em.getDriver();
           const items = data[prop.name].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return entity[prop.name] = new Collection<T>(entity, items);
-        } else if (!entity[prop.name]) {
+          return (entity as any)[prop.name] = new Collection<IEntity>(entity, items);
+        } else if (!entity[prop.name as keyof T]) {
           const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : undefined;
-          return entity[prop.name] = new Collection<T>(entity, items, false);
+          return (entity as any)[prop.name] = new Collection<IEntity>(entity, items, false);
         }
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
         if (data[prop.name] && !Utils.isEntity(data[prop.name])) {
           const id = this.em.getDriver().normalizePrimaryKey(data[prop.name]);
-          entity[prop.name] = this.createReference(prop.type, id);
+          entity[prop.name as keyof T] = this.createReference(prop.type, id);
         }
 
         return;
       }
 
       if (prop.reference === ReferenceType.SCALAR && data[prop.name]) {
-        entity[prop.name] = data[prop.name];
+        entity[prop.name as keyof T] = data[prop.name];
       }
     });
   }

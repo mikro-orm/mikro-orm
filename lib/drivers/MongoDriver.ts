@@ -31,7 +31,7 @@ export class MongoDriver extends DatabaseDriver {
     const res = await resultSet.toArray();
     this.logQuery(`${query}.toArray(); [took ${Date.now() - now} ms]`);
 
-    return res.map(r => this.mapResult(r, this.metadata[entityName]));
+    return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {

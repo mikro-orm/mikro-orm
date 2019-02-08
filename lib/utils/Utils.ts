@@ -3,6 +3,7 @@ import * as clone from 'clone';
 import { IEntity, IPrimaryKey } from '..';
 import { Collection } from '../Collection';
 import { MetadataStorage } from '../metadata/MetadataStorage';
+import { IEntityType } from '../decorators/Entity';
 
 export class Utils {
 
@@ -40,7 +41,7 @@ export class Utils {
     return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
   }
 
-  static prepareEntity(e: IEntity): any {
+  static prepareEntity<T>(e: IEntityType<T>): any {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
@@ -49,12 +50,13 @@ export class Utils {
     // remove collections and references
     Object.values(meta.properties).forEach(prop => {
       const pk = () => metadata[prop.type].primaryKey;
+      const name = prop.name as keyof T;
 
-      if (e[prop.name] instanceof Collection || (Utils.isEntity(e[prop.name]) && !e[prop.name][pk()])) {
-        return delete ret[prop.name];
+      if (e[name] as any instanceof Collection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
+        return delete ret[name];
       }
 
-      if (Utils.isEntity(e[prop.name])) {
+      if (Utils.isEntity(e[name])) {
         return ret[prop.name] = ret[prop.name][pk()];
       }
     });
@@ -100,7 +102,7 @@ export class Utils {
       if (result[i] === '=') {
         result.splice(i, 2);
       } else if (result[i].includes('=')) {
-        result[i] = result[i].split('=')[0];
+        result[i] = (result[i] as string).split('=')[0];
         result.splice(i + 1, 1);
       }
     }

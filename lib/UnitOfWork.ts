@@ -1,6 +1,6 @@
 import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
-import { EntityMetadata, EntityProperty, IEntity, ReferenceType } from './decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
 
@@ -81,7 +81,7 @@ export class UnitOfWork {
       ret.payload = Utils.prepareEntity(entity);
     }
 
-    this.em.validator.validate(ret.entity, ret.payload, meta);
+    this.em.validator.validate<typeof entity>(ret.entity, ret.payload, meta);
     await this.processReferences(ret, meta);
 
     if (entity.id && Object.keys(ret.payload).length === 0) {
@@ -115,12 +115,12 @@ export class UnitOfWork {
     }
   }
 
-  private async processManyToMany(changeSet: ChangeSet, prop: EntityProperty): Promise<void> {
+  private async processManyToMany<T>(changeSet: ChangeSet, prop: EntityProperty): Promise<void> {
     const collection = changeSet.entity[prop.name] as Collection<IEntity>;
 
     if (prop.owner && collection.isDirty()) {
       for (const item of collection.getItems()) {
-        const pk = this.metadata[prop.type].primaryKey;
+        const pk = this.metadata[prop.type].primaryKey as keyof typeof item;
 
         // when new entity found in reference, cascade persist it first so we have its id
         if (!item[pk]) {
@@ -156,7 +156,7 @@ export class UnitOfWork {
       this.addToIdentityMap(changeSet.entity);
     } else {
       changeSet.entity[pk] = await this.em.getDriver().nativeInsert(changeSet.name, changeSet.payload);
-      delete changeSet.entity['__initialized'];
+      delete changeSet.entity.__initialized;
       this.em.merge(changeSet.name, changeSet.entity);
     }
 
@@ -167,14 +167,14 @@ export class UnitOfWork {
     }
   }
 
-  private async runHooks(type: string, entity: IEntity, payload: any = null) {
+  private async runHooks<T>(type: string, entity: IEntityType<T>, payload: any = null) {
     const hooks = this.metadata[entity.constructor.name].hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
       const copy = Utils.copy(entity);
 
       for (const hook of hooks[type]) {
-        await entity[hook]();
+        await entity[hook as keyof T]();
       }
 
       if (payload) {
@@ -190,6 +190,6 @@ export interface ChangeSet {
   payload: any;
   collection: string;
   name: string;
-  entity: IEntity;
+  entity: IEntityType<any>;
   delete: boolean;
 }

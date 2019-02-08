@@ -22,7 +22,7 @@ export class SqliteDriver extends DatabaseDriver {
   }
 
   async isConnected(): Promise<boolean> {
-    return this.connection['driver']['open'];
+    return (this.connection as any)['driver']['open'];
   }
 
   async begin(savepoint?: string): Promise<void> {
@@ -55,7 +55,7 @@ export class SqliteDriver extends DatabaseDriver {
 
     const res = await this.execute(qb);
 
-    return res.map(r => this.mapResult(r, this.metadata[entityName]));
+    return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
   }
 
   async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T> {

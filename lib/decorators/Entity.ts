@@ -1,6 +1,9 @@
 import { merge } from 'lodash';
 import { Utils } from '../utils/Utils';
 import { MetadataStorage } from '../metadata/MetadataStorage';
+import { EntityManager } from '../EntityManager';
+import { Collection } from '../Collection';
+import { EntityRepository } from '../EntityRepository';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -16,18 +19,25 @@ export function Entity(options: EntityOptions = {}): Function {
 
 export type EntityOptions = {
   collection?: string;
-  customRepository?: any;
+  customRepository?: () => { new (em: EntityManager, entityName: string): EntityRepository<IEntity> };
 }
 
-export interface IEntity<T = number | string> {
-  id: T;
+export interface IEntity<K = number | string> {
+  id: K;
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?): Promise<IEntity>;
+  init(populated?: boolean): Promise<this>;
   toObject(parent?: IEntity, isCollection?: boolean): { [field: string]: any };
   toJSON(): { [field: string]: any };
   assign(data: any): void;
+  __em: EntityManager;
+  __initialized?: boolean;
+  __populated: boolean;
 }
+
+export type IEntityType<T> = {
+  [k in keyof T]: IEntity | Collection<IEntity> | any;
+} & IEntity;
 
 export enum ReferenceType {
   SCALAR = 0,

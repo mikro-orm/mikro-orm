@@ -76,6 +76,7 @@
     "@types/mongodb": "^3.1.19",
     "@types/mysql2": "types/mysql2",
     "@types/node": "^10.12.18",
+    "@types/uuid": "^3.4.4",
     "codacy-coverage": "^3.4.0",
     "coveralls": "^3.0.2",
     "jest": "^23.6.0",
