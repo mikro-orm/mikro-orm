@@ -12,7 +12,7 @@ export class BookTag {
   name: string;
 
   @ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
-  books = new Collection<Book>(this);
+  books: Collection<Book> = new Collection<Book>(this);
 
   constructor(name: string) {
     this.name = name;

@@ -11,7 +11,7 @@ export abstract class BaseEntity2 {
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
-        this[prop] = new Collection(this as any);
+        (this as any)[prop] = new Collection(this);
       }
     });
   }
