@@ -1,23 +1,11 @@
 import { FilterQuery } from './DatabaseDriver';
 import { IEntity, IPrimaryKey, NamingStrategy } from '..';
 import { EntityProperty } from '../decorators/Entity';
+import { Connection } from '../connections/Connection';
 
-export interface IDatabaseDriver {
+export interface IDatabaseDriver<C extends Connection = Connection> {
 
-  /**
-   * Establishes connection to database
-   */
-  connect(): Promise<void>;
-
-  /**
-   * Are we connected to the database
-   */
-  isConnected(): Promise<boolean>;
-
-  /**
-   * Closes the database connection (aka disconnect)
-   */
-  close(force?: boolean): Promise<void>;
+  getConnection(): C;
 
   /**
    * Finds selection of entities
@@ -27,7 +15,7 @@ export interface IDatabaseDriver {
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T>;
+  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T | null>;
 
   nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
 
@@ -39,29 +27,7 @@ export interface IDatabaseDriver {
 
   count(entityName: string, where: any): Promise<number>;
 
-  getTableName(entityName: string): string;
-
-  /**
-   * Returns default client url for given driver (e.g. mongodb://localhost:27017 for mongodb)
-   */
-  getDefaultClientUrl(): string;
-
   getDefaultNamingStrategy(): { new (): NamingStrategy };
-
-  /**
-   * Begins a transaction (if supported)
-   */
-  begin(savepoint?: string): Promise<void>;
-
-  /**
-   * Commits statements in a transaction
-   */
-  commit(savepoint?: string): Promise<void>;
-
-  /**
-   * Rollback changes in a transaction
-   */
-  rollback(savepoint?: string): Promise<void>;
 
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)

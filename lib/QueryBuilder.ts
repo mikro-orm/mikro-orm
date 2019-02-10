@@ -1,5 +1,6 @@
 import { Utils } from './utils/Utils';
 import { EntityMetadata, ReferenceType } from './decorators/Entity';
+import { Connection } from './connections/Connection';
 
 /**
  * SQL query builder
@@ -20,7 +21,8 @@ export class QueryBuilder {
   private alias = `e0`;
 
   constructor(private entityName: string,
-              private metadata: { [entity: string]: EntityMetadata }) { }
+              private metadata: { [entity: string]: EntityMetadata },
+              private connection: Connection) { }
 
   select(fields: string | string[]): QueryBuilder {
     this.type = QueryType.SELECT;
@@ -182,6 +184,10 @@ export class QueryBuilder {
     }
 
     return ret;
+  }
+
+  async execute(method?: string): Promise<any> {
+    return this.connection.execute(this.getQuery(), this.getParams(), method);
   }
 
   private getWhereParams(): any[] {

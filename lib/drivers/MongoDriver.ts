@@ -1,118 +1,68 @@
-import { Collection as MongoCollection, Db, FilterQuery, MongoClient, ObjectID } from 'mongodb';
+import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { Utils } from '../utils/Utils';
 import { IEntity, IPrimaryKey, NamingStrategy, MongoNamingStrategy } from '..';
+import { MongoConnection } from '../connections/MongoConnection';
 
-export class MongoDriver extends DatabaseDriver {
+export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
-  protected client: MongoClient;
-  protected db: Db;
-
-  async connect(): Promise<void> {
-    this.client = await MongoClient.connect(this.options.clientUrl as string, { useNewUrlParser: true });
-    this.db = this.client.db(this.options.dbName);
-  }
-
-  async close(force?: boolean): Promise<void> {
-    return this.client.close(force);
-  }
-
-  async isConnected(): Promise<boolean> {
-    return this.client.isConnected();
-  }
-
-  getCollection(entityName: string): MongoCollection {
-    return this.db.collection(this.getTableName(entityName));
-  }
+  protected readonly connection = new MongoConnection(this.options, this.logger);
 
   async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
-    const { query, resultSet } = this.buildQuery<T>(entityName, where, orderBy, limit, offset);
-    const now = Date.now();
-    const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray(); [took ${Date.now() - now} ms]`);
+    where = this.renameFields(entityName, where);
+    const res = await this.connection.find<T>(this.metadata[entityName].collection, where, orderBy, limit, offset);
 
     return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T> {
+  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as any) };
     }
 
-    where = this.renameFields(entityName, where);
-    const query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)}).limit(1).next();`;
-    where = this.convertObjectIds(where);
-    const now = Date.now();
-    const res = await this.getCollection(entityName).find<T>(where as FilterQuery<T>).limit(1).next();
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    where = this.renameFields(entityName, where) as FilterQuery<T>;
+    const res = await this.connection.find<T>(this.metadata[entityName].collection, where, {}, 1);
 
-    return this.mapResult(res, this.metadata[entityName]);
+    return this.mapResult(res[0], this.metadata[entityName]);
   }
 
-  async count(entityName: string, where: any): Promise<number> {
+  async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number> {
     where = this.renameFields(entityName, where);
-    const query = `db.getCollection("${this.metadata[entityName].collection}").count(${JSON.stringify(where)});`;
-    where = this.convertObjectIds(where);
-
-    const now = Date.now();
-    const res = await this.getCollection(this.metadata[entityName].collection).countDocuments(where, {});
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
-
-    return res;
+    return this.connection.countDocuments<T>(this.metadata[entityName].collection, where);
   }
 
-  async nativeInsert(entityName: string, data: any): Promise<ObjectID> {
+  async nativeInsert<T extends IEntity>(entityName: string, data: Partial<T>): Promise<ObjectID> {
     data = this.renameFields(entityName, data);
-    const query = `db.getCollection("${this.metadata[entityName].collection}").insertOne(${JSON.stringify(data)});`;
-    data = this.convertObjectIds(data);
+    const res = await this.connection.insertOne<T>(this.metadata[entityName].collection, data);
 
-    const now = Date.now();
-    const result = await this.getCollection(entityName).insertOne(data);
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
-
-    return result.insertedId;
+    return res.insertedId;
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number> {
+  async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as any) };
     }
 
-    where = this.renameFields(entityName, where);
-    const query = `db.getCollection("${this.metadata[entityName].collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
-    where = this.convertObjectIds(where);
+    where = this.renameFields(entityName, where) as FilterQuery<T>;
+    data = this.renameFields(entityName, data);
+    const res = await this.connection.updateMany<T>(this.metadata[entityName].collection, where, data);
 
-    const now = Date.now();
-    const result = await this.getCollection(entityName).updateMany(where as FilterQuery<IEntity>, { $set: data });
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
-
-    return result.modifiedCount;
+    return res.modifiedCount;
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number> {
+  async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as any) };
     }
 
-    where = this.renameFields(entityName, where);
-    const query = `db.getCollection("${this.metadata[entityName].collection}").deleteMany(${JSON.stringify(where)});`;
-    where = this.convertObjectIds(where);
+    where = this.renameFields(entityName, where) as FilterQuery<T>;
+    const res = await this.connection.deleteMany<T>(this.metadata[entityName].collection, where);
 
-    const now = Date.now();
-    const result = await this.getCollection(this.metadata[entityName].collection).deleteMany(where as FilterQuery<IEntity>);
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
-
-    return result.deletedCount || 0;
+    return res.deletedCount || 0;
   }
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
-    const query = `db.getCollection("${this.metadata[entityName].collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
-
-    const now = Date.now();
-    const res = await this.getCollection(this.metadata[entityName].collection).aggregate(pipeline).toArray();
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
-
-    return res;
+    return this.connection.aggregate(this.metadata[entityName].collection, pipeline);
   }
 
   normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
@@ -127,40 +77,12 @@ export class MongoDriver extends DatabaseDriver {
     return new ObjectID(data);
   }
 
-  getDefaultClientUrl(): string {
-    return 'mongodb://localhost:27017';
-  }
-
   getDefaultNamingStrategy(): { new (): NamingStrategy } {
     return MongoNamingStrategy;
   }
 
   usesPivotTable(): boolean {
     return false;
-  }
-
-  private buildQuery<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, orderBy: { [p: string]: 1 | -1 }, limit: number, offset: number): { query: string; resultSet: any } {
-    where = this.renameFields(entityName, where);
-    let query = `db.getCollection("${this.metadata[entityName].collection}").find(${JSON.stringify(where)})`;
-    where = this.convertObjectIds(where);
-    const resultSet = this.getCollection(entityName).find(where as FilterQuery<T>);
-
-    if (Object.keys(orderBy).length > 0) {
-      query += `.sort(${JSON.stringify(orderBy)})`;
-      resultSet.sort(orderBy);
-    }
-
-    if (limit !== undefined) {
-      query += `.limit(${limit})`;
-      resultSet.limit(limit);
-    }
-
-    if (offset !== undefined) {
-      query += `.skip(${offset})`;
-      resultSet.skip(offset);
-    }
-
-    return { query, resultSet };
   }
 
   private renameFields(entityName: string, data: any): any {
@@ -179,28 +101,6 @@ export class MongoDriver extends DatabaseDriver {
     });
 
     return data;
-  }
-
-  private convertObjectIds(payload: any): any {
-    if (payload instanceof ObjectID) {
-      return payload;
-    }
-
-    if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectID(payload);
-    }
-
-    if (Array.isArray(payload)) {
-      return payload.map((item: any) => this.convertObjectIds(item));
-    }
-
-    if (Utils.isObject(payload)) {
-      Object.keys(payload).forEach(k => {
-        payload[k] = this.convertObjectIds(payload[k]);
-      });
-    }
-
-    return payload;
   }
 
 }

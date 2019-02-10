@@ -7,3 +7,4 @@
 - single table inheritance
 - run SQL queries in transactions (flush)
 - support for LIKE clauses in SQL drivers
+- support entity class instead of string name in EM methods (CRUD, getRepository, ...)

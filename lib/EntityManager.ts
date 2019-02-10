@@ -14,6 +14,7 @@ import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
+import { Connection } from './connections/Connection';
 
 export class EntityManager {
 
@@ -27,7 +28,7 @@ export class EntityManager {
   private readonly _unitOfWork = new UnitOfWork(this);
 
   constructor(readonly options: MikroORMOptions,
-              private readonly driver: IDatabaseDriver) {
+              private readonly driver: IDatabaseDriver<Connection>) {
   }
 
   getIdentity<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
@@ -55,8 +56,12 @@ export class EntityManager {
     return em.identityMap;
   }
 
-  getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
+  getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
     return this.driver as D;
+  }
+
+  getConnection<C extends Connection = Connection>(): C {
+    return this.driver.getConnection() as C;
   }
 
   getRepository<T extends IEntity>(entityName: string): EntityRepository<T> {
@@ -75,7 +80,7 @@ export class EntityManager {
   }
 
   createQueryBuilder(entityName: string): QueryBuilder {
-    return new QueryBuilder(entityName, this.metadata);
+    return new QueryBuilder(entityName, this.metadata, this.getConnection());
   }
 
   async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
@@ -126,15 +131,15 @@ export class EntityManager {
   }
 
   async begin(savepoint?: string): Promise<void> {
-    await this.getDriver().begin(savepoint);
+    await this.getConnection().begin(savepoint);
   }
 
   async commit(savepoint?: string): Promise<void> {
-    await this.getDriver().commit(savepoint);
+    await this.getConnection().commit(savepoint);
   }
 
   async rollback(savepoint?: string): Promise<void> {
-    await this.getDriver().rollback(savepoint);
+    await this.getConnection().rollback(savepoint);
   }
 
   async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {

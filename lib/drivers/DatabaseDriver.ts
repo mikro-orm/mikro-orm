@@ -6,25 +6,19 @@ import { Utils } from '../utils/Utils';
 import { QueryOrder } from '../QueryBuilder';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { Logger } from '../utils/Logger';
+import { Connection } from '../connections/Connection';
 
-export abstract class DatabaseDriver implements IDatabaseDriver {
+export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  protected readonly metadata: { [k: string]: EntityMetadata } = {};
+  protected readonly connection: Connection;
+  protected readonly metadata = MetadataStorage.getMetadata();
 
   constructor(protected readonly options: MikroORMOptions,
-              protected readonly logger: Logger) {
-    this.metadata = MetadataStorage.getMetadata();
-  }
-
-  abstract async connect(): Promise<void>;
-
-  abstract async isConnected(): Promise<boolean>;
-
-  abstract async close(force?: boolean): Promise<void>;
+              protected readonly logger: Logger) { }
 
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
 
-  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T>;
+  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
 
   abstract async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
 
@@ -36,20 +30,6 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
-  }
-
-  abstract getDefaultClientUrl(): string;
-
-  async begin(savepoint: string): Promise<void> {
-    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
-  }
-
-  async commit(savepoint: string): Promise<void> {
-    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
-  }
-
-  async rollback(savepoint: string): Promise<void> {
-    throw new Error(`Transactions are not supported by ${this.constructor.name} driver`);
   }
 
   async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }> {
@@ -82,10 +62,6 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     return data;
   }
 
-  getTableName(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
-  }
-
   usesPivotTable(): boolean {
     return true;
   }
@@ -112,8 +88,8 @@ export abstract class DatabaseDriver implements IDatabaseDriver {
     return ret;
   }
 
-  protected logQuery(query: string): void {
-    this.logger.debug(`[query-logger] ${query}`);
+  getConnection(): C {
+    return this.connection as C;
   }
 
 }

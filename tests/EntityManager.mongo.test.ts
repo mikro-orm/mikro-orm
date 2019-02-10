@@ -265,10 +265,10 @@ describe('EntityManagerMongo', () => {
   test('should return mongo driver', async () => {
     const driver = orm.em.getDriver<MongoDriver>();
     expect(driver instanceof MongoDriver).toBe(true);
-    expect(driver.getCollection(Book.name).collectionName).toBe('books-table');
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.usesPivotTable()).toBe(false);
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables')
+    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method')
   });
 
   test('findOne by id', async () => {
@@ -823,9 +823,9 @@ describe('EntityManagerMongo', () => {
   });
 
   test('EM do not support transactions', async () => {
-    await expect(orm.em.begin()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
-    await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
-    await expect(orm.em.commit()).rejects.toThrowError('Transactions are not supported by MongoDriver driver');
+    await expect(orm.em.begin()).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(orm.em.commit()).rejects.toThrowError('Transactions are not supported by current driver');
   });
 
   afterAll(async () => orm.close(true));

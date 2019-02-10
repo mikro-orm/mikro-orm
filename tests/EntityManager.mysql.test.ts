@@ -30,7 +30,7 @@ describe('EntityManagerMySql', () => {
       password: 'secret',
       user: 'user',
     } as MikroORMOptions, new Logger({ logger: jest.fn() } as any));
-    expect(driver.getConnectionOptions()).toEqual({
+    expect(driver.getConnection().getConnectionOptions()).toEqual({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -44,7 +44,7 @@ describe('EntityManagerMySql', () => {
     expect(driver instanceof MySqlDriver).toBe(true);
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
     expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
-    const res = await driver.execute('SELECT 1 as count');
+    const res = await driver.getConnection().execute('SELECT 1 as count');
     expect(res[0][0]).toEqual({ count: 1 });
     expect(driver.denormalizePrimaryKey(1)).toBe(1);
     expect(driver.denormalizePrimaryKey('1')).toBe('1');
