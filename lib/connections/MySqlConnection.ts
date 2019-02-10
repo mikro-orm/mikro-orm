@@ -25,14 +25,17 @@ export class MySqlConnection extends Connection {
   }
 
   async begin(): Promise<void> {
+    this.logQuery('START TRANSACTION');
     await this.connection.beginTransaction();
   }
 
   async commit(): Promise<void> {
+    this.logQuery('COMMIT');
     await this.connection.commit();
   }
 
   async rollback(): Promise<void> {
+    this.logQuery('ROLLBACK');
     await this.connection.rollback();
   }
 
