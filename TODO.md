@@ -5,6 +5,5 @@
 - debugging section in docs (add logger, set debug mode, query logger)
 - test request context is properly garbage collected or we need some clean manual up
 - single table inheritance
-- run SQL queries in transactions (flush)
 - support for LIKE clauses in SQL drivers
 - support entity class instead of string name in EM methods (CRUD, getRepository, ...)

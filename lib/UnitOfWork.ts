@@ -53,11 +53,19 @@ export class UnitOfWork {
   }
 
   async commit(): Promise<void> {
-    for (const changeSet of this.persistStack) {
-      await this.immediateCommit(changeSet, false);
-    }
+    await this.em.begin('master', true);
 
-    this.persistStack.length = 0;
+    try {
+      for (const changeSet of this.persistStack) {
+        await this.immediateCommit(changeSet, false);
+      }
+
+      this.persistStack.length = 0;
+      await this.em.commit('master', true);
+    } catch (e) {
+      await this.em.rollback('master', true);
+      throw e;
+    }
   }
 
   clear(): void {

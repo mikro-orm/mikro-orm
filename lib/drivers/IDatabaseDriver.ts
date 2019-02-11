@@ -49,4 +49,19 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }>;
 
+  /**
+   * Begins a transaction (if supported)
+   */
+  begin(savepoint?: string, silent?: boolean): Promise<void>;
+
+  /**
+   * Commits statements in a transaction
+   */
+  commit(savepoint?: string, silent?: boolean): Promise<void>;
+
+  /**
+   * Rollback changes in a transaction
+   */
+  rollback(savepoint?: string, silent?: boolean): Promise<void>;
+
 }

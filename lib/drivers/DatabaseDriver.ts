@@ -12,6 +12,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected readonly connection: Connection;
   protected readonly metadata = MetadataStorage.getMetadata();
+  protected transactionLevel = 0;
+  protected transactionRolledBack = false;
 
   constructor(protected readonly options: MikroORMOptions,
               protected readonly logger: Logger) { }
@@ -90,6 +92,37 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   getConnection(): C {
     return this.connection as C;
+  }
+
+  async begin(savepoint?: string, silent?: boolean): Promise<void> {
+    this.transactionLevel++;
+
+    if (this.transactionLevel === 1) {
+      await this.connection.begin(savepoint, silent);
+    }
+  }
+
+  async commit(savepoint?: string, silent?: boolean): Promise<void> {
+    if (this.transactionRolledBack) {
+      throw new Error('Transaction commit failed because the transaction has been marked for rollback only');
+    }
+
+    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
+
+    if (this.transactionLevel === 0) {
+      await this.connection.commit(savepoint, silent);
+    }
+  }
+
+  async rollback(savepoint?: string, silent?: boolean): Promise<void> {
+    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
+
+    if (this.transactionLevel === 0) {
+      await this.connection.rollback(savepoint, silent);
+      this.transactionRolledBack = false;
+    } else {
+      this.transactionRolledBack = true;
+    }
   }
 
 }

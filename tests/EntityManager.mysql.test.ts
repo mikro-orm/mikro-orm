@@ -105,6 +105,27 @@ describe('EntityManagerMySql', () => {
     }
   });
 
+  test('nested transaction rollback will rollback the outer one as well', async () => {
+    const mock = jest.fn();
+    const logger = new Logger({ logger: mock, debug: true } as any);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    // start outer transaction
+    const transaction = orm.em.transactional(async em => {
+      // do stuff inside inner transaction and rollback
+      const god = new Author2('God', 'hello@heaven.god');
+      await em.begin();
+      await em.persist(god);
+      await em.rollback();
+    });
+
+    // try to commit the outer transaction
+    await expect(transaction).rejects.toThrowError('Transaction commit failed because the transaction has been marked for rollback only');
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toBe('[query-logger] START TRANSACTION');
+    expect(mock.mock.calls[2][0]).toBe('[query-logger] ROLLBACK');
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);

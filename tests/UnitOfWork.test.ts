@@ -88,6 +88,14 @@ describe('UnitOfWork', () => {
     expect(changeSet2).toBeNull();
   });
 
+  test('commit runs everything in transaction', async () => {
+    const author = new Author('test', 'test');
+    author.id = '00000001885f0a3cc37dc9f0';
+    await uow.persist(author);
+    uow['persistStack'][0].payload = 'foo-bar'; // make it rollback
+    await expect(uow.commit()).rejects.toThrow();
+  });
+
   afterAll(async () => orm.close(true));
 
 });
