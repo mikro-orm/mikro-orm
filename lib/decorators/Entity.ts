@@ -39,6 +39,10 @@ export type IEntityType<T> = {
   [k in keyof T]: IEntity | Collection<IEntity> | any;
 } & IEntity;
 
+export type EntityClass<T extends IEntityType<T>> = {
+  new(...args: any[]): T;
+}
+
 export enum ReferenceType {
   SCALAR = 0,
   MANY_TO_ONE = 1,

@@ -217,6 +217,20 @@ describe('EntityManagerMongo', () => {
     expect(ref.isInitialized()).toBe(true);
   });
 
+  test('findOne supports regexps', async () => {
+    const author1 = new Author('Author 1', 'a1@example.com');
+    const author2 = new Author('Author 2', 'a2@example.com');
+    const author3 = new Author('Author 3', 'a3@example.com');
+    await orm.em.persist([author1, author2, author3]);
+    orm.em.clear();
+
+    const authors = await orm.em.find(Author, { email: /example\.com$/ });
+    expect(authors.length).toBe(3);
+    expect(authors[0].name).toBe('Author 1');
+    expect(authors[1].name).toBe('Author 2');
+    expect(authors[2].name).toBe('Author 3');
+  });
+
   test('stable results of serialization', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -225,7 +239,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = (await orm.em.findOne<Author>(Author, god.id))!;
+    const newGod = (await orm.em.findOne(Author, god.id))!;
     const books = await orm.em.find<Book>(Book, {});
     await newGod.init(false);
 

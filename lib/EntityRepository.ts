@@ -2,9 +2,9 @@ import { EntityManager } from './EntityManager';
 import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { IEntity } from './decorators/Entity';
+import { IEntityType } from './decorators/Entity';
 
-export class EntityRepository<T extends IEntity> {
+export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private _em: EntityManager,
               protected entityName: string) { }
@@ -52,7 +52,7 @@ export class EntityRepository<T extends IEntity> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends IEntity>(id: IPrimaryKey): T {
+  getReference<T extends IEntityType<T>>(id: IPrimaryKey): T {
     return this.em.getReference<T>(this.entityName, id);
   }
 

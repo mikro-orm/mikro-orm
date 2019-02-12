@@ -53,8 +53,8 @@ EntityManager.canPopulate(entityName: string, property: string): boolean;
 Example:
 
 ```typescript
-const author = orm.em.findOne(Author, '...id...');
-const books = orm.em.find(Book, {});
+const author = await orm.em.findOne(Author, '...id...');
+const books = await orm.em.find(Book, {});
 
 for (const author of authors) {
   console.log(author.name); // Jon Snow
@@ -71,6 +71,19 @@ for (const author of authors) {
   }
 }
 ```
+
+## Type of fetched entities
+
+Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types.
+All of following examples are equal and will let typescript correctly infer the entity type:
+
+```typescript
+const author1 = await orm.em.findOne<Author>(Author.name, '...id...');
+const author2 = await orm.em.findOne<Author>('Author', '...id...');
+const author3 = await orm.em.findOne(Author, '...id...');
+```
+
+## Entity repositories
 
 Although you can use `EntityManager` directly, much more convenient way is to use 
 [`EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/). You can register
