@@ -61,32 +61,32 @@
     "lodash.merge": "^4.6.1",
     "node-request-context": "^1.0.5",
     "ts-morph": "^1.0.0",
-    "typescript": "^3.2.4",
+    "typescript": "^3.3.3",
     "uuid": "^3.3.2"
   },
   "peerDependencies": {
-    "mongodb": "^3.1.12",
-    "mysql2": "^1.6.4",
-    "sqlite": "^3.0.0"
+    "mongodb": "^3.1.13",
+    "mysql2": "^1.6.5",
+    "sqlite": "^3.0.1"
   },
   "devDependencies": {
     "@types/clone": "^0.1.30",
-    "@types/jest": "^23.3.13",
+    "@types/jest": "^24.0.1",
     "@types/lodash": "^4.14.120",
     "@types/mongodb": "^3.1.19",
     "@types/mysql2": "types/mysql2",
-    "@types/node": "^10.12.18",
+    "@types/node": "^11.9.0",
     "@types/uuid": "^3.4.4",
     "codacy-coverage": "^3.4.0",
     "coveralls": "^3.0.2",
-    "jest": "^23.6.0",
-    "mongodb": "^3.1.12",
-    "mysql2": "^1.6.4",
+    "jest": "^24.1.0",
+    "mongodb": "^3.1.13",
+    "mysql2": "^1.6.5",
     "pre-commit": "^1.2.2",
     "rimraf": "^2.6.3",
     "sqlite": "^3.0.0",
     "ts-jest": "^23.10.5",
-    "ts-node": "^7.0.1",
+    "ts-node": "^8.0.2",
     "tslint": "^5.12.1"
   }
 }
