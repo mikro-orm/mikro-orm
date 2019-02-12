@@ -29,7 +29,7 @@ export class Book {
   @ManyToOne({ entity: () => Publisher }) // or you can specify the entity as class reference or string name
   publisher: Publisher;
 
-  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {

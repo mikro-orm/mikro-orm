@@ -53,8 +53,8 @@ EntityManager.canPopulate(entityName: string, property: string): boolean;
 Example:
 
 ```typescript
-const author = orm.em.findOne(Author.name, '...id...');
-const books = orm.em.find(Book.name, {});
+const author = orm.em.findOne(Author, '...id...');
+const books = orm.em.find(Book, {});
 
 for (const author of authors) {
   console.log(author.name); // Jon Snow

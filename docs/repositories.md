@@ -19,7 +19,7 @@ EntityRepository.count(where?: any): Promise<number>;
 Example:
 
 ```typescript
-const booksRepository = orm.em.getRepository<Book>(Book.name);
+const booksRepository = orm.em.getRepository<Book>(Book);
 
 // with sorting, limit and offset parameters, populating author references
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 }, 2, 1);

@@ -11,7 +11,7 @@ When you use nested populate while querying all `BookTag`s, this is what happens
 the background:
 
 ```typescript
-const tags = await orm.em.findAll(BookTag.name, ['books.publisher.tests', 'books.author']);
+const tags = await orm.em.findAll(BookTag, ['books.publisher.tests', 'books.author']);
 console.log(tags[0].books[0].publisher.tests[0].name); // prints name of nested test
 console.log(tags[0].books[0].author.name); // prints name of nested author
 ```

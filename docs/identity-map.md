@@ -4,7 +4,7 @@
 one entity.
 
 ```typescript
-const authorRepository = orm.em.getRepository<Author>(Author.name);
+const authorRepository = orm.em.getRepository<Author>(Author);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
 const authors = await authorRepository.findAll(['books']);
 

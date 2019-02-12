@@ -10,7 +10,7 @@ use those references to update entity relations:
 ```typescript
 const jon = new Author('Jon Snow', 'snow@wall.st');
 const book = new Book('Book', jon);
-book.author = orm.em.getReference<Author>(Author.name, '...id...');
+book.author = orm.em.getReference<Author>(Author, '...id...');
 ```
 
 Same result can be easily achieved with `IEntity.assign()`:

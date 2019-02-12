@@ -36,7 +36,7 @@ books = new Collection<Book>(this);
 Here is example of how cascade persist works:
 
 ```typescript
-const book = await orm.em.findOne<Book>(Book.name, 'id', ['author', 'tags']);
+const book = await orm.em.findOne<Book>(Book, 'id', ['author', 'tags']);
 book.author.name = 'Foo Bar';
 book.tags[0].name = 'new name 1';
 book.tags[1].name = 'new name 2';

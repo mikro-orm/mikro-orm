@@ -57,7 +57,7 @@ import { MikroOrmMiddleware } from './mikro-orm.middleware';
       });
     }},
     { provide: EntityManager, useFactory: (orm: MikroORM) => orm.em, inject: [MikroORM] },
-    { provide: 'UserRepository', useFactory: (em: EntityManager) => em.getRepository(User.name), inject: [EntityManager] },
+    { provide: 'UserRepository', useFactory: (em: EntityManager) => em.getRepository(User), inject: [EntityManager] },
   ],
 })
 export class AppModule {}

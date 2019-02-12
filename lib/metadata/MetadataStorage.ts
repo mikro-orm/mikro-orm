@@ -129,8 +129,7 @@ export class MetadataStorage {
     // init types and column names
     Object.values(meta.properties).forEach(prop => {
       if (prop.entity) {
-        const type = prop.entity();
-        prop.type = type instanceof Function ? type.name : type;
+        prop.type = Utils.className(prop.entity());
       } else {
         const old = prop.type;
         const property = properties.find(v => v.getName() === prop.name);

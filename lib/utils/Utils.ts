@@ -134,4 +134,12 @@ export class Utils {
     return Utils.isObject(key) && key.constructor.name === 'ObjectID';
   }
 
+  static className(classOrName: string | Function): string {
+    if (typeof classOrName === 'string') {
+      return classOrName;
+    }
+
+    return classOrName.name;
+  }
+
 }

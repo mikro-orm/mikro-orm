@@ -11,7 +11,7 @@ method will throw error in this case.
 > cannot add new items to `Collection` this way. 
 
 ```typescript
-const author = orm.em.findOne(Author.name, '...', ['books']); // populating books collection
+const author = orm.em.findOne(Author, '...', ['books']); // populating books collection
 
 // or we could lazy load books collection later via `init()` method
 await author.books.init();

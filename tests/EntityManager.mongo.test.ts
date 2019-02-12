@@ -44,14 +44,14 @@ describe('EntityManagerMongo', () => {
     await repo.flush();
     orm.em.clear();
 
-    const publisher7k = (await orm.em.getRepository<Publisher>(Publisher.name).findOne({ name: '7K publisher' }))!;
+    const publisher7k = (await orm.em.getRepository<Publisher>(Publisher).findOne({ name: '7K publisher' }))!;
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(true);
     orm.em.clear();
 
-    const authorRepository = orm.em.getRepository<Author>(Author.name);
-    const booksRepository = orm.em.getRepository<Book>(Book.name);
+    const authorRepository = orm.em.getRepository<Author>(Author);
+    const booksRepository = orm.em.getRepository<Book>(Book);
     const books = await booksRepository.findAll(['author']);
     expect(books[0].author.isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible._id })).not.toBe(null);
@@ -132,18 +132,18 @@ describe('EntityManagerMongo', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository<Book>(Book.name).remove(lastBook[0]._id);
+    await orm.em.getRepository<Book>(Book).remove(lastBook[0]._id);
   });
 
   test('should provide custom repository', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
     expect(repo).toBeInstanceOf(AuthorRepository);
     expect(repo.magic).toBeInstanceOf(Function);
     expect(repo.magic('test')).toBe('111 test 222');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
     const author = new Author('name', 'email');
     await repo.persist(author);
     await expect(repo.find(author)).rejects.toThrowError('Author entity provided in search condition. Please provide identifier instead.');
@@ -154,7 +154,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const author2 = new Author('name2', 'email2');
     const author3 = new Author('name3', 'email3');
-    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
     await repo.persist(author, false);
     await repo.persist(author2, false);
     await repo.remove(author);
@@ -197,11 +197,11 @@ describe('EntityManagerMongo', () => {
   });
 
   test('findOne with empty where will throw', async () => {
-    await expect(orm.em.findOne<Author>(Author.name, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author.name, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne<Author>(Author, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -225,8 +225,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = (await orm.em.findOne<Author>(Author.name, god.id))!;
-    const books = await orm.em.find<Book>(Book.name, {});
+    const newGod = (await orm.em.findOne<Author>(Author, god.id))!;
+    const books = await orm.em.find<Book>(Book, {});
     await newGod.init(false);
 
     for (const book of books) {

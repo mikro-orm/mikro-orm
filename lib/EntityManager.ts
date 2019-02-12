@@ -31,7 +31,8 @@ export class EntityManager {
               private readonly driver: IDatabaseDriver<Connection>) {
   }
 
-  getIdentity<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
+  getIdentity<T extends IEntity>(entityName: string | Function, id: IPrimaryKey): T {
+    entityName = Utils.className(entityName);
     const em = RequestContext.getEntityManager() || this;
     const token = `${entityName}-${id}`;
 
@@ -64,7 +65,9 @@ export class EntityManager {
     return this.driver.getConnection() as C;
   }
 
-  getRepository<T extends IEntity>(entityName: string): EntityRepository<T> {
+  getRepository<T extends IEntity>(entityName: string | Function): EntityRepository<T> {
+    entityName = Utils.className(entityName);
+
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata[entityName];
 
@@ -79,11 +82,13 @@ export class EntityManager {
     return this.repositoryMap[entityName] as EntityRepository<T>;
   }
 
-  createQueryBuilder(entityName: string): QueryBuilder {
+  createQueryBuilder(entityName: string | Function): QueryBuilder {
+    entityName = Utils.className(entityName);
     return new QueryBuilder(entityName, this.metadata, this.getConnection());
   }
 
-  async find<T extends IEntity>(entityName: string, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntity>(entityName: string | Function, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
+    entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
 
@@ -103,7 +108,9 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntity>(entityName: string | Function, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+    entityName = Utils.className(entityName);
+
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
@@ -152,18 +159,21 @@ export class EntityManager {
     });
   }
 
-  async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {
+  async nativeInsert(entityName: string | Function, data: any): Promise<IPrimaryKey> {
+    entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'insert data');
     return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
+  async nativeUpdate(entityName: string | Function, where: FilterQuery<IEntity>, data: any): Promise<number> {
+    entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
+  async nativeDelete(entityName: string | Function, where: FilterQuery<IEntity> | string | any): Promise<number> {
+    entityName = Utils.className(entityName);
     this.validator.validateParams(where, 'delete condition');
     return this.driver.nativeDelete(entityName, where);
   }
@@ -171,11 +181,14 @@ export class EntityManager {
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
-  async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
+  async aggregate(entityName: string | Function, pipeline: any[]): Promise<any[]> {
+    entityName = Utils.className(entityName);
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends IEntity>(entityName: string, data: any): T {
+  merge<T extends IEntity>(entityName: string | Function, data: any): T {
+    entityName = Utils.className(entityName);
+
     if (!data || (!data.id && !data._id)) {
       throw new Error('You cannot merge entity without id!');
     }
@@ -195,14 +208,17 @@ export class EntityManager {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T extends IEntity>(entityName: string, data: any): T {
+  create<T extends IEntity>(entityName: string | Function, data: any): T {
+    entityName = Utils.className(entityName);
     return this.entityFactory.create<T>(entityName, data, false);
   }
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
+  getReference<T extends IEntity>(entityName: string | Function, id: IPrimaryKey): T {
+    entityName = Utils.className(entityName);
+
     if (this.getIdentity(entityName, id)) {
       return this.getIdentity<T>(entityName, id);
     }
@@ -210,7 +226,9 @@ export class EntityManager {
     return this.entityFactory.createReference<T>(entityName, id);
   }
 
-  async remove(entityName: string, where: IEntity | any, flush = true): Promise<number> {
+  async remove(entityName: string | Function, where: IEntity | any, flush = true): Promise<number> {
+    entityName = Utils.className(entityName);
+
     if (Utils.isEntity(where)) {
       await this.removeEntity(where, flush);
       return 1;
@@ -230,7 +248,8 @@ export class EntityManager {
     }
   }
 
-  async count(entityName: string, where: any): Promise<number> {
+  async count(entityName: string | Function, where: any): Promise<number> {
+    entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     return this.driver.count(entityName, where);
   }
@@ -270,7 +289,8 @@ export class EntityManager {
     this.unitOfWork.addToIdentityMap(entity);
   }
 
-  canPopulate(entityName: string, property: string): boolean {
+  canPopulate(entityName: string | Function, property: string): boolean {
+    entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
     const props = this.metadata[entityName].properties;
     const ret = p in props && props[p].reference !== ReferenceType.SCALAR;

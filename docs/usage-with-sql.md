@@ -35,7 +35,7 @@ defined on owning side:
 
 ```typescript
 // for unidirectional
-@ManyToMany({ entity: () => Test.name, owner: true, pivotTable: 'publisher2test' })
+@ManyToMany({ entity: () => Test, owner: true, pivotTable: 'publisher2test' })
 tests = new Collection<Test>(this);
 
 // for bidirectional
@@ -49,7 +49,7 @@ When you need to execute some SQL query without all the ORM stuff involved, you 
 compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Author.name);
+const qb = orm.em.createQueryBuilder(Author);
 qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
 
 console.log(qb.getQuery());
