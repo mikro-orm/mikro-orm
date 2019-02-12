@@ -1,5 +1,5 @@
 import { Collection, EntityManager, MikroORM, MikroORMOptions } from '../lib';
-import { Author2, Publisher2, PublisherType, Book2, BookTag2, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Utils } from '../lib/utils/Utils';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
@@ -70,13 +70,13 @@ describe('EntityManagerMySql', () => {
 
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven.god');
-    await orm.em.begin();
+    await orm.em.beginTransaction();
     await orm.em.persist(god1);
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
     expect(res1).toBeNull();
 
-    await orm.em.begin();
+    await orm.em.beginTransaction();
     const god2 = new Author2('God2', 'hello@heaven.god');
     await orm.em.persist(god2);
     await orm.em.commit();
@@ -105,6 +105,26 @@ describe('EntityManagerMySql', () => {
     }
   });
 
+  test('nested transactions', async () => {
+    const mock = jest.fn();
+    const logger = new Logger({ logger: mock, debug: true } as any);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    // start outer transaction
+    const transaction = orm.em.transactional(async em => {
+      // do stuff inside inner transaction
+      await em.transactional(async em2 => {
+        await em2.persist(new Author2('God', 'hello@heaven.god'), false);
+      });
+    });
+
+    // try to commit the outer transaction
+    await expect(transaction).resolves.toBeUndefined();
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toBe('[query-logger] START TRANSACTION');
+    expect(mock.mock.calls[2][0]).toBe('[query-logger] COMMIT');
+  });
+
   test('nested transaction rollback will rollback the outer one as well', async () => {
     const mock = jest.fn();
     const logger = new Logger({ logger: mock, debug: true } as any);
@@ -113,9 +133,8 @@ describe('EntityManagerMySql', () => {
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
       // do stuff inside inner transaction and rollback
-      const god = new Author2('God', 'hello@heaven.god');
-      await em.begin();
-      await em.persist(god);
+      await em.beginTransaction();
+      await em.persist(new Author2('God', 'hello@heaven.god'), false);
       await em.rollback();
     });
 

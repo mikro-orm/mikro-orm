@@ -20,7 +20,7 @@ export class SqliteConnection extends Connection {
     return (this.connection as any)['driver']['open'];
   }
 
-  async begin(savepoint?: string): Promise<void> {
+  async beginTransaction(savepoint?: string): Promise<void> {
     await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'BEGIN', [], 'run');
   }
 

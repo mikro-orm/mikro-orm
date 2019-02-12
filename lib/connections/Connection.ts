@@ -29,28 +29,22 @@ export abstract class Connection {
   /**
    * Begins a transaction (if supported)
    */
-  async begin(savepoint?: string, silent?: boolean): Promise<void> {
-    if (!silent) {
-      throw new Error(`Transactions are not supported by current driver`);
-    }
+  async beginTransaction(savepoint?: string): Promise<void> {
+    throw new Error(`Transactions are not supported by current driver`);
   }
 
   /**
    * Commits statements in a transaction
    */
-  async commit(savepoint?: string, silent?: boolean): Promise<void> {
-    if (!silent) {
-      throw new Error(`Transactions are not supported by current driver`);
-    }
+  async commit(savepoint?: string): Promise<void> {
+    throw new Error(`Transactions are not supported by current driver`);
   }
 
   /**
    * Rollback changes in a transaction
    */
-  async rollback(savepoint?: string, silent?: boolean): Promise<void> {
-    if (!silent) {
-      throw new Error(`Transactions are not supported by current driver`);
-    }
+  async rollback(savepoint?: string): Promise<void> {
+    throw new Error(`Transactions are not supported by current driver`);
   }
 
   abstract async execute(query: string, params?: any[], method?: string): Promise<any>;

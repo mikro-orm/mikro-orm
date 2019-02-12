@@ -76,7 +76,7 @@ export class EntityFactory {
           const items = data[prop.name].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
           return (entity as any)[prop.name] = new Collection<IEntity>(entity, items);
         } else if (!entity[prop.name as keyof T]) {
-          const items = prop.owner && !this.em.getDriver().usesPivotTable() ? [] : undefined;
+          const items = prop.owner && !this.em.getDriver().getConfig().usesPivotTable ? [] : undefined;
           return (entity as any)[prop.name] = new Collection<IEntity>(entity, items, false);
         }
       }

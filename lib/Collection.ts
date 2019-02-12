@@ -47,7 +47,7 @@ export class Collection<T extends IEntityType<T>> {
   async init(populate: string[] = []): Promise<Collection<T>> {
     const em = this.owner.__em as EntityManager;
 
-    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().usesPivotTable()) {
+    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getConfig().usesPivotTable) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
       this.set(map[this.owner.id].map(item => em.merge(this.property.type, item)) as T[], true);
 
@@ -55,7 +55,7 @@ export class Collection<T extends IEntityType<T>> {
     }
 
     // do not make db call if we know we will get no results
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getDriver().usesPivotTable()) && this.items.length === 0) {
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getDriver().getConfig().usesPivotTable) && this.items.length === 0) {
       this.initialized = true;
       this.dirty = false;
       this.populated();
@@ -189,7 +189,7 @@ export class Collection<T extends IEntityType<T>> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk] = this.owner.id;
     } else { // MANY_TO_MANY
-      if (this.property.owner || this.owner.__em.getDriver().usesPivotTable()) {
+      if (this.property.owner || this.owner.__em.getDriver().getConfig().usesPivotTable) {
         cond.id = { $in: this.items.map(item => item.id) };
       } else {
         cond[this.property.mappedBy] = this.owner.id;

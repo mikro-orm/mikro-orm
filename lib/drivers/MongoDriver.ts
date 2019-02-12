@@ -1,7 +1,7 @@
 import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { Utils } from '../utils/Utils';
-import { IEntity, IPrimaryKey, NamingStrategy, MongoNamingStrategy } from '..';
+import { IEntity, IPrimaryKey, MongoNamingStrategy, DriverConfig } from '..';
 import { MongoConnection } from '../connections/MongoConnection';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
@@ -77,12 +77,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new ObjectID(data);
   }
 
-  getDefaultNamingStrategy(): { new (): NamingStrategy } {
-    return MongoNamingStrategy;
-  }
-
-  usesPivotTable(): boolean {
-    return false;
+  getConfig(): DriverConfig {
+    return {
+      usesPivotTable: false,
+      supportsTransactions: false,
+      supportsSavePoints: false,
+      namingStrategy: MongoNamingStrategy,
+    };
   }
 
   private renameFields(entityName: string, data: any): any {

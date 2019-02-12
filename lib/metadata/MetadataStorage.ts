@@ -24,7 +24,7 @@ export class MetadataStorage {
   constructor(private readonly em: EntityManager,
               private readonly options: MikroORMOptions,
               private readonly logger: Logger) {
-    const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getDefaultNamingStrategy();
+    const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getConfig().namingStrategy;
     this.namingStrategy = new NamingStrategy();
     this.cache = new this.options.cache.adapter(this.options.cache.options);
   }
@@ -239,7 +239,7 @@ export class MetadataStorage {
     this.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
     EntityHelper.decorate(meta, this.em);
 
-    if (this.em.getDriver().usesPivotTable()) {
+    if (this.em.getDriver().getConfig().usesPivotTable) {
       this.definePivotTableEntities(meta);
     }
   }

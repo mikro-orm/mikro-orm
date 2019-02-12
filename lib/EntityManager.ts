@@ -130,32 +130,26 @@ export class EntityManager {
     return entity;
   }
 
-  async begin(savepoint?: string, silent = false): Promise<void> {
-    await this.driver.begin(savepoint, silent);
+  async beginTransaction(): Promise<void> {
+    await this.driver.beginTransaction();
   }
 
-  async commit(savepoint?: string, silent = false): Promise<void> {
-    await this.driver.commit(savepoint, silent);
+  async commit(): Promise<void> {
+    await this.driver.commit();
   }
 
-  async rollback(savepoint?: string, silent = false): Promise<void> {
-    await this.driver.rollback(savepoint, silent);
+  async rollback(): Promise<void> {
+    await this.driver.rollback();
   }
 
   async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {
     const em = this.fork();
-
-    try {
-      await em.begin();
+    await em.getDriver().transactional(async () => {
       const ret = await cb(em);
       await em.flush();
-      await em.commit();
 
       return ret;
-    } catch (e) {
-      await em.rollback();
-      throw e;
-    }
+    });
   }
 
   async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey> {

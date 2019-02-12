@@ -1,5 +1,5 @@
 import { FilterQuery } from './DatabaseDriver';
-import { IEntity } from '..';
+import { DriverConfig, IEntity, UnderscoreNamingStrategy } from '..';
 import { Utils } from '../utils/Utils';
 import { SqliteConnection } from '../connections/SqliteConnection';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
@@ -80,6 +80,15 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     const res = await qb.delete(where).execute('run');
 
     return res.changes;
+  }
+
+  getConfig(): DriverConfig {
+    return {
+      usesPivotTable: true,
+      supportsTransactions: true,
+      supportsSavePoints: true,
+      namingStrategy: UnderscoreNamingStrategy,
+    };
   }
 
 }

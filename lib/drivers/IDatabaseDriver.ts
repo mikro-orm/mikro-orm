@@ -27,8 +27,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   count(entityName: string, where: any): Promise<number>;
 
-  getDefaultNamingStrategy(): { new (): NamingStrategy };
-
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
    */
@@ -40,11 +38,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   denormalizePrimaryKey(data: number | string): IPrimaryKey;
 
   /**
-   * NoSQL databases do require pivot table for M:N
-   */
-  usesPivotTable(): boolean;
-
-  /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
   loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }>;
@@ -52,16 +45,32 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Begins a transaction (if supported)
    */
-  begin(savepoint?: string, silent?: boolean): Promise<void>;
+  beginTransaction(): Promise<void>;
 
   /**
    * Commits statements in a transaction
    */
-  commit(savepoint?: string, silent?: boolean): Promise<void>;
+  commit(): Promise<void>;
 
   /**
    * Rollback changes in a transaction
    */
-  rollback(savepoint?: string, silent?: boolean): Promise<void>;
+  rollback(): Promise<void>;
 
+  /**
+   * Runs callback inside transaction
+   */
+  transactional(cb: () => Promise<any>): Promise<any>;
+
+  isInTransaction(): boolean;
+
+  getConfig(): DriverConfig;
+
+}
+
+export interface DriverConfig {
+  usesPivotTable: boolean;
+  supportsTransactions: boolean;
+  supportsSavePoints: boolean;
+  namingStrategy: { new(): NamingStrategy };
 }

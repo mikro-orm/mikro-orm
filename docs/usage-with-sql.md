@@ -87,7 +87,7 @@ For more examples of how to work with `QueryBuilder`, take a look at `QueryBuild
 
 ## Transactions
 
-MySQL driver provides basic support for transactions via `begin/commit/rollback` methods on both 
+MySQL driver provides basic support for transactions via `beginTransaction/commit/rollback` methods on both 
 `MySqlDriver` and their shortcuts on `EntityManager` as well. 
 
 You can also use `EntityManager.transactional(cb)` helper to run callback in transaction. It will
@@ -103,7 +103,7 @@ await orm.em.transactional(async (em: EntityManager) => {
 ```
 
 ```typescript
-EntityManager.begin(): Promise<void>;
+EntityManager.beginTransaction(): Promise<void>;
 EntityManager.commit(): Promise<void>;
 EntityManager.rollback(): Promise<void>;
 EntityManager.transactional(cb: (em: EntityManager) => Promise<any>): Promise<any>;

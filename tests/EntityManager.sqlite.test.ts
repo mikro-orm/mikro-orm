@@ -4,6 +4,7 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { Utils } from '../lib/utils/Utils';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
+import { Logger } from '../lib/utils/Logger';
 
 /**
  * @class EntityManagerSqliteTest
@@ -50,13 +51,13 @@ describe('EntityManagerSqlite', () => {
 
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven.god');
-    await orm.em.begin();
+    await orm.em.beginTransaction();
     await orm.em.persist(god1);
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
     expect(res1).toBeNull();
 
-    await orm.em.begin();
+    await orm.em.beginTransaction();
     const god2 = new Author2('God2', 'hello@heaven.god');
     await orm.em.persist(god2);
     await orm.em.commit();
@@ -85,20 +86,46 @@ describe('EntityManagerSqlite', () => {
     }
   });
 
-  test('transactions with save-points', async () => {
-    const god1 = new Author2('God1', 'hello@heaven.god');
-    await orm.em.begin('s1');
-    await orm.em.persist(god1);
-    await orm.em.rollback('s1');
-    const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
-    expect(res1).toBeNull();
+  test('nested transactions with save-points', async () => {
+    await orm.em.transactional(async em => {
+      const driver = em.getDriver();
+      const god1 = new Author2('God1', 'hello@heaven.god');
+      await driver.beginTransaction();
+      await em.persist(god1);
+      await driver.rollback();
+      const res1 = await em.findOne(Author2.name, { name: 'God1' });
+      expect(res1).toBeNull();
 
-    await orm.em.begin('s2');
-    const god2 = new Author2('God2', 'hello@heaven.god');
-    await orm.em.persist(god2);
-    await orm.em.commit('s2');
-    const res2 = await orm.em.findOne(Author2.name, { name: 'God2' });
-    expect(res2).not.toBeNull();
+      await driver.beginTransaction();
+      const god2 = new Author2('God2', 'hello@heaven.god');
+      await em.persist(god2);
+      await driver.commit();
+      const res2 = await em.findOne(Author2.name, { name: 'God2' });
+      expect(res2).not.toBeNull();
+    });
+  });
+
+  test('nested transaction rollback with save-points will commit the outer one', async () => {
+    const mock = jest.fn();
+    const logger = new Logger({ logger: mock, debug: true } as any);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    // start outer transaction
+    const transaction = orm.em.transactional(async em => {
+      // do stuff inside inner transaction and rollback
+      await em.beginTransaction();
+      await em.persist(new Author2('God', 'hello@heaven.god'));
+      await em.rollback();
+
+      await em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
+    });
+
+    // try to commit the outer transaction
+    await expect(transaction).resolves.toBeUndefined();
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch('[query-logger] BEGIN');
+    expect(mock.mock.calls[5][0]).toMatch('[query-logger] COMMIT');
+    expect(await orm.em.findOne<Author2>(Author2.name, { name: 'God Persisted!' })).not.toBeNull();
   });
 
   test('should load entities', async () => {

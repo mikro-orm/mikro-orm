@@ -24,7 +24,7 @@ export class MySqlConnection extends Connection {
     }
   }
 
-  async begin(): Promise<void> {
+  async beginTransaction(): Promise<void> {
     this.logQuery('START TRANSACTION');
     await this.connection.beginTransaction();
   }

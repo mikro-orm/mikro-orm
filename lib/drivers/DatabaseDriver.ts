@@ -1,6 +1,6 @@
 import { MikroORMOptions } from '../MikroORM';
-import { IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, NamingStrategy, UnderscoreNamingStrategy } from '..';
+import { DriverConfig, IDatabaseDriver } from './IDatabaseDriver';
+import { IEntity, IPrimaryKey, UnderscoreNamingStrategy } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { QueryOrder } from '../QueryBuilder';
@@ -35,7 +35,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }> {
-    if (!this.usesPivotTable()) {
+    if (!this.getConfig().usesPivotTable) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
 
@@ -64,14 +64,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return data;
   }
 
-  usesPivotTable(): boolean {
-    return true;
-  }
-
-  getDefaultNamingStrategy(): { new (): NamingStrategy } {
-    return UnderscoreNamingStrategy;
-  }
-
   mapResult(result: any, meta: EntityMetadata): any {
     if (!result || !meta) {
       return result || null;
@@ -94,35 +86,71 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connection as C;
   }
 
-  async begin(savepoint?: string, silent?: boolean): Promise<void> {
+  async beginTransaction(): Promise<void> {
     this.transactionLevel++;
 
     if (this.transactionLevel === 1) {
-      await this.connection.begin(savepoint, silent);
+      await this.connection.beginTransaction();
+    } else if (this.getConfig().supportsSavePoints) {
+      await this.connection.beginTransaction(this.getSavePointName());
     }
   }
 
-  async commit(savepoint?: string, silent?: boolean): Promise<void> {
+  async commit(): Promise<void> {
     if (this.transactionRolledBack) {
       throw new Error('Transaction commit failed because the transaction has been marked for rollback only');
     }
 
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
-
-    if (this.transactionLevel === 0) {
-      await this.connection.commit(savepoint, silent);
+    if (this.transactionLevel === 1) {
+      await this.connection.commit();
+    } else if (this.getConfig().supportsSavePoints) {
+      await this.connection.commit(this.getSavePointName());
     }
+
+    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
   }
 
-  async rollback(savepoint?: string, silent?: boolean): Promise<void> {
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
-
-    if (this.transactionLevel === 0) {
-      await this.connection.rollback(savepoint, silent);
+  async rollback(savepoint?: string): Promise<void> {
+    if (this.transactionLevel === 1) {
+      await this.connection.rollback(savepoint);
       this.transactionRolledBack = false;
+    } else if (this.getConfig().supportsSavePoints) {
+      await this.connection.rollback(this.getSavePointName());
     } else {
       this.transactionRolledBack = true;
     }
+
+    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
+  }
+
+  async transactional(cb: () => Promise<any>): Promise<any> {
+    try {
+      await this.beginTransaction();
+      const ret = await cb();
+      await this.commit();
+
+      return ret;
+    } catch (e) {
+      await this.rollback();
+      throw e;
+    }
+  }
+
+  isInTransaction(): boolean {
+    return this.transactionLevel > 0;
+  }
+
+  getConfig(): DriverConfig {
+    return {
+      usesPivotTable: true,
+      supportsTransactions: true,
+      supportsSavePoints: false,
+      namingStrategy: UnderscoreNamingStrategy,
+    };
+  }
+
+  private getSavePointName(): string {
+    return `${this.constructor.name}_${this.transactionLevel}`;
   }
 
 }

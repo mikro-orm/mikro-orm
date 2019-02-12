@@ -57,7 +57,7 @@ export class EntityLoader {
     const prop = this.metadata[entityName].properties[field as string];
     const filtered = entities.filter(e => e[field] as any instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.usesPivotTable()) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getConfig().usesPivotTable) {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
       const children: IEntity[] = [];
 
@@ -84,7 +84,7 @@ export class EntityLoader {
       }
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.usesPivotTable()) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.getConfig().usesPivotTable) {
       for (const entity of filtered) {
         const items = data.filter(child => (child[prop.mappedBy] as Collection<IEntity>).contains(entity));
         (entity[field] as Collection<IEntity>).set(items, true);

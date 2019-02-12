@@ -53,19 +53,26 @@ export class UnitOfWork {
   }
 
   async commit(): Promise<void> {
-    await this.em.begin('master', true);
+    if (this.persistStack.length === 0) {
+      return; // nothing to do, do not start transaction
+    }
 
-    try {
+    const driver = this.em.getDriver();
+    const runInTransaction = !driver.isInTransaction() && driver.getConfig().supportsTransactions;
+
+    if (runInTransaction) {
+      await driver.transactional(async () => {
+        for (const changeSet of this.persistStack) {
+          await this.immediateCommit(changeSet, false);
+        }
+      });
+    } else {
       for (const changeSet of this.persistStack) {
         await this.immediateCommit(changeSet, false);
       }
-
-      this.persistStack.length = 0;
-      await this.em.commit('master', true);
-    } catch (e) {
-      await this.em.rollback('master', true);
-      throw e;
     }
+
+    this.persistStack.length = 0;
   }
 
   clear(): void {
