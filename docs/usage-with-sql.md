@@ -111,6 +111,21 @@ EntityManager.transactional(cb: (em: EntityManager) => Promise<any>): Promise<an
 
 Keep in mind transactions are supported only in MySQL driver currently. 
 
+## LIKE queries
+
+SQL do support LIKE queries via native JS regular expressions:
+
+```typescript
+const author1 = new Author2('Author 1', 'a1@example.com');
+const author2 = new Author2('Author 2', 'a2@example.com');
+const author3 = new Author2('Author 3', 'a3@example.com');
+await orm.em.persist([author1, author2, author3]);
+
+// finds authors with email like '%exa%le.c_m'
+const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ }); 
+console.log(authors); // all 3 authors found
+```
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your

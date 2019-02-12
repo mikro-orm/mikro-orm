@@ -257,6 +257,20 @@ describe('EntityManagerSqlite', () => {
     expect(ref.isInitialized()).toBe(true);
   });
 
+  test('findOne supports regexps', async () => {
+    const author1 = new Author2('Author 1', 'a1@example.com');
+    const author2 = new Author2('Author 2', 'a2@example.com');
+    const author3 = new Author2('Author 3', 'a3@example.com');
+    await orm.em.persist([author1, author2, author3]);
+    orm.em.clear();
+
+    const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
+    expect(authors.length).toBe(3);
+    expect(authors[0].name).toBe('Author 1');
+    expect(authors[1].name).toBe('Author 2');
+    expect(authors[2].name).toBe('Author 3');
+  });
+
   test('stable results of serialization', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);

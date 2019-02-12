@@ -196,6 +196,8 @@ export class QueryBuilder {
     Object.values(this._cond).forEach(cond => {
       if (Utils.isObject(cond) && cond.$in) {
         return ret.push(...cond.$in);
+      } else if (cond instanceof RegExp) {
+        return ret.push(this.getRegExpParam(cond));
       }
 
       ret.push(cond);
@@ -222,6 +224,8 @@ export class QueryBuilder {
 
     if (value && Utils.isObject(value) && value.$in) {
       ret += ` IN (${Object.keys(value.$in).map(() => '?').join(', ')})`;
+    } else if (value instanceof RegExp) {
+      ret += ' LIKE ?';
     } else if (value) {
       ret += ' = ?';
     }
@@ -328,6 +332,29 @@ export class QueryBuilder {
 
   private getTableName(entityName: string): string {
     return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
+  }
+
+  private getRegExpParam(re: RegExp): string {
+    const value = re.source
+      .replace(/\.\*/g, '%') // .* -> %
+      .replace(/\./g, '_')   // .  -> _
+      .replace(/\\_/g, '.')  // \. -> .
+      .replace(/^\^/g, '')   // remove ^ from start
+      .replace(/\$$/g, '');  // remove $ from end
+
+    if (re.source.startsWith('^') && re.source.endsWith('$')) {
+      return value;
+    }
+
+    if (re.source.startsWith('^')) {
+      return value + '%';
+    }
+
+    if (re.source.endsWith('$')) {
+      return '%' + value;
+    }
+
+    return `%${value}%`;
   }
 
 }
