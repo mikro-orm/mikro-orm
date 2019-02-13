@@ -92,7 +92,7 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     await uow.persist(author);
-    uow['persistStack'][0].payload = 'foo-bar'; // make it rollback
+    uow['persistStack'][0].payload = 'foo-bar' as any; // make it rollback
     await expect(uow.commit()).rejects.toThrow();
   });
 
