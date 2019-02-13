@@ -4,6 +4,7 @@ import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityManager } from '../EntityManager';
 import { Collection } from '../Collection';
 import { EntityRepository } from '../EntityRepository';
+import { IPrimaryKey } from './PrimaryKey';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -43,6 +44,10 @@ export type EntityClass<T extends IEntityType<T>> = {
   new(...args: any[]): T;
 }
 
+export type EntityData<T extends IEntityType<T>> = {
+  [P in keyof T]?: T[P] | IPrimaryKey;
+} & { [key: string]: any; };
+
 export enum ReferenceType {
   SCALAR = 0,
   MANY_TO_ONE = 1,
@@ -74,15 +79,15 @@ export interface EntityProperty {
   referenceColumnName: string;
 }
 
-export interface EntityMetadata {
+export interface EntityMetadata<T extends IEntityType<T> = any> {
   name: string;
-  constructorParams: string[];
+  constructorParams: (keyof T & string)[];
   extends: string;
   collection: string;
   path: string;
-  primaryKey: string;
-  properties: { [property: string]: EntityProperty };
+  primaryKey: keyof T & string;
+  properties: { [K in keyof T & string]: EntityProperty };
   customRepository: any;
   hooks: { [type: string]: string[] };
-  prototype: Function;
+  prototype: EntityClass<T> & IEntity;
 }

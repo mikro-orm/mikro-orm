@@ -1,7 +1,7 @@
 import { Collection } from './Collection';
 import { EntityManager } from './EntityManager';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { EntityClass, EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { Utils } from './utils/Utils';
 import { MetadataStorage } from './metadata/MetadataStorage';
 
@@ -13,7 +13,8 @@ export class EntityFactory {
 
   constructor(private em: EntityManager) { }
 
-  create<T extends IEntity>(entityName: string, data: any, initialized = true): T {
+  create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>, initialized = true): T {
+    entityName = Utils.className(entityName);
     const meta = this.metadata[entityName];
     const exclude: string[] = [];
     let entity: T;
@@ -49,49 +50,51 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends IEntity>(entityName: string, id: IPrimaryKey): T {
-    if (this.em.getIdentity(entityName, id)) {
+  createReference<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
+    if (this.em.getIdentity<T>(entityName, id)) {
       return this.em.getIdentity<T>(entityName, id);
     }
 
-    return this.create<T>(entityName, { id }, false);
+    return this.create<T>(entityName, { id } as EntityData<T>, false);
   }
 
-  private initEntity<T extends IEntityType<T>>(entity: T, meta: EntityMetadata, data: any, exclude: string[]): void {
-    entity.id = data.id; // process PK first
+  private initEntity<T extends IEntityType<T>>(entity: T, meta: EntityMetadata, data: EntityData<T>, exclude: string[]): void {
+    entity.id = data.id as string | number; // process PK first
 
     // then process user defined properties (ignore not defined keys in `data`)
     Object.values(meta.properties).forEach(prop => {
+      const value = data[prop.name];
+
       if (exclude.includes(prop.name)) {
         return;
       }
 
       if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        return (entity as any)[prop.name] = new Collection<IEntity>(entity, undefined, !!data[prop.name]);
+        return entity[prop.name as keyof T] = new Collection<IEntity>(entity, undefined, !!value) as T[keyof T];
       }
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
-        if (prop.owner && Array.isArray(data[prop.name])) {
+        if (prop.owner && Array.isArray(value)) {
           const driver = this.em.getDriver();
-          const items = data[prop.name].map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
-          return (entity as any)[prop.name] = new Collection<IEntity>(entity, items);
+          const items = value.map((id: IPrimaryKey) => this.createReference(prop.type, driver.normalizePrimaryKey(id)));
+          return entity[prop.name as keyof T] = new Collection<IEntity>(entity, items) as T[keyof T];
         } else if (!entity[prop.name as keyof T]) {
           const items = prop.owner && !this.em.getDriver().getConfig().usesPivotTable ? [] : undefined;
-          return (entity as any)[prop.name] = new Collection<IEntity>(entity, items, false);
+          return entity[prop.name as keyof T] = new Collection<IEntity>(entity, items, false) as T[keyof T];
         }
       }
 
       if (prop.reference === ReferenceType.MANY_TO_ONE) {
-        if (data[prop.name] && !Utils.isEntity(data[prop.name])) {
-          const id = this.em.getDriver().normalizePrimaryKey(data[prop.name]);
-          entity[prop.name as keyof T] = this.createReference(prop.type, id);
+        if (value && !Utils.isEntity(value)) {
+          const id = this.em.getDriver().normalizePrimaryKey(value as IPrimaryKey);
+          entity[prop.name as keyof T] = this.createReference(prop.type, id as IPrimaryKey);
         }
 
         return;
       }
 
-      if (prop.reference === ReferenceType.SCALAR && data[prop.name]) {
-        entity[prop.name as keyof T] = data[prop.name];
+      if (prop.reference === ReferenceType.SCALAR && value) {
+        entity[prop.name as keyof T] = value;
       }
     });
   }
@@ -99,13 +102,15 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends IEntity>(meta: EntityMetadata, data: any): any[] {
-    return meta.constructorParams.map((k: string) => {
-      if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
-        return this.em.getReference<T>(meta.properties[k].type, data[k]);
+  private extractConstructorParams<T extends IEntityType<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
+    return meta.constructorParams.map(k => {
+      const value = data[k];
+
+      if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && value) {
+        return this.em.getReference(meta.properties[k].type, value) as T[keyof T];
       }
 
-      return data[k];
+      return data[k] as T[keyof T];
     });
   }
 

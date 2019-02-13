@@ -1,6 +1,6 @@
 import { FilterQuery } from './DatabaseDriver';
 import { IEntity, IPrimaryKey, NamingStrategy } from '..';
-import { EntityProperty } from '../decorators/Entity';
+import { EntityData, EntityProperty } from '../decorators/Entity';
 import { Connection } from '../connections/Connection';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
@@ -17,15 +17,15 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T | null>;
 
-  nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
+  nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<IPrimaryKey>;
 
-  nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number>;
+  nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<number>;
 
-  nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
+  nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number>;
+
+  count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
-
-  count(entityName: string, where: any): Promise<number>;
 
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
@@ -40,7 +40,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }>;
+  loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: T[] }>;
 
   /**
    * Begins a transaction (if supported)

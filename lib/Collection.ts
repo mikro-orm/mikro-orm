@@ -48,8 +48,8 @@ export class Collection<T extends IEntityType<T>> {
     const em = this.owner.__em as EntityManager;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getConfig().usesPivotTable) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.id]);
-      this.set(map[this.owner.id].map(item => em.merge(this.property.type, item)) as T[], true);
+      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [this.owner.id]);
+      this.set(map[this.owner.id].map(item => em.merge<T>(this.property.type, item)), true);
 
       return this;
     }

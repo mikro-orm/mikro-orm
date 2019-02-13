@@ -42,7 +42,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {
-    const repo = orm.em.getRepository<Author2>(Author2.name);
+    const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
     await repo.persist(author);
     await expect(repo.find(author)).rejects.toThrowError('Author2 entity provided in search condition. Please provide identifier instead.');
@@ -54,21 +54,21 @@ describe('EntityManagerSqlite', () => {
     await orm.em.beginTransaction();
     await orm.em.persist(god1);
     await orm.em.rollback();
-    const res1 = await orm.em.findOne(Author2.name, { name: 'God1' });
+    const res1 = await orm.em.findOne(Author2, { name: 'God1' });
     expect(res1).toBeNull();
 
     await orm.em.beginTransaction();
     const god2 = new Author2('God2', 'hello@heaven.god');
     await orm.em.persist(god2);
     await orm.em.commit();
-    const res2 = await orm.em.findOne(Author2.name, { name: 'God2' });
+    const res2 = await orm.em.findOne(Author2, { name: 'God2' });
     expect(res2).not.toBeNull();
 
     await orm.em.transactional(async em => {
       const god3 = new Author2('God3', 'hello@heaven.god');
       await em.persist(god3);
     });
-    const res3 = await orm.em.findOne(Author2.name, { name: 'God3' });
+    const res3 = await orm.em.findOne(Author2, { name: 'God3' });
     expect(res3).not.toBeNull();
 
     const err = new Error('Test');
@@ -81,7 +81,7 @@ describe('EntityManagerSqlite', () => {
       });
     } catch (e) {
       expect(e).toBe(err);
-      const res4 = await orm.em.findOne(Author2.name, { name: 'God4' });
+      const res4 = await orm.em.findOne(Author2, { name: 'God4' });
       expect(res4).toBeNull();
     }
   });
@@ -93,14 +93,14 @@ describe('EntityManagerSqlite', () => {
       await driver.beginTransaction();
       await em.persist(god1);
       await driver.rollback();
-      const res1 = await em.findOne(Author2.name, { name: 'God1' });
+      const res1 = await em.findOne(Author2, { name: 'God1' });
       expect(res1).toBeNull();
 
       await driver.beginTransaction();
       const god2 = new Author2('God2', 'hello@heaven.god');
       await em.persist(god2);
       await driver.commit();
-      const res2 = await em.findOne(Author2.name, { name: 'God2' });
+      const res2 = await em.findOne(Author2, { name: 'God2' });
       expect(res2).not.toBeNull();
     });
   });
@@ -125,7 +125,7 @@ describe('EntityManagerSqlite', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('[query-logger] BEGIN');
     expect(mock.mock.calls[5][0]).toMatch('[query-logger] COMMIT');
-    expect(await orm.em.findOne<Author2>(Author2.name, { name: 'God Persisted!' })).not.toBeNull();
+    expect(await orm.em.findOne(Author2, { name: 'God Persisted!' })).not.toBeNull();
   });
 
   test('should load entities', async () => {
@@ -149,21 +149,21 @@ describe('EntityManagerSqlite', () => {
     const book3 = new Book2('My Life on The Wall, part 3', author);
     book3.publisher = publisher;
 
-    const repo = orm.em.getRepository<Book2>(Book2.name);
+    const repo = orm.em.getRepository(Book2);
     await repo.persist(book1, false);
     await repo.persist(book2, false);
     await repo.persist(book3, false);
     await repo.flush();
     orm.em.clear();
 
-    const publisher7k = (await orm.em.getRepository<Publisher2>(Publisher2.name).findOne({ name: '7K publisher' }))!;
+    const publisher7k = (await orm.em.getRepository(Publisher2).findOne({ name: '7K publisher' }))!;
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(false);
     orm.em.clear();
 
-    const authorRepository = orm.em.getRepository<Author2>(Author2.name);
-    const booksRepository = orm.em.getRepository<Book2>(Book2.name);
+    const authorRepository = orm.em.getRepository(Author2);
+    const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll(['author']);
     expect(books[0].author.isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible.id })).not.toBe(null);
@@ -241,7 +241,7 @@ describe('EntityManagerSqlite', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository<Book2>(Book2.name).remove(lastBook[0].id);
+    await orm.em.getRepository(Book2).remove(lastBook[0].id);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -250,9 +250,9 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible);
     orm.em.clear();
 
-    const ref = orm.em.getReference(Author2.name, god.id);
+    const ref = orm.em.getReference(Author2, god.id);
     expect(ref.isInitialized()).toBe(false);
-    const newGod = await orm.em.findOne(Author2.name, god.id);
+    const newGod = await orm.em.findOne(Author2, god.id);
     expect(ref).toBe(newGod);
     expect(ref.isInitialized()).toBe(true);
   });
@@ -279,8 +279,8 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = (await orm.em.findOne<Author2>(Author2.name, god.id))!;
-    const books = await orm.em.find<Book2>(Book2.name, {});
+    const newGod = (await orm.em.findOne(Author2, god.id))!;
+    const books = await orm.em.find(Book2, {});
     await newGod.init(false);
 
     for (const book of books) {
@@ -303,8 +303,8 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = orm.em.getReference<Author2>(Author2.name, god.id);
-    const publisher = (await orm.em.findOne<Publisher2>(Publisher2.name, pub.id, ['books']))!;
+    const newGod = orm.em.getReference(Author2, god.id);
+    const publisher = (await orm.em.findOne(Publisher2, pub.id, ['books']))!;
     await newGod.init();
 
     const json = publisher.toJSON().books;
@@ -317,7 +317,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('findOne by id', async () => {
-    const authorRepository = orm.em.getRepository<Author2>(Author2.name);
+    const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     await authorRepository.persist(jon);
 
@@ -333,7 +333,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('populate ManyToOne relation', async () => {
-    const authorRepository = orm.em.getRepository<Author2>(Author2.name);
+    const authorRepository = orm.em.getRepository(Author2);
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
     await orm.em.persist(bible);
@@ -381,7 +381,7 @@ describe('EntityManagerSqlite', () => {
     expect(tag5.id).toBeDefined();
 
     // test inverse side
-    const tagRepository = orm.em.getRepository<BookTag2>(BookTag2.name);
+    const tagRepository = orm.em.getRepository(BookTag2);
     let tags = await tagRepository.findAll();
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
@@ -394,7 +394,7 @@ describe('EntityManagerSqlite', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find<BookTag2>(BookTag2.name);
+    tags = await orm.em.find(BookTag2);
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book2\[] of entity BookTag2\[\d+] not initialized/);
@@ -422,7 +422,7 @@ describe('EntityManagerSqlite', () => {
 
     // test M:N lazy init
     orm.em.clear();
-    let book = (await orm.em.findOne<Book2>(Book2.name, { tags: tag1.id }))!;
+    let book = (await orm.em.findOne(Book2, { tags: tag1.id }))!;
     expect(book.tags.isInitialized()).toBe(false);
     await book.tags.init();
     expect(book.tags.isInitialized()).toBe(true);
@@ -437,14 +437,14 @@ describe('EntityManagerSqlite', () => {
     book.tags.remove(tag1);
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book2>(Book2.name, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tag1);
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book2>(Book2.name, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -458,7 +458,7 @@ describe('EntityManagerSqlite', () => {
     book.tags.removeAll();
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book2>(Book2.name, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -471,7 +471,7 @@ describe('EntityManagerSqlite', () => {
     const p2 = new Publisher2('bar');
     p2.tests.add(new Test2(), new Test2());
     await orm.em.persist([p1, p2]);
-    const repo = orm.em.getRepository<Publisher2>(Publisher2.name);
+    const repo = orm.em.getRepository(Publisher2);
 
     orm.em.clear();
     const publishers = await repo.findAll(['tests']);
@@ -500,7 +500,7 @@ describe('EntityManagerSqlite', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
     await orm.em.persist([book1, book2, book3]);
-    const repo = orm.em.getRepository<BookTag2>(BookTag2.name);
+    const repo = orm.em.getRepository(BookTag2);
 
     orm.em.clear();
     const tags = await repo.findAll(['books']);
@@ -517,7 +517,7 @@ describe('EntityManagerSqlite', () => {
   test('hooks', async () => {
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;
-    const repo = orm.em.getRepository<Author2>(Author2.name);
+    const repo = orm.em.getRepository(Author2);
     const author = new Author2('Jon Snow', 'snow@wall.st');
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
@@ -547,7 +547,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {
-    const repo = orm.em.getRepository<Author2>(Author2.name);
+    const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
     await repo.persist(author);
     orm.em.clear();
@@ -557,7 +557,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('many to many collection does have fixed order', async () => {
-    const repo = orm.em.getRepository<Publisher2>(Publisher2.name);
+    const repo = orm.em.getRepository(Publisher2);
     const publisher = new Publisher2();
     const t1 = Test2.create('t1');
     const t2 = Test2.create('t2');
@@ -576,7 +576,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
-    const repo = orm.em.getRepository<Author2>(Author2.name);
+    const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
@@ -602,22 +602,22 @@ describe('EntityManagerSqlite', () => {
 
   test('EM supports native insert/update/delete', async () => {
     orm.options.debug = false;
-    const res1 = await orm.em.nativeInsert(Author2.name, { name: 'native name 1' });
+    const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1' });
     expect(typeof res1).toBe('number');
 
-    const res2 = await orm.em.nativeUpdate(Author2.name, { name: 'native name 1' }, { name: 'new native name' });
+    const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });
     expect(res2).toBe(1);
 
-    const res3 = await orm.em.nativeDelete(Author2.name, { name: 'new native name' });
+    const res3 = await orm.em.nativeDelete(Author2, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author2.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
+    const res4 = await orm.em.nativeInsert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
     expect(typeof res4).toBe('number');
 
-    const res5 = await orm.em.nativeUpdate(Author2.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
-    await expect(orm.em.aggregate(Author2.name, [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
+    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {

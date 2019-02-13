@@ -61,7 +61,7 @@ describe('EntityFactory', () => {
   });
 
   test('should return reference', async () => {
-    const ref = factory.createReference<Book>(Book.name, '5b0d19b28b21c648c2c8a600');
+    const ref = factory.createReference(Book, '5b0d19b28b21c648c2c8a600');
     expect(ref).toBeInstanceOf(Book);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.title).toBeUndefined();
@@ -69,7 +69,7 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity', async () => {
-    const entity = factory.create<Author>(Author.name, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com' });
+    const entity = factory.create(Author, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com' });
     expect(entity).toBeInstanceOf(Author);
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
@@ -77,7 +77,7 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity without id', async () => {
-    const author = factory.create<Author>(Author.name, { name: 'test', favouriteBook: '5b0d19b28b21c648c2c8a600', email: 'mail@test.com' });
+    const author = factory.create(Author, { name: 'test', favouriteBook: '5b0d19b28b21c648c2c8a600', email: 'mail@test.com' });
     expect(author).toBeInstanceOf(Author);
     expect(author.id).toBeNull();
     expect(author.name).toBe('test');
@@ -88,9 +88,9 @@ describe('EntityFactory', () => {
 
   test('should return entity without id [reference as constructor parameter]', async () => {
     // we need to use normal entity manager to have working identity map
-    const author = orm.em['entityFactory'].createReference<Author>(Author.name, '5b0d19b28b21c648c2c8a600');
+    const author = orm.em['entityFactory'].createReference(Author, '5b0d19b28b21c648c2c8a600');
     expect(author.id).toBe('5b0d19b28b21c648c2c8a600');
-    const book = orm.em.create<Book>(Book.name, { title: 'book title', author: author.id });
+    const book = orm.em.create(Book, { title: 'book title', author: author.id });
     expect(book).toBeInstanceOf(Book);
     expect(book.id).toBeNull();
     expect(book.title).toBe('book title');
@@ -103,12 +103,12 @@ describe('EntityFactory', () => {
     expect(p1).toBeInstanceOf(Publisher);
     expect(p1.books).toBeInstanceOf(Collection);
     expect(p1.tests).toBeInstanceOf(Collection);
-    const p2 = factory.create<Publisher>(Publisher.name, { id: '5b0d19b28b21c648c2c8a601' });
+    const p2 = factory.create(Publisher, { id: '5b0d19b28b21c648c2c8a601' });
     expect(p2).toBeInstanceOf(Publisher);
     expect(p2.name).toBeUndefined();
     expect(p2.books).toBeInstanceOf(Collection);
     expect(p2.tests).toBeInstanceOf(Collection);
-    const p3 = factory.create<Publisher>(Publisher.name, { id: '5b0d19b28b21c648c2c8a602', name: 'test' });
+    const p3 = factory.create(Publisher, { id: '5b0d19b28b21c648c2c8a602', name: 'test' });
     expect(p3).toBeInstanceOf(Publisher);
     expect(p3.name).toBe('test');
     expect(p3.books).toBeInstanceOf(Collection);
@@ -121,7 +121,7 @@ describe('EntityFactory', () => {
     expect(p1).toBeInstanceOf(Publisher);
     expect(p1.books).toBeInstanceOf(Collection);
     expect(p1.tests).toBeInstanceOf(Collection);
-    const p2 = factory.createReference<Publisher>(Publisher.name, '5b0d19b28b21c648c2c8a600');
+    const p2 = factory.createReference(Publisher, '5b0d19b28b21c648c2c8a600');
     expect(p2).toBeInstanceOf(Publisher);
     expect(p2.name).toBeUndefined();
     expect(p1.books).toBeInstanceOf(Collection);

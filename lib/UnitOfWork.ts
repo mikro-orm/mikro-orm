@@ -1,13 +1,13 @@
 import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
-import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
 
 export class UnitOfWork {
 
   // holds copy of entity manager's identity map so we can compute changes when persisting
-  private readonly identityMap = {} as any;
+  private readonly identityMap = {} as Record<string, IEntity>;
   private readonly persistStack: ChangeSet[] = [];
   private readonly metadata = MetadataStorage.getMetadata();
 
@@ -182,7 +182,7 @@ export class UnitOfWork {
     }
   }
 
-  private async runHooks<T>(type: string, entity: IEntityType<T>, payload: any = null) {
+  private async runHooks<T extends IEntityType<T>>(type: string, entity: IEntityType<T>, payload?: EntityData<T>) {
     const hooks = this.metadata[entity.constructor.name].hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
@@ -200,11 +200,11 @@ export class UnitOfWork {
 
 }
 
-export interface ChangeSet {
+export interface ChangeSet<T extends IEntityType<T> = any> {
   index: number;
-  payload: any;
-  collection: string;
   name: string;
-  entity: IEntityType<any>;
+  collection: string;
   delete: boolean;
+  entity: T;
+  payload: EntityData<T>;
 }

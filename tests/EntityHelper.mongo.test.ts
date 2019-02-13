@@ -33,7 +33,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(author);
     orm.em.clear();
 
-    const jon = orm.em.getReference<Author>(Author.name, author.id!);
+    const jon = orm.em.getReference(Author, author.id!);
     expect(jon.isInitialized()).toBe(false);
     await EntityHelper.init(jon);
     expect(jon.isInitialized()).toBe(true);

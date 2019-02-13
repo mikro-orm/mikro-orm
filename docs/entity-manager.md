@@ -83,6 +83,8 @@ const author2 = await orm.em.findOne<Author>('Author', '...id...');
 const author3 = await orm.em.findOne(Author, '...id...');
 ```
 
+As the last one is the least verbose, it should be preferred. 
+
 ## Entity repositories
 
 Although you can use `EntityManager` directly, much more convenient way is to use 

@@ -35,7 +35,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<any[]> {
+  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]> {
     let query = `db.getCollection("${collection}").find`;
     where = this.convertObjectIds(where);
     const resultSet = this.getCollection(collection).find(where);

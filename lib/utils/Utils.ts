@@ -23,8 +23,8 @@ export class Utils {
     return [...new Set(items)];
   }
 
-  static diff(a: any, b: any): any {
-    const ret = {} as any;
+  static diff(a: Record<string, any>, b: Record<string, any>): Record<string, any> {
+    const ret: Record<string, any> = {};
 
     Object.keys(b).forEach(k => {
       if (Utils.equals(a[k], b[k])) {
@@ -37,11 +37,11 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities(a: IEntity, b: IEntity): any {
+  static diffEntities(a: IEntity, b: IEntity): Record<string, any> {
     return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
   }
 
-  static prepareEntity<T>(e: IEntityType<T>): any {
+  static prepareEntity<T>(e: IEntityType<T>): Record<string, any> {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);

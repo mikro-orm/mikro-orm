@@ -2,12 +2,12 @@ import { EntityManager } from './EntityManager';
 import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { IEntityType } from './decorators/Entity';
+import { EntityClass, EntityData, IEntityType } from './decorators/Entity';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private _em: EntityManager,
-              protected entityName: string) { }
+              protected entityName: string | EntityClass<T>) { }
 
   async persist(entity: T, flush = true): Promise<void> {
     return this.em.persist(entity, flush);
@@ -25,7 +25,7 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 
-  async remove(where: T | any, flush = true): Promise<number> {
+  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = true): Promise<number> {
     return this.em.remove(this.entityName, where, flush);
   }
 
@@ -33,11 +33,11 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.flush();
   }
 
-  async nativeInsert(data: any): Promise<IPrimaryKey> {
+  async nativeInsert(data: EntityData<T>): Promise<IPrimaryKey> {
     return this.em.nativeInsert(this.entityName, data)
   }
 
-  async nativeUpdate(where: FilterQuery<T>, data: any): Promise<number> {
+  async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     return this.em.nativeUpdate(this.entityName, where, data)
   }
 
@@ -52,7 +52,7 @@ export class EntityRepository<T extends IEntityType<T>> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends IEntityType<T>>(id: IPrimaryKey): T {
+  getReference(id: IPrimaryKey): T {
     return this.em.getReference<T>(this.entityName, id);
   }
 
@@ -63,11 +63,11 @@ export class EntityRepository<T extends IEntityType<T>> {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create(data: any): T {
+  create(data: EntityData<T>): T {
     return this.em.create<T>(this.entityName, data);
   }
 
-  async count(where: any = {}): Promise<number> {
+  async count(where: FilterQuery<T> = {}): Promise<number> {
     return this.em.count(this.entityName, where);
   }
 

@@ -9,7 +9,7 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder } from './QueryBuilder';
-import { Cascade, EntityClass, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { Cascade, EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
@@ -39,7 +39,7 @@ export class EntityManager {
     return em.identityMap[token] as T;
   }
 
-  setIdentity(entity: IEntity, id?: IPrimaryKey): void {
+  setIdentity<T extends IEntityType<T>>(entity: T, id?: IPrimaryKey): void {
     const em = RequestContext.getEntityManager() || this;
     const token = `${entity.constructor.name}-${id || entity.id}`;
     em.identityMap[token] = entity;
@@ -159,20 +159,20 @@ export class EntityManager {
     });
   }
 
-  async nativeInsert(entityName: string | EntityClass<IEntity>, data: any): Promise<IPrimaryKey> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): Promise<IPrimaryKey> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'insert data');
     return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate(entityName: string | EntityClass<IEntity>, where: FilterQuery<IEntity>, data: any): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete(entityName: string | EntityClass<IEntity>, where: FilterQuery<IEntity> | string | any): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string | any): Promise<number> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where, 'delete condition');
     return this.driver.nativeDelete(entityName, where);
@@ -186,20 +186,20 @@ export class EntityManager {
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: any): T {
+  merge<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
 
     if (!data || (!data.id && !data._id)) {
       throw new Error('You cannot merge entity without id!');
     }
 
-    const entity = Utils.isEntity(data) ? data : this.entityFactory.create<T>(entityName, data, true);
+    const entity = Utils.isEntity(data) ? data as T : this.entityFactory.create<T>(entityName, data, true);
 
-    if (this.getIdentity(entityName, entity.id)) {
+    if (this.getIdentity<T>(entityName, entity.id)) {
       EntityHelper.assign(entity, data);
-      this.unitOfWork.addToIdentityMap(entity as IEntity);
+      this.unitOfWork.addToIdentityMap(entity);
     } else {
-      this.addToIdentityMap(entity as IEntity);
+      this.addToIdentityMap(entity);
     }
 
     return entity as T;
@@ -208,7 +208,7 @@ export class EntityManager {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: any): T {
+  create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
     return this.entityFactory.create<T>(entityName, data, false);
   }

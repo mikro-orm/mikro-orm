@@ -18,7 +18,7 @@ const methods = {
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
-const repo = new EntityRepository<Publisher>(em, Publisher.name);
+const repo = new EntityRepository(em, Publisher);
 
 /**
  * @class EntityRepositoryTest
@@ -27,27 +27,27 @@ describe('EntityRepository', () => {
 
   test('should forward calls to EntityManager', async () => {
     repo.getReference('bar');
-    expect(methods.getReference.mock.calls[0]).toEqual([Publisher.name, 'bar']);
+    expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar']);
     const e = Object.create(Publisher.prototype);
     await repo.persist(e, false);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);
     await repo.find({ foo: 'bar' });
-    expect(methods.find.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }, [], {}, undefined, undefined]);
+    expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
-    expect(methods.findOne.mock.calls[0]).toEqual([Publisher.name, 'bar', []]);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', []]);
     await repo.remove('bar');
-    expect(methods.remove.mock.calls[0]).toEqual([Publisher.name, 'bar', true]);
+    expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
     await repo.create({ name: 'bar' });
-    expect(methods.create.mock.calls[0]).toEqual([Publisher.name, { name: 'bar' }]);
+    expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
 
     await repo.nativeInsert({ foo: 'bar' });
-    expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }]);
+    expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }]);
     await repo.nativeUpdate({ foo: 'bar' }, { foo: 'baz' });
-    expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }, { foo: 'baz' }]);
+    expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, { foo: 'baz' }]);
     await repo.nativeDelete({ foo: 'bar' });
-    expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher.name, { foo: 'bar' }]);
+    expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }]);
     await repo.aggregate([{ foo: 'bar' }]);
-    expect(methods.aggregate.mock.calls[0]).toEqual([Publisher.name, [{ foo: 'bar' }]]);
+    expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ foo: 'bar' }]]);
   });
 
 });

@@ -29,7 +29,7 @@ export class EntityLoader {
         entities.forEach(entity => {
           if (Utils.isEntity(entity[f as keyof T])) {
             children.push(entity[f as keyof T]);
-          } else if (entity[f as keyof T] as any instanceof Collection) {
+          } else if (entity[f as keyof T] as object instanceof Collection) {
             children.push(...entity[f as keyof T].getItems());
           }
         });
@@ -49,13 +49,13 @@ export class EntityLoader {
   private async populateMany<T extends IEntityType<T>>(entityName: string, entities: T[], field: keyof T): Promise<IEntity[]> {
     // set populate flag
     entities.forEach(entity => {
-      if (Utils.isEntity(entity[field]) || entity[field] as any instanceof Collection) {
+      if (Utils.isEntity(entity[field]) || entity[field] as object instanceof Collection) {
         (entity[field] as IEntity).populated();
       }
     });
 
     const prop = this.metadata[entityName].properties[field as string];
-    const filtered = entities.filter(e => e[field] as any instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
+    const filtered = entities.filter(e => e[field] as object instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getConfig().usesPivotTable) {
       const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
@@ -96,7 +96,7 @@ export class EntityLoader {
 
   private async findChildren<T extends IEntityType<T>>(entities: T[], prop: EntityProperty): Promise<IEntityType<any>[]> {
     const name = prop.name as keyof T;
-    const filtered = entities.filter(e => e[name] as any instanceof Collection && !(e[name] as any as Collection<IEntity>).isInitialized(true));
+    const filtered = entities.filter(e => e[name] as object instanceof Collection && !(e[name] as Collection<IEntity>).isInitialized(true));
     const children: IEntity[] = [];
     let fk = this.metadata[prop.type].primaryKey;
 

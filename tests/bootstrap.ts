@@ -63,32 +63,32 @@ export async function initORMSqlite() {
 }
 
 export async function wipeDatabase(em: EntityManager) {
-  await em.getRepository<Author>(Author.name).remove({});
-  await em.getRepository<Book>(Book.name).remove({});
-  await em.getRepository<BookTag>(BookTag.name).remove({});
-  await em.getRepository<Publisher>(Publisher.name).remove({});
-  await em.getRepository<Test>(Test.name).remove({});
+  await em.getRepository(Author).remove({});
+  await em.getRepository(Book).remove({});
+  await em.getRepository(BookTag).remove({});
+  await em.getRepository(Publisher).remove({});
+  await em.getRepository(Test).remove({});
   em.clear();
 }
 
 export async function wipeDatabaseMySql(em: EntityManager) {
-  await em.createQueryBuilder(Author2.name).truncate().execute();
-  await em.createQueryBuilder(Book2.name).truncate().execute();
-  await em.createQueryBuilder(BookTag2.name).truncate().execute();
-  await em.createQueryBuilder(Publisher2.name).truncate().execute();
-  await em.createQueryBuilder(Test2.name).truncate().execute();
+  await em.createQueryBuilder(Author2).truncate().execute();
+  await em.createQueryBuilder(Book2).truncate().execute();
+  await em.createQueryBuilder(BookTag2).truncate().execute();
+  await em.createQueryBuilder(Publisher2).truncate().execute();
+  await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
   em.clear();
 }
 
 export async function wipeDatabaseSqlite(em: EntityManager) {
-  await em.createQueryBuilder(Author2.name).delete().execute('run');
-  await em.createQueryBuilder(Author2.name).delete().execute('run');
-  await em.createQueryBuilder(Book2.name).delete().execute('run');
-  await em.createQueryBuilder(BookTag2.name).delete().execute('run');
-  await em.createQueryBuilder(Publisher2.name).delete().execute('run');
-  await em.createQueryBuilder(Test2.name).delete().execute('run');
+  await em.createQueryBuilder(Author2).delete().execute('run');
+  await em.createQueryBuilder(Author2).delete().execute('run');
+  await em.createQueryBuilder(Book2).delete().execute('run');
+  await em.createQueryBuilder(BookTag2).delete().execute('run');
+  await em.createQueryBuilder(Publisher2).delete().execute('run');
+  await em.createQueryBuilder(Test2).delete().execute('run');
   await em.createQueryBuilder('book2_to_book_tag2').delete().execute('run');
   await em.createQueryBuilder('publisher2_to_test2').delete().execute('run');
   em.clear();

@@ -25,18 +25,21 @@ export class MySqlConnection extends Connection {
   }
 
   async beginTransaction(): Promise<void> {
-    this.logQuery('START TRANSACTION');
+    const now = Date.now();
     await this.connection.beginTransaction();
+    this.logQuery(`START TRANSACTION [took ${Date.now() - now} ms]`);
   }
 
   async commit(): Promise<void> {
-    this.logQuery('COMMIT');
+    const now = Date.now();
     await this.connection.commit();
+    this.logQuery(`COMMIT [took ${Date.now() - now} ms]`);
   }
 
   async rollback(): Promise<void> {
-    this.logQuery('ROLLBACK');
+    const now = Date.now();
     await this.connection.rollback();
+    this.logQuery(`ROLLBACK [took ${Date.now() - now} ms]`);
   }
 
   getDefaultClientUrl(): string {

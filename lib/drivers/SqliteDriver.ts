@@ -1,8 +1,9 @@
 import { FilterQuery } from './DatabaseDriver';
-import { DriverConfig, IEntity, UnderscoreNamingStrategy } from '..';
+import { DriverConfig, UnderscoreNamingStrategy } from '..';
 import { Utils } from '../utils/Utils';
 import { SqliteConnection } from '../connections/SqliteConnection';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
+import { EntityData, IEntityType } from '../decorators/Entity';
 
 export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
 
@@ -15,7 +16,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     return res.count;
   }
 
-  async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: { [p: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = this.createQueryBuilder(entityName);
     qb.select('*').populate(populate).where(where).orderBy(orderBy);
 
@@ -28,7 +29,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -39,7 +40,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     return this.mapResult(res, this.metadata[entityName]);
   }
 
-  async nativeInsert(entityName: string, data: any): Promise<number> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
     const collections = this.extractManyToMany(entityName, data);
 
     if (Object.keys(data).length === 0) {
@@ -53,7 +54,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     return res.lastID;
   }
 
-  async nativeUpdate(entityName: string, where: FilterQuery<IEntity>, data: any): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }
@@ -71,7 +72,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     return res ? res.changes : 0;
   }
 
-  async nativeDelete(entityName: string, where: FilterQuery<IEntity> | string | any): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
       where = { id: where };
     }

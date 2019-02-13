@@ -5,10 +5,10 @@ import { Connection } from './Connection';
 
 export class SqliteConnection extends Connection {
 
-  private connection: Database;
+  private connection: SqliteDatabase;
 
   async connect(): Promise<void> {
-    this.connection = await sqlite.open(this.options.dbName);
+    this.connection = await sqlite.open(this.options.dbName) as SqliteDatabase;
     await this.connection.exec('PRAGMA foreign_keys = ON');
   }
 
@@ -17,7 +17,7 @@ export class SqliteConnection extends Connection {
   }
 
   async isConnected(): Promise<boolean> {
-    return (this.connection as any)['driver']['open'];
+    return this.connection['driver']['open'];
   }
 
   async beginTransaction(savepoint?: string): Promise<void> {
@@ -74,3 +74,5 @@ export class SqliteConnection extends Connection {
   }
 
 }
+
+export type SqliteDatabase = Database & { driver: { open: boolean } };

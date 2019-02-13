@@ -1,7 +1,7 @@
 import { Collection } from '../Collection';
 import { SCALAR_TYPES } from '../EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
 import { Utils } from './Utils';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
@@ -14,33 +14,35 @@ export class EntityHelper {
     return entity;
   }
 
-  static assign<T extends IEntityType<T>>(entity: T, data: any): void {
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>): void {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[entity.constructor.name];
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
-      if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && data[prop]) {
-        return EntityHelper.assignReference<T>(entity, data[prop], props[prop], entity.__em);
+      const value = data[prop as keyof EntityData<T>];
+
+      if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && value) {
+        return EntityHelper.assignReference<T>(entity, value, props[prop], entity.__em);
       }
 
       const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
 
-      if (isCollection && Array.isArray(data[prop])) {
-        return EntityHelper.assignCollection<T>(entity, data[prop], props[prop], entity.__em);
+      if (isCollection && Array.isArray(value)) {
+        return EntityHelper.assignCollection<T>(entity, value, props[prop], entity.__em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        entity[prop as keyof T] = entity.__em.validator.validateProperty(props[prop], data[prop], entity)
+        entity[prop as keyof T] = entity.__em.validator.validateProperty(props[prop], value, entity);
       }
 
-      entity[prop as keyof T] = data[prop];
+      entity[prop as keyof T] = value as T[keyof T];
     });
   }
 
-  static toObject<T extends IEntityType<T>>(entity: T, parent?: IEntity, isCollection = false): { [field: string]: any } {
+  static toObject<T extends IEntityType<T>>(entity: T, parent?: IEntity, isCollection = false): EntityData<T> {
     parent = parent || entity;
-    const ret = entity.id ? { id: entity.id } : {} as any;
+    const ret = (entity.id ? { id: entity.id } : {}) as EntityData<T>;
 
     if (!entity.isInitialized() && entity.id) {
       return ret;
@@ -51,7 +53,7 @@ export class EntityHelper {
         return;
       }
 
-      if (entity[prop as keyof T] as any instanceof Collection) {
+      if (entity[prop as keyof T] as object instanceof Collection) {
         const col = entity[prop as keyof T] as Collection<IEntity>;
 
         if (col.isInitialized(true) && col.shouldPopulate()) {
@@ -120,11 +122,11 @@ export class EntityHelper {
     (entity[prop.name as keyof T] as Collection<IEntity>).set(items);
   }
 
-  static decorate(meta: EntityMetadata, em: EntityManager) {
+  static decorate<T extends IEntityType<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
     const pk = meta.properties[meta.primaryKey];
 
     // define magic id property getter/setter if PK property is `_id` and there is no `id` property defined
-    if (pk.name === '_id' && !meta.properties.id) {
+    if (pk.name === '_id' && !meta.properties['id' as keyof T & string]) {
       Object.defineProperty(meta.prototype, 'id', {
         get(): string | null {
           return this._id ? em.getDriver().normalizePrimaryKey<string>(this._id) : null;
@@ -161,7 +163,7 @@ export class EntityHelper {
       },
     });
 
-    if (!(meta.prototype as any).assign) {
+    if (!meta.prototype.assign) {
       Object.defineProperty(meta.prototype, 'assign', {
         value(data: any) {
           EntityHelper.assign(this, data);
@@ -169,7 +171,7 @@ export class EntityHelper {
       });
     }
 
-    if (!(meta.prototype as any).toJSON) {
+    if (!meta.prototype.toJSON) {
       Object.defineProperty(meta.prototype, 'toJSON', {
         value() {
           return EntityHelper.toObject(this);

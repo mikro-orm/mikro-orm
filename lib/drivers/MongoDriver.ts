@@ -1,23 +1,24 @@
 import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { Utils } from '../utils/Utils';
-import { IEntity, IPrimaryKey, MongoNamingStrategy, DriverConfig } from '..';
+import { IPrimaryKey, MongoNamingStrategy, DriverConfig } from '..';
 import { MongoConnection } from '../connections/MongoConnection';
+import { EntityData, IEntityType } from '../decorators/Entity';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   protected readonly connection = new MongoConnection(this.options, this.logger);
 
-  async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
     const res = await this.connection.find<T>(this.metadata[entityName].collection, where, orderBy, limit, offset);
 
-    return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
+    return res.map((r: T) => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as any) };
+      where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
@@ -26,21 +27,21 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult(res[0], this.metadata[entityName]);
   }
 
-  async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number> {
+  async count<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>): Promise<number> {
     where = this.renameFields(entityName, where);
     return this.connection.countDocuments<T>(this.metadata[entityName].collection, where);
   }
 
-  async nativeInsert<T extends IEntity>(entityName: string, data: Partial<T>): Promise<ObjectID> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<ObjectID> {
     data = this.renameFields(entityName, data);
-    const res = await this.connection.insertOne<T>(this.metadata[entityName].collection, data);
+    const res = await this.connection.insertOne<EntityData<T>>(this.metadata[entityName].collection, data);
 
     return res.insertedId;
   }
 
-  async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: any): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as any) };
+      where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
@@ -50,9 +51,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.modifiedCount;
   }
 
-  async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectID(where as any) };
+      where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;

@@ -37,21 +37,21 @@ describe('EntityManagerMongo', () => {
     const book3 = new Book('My Life on The Wall, part 3', author);
     book3.publisher = publisher;
 
-    const repo = orm.em.getRepository<Book>(Book.name);
+    const repo = orm.em.getRepository(Book);
     await repo.persist(book1, false);
     await repo.persist(book2, false);
     await repo.persist(book3, false);
     await repo.flush();
     orm.em.clear();
 
-    const publisher7k = (await orm.em.getRepository<Publisher>(Publisher).findOne({ name: '7K publisher' }))!;
+    const publisher7k = (await orm.em.getRepository(Publisher).findOne({ name: '7K publisher' }))!;
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(true);
     orm.em.clear();
 
-    const authorRepository = orm.em.getRepository<Author>(Author);
-    const booksRepository = orm.em.getRepository<Book>(Book);
+    const authorRepository = orm.em.getRepository(Author);
+    const booksRepository = orm.em.getRepository(Book);
     const books = await booksRepository.findAll(['author']);
     expect(books[0].author.isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible._id })).not.toBe(null);
@@ -132,18 +132,18 @@ describe('EntityManagerMongo', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository<Book>(Book).remove(lastBook[0]._id);
+    await orm.em.getRepository(Book).remove(lastBook[0]._id);
   });
 
   test('should provide custom repository', async () => {
-    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
     expect(repo).toBeInstanceOf(AuthorRepository);
     expect(repo.magic).toBeInstanceOf(Function);
     expect(repo.magic('test')).toBe('111 test 222');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {
-    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
     const author = new Author('name', 'email');
     await repo.persist(author);
     await expect(repo.find(author)).rejects.toThrowError('Author entity provided in search condition. Please provide identifier instead.');
@@ -154,33 +154,33 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const author2 = new Author('name2', 'email2');
     const author3 = new Author('name3', 'email3');
-    const repo = orm.em.getRepository<Author>(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
     await repo.persist(author, false);
     await repo.persist(author2, false);
     await repo.remove(author);
     expect(Object.keys(orm.em.getIdentityMap())).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
     await repo.persist(author2, false);
-    await orm.em.remove(Author.name, author3, false);
+    await orm.em.remove(Author, author3, false);
     await repo.flush();
-    await orm.em.remove(Author.name, author3);
+    await orm.em.remove(Author, author3);
   });
 
   test('removing persisted entity will remove it from persist stack first', async () => {
     const author = new Author('name', 'email');
-    const repo = orm.em.getRepository<Author>(Author.name) as AuthorRepository;
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
     await repo.persist(author);
-    expect(orm.em.getIdentity(Author.name, author.id)).toBeDefined();
+    expect(orm.em.getIdentity(Author, author.id)).toBeDefined();
     author.name = 'new name';
     await repo.persist(author, false);
     await orm.em.removeEntity(author);
-    expect(orm.em.getIdentity(Author.name, author.id)).toBeUndefined();
+    expect(orm.em.getIdentity(Author, author.id)).toBeUndefined();
     expect(orm.em.getIdentityMap()).toEqual({});
   });
 
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
-    expect(() => orm.em.merge(Author.name, author)).toThrowError('You cannot merge entity without id!');
+    expect(() => orm.em.merge(Author, author)).toThrowError('You cannot merge entity without id!');
   });
 
   test('fork', async () => {
@@ -197,11 +197,11 @@ describe('EntityManagerMongo', () => {
   });
 
   test('findOne with empty where will throw', async () => {
-    await expect(orm.em.findOne<Author>(Author, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    await expect(orm.em.findOne<Author>(Author, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, '')).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, {})).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, [])).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, undefined!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    await expect(orm.em.findOne(Author, null!)).rejects.toThrowError(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -210,9 +210,9 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(bible);
     orm.em.clear();
 
-    const ref = orm.em.getReference(Author.name, god.id);
+    const ref = orm.em.getReference(Author, god.id);
     expect(ref.isInitialized()).toBe(false);
-    const newGod = await orm.em.findOne(Author.name, god.id);
+    const newGod = await orm.em.findOne(Author, god.id);
     expect(ref).toBe(newGod);
     expect(ref.isInitialized()).toBe(true);
   });
@@ -240,7 +240,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const newGod = (await orm.em.findOne(Author, god.id))!;
-    const books = await orm.em.find<Book>(Book, {});
+    const books = await orm.em.find(Book, {});
     await newGod.init(false);
 
     for (const book of books) {
@@ -263,8 +263,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = orm.em.getReference<Author>(Author.name, god.id);
-    const publisher = (await orm.em.findOne<Publisher>(Publisher.name, pub.id, ['books']))!;
+    const newGod = orm.em.getReference(Author, god.id);
+    const publisher = (await orm.em.findOne(Publisher, pub.id, ['books']))!;
     await newGod.init();
 
     const json = publisher.toJSON().books;
@@ -281,12 +281,12 @@ describe('EntityManagerMongo', () => {
     expect(driver instanceof MongoDriver).toBe(true);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getConfig().usesPivotTable).toBe(false);
-    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables')
-    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method')
+    await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
+    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
   });
 
   test('findOne by id', async () => {
-    const authorRepository = orm.em.getRepository<Author>(Author.name);
+    const authorRepository = orm.em.getRepository(Author);
     const jon = new Author('Jon Snow', 'snow@wall.st');
     await authorRepository.persist(jon);
 
@@ -312,7 +312,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('populate ManyToOne relation', async () => {
-    const authorRepository = orm.em.getRepository<Author>(Author.name);
+    const authorRepository = orm.em.getRepository(Author);
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     await orm.em.persist(bible);
@@ -361,7 +361,7 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toArray()).toEqual([tag1.toJSON(), tag3.toJSON()]);
 
     // test inverse side
-    const tagRepository = orm.em.getRepository<BookTag>(BookTag.name);
+    const tagRepository = orm.em.getRepository(BookTag);
     let tags = await tagRepository.findAll();
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
@@ -374,7 +374,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find<BookTag>(BookTag.name);
+    tags = await orm.em.find(BookTag);
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
@@ -393,7 +393,7 @@ describe('EntityManagerMongo', () => {
 
     // test M:N lazy init
     orm.em.clear();
-    let book = (await orm.em.findOne<Book>(Book.name, { tags: tag1._id }))!;
+    let book = (await orm.em.findOne(Book, { tags: tag1._id }))!;
     expect(book.tags.isInitialized()).toBe(true); // owning side is always initialized
     expect(book.tags.count()).toBe(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
@@ -408,14 +408,14 @@ describe('EntityManagerMongo', () => {
     book.tags.remove(tag1, tag5); // tag5 will be ignored as it is not part of collection
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
+    book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tag1);
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
+    book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -429,7 +429,7 @@ describe('EntityManagerMongo', () => {
     book.tags.removeAll();
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne<Book>(Book.name, book._id))!;
+    book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -442,7 +442,7 @@ describe('EntityManagerMongo', () => {
     const p2 = new Publisher('bar');
     p2.tests.add(new Test(), new Test());
     await orm.em.persist([p1, p2]);
-    const repo = orm.em.getRepository<Publisher>(Publisher.name);
+    const repo = orm.em.getRepository(Publisher);
 
     orm.em.clear();
     const publishers = await repo.findAll(['tests']);
@@ -471,7 +471,7 @@ describe('EntityManagerMongo', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
     await orm.em.persist([book1, book2, book3]);
-    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+    const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
     await repo.findOne(tag5.id, ['books']); // preload one of collections to test it is not re-loaded
@@ -502,7 +502,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([book1, book2, book3]);
     orm.em.clear();
 
-    const repo = orm.em.getRepository<Book>(Book.name);
+    const repo = orm.em.getRepository(Book);
     let book = (await repo.findOne(book1.id, ['author', 'tags']))!;
     book.author.name = 'Foo Bar';
     book.tags[0].name = 'new name 1';
@@ -532,7 +532,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([book1, book2, book3]);
     orm.em.clear();
 
-    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+    const repo = orm.em.getRepository(BookTag);
     let tag = (await repo.findOne(tag5.id, ['books.author']))!;
     tag.books[0].title = 'new title 1';
     tag.books[1].title = 'new title 2';
@@ -563,7 +563,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(author);
     orm.em.clear();
 
-    const repo = orm.em.getRepository<Book>(Book.name);
+    const repo = orm.em.getRepository(Book);
     let books = await repo.findAll(['author', 'tags']);
     expect(books.length).toBe(3);
     expect(books[0].tags.count()).toBe(2);
@@ -585,11 +585,11 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(author);
     orm.em.clear();
 
-    const repo = orm.em.getRepository<Book>(Book.name);
+    const repo = orm.em.getRepository(Book);
     let books = await repo.findAll();
     expect(books.length).toBe(3);
     expect(books[0].publisher.id).toBeDefined();
-    expect(await orm.em.count(Publisher.name, {})).toBe(1);
+    expect(await orm.em.count(Publisher, {})).toBe(1);
 
     // by removing one book, publisher will be cascade removed and other books will remain its identifier
     await orm.em.removeEntity(books[0]);
@@ -599,7 +599,7 @@ describe('EntityManagerMongo', () => {
     expect(books.length).toBe(2);
     expect(books[0].publisher).not.toBeNull();
     expect(books[1].publisher).not.toBeNull();
-    expect(await orm.em.count(Publisher.name, {})).toBe(0);
+    expect(await orm.em.count(Publisher, {})).toBe(0);
   });
 
   test('nested populating', async () => {
@@ -622,7 +622,7 @@ describe('EntityManagerMongo', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
     await orm.em.persist([book1, book2, book3]);
-    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+    const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
     const tags = await repo.findAll(['books.publisher.tests', 'books.author']);
@@ -642,7 +642,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find<Book>(Book.name, {}, ['publisher.tests', 'author']);
+    const books = await orm.em.find(Book, {}, ['publisher.tests', 'author']);
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book);
     expect(books[0].isInitialized()).toBe(true);
@@ -671,7 +671,7 @@ describe('EntityManagerMongo', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
     await orm.em.persist([book1, book2, book3]);
-    const repo = orm.em.getRepository<BookTag>(BookTag.name);
+    const repo = orm.em.getRepository(BookTag);
 
     orm.em.clear();
     const tags = await repo.findAll(['books.publisher.tests']);
@@ -689,7 +689,7 @@ describe('EntityManagerMongo', () => {
     const book2 = new Book('My Life on The Wall, part 2', author);
     const book3 = new Book('My Life on The Wall, part 3', author);
     await orm.em.persist([book1, book2, book3]);
-    const repo = orm.em.getRepository<Author>(Author.name);
+    const repo = orm.em.getRepository(Author);
 
     orm.em.clear();
     author = (await repo.findOne(author.id))!;
@@ -703,7 +703,7 @@ describe('EntityManagerMongo', () => {
   test('hooks', async () => {
     Author.beforeDestroyCalled = 0;
     Author.afterDestroyCalled = 0;
-    const repo = orm.em.getRepository<Author>(Author.name);
+    const repo = orm.em.getRepository(Author);
     const author = new Author('Jon Snow', 'snow@wall.st');
     expect(author.id).toBeNull();
     expect(author.version).toBeUndefined();
@@ -733,7 +733,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('canPopulate', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name);
+    const repo = orm.em.getRepository(Author);
     expect(repo.canPopulate('test')).toBe(false);
     expect(repo.canPopulate('name')).toBe(false);
     expect(repo.canPopulate('favouriteBook')).toBe(true);
@@ -741,7 +741,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name);
+    const repo = orm.em.getRepository(Author);
     const author = new Author('Johny Cash', 'johny@cash.com');
     await repo.persist(author);
     orm.em.clear();
@@ -751,7 +751,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('many to many collection does have fixed order', async () => {
-    const repo = orm.em.getRepository<Publisher>(Publisher.name);
+    const repo = orm.em.getRepository(Publisher);
     const publisher = new Publisher();
     const t1 = Test.create('t1');
     const t2 = Test.create('t2');
@@ -770,7 +770,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
-    const repo = orm.em.getRepository<Author>(Author.name);
+    const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
@@ -795,23 +795,23 @@ describe('EntityManagerMongo', () => {
 
   test('EM supports native insert/update/delete/aggregate', async () => {
     orm.options.debug = false;
-    const res1 = await orm.em.nativeInsert(Author.name, { name: 'native name 1' });
+    const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectID);
 
-    const res2 = await orm.em.nativeUpdate(Author.name, { name: 'native name 1' }, { name: 'new native name' });
+    const res2 = await orm.em.nativeUpdate(Author, { name: 'native name 1' }, { name: 'new native name' });
     expect(res2).toBe(1);
 
-    const res3 = await orm.em.aggregate(Author.name, [{ $match: { name: 'new native name' } }]);
+    const res3 = await orm.em.aggregate(Author, [{ $match: { name: 'new native name' } }]);
     expect(res3.length).toBe(1);
     expect(res3[0]).toMatchObject({ name: 'new native name' });
 
-    const res4 = await orm.em.nativeDelete(Author.name, { name: 'new native name' });
+    const res4 = await orm.em.nativeDelete(Author, { name: 'new native name' });
     expect(res4).toBe(1);
 
-    const res5 = await orm.em.nativeInsert(Author.name, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
+    const res5 = await orm.em.nativeInsert(Author, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
     expect(res5).toBeInstanceOf(ObjectID);
 
-    const res6 = await orm.em.nativeUpdate(Author.name, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
+    const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
   });
 
@@ -823,14 +823,14 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist([b1, b2, b3]);
     orm.em.clear();
 
-    const a1 = (await orm.em.findOne<Author>(Author.name, author.id))!;
+    const a1 = (await orm.em.findOne(Author, author.id))!;
     expect(a1.books).toBeInstanceOf(Collection);
     expect(a1.books.isInitialized()).toBe(false);
 
-    await orm.em.nativeUpdate(Author.name, { id: author.id }, { books: [b1.id, b2.id, b3.id] });
+    await orm.em.nativeUpdate(Author, { id: author.id }, { books: [b1.id, b2.id, b3.id] });
     orm.em.clear();
 
-    const a2 = (await orm.em.findOne<Author>(Author.name, author.id))!;
+    const a2 = (await orm.em.findOne(Author, author.id))!;
     expect(a2.books).toBeInstanceOf(Collection);
     expect(a2.books.isInitialized()).toBe(true);
     expect(a2.books.isInitialized(true)).toBe(false);

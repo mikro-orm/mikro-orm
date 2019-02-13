@@ -1,5 +1,5 @@
 import { IPrimaryKey } from '..';
-import { ReferenceType } from '../decorators/Entity';
+import { EntityData, IEntityType, ReferenceType } from '../decorators/Entity';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryBuilder } from '../QueryBuilder';
 import { Connection } from '../connections/Connection';
@@ -10,13 +10,13 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return new QueryBuilder(entityName, this.metadata, this.connection);
   }
 
-  protected extractManyToMany(entityName: string, data: any): any {
+  protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
     if (!this.metadata[entityName]) {
       return {};
     }
 
     const props = this.metadata[entityName].properties;
-    const ret = {} as any;
+    const ret: EntityData<T> = {};
 
     for (const k of Object.keys(data)) {
       const prop = props[k];
@@ -30,7 +30,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return ret;
   }
 
-  protected async processManyToMany(entityName: string, pk: IPrimaryKey, collections: any) {
+  protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>) {
     const props = this.metadata[entityName].properties;
 
     for (const k of Object.keys(collections)) {

@@ -1,7 +1,7 @@
 import { MikroORMOptions } from '../MikroORM';
 import { DriverConfig, IDatabaseDriver } from './IDatabaseDriver';
 import { IEntity, IPrimaryKey, UnderscoreNamingStrategy } from '..';
-import { EntityMetadata, EntityProperty } from '../decorators/Entity';
+import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { QueryOrder } from '../QueryBuilder';
 import { MetadataStorage } from '../metadata/MetadataStorage';
@@ -22,19 +22,19 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
 
-  abstract async nativeInsert(entityName: string, data: any): Promise<IPrimaryKey>;
+  abstract async nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<IPrimaryKey>;
 
-  abstract async nativeUpdate(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: any): Promise<number>;
+  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<number>;
 
-  abstract async nativeDelete(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
+  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
 
-  abstract async count(entityName: string, where: any): Promise<number>;
+  abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: IPrimaryKey[] }> {
+  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: T[] }> {
     if (!this.getConfig().usesPivotTable) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -45,7 +45,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
     const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
 
-    const map = {} as any;
+    const map: { [key: string]: T[] } = {};
     owners.forEach(owner => map['' + owner] = []);
     items.forEach((item: any) => {
       map['' + item[fk1]].push(item);
@@ -64,16 +64,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return data;
   }
 
-  mapResult(result: any, meta: EntityMetadata): any {
+  mapResult<T extends IEntityType<T>>(result: T, meta: EntityMetadata): T {
     if (!result || !meta) {
       return result || null;
     }
 
     const ret = Object.assign({}, result);
 
-    Object.keys(meta.properties).forEach(p => {
-      const prop = meta.properties[p];
-
+    Object.values(meta.properties).forEach(prop => {
       if (prop.fieldName && prop.fieldName in ret) {
         Utils.renameKey(ret, prop.fieldName, prop.name);
       }

@@ -104,7 +104,7 @@ export class Book {
   @ManyToOne()
   author: Author;
 
-  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -148,7 +148,7 @@ await orm.em.persist([book1, book2, book3]);
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 
 ```typescript
-const authors = orm.em.find(Author.name, {});
+const authors = orm.em.find(Author, {});
 
 for (const author of authors) {
   console.log(author); // instance of Author entity
@@ -165,7 +165,7 @@ More convenient way of fetching entities from database is by using `EntityReposi
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
 ```typescript
-const booksRepository = orm.em.getRepository<Book>(Book.name);
+const booksRepository = orm.em.getRepository(Book);
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 });
 console.log(books); // Book[]
 ```
