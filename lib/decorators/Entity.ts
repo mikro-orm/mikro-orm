@@ -31,6 +31,7 @@ export interface IEntity<K = number | string> {
   toObject(parent?: IEntity, isCollection?: boolean): { [field: string]: any };
   toJSON(): { [field: string]: any };
   assign(data: any): void;
+  uuid: string;
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;

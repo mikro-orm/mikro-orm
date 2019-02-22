@@ -126,7 +126,7 @@ export class Utils {
     return null;
   }
 
-  static isEntity(data: any): boolean {
+  static isEntity<T = IEntity>(data: any): data is T {
     return Utils.isObject(data) && !!data.__entity;
   }
 

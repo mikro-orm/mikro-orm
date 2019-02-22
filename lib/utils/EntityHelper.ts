@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import { Collection } from '../Collection';
 import { SCALAR_TYPES } from '../EntityFactory';
 import { EntityManager } from '../EntityManager';
@@ -83,7 +84,7 @@ export class EntityHelper {
 
   private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
     if (Utils.isEntity(value)) {
-      entity[prop.name as keyof T] = value;
+      entity[prop.name as keyof T] = value as T[keyof T];
       return;
     }
 
@@ -112,6 +113,8 @@ export class EntityHelper {
       }
 
       invalid.push(item);
+
+      return item;
     });
 
     if (invalid.length > 0) {
@@ -160,6 +163,20 @@ export class EntityHelper {
         value(parent?: IEntity, isCollection?: boolean) {
           return EntityHelper.toObject(this, parent, isCollection);
         }
+      },
+      uuid: {
+        get(): string {
+          if (!this.__uuid) {
+            Object.defineProperty(this, '__uuid', {
+              value: uuid(),
+              enumerable: false,
+              writable: false,
+              configurable: false,
+            });
+          }
+
+          return this.__uuid;
+        },
       },
     });
 

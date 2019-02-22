@@ -57,6 +57,11 @@ export class EntityManager {
     return em.identityMap;
   }
 
+  addToIdentityMap(entity: IEntity) {
+    this.setIdentity(entity);
+    this.unitOfWork.addToIdentityMap(entity);
+  }
+
   getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
     return this.driver as D;
   }
@@ -193,7 +198,7 @@ export class EntityManager {
       throw new Error('You cannot merge entity without id!');
     }
 
-    const entity = Utils.isEntity(data) ? data as T : this.entityFactory.create<T>(entityName, data, true);
+    const entity = Utils.isEntity<T>(data) ? data : this.entityFactory.create<T>(entityName, data, true);
 
     if (this.getIdentity<T>(entityName, entity.id)) {
       EntityHelper.assign(entity, data);
@@ -226,6 +231,26 @@ export class EntityManager {
     return this.entityFactory.createReference<T>(entityName, id);
   }
 
+  async count<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number> {
+    entityName = Utils.className(entityName);
+    this.validator.validateParams(where);
+    return this.driver.count(entityName, where);
+  }
+
+  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
+    entity = Array.isArray(entity) ? entity : [entity];
+
+    for (const ent of entity) {
+      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
+        this.unitOfWork.persist(e);
+      });
+    }
+
+    if (flush) {
+      await this.flush();
+    }
+  }
+
   async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = true): Promise<number> {
     entityName = Utils.className(entityName);
 
@@ -239,29 +264,9 @@ export class EntityManager {
 
   async removeEntity(entity: IEntity, flush = true): Promise<void> {
     await this.cascade(entity, Cascade.REMOVE, async (e: IEntity) => {
-      await this.unitOfWork.remove(e);
+      this.unitOfWork.remove(e);
       this.unsetIdentity(e);
     });
-
-    if (flush) {
-      await this.flush();
-    }
-  }
-
-  async count<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number> {
-    entityName = Utils.className(entityName);
-    this.validator.validateParams(where);
-    return this.driver.count(entityName, where);
-  }
-
-  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
-    entity = Array.isArray(entity) ? entity : [entity];
-
-    for (const ent of entity) {
-      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
-        await this.unitOfWork.persist(e);
-      });
-    }
 
     if (flush) {
       await this.flush();
@@ -282,11 +287,6 @@ export class EntityManager {
     const map = this.getIdentityMap();
     Object.keys(map).forEach(key => delete map[key]);
     this.unitOfWork.clear();
-  }
-
-  addToIdentityMap(entity: IEntity) {
-    this.setIdentity(entity);
-    this.unitOfWork.addToIdentityMap(entity);
   }
 
   canPopulate(entityName: string | Function, property: string): boolean {
