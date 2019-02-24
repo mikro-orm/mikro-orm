@@ -1,15 +1,15 @@
 import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
 import { EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
-import { IPrimaryKey } from './decorators/PrimaryKey';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
+import { EntityIdentifier } from './utils/EntityIdentifier';
 
 export class UnitOfWork {
 
   // holds copy of entity manager's identity map so we can compute changes when persisting
   private readonly identityMap = {} as Record<string, IEntity>;
-  private readonly identifierMap = {} as Record<string, Identifier>;
+  private readonly identifierMap = {} as Record<string, EntityIdentifier>;
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet[] = [];
@@ -27,7 +27,7 @@ export class UnitOfWork {
     }
 
     if (!entity.id) {
-      this.identifierMap[entity.uuid] = new Identifier();
+      this.identifierMap[entity.uuid] = new EntityIdentifier();
     }
 
     this.persistStack.push(entity);
@@ -157,20 +157,16 @@ export class UnitOfWork {
     visited.push(entity);
 
     if (!entity.id && !this.identifierMap[entity.uuid]) {
-      this.identifierMap[entity.uuid] = new Identifier();
+      this.identifierMap[entity.uuid] = new EntityIdentifier();
     }
 
     for (const prop of Object.values(meta.properties)) {
       const reference = entity[prop.name as keyof T];
 
-      if (prop.reference === ReferenceType.MANY_TO_MANY) {
-        const collection = reference as Collection<IEntity>;
-
-        if (collection.isDirty()) {
-          for (const item of collection.getItems()) {
-            if (!this.hasIdentifier(item)) {
-              this.findNewEntities(item, visited);
-            }
+      if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
+        for (const item of (reference as Collection<IEntity>).getItems()) {
+          if (!this.hasIdentifier(item)) {
+            this.findNewEntities(item, visited);
           }
         }
       } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
@@ -193,10 +189,10 @@ export class UnitOfWork {
     for (const prop of Object.values(meta.properties)) {
       const value = changeSet.payload[prop.name];
 
-      if (value instanceof Identifier) {
+      if (value instanceof EntityIdentifier) {
         changeSet.payload[prop.name] = value.getValue();
-      } else if (Array.isArray(value) && value.some(item => item instanceof Identifier)) {
-        changeSet.payload[prop.name] = value.map(item => item instanceof Identifier ? item.getValue() : item);
+      } else if (Array.isArray(value) && value.some(item => item instanceof EntityIdentifier)) {
+        changeSet.payload[prop.name] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item);
       }
 
       if (prop.onUpdate) {
@@ -266,18 +262,4 @@ export interface ChangeSet<T extends IEntityType<T> = IEntityType<any>> {
   delete: boolean;
   entity: T;
   payload: EntityData<T>;
-}
-
-export class Identifier {
-
-  constructor(private value?: IPrimaryKey) { }
-
-  setValue(value: IPrimaryKey): void {
-    this.value = value;
-  }
-
-  getValue<T = IPrimaryKey>(): T {
-    return this.value as T;
-  }
-
 }
