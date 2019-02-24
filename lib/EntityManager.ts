@@ -20,7 +20,6 @@ export class EntityManager {
 
   readonly validator = new Validator(this.options.strict);
 
-  private readonly identityMap: { [k: string]: IEntity } = {};
   private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
   private readonly entityFactory = new EntityFactory(this);
   private readonly entityLoader = new EntityLoader(this);
@@ -33,28 +32,19 @@ export class EntityManager {
 
   getIdentity<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entityName}-${id}`;
-
-    return em.identityMap[token] as T;
+    return this.unitOfWork.getById<T>(entityName, id);
   }
 
-  setIdentity<T extends IEntityType<T>>(entity: T, id?: IPrimaryKey): void {
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entity.constructor.name}-${id || entity.id}`;
-    em.identityMap[token] = entity;
+  setIdentity<T extends IEntityType<T>>(entity: T): void {
+    this.unitOfWork.addToIdentityMap(entity);
   }
 
   unsetIdentity(entity: IEntity): void {
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entity.constructor.name}-${entity.id}`;
-    delete em.identityMap[token];
     this.unitOfWork.unsetIdentity(entity);
   }
 
-  getIdentityMap(): { [k: string]: IEntity } {
-    const em = RequestContext.getEntityManager() || this;
-    return em.identityMap;
+  getIdentityMap(): Record<string, IEntity> {
+    return this.unitOfWork.getIdentityMap();
   }
 
   addToIdentityMap(entity: IEntity) {

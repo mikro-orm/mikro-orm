@@ -16,6 +16,7 @@ export class EntityFactory {
   create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>, initialized = true): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata[entityName];
+    const Entity = require(meta.path)[meta.name];
     const exclude: string[] = [];
     let entity: T;
 
@@ -27,16 +28,15 @@ export class EntityFactory {
 
     if (!data.id) {
       const params = this.extractConstructorParams<T>(meta, data);
-      const Entity = require(meta.path)[entityName];
       entity = new Entity(...params);
       exclude.push(...meta.constructorParams);
     } else if (this.em.getIdentity(entityName, data.id)) {
       entity = this.em.getIdentity<T>(entityName, data.id);
     } else {
       // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
-      const Entity = require(meta.path)[meta.name];
       entity = Object.create(Entity.prototype);
-      this.em.setIdentity(entity, data.id);
+      entity.id = data.id as number | string;
+      this.em.setIdentity(entity);
     }
 
     this.initEntity(entity, meta, data, exclude);

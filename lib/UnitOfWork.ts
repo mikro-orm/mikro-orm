@@ -4,12 +4,19 @@ import { EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from 
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
 import { EntityIdentifier } from './utils/EntityIdentifier';
+import { IPrimaryKey } from './decorators/PrimaryKey';
 
 export class UnitOfWork {
 
-  // holds copy of entity manager's identity map so we can compute changes when persisting
+  /** map of references to managed entities */
   private readonly identityMap = {} as Record<string, IEntity>;
+
+  /** holds copy of identity map so we can compute changes when persisting managed entities */
+  private readonly originalEntityData = {} as Record<string, IEntity>;
+
+  /** map of wrapped primary keys so we can compute change set without eager commit */
   private readonly identifierMap = {} as Record<string, EntityIdentifier>;
+
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet[] = [];
@@ -18,7 +25,17 @@ export class UnitOfWork {
   constructor(private em: EntityManager) { }
 
   addToIdentityMap(entity: IEntity): void {
-    this.identityMap[`${entity.constructor.name}-${entity.id}`] = Utils.copy(entity);
+    this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
+    this.originalEntityData[entity.uuid] = Utils.copy(entity);
+  }
+
+  getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
+    const token = `${entityName}-${id}`;
+    return this.identityMap[token] as T;
+  }
+
+  getIdentityMap(): Record<string, IEntity> {
+    return this.identityMap;
   }
 
   persist<T extends IEntityType<T>>(entity: T): void {
@@ -52,7 +69,7 @@ export class UnitOfWork {
     this.computeChangeSets();
 
     if (this.changeSets.length === 0) {
-      return this.clear(false); // nothing to do, do not start transaction
+      return this.postCommitCleanup(); // nothing to do, do not start transaction
     }
 
     const driver = this.em.getDriver();
@@ -70,22 +87,19 @@ export class UnitOfWork {
       }
     }
 
-    this.clear(false);
+    this.postCommitCleanup();
   }
 
-  clear(identityMap = true): void {
-    if (identityMap) {
-      Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
-    }
-
-    Object.keys(this.identifierMap).forEach(key => delete this.identifierMap[key]);
-    this.persistStack.length = 0;
-    this.removeStack.length = 0;
-    this.changeSets.length = 0;
+  clear(): void {
+    Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
+    Object.keys(this.originalEntityData).forEach(key => delete this.originalEntityData[key]);
+    this.postCommitCleanup();
   }
 
   unsetIdentity(entity: IEntity): void {
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
+    delete this.identifierMap[entity.uuid];
+    delete this.originalEntityData[entity.uuid];
   }
 
   computeChangeSets(): void {
@@ -108,8 +122,8 @@ export class UnitOfWork {
     changeSet.name = meta.name;
     changeSet.collection = meta.collection;
 
-    if (entity.id && this.identityMap[`${meta.name}-${entity.id}`]) {
-      changeSet.payload = Utils.diffEntities(this.identityMap[`${meta.name}-${entity.id}`], entity);
+    if (entity.id && this.originalEntityData[entity.uuid]) {
+      changeSet.payload = Utils.diffEntities(this.originalEntityData[entity.uuid], entity);
     } else {
       changeSet.payload = Utils.prepareEntity(entity);
     }
@@ -123,6 +137,7 @@ export class UnitOfWork {
 
     this.changeSets.push(changeSet);
     this.cleanUpStack(this.persistStack, entity);
+    this.originalEntityData[entity.uuid] = Utils.copy(entity);
 
     return changeSet;
   }
@@ -235,12 +250,19 @@ export class UnitOfWork {
   /**
    * clean up persist/remove stack from previous persist/remove calls for this entity done before flushing
    */
-  private cleanUpStack(stack: IEntity[], entity: IEntity) {
+  private cleanUpStack(stack: IEntity[], entity: IEntity): void {
     for (const index in stack) {
       if (stack[index] === entity) {
         stack.splice(+index, 1);
       }
     }
+  }
+
+  private postCommitCleanup(): void {
+    Object.keys(this.identifierMap).forEach(key => delete this.identifierMap[key]);
+    this.persistStack.length = 0;
+    this.removeStack.length = 0;
+    this.changeSets.length = 0;
   }
 
   private hasIdentifier<T extends IEntityType<T>>(entity: T): boolean {

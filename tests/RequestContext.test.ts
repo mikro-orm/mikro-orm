@@ -16,7 +16,7 @@ describe('RequestContext', () => {
     RequestContext.create(orm.em, () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
-      expect(em['identityMap']).not.toBe(orm.em['identityMap']);
+      expect(em['_unitOfWork']['identityMap']).not.toBe(orm.em['_unitOfWork']['identityMap']);
     });
   });
 
