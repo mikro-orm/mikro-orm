@@ -58,11 +58,10 @@ export class UnitOfWork {
 
     if (entity.id) {
       this.removeStack.push(entity);
-    } else {
-      delete this.identifierMap[entity.uuid];
     }
 
     this.cleanUpStack(this.persistStack, entity);
+    this.unsetIdentity(entity);
   }
 
   async commit(): Promise<void> {

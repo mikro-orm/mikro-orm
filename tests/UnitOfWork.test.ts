@@ -77,6 +77,9 @@ describe('UnitOfWork', () => {
     uow.addToIdentityMap(author); // add entity to IM first
     const changeSet = await uow.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
+    expect(uow.getIdentityMap()).not.toEqual({});
+    uow.clear();
+    expect(uow.getIdentityMap()).toEqual({});
   });
 
   test('persist and remove will add entity to given stack only once', async () => {

@@ -110,7 +110,7 @@ export class Utils {
     return result;
   }
 
-  static isPrimaryKey(key: any): boolean {
+  static isPrimaryKey(key: any): key is IPrimaryKey {
     return typeof key === 'string' || typeof key === 'number' || Utils.isObjectID(key);
   }
 
