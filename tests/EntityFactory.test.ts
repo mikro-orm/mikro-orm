@@ -1,36 +1,13 @@
 import { Book, Author, Publisher } from './entities';
-import { EntityManager, MikroORM, Collection, MikroORMOptions, MongoNamingStrategy } from '../lib';
+import { MikroORM, Collection } from '../lib';
 import { EntityFactory } from '../lib/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { Validator } from '../lib/Validator';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
 import { Logger } from '../lib/utils/Logger';
 import { ReferenceType } from '../lib/decorators/Entity';
 
 const logger = new Logger({ logger: jest.fn() } as any);
-const Mock = jest.fn<EntityManager, any>(() => ({
-  connection: jest.fn(),
-  identityMap: jest.fn(),
-  options: {
-    baseDir: __dirname,
-    entitiesDirs: ['entities'],
-    logger: jest.fn(),
-  },
-  getReference: jest.fn(),
-  getDriver: () => new MongoDriver({
-    dbName: 'mikro-orm-test',
-    clientUrl: 'mongo://...',
-  } as MikroORMOptions, logger),
-  getIdentity: jest.fn(),
-  setIdentity: jest.fn(),
-  validator: new Validator(false),
-  namingStrategy: new MongoNamingStrategy(),
-} as any));
-const em = new Mock();
-const factory = new EntityFactory(em);
-Object.assign(em, { entityFactory: factory });
 
 /**
  * @class EntityFactoryTest
@@ -38,10 +15,12 @@ Object.assign(em, { entityFactory: factory });
 describe('EntityFactory', () => {
 
   let orm: MikroORM;
+  let factory: EntityFactory;
 
   beforeAll(async () => {
     orm = await initORM();
-    new MetadataStorage(em, orm.options, logger).discover();
+    new MetadataStorage(orm.em, orm.options, logger).discover();
+    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver());
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
@@ -95,6 +74,14 @@ describe('EntityFactory', () => {
     expect(book.id).toBeNull();
     expect(book.title).toBe('book title');
     expect(book.author).toBe(author);
+
+    // try with id of entity that is not managed
+    const book2 = orm.em.create(Book, { title: 'book title', author: '5b0d19b28b21c648c2c8a601' });
+    expect(book2).toBeInstanceOf(Book);
+    expect(book2.id).toBeNull();
+    expect(book2.title).toBe('book title');
+    expect(book2.author).toBeInstanceOf(Author);
+    expect(book2.author.id).toBe('5b0d19b28b21c648c2c8a601');
   });
 
   test('create should create entity without calling constructor', async () => {

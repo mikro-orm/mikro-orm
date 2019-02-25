@@ -170,11 +170,11 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     await repo.persist(author);
-    expect(orm.em.getIdentity(Author, author.id)).toBeDefined();
+    expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
     await repo.persist(author, false);
     await orm.em.removeEntity(author);
-    expect(orm.em.getIdentity(Author, author.id)).toBeUndefined();
+    expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getIdentityMap()).toEqual({});
   });
 

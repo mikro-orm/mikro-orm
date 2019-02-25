@@ -21,19 +21,19 @@ describe('UnitOfWork', () => {
     // number instead of string will throw
     const author = new Author('test', 'test');
     Object.assign(author, { name: 111, email: 222 });
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.name of type 'string' to '111' of type 'number'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: trying to set Author.name of type 'string' to '111' of type 'number'`);
 
     // string date with unknown format will throw
     Object.assign(author, { name: '333', email: '444', born: 'asd' });
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: trying to set Author.born of type 'date' to 'asd' of type 'string'`);
 
     // number bool with other value than 0/1 will throw
     Object.assign(author, { termsAccepted: 2 });
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
 
     // string date with correct format will be auto-corrected
     Object.assign(author, { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 });
-    let changeSet = (await uow.persist(author))!;
+    let changeSet = uow.computeChangeSet(author)!;
     expect(typeof changeSet.payload.name).toBe('string');
     expect(changeSet.payload.name).toBe('333');
     expect(typeof changeSet.payload.email).toBe('string');
@@ -44,56 +44,56 @@ describe('UnitOfWork', () => {
 
     // Date object will be ok
     Object.assign(author, { born: new Date() });
-    changeSet = (await uow.persist(author))!;
+    changeSet = (await uow.computeChangeSet(author))!;
     expect(changeSet.payload.born instanceof Date).toBe(true);
 
     // null will be ok
     Object.assign(author, { born: null });
-    changeSet = (await uow.persist(author))!;
+    changeSet = (await uow.computeChangeSet(author))!;
     expect(changeSet.payload.born).toBeNull();
 
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
-    changeSet = (await uow.persist(author))!;
+    changeSet = (await uow.computeChangeSet(author))!;
     expect(typeof changeSet.payload.age).toBe('number');
     expect(changeSet.payload.age).toBe(21);
 
     // string instead of number with will throw
     Object.assign(author, { age: 'asd' });
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.age of type 'number' to 'asd' of type 'string'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: trying to set Author.age of type 'number' to 'asd' of type 'string'`);
     Object.assign(author, { age: new Date() });
-    await expect(uow.persist(author)).rejects.toThrowError(/Validation error: trying to set Author\.age of type 'number' to '.*' of type 'date'/);
+    expect(() => uow.computeChangeSet(author)).toThrowError(/Validation error: trying to set Author\.age of type 'number' to '.*' of type 'date'/);
     Object.assign(author, { age: false });
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
 
     // missing collection instance in m:n and 1:m relations
     delete author.books;
-    await expect(uow.persist(author)).rejects.toThrowError(`Validation error: Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
+    expect(() => uow.computeChangeSet(author)).toThrowError(`Validation error: Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
   });
 
   test('changeSet is null for empty payload', async () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.addToIdentityMap(author); // add entity to IM first
-    const changeSet = await uow.persist(author); // then try to persist it again
+    const changeSet = await uow.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
+    expect(uow.getIdentityMap()).not.toEqual({});
+    uow.clear();
+    expect(uow.getIdentityMap()).toEqual({});
   });
 
-  test('changeSet is null when persisting twice', async () => {
+  test('persist and remove will add entity to given stack only once', async () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
-    const changeSet1 = await uow.persist(author);
-    expect(changeSet1).not.toBeNull();
-    const changeSet2 = await uow.persist(author);
-    expect(changeSet2).toBeNull();
-  });
-
-  test('commit runs everything in transaction', async () => {
-    const author = new Author('test', 'test');
-    author.id = '00000001885f0a3cc37dc9f0';
-    await uow.persist(author);
-    uow['persistStack'][0].payload = 'foo-bar' as any; // make it rollback
-    await expect(uow.commit()).rejects.toThrow();
+    uow.persist(author);
+    expect(uow['persistStack'].length).toBe(1);
+    uow.persist(author);
+    expect(uow['persistStack'].length).toBe(1);
+    uow.remove(author);
+    expect(uow['persistStack'].length).toBe(0);
+    expect(uow['removeStack'].length).toBe(1);
+    uow.remove(author);
+    expect(uow['removeStack'].length).toBe(1);
   });
 
   afterAll(async () => orm.close(true));

@@ -16,7 +16,8 @@ describe('RequestContext', () => {
     RequestContext.create(orm.em, () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
-      expect(em['identityMap']).not.toBe(orm.em['identityMap']);
+      // access UoW via property so we do not get the one from request context automatically
+      expect(em['unitOfWork'].getIdentityMap()).not.toBe(orm.em['unitOfWork'].getIdentityMap());
     });
   });
 

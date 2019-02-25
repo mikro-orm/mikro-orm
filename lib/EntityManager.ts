@@ -20,41 +20,18 @@ export class EntityManager {
 
   readonly validator = new Validator(this.options.strict);
 
-  private readonly identityMap: { [k: string]: IEntity } = {};
   private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
-  private readonly entityFactory = new EntityFactory(this);
   private readonly entityLoader = new EntityLoader(this);
   private readonly metadata = MetadataStorage.getMetadata();
-  private readonly _unitOfWork = new UnitOfWork(this);
+  private readonly unitOfWork = new UnitOfWork(this);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver);
 
   constructor(readonly options: MikroORMOptions,
               private readonly driver: IDatabaseDriver<Connection>) {
   }
 
-  getIdentity<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
-    entityName = Utils.className(entityName);
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entityName}-${id}`;
-
-    return em.identityMap[token] as T;
-  }
-
-  setIdentity<T extends IEntityType<T>>(entity: T, id?: IPrimaryKey): void {
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entity.constructor.name}-${id || entity.id}`;
-    em.identityMap[token] = entity;
-  }
-
-  unsetIdentity(entity: IEntity): void {
-    const em = RequestContext.getEntityManager() || this;
-    const token = `${entity.constructor.name}-${entity.id}`;
-    delete em.identityMap[token];
-    this.unitOfWork.unsetIdentity(entity);
-  }
-
-  getIdentityMap(): { [k: string]: IEntity } {
-    const em = RequestContext.getEntityManager() || this;
-    return em.identityMap;
+  getIdentityMap(): Record<string, IEntity> {
+    return this.getUnitOfWork().getIdentityMap();
   }
 
   getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
@@ -72,8 +49,8 @@ export class EntityManager {
       const meta = this.metadata[entityName];
 
       if (meta.customRepository) {
-        const customRepository = meta.customRepository();
-        this.repositoryMap[entityName] = new customRepository(this, entityName);
+        const CustomRepository = meta.customRepository();
+        this.repositoryMap[entityName] = new CustomRepository(this, entityName);
       } else {
         this.repositoryMap[entityName] = new EntityRepository<T>(this, entityName);
       }
@@ -115,13 +92,14 @@ export class EntityManager {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
 
-    where = this.driver.normalizePrimaryKey(where as IPrimaryKey);
+    if (Utils.isPrimaryKey(where)) {
+      where = this.driver.normalizePrimaryKey<IPrimaryKey>(where);
+      const entity = this.getUnitOfWork().getById<T>(entityName, where);
 
-    if (Utils.isPrimaryKey(where) && this.getIdentity(entityName, where as IPrimaryKey) && this.getIdentity(entityName, where as IPrimaryKey).isInitialized()) {
-      const entity = this.getIdentity<T>(entityName, where as IPrimaryKey);
-      await this.entityLoader.populate(entityName, [entity], populate);
-
-      return entity;
+      if (entity && entity.isInitialized()) {
+        await this.entityLoader.populate(entityName, [entity], populate);
+        return entity;
+      }
     }
 
     this.validator.validateParams(where);
@@ -193,14 +171,9 @@ export class EntityManager {
       throw new Error('You cannot merge entity without id!');
     }
 
-    const entity = Utils.isEntity(data) ? data as T : this.entityFactory.create<T>(entityName, data, true);
-
-    if (this.getIdentity<T>(entityName, entity.id)) {
-      EntityHelper.assign(entity, data);
-      this.unitOfWork.addToIdentityMap(entity);
-    } else {
-      this.addToIdentityMap(entity);
-    }
+    const entity = Utils.isEntity<T>(data) ? data : this.entityFactory.create<T>(entityName, data, true);
+    EntityHelper.assign(entity, data);
+    this.getUnitOfWork().addToIdentityMap(entity);
 
     return entity as T;
   }
@@ -219,11 +192,31 @@ export class EntityManager {
   getReference<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
 
-    if (this.getIdentity(entityName, id)) {
-      return this.getIdentity<T>(entityName, id);
+    if (this.getUnitOfWork().getById(entityName, id)) {
+      return this.getUnitOfWork().getById<T>(entityName, id);
     }
 
     return this.entityFactory.createReference<T>(entityName, id);
+  }
+
+  async count<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number> {
+    entityName = Utils.className(entityName);
+    this.validator.validateParams(where);
+    return this.driver.count(entityName, where);
+  }
+
+  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
+    entity = Array.isArray(entity) ? entity : [entity];
+
+    for (const ent of entity) {
+      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
+        this.getUnitOfWork().persist(e);
+      });
+    }
+
+    if (flush) {
+      await this.flush();
+    }
   }
 
   async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = true): Promise<number> {
@@ -239,29 +232,8 @@ export class EntityManager {
 
   async removeEntity(entity: IEntity, flush = true): Promise<void> {
     await this.cascade(entity, Cascade.REMOVE, async (e: IEntity) => {
-      await this.unitOfWork.remove(e);
-      this.unsetIdentity(e);
+      this.getUnitOfWork().remove(e);
     });
-
-    if (flush) {
-      await this.flush();
-    }
-  }
-
-  async count<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number> {
-    entityName = Utils.className(entityName);
-    this.validator.validateParams(where);
-    return this.driver.count(entityName, where);
-  }
-
-  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
-    entity = Array.isArray(entity) ? entity : [entity];
-
-    for (const ent of entity) {
-      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
-        await this.unitOfWork.persist(e);
-      });
-    }
 
     if (flush) {
       await this.flush();
@@ -272,21 +244,14 @@ export class EntityManager {
    * flush changes to database
    */
   async flush(): Promise<void> {
-    await this.unitOfWork.commit();
+    await this.getUnitOfWork().commit();
   }
 
   /**
    * clear identity map, detaching all entities
    */
   clear(): void {
-    const map = this.getIdentityMap();
-    Object.keys(map).forEach(key => delete map[key]);
-    this.unitOfWork.clear();
-  }
-
-  addToIdentityMap(entity: IEntity) {
-    this.setIdentity(entity);
-    this.unitOfWork.addToIdentityMap(entity);
+    this.getUnitOfWork().clear();
   }
 
   canPopulate(entityName: string | Function, property: string): boolean {
@@ -308,6 +273,11 @@ export class EntityManager {
 
   fork(): EntityManager {
     return new EntityManager(this.options, this.driver);
+  }
+
+  getUnitOfWork(): UnitOfWork {
+    const em = RequestContext.getEntityManager() || this;
+    return em.unitOfWork;
   }
 
   private async cascade<T extends IEntityType<T>>(entity: T, type: Cascade, cb: (e: IEntity) => Promise<void>, visited: IEntity[] = []): Promise<void> {
@@ -339,11 +309,6 @@ export class EntityManager {
         }
       }
     }
-  }
-
-  private get unitOfWork(): UnitOfWork {
-    const em = RequestContext.getEntityManager() || this;
-    return em._unitOfWork;
   }
 
 }

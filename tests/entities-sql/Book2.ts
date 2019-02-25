@@ -13,13 +13,13 @@ export class Book2 extends BaseEntity2 {
   @Property()
   title: string;
 
-  @ManyToOne()
+  @ManyToOne({ cascade: [] })
   author: Author2;
 
-  @ManyToOne()
+  @ManyToOne({ cascade: [] })
   publisher: Publisher2;
 
-  @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books' })
+  @ManyToMany({ entity: () => BookTag2.name, inversedBy: 'books', cascade: [] })
   tags: Collection<BookTag2>;
 
   constructor(title: string, author: Author2) {
