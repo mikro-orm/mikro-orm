@@ -162,13 +162,8 @@ export class UnitOfWork {
     }
   }
 
-  private findNewEntities<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
-    if (visited.includes(entity)) {
-      return;
-    }
-
+  private findNewEntities<T extends IEntityType<T>>(entity: T): void {
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
-    visited.push(entity);
 
     if (!entity.id && !this.identifierMap[entity.uuid]) {
       this.identifierMap[entity.uuid] = new EntityIdentifier();
@@ -180,12 +175,12 @@ export class UnitOfWork {
       if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
         for (const item of (reference as Collection<IEntity>).getItems()) {
           if (!this.hasIdentifier(item)) {
-            this.findNewEntities(item, visited);
+            this.findNewEntities(item);
           }
         }
       } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
         if (!this.hasIdentifier(reference)) {
-          this.findNewEntities(reference, visited);
+          this.findNewEntities(reference);
         }
       }
     }

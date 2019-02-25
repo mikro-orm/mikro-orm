@@ -458,11 +458,11 @@ describe('EntityManagerMySql', () => {
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tag1);
+    book.tags.add(tag1, new BookTag2('fresh'));
     await orm.em.persist(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
-    expect(book.tags.count()).toBe(2);
+    expect(book.tags.count()).toBe(3);
 
     // contains
     expect(book.tags.contains(tag1)).toBe(true);
