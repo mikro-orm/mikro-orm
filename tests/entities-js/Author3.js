@@ -91,12 +91,12 @@ const schema = {
       type: 'Date',
     },
     books: {
-      reference: 2,
+      reference: '1:m',
       fk: 'author',
       type: 'Book3',
     },
     favouriteBook: {
-      reference: 1,
+      reference: 'm:1',
       type: 'Book3',
       fk: 'id',
     },

@@ -28,12 +28,12 @@ const schema = {
       type: 'string',
     },
     books: {
-      reference: 2,
+      reference: '1:m',
       fk: 'publisher',
       type: 'Book3',
     },
     tests: {
-      reference: 3,
+      reference: 'm:n',
       owner: true,
       type: 'Test3',
     },

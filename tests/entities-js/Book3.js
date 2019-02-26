@@ -34,17 +34,17 @@ const schema = {
       type: 'string',
     },
     author: {
-      reference: 1,
+      reference: 'm:1',
       type: 'Author3',
       fk: 'id',
     },
     publisher: {
-      reference: 1,
+      reference: 'm:1',
       type: 'Publisher3',
       fk: 'id',
     },
     tags: {
-      reference: 3,
+      reference: 'm:n',
       owner: true,
       inversedBy: 'books',
       type: 'BookTag3',

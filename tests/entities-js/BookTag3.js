@@ -27,7 +27,7 @@ const schema = {
       type: 'string',
     },
     books: {
-      reference: 3,
+      reference: 'm:n',
       owner: false,
       mappedBy: 'tags',
       type: 'Book3',

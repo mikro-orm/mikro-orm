@@ -69,12 +69,12 @@ const schema = {
       type: 'Date',
     },
     books: {
-      reference: 2,
+      reference: '1:m',
       fk: 'author',
       type: 'Book',
     },
     favouriteBook: {
-      reference: 1,
+      reference: 'm:1',
       type: 'Book',
       fk: 'id',
     },
@@ -88,10 +88,10 @@ Reference parameter can be one of (where `SCALAR` is the default one):
 
 ```typescript
 export enum ReferenceType {
-  SCALAR = 0,
-  MANY_TO_ONE = 1,
-  ONE_TO_MANY = 2,
-  MANY_TO_MANY = 3,
+  SCALAR = 'scalar',
+  MANY_TO_ONE = 'm:1',
+  ONE_TO_MANY = '1:m',
+  MANY_TO_MANY = 'm:n',
 }
 ```
 
@@ -99,9 +99,9 @@ When initializing ORM, provide `JavaScriptMetadataProvider` as metadata provider
 
 ```javascript
 const orm = await MikroORM.init({
-    entitiesDirs: ['entities'],
-    dbName: '...',
-    metadataProvider: JavaScriptMetadataProvider,
+  entitiesDirs: ['entities'],
+  dbName: '...',
+  metadataProvider: JavaScriptMetadataProvider,
 });
 ```
 
