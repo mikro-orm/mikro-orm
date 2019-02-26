@@ -7,8 +7,8 @@ import { IPrimaryKey } from './PrimaryKey';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
-    const storage = MetadataStorage.getMetadata(target.name);
-    const meta = Utils.merge(storage[target.name], options);
+    const meta = MetadataStorage.getMetadata(target.name);
+    Utils.merge(meta, options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
     meta.extends = Object.getPrototypeOf(target).name || undefined;

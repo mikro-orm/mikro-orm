@@ -32,3 +32,4 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
   - [Usage with MongoDB](usage-with-mongo.md)
 - Recipes
   - [Usage with NestJS](usage-with-nestjs.md)
+  - [Usage with Vanilla JS](usage-with-js.md)

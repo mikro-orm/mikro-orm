@@ -4,11 +4,7 @@ import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function OneToMany(options: OneToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {
-    const entity = target.constructor.name;
-    const storage = MetadataStorage.getMetadata(entity);
-
-    const meta = storage[entity];
-    meta.properties = meta.properties || {};
+    const meta = MetadataStorage.getMetadata(target.constructor.name);
 
     if (!options.entity) {
       throw new Error(`'@OneToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);

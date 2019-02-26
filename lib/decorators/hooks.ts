@@ -32,8 +32,7 @@ export function AfterDelete() {
 
 function hook(type: string) {
   return function (target: any, method: string) {
-    const storage = MetadataStorage.getMetadata(target.constructor.name);
-    const meta = storage[target.constructor.name];
+    const meta = MetadataStorage.getMetadata(target.constructor.name);
 
     if (!meta.hooks) {
       meta.hooks = {};

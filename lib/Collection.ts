@@ -201,8 +201,7 @@ export class Collection<T extends IEntityType<T>> {
 
   private get property() {
     if (!this._property) {
-      const metadata = MetadataStorage.getMetadata();
-      const meta = metadata[this.owner.constructor.name];
+      const meta = MetadataStorage.getMetadata(this.owner.constructor.name);
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

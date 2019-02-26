@@ -6,6 +6,8 @@ import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
 import { Logger } from './utils/Logger';
 import { Utils } from './utils/Utils';
+import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvider';
+import { MetadataProvider } from './metadata/MetadataProvider';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -19,6 +21,7 @@ const defaultOptions = {
     adapter: FileCacheAdapter,
     options: { cacheDir: process.cwd() + '/temp' },
   },
+  metadataProvider: TypeScriptMetadataProvider,
 };
 
 export class MikroORM {
@@ -64,7 +67,7 @@ export class MikroORM {
   async connect(): Promise<IDatabaseDriver> {
     await this.driver.getConnection().connect();
     const clientUrl = this.options.clientUrl!.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
-    this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
+    this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName}${clientUrl ? ' on ' + clientUrl : ''}`);
 
     return this.driver;
   }
@@ -101,6 +104,7 @@ export interface MikroORMOptions {
     adapter: { new (...params: any[]): CacheAdapter },
     options: { [k: string]: any },
   },
+  metadataProvider: { new (options: MikroORMOptions): MetadataProvider },
 }
 
 export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof defaultOptions>> | MikroORMOptions;
