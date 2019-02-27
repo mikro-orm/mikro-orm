@@ -9,6 +9,7 @@ import { Logger } from './utils/Logger';
 
 const defaultOptions = {
   entitiesDirs: [],
+  autoFlush: true,
   strict: false,
   logger: () => undefined,
   baseDir: process.cwd(),
@@ -82,6 +83,7 @@ export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
   entitiesDirsTs?: string[];
+  autoFlush: boolean;
   driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   clientUrl?: string;

@@ -29,6 +29,23 @@ await orm.em.persist(book2, false);
 await orm.em.persist(book3); // flush everything to database at once
 ```
 
+### Auto flushing
+
+By default, `EntityManager.persist()` will **flush your changes automatically**. You can use
+its second parameter to disable auto-flushing, and use `EntityManager.flush()` manually. 
+
+You can also disable this feature globally via `autoFlush` option when initializing the ORM:
+
+```typescript
+const orm = await MikroORM.init({
+  autoFlush: false,
+  // ...
+});
+await orm.em.persist(new Entity()); // no auto-flushing now
+await orm.em.flush();
+await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
+``` 
+
 ## Fetching entities with EntityManager
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 

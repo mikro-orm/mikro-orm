@@ -6,10 +6,10 @@ import { EntityClass, EntityData, IEntityType } from './decorators/Entity';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
-  constructor(private _em: EntityManager,
-              protected entityName: string | EntityClass<T>) { }
+  constructor(private readonly _em: EntityManager,
+              protected readonly entityName: string | EntityClass<T>, ) { }
 
-  async persist(entity: T, flush = true): Promise<void> {
+  async persist(entity: T, flush = this._em.options.autoFlush): Promise<void> {
     return this.em.persist(entity, flush);
   }
 
@@ -25,7 +25,7 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
   }
 
-  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = true): Promise<number> {
+  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this._em.options.autoFlush): Promise<number> {
     return this.em.remove(this.entityName, where, flush);
   }
 

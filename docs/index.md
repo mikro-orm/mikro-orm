@@ -16,7 +16,7 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
   - [Persisting, cascading and fetching entities with `EntityManager`](entity-manager.md)
   - [Using `EntityRepository` instead of `EntityManager`](repositories.md)
 - Fundamentals
-  - [Identity Map](identity-map.md)
+  - [Identity Map and Request Context](identity-map.md)
   - [Entity references](entity-references.md)
   - [Using entity constructors](entity-constructors.md)
   - [Collections](collections.md)

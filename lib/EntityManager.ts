@@ -205,7 +205,7 @@ export class EntityManager {
     return this.driver.count(entityName, where);
   }
 
-  async persist(entity: IEntity | IEntity[], flush = true): Promise<void> {
+  async persist(entity: IEntity | IEntity[], flush = this.options.autoFlush): Promise<void> {
     entity = Array.isArray(entity) ? entity : [entity];
 
     for (const ent of entity) {
@@ -219,7 +219,7 @@ export class EntityManager {
     }
   }
 
-  async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = true): Promise<number> {
+  async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = this.options.autoFlush): Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
@@ -230,7 +230,7 @@ export class EntityManager {
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: IEntity, flush = true): Promise<void> {
+  async removeEntity(entity: IEntity, flush = this.options.autoFlush): Promise<void> {
     await this.cascade(entity, Cascade.REMOVE, async (e: IEntity) => {
       this.getUnitOfWork().remove(e);
     });

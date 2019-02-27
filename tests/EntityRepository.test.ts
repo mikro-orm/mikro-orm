@@ -15,6 +15,7 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
+  options: { autoFlush: true },
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
