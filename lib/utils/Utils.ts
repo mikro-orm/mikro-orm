@@ -1,5 +1,6 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
+
 import { IEntity, IPrimaryKey } from '..';
 import { Collection } from '../Collection';
 import { MetadataStorage } from '../metadata/MetadataStorage';
@@ -7,11 +8,11 @@ import { IEntityType } from '../decorators/Entity';
 
 export class Utils {
 
-  static isObject(o: any): boolean {
-    return typeof o === 'object' && o !== null;
+  static isObject(o: any): o is Record<string, any> {
+    return !!o && typeof o === 'object' && !Array.isArray(o);
   }
 
-  static isString(s: any): boolean {
+  static isString(s: any): s is string {
     return typeof s === 'string';
   }
 
@@ -21,6 +22,30 @@ export class Utils {
 
   static unique<T = string>(items: T[]): T[] {
     return [...new Set(items)];
+  }
+
+  static merge(target: any, ...sources: any[]): any {
+    if (!sources.length) {
+      return target;
+    }
+
+    const source = sources.shift();
+
+    if (Utils.isObject(target) && Utils.isObject(source)) {
+      Object.entries(source).forEach(([key, value]) => {
+        if (Utils.isObject(value)) {
+          if (!target[key]) {
+            Object.assign(target, { [key]: {} });
+          }
+
+          Utils.merge(target[key], value);
+        } else {
+          Object.assign(target, { [key]: value });
+        }
+      });
+    }
+
+    return Utils.merge(target, ...sources);
   }
 
   static diff(a: Record<string, any>, b: Record<string, any>): Record<string, any> {

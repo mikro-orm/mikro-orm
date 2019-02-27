@@ -22,7 +22,7 @@ describe('Utils', () => {
     expect(Utils.isObject(0)).toBe(false);
     expect(Utils.isObject(5)).toBe(false);
     expect(Utils.isObject(5.3)).toBe(false);
-    expect(Utils.isObject(['a'])).toBe(true);
+    expect(Utils.isObject(['a'])).toBe(false);
     expect(Utils.isObject(null)).toBe(false);
     expect(Utils.isObject(() => 1)).toBe(false);
     expect(Utils.isObject(function() { return 1; })).toBe(false);
@@ -56,6 +56,17 @@ describe('Utils', () => {
     expect(Utils.equals({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toBe(true);
     expect(Utils.equals({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toBe(false);
     expect(Utils.equals({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toBe(true);
+  });
+
+  test('merge', () => {
+    expect(Utils.merge({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toEqual({a: 'b', b: 'c'});
+    expect(Utils.merge({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}});
+    expect(Utils.merge({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toEqual({a: 'a', b: 'c'});
+    expect(Utils.merge({a: 'a', b: 'c', c: {a: 'u', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', b: 'c', c: {a: 'u', d: 'e', f: ['g', 'h']}});
+    expect(Utils.merge({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
+    expect(Utils.merge({a: 'a', b: ['c']}, {b: []})).toEqual({a: 'a', b: []});
+    expect(Utils.merge({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b', b: ['c']});
+    expect(Utils.merge({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined, b: ['c']});
   });
 
   test('diff', () => {

@@ -1,12 +1,11 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, EntityHelper,
+  Cascade, Collection, Entity, OneToMany, Property, ManyToOne, EntityHelper,
 } from '../../lib';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
-import { Cascade } from '../../lib/decorators/Entity';
 
 @Entity({ customRepository: () => AuthorRepository })
 export class Author extends BaseEntity {

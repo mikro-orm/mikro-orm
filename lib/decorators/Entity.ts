@@ -1,4 +1,3 @@
-import { merge } from 'lodash';
 import { Utils } from '../utils/Utils';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityManager } from '../EntityManager';
@@ -9,7 +8,7 @@ import { IPrimaryKey } from './PrimaryKey';
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
     const storage = MetadataStorage.getMetadata(target.name);
-    const meta = merge(storage[target.name], options);
+    const meta = Utils.merge(storage[target.name], options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
     meta.extends = Object.getPrototypeOf(target).name || undefined;

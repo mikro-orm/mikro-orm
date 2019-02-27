@@ -1,4 +1,3 @@
-import { merge } from 'lodash';
 import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
@@ -6,6 +5,7 @@ import { MetadataStorage } from './metadata/MetadataStorage';
 import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
 import { Logger } from './utils/Logger';
+import { Utils } from './utils/Utils';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -39,7 +39,7 @@ export class MikroORM {
   }
 
   constructor(options: Options) {
-    this.options = merge({}, defaultOptions, options);
+    this.options = Utils.merge({}, defaultOptions, options);
 
     if (!this.options.dbName) {
       throw new Error('No database specified, please fill in `dbName` option');

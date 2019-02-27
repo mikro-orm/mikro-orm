@@ -1,4 +1,3 @@
-import { merge } from 'lodash';
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
@@ -102,7 +101,7 @@ export class MetadataStorage {
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${name}`);
-      merge(meta, cache);
+      Utils.merge(meta, cache);
       meta.prototype = target.prototype;
 
       return meta;

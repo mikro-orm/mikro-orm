@@ -58,7 +58,6 @@
   "dependencies": {
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
-    "lodash.merge": "^4.6.1",
     "node-request-context": "^1.0.5",
     "ts-morph": "^1.2.0",
     "typescript": "^3.3.3",
@@ -72,7 +71,6 @@
   "devDependencies": {
     "@types/clone": "^0.1.30",
     "@types/jest": "^24.0.6",
-    "@types/lodash": "^4.14.121",
     "@types/mongodb": "^3.1.19",
     "@types/mysql2": "types/mysql2",
     "@types/node": "^11.9.4",
