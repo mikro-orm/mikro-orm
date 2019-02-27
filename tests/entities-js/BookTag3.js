@@ -23,9 +23,7 @@ const schema = {
   name: 'BookTag3',
   extends: 'BaseEntity4',
   properties: {
-    name: {
-      type: 'string',
-    },
+    name: 'string',
     books: {
       reference: 'm:n',
       owner: false,

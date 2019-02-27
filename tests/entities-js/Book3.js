@@ -30,9 +30,7 @@ const schema = {
   name: 'Book3',
   extends: 'BaseEntity4',
   properties: {
-    title: {
-      type: 'string',
-    },
+    title: 'string',
     author: {
       reference: 'm:1',
       type: 'Author3',
