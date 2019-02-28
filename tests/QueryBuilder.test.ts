@@ -1,7 +1,6 @@
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { QueryOrder } from '../lib/QueryBuilder';
 import { initORMMySql } from './bootstrap';
-import { MikroORM } from '../lib';
+import { MikroORM, QueryOrder } from '../lib';
 
 /**
  * @class QueryBuilderTest
