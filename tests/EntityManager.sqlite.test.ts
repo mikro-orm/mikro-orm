@@ -1,9 +1,11 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, MikroORM } from '../lib';
+import { Collection, EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { Utils } from '../lib/utils/Utils';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { Logger } from '../lib/utils/Logger';
+import { EntityMetadata } from '../lib/decorators/Entity';
+import { FileCacheAdapter } from '../lib/cache/FileCacheAdapter';
 
 const { Author3 } = require('./entities-js/Author3');
 const { Book3 } = require('./entities-js/Book3');
@@ -27,6 +29,16 @@ describe('EntityManagerSqlite', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+  });
+
+  test('onUpdate should be re-hydrated when loading metadata from cache', async () => {
+    const provider = new JavaScriptMetadataProvider(orm.options);
+    const cacheAdapter = new FileCacheAdapter(orm.options.cache.options as any);
+    const cache = cacheAdapter.get('Author3');
+    const meta = {} as EntityMetadata;
+    provider.loadFromCache(meta, cache);
+    expect(meta.properties['updatedAt'].onUpdate).toBeDefined();
+    expect(meta.properties['updatedAt'].onUpdate!()).toBeInstanceOf(Date);
   });
 
   test('should return sqlite driver', async () => {

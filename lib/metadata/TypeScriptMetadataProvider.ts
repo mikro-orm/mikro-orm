@@ -23,7 +23,7 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     this.sources = this.project.addExistingSourceFiles(dirs);
   }
 
-  discover(meta: EntityMetadata, name: string): void {
+  discoverEntity(meta: EntityMetadata, name: string): void {
     const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
     const source = this.sources.find(s => !!s.getFilePath().match(file));
     const properties = source!.getClass(name)!.getInstanceProperties();

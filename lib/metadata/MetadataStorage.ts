@@ -90,7 +90,8 @@ export class MetadataStorage {
     const path = `${this.options.baseDir}/${basePath}/${file}`;
     const target = require(path)[name]; // include the file to trigger loading of metadata
     const meta = MetadataStorage.getMetadata(name);
-    const cache = this.cache.get(name, path);
+    const cache = this.cache.get(name);
+    meta.prototype = target.prototype;
 
     // skip already discovered entities
     if (Utils.isEntity(target.prototype)) {
@@ -99,15 +100,13 @@ export class MetadataStorage {
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${name}`);
-      Utils.merge(meta, cache);
-      meta.prototype = target.prototype;
+      this.metadataProvider.loadFromCache(meta, cache);
 
       return meta;
     }
 
     meta.path = path;
-    meta.prototype = target.prototype;
-    this.metadataProvider.discover(meta, name);
+    this.metadataProvider.discoverEntity(meta, name);
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
