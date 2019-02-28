@@ -52,9 +52,15 @@
       "lib/**/*.ts"
     ]
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
   "lint-staged": {
@@ -77,6 +83,8 @@
     "sqlite": "^3.0.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^7.5.2",
+    "@commitlint/config-conventional": "^7.5.0",
     "@types/clone": "^0.1.30",
     "@types/jest": "^24.0.9",
     "@types/mongodb": "^3.1.19",
@@ -91,6 +99,7 @@
     "mongodb": "^3.1.13",
     "mysql2": "^1.6.5",
     "rimraf": "^2.6.3",
+    "semantic-release": "^15.13.3",
     "sqlite": "^3.0.2",
     "ts-jest": "^24.0.0",
     "ts-node": "^8.0.2",
