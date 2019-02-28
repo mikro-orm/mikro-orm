@@ -43,31 +43,17 @@ const schema = {
   name: 'Author',
   extends: 'BaseEntity',
   properties: {
-    createdAt: {
-      type: 'Date',
-    },
+    createdAt: 'Date',
     updatedAt: {
       type: 'Date',
       onUpdate: () => new Date(),
     },
-    name: {
-      type: 'string',
-    },
-    email: {
-      type: 'string',
-    },
-    age: {
-      type: 'number',
-    },
-    termsAccepted: {
-      type: 'boolean',
-    },
-    identities: {
-      type: 'string[]',
-    },
-    born: {
-      type: 'Date',
-    },
+    name: 'string',
+    email: 'string',
+    age: 'number',
+    termsAccepted: 'boolean',
+    identities: 'string[]',
+    born: 'Date',
     books: {
       reference: '1:m',
       fk: 'author',
