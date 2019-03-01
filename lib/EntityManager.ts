@@ -52,7 +52,7 @@ export class EntityManager {
         const CustomRepository = meta.customRepository();
         this.repositoryMap[entityName] = new CustomRepository(this, entityName);
       } else {
-        this.repositoryMap[entityName] = new EntityRepository<T>(this, entityName);
+        this.repositoryMap[entityName] = new this.options.entityRepository(this, entityName);
       }
     }
 

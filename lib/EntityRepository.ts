@@ -8,7 +8,7 @@ import { QueryOrder } from './QueryBuilder';
 export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private readonly _em: EntityManager,
-              protected readonly entityName: string | EntityClass<T>, ) { }
+              protected readonly entityName: string | EntityClass<T>) { }
 
   async persist(entity: T, flush = this._em.options.autoFlush): Promise<void> {
     return this.em.persist(entity, flush);
