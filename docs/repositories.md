@@ -3,20 +3,6 @@
 More convenient way of fetching entities from database is by using `EntityRepository`, that
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
-API:
-
-```typescript
-EntityRepository.persist(entity: IEntity, flush?: boolean): Promise<void>;
-EntityRepository.findOne(where: FilterQuery<IEntity> | string, populate?: string[]): Promise<IEntity>;
-EntityRepository.find(where: FilterQuery<IEntity>, options?: FindOptions): Promise<IEntity[]>;
-EntityRepository.find(where: FilterQuery<IEntity>, populate?: string[], orderBy?: { [k: string]: QueryOrder; }, limit?: number, offset?: number): Promise<IEntity[]>;
-EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<IEntity[]>;
-EntityRepository.remove(where: IEntity | any): Promise<number>;
-EntityRepository.flush(): Promise<void>;
-EntityRepository.canPopulate(property: string): boolean;
-EntityRepository.count(where?: any): Promise<number>;
-```
-
 Example:
 
 ```typescript
@@ -71,5 +57,116 @@ Now you can access your custom repository via `EntityManager.getRepository()` me
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
 or [`tests/EntityManager.mysql.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+
+## EntityRepository\<T\> API
+
+#### `find(where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
+
+Returns array of entities found for given condition. You can specify `FindOptions` to request
+population of referenced entities or control the pagination:
+
+```typescript
+export interface FindOptions {
+  populate?: string[];
+  orderBy?: { [k: string]: QueryOrder };
+  limit?: number;
+  offset?: number;
+}
+```
+
+---
+
+#### `find(where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+
+Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
+and `offset`.
+
+---
+
+#### `findOne(where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
+
+Finds an entity by given `where` condition. You can use primary key as `where` value, then
+if the entity is already managed, no database call will be made. 
+
+---
+
+#### `merge(data: EntityData<T>): T`
+
+Adds given entity to current Identity Map. After merging, entity becomes managed. 
+This is useful when you want to work with cached entities. 
+
+---
+
+#### `getReference(id: string): T`
+
+Gets a reference to the entity identified by the given type and identifier without actually 
+loading it, if the entity is not yet loaded.
+
+---
+
+#### `count(where: any): Promise<number>`
+
+Gets count of entities matching the `where` condition. 
+
+---
+
+#### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
+
+Tells the EntityManager to make an instance managed and persistent. The entity will be 
+entered into the database at or before transaction commit or as a result of the flush 
+operation. You can control immediate flushing via `flush` parameter and via `autoFlush`
+configuration option. 
+
+---
+
+#### `persistAndFlush(entity: IEntity | IEntity[]): Promise<void>`
+
+Shortcut for `persist` & `flush`.
+
+---
+
+#### `persistLater(entity: IEntity | IEntity[]): void`
+
+Shortcut for just `persist`, without flushing. 
+
+---
+
+#### `flush(): Promise<void>`
+
+Flushes all changes to objects that have been queued up to now to the database.
+
+---
+
+#### `remove(where: IEntity | any, flush?: boolean): Promise<number>`
+
+When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
+otherwise it fires delete query with given `where` condition. 
+
+This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.  
+
+---
+
+#### `removeAndFlush(entity: IEntity): Promise<void>`
+
+Shortcut for `removeEntity` & `flush`.
+
+This method fires `beforeDelete` and `afterDelete` hooks. 
+
+---
+
+#### `removeLater(entity: IEntity): void`
+
+Shortcut for `removeEntity` without flushing. 
+
+This method fires `beforeDelete` and `afterDelete` hooks. 
+
+---
+
+#### `canPopulate(property: string): boolean`
+
+Returns whether given entity has given property which can be populated (is reference or
+collection).
+
+---
 
 [&larr; Back to table of contents](index.md#table-of-contents)

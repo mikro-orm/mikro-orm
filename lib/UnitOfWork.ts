@@ -1,6 +1,6 @@
 import { Utils } from './utils/Utils';
 import { EntityManager } from './EntityManager';
-import { EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { Cascade, EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Collection } from './Collection';
 import { EntityIdentifier } from './utils/EntityIdentifier';
@@ -38,7 +38,7 @@ export class UnitOfWork {
     return this.identityMap;
   }
 
-  persist<T extends IEntityType<T>>(entity: T): void {
+  persist<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
     if (this.persistStack.includes(entity)) {
       return;
     }
@@ -49,9 +49,10 @@ export class UnitOfWork {
 
     this.persistStack.push(entity);
     this.cleanUpStack(this.removeStack, entity);
+    this.cascade(entity, Cascade.PERSIST, visited);
   }
 
-  remove(entity: IEntity): void {
+  remove(entity: IEntity, visited: IEntity[] = []): void {
     if (this.removeStack.includes(entity)) {
       return;
     }
@@ -62,6 +63,7 @@ export class UnitOfWork {
 
     this.cleanUpStack(this.persistStack, entity);
     this.unsetIdentity(entity);
+    this.cascade(entity, Cascade.REMOVE, visited);
   }
 
   async commit(): Promise<void> {
@@ -267,6 +269,42 @@ export class UnitOfWork {
     }
 
     return this.identifierMap[entity.uuid] && this.identifierMap[entity.uuid].getValue();
+  }
+
+  private cascade<T extends IEntityType<T>>(entity: T, type: Cascade, visited: IEntity[]): void {
+    if (visited.includes(entity)) {
+      return;
+    }
+
+    visited.push(entity);
+
+    switch (type) {
+      case Cascade.PERSIST: this.persist(entity, visited); break;
+      case Cascade.REMOVE: this.remove(entity, visited); break;
+    }
+
+    const meta = this.metadata[entity.constructor.name];
+
+    for (const prop of Object.values(meta.properties)) {
+      if (!prop.cascade || !prop.cascade.includes(type)) {
+        continue;
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
+        this.cascade(entity[prop.name as keyof T], type, visited);
+        continue;
+      }
+
+      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+        const collection = entity[prop.name as keyof T] as Collection<IEntity>;
+
+        if (collection.isInitialized(true)) {
+          for (const item of collection.getItems()) {
+            this.cascade(item, type, visited);
+          }
+        }
+      }
+    }
   }
 
 }

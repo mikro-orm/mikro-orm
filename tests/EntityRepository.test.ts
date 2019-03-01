@@ -1,12 +1,16 @@
-import { EntityRepository, EntityManager } from '../lib';
+import { EntityRepository, EntityManager, IEntity } from '../lib';
 import { Publisher } from './entities';
 
 const methods = {
   getReference: jest.fn(),
   persist: jest.fn(),
+  persistAndFlush: jest.fn(),
+  persistLater: jest.fn(),
   findOne: jest.fn(),
   find: jest.fn(),
   remove: jest.fn(),
+  removeAndFlush: jest.fn(),
+  removeLater: jest.fn(),
   flush: jest.fn(),
   canPopulate: jest.fn(),
   count: jest.fn(),
@@ -32,12 +36,21 @@ describe('EntityRepository', () => {
     const e = Object.create(Publisher.prototype);
     await repo.persist(e, false);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);
+    await repo.persistAndFlush(e);
+    expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
+    repo.persistLater(e);
+    expect(methods.persistLater.mock.calls[0]).toEqual([e]);
     await repo.find({ foo: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', []]);
     await repo.remove('bar');
     expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
+    const entity = {} as IEntity;
+    await repo.removeAndFlush(entity);
+    expect(methods.removeAndFlush.mock.calls[0]).toEqual([entity]);
+    repo.removeLater(entity);
+    expect(methods.removeLater.mock.calls[0]).toEqual([entity]);
     await repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
 

@@ -142,7 +142,7 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await orm.em.persist([book1, book2, book3]);
+await orm.em.persistAndFlush([book1, book2, book3]);
 ```
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 

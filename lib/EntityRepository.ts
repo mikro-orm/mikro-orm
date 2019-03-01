@@ -2,7 +2,7 @@ import { EntityManager, FindOptions } from './EntityManager';
 import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { EntityClass, EntityData, IEntityType } from './decorators/Entity';
+import { EntityClass, EntityData, IEntity, IEntityType } from './decorators/Entity';
 import { QueryOrder } from './QueryBuilder';
 
 export class EntityRepository<T extends IEntityType<T>> {
@@ -10,8 +10,16 @@ export class EntityRepository<T extends IEntityType<T>> {
   constructor(private readonly _em: EntityManager,
               protected readonly entityName: string | EntityClass<T>) { }
 
-  async persist(entity: T, flush = this._em.options.autoFlush): Promise<void> {
-    return this.em.persist(entity, flush);
+  async persist(entity: T | IEntity[], flush = this._em.options.autoFlush): Promise<void> {
+    await this.em.persist(entity, flush);
+  }
+
+  async persistAndFlush(entity: IEntity | IEntity[]): Promise<void> {
+    await this.em.persistAndFlush(entity);
+  }
+
+  persistLater(entity: IEntity | IEntity[]): void {
+    this.em.persistLater(entity);
   }
 
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
@@ -30,6 +38,14 @@ export class EntityRepository<T extends IEntityType<T>> {
 
   async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this._em.options.autoFlush): Promise<number> {
     return this.em.remove(this.entityName, where, flush);
+  }
+
+  async removeAndFlush(entity: IEntity): Promise<void> {
+    await this.em.removeAndFlush(entity);
+  }
+
+  removeLater(entity: IEntity): void {
+    this.em.removeLater(entity);
   }
 
   async flush(): Promise<void> {

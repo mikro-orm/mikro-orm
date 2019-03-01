@@ -22,7 +22,7 @@ describe('EntityManagerMongo', () => {
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
-    await orm.em.persist(bible);
+    await orm.em.persistAndFlush(bible);
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = new Date();
@@ -38,9 +38,9 @@ describe('EntityManagerMongo', () => {
     book3.publisher = publisher;
 
     const repo = orm.em.getRepository(Book);
-    await repo.persist(book1, false);
-    await repo.persist(book2, false);
-    await repo.persist(book3, false);
+    repo.persistLater(book1);
+    repo.persistLater(book2);
+    repo.persistLater(book3);
     await repo.flush();
     orm.em.clear();
 
@@ -174,13 +174,13 @@ describe('EntityManagerMongo', () => {
     const author2 = new Author('name2', 'email2');
     const author3 = new Author('name3', 'email3');
     const repo = orm.em.getRepository(Author) as AuthorRepository;
-    await repo.persist(author, false);
-    await repo.persist(author2, false);
-    await repo.remove(author);
+    repo.persistLater(author);
+    repo.persistLater(author2);
+    await repo.removeAndFlush(author);
     expect(Object.keys(orm.em.getIdentityMap())).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
-    await repo.persist(author2, false);
-    await orm.em.remove(Author, author3, false);
+    repo.persistLater(author2);
+    orm.em.removeLater(author3);
     await repo.flush();
     await orm.em.remove(Author, author3);
   });
@@ -192,7 +192,7 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
     await repo.persist(author, false);
-    await orm.em.removeEntity(author);
+    await orm.em.removeEntity(author, false);
     expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getIdentityMap()).toEqual({});
   });
@@ -839,7 +839,8 @@ describe('EntityManagerMongo', () => {
     const b1 = new Book('b1', author);
     const b2 = new Book('b2', author);
     const b3 = new Book('b3', author);
-    await orm.em.persist([b1, b2, b3]);
+    orm.em.persistLater([b1, b2, b3]);
+    await orm.em.flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author, author.id))!;

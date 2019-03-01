@@ -9,11 +9,10 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder, QueryOrder } from './QueryBuilder';
-import { Cascade, EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
-import { Collection } from './Collection';
 import { Connection } from './connections/Connection';
 
 export class EntityManager {
@@ -209,16 +208,28 @@ export class EntityManager {
   }
 
   async persist(entity: IEntity | IEntity[], flush = this.options.autoFlush): Promise<void> {
+    if (flush) {
+      await this.persistAndFlush(entity);
+    } else {
+      this.persistLater(entity);
+    }
+  }
+
+  async persistAndFlush(entity: IEntity | IEntity[]): Promise<void> {
     entity = Array.isArray(entity) ? entity : [entity];
 
     for (const ent of entity) {
-      await this.cascade(ent, Cascade.PERSIST, async (e: IEntity) => {
-        this.getUnitOfWork().persist(e);
-      });
+      this.getUnitOfWork().persist(ent);
     }
 
-    if (flush) {
-      await this.flush();
+    await this.flush();
+  }
+
+  persistLater(entity: IEntity | IEntity[]): void {
+    entity = Array.isArray(entity) ? entity : [entity];
+
+    for (const ent of entity) {
+      this.getUnitOfWork().persist(ent);
     }
   }
 
@@ -234,13 +245,20 @@ export class EntityManager {
   }
 
   async removeEntity(entity: IEntity, flush = this.options.autoFlush): Promise<void> {
-    await this.cascade(entity, Cascade.REMOVE, async (e: IEntity) => {
-      this.getUnitOfWork().remove(e);
-    });
-
     if (flush) {
-      await this.flush();
+      await this.removeAndFlush(entity);
+    } else {
+      this.removeLater(entity);
     }
+  }
+
+  async removeAndFlush(entity: IEntity): Promise<void> {
+    this.getUnitOfWork().remove(entity);
+    await this.flush();
+  }
+
+  removeLater(entity: IEntity): void {
+    this.getUnitOfWork().remove(entity);
   }
 
   /**
@@ -281,37 +299,6 @@ export class EntityManager {
   getUnitOfWork(): UnitOfWork {
     const em = RequestContext.getEntityManager() || this;
     return em.unitOfWork;
-  }
-
-  private async cascade<T extends IEntityType<T>>(entity: T, type: Cascade, cb: (e: IEntity) => Promise<void>, visited: IEntity[] = []): Promise<void> {
-    if (visited.includes(entity)) {
-      return;
-    }
-
-    await cb(entity);
-    const meta = this.metadata[entity.constructor.name];
-    visited.push(entity);
-
-    for (const prop of Object.values(meta.properties)) {
-      if (!prop.cascade || !prop.cascade.includes(type)) {
-        continue;
-      }
-
-      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
-        await this.cascade(entity[prop.name as keyof T], type, cb, visited);
-        continue;
-      }
-
-      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
-        const collection = entity[prop.name as keyof T] as Collection<IEntity>;
-
-        if (collection.isInitialized(true)) {
-          for (const item of collection.getItems()) {
-            await this.cascade(item, type, cb, visited);
-          }
-        }
-      }
-    }
   }
 
 }
