@@ -51,4 +51,16 @@ describe('EntityRepository', () => {
     expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ foo: 'bar' }]]);
   });
 
+  test('find() supports calling with options object', async () => {
+    const options = {
+      populate: ['test'],
+      orderBy: { test: -1 },
+      limit: 123,
+      offset: 321,
+    };
+    methods.find.mock.calls = [];
+    await repo.find({ foo: 'bar' }, options);
+    expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, options, {}, undefined, undefined]);
+  });
+
 });

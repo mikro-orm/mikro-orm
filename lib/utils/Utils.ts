@@ -8,7 +8,7 @@ import { IEntityType } from '../decorators/Entity';
 
 export class Utils {
 
-  static isObject(o: any): o is Record<string, any> {
+  static isObject<T = Record<string, any>>(o: any): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o);
   }
 
