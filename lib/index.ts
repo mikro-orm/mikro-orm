@@ -4,6 +4,7 @@ export * from './EntityManager';
 export * from './utils/RequestContext';
 export * from './utils/EntityHelper';
 export * from './Collection';
+export * from './QueryBuilder';
 export * from './drivers/IDatabaseDriver';
 export * from './drivers/DatabaseDriver';
 export * from './naming-strategy/NamingStrategy';

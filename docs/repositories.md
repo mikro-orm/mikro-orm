@@ -8,8 +8,9 @@ API:
 ```typescript
 EntityRepository.persist(entity: IEntity, flush?: boolean): Promise<void>;
 EntityRepository.findOne(where: FilterQuery<IEntity> | string, populate?: string[]): Promise<IEntity>;
-EntityRepository.find(where: FilterQuery<IEntity>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<IEntity[]>;
-EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<IEntity[]>;
+EntityRepository.find(where: FilterQuery<IEntity>, options?: FindOptions): Promise<IEntity[]>;
+EntityRepository.find(where: FilterQuery<IEntity>, populate?: string[], orderBy?: { [k: string]: QueryOrder; }, limit?: number, offset?: number): Promise<IEntity[]>;
+EntityRepository.findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<IEntity[]>;
 EntityRepository.remove(where: IEntity | any): Promise<number>;
 EntityRepository.flush(): Promise<void>;
 EntityRepository.canPopulate(property: string): boolean;
@@ -19,10 +20,19 @@ EntityRepository.count(where?: any): Promise<number>;
 Example:
 
 ```typescript
-const booksRepository = orm.em.getRepository<Book>(Book);
+const booksRepository = orm.em.getRepository(Book);
 
 // with sorting, limit and offset parameters, populating author references
-const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 }, 2, 1);
+const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
+
+// or with options object
+const books = await booksRepository.find({ author: '...' }, { 
+  populate: ['author'],
+  limit: 1,
+  offset: 2,
+  sort: { title: QueryOrder.DESC },
+});
+
 console.log(books); // Book[]
 ```
 
@@ -54,6 +64,9 @@ Note that we need to pass that repository reference inside a callback so we will
 into circular dependency issues when using entity references inside that repository.
 
 Now you can access your custom repository via `EntityManager.getRepository()` method.
+
+> You can also register custom base repository (for all entities where you do not specify 
+`customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
 
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)

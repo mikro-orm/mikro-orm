@@ -1,13 +1,14 @@
-import { EntityManager } from './EntityManager';
+import { EntityManager, FindOptions } from './EntityManager';
 import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { EntityClass, EntityData, IEntityType } from './decorators/Entity';
+import { QueryOrder } from './QueryBuilder';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private readonly _em: EntityManager,
-              protected readonly entityName: string | EntityClass<T>, ) { }
+              protected readonly entityName: string | EntityClass<T>) { }
 
   async persist(entity: T, flush = this._em.options.autoFlush): Promise<void> {
     return this.em.persist(entity, flush);
@@ -17,8 +18,10 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.findOne<T>(this.entityName, where, populate);
   }
 
-  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
-    return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate, orderBy, limit, offset);
+  async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>;
+  async find(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
+  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOptions = [], orderBy: { [k: string]: QueryOrder } = {}, limit?: number, offset?: number): Promise<T[]> {
+    return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
   }
 
   async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {

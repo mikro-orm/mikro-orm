@@ -87,7 +87,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   path: string;
   primaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty };
-  customRepository: any;
+  customRepository: () => { new (em: EntityManager, entityName: string | EntityClass<T>): EntityRepository<T> };
   hooks: { [type: string]: string[] };
   prototype: EntityClass<T> & IEntity;
 }

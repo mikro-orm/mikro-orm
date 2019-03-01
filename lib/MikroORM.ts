@@ -8,6 +8,8 @@ import { Logger } from './utils/Logger';
 import { Utils } from './utils/Utils';
 import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvider';
 import { MetadataProvider } from './metadata/MetadataProvider';
+import { EntityRepository } from './EntityRepository';
+import { EntityClass, IEntity } from './decorators/Entity';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -15,6 +17,7 @@ const defaultOptions = {
   strict: false,
   logger: () => undefined,
   baseDir: process.cwd(),
+  entityRepository: EntityRepository,
   debug: false,
   cache: {
     enabled: true,
@@ -89,6 +92,7 @@ export interface MikroORMOptions {
   autoFlush: boolean;
   driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
+  entityRepository: { new (em: EntityManager, entityName: string | EntityClass<IEntity>): EntityRepository<IEntity> };
   clientUrl?: string;
   host?: string;
   port?: number;

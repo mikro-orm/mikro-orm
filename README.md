@@ -167,7 +167,18 @@ carries the entity name so you do not have to pass it to every `find` and `findO
 
 ```typescript
 const booksRepository = orm.em.getRepository(Book);
-const books = await booksRepository.find({ author: '...' }, ['author'], { title: -1 });
+
+// with sorting, limit and offset parameters, populating author references
+const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
+
+// or with options object
+const books = await booksRepository.find({ author: '...' }, { 
+  populate: ['author'],
+  limit: 1,
+  offset: 2,
+  sort: { title: QueryOrder.DESC },
+});
+
 console.log(books); // Book[]
 ```
 

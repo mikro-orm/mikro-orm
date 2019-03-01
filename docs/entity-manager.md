@@ -44,7 +44,7 @@ const orm = await MikroORM.init({
 await orm.em.persist(new Entity()); // no auto-flushing now
 await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
-``` 
+```
 
 ## Fetching entities with EntityManager
 
@@ -54,7 +54,8 @@ API:
 
 ```typescript
 EntityManager.getRepository<T extends IEntity>(entityName: string): EntityRepository<T>;
-EntityManager.find<T extends IEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1; }, limit?: number, offset?: number): Promise<T[]>;
+EntityManager.find<T extends IEntity>(entityName: string, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
+EntityManager.find<T extends IEntity>(entityName: string, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
 EntityManager.findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate?: string[]): Promise<T>;
 EntityManager.merge<T extends IEntity>(entityName: string, data: any): T;
 EntityManager.getReference<T extends IEntity>(entityName: string, id: string): T;

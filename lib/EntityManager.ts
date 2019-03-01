@@ -8,7 +8,7 @@ import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { QueryBuilder } from './QueryBuilder';
+import { QueryBuilder, QueryOrder } from './QueryBuilder';
 import { Cascade, EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
 import { EntityHelper } from './utils/EntityHelper';
 import { EntityLoader } from './EntityLoader';
@@ -52,7 +52,7 @@ export class EntityManager {
         const CustomRepository = meta.customRepository();
         this.repositoryMap[entityName] = new CustomRepository(this, entityName);
       } else {
-        this.repositoryMap[entityName] = new EntityRepository<T>(this, entityName);
+        this.repositoryMap[entityName] = new this.options.entityRepository(this, entityName);
       }
     }
 
@@ -64,10 +64,13 @@ export class EntityManager {
     return new QueryBuilder(entityName, this.metadata, this.getConnection());
   }
 
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where);
-    const results = await this.driver.find(entityName, where, populate, orderBy, limit, offset);
+    const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
+    const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset);
 
     if (results.length === 0) {
       return [];
@@ -80,7 +83,7 @@ export class EntityManager {
       ret.push(entity);
     }
 
-    await this.entityLoader.populate(entityName, ret, populate);
+    await this.entityLoader.populate(entityName, ret, options.populate || []);
 
     return ret;
   }
@@ -311,4 +314,11 @@ export class EntityManager {
     }
   }
 
+}
+
+export interface FindOptions {
+  populate?: string[];
+  orderBy?: { [k: string]: QueryOrder };
+  limit?: number;
+  offset?: number;
 }

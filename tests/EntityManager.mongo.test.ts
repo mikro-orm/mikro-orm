@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { Collection, EntityManager, MikroORM } from '../lib';
+import { Collection, EntityManager, MikroORM, QueryOrder } from '../lib';
 import { EntityProperty } from '../lib/decorators/Entity';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -132,6 +132,25 @@ describe('EntityManagerMongo', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author);
     expect(lastBook[0].author.isInitialized()).toBe(true);
+
+    const lastBook2 = await booksRepository.find({ author: jon.id }, {
+      populate: ['author'],
+      orderBy: { title: QueryOrder.DESC },
+      limit: 2,
+      offset: 2,
+    });
+    expect(lastBook2.length).toBe(1);
+    expect(lastBook[0]).toBe(lastBook2[0]);
+
+    const lastBook3 = await orm.em.find(Book, { author: jon.id }, {
+      populate: ['author'],
+      orderBy: { title: QueryOrder.DESC },
+      limit: 2,
+      offset: 2,
+    });
+    expect(lastBook3.length).toBe(1);
+    expect(lastBook[0]).toBe(lastBook3[0]);
+
     await orm.em.getRepository(Book).remove(lastBook[0]._id);
   });
 
