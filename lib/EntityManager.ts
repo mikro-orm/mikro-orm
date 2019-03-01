@@ -64,8 +64,8 @@ export class EntityManager {
   }
 
   async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };

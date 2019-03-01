@@ -83,6 +83,19 @@ and `offset`.
 
 ---
 
+#### `findAll(options?: FindOptions): Promise<T[]>`
+
+Returns all entities for given type. 
+
+---
+
+#### `findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+
+Same as previous `findAll` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
+and `offset`.
+
+---
+
 #### `findOne(where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
 
 Finds an entity by given `where` condition. You can use primary key as `where` value, then

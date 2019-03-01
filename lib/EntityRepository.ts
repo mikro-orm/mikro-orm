@@ -32,8 +32,10 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
   }
 
-  async findAll(populate: string[] = [], orderBy: { [k: string]: 1 | -1 } = {}, limit?: number, offset?: number): Promise<T[]> {
-    return this.em.find<T>(this.entityName, {}, populate, orderBy, limit, offset);
+  async findAll(options?: FindOptions): Promise<T[]>;
+  async findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
+  async findAll(populate: string[] | FindOptions = [], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]> {
+    return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 
   async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this._em.options.autoFlush): Promise<number> {

@@ -1,5 +1,5 @@
 import { FilterQuery } from './DatabaseDriver';
-import { IEntity, IPrimaryKey, NamingStrategy } from '..';
+import { IEntity, IPrimaryKey, NamingStrategy, QueryOrder } from '..';
 import { EntityData, EntityProperty } from '../decorators/Entity';
 import { Connection } from '../connections/Connection';
 
@@ -10,7 +10,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
+  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
