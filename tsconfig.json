@@ -4,13 +4,10 @@
     "target": "es2017",
     "moduleResolution": "node",
     "declaration": true,
-    "sourceMap": false,
     "outDir": "./dist",
     "strict": true,
     "strictPropertyInitialization": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "lib": ["es2017", "es7"]
+    "experimentalDecorators": true
   },
   "files": [
     "lib/index.ts"

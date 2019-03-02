@@ -52,6 +52,13 @@ $ npm i -s mikro-orm mysql2 # for mysql
 $ npm i -s mikro-orm sqlite # for sqlite
 ```
 
+Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
+in `tsconfig.json` via:
+
+```json
+"experimentalDecorators": true
+```
+
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
