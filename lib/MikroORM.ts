@@ -38,10 +38,16 @@ export class MikroORM {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
     orm.em = new EntityManager(orm.options, driver);
-    const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
-    storage.discover();
 
-    return orm;
+    try {
+      const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
+      storage.discover();
+
+      return orm;
+    } catch (e) {
+      await orm.close(true);
+      throw e;
+    }
   }
 
   constructor(options: Options) {

@@ -1,5 +1,6 @@
 import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
 import { join } from 'path';
+import { existsSync } from 'fs';
 
 import { MetadataProvider } from './MetadataProvider';
 import { EntityMetadata } from '../decorators/Entity';
@@ -19,7 +20,16 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       this.options.entitiesDirsTs = this.options.entitiesDirs;
     }
 
-    const dirs = this.options.entitiesDirsTs.map(dir => join(this.options.baseDir, dir, '**', '*.ts'));
+    const dirs = this.options.entitiesDirsTs.map(dir => {
+      const path = join(this.options.baseDir, dir);
+
+      if (!existsSync(path)) {
+        throw new Error(`Path ${path} does not exist`);
+      }
+
+      return join(path, '**', '*.ts');
+    });
+
     this.sources = this.project.addExistingSourceFiles(dirs);
   }
 
