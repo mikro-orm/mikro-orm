@@ -4,7 +4,7 @@ import * as clone from 'clone';
 import { IEntity, IPrimaryKey } from '..';
 import { Collection } from '../Collection';
 import { MetadataStorage } from '../metadata/MetadataStorage';
-import { IEntityType } from '../decorators/Entity';
+import { EntityMetadata, IEntityType } from '../decorators/Entity';
 
 export class Utils {
 
@@ -165,6 +165,23 @@ export class Utils {
     }
 
     return classOrName.name;
+  }
+
+  /**
+   * uses some dark magic to get source path to caller where decorator is used
+   */
+  static lookupPathFromDecorator(meta: EntityMetadata): void {
+    if (meta.path) {
+      return;
+    }
+
+    // use some dark magic to get source path to caller
+    const stack = new Error().stack!.split('\n');
+    const line = stack.find(line => line.includes('__decorate'))!;
+
+    if (line) {
+      meta.path = line.match(/\((.*):\d+:\d+\)/)![1];
+    }
   }
 
 }

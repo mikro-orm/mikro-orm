@@ -12,6 +12,7 @@ export function Entity(options: EntityOptions = {}): Function {
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
     meta.extends = Object.getPrototypeOf(target).name || undefined;
+    Utils.lookupPathFromDecorator(meta);
 
     return target;
   };
@@ -40,9 +41,7 @@ export type IEntityType<T> = {
   [k in keyof T]: IEntity | Collection<IEntity> | any;
 } & IEntity;
 
-export type EntityClass<T extends IEntityType<T>> = {
-  new(...args: any[]): T;
-}
+export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
 
 export type EntityData<T extends IEntityType<T>> = {
   [P in keyof T]?: T[P] | IPrimaryKey;

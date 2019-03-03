@@ -1,5 +1,6 @@
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityProperty, IEntity, ReferenceType } from './Entity';
+import { Utils } from '../utils/Utils';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
@@ -7,6 +8,7 @@ export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
     options.name = propertyName;
     meta.primaryKey = propertyName;
     meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR, primary: true }, options) as EntityProperty;
+    Utils.lookupPathFromDecorator(meta);
   };
 }
 

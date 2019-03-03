@@ -1,11 +1,13 @@
 import { PropertyOptions } from './Property';
 import { Cascade, EntityProperty, IEntity, ReferenceType } from './Entity';
 import { MetadataStorage } from '../metadata/MetadataStorage';
+import { Utils } from '../utils/Utils';
 
 export function ManyToMany(options: ManyToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {
     const entity = target.constructor.name;
     const meta = MetadataStorage.getMetadata(entity);
+    Utils.lookupPathFromDecorator(meta);
 
     if (!options.entity) {
       throw new Error(`'@ManyToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
