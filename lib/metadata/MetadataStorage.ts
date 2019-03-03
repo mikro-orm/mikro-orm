@@ -1,5 +1,4 @@
-import { readdirSync } from 'fs';
-import { join } from 'path';
+import { sync as globby } from 'globby';
 
 import { EntityClass, EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
@@ -62,7 +61,7 @@ export class MetadataStorage {
   }
 
   private discoverDirectory(basePath: string): string[] {
-    const files = readdirSync(join(this.options.baseDir, basePath));
+    const files = globby('*', { cwd: `${this.options.baseDir}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     const discovered: string[] = [];

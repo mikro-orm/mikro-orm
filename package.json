@@ -74,6 +74,7 @@
   "dependencies": {
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
+    "globby": "^9.1.0",
     "node-request-context": "^1.0.5",
     "ts-morph": "^1.2.0",
     "typescript": "^3.3.3",
@@ -88,6 +89,7 @@
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
     "@types/clone": "^0.1.30",
+    "@types/globby": "^8.0.0",
     "@types/jest": "^24.0.9",
     "@types/mongodb": "^3.1.19",
     "@types/mysql2": "types/mysql2",
