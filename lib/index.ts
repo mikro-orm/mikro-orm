@@ -13,6 +13,7 @@ export * from './naming-strategy/UnderscoreNamingStrategy';
 export * from './metadata/MetadataProvider';
 export * from './metadata/JavaScriptMetadataProvider';
 export * from './metadata/TypeScriptMetadataProvider';
+export * from './cache/CacheAdapter';
 export { Cascade, Entity, IEntity, EntityOptions } from './decorators/Entity';
 export * from './decorators/OneToMany';
 export * from './decorators/ManyToOne';

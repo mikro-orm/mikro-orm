@@ -27,6 +27,8 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
   - [Property validation](property-validation.md)
   - [Lifecycle hooks](lifecycle-hooks.md)
   - [Naming strategy](naming-strategy.md)
+  - [Metadata cache](metadata-cache.md)
+  - [Debugging](debugging.md)
 - Usage with different drivers
   - [Usage with MySQL and SQLite](usage-with-sql.md)
   - [Usage with MongoDB](usage-with-mongo.md)
