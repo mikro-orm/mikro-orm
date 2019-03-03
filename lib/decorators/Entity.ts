@@ -7,8 +7,8 @@ import { IPrimaryKey } from './PrimaryKey';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
-    const storage = MetadataStorage.getMetadata(target.name);
-    const meta = Utils.merge(storage[target.name], options);
+    const meta = MetadataStorage.getMetadata(target.name);
+    Utils.merge(meta, options);
     meta.name = target.name;
     meta.constructorParams = Utils.getParamNames(target);
     meta.extends = Object.getPrototypeOf(target).name || undefined;
@@ -49,15 +49,15 @@ export type EntityData<T extends IEntityType<T>> = {
 } & { [key: string]: any; };
 
 export enum ReferenceType {
-  SCALAR = 0,
-  MANY_TO_ONE = 1,
-  ONE_TO_MANY = 2,
-  MANY_TO_MANY = 3,
+  SCALAR = 'scalar',
+  MANY_TO_ONE = 'm:1',
+  ONE_TO_MANY = '1:m',
+  MANY_TO_MANY = 'm:n',
 }
 
 export enum Cascade {
-  PERSIST = 0,
-  REMOVE = 1,
+  PERSIST = 'persist',
+  REMOVE = 'remove',
 }
 
 export interface EntityProperty {

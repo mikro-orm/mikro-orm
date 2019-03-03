@@ -3,12 +3,8 @@ import { EntityProperty, IEntity, ReferenceType } from './Entity';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
-    const entity = target.constructor.name;
-    const storage = MetadataStorage.getMetadata(entity);
-
-    const meta = storage[entity];
+    const meta = MetadataStorage.getMetadata(target.constructor.name);
     options.name = propertyName;
-    meta.properties = meta.properties || {};
     meta.primaryKey = propertyName;
     meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR, primary: true }, options) as EntityProperty;
   };

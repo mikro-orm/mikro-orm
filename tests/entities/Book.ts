@@ -1,10 +1,9 @@
 import { ObjectID } from 'mongodb';
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Collection, Cascade, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
 import { BaseEntity3 } from './BaseEntity3';
-import { Cascade } from '../../lib/decorators/Entity';
 
 @Entity({ collection: 'books-table' })
 export class Book extends BaseEntity3 {

@@ -3,12 +3,8 @@ import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
-    const entity = target.constructor.name;
-    const storage = MetadataStorage.getMetadata(entity);
-
-    const meta = storage[entity];
+    const meta = MetadataStorage.getMetadata(target.constructor.name);
     options.name = propertyName;
-    meta.properties = meta.properties || {};
     meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
   };
 }

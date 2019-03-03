@@ -33,6 +33,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 - [Preloading deeply nested structures via populate](https://b4nan.github.io/mikro-orm/nested-populate/)
 - [Property validation](https://b4nan.github.io/mikro-orm/property-validation/)
 - [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
+- [Vanilla JS support](https://b4nan.github.io/mikro-orm/usage-with-js/)
 
 ## Quick start
 

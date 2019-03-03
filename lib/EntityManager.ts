@@ -26,8 +26,7 @@ export class EntityManager {
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver);
 
   constructor(readonly options: MikroORMOptions,
-              private readonly driver: IDatabaseDriver<Connection>) {
-  }
+              private readonly driver: IDatabaseDriver<Connection>) { }
 
   getIdentityMap(): Record<string, IEntity> {
     return this.getUnitOfWork().getIdentityMap();

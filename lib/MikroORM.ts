@@ -6,6 +6,8 @@ import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
 import { Logger } from './utils/Logger';
 import { Utils } from './utils/Utils';
+import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvider';
+import { MetadataProvider } from './metadata/MetadataProvider';
 import { EntityRepository } from './EntityRepository';
 import { EntityClass, IEntity } from './decorators/Entity';
 
@@ -22,6 +24,7 @@ const defaultOptions = {
     adapter: FileCacheAdapter,
     options: { cacheDir: process.cwd() + '/temp' },
   },
+  metadataProvider: TypeScriptMetadataProvider,
 };
 
 export class MikroORM {
@@ -35,10 +38,16 @@ export class MikroORM {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
     orm.em = new EntityManager(orm.options, driver);
-    const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
-    storage.discover();
 
-    return orm;
+    try {
+      const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
+      storage.discover();
+
+      return orm;
+    } catch (e) {
+      await orm.close(true);
+      throw e;
+    }
   }
 
   constructor(options: Options) {
@@ -67,7 +76,7 @@ export class MikroORM {
   async connect(): Promise<IDatabaseDriver> {
     await this.driver.getConnection().connect();
     const clientUrl = this.options.clientUrl!.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
-    this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName} on ${clientUrl}`);
+    this.logger.info(`MikroORM: successfully connected to database ${this.options.dbName}${clientUrl ? ' on ' + clientUrl : ''}`);
 
     return this.driver;
   }
@@ -105,6 +114,7 @@ export interface MikroORMOptions {
     adapter: { new (...params: any[]): CacheAdapter },
     options: { [k: string]: any },
   },
+  metadataProvider: { new (options: MikroORMOptions): MetadataProvider },
 }
 
 export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof defaultOptions>> | MikroORMOptions;

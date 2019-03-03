@@ -5,8 +5,7 @@ import { ReferenceType } from '../../lib/decorators/Entity';
 export abstract class BaseEntity2 {
 
   constructor() {
-    const metadata = MetadataStorage.getMetadata();
-    const meta = metadata[this.constructor.name];
+    const meta = MetadataStorage.getMetadata(this.constructor.name);
     const props = meta.properties;
 
     Object.keys(props).forEach(prop => {

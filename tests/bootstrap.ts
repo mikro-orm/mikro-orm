@@ -1,10 +1,16 @@
-import { EntityManager, MikroORM } from '../lib';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-sql';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 import { SqliteConnection } from '../lib/connections/SqliteConnection';
+
+const { Author3 } = require('./entities-js/Author3');
+const { Book3 } = require('./entities-js/Book3');
+const { BookTag3 } = require('./entities-js/BookTag3');
+const { Publisher3 } = require('./entities-js/Publisher3');
+const { Test3 } = require('./entities-js/Test3');
 
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
@@ -49,11 +55,12 @@ export async function initORMMySql() {
 
 export async function initORMSqlite() {
   const orm = await MikroORM.init({
-    entitiesDirs: ['entities-sql'],
+    entitiesDirs: ['entities-js'],
     dbName: 'tests/mikro_orm_test.db',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: true,
+    metadataProvider: JavaScriptMetadataProvider,
   });
 
   const connection = orm.em.getConnection<SqliteConnection>();
@@ -83,13 +90,13 @@ export async function wipeDatabaseMySql(em: EntityManager) {
 }
 
 export async function wipeDatabaseSqlite(em: EntityManager) {
-  await em.createQueryBuilder(Author2).delete().execute('run');
-  await em.createQueryBuilder(Author2).delete().execute('run');
-  await em.createQueryBuilder(Book2).delete().execute('run');
-  await em.createQueryBuilder(BookTag2).delete().execute('run');
-  await em.createQueryBuilder(Publisher2).delete().execute('run');
-  await em.createQueryBuilder(Test2).delete().execute('run');
-  await em.createQueryBuilder('book2_to_book_tag2').delete().execute('run');
-  await em.createQueryBuilder('publisher2_to_test2').delete().execute('run');
+  await em.createQueryBuilder(Author3).delete().execute('run');
+  await em.createQueryBuilder(Author3).delete().execute('run');
+  await em.createQueryBuilder(Book3).delete().execute('run');
+  await em.createQueryBuilder(BookTag3).delete().execute('run');
+  await em.createQueryBuilder(Publisher3).delete().execute('run');
+  await em.createQueryBuilder(Test3).delete().execute('run');
+  await em.createQueryBuilder('book3_to_book_tag3').delete().execute('run');
+  await em.createQueryBuilder('publisher3_to_test3').delete().execute('run');
   em.clear();
 }

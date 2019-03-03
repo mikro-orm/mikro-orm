@@ -5,9 +5,7 @@ import { MetadataStorage } from '../metadata/MetadataStorage';
 export function ManyToMany(options: ManyToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {
     const entity = target.constructor.name;
-    const storage = MetadataStorage.getMetadata(entity);
-    const meta = storage[entity];
-    meta.properties = meta.properties || {};
+    const meta = MetadataStorage.getMetadata(entity);
 
     if (!options.entity) {
       throw new Error(`'@ManyToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);

@@ -1,11 +1,10 @@
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
 
 import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { EntityHelper } from '../utils/EntityHelper';
-import { NamingStrategy } from '..';
+import { MetadataProvider, NamingStrategy } from '..';
 import { EntityManager } from '../EntityManager';
 import { MikroORMOptions } from '../MikroORM';
 import { CacheAdapter } from '../cache/CacheAdapter';
@@ -17,6 +16,7 @@ export class MetadataStorage {
   private static readonly metadata: { [entity: string]: EntityMetadata } = {};
 
   private readonly namingStrategy: NamingStrategy;
+  private readonly metadataProvider: MetadataProvider;
   private readonly cache: CacheAdapter;
   private readonly validator = new MetadataValidator();
 
@@ -25,12 +25,19 @@ export class MetadataStorage {
               private readonly logger: Logger) {
     const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getConfig().namingStrategy;
     this.namingStrategy = new NamingStrategy();
+    this.metadataProvider = new this.options.metadataProvider(this.options);
     this.cache = new this.options.cache.adapter(this.options.cache.options);
   }
 
-  static getMetadata(entity?: string): { [entity: string]: EntityMetadata } {
+  static getMetadata(): { [entity: string]: EntityMetadata };
+  static getMetadata(entity: string): EntityMetadata;
+  static getMetadata(entity?: string): { [entity: string]: EntityMetadata } | EntityMetadata {
     if (entity && !MetadataStorage.metadata[entity]) {
-      MetadataStorage.metadata[entity] = {} as EntityMetadata;
+      MetadataStorage.metadata[entity] = { properties: {} } as EntityMetadata;
+    }
+
+    if (entity) {
+      return MetadataStorage.metadata[entity];
     }
 
     return MetadataStorage.metadata;
@@ -39,17 +46,8 @@ export class MetadataStorage {
   discover(): { [k: string]: EntityMetadata } {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
-
-    const project = new Project();
     const discovered: string[] = [];
-
-    if (!this.options.entitiesDirsTs) {
-      this.options.entitiesDirsTs = this.options.entitiesDirs;
-    }
-
-    const dirs = this.options.entitiesDirsTs.map(dir => join(this.options.baseDir, dir, '**', '*.ts'));
-    const sources = project.addExistingSourceFiles(dirs);
-    this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(sources, dir)));
+    this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
     discovered.forEach(name => this.processEntity(name));
     const diff = Date.now() - startTime;
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
@@ -57,7 +55,7 @@ export class MetadataStorage {
     return MetadataStorage.metadata;
   }
 
-  private discoverDirectory(sources: SourceFile[], basePath: string): string[] {
+  private discoverDirectory(basePath: string): string[] {
     const files = readdirSync(join(this.options.baseDir, basePath));
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
@@ -74,7 +72,7 @@ export class MetadataStorage {
         return;
       }
 
-      const meta = this.discoverFile(sources, basePath, file);
+      const meta = this.discoverFile(basePath, file);
 
       // ignore base entities (not annotated with @Entity)
       if (meta && meta.name) {
@@ -85,62 +83,43 @@ export class MetadataStorage {
     return discovered;
   }
 
-  private discoverFile(sources: SourceFile[], basePath: string, file: string): EntityMetadata | null {
+  private discoverFile(basePath: string, file: string): EntityMetadata | null {
     const name = this.getClassName(file);
     this.logger.debug(`- processing entity ${name}`);
 
     const path = `${this.options.baseDir}/${basePath}/${file}`;
     const target = require(path)[name]; // include the file to trigger loading of metadata
-    const meta = MetadataStorage.metadata[name];
-    const cache = this.cache.get(name, path);
+    const meta = MetadataStorage.getMetadata(name);
+    const cache = this.cache.get(name);
+    meta.prototype = target.prototype;
 
-    // skip already discovered or when properties
-    if (Utils.isEntity(target.prototype) || !meta) {
+    // skip already discovered entities
+    if (Utils.isEntity(target.prototype)) {
       return null;
     }
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${name}`);
-      Utils.merge(meta, cache);
-      meta.prototype = target.prototype;
+      this.metadataProvider.loadFromCache(meta, cache);
 
       return meta;
     }
 
-    const source = sources.find(s => !!s.getFilePath().match(file.replace(/\.js$/, '.ts')));
     meta.path = path;
-    meta.prototype = target.prototype;
-    const properties = source!.getClass(name)!.getInstanceProperties();
+    this.metadataProvider.discoverEntity(meta, name);
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    this.initProperties(meta, properties);
+    // init types and column names
+    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+
     const copy = Object.assign({}, meta);
     delete copy.prototype;
     this.cache.set(name, copy, path);
 
     return meta;
-  }
-
-  private initProperties(meta: EntityMetadata, properties: ClassInstancePropertyTypes[]) {
-    // init types and column names
-    Object.values(meta.properties).forEach(prop => {
-      if (prop.entity) {
-        prop.type = Utils.className(prop.entity());
-      } else {
-        const old = prop.type;
-        const property = properties.find(v => v.getName() === prop.name);
-        prop.type = property!.getType().getText(property);
-
-        if (prop.type === 'any' && old) {
-          prop.type = old;
-        }
-      }
-
-      this.applyNamingStrategy(meta, prop);
-    });
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
@@ -151,7 +130,9 @@ export class MetadataStorage {
     if (!prop.fieldName) {
       if (prop.reference === ReferenceType.SCALAR) {
         prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
-      } else if (prop.reference === ReferenceType.MANY_TO_ONE) {
+      }
+
+      if (prop.reference === ReferenceType.MANY_TO_ONE) {
         prop.fieldName = this.namingStrategy.joinColumnName(prop.name);
       }
 
@@ -180,6 +161,17 @@ export class MetadataStorage {
       if (!prop.referenceColumnName) {
         prop.referenceColumnName = this.namingStrategy.referenceColumnName();
       }
+    }
+  }
+
+  private processEntity(name: string): void {
+    const meta = MetadataStorage.metadata[name];
+    this.defineBaseEntityProperties(meta);
+    this.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
+    EntityHelper.decorate(meta, this.em);
+
+    if (this.em.getDriver().getConfig().usesPivotTable) {
+      this.definePivotTableEntities(meta);
     }
   }
 
@@ -224,21 +216,10 @@ export class MetadataStorage {
     }
 
     meta.properties = { ...base.properties, ...meta.properties };
-    const primary = Object.values(base.properties).find(p => p.primary);
+    const primary = Object.values(meta.properties).find(p => p.primary);
 
     if (primary && !meta.primaryKey) {
       meta.primaryKey = primary.name;
-    }
-  }
-
-  private processEntity(name: string): void {
-    const meta = MetadataStorage.metadata[name];
-    this.defineBaseEntityProperties(meta);
-    this.validator.validateEntityDefinition(MetadataStorage.metadata, meta.name);
-    EntityHelper.decorate(meta, this.em);
-
-    if (this.em.getDriver().getConfig().usesPivotTable) {
-      this.definePivotTableEntities(meta);
     }
   }
 

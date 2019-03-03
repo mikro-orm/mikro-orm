@@ -109,6 +109,8 @@ export interface Author extends IEntity { }
 
 More information about how collections work can be found on [collections page](collections.md).
 
+If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
+
 ## Entity file names
 
 You are free to choose one of those formats for entity filename (for a `BookTag` entity):
