@@ -13,6 +13,8 @@ import { EntityClass, IEntity } from './decorators/Entity';
 
 const defaultOptions = {
   entitiesDirs: [],
+  entitiesDirsTs: [],
+  tsConfigPath: process.cwd() + '/tsconfig.json',
   autoFlush: true,
   strict: false,
   logger: () => undefined,
@@ -94,7 +96,8 @@ export class MikroORM {
 export interface MikroORMOptions {
   dbName: string;
   entitiesDirs: string[];
-  entitiesDirsTs?: string[];
+  entitiesDirsTs: string[];
+  tsConfigPath: string;
   autoFlush: boolean;
   driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };

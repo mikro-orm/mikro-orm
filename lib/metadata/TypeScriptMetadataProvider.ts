@@ -5,38 +5,25 @@ import { existsSync } from 'fs';
 import { MetadataProvider } from './MetadataProvider';
 import { EntityMetadata } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
-import { MikroORMOptions } from '../MikroORM';
 
 export class TypeScriptMetadataProvider extends MetadataProvider {
 
-  private readonly project: Project;
-  private readonly sources: SourceFile[];
-
-  constructor(protected readonly options: MikroORMOptions) {
-    super(options);
-    this.project = new Project();
-
-    if (!this.options.entitiesDirsTs) {
-      this.options.entitiesDirsTs = this.options.entitiesDirs;
-    }
-
-    const dirs = this.options.entitiesDirsTs.map(dir => {
-      const path = join(this.options.baseDir, dir);
-
-      if (!existsSync(path)) {
-        throw new Error(`Path ${path} does not exist`);
-      }
-
-      return join(path, '**', '*.ts');
-    });
-
-    this.sources = this.project.addExistingSourceFiles(dirs);
-  }
+  private readonly project = new Project();
+  private sources: SourceFile[];
 
   discoverEntity(meta: EntityMetadata, name: string): void {
+    if (!meta.path) {
+      return;
+    }
+
     const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
-    const source = this.sources.find(s => !!s.getFilePath().match(file));
-    const properties = source!.getClass(name)!.getInstanceProperties();
+    const source = this.getSourceFile(file);
+
+    if (!source) {
+      throw new Error(`Source file for entity ${name} not found, check your 'entitiesDirsTs' option`);
+    }
+
+    const properties = source.getClass(name)!.getInstanceProperties();
     this.initProperties(meta, properties);
   }
 
@@ -54,6 +41,39 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
           prop.type = old;
         }
       }
+    });
+  }
+
+  private getSourceFile(file: string): SourceFile | undefined {
+    if (!this.sources) {
+      this.initSourceFiles();
+    }
+
+    return this.sources.find(s => s.getFilePath().endsWith(file));
+  }
+
+  private initSourceFiles(): void {
+    if (this.options.entitiesDirsTs.length === 0) {
+      this.options.entitiesDirsTs = this.options.entitiesDirs;
+    }
+
+    if (this.options.entitiesDirsTs.length > 0) {
+      const dirs = this.validateDirectories(this.options.entitiesDirsTs);
+      this.sources = this.project.addExistingSourceFiles(dirs);
+    } else {
+      this.sources = this.project.addSourceFilesFromTsConfig(this.options.tsConfigPath);
+    }
+  }
+
+  private validateDirectories(dirs: string[]): string[] {
+    return dirs.map(dir => {
+      const path = join(this.options.baseDir, dir);
+
+      if (!existsSync(path)) {
+        throw new Error(`Path ${path} does not exist`);
+      }
+
+      return join(path, '**', '*.ts');
     });
   }
 
