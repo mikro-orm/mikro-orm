@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { join } from 'path';
 
-import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
+import { EntityClass, EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { EntityHelper } from '../utils/EntityHelper';
 import { MetadataProvider, NamingStrategy } from '..';
@@ -47,7 +47,13 @@ export class MetadataStorage {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     const discovered: string[] = [];
-    this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
+
+    if (this.options.entities && this.options.entities.length > 0) {
+      this.options.entities.forEach(entity => discovered.push(...this.discoverEntity(entity)));
+    } else {
+      this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
+    }
+
     discovered.forEach(name => this.processEntity(name));
     const diff = Date.now() - startTime;
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
@@ -120,6 +126,46 @@ export class MetadataStorage {
     this.cache.set(name, copy, path);
 
     return meta;
+  }
+
+  private discoverEntity(entity: EntityClass<IEntity>): string[] {
+    this.logger.debug(`- processing entity ${entity.name}`);
+
+    const meta = MetadataStorage.getMetadata(entity.name);
+    const cache = this.cache.get(entity.name);
+    meta.prototype = entity.prototype;
+
+    // skip already discovered entities
+    if (Utils.isEntity(entity.prototype)) {
+      return [];
+    }
+
+    if (cache) {
+      this.logger.debug(`- using cached metadata for entity ${entity.name}`);
+      this.metadataProvider.loadFromCache(meta, cache);
+
+      return meta.name ? [meta.name] : [];
+    }
+
+    this.metadataProvider.discoverEntity(meta, entity.name);
+
+    if (!meta.collection && meta.name) {
+      meta.collection = this.namingStrategy.classToTableName(meta.name);
+    }
+
+    // init types and column names
+    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+
+    const copy = Object.assign({}, meta);
+    delete copy.prototype;
+
+    // base entity without properties might not have path, but nothing to cache there
+    if (meta.path) {
+      this.cache.set(entity.name, copy, meta.path);
+    }
+
+    // ignore base entities (not annotated with @Entity)
+    return meta.name ? [meta.name] : [];
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {

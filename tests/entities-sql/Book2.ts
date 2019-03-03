@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Collection, Entity, ManyToMany, ManyToOne, Property } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -6,9 +6,6 @@ import { BaseEntity2 } from './BaseEntity2';
 
 @Entity()
 export class Book2 extends BaseEntity2 {
-
-  @PrimaryKey()
-  id: number;
 
   @Property()
   title: string;

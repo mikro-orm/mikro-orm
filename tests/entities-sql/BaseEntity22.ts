@@ -1,13 +1,10 @@
-import { Collection, IEntity, PrimaryKey } from '../../lib';
+import { Collection, IEntity } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata/MetadataStorage';
 import { ReferenceType } from '../../lib/decorators/Entity';
 
-export abstract class BaseEntity2 {
+export abstract class BaseEntity22 {
 
-  @PrimaryKey()
-  id: number;
-
-  protected constructor() {
+  constructor() {
     const meta = MetadataStorage.getMetadata(this.constructor.name);
     const props = meta.properties;
 
@@ -20,4 +17,4 @@ export abstract class BaseEntity2 {
 
 }
 
-export interface BaseEntity2 extends IEntity<number> { }
+export interface BaseEntity22 extends IEntity<number> { }

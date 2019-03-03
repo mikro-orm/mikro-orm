@@ -13,6 +13,7 @@ import { EntityClass, IEntity } from './decorators/Entity';
 import { NullCacheAdapter } from './cache/NullCacheAdapter';
 
 const defaultOptions = {
+  entities: [],
   entitiesDirs: [],
   entitiesDirsTs: [],
   tsConfigPath: process.cwd() + '/tsconfig.json',
@@ -60,8 +61,8 @@ export class MikroORM {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (!this.options.entitiesDirs || this.options.entitiesDirs.length === 0) {
-      throw new Error('No directories for entity discovery specified, please fill in `entitiesDirs` option');
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
+      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
     }
 
     if (!this.options.driver) {
@@ -100,6 +101,7 @@ export class MikroORM {
 
 export interface MikroORMOptions {
   dbName: string;
+  entities: EntityClass<IEntity>[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
   tsConfigPath: string;

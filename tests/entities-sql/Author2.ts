@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, PrimaryKey,
+  Collection, Entity, OneToMany, Property, ManyToOne,
 } from '../../lib';
 
 import { Book2 } from './Book2';
@@ -11,9 +11,6 @@ export class Author2 extends BaseEntity2 {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
-
-  @PrimaryKey()
-  id: number;
 
   @Property()
   createdAt = new Date();
