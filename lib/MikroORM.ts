@@ -10,6 +10,7 @@ import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvide
 import { MetadataProvider } from './metadata/MetadataProvider';
 import { EntityRepository } from './EntityRepository';
 import { EntityClass, IEntity } from './decorators/Entity';
+import { NullCacheAdapter } from './cache/NullCacheAdapter';
 
 const defaultOptions = {
   entitiesDirs: [],
@@ -65,6 +66,10 @@ export class MikroORM {
 
     if (!this.options.driver) {
       this.options.driver = require('./drivers/MongoDriver').MongoDriver;
+    }
+
+    if (!this.options.cache.enabled) {
+      this.options.cache.adapter = NullCacheAdapter;
     }
 
     this.logger = new Logger(this.options);
