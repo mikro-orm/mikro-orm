@@ -77,62 +77,25 @@ export class MetadataStorage {
         return;
       }
 
-      const meta = this.discoverFile(basePath, file);
-
-      // ignore base entities (not annotated with @Entity)
-      if (meta && meta.name) {
-        discovered.push(meta.name);
-      }
+      const name = this.getClassName(file);
+      const path = `${this.options.baseDir}/${basePath}/${file}`;
+      const target = require(path)[name]; // include the file to trigger loading of metadata
+      discovered.push(...this.discoverEntity(target, path));
     });
 
     return discovered;
   }
 
-  private discoverFile(basePath: string, file: string): EntityMetadata | null {
-    const name = this.getClassName(file);
-    this.logger.debug(`- processing entity ${name}`);
-
-    const path = `${this.options.baseDir}/${basePath}/${file}`;
-    const target = require(path)[name]; // include the file to trigger loading of metadata
-    const meta = MetadataStorage.getMetadata(name);
-    const cache = this.cache.get(name);
-    meta.prototype = target.prototype;
-
-    // skip already discovered entities
-    if (Utils.isEntity(target.prototype)) {
-      return null;
-    }
-
-    if (cache) {
-      this.logger.debug(`- using cached metadata for entity ${name}`);
-      this.metadataProvider.loadFromCache(meta, cache);
-
-      return meta;
-    }
-
-    meta.path = path;
-    this.metadataProvider.discoverEntity(meta, name);
-
-    if (!meta.collection && meta.name) {
-      meta.collection = this.namingStrategy.classToTableName(meta.name);
-    }
-
-    // init types and column names
-    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
-
-    const copy = Object.assign({}, meta);
-    delete copy.prototype;
-    this.cache.set(name, copy, path);
-
-    return meta;
-  }
-
-  private discoverEntity(entity: EntityClass<IEntity>): string[] {
+  private discoverEntity(entity: EntityClass<IEntity>, path?: string): string[] {
     this.logger.debug(`- processing entity ${entity.name}`);
 
     const meta = MetadataStorage.getMetadata(entity.name);
     const cache = this.cache.get(entity.name);
     meta.prototype = entity.prototype;
+
+    if (path) {
+      meta.path = path;
+    }
 
     // skip already discovered entities
     if (Utils.isEntity(entity.prototype)) {
