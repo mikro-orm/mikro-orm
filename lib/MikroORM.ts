@@ -45,7 +45,7 @@ export class MikroORM {
 
     try {
       const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
-      storage.discover();
+      await storage.discover();
 
       return orm;
     } catch (e) {

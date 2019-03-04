@@ -6,7 +6,7 @@ export abstract class MetadataProvider {
 
   constructor(protected readonly options: MikroORMOptions) { }
 
-  abstract discoverEntity(meta: EntityMetadata, name: string): void;
+  abstract async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Utils.merge(meta, cache);

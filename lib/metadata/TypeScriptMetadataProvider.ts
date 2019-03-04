@@ -11,7 +11,7 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
   private readonly project = new Project();
   private sources: SourceFile[];
 
-  discoverEntity(meta: EntityMetadata, name: string): void {
+  async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     if (!meta.path) {
       return;
     }

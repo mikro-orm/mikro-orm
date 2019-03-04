@@ -4,7 +4,7 @@ import { Utils } from '../utils/Utils';
 
 export class JavaScriptMetadataProvider extends MetadataProvider {
 
-  discoverEntity(meta: EntityMetadata, name: string): void {
+  async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     const { schema } = require(meta.path);
     Object.entries(schema.properties).forEach(([name, prop]) => {
       if (typeof prop === 'string') {

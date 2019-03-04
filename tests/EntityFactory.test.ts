@@ -19,7 +19,7 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORM();
-    new MetadataStorage(orm.em, orm.options, logger).discover();
+    await new MetadataStorage(orm.em, orm.options, logger).discover();
     factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver());
   });
   beforeEach(async () => wipeDatabase(orm.em));

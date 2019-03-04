@@ -14,7 +14,7 @@ describe('EntityHelperMySql', () => {
   beforeAll(async () => {
     orm = await initORMMySql();
     const logger = new Logger({ logger: jest.fn() } as any);
-    new MetadataStorage(orm.em, orm.options, logger).discover();
+    await new MetadataStorage(orm.em, orm.options, logger).discover();
   });
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 

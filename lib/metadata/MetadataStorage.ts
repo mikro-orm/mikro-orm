@@ -3,10 +3,9 @@ import { sync as globby } from 'globby';
 import { EntityClass, EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { EntityHelper } from '../utils/EntityHelper';
-import { MetadataProvider, NamingStrategy } from '..';
+import { CacheAdapter, MetadataProvider, NamingStrategy } from '..';
 import { EntityManager } from '../EntityManager';
 import { MikroORMOptions } from '../MikroORM';
-import { CacheAdapter } from '../cache/CacheAdapter';
 import { Logger } from '../utils/Logger';
 import { MetadataValidator } from './MetadataValidator';
 
@@ -42,15 +41,19 @@ export class MetadataStorage {
     return MetadataStorage.metadata;
   }
 
-  discover(): { [k: string]: EntityMetadata } {
+  async discover(): Promise<{ [k: string]: EntityMetadata }> {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     const discovered: string[] = [];
 
-    if (this.options.entities && this.options.entities.length > 0) {
-      this.options.entities.forEach(entity => discovered.push(...this.discoverEntity(entity)));
+    if (this.options.entities.length > 0) {
+      for (const entity of this.options.entities) {
+        discovered.push(...(await this.discoverEntity(entity)));
+      }
     } else {
-      this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
+      for (const dir of this.options.entitiesDirs) {
+        discovered.push(...(await this.discoverDirectory(dir)));
+      }
     }
 
     discovered.forEach(name => this.processEntity(name));
@@ -60,12 +63,12 @@ export class MetadataStorage {
     return MetadataStorage.metadata;
   }
 
-  private discoverDirectory(basePath: string): string[] {
+  private async discoverDirectory(basePath: string): Promise<string[]> {
+    const discovered: string[] = [];
     const files = globby('*', { cwd: `${this.options.baseDir}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
-    const discovered: string[] = [];
-    files.forEach(file => {
+    for (const file of files) {
       if (
         !file.match(/\.[jt]s$/) ||
         file.endsWith('.js.map') ||
@@ -74,19 +77,19 @@ export class MetadataStorage {
         file.match(/index\.[jt]s$/)
       ) {
         this.logger.debug(`- ignoring file ${file}`);
-        return;
+        continue;
       }
 
       const name = this.getClassName(file);
       const path = `${this.options.baseDir}/${basePath}/${file}`;
       const target = require(path)[name]; // include the file to trigger loading of metadata
-      discovered.push(...this.discoverEntity(target, path));
-    });
+      discovered.push(...(await this.discoverEntity(target, path)));
+    }
 
     return discovered;
   }
 
-  private discoverEntity(entity: EntityClass<IEntity>, path?: string): string[] {
+  private async discoverEntity(entity: EntityClass<IEntity>, path?: string): Promise<string[]> {
     this.logger.debug(`- processing entity ${entity.name}`);
 
     const meta = MetadataStorage.getMetadata(entity.name);
@@ -109,7 +112,7 @@ export class MetadataStorage {
       return meta.name ? [meta.name] : [];
     }
 
-    this.metadataProvider.discoverEntity(meta, entity.name);
+    await this.metadataProvider.loadEntityMetadata(meta, entity.name);
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
