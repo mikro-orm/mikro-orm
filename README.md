@@ -65,16 +65,14 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 ```typescript
 const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
-  entitiesDirsTs: ['./src/entities'], // path to your TS entities (source), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
-> Unless you are using `ts-node`, you will need to provide path to both compiled JS and 
-> source TS folders. This is needed for reflection that will sniff types from TS files in 
-> the background. 
+There are more ways to configure your entities, take a look at 
+[installation page](https://b4nan.github.io/mikro-orm/identity-map/#request-context).
 
 Then you will need to fork entity manager for each request so their 
 [identity maps](https://b4nan.github.io/mikro-orm/identity-map/) will not collide. 

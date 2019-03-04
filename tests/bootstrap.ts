@@ -5,6 +5,9 @@ import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 import { SqliteConnection } from '../lib/connections/SqliteConnection';
+import { BaseEntity2 } from './entities-sql/BaseEntity2';
+import { FooBar2 } from './entities-sql/FooBar2';
+import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 const { Author3 } = require('./entities-js/Author3');
 const { Book3 } = require('./entities-js/Book3');
@@ -38,7 +41,8 @@ export async function initORMMySql() {
   }
 
   const orm = await MikroORM.init({
-    entitiesDirs: ['entities-sql'],
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, BaseEntity2, BaseEntity22],
+    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
     port,
     baseDir: BASE_DIR,

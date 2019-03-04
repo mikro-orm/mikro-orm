@@ -10,9 +10,13 @@ import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvide
 import { MetadataProvider } from './metadata/MetadataProvider';
 import { EntityRepository } from './EntityRepository';
 import { EntityClass, IEntity } from './decorators/Entity';
+import { NullCacheAdapter } from './cache/NullCacheAdapter';
 
 const defaultOptions = {
+  entities: [],
   entitiesDirs: [],
+  entitiesDirsTs: [],
+  tsConfigPath: process.cwd() + '/tsconfig.json',
   autoFlush: true,
   strict: false,
   logger: () => undefined,
@@ -57,12 +61,16 @@ export class MikroORM {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (!this.options.entitiesDirs || this.options.entitiesDirs.length === 0) {
-      throw new Error('No directories for entity discovery specified, please fill in `entitiesDirs` option');
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
+      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
     }
 
     if (!this.options.driver) {
       this.options.driver = require('./drivers/MongoDriver').MongoDriver;
+    }
+
+    if (!this.options.cache.enabled) {
+      this.options.cache.adapter = NullCacheAdapter;
     }
 
     this.logger = new Logger(this.options);
@@ -93,8 +101,10 @@ export class MikroORM {
 
 export interface MikroORMOptions {
   dbName: string;
+  entities: EntityClass<IEntity>[];
   entitiesDirs: string[];
-  entitiesDirsTs?: string[];
+  entitiesDirsTs: string[];
+  tsConfigPath: string;
   autoFlush: boolean;
   driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };

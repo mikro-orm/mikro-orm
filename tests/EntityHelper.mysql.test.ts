@@ -1,6 +1,8 @@
 import { MikroORM } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2 } from './entities-sql';
+import { MetadataStorage } from '../lib/metadata/MetadataStorage';
+import { Logger } from '../lib/utils/Logger';
 
 /**
  * @class EntityHelperMySqlTest
@@ -9,7 +11,11 @@ describe('EntityHelperMySql', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => {
+    orm = await initORMMySql();
+    const logger = new Logger({ logger: jest.fn() } as any);
+    new MetadataStorage(orm.em, orm.options, logger).discover();
+  });
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('#assign() should update entity values [mysql]', async () => {

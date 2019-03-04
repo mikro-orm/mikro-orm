@@ -1,7 +1,6 @@
-import { readdirSync } from 'fs';
-import { join } from 'path';
+import { sync as globby } from 'globby';
 
-import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
+import { EntityClass, EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
 import { Utils } from '../utils/Utils';
 import { EntityHelper } from '../utils/EntityHelper';
 import { MetadataProvider, NamingStrategy } from '..';
@@ -47,7 +46,13 @@ export class MetadataStorage {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     const discovered: string[] = [];
-    this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
+
+    if (this.options.entities && this.options.entities.length > 0) {
+      this.options.entities.forEach(entity => discovered.push(...this.discoverEntity(entity)));
+    } else {
+      this.options.entitiesDirs.forEach(dir => discovered.push(...this.discoverDirectory(dir)));
+    }
+
     discovered.forEach(name => this.processEntity(name));
     const diff = Date.now() - startTime;
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
@@ -56,7 +61,7 @@ export class MetadataStorage {
   }
 
   private discoverDirectory(basePath: string): string[] {
-    const files = readdirSync(join(this.options.baseDir, basePath));
+    const files = globby('*', { cwd: `${this.options.baseDir}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     const discovered: string[] = [];
@@ -72,41 +77,39 @@ export class MetadataStorage {
         return;
       }
 
-      const meta = this.discoverFile(basePath, file);
-
-      // ignore base entities (not annotated with @Entity)
-      if (meta && meta.name) {
-        discovered.push(meta.name);
-      }
+      const name = this.getClassName(file);
+      const path = `${this.options.baseDir}/${basePath}/${file}`;
+      const target = require(path)[name]; // include the file to trigger loading of metadata
+      discovered.push(...this.discoverEntity(target, path));
     });
 
     return discovered;
   }
 
-  private discoverFile(basePath: string, file: string): EntityMetadata | null {
-    const name = this.getClassName(file);
-    this.logger.debug(`- processing entity ${name}`);
+  private discoverEntity(entity: EntityClass<IEntity>, path?: string): string[] {
+    this.logger.debug(`- processing entity ${entity.name}`);
 
-    const path = `${this.options.baseDir}/${basePath}/${file}`;
-    const target = require(path)[name]; // include the file to trigger loading of metadata
-    const meta = MetadataStorage.getMetadata(name);
-    const cache = this.cache.get(name);
-    meta.prototype = target.prototype;
+    const meta = MetadataStorage.getMetadata(entity.name);
+    const cache = this.cache.get(entity.name);
+    meta.prototype = entity.prototype;
+
+    if (path) {
+      meta.path = path;
+    }
 
     // skip already discovered entities
-    if (Utils.isEntity(target.prototype)) {
-      return null;
+    if (Utils.isEntity(entity.prototype)) {
+      return [];
     }
 
     if (cache) {
-      this.logger.debug(`- using cached metadata for entity ${name}`);
+      this.logger.debug(`- using cached metadata for entity ${entity.name}`);
       this.metadataProvider.loadFromCache(meta, cache);
 
-      return meta;
+      return meta.name ? [meta.name] : [];
     }
 
-    meta.path = path;
-    this.metadataProvider.discoverEntity(meta, name);
+    this.metadataProvider.discoverEntity(meta, entity.name);
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
@@ -117,9 +120,14 @@ export class MetadataStorage {
 
     const copy = Object.assign({}, meta);
     delete copy.prototype;
-    this.cache.set(name, copy, path);
 
-    return meta;
+    // base entity without properties might not have path, but nothing to cache there
+    if (meta.path) {
+      this.cache.set(entity.name, copy, meta.path);
+    }
+
+    // ignore base entities (not annotated with @Entity)
+    return meta.name ? [meta.name] : [];
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
