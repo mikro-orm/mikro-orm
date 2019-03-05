@@ -1,39 +1,39 @@
 <nav class="menu" id="sidebar-menu">
   <h3>Overview</h3>
   <ul>
-    <li><a href="{{ site.url }}/installation/">Installation &amp; Usage</a></li>
-    <li><a href="{{ site.url }}/defining-entities/">Defining entities</a></li>
-    <li><a href="{{ site.url }}/entity-manager/">EntityManager</a></li>
-    <li><a href="{{ site.url }}/repositories/">EntityRepository</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/installation/">Installation &amp; Usage</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/defining-entities/">Defining entities</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/entity-manager/">EntityManager</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/repositories/">EntityRepository</a></li>
   </ul>
   <h3>Fundamentals</h3>
   <ul>
-    <li><a href="{{ site.url }}/identity-map/">Identity Map and Request Context</a></li>
-    <li><a href="{{ site.url }}/entity-references/">Entity references</a></li>
-    <li><a href="{{ site.url }}/entity-constructors/">Using entity constructors</a></li>
-    <li><a href="{{ site.url }}/collections/">Collections</a></li>
-    <li><a href="{{ site.url }}/cascading/">Cascading persist and remove</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/identity-map/">Identity Map and Request Context</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/entity-references/">Entity references</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/entity-constructors/">Using entity constructors</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/collections/">Collections</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/cascading/">Cascading persist and remove</a></li>
   </ul>
   <h3>Advanced features</h3>
   <ul>
-    <li><a href="{{ site.url }}/nested-populate/">Smart nested populate</a></li>
-    <li><a href="{{ site.url }}/entity-helper/">Updating entity values</a></li>
-    <li><a href="{{ site.url }}/property-validation/">Property validation</a></li>
-    <li><a href="{{ site.url }}/lifecycle-hooks/">Lifecycle hooks</a></li>
-    <li><a href="{{ site.url }}/naming-strategy/">Naming strategy</a></li>
-    <li><a href="{{ site.url }}/metadata-cache/">Metadata cache</a></li>
-    <li><a href="{{ site.url }}/debugging/">Debugging</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/nested-populate/">Smart nested populate</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/entity-helper/">Updating entity values</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/property-validation/">Property validation</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/lifecycle-hooks/">Lifecycle hooks</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/naming-strategy/">Naming strategy</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/metadata-cache/">Metadata cache</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/debugging/">Debugging</a></li>
   </ul>
   <h3>Usage with different drivers</h3>
   <ul>
-    <li><a href="{{ site.url }}/usage-with-sql/">Usage with MySQL and SQLite</a></li>
-    <li><a href="{{ site.url }}/usage-with-mongo/">Usage with MongoDB</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/usage-with-sql/">Usage with MySQL and SQLite</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/usage-with-mongo/">Usage with MongoDB</a></li>
   </ul>
   <h3>Recipes</h3>
   <ul>
-    <li><a href="{{ site.url }}/usage-with-nestjs/">Usage with NestJS</a></li>
-    <li><a href="{{ site.url }}/usage-with-js/">Usage with Vanilla JS</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/usage-with-nestjs/">Usage with NestJS</a></li>
+    <li><a href="{{ site.github.url | default: site.url }}/usage-with-js/">Usage with Vanilla JS</a></li>
   </ul>
 
-  <p class="repo-owner"><a href="{{ site.url }}{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a href="{{ site.url }}{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</p>
+  <p class="repo-owner"><a href="{{ site.github.url | default: site.url }}{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a href="{{ site.github.url | default: site.url }}{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</p>
 </nav>
