@@ -37,7 +37,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 
 ## Quick start
 
-Fist install the module via `yarn` or `npm` and do not forget to install the database driver as well:
+First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
 ```
 $ yarn add mikro-orm mongodb # for mongo

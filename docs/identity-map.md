@@ -1,10 +1,13 @@
+---
+---
+
 # Identity Map
 
 `MikroORM` uses identity map in background so you will always get the same instance of 
 one entity.
 
 ```typescript
-const authorRepository = orm.em.getRepository<Author>(Author);
+const authorRepository = orm.em.getRepository(Author);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
 const authors = await authorRepository.findAll(['books']);
 

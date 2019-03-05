@@ -1,3 +1,6 @@
+---
+---
+
 # Cascading persist and remove
 
 When persisting or removing entity, all your references are by default cascade persisted. 

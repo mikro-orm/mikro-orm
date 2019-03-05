@@ -1,3 +1,6 @@
+---
+---
+
 # Using EntityRepository instead of EntityManager
 
 More convenient way of fetching entities from database is by using `EntityRepository`, that

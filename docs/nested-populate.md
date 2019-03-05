@@ -1,3 +1,6 @@
+---
+---
+
 # Smart nested populate
 
 `MikroORM` is capable of loading large nested structures while maintaining good 

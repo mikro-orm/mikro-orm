@@ -1,3 +1,6 @@
+---
+---
+
 # Usage with JavaScript
 
 To use `mikro-orm` with Vanilla JavaScript, define your entities like this:

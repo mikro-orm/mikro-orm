@@ -1,4 +1,6 @@
-Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
+---
+layout: homepage
+---
 
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
@@ -7,6 +9,12 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 [![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4fc24bb70323474180b67bc14838c416)](https://app.codacy.com/app/B4nan/mikro-orm?utm_source=github.com&utm_medium=referral&utm_content=B4nan/mikro-orm&utm_campaign=Badge_Grade_Settings)
+
+MikroORM is TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.
+
+Currently it supports MongoDB, MySQL and SQLite databases, but more can be supported via custom drivers right now. It has first class TypeScript support, while staying back compatible with Vanilla JavaScript.
+
+> Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 ## Table of contents
 

@@ -1,3 +1,6 @@
+---
+---
+
 # Naming strategy
 
 When mapping your entities to database tables and columns, their names will be defined by naming 

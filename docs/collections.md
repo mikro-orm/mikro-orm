@@ -1,3 +1,6 @@
+---
+---
+
 # Collections
 
 `OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements

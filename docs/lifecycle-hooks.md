@@ -1,3 +1,6 @@
+---
+---
+
 # Lifecycle hooks
 
 You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of

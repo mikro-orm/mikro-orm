@@ -4,14 +4,26 @@ theme: jekyll-theme-cayman
 permalink: pretty
 
 kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: 'highlight'
   auto_ids: true
   toc_levels: 2..4
 
 plugins:
   - jekyll-redirect-from
   - jekyll-sitemap
-  - jekyll-toc
 
-toc:
-  min_level: 2
-  max_level: 4
+sass:
+  style: compressed
+  sass_dir: _assets
+
+twitter_username: b4nan
+
+defaults:
+  -
+    scope:
+      path: '' # an empty string here means all files in the project
+    values:
+      layout: 'default'

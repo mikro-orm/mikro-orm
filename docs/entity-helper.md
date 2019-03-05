@@ -1,3 +1,6 @@
+---
+---
+
 # EntityHelper and decorated entities
 
 ## Updating entity values with IEntity.assign()

@@ -1,3 +1,6 @@
+---
+---
+
 # Defining entities
 
 Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator.

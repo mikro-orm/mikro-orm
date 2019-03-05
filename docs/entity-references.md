@@ -1,3 +1,6 @@
+---
+---
+
 # Entity references
 
 Every single entity relation is mapped to an entity reference. Reference is an entity that has

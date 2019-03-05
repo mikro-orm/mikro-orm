@@ -1,3 +1,6 @@
+---
+---
+
 # Usage with MongoDB
 
 To use `mikro-orm` with mongo database, do not forget to install `mongodb` dependency. As `MongoDriver`
@@ -35,7 +38,7 @@ console.log(author._id); // returns ObjectID('...id...')
 // all of those will return the same results
 const article = '...article id...'; // string id
 const book = '...book id...'; // string id
-const repo = orm.em.getRepository<Author>(Author);
+const repo = orm.em.getRepository(Author);
 const foo1 = await repo.find({ id: { $in: [article] }, favouriteBook: book });
 const bar1 = await repo.find({ id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
 const foo2 = await repo.find({ _id: { $in: [article] }, favouriteBook: book });
