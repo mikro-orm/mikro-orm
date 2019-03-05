@@ -17,7 +17,7 @@ export class FileCacheAdapter implements CacheAdapter {
     const buffer = readFileSync(this.path(name));
     const payload = JSON.parse(buffer.toString());
 
-    if (payload.modified !== this.getModifiedTime(payload.origin)) {
+    if (!existsSync(payload.origin) || payload.modified !== this.getModifiedTime(payload.origin)) {
       return null;
     }
 
