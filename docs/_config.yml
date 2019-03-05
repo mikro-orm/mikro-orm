@@ -19,9 +19,6 @@ sass:
   style: compressed
   sass_dir: _assets
 
-google_analytics: UA-135618258-1
-twitter_username: b4nan
-
 defaults:
   -
     scope:
