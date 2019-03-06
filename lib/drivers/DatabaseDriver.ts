@@ -1,9 +1,7 @@
 import { MikroORMOptions } from '../MikroORM';
 import { DriverConfig, IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, UnderscoreNamingStrategy } from '..';
+import { IEntity, IPrimaryKey, UnderscoreNamingStrategy, Utils, QueryOrder } from '..';
 import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators/Entity';
-import { Utils } from '../utils/Utils';
-import { QueryOrder } from '../QueryBuilder';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { Logger } from '../utils/Logger';
 import { Connection } from '../connections/Connection';
@@ -18,7 +16,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   constructor(protected readonly options: MikroORMOptions,
               protected readonly logger: Logger) { }
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: { [p: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]>;
+  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
 
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
 
@@ -34,7 +32,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<{ [key: string]: T[] }> {
+  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<Record<string, T[]>> {
     if (!this.getConfig().usesPivotTable) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -45,7 +43,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
     const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
 
-    const map: { [key: string]: T[] } = {};
+    const map: Record<string, T[]> = {};
     owners.forEach(owner => map['' + owner] = []);
     items.forEach((item: any) => {
       map['' + item[fk1]].push(item);
@@ -86,12 +84,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async beginTransaction(): Promise<void> {
     this.transactionLevel++;
-
-    if (this.transactionLevel === 1) {
-      await this.connection.beginTransaction();
-    } else if (this.getConfig().supportsSavePoints) {
-      await this.connection.beginTransaction(this.getSavePointName());
-    }
+    await this.runTransaction('beginTransaction');
   }
 
   async commit(): Promise<void> {
@@ -99,22 +92,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       throw new Error('Transaction commit failed because the transaction has been marked for rollback only');
     }
 
-    if (this.transactionLevel === 1) {
-      await this.connection.commit();
-    } else if (this.getConfig().supportsSavePoints) {
-      await this.connection.commit(this.getSavePointName());
-    }
-
+    await this.runTransaction('commit');
     this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
   }
 
-  async rollback(savepoint?: string): Promise<void> {
+  async rollback(): Promise<void> {
+    await this.runTransaction('rollback');
+
     if (this.transactionLevel === 1) {
-      await this.connection.rollback(savepoint);
       this.transactionRolledBack = false;
-    } else if (this.getConfig().supportsSavePoints) {
-      await this.connection.rollback(this.getSavePointName());
-    } else {
+    } else if (!this.getConfig().supportsSavePoints) {
       this.transactionRolledBack = true;
     }
 
@@ -147,12 +134,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     };
   }
 
+  private async runTransaction(method: 'beginTransaction' | 'commit' | 'rollback'): Promise<void> {
+    if (this.transactionLevel === 1 || this.getConfig().supportsSavePoints) {
+      const useSavepoint = this.transactionLevel !== 1 && this.getConfig().supportsSavePoints;
+      await this.connection[method](useSavepoint ? this.getSavePointName() : undefined);
+    }
+  }
+
   private getSavePointName(): string {
     return `${this.constructor.name}_${this.transactionLevel}`;
   }
 
 }
 
-export type FilterQuery<T> = {
-  [P in keyof T]?: T[P];
-} | { [key: string]: any };
+export type FilterQuery<T> = Partial<T> | Record<string, any>;

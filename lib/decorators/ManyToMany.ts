@@ -1,7 +1,7 @@
 import { PropertyOptions } from './Property';
 import { Cascade, EntityProperty, IEntity, ReferenceType } from './Entity';
 import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Utils } from '../utils/Utils';
+import { Utils } from '..';
 
 export function ManyToMany(options: ManyToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {

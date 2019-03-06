@@ -8,9 +8,13 @@ import { Logger } from './utils/Logger';
 import { Utils } from './utils/Utils';
 import { TypeScriptMetadataProvider } from './metadata/TypeScriptMetadataProvider';
 import { MetadataProvider } from './metadata/MetadataProvider';
-import { EntityRepository } from './EntityRepository';
+import { EntityRepository } from './entity/EntityRepository';
 import { EntityClass, IEntity } from './decorators/Entity';
 import { NullCacheAdapter } from './cache/NullCacheAdapter';
+import { Hydrator } from './hydration/Hydrator';
+import { ObjectHydrator } from './hydration/ObjectHydrator';
+import { EntityFactory } from './entity/EntityFactory';
+import { MetadataDiscovery } from './metadata/MetadataDiscovery';
 
 const defaultOptions = {
   entities: [],
@@ -22,6 +26,7 @@ const defaultOptions = {
   logger: () => undefined,
   baseDir: process.cwd(),
   entityRepository: EntityRepository,
+  hydrator: ObjectHydrator,
   debug: false,
   cache: {
     enabled: true,
@@ -44,7 +49,7 @@ export class MikroORM {
     orm.em = new EntityManager(orm.options, driver);
 
     try {
-      const storage = new MetadataStorage(orm.em, orm.options, orm.logger);
+      const storage = new MetadataDiscovery(orm.em, orm.options, orm.logger);
       await storage.discover();
 
       return orm;
@@ -56,25 +61,13 @@ export class MikroORM {
 
   constructor(options: Options) {
     this.options = Utils.merge({}, defaultOptions, options);
-
-    if (!this.options.dbName) {
-      throw new Error('No database specified, please fill in `dbName` option');
-    }
-
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
-      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
-    }
-
-    if (!this.options.driver) {
-      this.options.driver = require('./drivers/MongoDriver').MongoDriver;
-    }
+    this.validateOptions();
+    this.logger = new Logger(this.options);
+    this.driver = this.initDriver();
 
     if (!this.options.cache.enabled) {
       this.options.cache.adapter = NullCacheAdapter;
     }
-
-    this.logger = new Logger(this.options);
-    this.driver = new this.options.driver!(this.options, this.logger);
 
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
@@ -97,6 +90,24 @@ export class MikroORM {
     return this.driver.getConnection().close(force);
   }
 
+  private validateOptions(): void {
+    if (!this.options.dbName) {
+      throw new Error('No database specified, please fill in `dbName` option');
+    }
+
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
+      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
+    }
+  }
+
+  private initDriver(): IDatabaseDriver {
+    if (!this.options.driver) {
+      this.options.driver = require('./drivers/MongoDriver').MongoDriver;
+    }
+
+    return new this.options.driver!(this.options, this.logger);
+  }
+
 }
 
 export interface MikroORMOptions {
@@ -108,6 +119,7 @@ export interface MikroORMOptions {
   autoFlush: boolean;
   driver?: { new (options: MikroORMOptions, logger: Logger): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
+  hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: string | EntityClass<IEntity>): EntityRepository<IEntity> };
   clientUrl?: string;
   host?: string;
@@ -122,7 +134,7 @@ export interface MikroORMOptions {
   cache: {
     enabled: boolean,
     adapter: { new (...params: any[]): CacheAdapter },
-    options: { [k: string]: any },
+    options: Record<string, any>,
   },
   metadataProvider: { new (options: MikroORMOptions): MetadataProvider },
 }

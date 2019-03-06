@@ -1,7 +1,8 @@
 import * as sqlite from 'sqlite';
 import { Database } from 'sqlite';
 import { readFileSync } from 'fs';
-import { Connection } from './Connection';
+import { Connection, QueryResult } from './Connection';
+import { EntityData, IEntity } from '../decorators/Entity';
 
 export class SqliteConnection extends Connection {
 
@@ -36,7 +37,7 @@ export class SqliteConnection extends Connection {
     return '';
   }
 
-  async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<any> {
+  async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
     params = params.map(p => {
       if (p instanceof Date) {
         p = p.toISOString();
@@ -56,7 +57,7 @@ export class SqliteConnection extends Connection {
       await statement.finalize();
       this.logQuery(query + ` [took ${Date.now() - now} ms]`);
 
-      return res;
+      return this.transformResult(res, method);
     } catch (e) {
       e.message += `\n in query: ${query}`;
 
@@ -73,6 +74,16 @@ export class SqliteConnection extends Connection {
     await this.connection.exec(file.toString());
   }
 
+  private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
+    if (method === 'run') {
+      return {
+        affectedRows: res.changes,
+        insertId: res.lastID,
+      };
+    }
+
+    return res;
+  }
 }
 
 export type SqliteDatabase = Database & { driver: { open: boolean } };

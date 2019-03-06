@@ -1,8 +1,6 @@
-import { Utils } from '../utils/Utils';
+import { Collection, EntityRepository, Utils } from '..';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityManager } from '../EntityManager';
-import { Collection } from '../Collection';
-import { EntityRepository } from '../EntityRepository';
 import { IPrimaryKey } from './PrimaryKey';
 
 export function Entity(options: EntityOptions = {}): Function {
@@ -28,8 +26,8 @@ export interface IEntity<K = number | string> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?: boolean): Promise<this>;
-  toObject(parent?: IEntity, isCollection?: boolean): { [field: string]: any };
-  toJSON(): { [field: string]: any };
+  toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
+  toJSON(): Record<string, any>;
   assign(data: any): void;
   uuid: string;
   __em: EntityManager;
@@ -37,15 +35,11 @@ export interface IEntity<K = number | string> {
   __populated: boolean;
 }
 
-export type IEntityType<T> = {
-  [k in keyof T]: IEntity | Collection<IEntity> | any;
-} & IEntity;
+export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;
 
 export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
 
-export type EntityData<T extends IEntityType<T>> = {
-  [P in keyof T]?: T[P] | IPrimaryKey;
-} & { [key: string]: any; };
+export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPrimaryKey; } & Record<string, any>;
 
 export enum ReferenceType {
   SCALAR = 'scalar',
@@ -87,6 +81,6 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   primaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty };
   customRepository: () => { new (em: EntityManager, entityName: string | EntityClass<T>): EntityRepository<T> };
-  hooks: { [type: string]: string[] };
+  hooks: Record<string, string[]>;
   prototype: EntityClass<T> & IEntity;
 }

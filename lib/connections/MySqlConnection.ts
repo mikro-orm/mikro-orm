@@ -1,7 +1,7 @@
 import { Connection as MySql2Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
 import { readFileSync } from 'fs';
 import { URL } from 'url';
-import { Connection } from './Connection';
+import { Connection, QueryResult } from './Connection';
 
 export class MySqlConnection extends Connection {
 
@@ -25,34 +25,32 @@ export class MySqlConnection extends Connection {
   }
 
   async beginTransaction(): Promise<void> {
-    const now = Date.now();
-    await this.connection.beginTransaction();
-    this.logQuery(`START TRANSACTION [took ${Date.now() - now} ms]`);
+    await this.query('START TRANSACTION');
   }
 
   async commit(): Promise<void> {
-    const now = Date.now();
-    await this.connection.commit();
-    this.logQuery(`COMMIT [took ${Date.now() - now} ms]`);
+    await this.query('COMMIT');
   }
 
   async rollback(): Promise<void> {
-    const now = Date.now();
-    await this.connection.rollback();
-    this.logQuery(`ROLLBACK [took ${Date.now() - now} ms]`);
+    await this.query('ROLLBACK');
   }
 
   getDefaultClientUrl(): string {
     return 'mysql://root@127.0.0.1:3306';
   }
 
-  async execute(query: string, params: any[] = []): Promise<any[]> {
+  async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
     try {
       const now = Date.now();
       const res = await this.connection.execute(query, params);
       this.logQuery(query + ` [took ${Date.now() - now} ms]`);
 
-      return res;
+      if (method === 'get') {
+        return (res as QueryResult[][])[0][0];
+      }
+
+      return res[0];
     } catch (e) {
       e.message += `\n in query: ${query}`;
 
@@ -82,7 +80,13 @@ export class MySqlConnection extends Connection {
 
   async loadFile(path: string): Promise<void> {
     const file = readFileSync(path);
-    await this.connection.query(file.toString());
+    await this.query(file.toString());
+  }
+
+  private async query(sql: string): Promise<void> {
+    const now = Date.now();
+    await this.connection.query(sql);
+    this.logQuery(`${sql} [took ${Date.now() - now} ms]`);
   }
 
 }

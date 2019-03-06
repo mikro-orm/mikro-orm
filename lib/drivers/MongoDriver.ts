@@ -1,7 +1,6 @@
 import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
-import { Utils } from '../utils/Utils';
-import { IPrimaryKey, MongoNamingStrategy, DriverConfig } from '..';
+import { IPrimaryKey, MongoNamingStrategy, DriverConfig, Utils, QueryOrder } from '..';
 import { MongoConnection } from '../connections/MongoConnection';
 import { EntityData, IEntityType } from '../decorators/Entity';
 
@@ -9,7 +8,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   protected readonly connection = new MongoConnection(this.options, this.logger);
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: { [k: string]: 1 | -1 }, limit: number, offset: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: Record<string, QueryOrder>, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
     const res = await this.connection.find<T>(this.metadata[entityName].collection, where, orderBy, limit, offset);
 

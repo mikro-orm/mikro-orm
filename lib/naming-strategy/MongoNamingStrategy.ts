@@ -15,7 +15,7 @@ export class MongoNamingStrategy implements NamingStrategy {
   }
 
   joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string {
-    return this.classToTableName(sourceEntity) + '-' + this.classToTableName(targetEntity);
+    return '';
   }
 
   propertyToColumnName(propertyName: string): string {

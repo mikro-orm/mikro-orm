@@ -1,36 +1,32 @@
-import { EntityRepository } from './EntityRepository';
-import { EntityFactory } from './EntityFactory';
-import { UnitOfWork } from './UnitOfWork';
+import { EntityRepository } from './entity/EntityRepository';
+import { EntityFactory } from './entity/EntityFactory';
+import { EntityValidator } from './entity/EntityValidator';
+import { EntityAssigner } from './entity/EntityAssigner';
+import { EntityLoader } from './entity/EntityLoader';
+import { UnitOfWork } from './unit-of-work/UnitOfWork';
 import { Utils } from './utils/Utils';
 import { MikroORMOptions } from './MikroORM';
-import { Validator } from './Validator';
 import { RequestContext } from './utils/RequestContext';
 import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
-import { QueryBuilder, QueryOrder } from './QueryBuilder';
+import { QueryBuilder, QueryOrder } from './query/QueryBuilder';
 import { EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
-import { EntityHelper } from './utils/EntityHelper';
-import { EntityLoader } from './EntityLoader';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Connection } from './connections/Connection';
 
 export class EntityManager {
 
-  readonly validator = new Validator(this.options.strict);
+  readonly validator = new EntityValidator(this.options.strict);
 
-  private readonly repositoryMap: { [k: string]: EntityRepository<IEntity> } = {};
+  private readonly repositoryMap: Record<string, EntityRepository<IEntity>> = {};
   private readonly entityLoader = new EntityLoader(this);
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly unitOfWork = new UnitOfWork(this);
-  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.options);
 
   constructor(readonly options: MikroORMOptions,
               private readonly driver: IDatabaseDriver<Connection>) { }
-
-  getIdentityMap(): Record<string, IEntity> {
-    return this.getUnitOfWork().getIdentityMap();
-  }
 
   getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
     return this.driver as D;
@@ -63,8 +59,8 @@ export class EntityManager {
   }
 
   async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
@@ -93,14 +89,11 @@ export class EntityManager {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
 
-    if (Utils.isPrimaryKey(where)) {
-      where = this.driver.normalizePrimaryKey<IPrimaryKey>(where);
-      const entity = this.getUnitOfWork().getById<T>(entityName, where);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
 
-      if (entity && entity.isInitialized()) {
-        await this.entityLoader.populate(entityName, [entity], populate);
-        return entity;
-      }
+    if (entity && entity.isInitialized()) {
+      await this.entityLoader.populate(entityName, [entity], populate);
+      return entity;
     }
 
     this.validator.validateParams(where);
@@ -110,7 +103,7 @@ export class EntityManager {
       return null;
     }
 
-    const entity = this.merge(entityName, data) as T;
+    entity = this.merge(entityName, data) as T;
     await this.entityLoader.populate(entityName, [entity], populate);
 
     return entity;
@@ -173,7 +166,7 @@ export class EntityManager {
     }
 
     const entity = Utils.isEntity<T>(data) ? data : this.entityFactory.create<T>(entityName, data, true);
-    EntityHelper.assign(entity, data);
+    EntityAssigner.assign(entity, data);
     this.getUnitOfWork().addToIdentityMap(entity);
 
     return entity as T;
@@ -304,7 +297,7 @@ export class EntityManager {
 
 export interface FindOptions {
   populate?: string[];
-  orderBy?: { [k: string]: QueryOrder };
+  orderBy?: Record<string, QueryOrder>;
   limit?: number;
   offset?: number;
 }
