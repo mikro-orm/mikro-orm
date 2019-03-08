@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Cascade, Collection, Entity, OneToMany, Property, ManyToOne, EntityHelper,
+  Cascade, Collection, Entity, OneToMany, Property, ManyToOne, EntityAssigner,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -83,7 +83,7 @@ export class Author extends BaseEntity {
   }
 
   assign(data: any): void {
-    EntityHelper.assign(this, data);
+    EntityAssigner.assign(this, data);
   }
 
   toJSON(): { [p: string]: any } {

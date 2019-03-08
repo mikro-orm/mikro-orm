@@ -177,7 +177,7 @@ describe('EntityManagerMongo', () => {
     repo.persistLater(author);
     repo.persistLater(author2);
     await repo.removeAndFlush(author);
-    expect(Object.keys(orm.em.getIdentityMap())).toEqual([`Author-${author2.id}`]);
+    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
     repo.persistLater(author2);
     orm.em.removeLater(author3);
@@ -194,7 +194,7 @@ describe('EntityManagerMongo', () => {
     await repo.persist(author, false);
     await orm.em.removeEntity(author, false);
     expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeUndefined();
-    expect(orm.em.getIdentityMap()).toEqual({});
+    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({});
   });
 
   test('should throw when trying to merge entity without id', async () => {
@@ -209,10 +209,10 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
-    expect(fork.getIdentityMap()).not.toBe(orm.em.getIdentityMap());
+    expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
     expect(fork['entityFactory']).not.toBe(orm.em['entityFactory']);
     expect(fork['metadata']).toBe(orm.em['metadata']);
-    expect(fork.getIdentityMap()).toEqual({});
+    expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
   });
 
   test('findOne with empty where will throw', async () => {

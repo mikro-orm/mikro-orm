@@ -1,8 +1,7 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
-import { IEntity, IPrimaryKey } from '..';
-import { Collection } from '../Collection';
+import { ArrayCollection, IEntity, IPrimaryKey } from '..';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityMetadata, IEntityType } from '../decorators/Entity';
 
@@ -77,7 +76,7 @@ export class Utils {
       const pk = () => metadata[prop.type].primaryKey;
       const name = prop.name as keyof T;
 
-      if (e[name] as any instanceof Collection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
+      if (e[name] as any instanceof ArrayCollection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
         return delete ret[name];
       }
 
@@ -111,7 +110,7 @@ export class Utils {
     const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
     const ARGUMENT_NAMES = /([^\s,]+)/g;
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
-    const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+    const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES) as string[];
 
     if (result === null) {
       return [];
@@ -124,10 +123,8 @@ export class Utils {
 
     // strip default values
     for (let i = 0; i < result.length; i++) {
-      if (result[i] === '=') {
-        result.splice(i, 2);
-      } else if (result[i].includes('=')) {
-        result[i] = (result[i] as string).split('=')[0];
+      if (result[i].includes('=')) {
+        result[i] = result[i].split('=')[0];
         result.splice(i + 1, 1);
       }
     }
@@ -182,6 +179,21 @@ export class Utils {
     if (line) {
       meta.path = line.match(/\((.*):\d+:\d+\)/)![1];
     }
+  }
+
+  static getObjectType(value: any): string {
+    const objectType = Object.prototype.toString.call(value);
+    return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
+  }
+
+  static async runSerial<T = any, U = any>(items: Iterable<U>, cb: (item: U) => Promise<T>): Promise<T[]> {
+    const ret = [];
+
+    for (const item of items) {
+      ret.push(await cb(item));
+    }
+
+    return ret;
   }
 
 }

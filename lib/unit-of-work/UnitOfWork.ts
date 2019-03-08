@@ -1,10 +1,9 @@
-import { Utils } from './utils/Utils';
-import { EntityManager } from './EntityManager';
-import { Cascade, EntityData, EntityMetadata, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
-import { MetadataStorage } from './metadata/MetadataStorage';
-import { Collection } from './Collection';
-import { EntityIdentifier } from './utils/EntityIdentifier';
-import { IPrimaryKey } from './decorators/PrimaryKey';
+import { Collection, EntityManager, FilterQuery, IPrimaryKey, Utils } from '..';
+import { Cascade, EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
+import { MetadataStorage } from '../metadata/MetadataStorage';
+import { EntityIdentifier } from '../entity/EntityIdentifier';
+import { ChangeSetComputer } from './ChangeSetComputer';
+import { ChangeSetPersister } from './ChangeSetPersister';
 
 export class UnitOfWork {
 
@@ -21,8 +20,10 @@ export class UnitOfWork {
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet[] = [];
   private readonly metadata = MetadataStorage.getMetadata();
+  private readonly changeSetComputer = new ChangeSetComputer(this.em, this.originalEntityData, this.identifierMap);
+  private readonly changeSetPersister = new ChangeSetPersister(this.em, this, this.identifierMap);
 
-  constructor(private em: EntityManager) { }
+  constructor(private readonly em: EntityManager) { }
 
   addToIdentityMap(entity: IEntity): void {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
@@ -32,6 +33,16 @@ export class UnitOfWork {
   getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
     const token = `${entityName}-${id}`;
     return this.identityMap[token] as T;
+  }
+
+  tryGetById<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): T | null {
+    if (!Utils.isPrimaryKey(where)) {
+      return null;
+    }
+
+    where = this.em.getDriver().normalizePrimaryKey<IPrimaryKey>(where);
+
+    return this.getById<T>(entityName, where);
   }
 
   getIdentityMap(): Record<string, IEntity> {
@@ -75,17 +86,12 @@ export class UnitOfWork {
 
     const driver = this.em.getDriver();
     const runInTransaction = !driver.isInTransaction() && driver.getConfig().supportsTransactions;
+    const promise = Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet));
 
     if (runInTransaction) {
-      await driver.transactional(async () => {
-        for (const changeSet of this.changeSets) {
-          await this.commitChangeSet(changeSet);
-        }
-      });
+      await driver.transactional(() => promise);
     } else {
-      for (const changeSet of this.changeSets) {
-        await this.commitChangeSet(changeSet);
-      }
+      await promise;
     }
 
     this.postCommitCleanup();
@@ -116,54 +122,6 @@ export class UnitOfWork {
     }
   }
 
-  computeChangeSet(entity: IEntity): ChangeSet | null {
-    const changeSet = { entity } as ChangeSet;
-    const meta = this.metadata[entity.constructor.name];
-
-    changeSet.name = meta.name;
-    changeSet.collection = meta.collection;
-
-    if (entity.id && this.originalEntityData[entity.uuid]) {
-      changeSet.payload = Utils.diffEntities(this.originalEntityData[entity.uuid], entity);
-    } else {
-      changeSet.payload = Utils.prepareEntity(entity);
-    }
-
-    this.em.validator.validate<typeof entity>(changeSet.entity, changeSet.payload, meta);
-    this.processReferences(changeSet, meta);
-
-    if (entity.id && Object.keys(changeSet.payload).length === 0) {
-      return null;
-    }
-
-    this.changeSets.push(changeSet);
-    this.cleanUpStack(this.persistStack, entity);
-    this.originalEntityData[entity.uuid] = Utils.copy(entity);
-
-    return changeSet;
-  }
-
-  private processReferences(changeSet: ChangeSet, meta: EntityMetadata): void {
-    for (const prop of Object.values(meta.properties)) {
-      if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-        const collection = changeSet.entity[prop.name] as Collection<IEntity>;
-
-        if (prop.owner && collection.isDirty()) {
-          const pk = this.metadata[prop.type].primaryKey as keyof IEntity;
-          changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.uuid]);
-          collection.setDirty(false);
-        }
-      } else if (prop.reference === ReferenceType.MANY_TO_ONE && changeSet.entity[prop.name]) {
-        const pk = this.metadata[prop.type].primaryKey;
-        const entity = changeSet.entity[prop.name];
-
-        if (!entity[pk]) {
-          changeSet.payload[prop.name] = this.identifierMap[entity.uuid];
-        }
-      }
-    }
-  }
-
   private findNewEntities<T extends IEntityType<T>>(entity: T): void {
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
 
@@ -173,21 +131,26 @@ export class UnitOfWork {
 
     for (const prop of Object.values(meta.properties)) {
       const reference = entity[prop.name as keyof T];
-
-      if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
-        for (const item of (reference as Collection<IEntity>).getItems()) {
-          if (!this.hasIdentifier(item)) {
-            this.findNewEntities(item);
-          }
-        }
-      } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference) {
-        if (!this.hasIdentifier(reference)) {
-          this.findNewEntities(reference);
-        }
-      }
+      this.processReference(prop, reference);
     }
 
-    this.computeChangeSet(entity);
+    const changeSet = this.changeSetComputer.computeChangeSet(entity);
+
+    if (changeSet) {
+      this.changeSets.push(changeSet);
+      this.cleanUpStack(this.persistStack, entity);
+      this.originalEntityData[entity.uuid] = Utils.copy(entity);
+    }
+  }
+
+  private processReference(prop: EntityProperty, reference: any): void {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
+      (reference as Collection<IEntity>).getItems()
+        .filter(item => !this.hasIdentifier(item))
+        .forEach(item => this.findNewEntities(item));
+    } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.hasIdentifier(reference)) {
+      this.findNewEntities(reference);
+    }
   }
 
   private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
@@ -195,35 +158,7 @@ export class UnitOfWork {
     const pk = meta.primaryKey as keyof T;
     const type = changeSet.entity[pk] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
-
-    // process references first
-    for (const prop of Object.values(meta.properties)) {
-      const value = changeSet.payload[prop.name];
-
-      if (value instanceof EntityIdentifier) {
-        changeSet.payload[prop.name] = value.getValue();
-      } else if (Array.isArray(value) && value.some(item => item instanceof EntityIdentifier)) {
-        changeSet.payload[prop.name] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item);
-      }
-
-      if (prop.onUpdate) {
-        changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name] = prop.onUpdate();
-      }
-    }
-
-    // persist the entity itself
-    if (changeSet.delete) {
-      await this.em.getDriver().nativeDelete(changeSet.name, changeSet.entity[pk]);
-    } else if (changeSet.entity[pk]) {
-      await this.em.getDriver().nativeUpdate(changeSet.name, changeSet.entity[pk], changeSet.payload);
-      this.addToIdentityMap(changeSet.entity);
-    } else {
-      changeSet.entity[pk] = await this.em.getDriver().nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
-      this.identifierMap[changeSet.entity.uuid].setValue(changeSet.entity[pk]);
-      delete changeSet.entity.__initialized;
-      this.em.merge(changeSet.name, changeSet.entity);
-    }
-
+    await this.changeSetPersister.persistToDatabase(changeSet);
     await this.runHooks(`after${type}`, changeSet.entity);
   }
 
@@ -232,10 +167,7 @@ export class UnitOfWork {
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
       const copy = Utils.copy(entity);
-
-      for (const hook of hooks[type]) {
-        await entity[hook as keyof T]();
-      }
+      await Utils.runSerial(hooks[type], hook => entity[hook as keyof T]());
 
       if (payload) {
         Object.assign(payload, Utils.diffEntities(copy, entity));
@@ -279,31 +211,30 @@ export class UnitOfWork {
     visited.push(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist(entity, visited); break;
+      case Cascade.PERSIST: this.persist<T>(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
     const meta = this.metadata[entity.constructor.name];
 
     for (const prop of Object.values(meta.properties)) {
-      if (!prop.cascade || !prop.cascade.includes(type)) {
-        continue;
-      }
+      this.cascadeReference<T>(entity, prop, type, visited);
+    }
+  }
 
-      if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
-        this.cascade(entity[prop.name as keyof T], type, visited);
-        continue;
-      }
+  private cascadeReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty, type: Cascade, visited: IEntity[]): void {
+    if (!prop.cascade || !prop.cascade.includes(type)) {
+      return;
+    }
 
-      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
-        const collection = entity[prop.name as keyof T] as Collection<IEntity>;
+    if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
+      return this.cascade(entity[prop.name as keyof T], type, visited);
+    }
 
-        if (collection.isInitialized(true)) {
-          for (const item of collection.getItems()) {
-            this.cascade(item, type, visited);
-          }
-        }
-      }
+    const collection = entity[prop.name as keyof T] as Collection<IEntity>;
+
+    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(true)) {
+      collection.getItems().forEach(item => this.cascade(item, type, visited));
     }
   }
 

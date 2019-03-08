@@ -20,7 +20,10 @@ script:
 
 before_install:
   - mysql -u root -e 'CREATE DATABASE mikro_orm_test;'
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 
 after_success:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
   - yarn coveralls
-  - yarn codacy-coverage

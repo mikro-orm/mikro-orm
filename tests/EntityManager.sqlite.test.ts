@@ -1,7 +1,6 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
+import { Collection, EntityManager, JavaScriptMetadataProvider, MikroORM, Utils } from '../lib';
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
-import { Utils } from '../lib/utils/Utils';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { Logger } from '../lib/utils/Logger';
 import { EntityMetadata } from '../lib/decorators/Entity';
@@ -398,7 +397,7 @@ describe('EntityManagerSqlite', () => {
     expect(tag5.id).toBeDefined();
 
     // test inverse side
-    const tagRepository = orm.em.getRepository<any>(BookTag3);
+    const tagRepository = orm.em.getRepository<typeof BookTag3>(BookTag3);
     let tags = await tagRepository.findAll();
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);

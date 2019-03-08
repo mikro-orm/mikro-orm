@@ -1,10 +1,83 @@
-import { IPrimaryKey } from '..';
+import { FilterQuery, IPrimaryKey, QueryOrder, QueryBuilder, Utils } from '..';
 import { EntityData, IEntityType, ReferenceType } from '../decorators/Entity';
 import { DatabaseDriver } from './DatabaseDriver';
-import { QueryBuilder } from '../QueryBuilder';
 import { Connection } from '../connections/Connection';
 
 export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDriver<C> {
+
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, limit?: number, offset?: number): Promise<T[]> {
+    const qb = this.createQueryBuilder(entityName);
+    qb.select('*').populate(populate).where(where).orderBy(orderBy);
+
+    if (limit !== undefined) {
+      qb.limit(limit, offset);
+    }
+
+    const res = await qb.execute('all');
+
+    return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
+  }
+
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
+    if (Utils.isPrimaryKey(where)) {
+      where = { id: where };
+    }
+
+    const qb = this.createQueryBuilder(entityName);
+    const res = await qb.select('*').populate(populate).where(where).limit(1).execute('get');
+
+    return this.mapResult(res, this.metadata[entityName]);
+  }
+
+  async count(entityName: string, where: any): Promise<number> {
+    const qb = this.createQueryBuilder(entityName);
+    const res = await qb.count('id', true).where(where).execute('get');
+
+    return res.count;
+  }
+
+  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
+    const collections = this.extractManyToMany(entityName, data);
+
+    if (Object.keys(data).length === 0) {
+      data.id = null;
+    }
+
+    const qb = this.createQueryBuilder(entityName);
+    const res = await qb.insert(data).execute('run');
+    await this.processManyToMany(entityName, res.insertId, collections);
+
+    return res.insertId;
+  }
+
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
+    if (Utils.isPrimaryKey(where)) {
+      where = { id: where };
+    }
+
+    const collections = this.extractManyToMany(entityName, data);
+    let res: any;
+
+    if (Object.keys(data).length) {
+      const qb = this.createQueryBuilder(entityName);
+      res = await qb.update(data).where(where).execute('run');
+    }
+
+    await this.processManyToMany(entityName, Utils.extractPK(data.id || where)!, collections);
+
+    return res ? res.affectedRows : 0;
+  }
+
+  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any): Promise<number> {
+    if (Utils.isPrimaryKey(where)) {
+      where = { id: where };
+    }
+
+    const qb = this.createQueryBuilder(entityName);
+    const res = await qb.delete(where).execute('run');
+
+    return res.affectedRows;
+  }
 
   protected createQueryBuilder(entityName: string): QueryBuilder {
     return new QueryBuilder(entityName, this.metadata, this.connection);
@@ -32,20 +105,18 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
   protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>) {
     const props = this.metadata[entityName].properties;
+    const owners = Object.keys(collections).filter(k => props[k].owner);
 
-    for (const k of Object.keys(collections)) {
+    for (const k of owners) {
       const prop = props[k];
       const fk1 = prop.joinColumn;
+      const fk2 = prop.inverseJoinColumn;
+      const qb1 = this.createQueryBuilder(prop.pivotTable);
+      await qb1.delete({ [fk1]: pk }).execute();
 
-      if (prop.owner) {
-        const qb1 = this.createQueryBuilder(prop.pivotTable);
-        const fk2 = prop.inverseJoinColumn;
-        await qb1.delete({ [fk1]: pk }).execute();
-
-        for (const item of collections[k]) {
-          const qb2 = this.createQueryBuilder(prop.pivotTable);
-          await qb2.insert({ [fk1]: pk, [fk2]: item }).execute();
-        }
+      for (const item of collections[k]) {
+        const qb2 = this.createQueryBuilder(prop.pivotTable);
+        await qb2.insert({ [fk1]: pk, [fk2]: item }).execute();
       }
     }
   }

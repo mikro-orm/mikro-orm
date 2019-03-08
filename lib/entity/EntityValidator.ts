@@ -1,8 +1,9 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
-import { Utils } from './utils/Utils';
+import { EntityMetadata, EntityProperty, IEntityType, ReferenceType } from '../decorators/Entity';
+import { Utils } from '..';
+import { ValidationError } from '../utils/ValidationError';
 
-export class Validator {
+export class EntityValidator {
 
   constructor(private strict: boolean) { }
 
@@ -30,39 +31,16 @@ export class Validator {
     }
 
     const expectedType = prop.type.toLowerCase();
-    const objectType = Object.prototype.toString.call(givenValue);
-    let givenType = objectType.match(/\[object (\w+)]/)![1].toLowerCase();
+    let givenType = Utils.getObjectType(givenValue);
     let ret = givenValue;
 
-    if (!this.strict && expectedType === 'date' && givenType === 'string') {
-      const date = new Date(givenValue);
-
-      if (date.toString() !== 'Invalid Date') {
-        ret = date;
-        givenType = 'date';
-      }
-    }
-
-    if (!this.strict && expectedType === 'number' && givenType === 'string') {
-      const num = +givenValue;
-
-      if ('' + num === givenValue) {
-        ret = num;
-        givenType = 'number';
-      }
-    }
-
-    if (!this.strict && expectedType === 'boolean' && givenType === 'number') {
-      const bool = !!givenValue;
-
-      if (+bool === givenValue) {
-        ret = bool;
-        givenType = 'boolean';
-      }
+    if (!this.strict) {
+      ret = this.fixTypes(expectedType, givenType, givenValue);
+      givenType = Utils.getObjectType(ret);
     }
 
     if (givenType !== expectedType) {
-      throw new Error(`Validation error: trying to set ${entity.constructor.name}.${prop.name} of type '${expectedType}' to '${givenValue}' of type '${givenType}'`);
+      throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
     }
 
     return ret;
@@ -74,11 +52,7 @@ export class Validator {
     }
 
     if (Utils.isEntity(params)) {
-      if (field) {
-        throw new Error(`${params.constructor.name} entity provided in ${type} in field '${field}'. Please provide identifier instead.`);
-      } else {
-        throw new Error(`${params.constructor.name} entity provided in ${type}. Please provide identifier instead.`);
-      }
+      throw ValidationError.fromEntityInsteadOfIdentifier(params, type, field);
     }
 
     if (Array.isArray(params)) {
@@ -94,8 +68,39 @@ export class Validator {
 
   private validateCollection<T>(entity: IEntityType<T>, prop: EntityProperty): void {
     if (!entity[prop.name as keyof T]) {
-      throw new Error(`Validation error: ${entity.constructor.name}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`);
+      throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
+  }
+
+  private fixTypes(expectedType: string, givenType: string, givenValue: any): any {
+    if (expectedType === 'date' && givenType === 'string') {
+      givenValue = this.fixDateType(givenValue);
+    }
+
+    if (expectedType === 'number' && givenType === 'string') {
+      givenValue = this.fixNumberType(givenValue);
+    }
+
+    if (expectedType === 'boolean' && givenType === 'number') {
+      givenValue = this.fixBooleanType(givenValue);
+    }
+
+    return givenValue;
+  }
+
+  private fixDateType(givenValue: string): Date | string {
+    const date = new Date(givenValue);
+    return date.toString() !== 'Invalid Date' ? date : givenValue;
+  }
+
+  private fixNumberType(givenValue: string): number | string {
+    const num = +givenValue;
+    return '' + num === givenValue ? num : givenValue;
+  }
+
+  private fixBooleanType(givenValue: number): boolean | number {
+    const bool = !!givenValue;
+    return +bool === givenValue ? bool : givenValue;
   }
 
 }

@@ -1,7 +1,6 @@
-import { Collection, EntityManager, MikroORM, MikroORMOptions } from '../lib';
+import { Collection, EntityManager, MikroORM, MikroORMOptions, Utils } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Utils } from '../lib/utils/Utils';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger } from '../lib/utils/Logger';
 
@@ -45,7 +44,7 @@ describe('EntityManagerMySql', () => {
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
     expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
     const res = await driver.getConnection().execute('SELECT 1 as count');
-    expect(res[0][0]).toEqual({ count: 1 });
+    expect(res[0]).toEqual({ count: 1 });
     expect(driver.denormalizePrimaryKey(1)).toBe(1);
     expect(driver.denormalizePrimaryKey('1')).toBe('1');
     expect(await driver.find(BookTag2.name, { books: [1] })).not.toBeNull();

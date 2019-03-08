@@ -1,11 +1,12 @@
 import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection } from '../lib';
-import { EntityFactory } from '../lib/EntityFactory';
+import { EntityFactory } from '../lib/entity/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
 import { Logger } from '../lib/utils/Logger';
 import { ReferenceType } from '../lib/decorators/Entity';
+import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
 
 const logger = new Logger({ logger: jest.fn() } as any);
 
@@ -19,8 +20,8 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORM();
-    await new MetadataStorage(orm.em, orm.options, logger).discover();
-    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver());
+    await new MetadataDiscovery(orm.em, orm.options, logger).discover();
+    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.options);
   });
   beforeEach(async () => wipeDatabase(orm.em));
 

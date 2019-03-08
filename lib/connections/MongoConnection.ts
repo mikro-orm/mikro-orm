@@ -2,8 +2,7 @@ import {
   Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, ObjectID, UpdateWriteOpResult,
 } from 'mongodb';
 import { Connection } from './Connection';
-import { Utils } from '../utils/Utils';
-import { FilterQuery } from '..';
+import { FilterQuery, QueryOrder, Utils } from '..';
 
 export class MongoConnection extends Connection {
 
@@ -35,7 +34,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: { [k: string]: 1 | -1 }, limit?: number, offset?: number): Promise<T[]> {
+  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
     let query = `db.getCollection("${collection}").find`;
     where = this.convertObjectIds(where);
     const resultSet = this.getCollection(collection).find(where);

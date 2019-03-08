@@ -1,9 +1,9 @@
-import { EntityManager, FindOptions } from './EntityManager';
-import { RequestContext } from './utils/RequestContext';
-import { FilterQuery } from './drivers/DatabaseDriver';
-import { IPrimaryKey } from './decorators/PrimaryKey';
-import { EntityClass, EntityData, IEntity, IEntityType } from './decorators/Entity';
-import { QueryOrder } from './QueryBuilder';
+import { EntityManager, FindOptions } from '../EntityManager';
+import { RequestContext } from '../utils/RequestContext';
+import { FilterQuery } from '../drivers/DatabaseDriver';
+import { IPrimaryKey } from '../decorators/PrimaryKey';
+import { EntityClass, EntityData, IEntity, IEntityType } from '../decorators/Entity';
+import { QueryOrder } from '../query/QueryBuilder';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
@@ -27,14 +27,14 @@ export class EntityRepository<T extends IEntityType<T>> {
   }
 
   async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>;
-  async find(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
-  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOptions = [], orderBy: { [k: string]: QueryOrder } = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOptions = [], orderBy: Record<string, QueryOrder> = {}, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
   }
 
   async findAll(options?: FindOptions): Promise<T[]>;
-  async findAll(populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>;
-  async findAll(populate: string[] | FindOptions = [], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]> {
+  async findAll(populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  async findAll(populate: string[] | FindOptions = [], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 

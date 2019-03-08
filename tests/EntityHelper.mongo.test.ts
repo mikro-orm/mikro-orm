@@ -1,12 +1,12 @@
 import { ObjectID } from 'mongodb';
 import { Author, Book, BookTag } from './entities';
-import { EntityHelper, MikroORM } from '../lib';
+import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 
 /**
- * @class EntityHelperMongoTest
+ * @class EntityAssignerMongoTest
  */
-describe('EntityHelperMongo', () => {
+describe('EntityAssignerMongo', () => {
 
   let orm: MikroORM;
 
@@ -46,13 +46,13 @@ describe('EntityHelperMongo', () => {
     await orm.em.persist(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    EntityHelper.assign(book, { title: 'Better Book2 1', author: god, notExisting: true });
+    EntityAssigner.assign(book, { title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persist(god);
-    EntityHelper.assign(book, { title: 'Better Book2 2', author: god.id });
+    EntityAssigner.assign(book, { title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
-    EntityHelper.assign(book, { title: 'Better Book2 3', author: jon._id });
+    EntityAssigner.assign(book, { title: 'Better Book2 3', author: jon._id });
     expect(book.title).toBe('Better Book2 3');
     expect(book.author).toBe(jon);
   });
@@ -69,16 +69,16 @@ describe('EntityHelperMongo', () => {
     book.tags.add(tag2);
     book.tags.add(tag3);
     await orm.em.persist(book);
-    EntityHelper.assign(book, { tags: [other._id] });
+    EntityAssigner.assign(book, { tags: [other._id] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
-    EntityHelper.assign(book, { tags: [] });
+    EntityAssigner.assign(book, { tags: [] });
     expect(book.tags.getIdentifiers()).toMatchObject([]);
-    EntityHelper.assign(book, { tags: [tag1.id, tag3.id] });
+    EntityAssigner.assign(book, { tags: [tag1.id, tag3.id] });
     expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
-    EntityHelper.assign(book, { tags: [tag2] });
+    EntityAssigner.assign(book, { tags: [tag2] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
-    expect(() => EntityHelper.assign(book, { tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
-    expect(() => EntityHelper.assign(book, { publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => EntityAssigner.assign(book, { tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => EntityAssigner.assign(book, { publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('should have string id getter and setter', async () => {

@@ -47,10 +47,15 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract async execute(query: string, params?: any[], method?: string): Promise<any>;
+  abstract async execute(query: string, params?: any[], method?: string): Promise<QueryResult | any | any[]>;
 
   protected logQuery(query: string): void {
     this.logger.debug(`[query-logger] ${query}`);
   }
 
+}
+
+export interface QueryResult {
+  affectedRows: number;
+  insertId: number;
 }

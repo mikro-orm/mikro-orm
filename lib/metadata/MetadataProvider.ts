@@ -1,6 +1,6 @@
 import { EntityMetadata } from '../decorators/Entity';
 import { MikroORMOptions } from '../MikroORM';
-import { Utils } from '../utils/Utils';
+import { Utils } from '..';
 
 export abstract class MetadataProvider {
 
