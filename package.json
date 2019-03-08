@@ -70,6 +70,12 @@
       "git add"
     ]
   },
+  "renovate": {
+    "extends": [
+      "config:base"
+    ],
+    "pinVersions": false
+  },
   "dependencies": {
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
