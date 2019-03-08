@@ -3,7 +3,7 @@ version: "3.4"
 services:
   mongo:
     container_name: mongo
-    image: mongo:3.4
+    image: mongo:3.7
     ports:
       - 27017:27017
     volumes:
