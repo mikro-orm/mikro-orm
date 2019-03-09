@@ -6,7 +6,7 @@
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/B4nan/mikro-orm.git"
+    "url": "https://github.com/B4nan/mikro-orm.git"
   },
   "keywords": [
     "ORM",
