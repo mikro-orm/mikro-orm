@@ -8,7 +8,7 @@ layout: homepage
 [![Dependency Status](https://david-dm.org/B4nan/mikro-orm.svg)](https://david-dm.org/B4nan/mikro-orm)
 [![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4fc24bb70323474180b67bc14838c416)](https://app.codacy.com/app/B4nan/mikro-orm?utm_source=github.com&utm_medium=referral&utm_content=B4nan/mikro-orm&utm_campaign=Badge_Grade_Settings)
+[![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/B4nan/mikro-orm/maintainability)
 
 MikroORM is TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.
 
