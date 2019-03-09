@@ -18,10 +18,6 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 MikroORM's documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://b4nan.github.io/mikro-orm/.
 
-> **Current documentation is for upcoming version 2.**
->
-> You can install it via `mikro-orm@next` tag.
-
 ## Core features
 
 - [Clean and simple entity definition](https://b4nan.github.io/mikro-orm/defining-entities/)
