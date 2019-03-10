@@ -1,6 +1,5 @@
-const { Collection } = require('../../lib');
 const { MetadataStorage } = require('../../lib/metadata');
-const { ReferenceType } = require('../../lib/entity');
+const { Collection, ReferenceType } = require('../../lib');
 
 /**
  * @property {number} id
@@ -27,6 +26,9 @@ const schema = {
       type: 'number',
     },
   },
+  path: __filename,
 };
 
-module.exports = { BaseEntity4, schema };
+module.exports.BaseEntity4 = BaseEntity4;
+module.exports.entity = BaseEntity4;
+module.exports.schema = schema;

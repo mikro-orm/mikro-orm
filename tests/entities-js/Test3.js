@@ -1,4 +1,4 @@
-const { BaseEntity4 } = require('./BaseEntity4');
+const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
  * @property {number} id
@@ -27,6 +27,9 @@ const schema = {
       type: 'string',
     },
   },
+  path: __filename,
 };
 
-module.exports = { Test3, schema };
+module.exports.Test3 = Test3;
+module.exports.entity = Test3;
+module.exports.schema = schema;

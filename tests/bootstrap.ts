@@ -9,11 +9,7 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { FooBar2 } from './entities-sql/FooBar2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
-const { Author3 } = require('./entities-js/Author3');
-const { Book3 } = require('./entities-js/Book3');
-const { BookTag3 } = require('./entities-js/BookTag3');
-const { Publisher3 } = require('./entities-js/Publisher3');
-const { Test3 } = require('./entities-js/Test3');
+const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
@@ -59,7 +55,7 @@ export async function initORMMySql() {
 
 export async function initORMSqlite() {
   const orm = await MikroORM.init({
-    entitiesDirs: ['entities-js'],
+    entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
     dbName: 'tests/mikro_orm_test.db',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
@@ -94,12 +90,11 @@ export async function wipeDatabaseMySql(em: EntityManager) {
 }
 
 export async function wipeDatabaseSqlite(em: EntityManager) {
-  await em.createQueryBuilder(Author3).delete().execute('run');
-  await em.createQueryBuilder(Author3).delete().execute('run');
-  await em.createQueryBuilder(Book3).delete().execute('run');
-  await em.createQueryBuilder(BookTag3).delete().execute('run');
-  await em.createQueryBuilder(Publisher3).delete().execute('run');
-  await em.createQueryBuilder(Test3).delete().execute('run');
+  await em.createQueryBuilder(Author3.entity).delete().execute('run');
+  await em.createQueryBuilder(Book3.entity).delete().execute('run');
+  await em.createQueryBuilder(BookTag3.entity).delete().execute('run');
+  await em.createQueryBuilder(Publisher3.entity).delete().execute('run');
+  await em.createQueryBuilder(Test3.entity).delete().execute('run');
   await em.createQueryBuilder('book3_to_book_tag3').delete().execute('run');
   await em.createQueryBuilder('publisher3_to_test3').delete().execute('run');
   em.clear();

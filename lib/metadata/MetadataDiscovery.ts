@@ -1,6 +1,6 @@
 import { sync as globby } from 'globby';
 
-import { EntityClass, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
+import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
 import { Configuration, Logger, Utils } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
@@ -61,7 +61,8 @@ export class MetadataDiscovery {
     }
   }
 
-  private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T>, path?: string): Promise<void> {
+  private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
+    entity = this.metadataProvider.prepare(entity);
     this.logger.debug(`- processing entity ${entity.name}`);
 
     const meta = MetadataStorage.getMetadata(entity.name);

@@ -1,6 +1,5 @@
 const { Collection, ReferenceType } = require('../../lib');
-const { Book3 } = require('./Book3');
-const { BaseEntity4 } = require('./BaseEntity4');
+const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
  * @property {number} id
@@ -95,6 +94,9 @@ const schema = {
     beforeDelete: ['beforeDelete'],
     afterDelete: ['afterDelete'],
   },
+  path: __filename,
 };
 
-module.exports = { Author3, schema };
+module.exports.Author3 = Author3;
+module.exports.entity = Author3;
+module.exports.schema = schema;

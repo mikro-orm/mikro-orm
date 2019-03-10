@@ -3,7 +3,7 @@ import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { TypeScriptMetadataProvider } from '../metadata';
 import { EntityRepository } from '../entity';
 import { MetadataProvider } from '../metadata';
-import { EntityClass, EntityName, EntityOptions, IEntity } from '../decorators';
+import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { EntityFactory } from '../entity';
 import { Logger } from './Logger';
@@ -139,7 +139,7 @@ export class Configuration {
 
 export interface MikroORMOptions {
   dbName: string;
-  entities: EntityClass<IEntity>[];
+  entities: (EntityClass<IEntity> | EntityClassGroup<IEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
   tsConfigPath: string;

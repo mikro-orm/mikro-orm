@@ -5,11 +5,11 @@ import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { Logger } from '../lib/utils';
 import { EntityMetadata } from '../lib/decorators';
 
-const { Author3 } = require('./entities-js/Author3');
-const { Book3 } = require('./entities-js/Book3');
-const { BookTag3 } = require('./entities-js/BookTag3');
-const { Publisher3 } = require('./entities-js/Publisher3');
-const { Test3 } = require('./entities-js/Test3');
+const { Author3 } = require('./entities-js').Author3;
+const { Book3 } = require('./entities-js').Book3;
+const { BookTag3 } = require('./entities-js').BookTag3;
+const { Publisher3 } = require('./entities-js').Publisher3;
+const { Test3 } = require('./entities-js').Test3;
 
 /**
  * @class EntityManagerSqliteTest

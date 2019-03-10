@@ -68,10 +68,16 @@ const schema = {
       fk: 'id',
     },
   },
+  path: __filename,
 };
 
-module.exports = { Author, schema };
+module.exports.Author = Author;
+module.exports.entity = Author;
+module.exports.schema = schema;
 ```
+
+> Do not forget to provide `name` and `path` schema parameters as well as `entity` 
+> and `schema` exports.
 
 Reference parameter can be one of (where `SCALAR` is the default one):
 
@@ -94,7 +100,8 @@ const orm = await MikroORM.init({
 });
 ```
 
-For more examples of plain JavaScript entity definitions,
-[take a look here](https://github.com/B4nan/mikro-orm/blob/master/tests/entities-js). 
+For more examples of plain JavaScript entity definitions take a look
+[at the tests](https://github.com/B4nan/mikro-orm/blob/master/tests/entities-js) or at
+[Express JavaScript example](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js). 
 
 [&larr; Back to table of contents](index.md#table-of-contents)

@@ -1,8 +1,5 @@
-const { Publisher3 } = require('./Publisher3');
-const { Author3 } = require('./Author3');
-const { BookTag3 } = require('./BookTag3');
-const { BaseEntity4 } = require('./BaseEntity4');
 const { Collection } = require('../../lib');
+const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
  * @property {number} id
@@ -48,6 +45,9 @@ const schema = {
       type: 'BookTag3',
     },
   },
+  path: __filename,
 };
 
-module.exports = { Book3, schema };
+module.exports.Book3 = Book3;
+module.exports.entity = Book3;
+module.exports.schema = schema;

@@ -1,7 +1,5 @@
 const { Collection } = require('../../lib');
-const { Book3 } = require('./Book3');
-const { Test3 } = require('./Test3');
-const { BaseEntity4 } = require('./BaseEntity4');
+const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
  * @property {number} id
@@ -41,6 +39,9 @@ const schema = {
       type: 'PublisherType',
     },
   },
+  path: __filename,
 };
 
-module.exports = { Publisher3, schema };
+module.exports.Publisher3 = Publisher3;
+module.exports.entity = Publisher3;
+module.exports.schema = schema;

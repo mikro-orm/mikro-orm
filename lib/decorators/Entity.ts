@@ -40,6 +40,11 @@ export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | a
 
 export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
 
+export type EntityClassGroup<T extends IEntityType<T>> = {
+  entity: EntityClass<T>
+  schema: EntityMetadata<T>,
+};
+
 export type EntityName<T extends IEntityType<T>> = string | EntityClass<T>;
 
 export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPrimaryKey; } & Record<string, any>;
