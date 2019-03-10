@@ -6,26 +6,19 @@ import { Configuration, Logger, Utils } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { EntityHelper, ReferenceType } from '../entity';
-import { NamingStrategy } from '../naming-strategy';
-import { MetadataProvider } from './MetadataProvider';
-import { CacheAdapter } from '../cache';
 
 export class MetadataDiscovery {
 
   private readonly metadata = MetadataStorage.getMetadata();
-  private readonly namingStrategy: NamingStrategy;
-  private readonly metadataProvider: MetadataProvider;
-  private readonly cache: CacheAdapter;
+  private readonly namingStrategy = this.config.getNamingStrategy();
+  private readonly metadataProvider = this.config.getMetadataProvider();
+  private readonly cache = this.config.getCacheAdapter();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly em: EntityManager,
               private readonly config: Configuration,
-              private readonly logger: Logger) {
-    this.namingStrategy = this.config.getNamingStrategy();
-    this.metadataProvider = this.config.getMetadataProvider();
-    this.cache = this.config.getCacheAdapter();
-  }
+              private readonly logger: Logger) { }
 
   async discover(): Promise<Record<string, EntityMetadata>> {
     const startTime = Date.now();
@@ -95,9 +88,12 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    // init types and column names
     Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+    this.saveToCache(meta, entity);
+    this.discovered.push(meta);
+  }
 
+  private saveToCache<T extends IEntityType<T>>(meta: EntityMetadata, entity: EntityClass<T>): void {
     const copy = Object.assign({}, meta);
     delete copy.prototype;
 
@@ -105,8 +101,6 @@ export class MetadataDiscovery {
     if (meta.path) {
       this.cache.set(entity.name, copy, meta.path);
     }
-
-    this.discovered.push(meta);
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
