@@ -10,8 +10,7 @@ import { QueryOrder } from './query';
 
 export class EntityManager {
 
-  readonly validator = new EntityValidator(this.config.get('strict'));
-
+  private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Record<string, EntityRepository<IEntity>> = {};
   private readonly entityLoader = new EntityLoader(this);
   private readonly metadata = MetadataStorage.getMetadata();
@@ -39,6 +38,10 @@ export class EntityManager {
     }
 
     return this.repositoryMap[entityName] as EntityRepository<T>;
+  }
+
+  getValidator(): EntityValidator {
+    return this.validator;
   }
 
   createQueryBuilder(entityName: EntityName<IEntity>): QueryBuilder {

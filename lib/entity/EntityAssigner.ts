@@ -27,7 +27,7 @@ export class EntityAssigner {
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        entity[prop as keyof T] = entity.__em.validator.validateProperty(props[prop], value, entity);
+        entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
       entity[prop as keyof T] = value as T[keyof T];

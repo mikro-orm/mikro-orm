@@ -1,16 +1,14 @@
 import { MetadataStorage } from '../metadata';
 import { EntityProperty, IEntityType } from '../decorators';
-import { UnitOfWork } from './UnitOfWork';
 import { EntityIdentifier } from '../entity';
-import { EntityManager } from '../EntityManager';
 import { ChangeSet } from './ChangeSet';
+import { IDatabaseDriver } from '..';
 
 export class ChangeSetPersister {
 
   private readonly metadata = MetadataStorage.getMetadata();
 
-  constructor(private readonly em: EntityManager,
-              private readonly uow: UnitOfWork,
+  constructor(private readonly driver: IDatabaseDriver,
               private readonly identifierMap: Record<string, EntityIdentifier>) { }
 
   async persistToDatabase<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
@@ -29,15 +27,13 @@ export class ChangeSetPersister {
     const pk = this.metadata[changeSet.name].primaryKey as keyof T;
 
     if (changeSet.delete) {
-      await this.em.getDriver().nativeDelete(changeSet.name, changeSet.entity[pk]);
+      await this.driver.nativeDelete(changeSet.name, changeSet.entity[pk]);
     } else if (changeSet.entity[pk]) {
-      await this.em.getDriver().nativeUpdate(changeSet.name, changeSet.entity[pk], changeSet.payload);
-      this.uow.addToIdentityMap(changeSet.entity);
+      await this.driver.nativeUpdate(changeSet.name, changeSet.entity[pk], changeSet.payload);
     } else {
-      changeSet.entity[pk] = await this.em.getDriver().nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
+      changeSet.entity[pk] = await this.driver.nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
       this.identifierMap[changeSet.entity.uuid].setValue(changeSet.entity[pk]);
       delete changeSet.entity.__initialized;
-      this.em.merge(changeSet.name, changeSet.entity);
     }
   }
 

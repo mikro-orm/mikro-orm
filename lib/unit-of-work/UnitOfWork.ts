@@ -23,8 +23,8 @@ export class UnitOfWork {
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet[] = [];
   private readonly metadata = MetadataStorage.getMetadata();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em, this.originalEntityData, this.identifierMap);
-  private readonly changeSetPersister = new ChangeSetPersister(this.em, this, this.identifierMap);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
+  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap);
 
   constructor(private readonly em: EntityManager) { }
 
@@ -160,8 +160,14 @@ export class UnitOfWork {
     const meta = this.metadata[changeSet.name];
     const pk = meta.primaryKey as keyof T;
     const type = changeSet.entity[pk] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
+
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet);
+
+    if (!changeSet.delete) {
+      this.em.merge(changeSet.name, changeSet.entity);
+    }
+
     await this.runHooks(`after${type}`, changeSet.entity);
   }
 
