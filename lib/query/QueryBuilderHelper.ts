@@ -1,6 +1,6 @@
-import { Utils } from '..';
-import { EntityMetadata } from '../decorators/Entity';
-import { QueryOrder, QueryType } from './QueryBuilder';
+import { Utils } from '../utils';
+import { EntityMetadata } from '../decorators';
+import { QueryOrder, QueryType } from './enums';
 
 export class QueryBuilderHelper {
 

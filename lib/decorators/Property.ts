@@ -1,7 +1,7 @@
 import { EntityProperty, IEntity } from './Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Utils } from '..';
-import { ReferenceType } from '../entity/enums';
+import { MetadataStorage } from '../metadata';
+import { Utils } from '../utils';
+import { ReferenceType } from '../entity';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {

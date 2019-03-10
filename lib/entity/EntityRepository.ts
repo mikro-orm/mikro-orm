@@ -1,16 +1,15 @@
 import { EntityManager, FindOptions } from '../EntityManager';
-import { RequestContext } from '../utils/RequestContext';
-import { FilterQuery } from '../drivers/DatabaseDriver';
-import { IPrimaryKey } from '../decorators/PrimaryKey';
-import { EntityClass, EntityData, IEntity, IEntityType } from '../decorators/Entity';
-import { QueryOrder } from '../query/QueryBuilder';
+import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { RequestContext } from '../utils';
+import { QueryOrder } from '../query';
+import { FilterQuery } from '..';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private readonly _em: EntityManager,
-              protected readonly entityName: string | EntityClass<T>) { }
+              protected readonly entityName: EntityName<T>) { }
 
-  async persist(entity: T | IEntity[], flush = this._em.options.autoFlush): Promise<void> {
+  async persist(entity: T | IEntity[], flush = this._em.config.get('autoFlush')): Promise<void> {
     await this.em.persist(entity, flush);
   }
 
@@ -38,7 +37,7 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 
-  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this._em.options.autoFlush): Promise<number> {
+  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this._em.config.get('autoFlush')): Promise<number> {
     return this.em.remove(this.entityName, where, flush);
   }
 

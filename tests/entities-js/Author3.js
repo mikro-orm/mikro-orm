@@ -1,4 +1,4 @@
-const { Collection } = require('../../lib');
+const { Collection, ReferenceType } = require('../../lib');
 const { Book3 } = require('./Book3');
 const { BaseEntity4 } = require('./BaseEntity4');
 
@@ -77,7 +77,7 @@ const schema = {
     identities: 'string[]',
     born: 'Date',
     books: {
-      reference: '1:m',
+      reference: ReferenceType.ONE_TO_MANY,
       fk: 'author',
       type: 'Book3',
     },

@@ -1,41 +1,34 @@
 import { sync as globby } from 'globby';
 
-import { EntityClass, EntityMetadata, EntityProperty, IEntity } from '../decorators/Entity';
-import { CacheAdapter, MetadataProvider, NamingStrategy, EntityHelper, Utils } from '..';
+import { EntityClass, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
-import { MikroORMOptions } from '../MikroORM';
-import { Logger } from '../utils/Logger';
+import { Configuration, Logger, Utils } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { ReferenceType } from '../entity/enums';
+import { EntityHelper, ReferenceType } from '../entity';
 
 export class MetadataDiscovery {
 
   private readonly metadata = MetadataStorage.getMetadata();
-  private readonly namingStrategy: NamingStrategy;
-  private readonly metadataProvider: MetadataProvider;
-  private readonly cache: CacheAdapter;
+  private readonly namingStrategy = this.config.getNamingStrategy();
+  private readonly metadataProvider = this.config.getMetadataProvider();
+  private readonly cache = this.config.getCacheAdapter();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly em: EntityManager,
-              private readonly options: MikroORMOptions,
-              private readonly logger: Logger) {
-    const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getConfig().namingStrategy;
-    this.namingStrategy = new NamingStrategy();
-    this.metadataProvider = new this.options.metadataProvider(this.options);
-    this.cache = new this.options.cache.adapter(this.options.cache.options);
-  }
+              private readonly config: Configuration,
+              private readonly logger: Logger) { }
 
   async discover(): Promise<Record<string, EntityMetadata>> {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     this.discovered.length = 0;
 
-    if (this.options.entities.length > 0) {
-      await Promise.all(this.options.entities.map(entity => this.discoverEntity(entity)));
+    if (this.config.get('entities').length > 0) {
+      await Promise.all(this.config.get('entities').map(entity => this.discoverEntity(entity)));
     } else {
-      await Promise.all(this.options.entitiesDirs.map(entity => this.discoverDirectory(entity)));
+      await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
     }
 
     this.discovered.forEach(meta => this.processEntity(meta));
@@ -46,7 +39,7 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = globby('*', { cwd: `${this.options.baseDir}/${basePath}` });
+    const files = globby('*', { cwd: `${this.config.get('baseDir')}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
@@ -62,13 +55,13 @@ export class MetadataDiscovery {
       }
 
       const name = this.getClassName(file);
-      const path = `${this.options.baseDir}/${basePath}/${file}`;
+      const path = `${this.config.get('baseDir')}/${basePath}/${file}`;
       const target = require(path)[name]; // include the file to trigger loading of metadata
       await this.discoverEntity(target, path);
     }
   }
 
-  private async discoverEntity(entity: EntityClass<IEntity>, path?: string): Promise<void> {
+  private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T>, path?: string): Promise<void> {
     this.logger.debug(`- processing entity ${entity.name}`);
 
     const meta = MetadataStorage.getMetadata(entity.name);
@@ -95,9 +88,12 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    // init types and column names
     Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+    this.saveToCache(meta, entity);
+    this.discovered.push(meta);
+  }
 
+  private saveToCache<T extends IEntityType<T>>(meta: EntityMetadata, entity: EntityClass<T>): void {
     const copy = Object.assign({}, meta);
     delete copy.prototype;
 
@@ -105,8 +101,6 @@ export class MetadataDiscovery {
     if (meta.path) {
       this.cache.set(entity.name, copy, meta.path);
     }
-
-    this.discovered.push(meta);
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {

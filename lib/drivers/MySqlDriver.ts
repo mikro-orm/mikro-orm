@@ -3,6 +3,6 @@ import { AbstractSqlDriver } from './AbstractSqlDriver';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection> {
 
-  protected readonly connection = new MySqlConnection(this.options, this.logger);
+  protected readonly connection = new MySqlConnection(this.config);
 
 }

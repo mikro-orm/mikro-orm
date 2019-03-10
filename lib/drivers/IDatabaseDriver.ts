@@ -1,7 +1,7 @@
-import { FilterQuery } from './DatabaseDriver';
-import { IEntity, IPrimaryKey, NamingStrategy, QueryOrder } from '..';
-import { EntityData, EntityProperty } from '../decorators/Entity';
+import { EntityData, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
 import { Connection } from '../connections/Connection';
+import { QueryOrder } from '../query';
+import { NamingStrategy } from '../naming-strategy';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -67,6 +67,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getConfig(): DriverConfig;
 
 }
+
+export type FilterQuery<T> = Partial<T> | Record<string, any>;
 
 export interface DriverConfig {
   usesPivotTable: boolean;

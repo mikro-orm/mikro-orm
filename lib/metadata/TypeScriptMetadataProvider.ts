@@ -3,8 +3,8 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata } from '../decorators/Entity';
-import { Utils } from '../utils/Utils';
+import { EntityMetadata } from '../decorators';
+import { Utils } from '../utils';
 
 export class TypeScriptMetadataProvider extends MetadataProvider {
 
@@ -53,21 +53,19 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
   }
 
   private initSourceFiles(): void {
-    if (this.options.entitiesDirsTs.length === 0) {
-      this.options.entitiesDirsTs = this.options.entitiesDirs;
-    }
+    const tsDirs = this.config.get('entitiesDirsTs');
 
-    if (this.options.entitiesDirsTs.length > 0) {
-      const dirs = this.validateDirectories(this.options.entitiesDirsTs);
+    if (tsDirs.length > 0) {
+      const dirs = this.validateDirectories(tsDirs);
       this.sources = this.project.addExistingSourceFiles(dirs);
     } else {
-      this.sources = this.project.addSourceFilesFromTsConfig(this.options.tsConfigPath);
+      this.sources = this.project.addSourceFilesFromTsConfig(this.config.get('tsConfigPath'));
     }
   }
 
   private validateDirectories(dirs: string[]): string[] {
     return dirs.map(dir => {
-      const path = join(this.options.baseDir, dir);
+      const path = join(this.config.get('baseDir'), dir);
 
       if (!existsSync(path)) {
         throw new Error(`Path ${path} does not exist`);

@@ -1,7 +1,7 @@
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../decorators/Entity';
-import { Utils } from '..';
-import { Cascade, ReferenceType } from '../entity/enums';
+import { EntityMetadata, EntityProperty } from '../decorators';
+import { Utils } from '../utils';
+import { Cascade, ReferenceType } from '../entity';
 
 export class JavaScriptMetadataProvider extends MetadataProvider {
 

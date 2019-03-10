@@ -1,12 +1,15 @@
 import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
-import { IPrimaryKey, MongoNamingStrategy, DriverConfig, Utils, QueryOrder } from '..';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, IEntityType } from '../decorators/Entity';
+import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
+import { QueryOrder } from '../query';
+import { Utils } from '../utils';
+import { DriverConfig } from './IDatabaseDriver';
+import { MongoNamingStrategy } from '../naming-strategy';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
-  protected readonly connection = new MongoConnection(this.options, this.logger);
+  protected readonly connection = new MongoConnection(this.config);
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: Record<string, QueryOrder>, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
@@ -65,7 +68,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.connection.aggregate(this.metadata[entityName].collection, pipeline);
   }
 
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
+  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectID): T {
     if (data instanceof ObjectID) {
       return data.toHexString() as unknown as T;
     }

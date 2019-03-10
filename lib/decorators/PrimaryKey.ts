@@ -1,7 +1,7 @@
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { EntityProperty, IEntity } from './Entity';
-import { Utils } from '..';
-import { ReferenceType } from '../entity/enums';
+import { MetadataStorage } from '../metadata';
+import { ReferenceType } from '../entity';
+import { EntityProperty, IEntity } from '.';
+import { Utils } from '../utils';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {

@@ -1,5 +1,5 @@
-import { IPrimaryKey, FilterQuery } from '..';
-import { IEntity, IEntityType } from '../decorators/Entity';
+import { FilterQuery, IPrimaryKey } from '..';
+import { IEntity, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';

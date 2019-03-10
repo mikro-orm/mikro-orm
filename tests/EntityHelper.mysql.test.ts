@@ -2,7 +2,6 @@ import { MikroORM } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2 } from './entities-sql';
 import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
-import { Logger } from '../lib/utils/Logger';
 
 /**
  * @class EntityHelperMySqlTest
@@ -13,8 +12,7 @@ describe('EntityHelperMySql', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql();
-    const logger = new Logger({ logger: jest.fn() } as any);
-    await new MetadataDiscovery(orm.em, orm.options, logger).discover();
+    await new MetadataDiscovery(orm.em, orm.config, orm.config.getLogger()).discover();
   });
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 

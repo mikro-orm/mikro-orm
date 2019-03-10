@@ -1,16 +1,14 @@
-import { Collection, Utils } from '..';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { EntityManager } from '../EntityManager';
-import { EntityProperty, IEntity } from '../decorators/Entity';
-import { ChangeSet } from './UnitOfWork';
-import { EntityIdentifier } from '../entity/EntityIdentifier';
-import { ReferenceType } from '../entity/enums';
+import { Utils } from '../utils';
+import { MetadataStorage } from '../metadata';
+import { EntityProperty, IEntity } from '../decorators';
+import { ChangeSet } from './ChangeSet';
+import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '../entity';
 
 export class ChangeSetComputer {
 
   private readonly metadata = MetadataStorage.getMetadata();
 
-  constructor(private readonly em: EntityManager,
+  constructor(private readonly validator: EntityValidator,
               private readonly originalEntityData: Record<string, IEntity>,
               private readonly identifierMap: Record<string, EntityIdentifier>) { }
 
@@ -22,7 +20,7 @@ export class ChangeSetComputer {
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
-    this.em.validator.validate<typeof entity>(changeSet.entity, changeSet.payload, meta);
+    this.validator.validate<typeof entity>(changeSet.entity, changeSet.payload, meta);
 
     for (const prop of Object.values(meta.properties)) {
       this.processReference(changeSet, prop);

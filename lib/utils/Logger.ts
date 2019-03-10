@@ -1,17 +1,20 @@
-import { MikroORMOptions } from '../MikroORM';
-
 export class Logger {
 
-  constructor(private readonly options: MikroORMOptions) { }
+  constructor(private readonly logger: (message: string) => void,
+              private debugMode = false) { }
 
   info(message: string): void {
-    this.options.logger(message);
+    this.logger(message);
   }
 
   debug(message: string): void {
-    if (this.options.debug) {
-      this.options.logger(message);
+    if (this.debugMode) {
+      this.logger(message);
     }
+  }
+
+  setDebugMode(debugMode: boolean): void {
+    this.debugMode = debugMode;
   }
 
 }

@@ -1,6 +1,6 @@
 import { ObjectID } from 'mongodb';
 import { Collection, EntityManager, MikroORM, QueryOrder } from '../lib';
-import { EntityProperty } from '../lib/decorators/Entity';
+import { EntityProperty } from '../lib/decorators';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -813,7 +813,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
-    orm.options.debug = false;
+    orm.config.getLogger().setDebugMode(false);
     const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectID);
 

@@ -1,8 +1,8 @@
-import {
-  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, ObjectID, UpdateWriteOpResult,
-} from 'mongodb';
+import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, ObjectID, UpdateWriteOpResult } from 'mongodb';
 import { Connection } from './Connection';
-import { FilterQuery, QueryOrder, Utils } from '..';
+import { Utils } from '../utils';
+import { QueryOrder } from '../query';
+import { FilterQuery } from '..';
 
 export class MongoConnection extends Connection {
 
@@ -10,8 +10,8 @@ export class MongoConnection extends Connection {
   protected db: Db;
 
   async connect(): Promise<void> {
-    this.client = await MongoClient.connect(this.options.clientUrl as string, { useNewUrlParser: true });
-    this.db = this.client.db(this.options.dbName);
+    this.client = await MongoClient.connect(this.config.getClientUrl(), { useNewUrlParser: true });
+    this.db = this.client.db(this.config.get('dbName'));
   }
 
   async close(force?: boolean): Promise<void> {

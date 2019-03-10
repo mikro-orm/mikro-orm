@@ -1,6 +1,6 @@
 import { IDatabaseDriver } from '..';
-import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators/Entity';
-import { EntityFactory } from '../entity/EntityFactory';
+import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
+import { EntityFactory } from '../entity';
 
 export abstract class Hydrator {
 

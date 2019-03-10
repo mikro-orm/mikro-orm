@@ -1,8 +1,8 @@
-import { Collection, EntityRepository, Utils } from '..';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import { MetadataStorage } from '../metadata';
 import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
-import { Cascade, ReferenceType } from '../entity/enums';
+import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
+import { Utils } from '../utils';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -19,7 +19,7 @@ export function Entity(options: EntityOptions = {}): Function {
 
 export type EntityOptions = {
   collection?: string;
-  customRepository?: () => { new (em: EntityManager, entityName: string): EntityRepository<IEntity> };
+  customRepository?: () => { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
 }
 
 export interface IEntity<K = number | string> {
@@ -39,6 +39,8 @@ export interface IEntity<K = number | string> {
 export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;
 
 export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
+
+export type EntityName<T extends IEntityType<T>> = string | EntityClass<T>;
 
 export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPrimaryKey; } & Record<string, any>;
 
@@ -69,7 +71,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   path: string;
   primaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty };
-  customRepository: () => { new (em: EntityManager, entityName: string | EntityClass<T>): EntityRepository<T> };
+  customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
   hooks: Record<string, string[]>;
   prototype: EntityClass<T> & IEntity;
 }

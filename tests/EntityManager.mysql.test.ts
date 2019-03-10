@@ -1,4 +1,4 @@
-import { Collection, EntityManager, MikroORM, MikroORMOptions, Utils } from '../lib';
+import { Collection, Configuration, EntityManager, MikroORM, Utils } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
@@ -23,12 +23,14 @@ describe('EntityManagerMySql', () => {
   });
 
   test('getConnectionOptions()', async () => {
-    const driver = new MySqlDriver({
+    const config = new Configuration({
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
-    } as MikroORMOptions, new Logger({ logger: jest.fn() } as any));
+      logger: jest.fn(),
+    } as any, false);
+    const driver = new MySqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
       database: 'db_name',
       host: '127.0.0.10',
@@ -106,7 +108,7 @@ describe('EntityManagerMySql', () => {
 
   test('nested transactions', async () => {
     const mock = jest.fn();
-    const logger = new Logger({ logger: mock, debug: true } as any);
+    const logger = new Logger(mock, true);
     Object.assign(orm.em.getConnection(), { logger });
 
     // start outer transaction
@@ -126,7 +128,7 @@ describe('EntityManagerMySql', () => {
 
   test('nested transaction rollback will rollback the outer one as well', async () => {
     const mock = jest.fn();
-    const logger = new Logger({ logger: mock, debug: true } as any);
+    const logger = new Logger(mock, true);
     Object.assign(orm.em.getConnection(), { logger });
 
     // start outer transaction
@@ -671,7 +673,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('EM supports native insert/update/delete', async () => {
-    orm.options.debug = false;
+    orm.config.getLogger().setDebugMode(false);
     const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1' });
     expect(typeof res1).toBe('number');
 

@@ -4,11 +4,8 @@ import { EntityFactory } from '../lib/entity/EntityFactory';
 import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
-import { Logger } from '../lib/utils/Logger';
 import { ReferenceType } from '../lib/entity/enums';
 import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
-
-const logger = new Logger({ logger: jest.fn() } as any);
 
 /**
  * @class EntityFactoryTest
@@ -20,8 +17,8 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORM();
-    await new MetadataDiscovery(orm.em, orm.options, logger).discover();
-    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.options);
+    await new MetadataDiscovery(orm.em, orm.config, orm.config.getLogger()).discover();
+    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config);
   });
   beforeEach(async () => wipeDatabase(orm.em));
 

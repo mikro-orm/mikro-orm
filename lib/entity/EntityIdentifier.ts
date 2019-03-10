@@ -1,4 +1,4 @@
-import { IPrimaryKey } from '..';
+import { IPrimaryKey } from '../decorators';
 
 export class EntityIdentifier {
 

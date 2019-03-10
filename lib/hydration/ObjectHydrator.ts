@@ -1,7 +1,7 @@
-import { Collection, IPrimaryKey, Utils } from '..';
-import { EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
+import { EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { Hydrator } from './Hydrator';
-import { ReferenceType } from '../entity/enums';
+import { Collection, ReferenceType } from '../entity';
+import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 

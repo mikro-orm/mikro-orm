@@ -1,5 +1,4 @@
-import { IEntity } from '..';
-import { EntityMetadata, EntityProperty } from '../decorators/Entity';
+import { EntityMetadata, EntityProperty, IEntity } from '../decorators';
 
 export class ValidationError extends Error {
 

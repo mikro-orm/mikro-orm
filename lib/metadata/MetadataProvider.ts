@@ -1,10 +1,9 @@
-import { EntityMetadata } from '../decorators/Entity';
-import { MikroORMOptions } from '../MikroORM';
-import { Utils } from '..';
+import { EntityMetadata } from '../decorators';
+import { Configuration, Utils } from '../utils';
 
 export abstract class MetadataProvider {
 
-  constructor(protected readonly options: MikroORMOptions) { }
+  constructor(protected readonly config: Configuration) { }
 
   abstract async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 

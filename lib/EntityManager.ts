@@ -1,32 +1,23 @@
-import { EntityRepository } from './entity/EntityRepository';
-import { EntityFactory } from './entity/EntityFactory';
-import { EntityValidator } from './entity/EntityValidator';
-import { EntityAssigner } from './entity/EntityAssigner';
-import { EntityLoader } from './entity/EntityLoader';
-import { UnitOfWork } from './unit-of-work/UnitOfWork';
-import { Utils } from './utils/Utils';
-import { MikroORMOptions } from './MikroORM';
-import { RequestContext } from './utils/RequestContext';
-import { FilterQuery } from './drivers/DatabaseDriver';
-import { IDatabaseDriver } from './drivers/IDatabaseDriver';
-import { IPrimaryKey } from './decorators/PrimaryKey';
-import { QueryBuilder, QueryOrder } from './query/QueryBuilder';
-import { EntityClass, EntityData, IEntity, IEntityType } from './decorators/Entity';
-import { MetadataStorage } from './metadata/MetadataStorage';
+import { Configuration, RequestContext, Utils } from './utils';
+import { EntityRepository, EntityAssigner, EntityFactory, EntityLoader, EntityValidator, ReferenceType } from './entity';
+import { UnitOfWork } from './unit-of-work';
+import { FilterQuery, IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
+import { QueryBuilder } from './query';
+import { MetadataStorage } from './metadata';
 import { Connection } from './connections/Connection';
-import { ReferenceType } from './entity/enums';
+import { QueryOrder } from './query';
 
 export class EntityManager {
 
-  readonly validator = new EntityValidator(this.options.strict);
-
+  private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Record<string, EntityRepository<IEntity>> = {};
   private readonly entityLoader = new EntityLoader(this);
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly unitOfWork = new UnitOfWork(this);
-  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.options);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config);
 
-  constructor(readonly options: MikroORMOptions,
+  constructor(readonly config: Configuration,
               private readonly driver: IDatabaseDriver<Connection>) { }
 
   getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
@@ -37,31 +28,30 @@ export class EntityManager {
     return this.driver.getConnection() as C;
   }
 
-  getRepository<T extends IEntityType<T>>(entityName: string | EntityClass<T>): EntityRepository<T> {
+  getRepository<T extends IEntityType<T>>(entityName: EntityName<T>): EntityRepository<T> {
     entityName = Utils.className(entityName);
 
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata[entityName];
-
-      if (meta.customRepository) {
-        const CustomRepository = meta.customRepository();
-        this.repositoryMap[entityName] = new CustomRepository(this, entityName);
-      } else {
-        this.repositoryMap[entityName] = new this.options.entityRepository(this, entityName);
-      }
+      const RepositoryClass = this.config.getRepositoryClass(meta.customRepository);
+      this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
 
     return this.repositoryMap[entityName] as EntityRepository<T>;
   }
 
-  createQueryBuilder(entityName: string | EntityClass<IEntity>): QueryBuilder {
+  getValidator(): EntityValidator {
+    return this.validator;
+  }
+
+  createQueryBuilder(entityName: EntityName<IEntity>): QueryBuilder {
     entityName = Utils.className(entityName);
     return new QueryBuilder(entityName, this.metadata, this.getConnection());
   }
 
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
@@ -83,7 +73,7 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
     entityName = Utils.className(entityName);
 
     if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
@@ -132,20 +122,20 @@ export class EntityManager {
     });
   }
 
-  async nativeInsert<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): Promise<IPrimaryKey> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<IPrimaryKey> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'insert data');
     return this.driver.nativeInsert(entityName, data);
   }
 
-  async nativeUpdate<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     return this.driver.nativeUpdate(entityName, where, data);
   }
 
-  async nativeDelete<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string | any): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | string | any): Promise<number> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where, 'delete condition');
     return this.driver.nativeDelete(entityName, where);
@@ -154,12 +144,12 @@ export class EntityManager {
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
-  async aggregate(entityName: string | EntityClass<IEntity>, pipeline: any[]): Promise<any[]> {
+  async aggregate(entityName: EntityName<IEntity>, pipeline: any[]): Promise<any[]> {
     entityName = Utils.className(entityName);
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): T {
+  merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
 
     if (!data || (!data.id && !data._id)) {
@@ -176,7 +166,7 @@ export class EntityManager {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>): T {
+  create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
     return this.entityFactory.create<T>(entityName, data, false);
   }
@@ -184,7 +174,7 @@ export class EntityManager {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
 
     if (this.getUnitOfWork().getById(entityName, id)) {
@@ -194,13 +184,13 @@ export class EntityManager {
     return this.entityFactory.createReference<T>(entityName, id);
   }
 
-  async count<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number> {
+  async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(where);
     return this.driver.count(entityName, where);
   }
 
-  async persist(entity: IEntity | IEntity[], flush = this.options.autoFlush): Promise<void> {
+  async persist(entity: IEntity | IEntity[], flush = this.config.get('autoFlush')): Promise<void> {
     if (flush) {
       await this.persistAndFlush(entity);
     } else {
@@ -226,7 +216,7 @@ export class EntityManager {
     }
   }
 
-  async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = this.options.autoFlush): Promise<number> {
+  async remove<T extends IEntityType<T>>(entityName: EntityName<T>, where: T | any, flush = this.config.get('autoFlush')): Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
@@ -237,7 +227,7 @@ export class EntityManager {
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: IEntity, flush = this.options.autoFlush): Promise<void> {
+  async removeEntity(entity: IEntity, flush = this.config.get('autoFlush')): Promise<void> {
     if (flush) {
       await this.removeAndFlush(entity);
     } else {
@@ -286,7 +276,7 @@ export class EntityManager {
   }
 
   fork(): EntityManager {
-    return new EntityManager(this.options, this.driver);
+    return new EntityManager(this.config, this.driver);
   }
 
   getUnitOfWork(): UnitOfWork {

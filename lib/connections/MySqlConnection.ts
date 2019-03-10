@@ -64,15 +64,15 @@ export class MySqlConnection extends Connection {
 
   getConnectionOptions(): ConnectionOptions {
     const ret = {} as ConnectionOptions;
-    const url = new URL(this.options.clientUrl!);
-    ret.host = this.options.host || url.hostname;
-    ret.port = this.options.port || +url.port;
-    ret.user = this.options.user || url.username;
-    ret.password = this.options.password || url.password;
-    ret.database = this.options.dbName || url.pathname.replace(/^\//, '');
+    const url = new URL(this.config.getClientUrl());
+    ret.host = this.config.get('host', url.hostname);
+    ret.port = this.config.get('port', +url.port);
+    ret.user = this.config.get('user', url.username);
+    ret.password = this.config.get('password', url.password);
+    ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
 
-    if (this.options.multipleStatements) {
-      ret.multipleStatements = this.options.multipleStatements;
+    if (this.config.get('multipleStatements')) {
+      ret.multipleStatements = this.config.get('multipleStatements');
     }
 
     return ret;

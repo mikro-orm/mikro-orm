@@ -1,9 +1,9 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
-import { Utils } from '..';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
+import { Utils } from '../utils';
+import { MetadataStorage } from '../metadata';
 import { ReferenceType } from './enums';
 
 export class EntityAssigner {
@@ -27,7 +27,7 @@ export class EntityAssigner {
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        entity[prop as keyof T] = entity.__em.validator.validateProperty(props[prop], value, entity);
+        entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
       entity[prop as keyof T] = value as T[keyof T];
