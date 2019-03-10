@@ -1,6 +1,6 @@
 const { Collection } = require('../../lib');
-const { MetadataStorage } = require('../../lib/metadata/MetadataStorage');
-const { ReferenceType } = require('../../lib/entity/enums');
+const { MetadataStorage } = require('../../lib/metadata');
+const { ReferenceType } = require('../../lib/entity');
 
 /**
  * @property {number} id

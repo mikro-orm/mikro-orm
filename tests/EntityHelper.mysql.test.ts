@@ -1,7 +1,7 @@
 import { MikroORM } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2 } from './entities-sql';
-import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
+import { MetadataDiscovery } from '../lib/metadata';
 
 /**
  * @class EntityHelperMySqlTest

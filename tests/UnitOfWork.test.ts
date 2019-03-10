@@ -1,8 +1,7 @@
 import { Author } from './entities';
 import { MikroORM } from '../lib';
-import { UnitOfWork } from '../lib/unit-of-work/UnitOfWork';
+import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
 import { initORM, wipeDatabase } from './bootstrap';
-import { ChangeSetComputer } from '../lib/unit-of-work/ChangeSetComputer';
 
 /**
  * @class UnitOfWorkTest

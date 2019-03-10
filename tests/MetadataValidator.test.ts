@@ -1,5 +1,5 @@
-import { ReferenceType } from '../lib/entity/enums';
-import { MetadataValidator } from '../lib/metadata/MetadataValidator';
+import { ReferenceType } from '../lib/entity';
+import { MetadataValidator } from '../lib/metadata';
 
 /**
  * @class MetadataValidatorTest

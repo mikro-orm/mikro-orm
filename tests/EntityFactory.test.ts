@@ -1,11 +1,9 @@
 import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection } from '../lib';
-import { EntityFactory } from '../lib/entity/EntityFactory';
+import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
-import { MetadataStorage } from '../lib/metadata/MetadataStorage';
-import { ReferenceType } from '../lib/entity/enums';
-import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
+import { MetadataDiscovery, MetadataStorage } from '../lib/metadata';
 
 /**
  * @class EntityFactoryTest

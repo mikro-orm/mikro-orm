@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import { FileCacheAdapter } from '../lib/cache/FileCacheAdapter';
+import { FileCacheAdapter } from '../lib/cache';
 import { TEMP_DIR } from './bootstrap';
 
 /**

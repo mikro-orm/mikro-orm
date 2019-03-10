@@ -1,4 +1,4 @@
-import { NullCacheAdapter } from '../lib/cache/NullCacheAdapter';
+import { NullCacheAdapter } from '../lib/cache';
 import { TEMP_DIR } from './bootstrap';
 
 /**

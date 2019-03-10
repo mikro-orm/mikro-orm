@@ -1,6 +1,6 @@
 import { Collection, IEntity, PrimaryKey } from '../../lib';
-import { MetadataStorage } from '../../lib/metadata/MetadataStorage';
-import { ReferenceType } from '../../lib/entity/enums';
+import { MetadataStorage } from '../../lib/metadata';
+import { ReferenceType } from '../../lib/entity';
 
 export abstract class BaseEntity2 {
 
