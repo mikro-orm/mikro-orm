@@ -1,8 +1,9 @@
-import { Collection, IEntity, Utils } from '..';
-import { EntityProperty, IEntityType } from '../decorators/Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import { EntityProperty, IEntity, IEntityType } from '../decorators';
+import { MetadataStorage } from '../metadata';
 import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
+import { Utils } from '../utils';
+import { Collection } from './Collection';
 
 export class EntityLoader {
 

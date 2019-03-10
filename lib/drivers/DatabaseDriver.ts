@@ -1,20 +1,20 @@
-import { MikroORMOptions } from '../MikroORM';
-import { DriverConfig, IDatabaseDriver } from './IDatabaseDriver';
-import { IEntity, IPrimaryKey, UnderscoreNamingStrategy, Utils, QueryOrder } from '..';
-import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators/Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Logger } from '../utils/Logger';
+import { DriverConfig, FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { MetadataStorage } from '../metadata';
 import { Connection } from '../connections/Connection';
+import { Configuration, Utils } from '../utils';
+import { QueryOrder } from '../query';
+import { UnderscoreNamingStrategy } from '../naming-strategy';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
   protected readonly connection: Connection;
   protected readonly metadata = MetadataStorage.getMetadata();
+  protected readonly logger = this.config.getLogger();
   protected transactionLevel = 0;
   protected transactionRolledBack = false;
 
-  constructor(protected readonly options: MikroORMOptions,
-              protected readonly logger: Logger) { }
+  constructor(protected readonly config: Configuration) { }
 
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
 
@@ -146,5 +146,3 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
 }
-
-export type FilterQuery<T> = Partial<T> | Record<string, any>;

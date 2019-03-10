@@ -1,4 +1,4 @@
-import { EntityMetadata } from '../decorators/Entity';
+import { EntityMetadata } from '../decorators';
 
 export class MetadataStorage {
 

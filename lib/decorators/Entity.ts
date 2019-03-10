@@ -1,8 +1,8 @@
-import { Collection, EntityRepository, Utils } from '..';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import { MetadataStorage } from '../metadata';
 import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
-import { Cascade, ReferenceType } from '../entity/enums';
+import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
+import { Utils } from '../utils';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -19,7 +19,7 @@ export function Entity(options: EntityOptions = {}): Function {
 
 export type EntityOptions = {
   collection?: string;
-  customRepository?: () => { new (em: EntityManager, entityName: string): EntityRepository<IEntity> };
+  customRepository?: () => { new (em: EntityManager, entityName: string | EntityClass<IEntity>): EntityRepository<IEntity> };
 }
 
 export interface IEntity<K = number | string> {

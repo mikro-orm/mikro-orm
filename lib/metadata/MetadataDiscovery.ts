@@ -1,13 +1,14 @@
 import { sync as globby } from 'globby';
 
-import { EntityClass, EntityMetadata, EntityProperty, IEntity } from '../decorators/Entity';
-import { CacheAdapter, MetadataProvider, NamingStrategy, EntityHelper, Utils } from '..';
+import { EntityClass, EntityMetadata, EntityProperty, IEntity } from '../decorators';
 import { EntityManager } from '../EntityManager';
-import { MikroORMOptions } from '../MikroORM';
-import { Logger } from '../utils/Logger';
+import { Configuration, Logger, Utils } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { ReferenceType } from '../entity/enums';
+import { EntityHelper, ReferenceType } from '../entity';
+import { NamingStrategy } from '../naming-strategy';
+import { MetadataProvider } from './MetadataProvider';
+import { CacheAdapter } from '../cache';
 
 export class MetadataDiscovery {
 
@@ -19,12 +20,11 @@ export class MetadataDiscovery {
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly em: EntityManager,
-              private readonly options: MikroORMOptions,
+              private readonly config: Configuration,
               private readonly logger: Logger) {
-    const NamingStrategy = this.options.namingStrategy || this.em.getDriver().getConfig().namingStrategy;
-    this.namingStrategy = new NamingStrategy();
-    this.metadataProvider = new this.options.metadataProvider(this.options);
-    this.cache = new this.options.cache.adapter(this.options.cache.options);
+    this.namingStrategy = this.config.getNamingStrategy();
+    this.metadataProvider = this.config.getMetadataProvider();
+    this.cache = this.config.getCacheAdapter();
   }
 
   async discover(): Promise<Record<string, EntityMetadata>> {
@@ -32,10 +32,10 @@ export class MetadataDiscovery {
     this.logger.debug(`ORM entity discovery started`);
     this.discovered.length = 0;
 
-    if (this.options.entities.length > 0) {
-      await Promise.all(this.options.entities.map(entity => this.discoverEntity(entity)));
+    if (this.config.get('entities').length > 0) {
+      await Promise.all(this.config.get('entities').map(entity => this.discoverEntity(entity)));
     } else {
-      await Promise.all(this.options.entitiesDirs.map(entity => this.discoverDirectory(entity)));
+      await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
     }
 
     this.discovered.forEach(meta => this.processEntity(meta));
@@ -46,7 +46,7 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = globby('*', { cwd: `${this.options.baseDir}/${basePath}` });
+    const files = globby('*', { cwd: `${this.config.get('baseDir')}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
@@ -62,7 +62,7 @@ export class MetadataDiscovery {
       }
 
       const name = this.getClassName(file);
-      const path = `${this.options.baseDir}/${basePath}/${file}`;
+      const path = `${this.config.get('baseDir')}/${basePath}/${file}`;
       const target = require(path)[name]; // include the file to trigger loading of metadata
       await this.discoverEntity(target, path);
     }

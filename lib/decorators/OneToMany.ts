@@ -1,8 +1,8 @@
 import { PropertyOptions } from './Property';
 import { EntityProperty, IEntity } from './Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Utils } from '..';
-import { Cascade, ReferenceType } from '../entity/enums';
+import { MetadataStorage } from '../metadata';
+import { Utils } from '../utils';
+import { Cascade, ReferenceType } from '../entity';
 
 export function OneToMany(options: OneToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {

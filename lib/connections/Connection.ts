@@ -1,10 +1,10 @@
-import { MikroORMOptions } from '../MikroORM';
-import { Logger } from '../utils/Logger';
+import { Configuration } from '../utils';
 
 export abstract class Connection {
 
-  constructor(protected readonly options: MikroORMOptions,
-              protected readonly logger: Logger) { }
+  protected readonly logger = this.config.getLogger();
+
+  constructor(protected readonly config: Configuration) { }
 
   /**
    * Establishes connection to database

@@ -1,32 +1,24 @@
-import { EntityRepository } from './entity/EntityRepository';
-import { EntityFactory } from './entity/EntityFactory';
-import { EntityValidator } from './entity/EntityValidator';
-import { EntityAssigner } from './entity/EntityAssigner';
-import { EntityLoader } from './entity/EntityLoader';
-import { UnitOfWork } from './unit-of-work/UnitOfWork';
-import { Utils } from './utils/Utils';
-import { MikroORMOptions } from './MikroORM';
-import { RequestContext } from './utils/RequestContext';
-import { FilterQuery } from './drivers/DatabaseDriver';
-import { IDatabaseDriver } from './drivers/IDatabaseDriver';
-import { IPrimaryKey } from './decorators/PrimaryKey';
-import { QueryBuilder, QueryOrder } from './query/QueryBuilder';
-import { EntityClass, EntityData, IEntity, IEntityType } from './decorators/Entity';
-import { MetadataStorage } from './metadata/MetadataStorage';
+import { Configuration, RequestContext, Utils } from './utils';
+import { EntityRepository, EntityAssigner, EntityFactory, EntityLoader, EntityValidator, ReferenceType } from './entity';
+import { UnitOfWork } from './unit-of-work';
+import { FilterQuery, IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { EntityClass, EntityData, IEntity, IEntityType, IPrimaryKey } from './decorators';
+import { QueryBuilder } from './query';
+import { MetadataStorage } from './metadata';
 import { Connection } from './connections/Connection';
-import { ReferenceType } from './entity/enums';
+import { QueryOrder } from './query';
 
 export class EntityManager {
 
-  readonly validator = new EntityValidator(this.options.strict);
+  readonly validator = new EntityValidator(this.config.get('strict'));
 
   private readonly repositoryMap: Record<string, EntityRepository<IEntity>> = {};
   private readonly entityLoader = new EntityLoader(this);
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly unitOfWork = new UnitOfWork(this);
-  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.options);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config);
 
-  constructor(readonly options: MikroORMOptions,
+  constructor(readonly config: Configuration,
               private readonly driver: IDatabaseDriver<Connection>) { }
 
   getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
@@ -42,13 +34,8 @@ export class EntityManager {
 
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata[entityName];
-
-      if (meta.customRepository) {
-        const CustomRepository = meta.customRepository();
-        this.repositoryMap[entityName] = new CustomRepository(this, entityName);
-      } else {
-        this.repositoryMap[entityName] = new this.options.entityRepository(this, entityName);
-      }
+      const RepositoryClass = this.config.getRepositoryClass(meta.customRepository);
+      this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
 
     return this.repositoryMap[entityName] as EntityRepository<T>;
@@ -200,7 +187,7 @@ export class EntityManager {
     return this.driver.count(entityName, where);
   }
 
-  async persist(entity: IEntity | IEntity[], flush = this.options.autoFlush): Promise<void> {
+  async persist(entity: IEntity | IEntity[], flush = this.config.get('autoFlush')): Promise<void> {
     if (flush) {
       await this.persistAndFlush(entity);
     } else {
@@ -226,7 +213,7 @@ export class EntityManager {
     }
   }
 
-  async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = this.options.autoFlush): Promise<number> {
+  async remove<T extends IEntityType<T>>(entityName: string | EntityClass<T>, where: T | any, flush = this.config.get('autoFlush')): Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
@@ -237,7 +224,7 @@ export class EntityManager {
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: IEntity, flush = this.options.autoFlush): Promise<void> {
+  async removeEntity(entity: IEntity, flush = this.config.get('autoFlush')): Promise<void> {
     if (flush) {
       await this.removeAndFlush(entity);
     } else {
@@ -286,7 +273,7 @@ export class EntityManager {
   }
 
   fork(): EntityManager {
-    return new EntityManager(this.options, this.driver);
+    return new EntityManager(this.config, this.driver);
   }
 
   getUnitOfWork(): UnitOfWork {

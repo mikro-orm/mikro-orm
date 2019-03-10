@@ -1,15 +1,16 @@
 import * as sqlite from 'sqlite';
 import { Database } from 'sqlite';
 import { readFileSync } from 'fs';
+
 import { Connection, QueryResult } from './Connection';
-import { EntityData, IEntity } from '../decorators/Entity';
+import { EntityData, IEntity } from '../decorators';
 
 export class SqliteConnection extends Connection {
 
   private connection: SqliteDatabase;
 
   async connect(): Promise<void> {
-    this.connection = await sqlite.open(this.options.dbName) as SqliteDatabase;
+    this.connection = await sqlite.open(this.config.get('dbName')) as SqliteDatabase;
     await this.connection.exec('PRAGMA foreign_keys = ON');
   }
 

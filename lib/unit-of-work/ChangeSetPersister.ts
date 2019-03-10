@@ -1,8 +1,9 @@
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { EntityProperty, IEntityType } from '../decorators/Entity';
-import { ChangeSet, UnitOfWork } from './UnitOfWork';
-import { EntityIdentifier } from '../entity/EntityIdentifier';
+import { MetadataStorage } from '../metadata';
+import { EntityProperty, IEntityType } from '../decorators';
+import { UnitOfWork } from './UnitOfWork';
+import { EntityIdentifier } from '../entity';
 import { EntityManager } from '../EntityManager';
+import { ChangeSet } from './ChangeSet';
 
 export class ChangeSetPersister {
 

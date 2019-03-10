@@ -1,19 +1,20 @@
-import { IPrimaryKey, Utils, IDatabaseDriver, MikroORMOptions } from '..';
-import { EntityClass, EntityData, EntityMetadata, IEntityType } from '../decorators/Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { UnitOfWork } from '../unit-of-work/UnitOfWork';
+import { Utils, Configuration } from '../utils';
+import { EntityClass, EntityData, EntityMetadata, IEntityType, IPrimaryKey } from '../decorators';
+import { MetadataStorage } from '../metadata';
+import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
+import { IDatabaseDriver } from '..';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 export class EntityFactory {
 
   private readonly metadata = MetadataStorage.getMetadata();
-  private readonly hydrator = new this.options.hydrator(this, this.driver);
+  private readonly hydrator = this.config.getHydrator(this);
 
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly driver: IDatabaseDriver,
-              private readonly options: MikroORMOptions) { }
+              private readonly config: Configuration) { }
 
   create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>, initialized = true): T {
     entityName = Utils.className(entityName);

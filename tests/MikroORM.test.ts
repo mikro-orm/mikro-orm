@@ -1,4 +1,4 @@
-import { MikroORM, EntityManager } from '../lib';
+import { MikroORM, EntityManager, Configuration } from '../lib';
 import { Author } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql/FooBaz2';
@@ -8,11 +8,16 @@ import { FooBaz2 } from './entities-sql/FooBaz2';
  */
 describe('MikroORM', () => {
 
-  test('should throw when not enough options provided', async () => {
+  test('should throw when not enough config provided', async () => {
     expect(() => new MikroORM({ entitiesDirs: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` option');
     expect(() => new MikroORM({ entities: [], entitiesDirs: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` or `entitiesDirs` option');
     expect(() => new MikroORM({ dbName: 'test', entities: [Author], clientUrl: 'test' })).not.toThrowError();
     expect(() => new MikroORM({ dbName: 'test', entitiesDirs: ['entities'], clientUrl: 'test' })).not.toThrowError();
+  });
+
+  test('should work with Configuration object instance', async () => {
+    expect(() => new MikroORM(new Configuration({ dbName: 'test', entities: [Author], clientUrl: 'test' }))).not.toThrowError();
+    expect(() => new MikroORM(new Configuration({ dbName: 'test', entitiesDirs: ['entities'], clientUrl: 'test' }))).not.toThrowError();
   });
 
   test('should throw when TS entity directory does not exist', async () => {

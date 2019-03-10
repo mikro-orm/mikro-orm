@@ -1,4 +1,4 @@
-import { EntityRepository, EntityManager, IEntity } from '../lib';
+import { EntityRepository, EntityManager, IEntity, Configuration } from '../lib';
 import { Publisher } from './entities';
 
 const methods = {
@@ -19,7 +19,7 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
-  options: { autoFlush: true },
+  config: new Configuration({ autoFlush: true } as any, false),
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
@@ -64,7 +64,7 @@ describe('EntityRepository', () => {
     expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ foo: 'bar' }]]);
   });
 
-  test('find() supports calling with options object', async () => {
+  test('find() supports calling with config object', async () => {
     const options = {
       populate: ['test'],
       orderBy: { test: -1 },

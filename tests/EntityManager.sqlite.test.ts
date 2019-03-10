@@ -2,9 +2,8 @@ import { unlinkSync } from 'fs';
 import { Collection, EntityManager, JavaScriptMetadataProvider, MikroORM, Utils } from '../lib';
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { Logger } from '../lib/utils/Logger';
-import { EntityMetadata } from '../lib/decorators/Entity';
-import { FileCacheAdapter } from '../lib/cache/FileCacheAdapter';
+import { Logger } from '../lib/utils';
+import { EntityMetadata } from '../lib/decorators';
 
 const { Author3 } = require('./entities-js/Author3');
 const { Book3 } = require('./entities-js/Book3');
@@ -31,8 +30,8 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('onUpdate should be re-hydrated when loading metadata from cache', async () => {
-    const provider = new JavaScriptMetadataProvider(orm.options);
-    const cacheAdapter = new FileCacheAdapter(orm.options.cache.options as any);
+    const provider = new JavaScriptMetadataProvider(orm.config);
+    const cacheAdapter = orm.config.getCacheAdapter();
     const cache = cacheAdapter.get('Author3');
     const meta = {} as EntityMetadata;
     provider.loadFromCache(meta, cache);
@@ -123,7 +122,7 @@ describe('EntityManagerSqlite', () => {
 
   test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
-    const logger = new Logger({ logger: mock, debug: true } as any);
+    const logger = new Logger(mock, true);
     Object.assign(orm.em.getConnection(), { logger });
 
     // start outer transaction
@@ -617,7 +616,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('EM supports native insert/update/delete', async () => {
-    orm.options.debug = false;
+    orm.config.getLogger().setDebugMode(false);
     const res1 = await orm.em.nativeInsert(Author3, { name: 'native name 1' });
     expect(typeof res1).toBe('number');
 
@@ -650,7 +649,7 @@ describe('EntityManagerSqlite', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.options.dbName);
+    unlinkSync(orm.config.get('dbName'));
   });
 
 });

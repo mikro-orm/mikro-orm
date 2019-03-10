@@ -1,10 +1,12 @@
-import { Collection, EntityManager, FilterQuery, IPrimaryKey, Utils } from '..';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { EntityIdentifier } from '../entity/EntityIdentifier';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { MetadataStorage } from '../metadata';
+import { Cascade, Collection, EntityIdentifier, ReferenceType } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
-import { Cascade, ReferenceType } from '../entity/enums';
+import { ChangeSet } from './ChangeSet';
+import { EntityManager } from '../EntityManager';
+import { Utils } from '../utils';
+import { FilterQuery } from '..';
 
 export class UnitOfWork {
 
@@ -241,11 +243,3 @@ export class UnitOfWork {
 
 }
 
-export interface ChangeSet<T extends IEntityType<T> = IEntityType<any>> {
-  index: number;
-  name: string;
-  collection: string;
-  delete: boolean;
-  entity: T;
-  payload: EntityData<T>;
-}

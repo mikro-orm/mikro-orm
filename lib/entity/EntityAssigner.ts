@@ -1,9 +1,9 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
-import { Utils } from '..';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
+import { Utils } from '../utils';
+import { MetadataStorage } from '../metadata';
 import { ReferenceType } from './enums';
 
 export class EntityAssigner {

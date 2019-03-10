@@ -1,7 +1,7 @@
-import { Utils } from '..';
+import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
-import { EntityData, IEntity, IEntityType } from '../decorators/Entity';
+import { EntityData, IEntity, IEntityType } from '../decorators';
 
 export class EntityTransformer {
 

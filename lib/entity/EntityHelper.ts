@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
-import { EntityClass, EntityData, EntityMetadata, IEntity, IEntityType } from '../decorators/Entity';
+import { EntityClass, EntityData, EntityMetadata, IEntity, IEntityType } from '../decorators';
 import { EntityTransformer } from './EntityTransformer';
 import { EntityAssigner } from './EntityAssigner';
 

@@ -1,10 +1,11 @@
-import { DriverConfig, UnderscoreNamingStrategy } from '..';
+import { UnderscoreNamingStrategy } from '../naming-strategy';
 import { SqliteConnection } from '../connections/SqliteConnection';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
+import { DriverConfig } from './IDatabaseDriver';
 
 export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
 
-  protected readonly connection = new SqliteConnection(this.options, this.logger);
+  protected readonly connection = new SqliteConnection(this.config);
 
   getConfig(): DriverConfig {
     return {

@@ -1,8 +1,9 @@
-import { Utils } from '..';
+import { Utils } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { EntityMetadata, EntityProperty } from '../decorators/Entity';
+import { EntityMetadata, EntityProperty } from '../decorators';
 import { Connection } from '../connections/Connection';
-import { ReferenceType } from '../entity/enums';
+import { ReferenceType } from '../entity';
+import { QueryFlag, QueryOrder, QueryType } from './enums';
 
 /**
  * SQL query builder
@@ -253,22 +254,4 @@ export class QueryBuilder {
     return sql;
   }
 
-}
-
-export enum QueryType {
-  TRUNCATE = 'TRUNCATE',
-  SELECT = 'SELECT',
-  INSERT = 'INSERT',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-}
-
-export enum QueryFlag {
-  COUNT = 'SELECT',
-  DISTINCT = 'DISTINCT',
-}
-
-export enum QueryOrder {
-  ASC = 1,
-  DESC = -1,
 }
