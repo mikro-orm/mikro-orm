@@ -1,6 +1,6 @@
 import { EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
-import { EntityTransformer } from './EntityTransformer';
 import { IPrimaryKey } from '..';
+import { EntityTransformer } from './EntityTransformer';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export class ArrayCollection<T extends IEntityType<T>> {

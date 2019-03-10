@@ -5,7 +5,7 @@ import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
 import { Logger } from '../lib/utils/Logger';
-import { ReferenceType } from '../lib/decorators/Entity';
+import { ReferenceType } from '../lib/entity/enums';
 import { MetadataDiscovery } from '../lib/metadata/MetadataDiscovery';
 
 const logger = new Logger({ logger: jest.fn() } as any);

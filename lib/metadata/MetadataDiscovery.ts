@@ -1,12 +1,13 @@
 import { sync as globby } from 'globby';
 
-import { EntityClass, EntityMetadata, EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
+import { EntityClass, EntityMetadata, EntityProperty, IEntity } from '../decorators/Entity';
 import { CacheAdapter, MetadataProvider, NamingStrategy, EntityHelper, Utils } from '..';
 import { EntityManager } from '../EntityManager';
 import { MikroORMOptions } from '../MikroORM';
 import { Logger } from '../utils/Logger';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
+import { ReferenceType } from '../entity/enums';
 
 export class MetadataDiscovery {
 

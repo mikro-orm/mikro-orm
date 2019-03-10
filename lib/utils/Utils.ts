@@ -1,9 +1,9 @@
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
-import { ArrayCollection, IEntity, IPrimaryKey } from '..';
+import { ArrayCollection, IPrimaryKey } from '..';
 import { MetadataStorage } from '../metadata/MetadataStorage';
-import { EntityMetadata, IEntityType } from '../decorators/Entity';
+import { EntityMetadata, IEntity, IEntityType } from '../decorators/Entity';
 
 export class Utils {
 

@@ -1,7 +1,8 @@
 import { IPrimaryKey, FilterQuery } from '..';
-import { IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
+import { IEntity, IEntityType } from '../decorators/Entity';
 import { EntityManager } from '../EntityManager';
 import { ArrayCollection } from './ArrayCollection';
+import { ReferenceType } from './enums';
 
 export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 

@@ -1,9 +1,10 @@
 import { Collection, EntityManager, FilterQuery, IPrimaryKey, Utils } from '..';
-import { Cascade, EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, ReferenceType } from '../decorators/Entity';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType } from '../decorators/Entity';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityIdentifier } from '../entity/EntityIdentifier';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
+import { Cascade, ReferenceType } from '../entity/enums';
 
 export class UnitOfWork {
 

@@ -1,6 +1,6 @@
 import { Collection, IEntity } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata/MetadataStorage';
-import { ReferenceType } from '../../lib/decorators/Entity';
+import { ReferenceType } from '../../lib/entity/enums';
 
 export abstract class BaseEntity22 {
 

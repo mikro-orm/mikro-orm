@@ -1,9 +1,10 @@
 import { Collection, Utils } from '..';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityManager } from '../EntityManager';
-import { EntityProperty, IEntity, ReferenceType } from '../decorators/Entity';
+import { EntityProperty, IEntity } from '../decorators/Entity';
 import { ChangeSet } from './UnitOfWork';
 import { EntityIdentifier } from '../entity/EntityIdentifier';
+import { ReferenceType } from '../entity/enums';
 
 export class ChangeSetComputer {
 

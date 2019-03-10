@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "2.0.0",
+  "version": "2.0.0-rc.1",
   "description": "Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB, MySQL and SQLite databases as well as usage with vanilla JS.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -32,7 +32,7 @@
   },
   "homepage": "https://b4nan.github.io/mikro-orm/",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "test": "jest --runInBand",
     "coverage": "rimraf temp && jest --runInBand --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",

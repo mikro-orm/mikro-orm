@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { Collection, Cascade, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';

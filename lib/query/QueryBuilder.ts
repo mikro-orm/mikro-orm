@@ -1,7 +1,8 @@
 import { Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
+import { EntityMetadata, EntityProperty } from '../decorators/Entity';
 import { Connection } from '../connections/Connection';
+import { ReferenceType } from '../entity/enums';
 
 /**
  * SQL query builder

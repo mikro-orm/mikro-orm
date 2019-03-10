@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Cascade, Collection, Entity, OneToMany, Property, ManyToOne, EntityAssigner,
+  Cascade, Collection, Entity, EntityAssigner, ManyToOne, OneToMany, Property,
 } from '../../lib';
 
 import { Book } from './Book';

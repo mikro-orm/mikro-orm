@@ -11,9 +11,10 @@ import { FilterQuery } from './drivers/DatabaseDriver';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { IPrimaryKey } from './decorators/PrimaryKey';
 import { QueryBuilder, QueryOrder } from './query/QueryBuilder';
-import { EntityClass, EntityData, IEntity, IEntityType, ReferenceType } from './decorators/Entity';
+import { EntityClass, EntityData, IEntity, IEntityType } from './decorators/Entity';
 import { MetadataStorage } from './metadata/MetadataStorage';
 import { Connection } from './connections/Connection';
+import { ReferenceType } from './entity/enums';
 
 export class EntityManager {
 

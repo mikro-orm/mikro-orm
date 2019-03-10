@@ -1,7 +1,8 @@
 import { FilterQuery, IPrimaryKey, QueryOrder, QueryBuilder, Utils } from '..';
-import { EntityData, IEntityType, ReferenceType } from '../decorators/Entity';
+import { EntityData, IEntityType } from '../decorators/Entity';
 import { DatabaseDriver } from './DatabaseDriver';
 import { Connection } from '../connections/Connection';
+import { ReferenceType } from '../entity/enums';
 
 export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDriver<C> {
 

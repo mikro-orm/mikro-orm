@@ -1,7 +1,6 @@
 import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { NamingStrategy } from './naming-strategy/NamingStrategy';
-import { MetadataStorage } from './metadata/MetadataStorage';
 import { FileCacheAdapter } from './cache/FileCacheAdapter';
 import { CacheAdapter } from './cache/CacheAdapter';
 import { Logger } from './utils/Logger';

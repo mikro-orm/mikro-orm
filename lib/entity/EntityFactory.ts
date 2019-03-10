@@ -1,7 +1,8 @@
 import { IPrimaryKey, Utils, IDatabaseDriver, MikroORMOptions } from '..';
-import { EntityClass, EntityData, EntityMetadata, IEntityType, ReferenceType } from '../decorators/Entity';
+import { EntityClass, EntityData, EntityMetadata, IEntityType } from '../decorators/Entity';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { UnitOfWork } from '../unit-of-work/UnitOfWork';
+import { ReferenceType } from './enums';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 

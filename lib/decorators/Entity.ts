@@ -2,6 +2,7 @@ import { Collection, EntityRepository, Utils } from '..';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
+import { Cascade, ReferenceType } from '../entity/enums';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -40,18 +41,6 @@ export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | a
 export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
 
 export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPrimaryKey; } & Record<string, any>;
-
-export enum ReferenceType {
-  SCALAR = 'scalar',
-  MANY_TO_ONE = 'm:1',
-  ONE_TO_MANY = '1:m',
-  MANY_TO_MANY = 'm:n',
-}
-
-export enum Cascade {
-  PERSIST = 'persist',
-  REMOVE = 'remove',
-}
 
 export interface EntityProperty {
   name: string;

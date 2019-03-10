@@ -1,4 +1,4 @@
-import { ReferenceType } from '../lib/decorators/Entity';
+import { ReferenceType } from '../lib/entity/enums';
 import { MetadataValidator } from '../lib/metadata/MetadataValidator';
 
 /**

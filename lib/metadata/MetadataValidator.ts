@@ -1,5 +1,6 @@
-import { EntityMetadata, EntityProperty, ReferenceType } from '../decorators/Entity';
+import { EntityMetadata, EntityProperty } from '../decorators/Entity';
 import { ValidationError } from '../utils/ValidationError';
+import { ReferenceType } from '../entity/enums';
 
 export class MetadataValidator {
 

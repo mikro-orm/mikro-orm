@@ -1,7 +1,7 @@
 import { ManyToMany, ManyToOne, OneToMany, Property } from '../lib';
 import { Test } from './entities';
 import { MetadataStorage } from '../lib/metadata/MetadataStorage';
-import { ReferenceType } from '../lib/decorators/Entity';
+import { ReferenceType } from '../lib/entity/enums';
 
 class Test2 {}
 class Test3 {}
