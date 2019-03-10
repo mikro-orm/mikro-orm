@@ -1,3 +1,17 @@
+<a name="2.0.1"></a>
+# [2.0.1](https://github.com/B4nan/mikro-orm/compare/v2.0.0...v2.0.1) (2019-03-10)
+
+### Bug Fixes
+
+* reorganize imports to fix circular dependency in built JS code ([bf23587](https://github.com/B4nan/mikro-orm/commit/bf23587))
+
+### Features
+
+* introduce `Configuration` object ([5916435](https://github.com/B4nan/mikro-orm/commit/5916435))
+
+
+
+<a name="2.0.0"></a>
 # [2.0.0](https://github.com/B4nan/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
 
 ### Bug Fixes
