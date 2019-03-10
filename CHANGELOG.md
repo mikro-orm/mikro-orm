@@ -1,5 +1,14 @@
+<a name="2.0.2"></a>
+## [2.0.2](https://github.com/B4nan/mikro-orm/compare/v2.0.1...v2.0.2) (2019-03-10)
+
+### Bug Fixes
+
+* require path in JS entity schema to fix support of entities array ([de63f35](https://github.com/B4nan/mikro-orm/commit/de63f35))
+
+
+
 <a name="2.0.1"></a>
-# [2.0.1](https://github.com/B4nan/mikro-orm/compare/v2.0.0...v2.0.1) (2019-03-10)
+## [2.0.1](https://github.com/B4nan/mikro-orm/compare/v2.0.0...v2.0.1) (2019-03-10)
 
 ### Bug Fixes
 
@@ -12,7 +21,7 @@
 
 
 <a name="2.0.0"></a>
-# [2.0.0](https://github.com/B4nan/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
+## [2.0.0](https://github.com/B4nan/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
 
 ### Bug Fixes
 

@@ -1,12 +1,12 @@
 {
   "name": "mikro-orm",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB, MySQL and SQLite databases as well as usage with vanilla JS.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/B4nan/mikro-orm.git"
+    "url": "git+ssh://git@github.com/B4nan/mikro-orm.git"
   },
   "keywords": [
     "ORM",
