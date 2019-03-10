@@ -1,5 +1,5 @@
 import { EntityManager, FindOptions } from '../EntityManager';
-import { EntityClass, EntityData, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { RequestContext } from '../utils';
 import { QueryOrder } from '../query';
 import { FilterQuery } from '..';
@@ -7,7 +7,7 @@ import { FilterQuery } from '..';
 export class EntityRepository<T extends IEntityType<T>> {
 
   constructor(private readonly _em: EntityManager,
-              protected readonly entityName: string | EntityClass<T>) { }
+              protected readonly entityName: EntityName<T>) { }
 
   async persist(entity: T | IEntity[], flush = this._em.config.get('autoFlush')): Promise<void> {
     await this.em.persist(entity, flush);

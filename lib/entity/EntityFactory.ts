@@ -1,5 +1,5 @@
 import { Utils, Configuration } from '../utils';
-import { EntityClass, EntityData, EntityMetadata, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityName, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
@@ -16,7 +16,7 @@ export class EntityFactory {
               private readonly driver: IDatabaseDriver,
               private readonly config: Configuration) { }
 
-  create<T extends IEntityType<T>>(entityName: string | EntityClass<T>, data: EntityData<T>, initialized = true): T {
+  create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true): T {
     entityName = Utils.className(entityName);
     data = Object.assign({}, data);
     const meta = this.metadata[entityName];
@@ -60,7 +60,7 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends IEntityType<T>>(entityName: string | EntityClass<T>, id: IPrimaryKey): T {
+  createReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
 
     if (this.unitOfWork.getById(entityName, id)) {

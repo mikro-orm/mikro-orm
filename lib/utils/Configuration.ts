@@ -3,7 +3,7 @@ import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { TypeScriptMetadataProvider } from '../metadata';
 import { EntityRepository } from '../entity';
 import { MetadataProvider } from '../metadata';
-import { EntityClass, EntityOptions, IEntity } from '../decorators';
+import { EntityClass, EntityName, EntityOptions, IEntity } from '../decorators';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { EntityFactory } from '../entity';
 import { Logger } from './Logger';
@@ -147,7 +147,7 @@ export interface MikroORMOptions {
   driver?: { new (config: Configuration): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
-  entityRepository: { new (em: EntityManager, entityName: string | EntityClass<IEntity>): EntityRepository<IEntity> };
+  entityRepository: { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
   clientUrl?: string;
   host?: string;
   port?: number;
