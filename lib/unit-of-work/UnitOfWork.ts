@@ -21,7 +21,7 @@ export class UnitOfWork {
 
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
-  private readonly changeSets: ChangeSet[] = [];
+  private readonly changeSets: ChangeSet<IEntity>[] = [];
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap);
@@ -121,7 +121,7 @@ export class UnitOfWork {
 
     for (const entity of Object.values(this.removeStack)) {
       const meta = this.metadata[entity.constructor.name];
-      this.changeSets.push({ entity, delete: true, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet);
+      this.changeSets.push({ entity, delete: true, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
     }
   }
 

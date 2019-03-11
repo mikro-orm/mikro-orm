@@ -52,7 +52,7 @@ export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPr
 export interface EntityProperty {
   name: string;
   fk: string;
-  entity: () => string | Function;
+  entity: () => EntityName<IEntity>;
   type: string;
   primary: boolean;
   reference: ReferenceType;

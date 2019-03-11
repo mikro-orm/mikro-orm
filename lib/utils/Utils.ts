@@ -2,7 +2,7 @@ import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
 import { MetadataStorage } from '../metadata';
-import { EntityMetadata, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { ArrayCollection } from '../entity';
 
 export class Utils {
@@ -47,7 +47,7 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
-  static diff(a: Record<string, any>, b: Record<string, any>): Record<string, any> {
+  static diff(a: Record<string, any>, b: Record<string, any>): Record<keyof (typeof a & typeof b), any> {
     const ret: Record<string, any> = {};
 
     Object.keys(b).forEach(k => {
@@ -61,11 +61,11 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities(a: IEntity, b: IEntity): Record<string, any> {
-    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b));
+  static diffEntities<T extends IEntityType<T>>(a: T, b: T): EntityData<T> {
+    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b)) as EntityData<T>;
   }
 
-  static prepareEntity<T>(e: IEntityType<T>): Record<string, any> {
+  static prepareEntity<T extends IEntityType<T>>(e: T): EntityData<T> {
     const metadata = MetadataStorage.getMetadata();
     const meta = metadata[e.constructor.name];
     const ret = Utils.copy(e);
