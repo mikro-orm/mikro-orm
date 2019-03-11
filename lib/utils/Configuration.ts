@@ -60,7 +60,7 @@ export class Configuration {
 
   getClientUrl(hidePassword = false): string {
     if (hidePassword) {
-      return this.options.clientUrl!.replace(/\/\/([^:]+):(\w+)@/, '//$1:*****@');
+      return this.options.clientUrl!.replace(/\/\/([^:]+):(.+)@/, '//$1:*****@');
     }
 
     return this.options.clientUrl!;

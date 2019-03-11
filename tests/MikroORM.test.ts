@@ -27,6 +27,14 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
   });
 
+  test('should hide password from connection uri', async () => {
+    const clientUrl = 'mongodb://dev-vision:Q#ais@2d-Aa_43:ui!0d.ai6d@mongodb-replicaset-0.mongodb-replicaset.dev.svc.cluster.local:27017,mongodb-replicaset-1...';
+    const expected = 'mongodb://dev-vision:*****@mongodb-replicaset-0.mongodb-replicaset.dev.svc.cluster.local:27017,mongodb-replicaset-1...';
+    const conf = new Configuration({ clientUrl } as any, false);
+    const hidden = conf.getClientUrl(true);
+    expect(hidden).toBe(expected);
+  });
+
   test('should init itself with entity manager', async () => {
     const orm = await MikroORM.init({
       entitiesDirs: ['entities'],
