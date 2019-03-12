@@ -75,7 +75,8 @@ export class Configuration {
   }
 
   getHydrator(factory: EntityFactory): Hydrator {
-    return this.cached(this.options.hydrator, factory, this.driver);
+    // Hydrator cannot be cached as it would have reference to wrong factory
+    return new this.options.hydrator(factory, this.driver);
   }
 
   getMetadataProvider(): MetadataProvider {
