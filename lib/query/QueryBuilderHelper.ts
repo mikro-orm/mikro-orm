@@ -4,11 +4,12 @@ import { QueryOrder, QueryType } from './enums';
 
 export class QueryBuilderHelper {
 
-  private static readonly GROUP_OPERATORS = {
+  static readonly GROUP_OPERATORS = {
     $and: 'AND',
     $or: 'OR',
   };
-  private static readonly OPERATORS = {
+
+  static readonly OPERATORS = {
     $eq: '=',
     $in: 'IN',
     $nin: 'NOT IN',

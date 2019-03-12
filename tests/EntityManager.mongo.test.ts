@@ -856,6 +856,36 @@ describe('EntityManagerMongo', () => {
     expect(a2.books.isInitialized(true)).toBe(false);
   });
 
+  test('EM supports smart search conditions', async () => {
+    const author = new Author('name', 'email');
+    author.born = new Date('1990-03-23');
+    const b1 = new Book('b1', author);
+    const b2 = new Book('b2', author);
+    const b3 = new Book('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author, { 'id:ne': '5ec6d9bf90dae100fbed92ba' }))!;
+    expect(a1).not.toBeNull();
+    expect(a1.id).toBe(author.id);
+    const a2 = (await orm.em.findOne(Author, { 'id>=': author.id }))!;
+    expect(a2).not.toBeNull();
+    expect(a2.id).toBe(author.id);
+    const a3 = (await orm.em.findOne(Author, { 'id:nin': ['5ec6d9bf90dae100fbed92ba'] }))!;
+    expect(a3).not.toBeNull();
+    expect(a3.id).toBe(author.id);
+    const now = new Date();
+    const a4 = (await orm.em.findOne(Author, { $or: [
+      { 'date >': now },
+      { 'date <': now },
+      { 'date >=': now },
+      { 'date <=': now },
+      { 'date !=': now },
+    ] }))!;
+    expect(a4).not.toBeNull();
+    expect(a4.id).toBe(author.id);
+  });
+
   test('EM do not support transactions', async () => {
     await expect(orm.em.beginTransaction()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');
