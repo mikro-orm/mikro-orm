@@ -19,6 +19,9 @@ describe('RequestContext', () => {
       // access UoW via property so we do not get the one from request context automatically
       expect(em['unitOfWork'].getIdentityMap()).not.toBe(orm.em['unitOfWork'].getIdentityMap());
     });
+    expect(RequestContext.currentRequestContext()).not.toBeNull();
+    await new Promise(resolve => setTimeout(resolve, 100)); // wait for GC
+    expect(RequestContext.currentRequestContext()).toBeNull();
   });
 
   afterAll(async () => orm.close(true));

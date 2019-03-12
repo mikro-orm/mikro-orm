@@ -1,28 +1,32 @@
-// @ts-ignore
-import { createNamespace, getNamespace } from 'node-request-context';
+import { createHook, executionAsyncId } from 'async_hooks';
 import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 
 export class RequestContext {
 
-  static readonly NAMESPACE = 'mikro-orm-context';
+  static readonly CONTEXT: Record<number, RequestContext> = {};
   readonly id = uuid();
 
   constructor(readonly em: EntityManager) { }
 
   static create(em: EntityManager, next: Function) {
-    const context = new RequestContext(em.fork());
-    const namespace = getNamespace(RequestContext.NAMESPACE) || createNamespace(RequestContext.NAMESPACE);
+    RequestContext.CONTEXT[executionAsyncId()] = new RequestContext(em.fork());
 
-    namespace.run(() => {
-      namespace.set(RequestContext.name, context);
-      next();
-    });
+    const init = (asyncId: number, type: string, triggerId: number) => {
+      if (RequestContext.CONTEXT[triggerId]) {
+        RequestContext.CONTEXT[asyncId] = RequestContext.CONTEXT[triggerId];
+      }
+    };
+    const destroy = (asyncId: number) => {
+      delete RequestContext.CONTEXT[asyncId];
+    };
+
+    createHook({ init, destroy }).enable();
+    next();
   }
 
   static currentRequestContext(): RequestContext | null {
-    const namespace = getNamespace(RequestContext.NAMESPACE);
-    return namespace ? namespace.get(RequestContext.name) : null;
+    return RequestContext.CONTEXT[executionAsyncId()] || null;
   }
 
   static getEntityManager(): EntityManager | null {
