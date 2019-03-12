@@ -1,3 +1,6 @@
+---
+---
+
 # Serializing
 
 By default, all entities are monkey patched with `toObject()` and `toJSON` methods:

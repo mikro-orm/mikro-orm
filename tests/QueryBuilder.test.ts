@@ -77,7 +77,7 @@ describe('QueryBuilder', () => {
 
   test('select by m:n with populate', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
-    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { '$in': [ 1, 2 ] } }).orderBy({ ['publisher2_to_test2.id']: QueryOrder.ASC });
+    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { $in: [ 1, 2 ] } }).orderBy({ ['publisher2_to_test2.id']: QueryOrder.ASC });
     let sql = 'SELECT `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` FROM `test2` AS `e0`';
     sql += ' LEFT JOIN `publisher2_to_test2` AS `e1` ON `e0`.`id` = `e1`.`test2_id`';
     sql += ' WHERE `e1`.`publisher2_id` IN (?, ?)';
@@ -91,6 +91,68 @@ describe('QueryBuilder', () => {
     qb.select('*').populate(['not_existing']);
     expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0`');
     expect(qb.getParams()).toEqual([]);
+  });
+
+  test('select with operator (simple)', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({ id: { $nin: [3, 4] } });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` WHERE `e0`.`id` NOT IN (?, ?)');
+    expect(qb.getParams()).toEqual([3, 4]);
+  });
+
+  test('select with operator (NOT)', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({ $not: { id: { $in: [3, 4] } } });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` WHERE NOT (`e0`.`id` IN (?, ?))');
+    expect(qb.getParams()).toEqual([3, 4]);
+  });
+
+  test('select with operator (AND)', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({ $and: [
+      { id: { $in: [1, 2, 7] }, },
+      { id: { $nin: [3, 4] }, },
+      { id: { $gt: 5 }, },
+      { id: { $lt: 10 }, },
+      { id: { $gte: 7 }, },
+      { id: { $lte: 8 }, },
+      { id: { $ne: 9 }, },
+      { $not: { id: { $eq: 10 } } },
+    ] });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` ' +
+      'WHERE (`e0`.`id` IN (?, ?, ?) ' +
+      'AND `e0`.`id` NOT IN (?, ?) ' +
+      'AND `e0`.`id` > ? ' +
+      'AND `e0`.`id` < ? ' +
+      'AND `e0`.`id` >= ? ' +
+      'AND `e0`.`id` <= ? ' +
+      'AND `e0`.`id` != ? ' +
+      'AND NOT (`e0`.`id` = ?))');
+    expect(qb.getParams()).toEqual([1, 2, 7, 3, 4, 5, 10, 7, 8, 9, 10]);
+  });
+
+  test('select with operator (OR)', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({ $or: [
+      { id: { $in: [1, 2, 7] }, },
+      { id: { $nin: [3, 4] }, },
+      { id: { $gt: 5 }, },
+      { id: { $lt: 10 }, },
+      { id: { $gte: 7 }, },
+      { id: { $lte: 8 }, },
+      { id: { $ne: 9 }, },
+      { $not: { id: { $eq: 10 } } },
+    ] });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` ' +
+      'WHERE (`e0`.`id` IN (?, ?, ?) ' +
+      'OR `e0`.`id` NOT IN (?, ?) ' +
+      'OR `e0`.`id` > ? ' +
+      'OR `e0`.`id` < ? ' +
+      'OR `e0`.`id` >= ? ' +
+      'OR `e0`.`id` <= ? ' +
+      'OR `e0`.`id` != ? ' +
+      'OR NOT (`e0`.`id` = ?))');
+    expect(qb.getParams()).toEqual([1, 2, 7, 3, 4, 5, 10, 7, 8, 9, 10]);
   });
 
   test('select count query', async () => {
