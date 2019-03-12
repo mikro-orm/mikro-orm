@@ -4,6 +4,21 @@ import { QueryOrder, QueryType } from './enums';
 
 export class QueryBuilderHelper {
 
+  private static readonly GROUP_OPERATORS = {
+    $and: 'AND',
+    $or: 'OR',
+  };
+  private static readonly OPERATORS = {
+    $eq: '=',
+    $in: 'IN',
+    $nin: 'NOT IN',
+    $gt: '>',
+    $gte: '>=',
+    $lt: '<',
+    $lte: '<=',
+    $ne: '!=',
+  };
+
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly metadata: Record<string, EntityMetadata>) { }
@@ -11,10 +26,24 @@ export class QueryBuilderHelper {
   getWhereParams(conditions: Record<string, any>): any[] {
     const ret: any[] = [];
 
-    Object.values(conditions).forEach(cond => {
-      if (Utils.isObject(cond) && cond.$in) {
-        return ret.push(...cond.$in);
-      } else if (cond instanceof RegExp) {
+    Object.entries(conditions).forEach(([key, cond]) => {
+      if (key === '$and' || key === '$or') {
+        return ret.push(...Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub))));
+      }
+
+      if (key === '$not') {
+        return ret.push(...this.getWhereParams(cond));
+      }
+
+      if (Utils.isObject(cond)) {
+        const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => cond[op])!;
+
+        if (cond[operator]) {
+          return ret.push(...(Array.isArray(cond[operator]) ? cond[operator] : [cond[operator]]));
+        }
+      }
+
+      if (cond instanceof RegExp) {
         return ret.push(this.getRegExpParam(cond));
       }
 
@@ -108,7 +137,17 @@ export class QueryBuilderHelper {
   }
 
   getQueryCondition(type: QueryType, cond: any): string[] {
-    return Object.keys(cond).map(k => this.mapper(type, k, cond[k]));
+    return Object.keys(cond).map(k => {
+      if (k === '$and' || k === '$or') {
+        return this.getGroupQueryCondition(type, k, cond[k]);
+      }
+
+      if (k === '$not') {
+        return 'NOT (' + this.getQueryCondition(type, cond[k])[0] + ')';
+      }
+
+      return this.mapper(type, k, cond[k]);
+    });
   }
 
   getQueryOrder(type: QueryType, orderBy: Record<string, QueryOrder>, populate: Record<string, string>): string[] {
@@ -141,17 +180,35 @@ export class QueryBuilderHelper {
   }
 
   private processValue(value: any): string | undefined {
-    if (value && Utils.isObject(value) && value.$in) {
-      return ` IN (${Object.keys(value.$in).map(() => '?').join(', ')})`;
-    }
-
     if (value instanceof RegExp) {
       return ' LIKE ?';
+    }
+
+    if (Utils.isObject(value)) {
+      return this.processObjectValue(value);
     }
 
     if (value) {
       return ' = ?';
     }
+  }
+
+  private processObjectValue(value: any): string | undefined {
+    for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
+      if (!value[op]) {
+        continue;
+      }
+
+      const token = Array.isArray(value[op]) ? `(${value[op].map(() => '?').join(', ')})` : '?';
+      return ` ${replacement} ${token}`;
+    }
+  }
+
+  private getGroupQueryCondition(type: QueryType, operator: '$and' | '$or', subCondition: any): string {
+    const glue = QueryBuilderHelper.GROUP_OPERATORS[operator];
+    const group = subCondition.map((sub: any) => this.getQueryCondition(type, sub)[0]);
+
+    return '(' + group.join(` ${glue} `) + ')';
   }
 
 }
