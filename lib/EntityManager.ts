@@ -156,7 +156,7 @@ export class EntityManager {
       throw new Error('You cannot merge entity without id!');
     }
 
-    const entity = Utils.isEntity<T>(data) ? data : this.entityFactory.create<T>(entityName, data, true);
+    const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data, true);
     EntityAssigner.assign(entity, data);
     this.getUnitOfWork().addToIdentityMap(entity);
 
@@ -168,7 +168,7 @@ export class EntityManager {
    */
   create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
-    return this.entityFactory.create<T>(entityName, data, false);
+    return this.getEntityFactory().create<T>(entityName, data, false);
   }
 
   /**
@@ -181,7 +181,7 @@ export class EntityManager {
       return this.getUnitOfWork().getById<T>(entityName, id);
     }
 
-    return this.entityFactory.createReference<T>(entityName, id);
+    return this.getEntityFactory().createReference<T>(entityName, id);
   }
 
   async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
@@ -282,6 +282,11 @@ export class EntityManager {
   getUnitOfWork(): UnitOfWork {
     const em = RequestContext.getEntityManager() || this;
     return em.unitOfWork;
+  }
+
+  getEntityFactory(): EntityFactory {
+    const em = RequestContext.getEntityManager() || this;
+    return em.entityFactory;
   }
 
 }

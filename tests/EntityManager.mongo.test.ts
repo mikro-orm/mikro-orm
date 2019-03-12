@@ -209,10 +209,12 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
-    expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
-    expect(fork['entityFactory']).not.toBe(orm.em['entityFactory']);
     expect(fork['metadata']).toBe(orm.em['metadata']);
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
+
+    // request context is not started so we can use UoW and EF getters
+    expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
+    expect(fork.getEntityFactory()).not.toBe(orm.em.getEntityFactory());
   });
 
   test('findOne with empty where will throw', async () => {

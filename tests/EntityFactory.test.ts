@@ -63,7 +63,7 @@ describe('EntityFactory', () => {
 
   test('should return entity without id [reference as constructor parameter]', async () => {
     // we need to use normal entity manager to have working identity map
-    const author = orm.em['entityFactory'].createReference(Author, '5b0d19b28b21c648c2c8a600');
+    const author = orm.em.getEntityFactory().createReference(Author, '5b0d19b28b21c648c2c8a600');
     expect(author.id).toBe('5b0d19b28b21c648c2c8a600');
     const book = orm.em.create(Book, { title: 'book title', author: author.id });
     expect(book).toBeInstanceOf(Book);
