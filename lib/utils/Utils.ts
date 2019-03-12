@@ -109,8 +109,11 @@ export class Utils {
   static getParamNames(func: Function | string): string[] {
     const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
     const ARGUMENT_NAMES = /([^\s,]+)/g;
-    const fnStr = func.toString().replace(STRIP_COMMENTS, '');
-    const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES) as string[];
+    const fnStr = func.toString().replace(STRIP_COMMENTS, ''); // strip comments
+    let paramsStr = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')); // extract params
+    paramsStr = paramsStr.replace(/{[^}]+}/g, '{}'); // simplify object default values like `a = { ... }`
+    paramsStr = paramsStr.replace(/\[[^\]]+]/g, '[]'); // simplify array default values like `a = [ ... ]`
+    const result = paramsStr.match(ARGUMENT_NAMES) as string[];
 
     if (result === null) {
       return [];
@@ -129,7 +132,7 @@ export class Utils {
       }
     }
 
-    return result;
+    return result.filter(i => i); // filter out empty strings
   }
 
   static isPrimaryKey(key: any): key is IPrimaryKey {
