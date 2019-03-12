@@ -1,6 +1,5 @@
 import { FilterQuery, IPrimaryKey } from '..';
 import { IEntity, IEntityType } from '../decorators';
-import { EntityManager } from '../EntityManager';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 
@@ -75,7 +74,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
   }
 
   async init(populate: string[] = []): Promise<this> {
-    const em = this.owner.__em as EntityManager;
+    const em = this.owner.__em;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getConfig().usesPivotTable) {
       const map = await em.getDriver().loadFromPivotTable<T>(this.property, [this.owner.id]);
