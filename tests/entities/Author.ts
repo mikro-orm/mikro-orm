@@ -86,9 +86,13 @@ export class Author extends BaseEntity {
     EntityAssigner.assign(this, data);
   }
 
-  toJSON(): { [p: string]: any } {
-    const o = this.toObject();
+  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
+    const o = this.toObject(...args);
     o.fooBar = 123;
+
+    if (strict) {
+      strip.forEach(k => delete o[k]);
+    }
 
     return o;
   }

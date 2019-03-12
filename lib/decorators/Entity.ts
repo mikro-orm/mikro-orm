@@ -28,7 +28,7 @@ export interface IEntity<K = number | string> {
   populated(populated?: boolean): void;
   init(populated?: boolean): Promise<this>;
   toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
-  toJSON(): Record<string, any>;
+  toJSON(...args: any[]): Record<string, any>;
   assign(data: any): void;
   uuid: string;
   __em: EntityManager;
@@ -71,6 +71,7 @@ export interface EntityProperty {
 export interface EntityMetadata<T extends IEntityType<T> = any> {
   name: string;
   constructorParams: (keyof T & string)[];
+  toJsonParams: string[];
   extends: string;
   collection: string;
   path: string;

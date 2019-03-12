@@ -78,7 +78,6 @@ describe('EntityManagerMongo', () => {
     // serialization test
     const o = jon.toJSON();
     expect(o).toMatchObject({
-      id: jon.id,
       createdAt: jon.createdAt,
       updatedAt: jon.updatedAt,
       books: [
@@ -88,7 +87,6 @@ describe('EntityManagerMongo', () => {
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
       born: jon.born,
-      email: 'snow@wall.st',
       name: 'Jon Snow',
       foo: 'bar',
     });

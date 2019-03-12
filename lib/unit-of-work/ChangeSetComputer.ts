@@ -20,7 +20,7 @@ export class ChangeSetComputer {
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
-    this.validator.validate<typeof entity>(changeSet.entity, changeSet.payload, meta);
+    this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
 
     for (const prop of Object.values(meta.properties)) {
       this.processReference(changeSet, prop);

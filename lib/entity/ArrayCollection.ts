@@ -1,5 +1,4 @@
 import { EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { EntityTransformer } from '../entity';
 import { MetadataStorage } from '../metadata';
 
 export class ArrayCollection<T extends IEntityType<T>> {
@@ -21,7 +20,12 @@ export class ArrayCollection<T extends IEntityType<T>> {
   }
 
   toArray(parent: IEntity = this.owner): Record<string, any>[] {
-    return this.getItems().map(item => EntityTransformer.toObject(item, parent, true));
+    return this.getItems().map(item => {
+      const meta = MetadataStorage.getMetadata(item.constructor.name);
+      const args = [...meta.toJsonParams.map(() => undefined), parent, true];
+
+      return item.toJSON(...args);
+    });
   }
 
   getIdentifiers(field = 'id'): IPrimaryKey[] {

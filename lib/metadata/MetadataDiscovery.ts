@@ -69,6 +69,7 @@ export class MetadataDiscovery {
     const cache = this.cache.get(entity.name);
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
+    meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '');
 
     // skip already discovered entities
     if (Utils.isEntity(entity.prototype)) {

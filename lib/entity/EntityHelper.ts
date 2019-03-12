@@ -29,8 +29,8 @@ export class EntityHelper {
     }
 
     if (!meta.prototype.toJSON) { // toJSON can be overridden
-      meta.prototype.toJSON = function () {
-        return EntityTransformer.toObject(this);
+      meta.prototype.toJSON = function (...args: any[]) {
+        return EntityTransformer.toObject(this, ...args.slice(meta.toJsonParams.length));
       };
     }
   }

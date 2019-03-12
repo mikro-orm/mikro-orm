@@ -26,6 +26,27 @@ describe('EntityAssignerMongo', () => {
     expect(author).toBeInstanceOf(Author);
     expect(author.toJSON()).toBeInstanceOf(Object);
     expect(author.toJSON()).toMatchObject({ fooBar: 123 });
+    expect(author.toJSON().email).toBeUndefined();
+    expect(author.toJSON(false)).toMatchObject({ fooBar: 123, email: author.email });
+  });
+
+  test('#toJSON properly calls child entity toJSON with correct params', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    const bible2 = new Book('Bible pt. 2', god);
+    const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
+    await orm.em.persist([bible, bible2, bible3]);
+    orm.em.clear();
+
+    const newGod = (await orm.em.findOne(Author, god.id))!;
+    const books = await orm.em.find(Book, { author: god.id });
+    await newGod.init();
+
+    for (const book of books) {
+      expect(book.toJSON()).toMatchObject({
+        author: { name: book.author.name },
+      });
+    }
   });
 
   test('#init() should populate the entity', async () => {

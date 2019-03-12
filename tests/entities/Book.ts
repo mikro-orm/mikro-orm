@@ -38,4 +38,14 @@ export class Book extends BaseEntity3 {
     this.author = author;
   }
 
+  toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): { [p: string]: any } {
+    const o = this.toObject(...args);
+
+    if (strict) {
+      strip.forEach(k => delete o[k]);
+    }
+
+    return o;
+  }
+
 }
