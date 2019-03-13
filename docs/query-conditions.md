@@ -18,7 +18,23 @@ const res = await orm.em.find(Author, { $and: [
 ] })
 ```
 
-There is a better way to do this by including the operator in your keys:
+For AND condition with single field, you can also do this:
+
+```typescript
+const res = await orm.em.find(Author, { 
+  id: { 
+    $in: [1, 2, 7],
+    $nin: [3, 4],
+    $gt: 5,
+    $lt: 10,
+    $gte: 7,
+    $lte: 8,
+    $ne: 9,
+  },
+})
+```
+
+Another way to do this by including the operator in your keys:
 
 ```typescript
 const res = await orm.em.find(Author, { $and: [

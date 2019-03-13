@@ -100,6 +100,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([3, 4]);
   });
 
+  test('select with operator (wrapped)', async () => {
+    const qb1 = orm.em.createQueryBuilder(Test2);
+    qb1.select('*').where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
+    expect(qb1.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` WHERE (`e0`.`id` NOT IN (?, ?) AND `e0`.`id` > ?)');
+    expect(qb1.getParams()).toEqual([3, 4, 2]);
+
+    const qb2 = orm.em.createQueryBuilder(Test2);
+    qb2.select('*').where({ id: { $nin: [3, 4], $gt: 2 } });
+    expect(qb2.getQuery()).toEqual(qb1.getQuery());
+    expect(qb2.getParams()).toEqual(qb1.getParams());
+  });
+
   test('select with operator (NOT)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $not: { id: { $in: [3, 4] } } });

@@ -24,16 +24,26 @@ export class QueryBuilderHelper {
               private readonly alias: string,
               private readonly metadata: Record<string, EntityMetadata>) { }
 
+  private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
+    if (key === '$and' || key === '$or') {
+      return Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub)));
+    } else {
+      return this.getWhereParams(cond);
+    }
+  }
+
   getWhereParams(conditions: Record<string, any>): any[] {
     const ret: any[] = [];
 
     Object.entries(conditions).forEach(([key, cond]) => {
-      if (key === '$and' || key === '$or') {
-        return ret.push(...Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub))));
+      if (['$and', '$or', '$not'].includes(key)) {
+        return ret.push(...this.getGroupWhereParams(key, cond));
       }
 
-      if (key === '$not') {
-        return ret.push(...this.getWhereParams(cond));
+      // grouped condition for one field
+      if (Utils.isObject(cond) && Object.keys(cond).length > 1) {
+        const subConditions = Object.entries(cond).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+        return ret.push(...this.getWhereParams({ $and: subConditions }));
       }
 
       if (Utils.isObject(cond)) {
@@ -145,6 +155,12 @@ export class QueryBuilderHelper {
 
       if (k === '$not') {
         return 'NOT (' + this.getQueryCondition(type, cond[k])[0] + ')';
+      }
+
+      // grouped condition for one field
+      if (Utils.isObject(cond[k]) && Object.keys(cond[k]).length > 1) {
+        const subCondition = Object.entries(cond[k]).map(([subKey, subValue]) => ({ [k]: { [subKey]: subValue } }));
+        return this.getGroupQueryCondition(type, '$and', subCondition);
       }
 
       return this.mapper(type, k, cond[k]);
