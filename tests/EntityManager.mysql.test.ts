@@ -3,6 +3,7 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger } from '../lib/utils';
+import { Author, Book } from './entities';
 
 /**
  * @class EntityManagerMySqlTest
@@ -702,6 +703,52 @@ describe('EntityManagerMySql', () => {
     const diff = Utils.diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
+  });
+
+  test('self referencing (2 step)', async () => {
+    const author = new Author2('name', 'email');
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    author.favouriteAuthor = author;
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
+    expect(a1).toBe(a1.favouriteAuthor);
+    expect(a1.id).not.toBeNull();
+    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+  });
+
+  test('self referencing (1 step)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    const author = new Author2('name', 'email');
+    author.favouriteAuthor = author;
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
+    expect(a1).toBe(a1.favouriteAuthor);
+    expect(a1.id).not.toBeNull();
+    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+
+    // check fired queries
+    expect(mock.mock.calls.length).toBe(8);
+    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
+    expect(mock.mock.calls[1][0]).toMatch('INSERT INTO `author2` (`name`, `email`, `created_at`, `updated_at`, `terms_accepted`) VALUES (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
+    expect(mock.mock.calls[5][0]).toMatch('UPDATE `author2` SET `favourite_author_id` = ?, `updated_at` = ? WHERE `id` = ?');
+    expect(mock.mock.calls[6][0]).toMatch('COMMIT');
+    expect(mock.mock.calls[7][0]).toMatch('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`id` = ?');
   });
 
   test('EM supports smart search conditions', async () => {

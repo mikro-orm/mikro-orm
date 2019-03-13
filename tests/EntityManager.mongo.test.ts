@@ -5,6 +5,7 @@ import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entitie
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { Logger } from '../lib/utils';
 
 /**
  * @class EntityManagerMongoTest
@@ -884,6 +885,50 @@ describe('EntityManagerMongo', () => {
     ] }))!;
     expect(a4).not.toBeNull();
     expect(a4.id).toBe(author.id);
+  });
+
+  test('self referencing (2 step)', async () => {
+    const author = new Author('name', 'email');
+    const b1 = new Book('b1', author);
+    const b2 = new Book('b2', author);
+    const b3 = new Book('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    author.favouriteAuthor = author;
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author, { id: author.id }))!;
+    expect(a1).toBe(a1.favouriteAuthor);
+    expect(a1.id).not.toBeNull();
+    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+  });
+
+  test('self referencing (1 step)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    const author = new Author('name', 'email');
+    author.favouriteAuthor = author;
+    const b1 = new Book('b1', author);
+    const b2 = new Book('b2', author);
+    const b3 = new Book('b3', author);
+    await orm.em.persist([b1, b2, b3]);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author, { id: author.id }))!;
+    expect(a1).toBe(a1.favouriteAuthor);
+    expect(a1.id).not.toBeNull();
+    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+
+    // check fired queries
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","termsAccepted":.*,"name":".*","email":".*","foo":".*","_id":".*"}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b1","author":".*","_id":".*"}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b2","author":".*","_id":".*"}\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b3","author":".*","_id":".*"}\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"_id":".*"}, { \$set: {"favouriteAuthor":".*","updatedAt":".*"} }\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.find\(.*\).toArray\(\);/);
   });
 
   test('EM do not support transactions', async () => {

@@ -22,6 +22,7 @@ export class UnitOfWork {
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet<IEntity>[] = [];
+  private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity>][] = [];
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap);
@@ -119,6 +120,13 @@ export class UnitOfWork {
       this.findNewEntities(this.persistStack.shift()!);
     }
 
+    while (this.extraUpdates.length) {
+      const extraUpdate = this.extraUpdates.shift()!;
+      extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
+      this.changeSets.push(changeSet);
+    }
+
     for (const entity of Object.values(this.removeStack)) {
       const meta = this.metadata[entity.constructor.name];
       this.changeSets.push({ entity, delete: true, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
@@ -134,7 +142,7 @@ export class UnitOfWork {
 
     for (const prop of Object.values(meta.properties)) {
       const reference = entity[prop.name as keyof T];
-      this.processReference(prop, reference);
+      this.processReference(entity, prop, reference);
     }
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
@@ -146,7 +154,14 @@ export class UnitOfWork {
     }
   }
 
-  private processReference(prop: EntityProperty, reference: any): void {
+  private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty, reference: any): void {
+    if (parent === reference && !this.hasIdentifier(parent)) {
+      this.extraUpdates.push([parent, prop.name as keyof IEntity, parent]);
+      delete parent[prop.name as keyof T];
+
+      return;
+    }
+
     if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
       (reference as Collection<IEntity>).getItems()
         .filter(item => !this.hasIdentifier(item))

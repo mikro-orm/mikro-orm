@@ -34,6 +34,7 @@ CREATE TABLE `author2` (
   `email` varchar(255) DEFAULT NULL,
   `born` datetime DEFAULT NULL,
   `favourite_book_id` int(11) DEFAULT NULL,
+  `favourite_author_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

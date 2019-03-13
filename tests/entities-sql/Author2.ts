@@ -42,6 +42,9 @@ export class Author2 extends BaseEntity2 {
   @ManyToOne()
   favouriteBook: Book2;
 
+  @ManyToOne()
+  favouriteAuthor: Author2;
+
   version: number;
   versionAsString: string;
 
