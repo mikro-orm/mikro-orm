@@ -26,7 +26,7 @@ export class ChangeSetComputer {
       this.processReference(changeSet, prop);
     }
 
-    if (entity.id && Object.keys(changeSet.payload).length === 0) {
+    if (this.originalEntityData[entity.uuid] && Object.keys(changeSet.payload).length === 0) {
       return null;
     }
 
@@ -34,7 +34,7 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends IEntityType<T>>(entity: T): EntityData<T> {
-    if (entity.id && this.originalEntityData[entity.uuid]) {
+    if (this.originalEntityData[entity.uuid]) {
       return Utils.diffEntities<T>(this.originalEntityData[entity.uuid] as T, entity);
     } else {
       return Utils.prepareEntity(entity);
