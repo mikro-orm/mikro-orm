@@ -86,6 +86,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       supportsTransactions: false,
       supportsSavePoints: false,
       namingStrategy: MongoNamingStrategy,
+      identifierQuoteCharacter: '',
     };
   }
 
