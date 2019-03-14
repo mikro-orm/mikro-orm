@@ -1,6 +1,7 @@
 import { Utils } from '../utils';
 import { EntityMetadata } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
+import { DriverConfig } from '..';
 
 export class QueryBuilderHelper {
 
@@ -20,9 +21,12 @@ export class QueryBuilderHelper {
     $ne: '!=',
   };
 
+  private readonly quoteChar = this.driverConfig.identifierQuoteCharacter;
+
   constructor(private readonly entityName: string,
               private readonly alias: string,
-              private readonly metadata: Record<string, EntityMetadata>) { }
+              private readonly metadata: Record<string, EntityMetadata>,
+              private readonly driverConfig: DriverConfig) { }
 
   private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
     if (key === '$and' || key === '$or') {
@@ -69,13 +73,13 @@ export class QueryBuilderHelper {
       return field;
     }
 
-    return '`' + field + '`';
+    return this.quoteChar + field + this.quoteChar;
   }
 
   mapper(type: QueryType, field: string, value: any = null): string {
     let ret = this.wrap(field);
 
-    if (field.match(/`?\w{2}`?\./)) {
+    if (this.isQuoted(field)) {
       const [a, f] = field.split('.');
       ret = this.wrap(a) + '.' + this.wrap(f);
     }
@@ -84,7 +88,7 @@ export class QueryBuilderHelper {
       ret += this.processValue(value);
     }
 
-    if (type !== QueryType.SELECT || ret.match(/`?\w{2}`?\./)) {
+    if (type !== QueryType.SELECT || this.isQuoted(ret)) {
       return ret;
     }
 
@@ -107,21 +111,27 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  processJoins(leftJoins: Record<string, [string, string, string, string]>): string {
-    return Object.values(leftJoins).map(([table, alias, column]) => {
-      return ` LEFT JOIN \`${table}\` AS \`${alias}\` ON \`${this.alias}\`.\`id\` = \`${alias}\`.\`${column}\``;
+  processJoins(leftJoins: Record<string, [string, string, string, string, string]>): string {
+    return Object.values(leftJoins).map(([table, alias, column, joinColumn, pk]) => {
+      return ` LEFT JOIN ${this.wrap(table)} AS ${this.wrap(alias)} ON ${this.wrap(this.alias)}.${this.wrap(pk)} = ${this.wrap(alias)}.${this.wrap(column)}`;
     }).join('');
   }
 
-  mapJoinColumns(type: QueryType, join: [string, string, string, string]): string[] {
+  mapJoinColumns(type: QueryType, join: [string, string, string, string, string]): string[] {
     return [
       this.mapper(type, `${join[1]}.${join[2]}`),
       this.mapper(type, `${join[1]}.${join[3]}`),
     ];
   }
 
-  getTableName(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
+  getTableName(entityName: string, wrap = false): string {
+    const name = this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
+
+    if (wrap) {
+      return this.wrap(name);
+    }
+
+    return name;
   }
 
   getRegExpParam(re: RegExp): string {
@@ -226,6 +236,10 @@ export class QueryBuilderHelper {
     const group = subCondition.map((sub: any) => this.getQueryCondition(type, sub)[0]);
 
     return '(' + group.join(` ${glue} `) + ')';
+  }
+
+  private isQuoted(field: string): boolean {
+    return new RegExp(`${this.quoteChar}?\\w{2}${this.quoteChar}?\\.`).test(field);
   }
 
 }

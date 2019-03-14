@@ -191,6 +191,7 @@ export class MetadataDiscovery {
 
   private definePivotProperty(prop: EntityProperty, name: string): EntityProperty {
     const ret = { name, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
+    ret.referenceColumnName = prop.referenceColumnName;
 
     if (name === prop.type) {
       ret.joinColumn = prop.inverseJoinColumn;

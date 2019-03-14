@@ -50,9 +50,9 @@ describe('EntityManagerSqlite', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver<SqliteDriver>();
-    const err1 = `SQLITE_ERROR: no such table: not_existing\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)\n with params: ["bar"]`;
+    const err1 = `SQLITE_ERROR: no such table: not_existing\n in query: INSERT INTO "not_existing" ("foo") VALUES (?)\n with params: ["bar"]`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `SQLITE_ERROR: no such table: not_existing\n in query: DELETE FROM \`not_existing\``;
+    const err2 = `SQLITE_ERROR: no such table: not_existing\n in query: DELETE FROM "not_existing"`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 

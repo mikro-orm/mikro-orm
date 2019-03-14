@@ -13,6 +13,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
       supportsTransactions: true,
       supportsSavePoints: true,
       namingStrategy: UnderscoreNamingStrategy,
+      identifierQuoteCharacter: '"',
     };
   }
 

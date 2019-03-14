@@ -75,4 +75,5 @@ export interface DriverConfig {
   supportsTransactions: boolean;
   supportsSavePoints: boolean;
   namingStrategy: { new(): NamingStrategy };
+  identifierQuoteCharacter: string,
 }

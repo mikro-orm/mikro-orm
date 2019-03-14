@@ -131,6 +131,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       supportsTransactions: true,
       supportsSavePoints: false,
       namingStrategy: UnderscoreNamingStrategy,
+      identifierQuoteCharacter: '`',
     };
   }
 

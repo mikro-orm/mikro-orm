@@ -4,6 +4,7 @@ import { EntityMetadata, EntityProperty } from '../decorators';
 import { Connection } from '../connections/Connection';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
+import { DriverConfig } from '..';
 
 /**
  * SQL query builder
@@ -15,18 +16,19 @@ export class QueryBuilder {
   private flags: QueryFlag[] = [];
   private _fields: string[];
   private _populate: Record<string, string> = {};
-  private _leftJoins: Record<string, [string, string, string, string]> = {};
+  private _leftJoins: Record<string, [string, string, string, string, string]> = {};
   private _cond: Record<string, any>;
   private _data: Record<string, any>;
   private _orderBy: Record<string, QueryOrder>;
   private _limit: number;
   private _offset: number;
   private readonly alias = `e0`;
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata);
+  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata, this.driverConfig);
 
-  constructor(private entityName: string,
-              private metadata: Record<string, EntityMetadata>,
-              private connection: Connection) { }
+  constructor(private readonly entityName: string,
+              private readonly metadata: Record<string, EntityMetadata>,
+              private readonly connection: Connection,
+              private readonly driverConfig: DriverConfig) { }
 
   select(fields: string | string[]): this {
     this._fields = Array.isArray(fields) ? fields : [fields];
@@ -75,7 +77,7 @@ export class QueryBuilder {
       if (this.metadata[field]) {
         const prop = this.metadata[field].properties[this.entityName];
         const alias = `e${this.aliasCounter++}`;
-        this._leftJoins[field] = [this.metadata[field].collection, alias, prop.joinColumn, prop.inverseJoinColumn];
+        this._leftJoins[field] = [this.metadata[field].collection, alias, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
         this._populate[field] = alias;
       }
     });
@@ -195,10 +197,10 @@ export class QueryBuilder {
       const alias1 = `e${this.aliasCounter++}`;
 
       if (prop.owner) {
-        this._leftJoins[prop.name] = [prop.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn];
+        this._leftJoins[prop.name] = [prop.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
       } else {
         const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-        this._leftJoins[prop.name] = [prop2.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn];
+        this._leftJoins[prop.name] = [prop2.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
       }
 
       this._fields.push(prop.name);
@@ -206,7 +208,7 @@ export class QueryBuilder {
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
       const alias2 = `e${this.aliasCounter++}`;
       const prop2 = this.metadata[prop.type].properties[prop.fk];
-      this._leftJoins[prop.name] = [this.helper.getTableName(prop.type), alias2, prop2.fieldName, prop.referenceColumnName];
+      this._leftJoins[prop.name] = [this.helper.getTableName(prop.type), alias2, prop2.fieldName, prop.referenceColumnName, prop.referenceColumnName];
       Utils.renameKey(cond, field, `${alias2}.${prop.referenceColumnName}`);
     }
   }
@@ -231,23 +233,23 @@ export class QueryBuilder {
     switch (this.type) {
       case QueryType.SELECT:
         sql += this.prepareFields(this._fields);
-        sql += ` FROM \`${this.helper.getTableName(this.entityName)}\` AS \`${this.alias}\``;
+        sql += ` FROM ${this.helper.getTableName(this.entityName, true)} AS ${this.helper.wrap(this.alias)}`;
         sql += this.helper.processJoins(this._leftJoins);
         break;
       case QueryType.INSERT:
-        sql += `INTO \`${this.helper.getTableName(this.entityName)}\``;
+        sql += `INTO ${this.helper.getTableName(this.entityName, true)}`;
         sql += ' (' + Object.keys(this._data).map(k => this.helper.wrap(k)).join(', ') + ')';
         sql += ' VALUES (' + Object.keys(this._data).map(() => '?').join(', ') + ')';
         break;
       case QueryType.UPDATE:
-        sql += `\`${this.helper.getTableName(this.entityName)}\``;
+        sql += this.helper.getTableName(this.entityName, true);
         sql += ' SET ' + Object.keys(this._data).map(k => this.helper.wrap(k) + ' = ?').join(', ');
         break;
       case QueryType.DELETE:
-        sql += `FROM \`${this.helper.getTableName(this.entityName)}\``;
+        sql += 'FROM ' + this.helper.getTableName(this.entityName, true);
         break;
       case QueryType.TRUNCATE:
-        sql += `TABLE \`${this.helper.getTableName(this.entityName)}\``;
+        sql += 'TABLE ' + this.helper.getTableName(this.entityName, true);
         break;
     }
 
