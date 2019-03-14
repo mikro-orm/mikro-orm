@@ -163,10 +163,10 @@ export class QueryBuilder {
 
     if (this.flags.includes(QueryFlag.COUNT)) {
       if (this.flags.includes(QueryFlag.DISTINCT)) {
-        return `COUNT(DISTINCT ${ret[0]}) AS \`count\``;
+        return `COUNT(DISTINCT ${ret[0]}) AS ${this.helper.wrap('count')}`;
       }
 
-      return `COUNT(${ret[0]}) AS \`count\``;
+      return `COUNT(${ret[0]}) AS ${this.helper.wrap('count')}`;
     }
 
     return ret.join(glue);
