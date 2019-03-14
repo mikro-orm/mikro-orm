@@ -3,7 +3,6 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger } from '../lib/utils';
-import { Author, Book } from './entities';
 
 /**
  * @class EntityManagerMySqlTest
@@ -45,12 +44,12 @@ describe('EntityManagerMySql', () => {
     const driver = orm.em.getDriver<MySqlDriver>();
     expect(driver instanceof MySqlDriver).toBe(true);
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
-    expect(await driver.nativeInsert(BookTag2.name, { books: [1] })).not.toBeNull();
+    expect(await driver.nativeInsert(Book2.name, { tags: [1] })).not.toBeNull();
     const res = await driver.getConnection().execute('SELECT 1 as count');
     expect(res[0]).toEqual({ count: 1 });
     expect(driver.denormalizePrimaryKey(1)).toBe(1);
     expect(driver.denormalizePrimaryKey('1')).toBe('1');
-    expect(await driver.find(BookTag2.name, { books: [1] })).not.toBeNull();
+    expect(await driver.find(BookTag2.name, { books: { $in: [1] } })).not.toBeNull();
   });
 
   test('driver appends errored query', async () => {
@@ -64,10 +63,36 @@ describe('EntityManagerMySql', () => {
   test('should throw when trying to search by entity instead of identifier', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
+    author.termsAccepted = true;
     await repo.persist(author);
     await expect(repo.find(author)).rejects.toThrowError('Author2 entity provided in search condition. Please provide identifier instead.');
     await expect(repo.find({ author })).rejects.toThrowError(`Author2 entity provided in search condition in field 'author'. Please provide identifier instead.`);
     expect(await repo.findOne({ termsAccepted: false })).toBeNull();
+  });
+
+  test('should work with boolean values', async () => {
+    const repo = orm.em.getRepository(Author2);
+    const author = new Author2('name', 'email');
+    await repo.persist(author);
+    expect(author.termsAccepted).toBe(false);
+    author.termsAccepted = true;
+    await repo.persist(author);
+    expect(author.termsAccepted).toBe(true);
+    orm.em.clear();
+
+    const a1 = await repo.findOne({ termsAccepted: false });
+    expect(a1).toBeNull();
+    const a2 = (await repo.findOne({ termsAccepted: true }))!;
+    expect(a2).not.toBeNull();
+    a2.termsAccepted = false;
+    await repo.persist(a2);
+    orm.em.clear();
+
+    const a3 = (await repo.findOne({ termsAccepted: false }))!;
+    expect(a3).not.toBeNull();
+    expect(a3.termsAccepted).toBe(false);
+    const a4 = await repo.findOne({ termsAccepted: true });
+    expect(a4).toBeNull();
   });
 
   test('transactions', async () => {

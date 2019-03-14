@@ -25,6 +25,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 'lol 321', PublisherType.GLOBAL, 2, 1]);
   });
 
+  test('select with boolean', async () => {
+    const qb = orm.em.createQueryBuilder(Author2);
+    qb.select('*').where({ termsAccepted: false });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`terms_accepted` = ?');
+    expect(qb.getParams()).toEqual([false]);
+  });
+
   test('select by regexp', async () => {
     let qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').where({ name: /test/ });

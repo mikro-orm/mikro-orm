@@ -76,7 +76,7 @@ export class QueryBuilderHelper {
     return this.quoteChar + field + this.quoteChar;
   }
 
-  mapper(type: QueryType, field: string, value: any = null): string {
+  mapper(type: QueryType, field: string, value?: any): string {
     let ret = this.wrap(field);
 
     if (this.isQuoted(field)) {
@@ -84,7 +84,7 @@ export class QueryBuilderHelper {
       ret = this.wrap(a) + '.' + this.wrap(f);
     }
 
-    if (value) {
+    if (typeof value !== 'undefined') {
       ret += this.processValue(value);
     }
 
@@ -215,9 +215,7 @@ export class QueryBuilderHelper {
       return this.processObjectValue(value);
     }
 
-    if (value) {
-      return ' = ?';
-    }
+    return ' = ?';
   }
 
   private processObjectValue(value: any): string | undefined {
