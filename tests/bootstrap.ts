@@ -8,6 +8,8 @@ import { SqliteConnection } from '../lib/connections/SqliteConnection';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { FooBar2 } from './entities-sql/FooBar2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
+import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -53,6 +55,22 @@ export async function initORMMySql() {
   return orm;
 }
 
+export async function initORMPostgreSql() {
+  const orm = await MikroORM.init({
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, BaseEntity2, BaseEntity22],
+    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+    dbName: `mikro_orm_test`,
+    baseDir: BASE_DIR,
+    driver: PostgreSqlDriver,
+    debug: true,
+  });
+
+  const connection = orm.em.getConnection<PostgreSqlConnection>();
+  await connection.loadFile(__dirname + '/postgre-schema.sql');
+
+  return orm;
+}
+
 export async function initORMSqlite() {
   const orm = await MikroORM.init({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
@@ -79,6 +97,17 @@ export async function wipeDatabase(em: EntityManager) {
 }
 
 export async function wipeDatabaseMySql(em: EntityManager) {
+  await em.createQueryBuilder(Author2).truncate().execute();
+  await em.createQueryBuilder(Book2).truncate().execute();
+  await em.createQueryBuilder(BookTag2).truncate().execute();
+  await em.createQueryBuilder(Publisher2).truncate().execute();
+  await em.createQueryBuilder(Test2).truncate().execute();
+  await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
+  em.clear();
+}
+
+export async function wipeDatabasePostgreSql(em: EntityManager) {
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
   await em.createQueryBuilder(BookTag2).truncate().execute();

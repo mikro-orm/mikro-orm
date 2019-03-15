@@ -1,17 +1,10 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
+import { Platform } from './Platform';
 
-export abstract class Platform {
-
-  usesPivotTable(): boolean {
-    return true;
-  }
-
-  supportsTransactions(): boolean {
-    return true;
-  }
+export class PostgreSqlPlatform extends Platform {
 
   supportsSavePoints(): boolean {
-    return false;
+    return true;
   }
 
   getNamingStrategy(): { new(): NamingStrategy} {
@@ -23,11 +16,11 @@ export abstract class Platform {
   }
 
   getParameterPlaceholder(index?: number): string {
-    return '?';
+    return '$' + index;
   }
 
   usesReturningStatement(): boolean {
-    return false;
+    return true;
   }
 
 }

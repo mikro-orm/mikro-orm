@@ -8,6 +8,7 @@ First install the module via `yarn` or `npm` and do not forget to install the da
 ```
 $ yarn add mikro-orm mongodb # for mongo
 $ yarn add mikro-orm mysql2 # for mysql
+$ yarn add mikro-orm pg # for postgresql
 $ yarn add mikro-orm sqlite # for sqlite
 ```
 
@@ -16,6 +17,7 @@ or
 ```
 $ npm i -s mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm mysql2 # for mysql
+$ npm i -s mikro-orm pg # for postgresql
 $ npm i -s mikro-orm sqlite # for sqlite
 ```
 

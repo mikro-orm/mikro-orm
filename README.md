@@ -1,7 +1,7 @@
 # MikroORM
 
 Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB,
-MySQL and SQLite databases. 
+MySQL, PostgreSQL and SQLite databases. 
 
 Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
@@ -38,6 +38,7 @@ First install the module via `yarn` or `npm` and do not forget to install the da
 ```
 $ yarn add mikro-orm mongodb # for mongo
 $ yarn add mikro-orm mysql2 # for mysql
+$ yarn add mikro-orm pg # for postgresql
 $ yarn add mikro-orm sqlite # for sqlite
 ```
 
@@ -46,6 +47,7 @@ or
 ```
 $ npm i -s mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm mysql2 # for mysql
+$ npm i -s mikro-orm pg # for postgresql
 $ npm i -s mikro-orm sqlite # for sqlite
 ```
 

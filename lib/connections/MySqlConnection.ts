@@ -1,23 +1,22 @@
 import { Connection as MySql2Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
 import { readFileSync } from 'fs';
-import { URL } from 'url';
 import { Connection, QueryResult } from './Connection';
 
 export class MySqlConnection extends Connection {
 
-  private connection: MySql2Connection;
+  protected client: MySql2Connection;
 
   async connect(): Promise<void> {
-    this.connection = await createConnection(this.getConnectionOptions());
+    this.client = await createConnection(this.getConnectionOptions());
   }
 
   async close(force?: boolean): Promise<void> {
-    await this.connection.end({ force });
+    await this.client.end({ force });
   }
 
   async isConnected(): Promise<boolean> {
     try {
-      await this.connection.query('SELECT 1');
+      await this.client.query('SELECT 1');
       return true;
     } catch {
       return false;
@@ -41,35 +40,17 @@ export class MySqlConnection extends Connection {
   }
 
   async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
-    try {
-      const now = Date.now();
-      const res = await this.connection.execute(query, params);
-      this.logQuery(query + ` [took ${Date.now() - now} ms]`);
+    const res = await this.executeQuery(query, params, () => this.client.execute(query, params));
 
-      if (method === 'get') {
-        return (res as QueryResult[][])[0][0];
-      }
-
-      return res[0];
-    } catch (e) {
-      e.message += `\n in query: ${query}`;
-
-      if (params && params.length) {
-        e.message += `\n with params: ${JSON.stringify(params)}`;
-      }
-
-      throw e;
+    if (method === 'get') {
+      return (res as QueryResult[][])[0][0];
     }
+
+    return res[0];
   }
 
   getConnectionOptions(): ConnectionOptions {
-    const ret = {} as ConnectionOptions;
-    const url = new URL(this.config.getClientUrl());
-    ret.host = this.config.get('host', url.hostname);
-    ret.port = this.config.get('port', +url.port);
-    ret.user = this.config.get('user', url.username);
-    ret.password = this.config.get('password', url.password);
-    ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
+    const ret: ConnectionOptions = super.getConnectionOptions();
 
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');
@@ -85,7 +66,7 @@ export class MySqlConnection extends Connection {
 
   private async query(sql: string): Promise<void> {
     const now = Date.now();
-    await this.connection.query(sql);
+    await this.client.query(sql);
     this.logQuery(`${sql} [took ${Date.now() - now} ms]`);
   }
 

@@ -113,7 +113,7 @@ export class QueryBuilder {
 
     sql += this.helper.getQueryPagination(this._limit, this._offset);
 
-    return sql;
+    return this.helper.finalize(this.type, sql, this.metadata[this.entityName]);
   }
 
   getParams(): any[] {
@@ -140,7 +140,7 @@ export class QueryBuilder {
     return ret;
   }
 
-  async execute(method?: string): Promise<any> {
+  async execute(method: 'all' | 'get' | 'run' = 'all'): Promise<any> {
     return this.connection.execute(this.getQuery(), this.getParams(), method);
   }
 

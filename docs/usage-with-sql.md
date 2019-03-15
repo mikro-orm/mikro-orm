@@ -6,7 +6,8 @@
 To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and provide
 `MySqlDriver` class when initializing ORM.
 
-Similarly for SQLite install `sqlite` dependency and provide `SqliteDriver`.
+Similarly for SQLite install `sqlite` dependency and provide `SqliteDriver`. For PostgreSQL
+install `pg` and provide `PostgreSqlDriver`.
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
