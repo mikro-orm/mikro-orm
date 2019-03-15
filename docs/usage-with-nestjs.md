@@ -46,7 +46,7 @@ export class MikroOrmMiddleware implements NestMiddleware {
 ## Dependency Injection
 
 ```typescript
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { EntityManager, MikroORM } from 'mikro-orm';
 import { MikroOrmMiddleware } from './mikro-orm.middleware';
 
@@ -54,9 +54,11 @@ import { MikroOrmMiddleware } from './mikro-orm.middleware';
   providers: [
     MikroOrmMiddleware,
     { provide: MikroORM, useFactory: async () => {
+      const logger = new Logger(MikroORM.name);
       return MikroORM.init({
         entitiesDirs: ['./src/entities'],
         dbName: '...',
+        logger: logger.log.bind(logger),
       });
     }},
     { provide: EntityManager, useFactory: (orm: MikroORM) => orm.em, inject: [MikroORM] },
