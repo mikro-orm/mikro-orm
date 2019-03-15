@@ -31,7 +31,7 @@ export class UnitOfWork {
 
   addToIdentityMap(entity: IEntity): void {
     this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
-    this.originalEntityData[entity.uuid] = Utils.copy(entity);
+    this.originalEntityData[entity.__uuid] = Utils.copy(entity);
   }
 
   getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
@@ -59,7 +59,7 @@ export class UnitOfWork {
     }
 
     if (!entity.id) {
-      this.identifierMap[entity.uuid] = new EntityIdentifier();
+      this.identifierMap[entity.__uuid] = new EntityIdentifier();
     }
 
     this.persistStack.push(entity);
@@ -109,8 +109,8 @@ export class UnitOfWork {
 
   unsetIdentity(entity: IEntity): void {
     delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
-    delete this.identifierMap[entity.uuid];
-    delete this.originalEntityData[entity.uuid];
+    delete this.identifierMap[entity.__uuid];
+    delete this.originalEntityData[entity.__uuid];
   }
 
   computeChangeSets(): void {
@@ -136,8 +136,8 @@ export class UnitOfWork {
   private findNewEntities<T extends IEntityType<T>>(entity: T): void {
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
 
-    if (!entity.id && !this.identifierMap[entity.uuid]) {
-      this.identifierMap[entity.uuid] = new EntityIdentifier();
+    if (!entity.id && !this.identifierMap[entity.__uuid]) {
+      this.identifierMap[entity.__uuid] = new EntityIdentifier();
     }
 
     for (const prop of Object.values(meta.properties)) {
@@ -150,7 +150,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.cleanUpStack(this.persistStack, entity);
-      this.originalEntityData[entity.uuid] = Utils.copy(entity);
+      this.originalEntityData[entity.__uuid] = Utils.copy(entity);
     }
   }
 
@@ -224,7 +224,7 @@ export class UnitOfWork {
       return true;
     }
 
-    return this.identifierMap[entity.uuid] && this.identifierMap[entity.uuid].getValue();
+    return this.identifierMap[entity.__uuid] && this.identifierMap[entity.__uuid].getValue();
   }
 
   private cascade<T extends IEntityType<T>>(entity: T, type: Cascade, visited: IEntity[]): void {

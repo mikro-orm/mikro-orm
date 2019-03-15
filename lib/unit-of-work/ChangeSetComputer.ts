@@ -26,7 +26,7 @@ export class ChangeSetComputer {
       this.processReference(changeSet, prop);
     }
 
-    if (this.originalEntityData[entity.uuid] && Object.keys(changeSet.payload).length === 0) {
+    if (this.originalEntityData[entity.__uuid] && Object.keys(changeSet.payload).length === 0) {
       return null;
     }
 
@@ -34,8 +34,8 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends IEntityType<T>>(entity: T): EntityData<T> {
-    if (this.originalEntityData[entity.uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[entity.uuid] as T, entity);
+    if (this.originalEntityData[entity.__uuid]) {
+      return Utils.diffEntities<T>(this.originalEntityData[entity.__uuid] as T, entity);
     } else {
       return Utils.prepareEntity(entity);
     }
@@ -61,7 +61,7 @@ export class ChangeSetComputer {
   private processManyToMany<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty, collection: Collection<IEntity>): void {
     if (prop.owner && collection.isDirty()) {
       const pk = this.metadata[prop.type].primaryKey as keyof IEntity;
-      changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.uuid]);
+      changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.__uuid]);
       collection.setDirty(false);
     }
   }

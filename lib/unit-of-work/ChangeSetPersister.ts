@@ -32,7 +32,7 @@ export class ChangeSetPersister {
       await this.driver.nativeUpdate(changeSet.name, changeSet.entity[pk], changeSet.payload);
     } else {
       changeSet.entity[pk] = await this.driver.nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
-      this.identifierMap[changeSet.entity.uuid].setValue(changeSet.entity[pk]);
+      this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity[pk]);
       delete changeSet.entity.__initialized;
     }
   }

@@ -54,13 +54,13 @@ export class EntityHelper {
       __populated: { value: false, writable: true },
       __entity: { value: true },
       __em: { value: em },
-      uuid: {
+      __uuid: {
         get(): string {
-          if (!this.__uuid) {
-            Object.defineProperty(this, '__uuid', { value: uuid() });
+          if (!this.___uuid) {
+            Object.defineProperty(this, '___uuid', { value: uuid() });
           }
 
-          return this.__uuid;
+          return this.___uuid;
         },
       },
     });

@@ -30,7 +30,7 @@ export interface IEntity<K = number | string> {
   toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   assign(data: any): void;
-  uuid: string;
+  __uuid: string;
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
