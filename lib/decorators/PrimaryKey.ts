@@ -1,6 +1,6 @@
 import { MetadataStorage } from '../metadata';
 import { ReferenceType } from '../entity';
-import { EntityProperty, IEntity } from '.';
+import { EntityProperty, IEntity, PropertyOptions } from '.';
 import { Utils } from '../utils';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
@@ -13,10 +13,9 @@ export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   };
 }
 
-export type PrimaryKeyOptions = {
+export interface PrimaryKeyOptions extends PropertyOptions {
   name?: string;
   type?: any;
-  [prop: string]: any;
 }
 
 export type IPrimaryKey = number | string | { toString?(): string, toHexString?(): string };
