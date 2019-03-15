@@ -4,7 +4,7 @@ import { EntityMetadata, EntityProperty } from '../decorators';
 import { Connection } from '../connections/Connection';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
-import { DriverConfig } from '..';
+import { Platform } from '../platforms/Platform';
 
 /**
  * SQL query builder
@@ -23,12 +23,12 @@ export class QueryBuilder {
   private _limit: number;
   private _offset: number;
   private readonly alias = `e0`;
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata, this.driverConfig);
+  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: Record<string, EntityMetadata>,
               private readonly connection: Connection,
-              private readonly driverConfig: DriverConfig) { }
+              private readonly platform: Platform) { }
 
   select(fields: string | string[]): this {
     this._fields = Array.isArray(fields) ? fields : [fields];

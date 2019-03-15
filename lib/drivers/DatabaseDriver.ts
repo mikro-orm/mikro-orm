@@ -1,14 +1,15 @@
-import { DriverConfig, FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
+import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
 import { Connection } from '../connections/Connection';
 import { Configuration, Utils } from '../utils';
 import { QueryOrder } from '../query';
-import { UnderscoreNamingStrategy } from '../naming-strategy';
+import { Platform } from '../platforms/Platform';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
   protected readonly connection: Connection;
+  protected readonly platform: Platform;
   protected readonly metadata = MetadataStorage.getMetadata();
   protected readonly logger = this.config.getLogger();
   protected transactionLevel = 0;
@@ -33,7 +34,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<Record<string, T[]>> {
-    if (!this.getConfig().usesPivotTable) {
+    if (!this.platform.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
 
@@ -105,7 +106,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     if (this.transactionLevel === 1) {
       this.transactionRolledBack = false;
-    } else if (!this.getConfig().supportsSavePoints) {
+    } else if (!this.platform.supportsSavePoints()) {
       this.transactionRolledBack = true;
     }
 
@@ -129,19 +130,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.transactionLevel > 0;
   }
 
-  getConfig(): DriverConfig {
-    return {
-      usesPivotTable: true,
-      supportsTransactions: true,
-      supportsSavePoints: false,
-      namingStrategy: UnderscoreNamingStrategy,
-      identifierQuoteCharacter: '`',
-    };
+  getPlatform(): Platform {
+    return this.platform;
   }
 
   private async runTransaction(method: 'beginTransaction' | 'commit' | 'rollback'): Promise<void> {
-    if (this.transactionLevel === 1 || this.getConfig().supportsSavePoints) {
-      const useSavepoint = this.transactionLevel !== 1 && this.getConfig().supportsSavePoints;
+    if (this.transactionLevel === 1 || this.platform.supportsSavePoints()) {
+      const useSavepoint = this.transactionLevel !== 1 && this.platform.supportsSavePoints();
       await this.connection[method](useSavepoint ? this.getSavePointName() : undefined);
     }
   }

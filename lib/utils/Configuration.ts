@@ -71,7 +71,7 @@ export class Configuration {
   }
 
   getNamingStrategy(): NamingStrategy {
-    return this.cached(this.options.namingStrategy || this.driver.getConfig().namingStrategy);
+    return this.cached(this.options.namingStrategy || this.driver.getPlatform().getNamingStrategy());
   }
 
   getHydrator(factory: EntityFactory): Hydrator {

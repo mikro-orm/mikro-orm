@@ -38,7 +38,7 @@ export class ObjectHydrator extends Hydrator {
       const items = value.map((id: IPrimaryKey) => this.factory.createReference(prop.type, this.driver.normalizePrimaryKey(id)));
       entity[prop.name as keyof T] = new Collection<IEntity>(entity, items) as T[keyof T];
     } else if (!entity[prop.name as keyof T]) {
-      const items = this.driver.getConfig().usesPivotTable ? undefined : [];
+      const items = this.driver.getPlatform().usesPivotTable() ? undefined : [];
       entity[prop.name as keyof T] = new Collection<IEntity>(entity, items, false) as T[keyof T];
     }
   }

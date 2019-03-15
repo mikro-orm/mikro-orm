@@ -1,7 +1,7 @@
 import { Utils } from '../utils';
 import { EntityMetadata } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
-import { DriverConfig } from '..';
+import { Platform } from '../platforms/Platform';
 
 export class QueryBuilderHelper {
 
@@ -21,12 +21,12 @@ export class QueryBuilderHelper {
     $ne: '!=',
   };
 
-  private readonly quoteChar = this.driverConfig.identifierQuoteCharacter;
+  private readonly quoteChar = this.platform.getIdentifierQuoteCharacter();
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly metadata: Record<string, EntityMetadata>,
-              private readonly driverConfig: DriverConfig) { }
+              private readonly platform: Platform) { }
 
   private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
     if (key === '$and' || key === '$or') {

@@ -89,7 +89,7 @@ export class UnitOfWork {
     }
 
     const driver = this.em.getDriver();
-    const runInTransaction = !driver.isInTransaction() && driver.getConfig().supportsTransactions;
+    const runInTransaction = !driver.isInTransaction() && driver.getPlatform().supportsTransactions();
     const promise = Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet));
 
     if (runInTransaction) {

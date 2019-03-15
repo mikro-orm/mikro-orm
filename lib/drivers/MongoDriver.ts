@@ -4,12 +4,12 @@ import { MongoConnection } from '../connections/MongoConnection';
 import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryOrder } from '../query';
 import { Utils } from '../utils';
-import { DriverConfig } from './IDatabaseDriver';
-import { MongoNamingStrategy } from '../naming-strategy';
+import { MongoPlatform } from '../platforms/MongoPlatform';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   protected readonly connection = new MongoConnection(this.config);
+  protected readonly platform = new MongoPlatform();
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: Record<string, QueryOrder>, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
@@ -78,16 +78,6 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {
     return new ObjectID(data);
-  }
-
-  getConfig(): DriverConfig {
-    return {
-      usesPivotTable: false,
-      supportsTransactions: false,
-      supportsSavePoints: false,
-      namingStrategy: MongoNamingStrategy,
-      identifierQuoteCharacter: '',
-    };
   }
 
   private renameFields(entityName: string, data: any): any {

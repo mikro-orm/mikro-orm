@@ -36,7 +36,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     const qb = this.createQueryBuilder(entityName);
     const res = await qb.count('id', true).where(where).execute('get');
 
-    return res.count;
+    return +res.count;
   }
 
   async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
@@ -83,7 +83,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
   }
 
   protected createQueryBuilder(entityName: string): QueryBuilder {
-    return new QueryBuilder(entityName, this.metadata, this.connection, this.getConfig());
+    return new QueryBuilder(entityName, this.metadata, this.connection, this.platform);
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {

@@ -1,7 +1,7 @@
 import { EntityData, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
 import { Connection } from '../connections/Connection';
 import { QueryOrder } from '../query';
-import { NamingStrategy } from '../naming-strategy';
+import { Platform } from '../platforms/Platform';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -64,16 +64,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   isInTransaction(): boolean;
 
-  getConfig(): DriverConfig;
+  getPlatform(): Platform;
 
 }
 
 export type FilterQuery<T> = Partial<T> | Record<string, any>;
-
-export interface DriverConfig {
-  usesPivotTable: boolean;
-  supportsTransactions: boolean;
-  supportsSavePoints: boolean;
-  namingStrategy: { new(): NamingStrategy };
-  identifierQuoteCharacter: string,
-}

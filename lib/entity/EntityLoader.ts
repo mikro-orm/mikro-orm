@@ -40,7 +40,7 @@ export class EntityLoader {
     const prop = this.metadata[entityName].properties[field as string];
     const filtered = this.filterCollections<T>(entities, field);
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getConfig().usesPivotTable) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
       return this.findChildrenFromPivotTable<T>(filtered, prop, field);
     }
 
@@ -60,7 +60,7 @@ export class EntityLoader {
       this.initializeOneToMany<T>(filtered, children, prop, field);
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.getConfig().usesPivotTable) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.getPlatform().usesPivotTable()) {
       this.initializeManyToMany<T>(filtered, children, prop, field);
     }
   }

@@ -170,7 +170,7 @@ export class MetadataDiscovery {
     this.validator.validateEntityDefinition(this.metadata, meta.name);
     EntityHelper.decorate(meta, this.em);
 
-    if (this.em.getDriver().getConfig().usesPivotTable) {
+    if (this.em.getDriver().getPlatform().usesPivotTable()) {
       Object.values(meta.properties).forEach(prop => this.definePivotTableEntities(meta, prop));
     }
   }
