@@ -3,6 +3,7 @@ import { EntityProperty, IEntity } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
+import { QueryOrder } from '../query';
 
 export function OneToMany(options: OneToManyOptions): Function {
   return function (target: IEntity, propertyName: string) {
@@ -22,4 +23,5 @@ export interface OneToManyOptions extends PropertyOptions {
   entity: () => string | Function;
   fk: string;
   cascade?: Cascade[];
+  orderBy?: { [field: string]: QueryOrder },
 }

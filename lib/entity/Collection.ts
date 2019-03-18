@@ -1,5 +1,5 @@
-import { FilterQuery, IPrimaryKey } from '..';
-import { IEntity, IEntityType } from '../decorators';
+import { FilterQuery, QueryOrder } from '..';
+import { IEntityType } from '../decorators';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 
@@ -92,11 +92,11 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
       return this;
     }
 
-    const cond = this.createCondition();
-    const order = this.items.map(item => item.id);
+    const { cond, orderBy } = this.createCondition();
+    const order = [...this.items]; // copy order of references
 
     this.items.length = 0;
-    const items = await em.find<T>(this.property.type, cond, populate);
+    const items = await em.find<T>(this.property.type, cond, populate, orderBy);
     this.reorderItems(items, order);
 
     this.items.push(...items);
@@ -108,16 +108,18 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     return this;
   }
 
-  private createCondition(): FilterQuery<T> {
+  private createCondition<T>(): { cond: FilterQuery<T>, orderBy?: Record<string, QueryOrder> } {
     const cond: Record<string, any> = {};
+    let orderBy = undefined;
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.fk as string] = this.owner.id;
+      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
 
-    return cond;
+    return { cond, orderBy };
   }
 
   private createManyToManyCondition(cond: Record<string, any>) {
@@ -143,11 +145,9 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
   /**
    * re-orders items after searching with `$in` operator
    */
-  private reorderItems(items: T[], order: IPrimaryKey[]): void {
+  private reorderItems(items: T[], order: T[]): void {
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
-      items.sort((a: IEntity, b: IEntity) => {
-        return order.indexOf(a.id) - order.indexOf(b.id);
-      });
+      items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     }
   }
 

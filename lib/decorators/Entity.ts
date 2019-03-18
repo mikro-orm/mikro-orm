@@ -3,6 +3,7 @@ import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
 import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Utils } from '../utils';
+import { QueryOrder } from '../query';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -62,6 +63,7 @@ export interface EntityProperty {
   owner: boolean;
   inversedBy: string;
   mappedBy: string;
+  orderBy?: { [field: string]: QueryOrder },
   pivotTable: string;
   joinColumn: string;
   inverseJoinColumn: string;

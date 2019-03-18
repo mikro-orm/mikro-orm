@@ -4,6 +4,7 @@ import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
 import { Utils } from '../utils';
 import { Collection } from './Collection';
+import { QueryOrder } from '../query';
 
 export class EntityLoader {
 
@@ -94,8 +95,9 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => e.id));
+    const orderBy = prop.orderBy || { [fk]: QueryOrder.ASC };
 
-    return this.em.find<IEntity>(prop.type, { [fk]: { $in: ids } });
+    return this.em.find<IEntity>(prop.type, { [fk]: { $in: ids } }, [], orderBy);
   }
 
   private async populateField<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], field: string): Promise<void> {
