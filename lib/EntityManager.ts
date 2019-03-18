@@ -154,13 +154,14 @@ export class EntityManager {
 
   merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
     entityName = Utils.className(entityName);
+    const meta = this.metadata[entityName];
 
-    if (!data || (!data.id && !data._id)) {
-      throw new Error('You cannot merge entity without id!');
+    if (!data || (!data[meta.primaryKey] && !data[meta.serializedPrimaryKey])) {
+      throw new Error('You cannot merge entity without identifier!');
     }
 
     const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data, true);
-    EntityAssigner.assign(entity, data);
+    EntityAssigner.assign(entity, data, true);
     this.getUnitOfWork().addToIdentityMap(entity);
 
     return entity as T;

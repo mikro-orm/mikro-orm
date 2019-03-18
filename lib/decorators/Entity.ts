@@ -35,6 +35,9 @@ export interface IEntity<K = number | string> {
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
+  __primaryKey: K;
+  __primaryKeyField: string & keyof IEntity;
+  __serializedPrimaryKey: string & keyof IEntity;
 }
 
 export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;
@@ -78,6 +81,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   collection: string;
   path: string;
   primaryKey: keyof T & string;
+  serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
   hooks: Record<string, string[]>;

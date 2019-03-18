@@ -9,10 +9,10 @@ export class Publisher2 extends BaseEntity2 {
   @Property()
   name: string;
 
-  @OneToMany({ entity: () => Book2.name, fk: 'publisher' })
+  @OneToMany({ entity: () => Book2, fk: 'publisher' })
   books: Collection<Book2>;
 
-  @ManyToMany({ entity: () => Test2.name, owner: true })
+  @ManyToMany({ entity: () => Test2, owner: true })
   tests: Collection<Test2>;
 
   @Property()

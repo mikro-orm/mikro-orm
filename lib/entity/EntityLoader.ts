@@ -94,7 +94,7 @@ export class EntityLoader {
       return [];
     }
 
-    const ids = Utils.unique(children.map(e => e.id));
+    const ids = Utils.unique(children.map(e => e.__primaryKey));
     const orderBy = prop.orderBy || { [fk]: QueryOrder.ASC };
 
     return this.em.find<IEntity>(prop.type, { [fk]: { $in: ids } }, [], orderBy);
@@ -122,11 +122,11 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends IEntityType<T>>(filtered: T[], prop: EntityProperty, field: keyof T): Promise<IEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.id));
+    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.__primaryKey));
     const children: IEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[entity.id as number].map(item => this.em.merge(prop.type, item));
+      const items = map[entity.__primaryKey as number].map(item => this.em.merge(prop.type, item));
       (entity[field] as Collection<IEntity>).set(items, true);
       children.push(...items);
     }

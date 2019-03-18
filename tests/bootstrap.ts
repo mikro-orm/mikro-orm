@@ -56,7 +56,7 @@ export async function initORMMySql() {
 export async function initORMSqlite() {
   const orm = await MikroORM.init({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
-    dbName: 'tests/mikro_orm_test.db',
+    dbName: './mikro_orm_test.db',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: true,

@@ -35,7 +35,7 @@ export class ObjectHydrator extends Hydrator {
 
   private hydrateManyToManyOwner<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (Array.isArray(value)) {
-      const items = value.map((id: IPrimaryKey) => this.factory.createReference(prop.type, this.driver.normalizePrimaryKey(id)));
+      const items = value.map((id: IPrimaryKey) => this.factory.createReference(prop.type, id));
       entity[prop.name as keyof T] = new Collection<IEntity>(entity, items) as T[keyof T];
     } else if (!entity[prop.name as keyof T]) {
       const items = this.driver.getPlatform().usesPivotTable() ? undefined : [];
@@ -51,8 +51,7 @@ export class ObjectHydrator extends Hydrator {
 
   private hydrateManyToOne<T extends IEntityType<T>>(value: any, entity: T, prop: EntityProperty): void {
     if (value && !Utils.isEntity(value)) {
-      const id = this.driver.normalizePrimaryKey(value as IPrimaryKey);
-      entity[prop.name as keyof T] = this.factory.createReference(prop.type, id as IPrimaryKey);
+      entity[prop.name as keyof T] = this.factory.createReference(prop.type, value as IPrimaryKey);
     }
   }
 

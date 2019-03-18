@@ -2,6 +2,8 @@ import { ObjectID } from 'mongodb';
 import { Collection, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MetadataStorage } from '../lib/metadata';
+import { Book2 } from './entities-sql';
 
 class Test {}
 
@@ -132,16 +134,25 @@ describe('Utils', () => {
     expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
   });
 
-  test('extractPK', () => {
+  test('extractPK with PK id/_id', () => {
+    const meta = MetadataStorage.getMetadata(Author.name);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
     const id = new ObjectID(1);
     expect(Utils.extractPK(id)).toBe(id);
-    expect(Utils.extractPK({ id })).toBe(id);
-    expect(Utils.extractPK({ _id: id })).toBe(id);
+    expect(Utils.extractPK({ id }, meta)).toBe(id);
+    expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
     expect(Utils.extractPK({ foo: 'bar' })).toBeNull();
     expect(Utils.extractPK(new Test())).toBeNull();
     expect(Utils.extractPK(true)).toBeNull();
+  });
+
+  test('extractPK with PK uuid', () => {
+    const meta = MetadataStorage.getMetadata(Book2.name);
+    expect(Utils.extractPK({ id: '...' }, meta)).toBeNull();
+    expect(Utils.extractPK({ _id: '...' }, meta)).toBeNull();
+    expect(Utils.extractPK({ foo: 'bar' }, meta)).toBeNull();
+    expect(Utils.extractPK({ uuid: 'uuid-123' }, meta)).toBe('uuid-123');
   });
 
   afterAll(async () => orm.close(true));

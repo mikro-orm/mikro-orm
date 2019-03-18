@@ -143,13 +143,13 @@ export class Utils {
     return typeof key === 'string' || typeof key === 'number' || Utils.isObjectID(key);
   }
 
-  static extractPK(data: any): IPrimaryKey | null {
+  static extractPK(data: any, meta?: EntityMetadata): IPrimaryKey | null {
     if (Utils.isPrimaryKey(data)) {
       return data;
     }
 
-    if (Utils.isObject(data)) {
-      return data.id || data._id || null;
+    if (Utils.isObject(data) && meta) {
+      return data[meta.primaryKey] || data[meta.serializedPrimaryKey] || null;
     }
 
     return null;

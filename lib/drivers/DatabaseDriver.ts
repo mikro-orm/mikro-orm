@@ -8,7 +8,7 @@ import { Platform } from '../platforms/Platform';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  protected readonly connection: Connection;
+  protected readonly connection: C;
   protected readonly platform: Platform;
   protected readonly metadata = MetadataStorage.getMetadata();
   protected readonly logger = this.config.getLogger();
@@ -53,14 +53,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
 
     return map;
-  }
-
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
-    return data as T;
-  }
-
-  denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return data;
   }
 
   mapResult<T extends IEntityType<T>>(result: T, meta: EntityMetadata): T {

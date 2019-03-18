@@ -7,16 +7,18 @@ import { MetadataStorage } from '../metadata';
 export class EntityTransformer {
 
   static toObject<T extends IEntityType<T>>(entity: T, parent?: IEntity, isCollection = false): EntityData<T> {
-    const ret = (entity.id ? { id: entity.id } : {}) as EntityData<T>;
+    const platform = entity.__em.getDriver().getPlatform();
+    const pk = platform.getSerializedPrimaryKeyField(entity.__primaryKeyField);
+    const ret = (entity.__primaryKey ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
 
-    if (!entity.isInitialized() && entity.id) {
+    if (!entity.isInitialized() && entity.__primaryKey) {
       return ret;
     }
 
     Object.keys(entity)
-      .filter(prop => prop !== 'id' && !prop.startsWith('_'))
+      .filter(prop => prop !== entity.__primaryKeyField && !prop.startsWith('_'))
       .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, parent || entity, isCollection)])
-      .filter(([prop, value]) => !!value)
+      .filter(([, value]) => !!value)
       .forEach(([prop, value]) => ret[prop!] = value);
 
     return ret;
@@ -36,6 +38,7 @@ export class EntityTransformer {
 
   private static processEntity<T extends IEntityType<T>>(prop: keyof T, entity: T, parent: IEntity, isCollection: boolean): T[keyof T] | undefined {
     const child = entity[prop] as IEntity;
+    const platform = child.__em.getDriver().getPlatform();
 
     if (child.isInitialized() && child.__populated && !isCollection && child !== parent) {
       const meta = MetadataStorage.getMetadata(child.constructor.name);
@@ -44,7 +47,7 @@ export class EntityTransformer {
       return child.toJSON(...args) as T[keyof T];
     }
 
-    return entity[prop].id;
+    return platform.normalizePrimaryKey(child.__primaryKey);
   }
 
   private static processCollection<T extends IEntityType<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {

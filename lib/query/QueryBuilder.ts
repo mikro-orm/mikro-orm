@@ -51,8 +51,8 @@ export class QueryBuilder {
     return this.init(QueryType.TRUNCATE);
   }
 
-  count(field = 'id', distinct = false): this {
-    this.select(field);
+  count(field?: string, distinct = false): this {
+    this.select(field || this.metadata[this.entityName].primaryKey);
     this.flags.push(QueryFlag.COUNT);
 
     if (distinct) {

@@ -3,7 +3,7 @@ import { MetadataStorage } from '../metadata';
 import { Cascade, Collection, EntityIdentifier, ReferenceType } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
-import { ChangeSet } from './ChangeSet';
+import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
 import { Utils } from '../utils';
 import { FilterQuery } from '..';
@@ -24,18 +24,19 @@ export class UnitOfWork {
   private readonly changeSets: ChangeSet<IEntity>[] = [];
   private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity>][] = [];
   private readonly metadata = MetadataStorage.getMetadata();
+  private readonly platform = this.em.getDriver().getPlatform();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap);
 
   constructor(private readonly em: EntityManager) { }
 
   addToIdentityMap(entity: IEntity): void {
-    this.identityMap[`${entity.constructor.name}-${entity.id}`] = entity;
+    this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
     this.originalEntityData[entity.__uuid] = Utils.copy(entity);
   }
 
   getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
-    const token = `${entityName}-${id}`;
+    const token = `${entityName}-${this.platform.normalizePrimaryKey(id)}`;
     return this.identityMap[token] as T;
   }
 
@@ -43,8 +44,6 @@ export class UnitOfWork {
     if (!Utils.isPrimaryKey(where)) {
       return null;
     }
-
-    where = this.em.getDriver().normalizePrimaryKey<IPrimaryKey>(where);
 
     return this.getById<T>(entityName, where);
   }
@@ -58,7 +57,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (!entity.id) {
+    if (!entity.__primaryKey) {
       this.identifierMap[entity.__uuid] = new EntityIdentifier();
     }
 
@@ -72,7 +71,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (entity.id) {
+    if (entity.__primaryKey) {
       this.removeStack.push(entity);
     }
 
@@ -108,7 +107,7 @@ export class UnitOfWork {
   }
 
   unsetIdentity(entity: IEntity): void {
-    delete this.identityMap[`${entity.constructor.name}-${entity.id}`];
+    delete this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`];
     delete this.identifierMap[entity.__uuid];
     delete this.originalEntityData[entity.__uuid];
   }
@@ -129,14 +128,14 @@ export class UnitOfWork {
 
     for (const entity of Object.values(this.removeStack)) {
       const meta = this.metadata[entity.constructor.name];
-      this.changeSets.push({ entity, delete: true, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
+      this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
     }
   }
 
   private findNewEntities<T extends IEntityType<T>>(entity: T): void {
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
 
-    if (!entity.id && !this.identifierMap[entity.__uuid]) {
+    if (!entity.__primaryKey && !this.identifierMap[entity.__uuid]) {
       this.identifierMap[entity.__uuid] = new EntityIdentifier();
     }
 
@@ -172,14 +171,11 @@ export class UnitOfWork {
   }
 
   private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
-    const meta = this.metadata[changeSet.name];
-    const pk = meta.primaryKey as keyof T;
-    const type = changeSet.entity[pk] ? (changeSet.delete ? 'Delete' : 'Update') : 'Create';
-
+    const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet);
 
-    if (!changeSet.delete) {
+    if (changeSet.type !== ChangeSetType.DELETE) {
       this.em.merge(changeSet.name, changeSet.entity);
     }
 

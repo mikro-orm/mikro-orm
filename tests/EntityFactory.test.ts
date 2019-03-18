@@ -1,3 +1,4 @@
+import { ObjectID } from 'mongodb';
 import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
@@ -17,6 +18,7 @@ describe('EntityFactory', () => {
     orm = await initORM();
     await new MetadataDiscovery(orm.em, orm.config, orm.config.getLogger()).discover();
     factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config);
+    expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
@@ -38,6 +40,7 @@ describe('EntityFactory', () => {
   test('should return reference', async () => {
     const ref = factory.createReference(Book, '5b0d19b28b21c648c2c8a600');
     expect(ref).toBeInstanceOf(Book);
+    expect(ref._id).toBeInstanceOf(ObjectID);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.title).toBeUndefined();
     expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
