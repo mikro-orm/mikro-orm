@@ -14,12 +14,21 @@ services:
     image: mysql:5.7
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3307:3306"
+      - 3307:3306
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
       - mysql:/var/lib/mysql
 
+  postgre:
+    container_name: postgre
+    image: postgres:11.2
+    ports:
+      - 5432:5432
+    volumes:
+      - postgre:/var/lib/postgresql/data
+
 volumes:
   mongo:
   mysql:
+  postgre:

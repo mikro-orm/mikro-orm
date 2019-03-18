@@ -43,7 +43,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
   async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
     const collections = this.extractManyToMany(entityName, data);
-    const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
+    const pk = this.getPrimaryKeyField(entityName);
 
     if (Object.keys(data).length === 0) {
       data[pk] = null;
@@ -133,6 +133,10 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
         await qb2.insert({ [fk1]: pk, [fk2]: item }).execute();
       }
     }
+  }
+
+  protected getPrimaryKeyField(entityName: string): string {
+    return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
   }
 
 }

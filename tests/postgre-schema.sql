@@ -11,7 +11,7 @@ CREATE TABLE author2 (
   name varchar(255) DEFAULT NULL,
   email varchar(255) DEFAULT NULL,
   born timestamp(0) DEFAULT NULL,
-  favourite_book_id int DEFAULT NULL,
+  favourite_book_id varchar(36) DEFAULT NULL,
   favourite_author_id int DEFAULT NULL,
   PRIMARY KEY (id)
 );
@@ -25,7 +25,7 @@ CREATE SEQUENCE book2_to_book_tag2_seq;
 
 CREATE TABLE book2_to_book_tag2 (
   id int check (id > 0) NOT NULL DEFAULT NEXTVAL ('book2_to_book_tag2_seq'),
-  book2_id int DEFAULT NULL,
+  book2_uuid_pk varchar(36) DEFAULT NULL,
   book_tag2_id int DEFAULT NULL,
   PRIMARY KEY (id)
 );
@@ -46,17 +46,15 @@ CREATE TABLE book_tag2 (
 
 
 DROP TABLE IF EXISTS book2;
-DROP SEQUENCE IF EXISTS book2_seq;
-
-CREATE SEQUENCE book2_seq;
 
 CREATE TABLE book2 (
-  id int check (id > 0) NOT NULL DEFAULT NEXTVAL ('book2_seq'),
+  uuid_pk varchar(36) NOT NULL,
+  created_at timestamp(3) DEFAULT NOW(),
   title varchar(255) DEFAULT NULL,
   foo varchar(255) DEFAULT NULL,
   author_id int DEFAULT NULL,
   publisher_id int DEFAULT NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (uuid_pk)
 );
 
 

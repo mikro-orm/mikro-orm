@@ -7,18 +7,18 @@ First install the module via `yarn` or `npm` and do not forget to install the da
 
 ```
 $ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2 # for mysql
-$ yarn add mikro-orm pg # for postgresql
-$ yarn add mikro-orm sqlite # for sqlite
+$ yarn add mikro-orm mysql2  # for mysql
+$ yarn add mikro-orm pg      # for postgresql
+$ yarn add mikro-orm sqlite  # for sqlite
 ```
 
 or
 
 ```
 $ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2 # for mysql
-$ npm i -s mikro-orm pg # for postgresql
-$ npm i -s mikro-orm sqlite # for sqlite
+$ npm i -s mikro-orm mysql2  # for mysql
+$ npm i -s mikro-orm pg      # for postgresql
+$ npm i -s mikro-orm sqlite  # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -77,6 +77,8 @@ const orm = await MikroORM.init({
   // ...
 });
 ```
+
+## Request context
 
 Then you will need to fork entity manager for each request so their identity maps will not 
 collide. To do so, use the `RequestContext` helper:

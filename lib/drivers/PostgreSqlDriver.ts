@@ -16,13 +16,17 @@ export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
     let sql = qb.getQuery();
 
     if (qb.type === QueryType.INSERT && Object.keys(params).length === 0) {
-      sql = sql.replace('() VALUES ()', '("id") VALUES (DEFAULT)');
+      const pk = this.getPrimaryKeyField(entityName);
+      const prop = this.metadata[entityName].properties[pk];
+      sql = sql.replace('() VALUES ()', `("${prop.fieldName}") VALUES (DEFAULT)`);
     }
 
     const res = await this.connection.execute(sql, params, 'run');
-    await this.processManyToMany(entityName, res.insertId, collections);
+    const pk = this.getPrimaryKeyField(entityName);
+    const id = res.insertId || data[pk];
+    await this.processManyToMany(entityName, id, collections);
 
-    return res.insertId;
+    return id;
   }
 
 }

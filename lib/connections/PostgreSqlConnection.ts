@@ -47,8 +47,7 @@ export class PostgreSqlConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    const file = readFileSync(path);
-    await this.execute(file.toString());
+    await this.client.query(readFileSync(path).toString());
   }
 
   private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
