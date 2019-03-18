@@ -28,16 +28,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
   /**
-   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
-   */
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T;
-
-  /**
-   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectID)
-   */
-  denormalizePrimaryKey(data: number | string): IPrimaryKey;
-
-  /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
   loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<Record<string, T[]>>;

@@ -23,7 +23,8 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
-      where = { id: where };
+      const pk = this.metadata[entityName].primaryKey;
+      where = { [pk]: where };
     }
 
     const qb = this.createQueryBuilder(entityName);
@@ -34,28 +35,33 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
   async count(entityName: string, where: any): Promise<number> {
     const qb = this.createQueryBuilder(entityName);
-    const res = await qb.count('id', true).where(where).execute('get');
+    const pk = this.metadata[entityName].primaryKey;
+    const res = await qb.count(pk, true).where(where).execute('get');
 
     return +res.count;
   }
 
   async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
     const collections = this.extractManyToMany(entityName, data);
+    const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
 
     if (Object.keys(data).length === 0) {
-      data.id = null;
+      data[pk] = null;
     }
 
     const qb = this.createQueryBuilder(entityName);
     const res = await qb.insert(data).execute('run');
-    await this.processManyToMany(entityName, res.insertId, collections);
+    const id = res.insertId || data[pk];
+    await this.processManyToMany(entityName, id, collections);
 
-    return res.insertId;
+    return id;
   }
 
   async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
+    const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
+
     if (Utils.isPrimaryKey(where)) {
-      where = { id: where };
+      where = { [pk]: where };
     }
 
     const collections = this.extractManyToMany(entityName, data);
@@ -66,14 +72,15 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
       res = await qb.update(data).where(where).execute('run');
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data.id || where)!, collections);
+    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata[entityName])!, collections);
 
     return res ? res.affectedRows : 0;
   }
 
   async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any): Promise<number> {
     if (Utils.isPrimaryKey(where)) {
-      where = { id: where };
+      const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
+      where = { [pk]: where };
     }
 
     const qb = this.createQueryBuilder(entityName);
@@ -107,6 +114,10 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
   }
 
   protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>) {
+    if (!this.metadata[entityName]) {
+      return;
+    }
+
     const props = this.metadata[entityName].properties;
     const owners = Object.keys(collections).filter(k => props[k].owner);
 

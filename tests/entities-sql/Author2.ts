@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne,
+  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder,
 } from '../../lib';
 
 import { Book2 } from './Book2';
@@ -36,7 +36,7 @@ export class Author2 extends BaseEntity2 {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book2, fk: 'author' })
+  @OneToMany({ entity: () => Book2, fk: 'author', orderBy: { createdAt: QueryOrder.ASC } })
   books: Collection<Book2>;
 
   @ManyToOne()

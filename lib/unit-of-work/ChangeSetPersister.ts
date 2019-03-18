@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { EntityProperty, IEntityType } from '../decorators';
 import { EntityIdentifier } from '../entity';
-import { ChangeSet } from './ChangeSet';
+import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { IDatabaseDriver } from '..';
 
 export class ChangeSetPersister {
@@ -24,15 +24,16 @@ export class ChangeSetPersister {
   }
 
   private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
-    const pk = this.metadata[changeSet.name].primaryKey as keyof T;
-
-    if (changeSet.delete) {
-      await this.driver.nativeDelete(changeSet.name, changeSet.entity[pk]);
-    } else if (changeSet.entity[pk]) {
-      await this.driver.nativeUpdate(changeSet.name, changeSet.entity[pk], changeSet.payload);
-    } else {
-      changeSet.entity[pk] = await this.driver.nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
-      this.identifierMap[changeSet.entity.uuid].setValue(changeSet.entity[pk]);
+    if (changeSet.type === ChangeSetType.DELETE) {
+      await this.driver.nativeDelete(changeSet.name, changeSet.entity.__primaryKey);
+    } else if (changeSet.type === ChangeSetType.UPDATE) {
+      await this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+    } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
+      await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      delete changeSet.entity.__initialized;
+    } else { // ChangeSetType.CREATE without primary key
+      changeSet.entity.__primaryKey = await this.driver.nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
+      this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey);
       delete changeSet.entity.__initialized;
     }
   }

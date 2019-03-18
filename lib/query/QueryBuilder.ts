@@ -51,8 +51,8 @@ export class QueryBuilder {
     return this.init(QueryType.TRUNCATE);
   }
 
-  count(field = 'id', distinct = false): this {
-    this.select(field);
+  count(field?: string, distinct = false): this {
+    this.select(field || this.metadata[this.entityName].primaryKey);
     this.flags.push(QueryFlag.COUNT);
 
     if (distinct) {
@@ -68,7 +68,19 @@ export class QueryBuilder {
   }
 
   orderBy(orderBy: Record<string, QueryOrder>): this {
+    orderBy = Object.assign({}, orderBy); // copy first
+
+    Object.keys(orderBy).forEach(field => {
+      if (!this.metadata[this.entityName] || !this.metadata[this.entityName].properties[field]) {
+        return;
+      }
+
+      const prop = this.metadata[this.entityName].properties[field];
+      Utils.renameKey(orderBy, field, prop.fieldName);
+    });
+
     this._orderBy = orderBy;
+
     return this;
   }
 

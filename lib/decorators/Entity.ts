@@ -3,6 +3,7 @@ import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
 import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Utils } from '../utils';
+import { QueryOrder } from '../query';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -30,10 +31,13 @@ export interface IEntity<K = number | string> {
   toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   assign(data: any): void;
-  uuid: string;
+  __uuid: string;
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
+  __primaryKey: K;
+  __primaryKeyField: string & keyof IEntity;
+  __serializedPrimaryKey: string & keyof IEntity;
 }
 
 export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;
@@ -62,6 +66,7 @@ export interface EntityProperty {
   owner: boolean;
   inversedBy: string;
   mappedBy: string;
+  orderBy?: { [field: string]: QueryOrder },
   pivotTable: string;
   joinColumn: string;
   inverseJoinColumn: string;
@@ -76,6 +81,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   collection: string;
   path: string;
   primaryKey: keyof T & string;
+  serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
   hooks: Record<string, string[]>;

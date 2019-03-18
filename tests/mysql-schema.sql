@@ -33,7 +33,7 @@ CREATE TABLE `author2` (
   `name` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `born` datetime DEFAULT NULL,
-  `favourite_book_id` int(11) DEFAULT NULL,
+  `favourite_book_id` varchar(36) DEFAULT NULL,
   `favourite_author_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS `book2_to_book_tag2`;
 
 CREATE TABLE `book2_to_book_tag2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `book2_id` int(11) DEFAULT NULL,
+  `book2_uuid_pk` varchar(36) DEFAULT NULL,
   `book_tag2_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -73,12 +73,13 @@ CREATE TABLE `book_tag2` (
 DROP TABLE IF EXISTS `book2`;
 
 CREATE TABLE `book2` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `uuid_pk` varchar(36) NOT NULL,
+  `created_at` datetime(3) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `foo` varchar(255) DEFAULT NULL,
   `author_id` int(11) DEFAULT NULL,
   `publisher_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`uuid_pk`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

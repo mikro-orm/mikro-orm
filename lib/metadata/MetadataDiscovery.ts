@@ -13,6 +13,7 @@ export class MetadataDiscovery {
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
   private readonly cache = this.config.getCacheAdapter();
+  private readonly platform = this.em.getDriver().getPlatform();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
@@ -31,7 +32,11 @@ export class MetadataDiscovery {
       await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
     }
 
-    this.discovered.forEach(meta => this.processEntity(meta));
+    // ignore base entities (not annotated with @Entity)
+    const filtered = this.discovered.filter(meta => meta.name);
+    filtered.forEach(meta => this.defineBaseEntityProperties(meta));
+    filtered.forEach(meta => this.processEntity(meta));
+
     const diff = Date.now() - startTime;
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
 
@@ -90,7 +95,6 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
     this.saveToCache(meta, entity);
     this.discovered.push(meta);
   }
@@ -107,7 +111,7 @@ export class MetadataDiscovery {
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE && !prop.fk) {
-      prop.fk = this.namingStrategy.referenceColumnName();
+      prop.fk = meta.properties[meta.primaryKey].fieldName;
     }
 
     if (!prop.fieldName) {
@@ -119,7 +123,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this.initOneToManyFields(prop);
+      this.initOneToManyFields(meta, prop);
     }
   }
 
@@ -138,39 +142,39 @@ export class MetadataDiscovery {
       prop.pivotTable = this.namingStrategy.joinTableName(meta.name, prop.type, prop.name);
     }
 
+    if (!prop.referenceColumnName) {
+      prop.referenceColumnName = meta.properties[meta.primaryKey].fieldName;
+    }
+
     if (!prop.inverseJoinColumn) {
-      prop.inverseJoinColumn = this.namingStrategy.joinKeyColumnName(prop.type);
+      const meta2 = this.metadata[prop.type];
+      const referenceColumnName = meta2.properties[meta2.primaryKey].fieldName;
+      prop.inverseJoinColumn = this.namingStrategy.joinKeyColumnName(prop.type, referenceColumnName);
     }
 
     if (!prop.joinColumn) {
-      prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.name);
-    }
-
-    if (!prop.referenceColumnName) {
-      prop.referenceColumnName = this.namingStrategy.referenceColumnName();
+      prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.name, prop.referenceColumnName);
     }
   }
 
-  private initOneToManyFields(prop: EntityProperty): void {
+  private initOneToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.joinColumn && prop.reference === ReferenceType.ONE_TO_MANY) {
       prop.joinColumn = this.namingStrategy.joinColumnName(prop.name);
     }
 
     if (!prop.referenceColumnName) {
-      prop.referenceColumnName = this.namingStrategy.referenceColumnName();
+      prop.referenceColumnName = meta.properties[meta.primaryKey].fieldName;
     }
   }
 
   private processEntity(meta: EntityMetadata): void {
-    if (!meta.name) {
-      return; // ignore base entities (not annotated with @Entity)
-    }
-
     this.defineBaseEntityProperties(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.name);
+    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+    meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
     EntityHelper.decorate(meta, this.em);
 
-    if (this.em.getDriver().getPlatform().usesPivotTable()) {
+    if (this.platform.usesPivotTable()) {
       Object.values(meta.properties).forEach(prop => this.definePivotTableEntities(meta, prop));
     }
   }
@@ -180,7 +184,7 @@ export class MetadataDiscovery {
       this.metadata[prop.pivotTable] = {
         name: prop.pivotTable,
         collection: prop.pivotTable,
-        primaryKey: prop.referenceColumnName,
+        primaryKey: this.namingStrategy.referenceColumnName(),
         properties: {
           [meta.name]: this.definePivotProperty(prop, meta.name),
           [prop.type]: this.definePivotProperty(prop, prop.type),
@@ -190,13 +194,21 @@ export class MetadataDiscovery {
   }
 
   private definePivotProperty(prop: EntityProperty, name: string): EntityProperty {
-    const ret = { name, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
-    ret.referenceColumnName = prop.referenceColumnName;
+    const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
 
     if (name === prop.type) {
+      const meta = this.metadata[name];
+      const prop2 = meta.properties[meta.primaryKey];
+
+      if (!prop2.fieldName) {
+        this.initFieldName(prop2);
+      }
+
+      ret.referenceColumnName = prop2.fieldName;
       ret.joinColumn = prop.inverseJoinColumn;
       ret.inverseJoinColumn = prop.joinColumn;
     } else {
+      ret.referenceColumnName = prop.referenceColumnName;
       ret.joinColumn = prop.joinColumn;
       ret.inverseJoinColumn = prop.inverseJoinColumn;
     }

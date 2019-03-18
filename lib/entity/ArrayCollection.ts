@@ -28,7 +28,15 @@ export class ArrayCollection<T extends IEntityType<T>> {
     });
   }
 
-  getIdentifiers(field = 'id'): IPrimaryKey[] {
+  getIdentifiers(field?: string): IPrimaryKey[] {
+    const items = this.getItems();
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    field = field || this.items[0].__primaryKeyField;
+
     return this.getItems().map(i => i[field as keyof T]);
   }
 
@@ -51,10 +59,10 @@ export class ArrayCollection<T extends IEntityType<T>> {
   remove(...items: T[]): void {
     for (const item of items) {
       this.handleInverseSide(item, 'remove');
-      const idx = this.items.findIndex(i => i.id === item.id);
+      const idx = this.items.findIndex(i => i.__serializedPrimaryKey === item.__serializedPrimaryKey);
 
       if (idx !== -1) {
-        delete this[this.items.length]; // remove last item
+        delete this[this.items.length - 1]; // remove last item
         this.items.splice(idx, 1);
         Object.assign(this, this.items); // reassign array access
       }
@@ -66,7 +74,12 @@ export class ArrayCollection<T extends IEntityType<T>> {
   }
 
   contains(item: T): boolean {
-    return !!this.items.find(i => i === item || !!(i.id && item.id && i.id === item.id));
+    return !!this.items.find(i => {
+      const objectIdentity = i === item;
+      const primaryKeyIdentity = i.__primaryKey && item.__primaryKey && i.__serializedPrimaryKey === item.__serializedPrimaryKey;
+
+      return !!(objectIdentity || primaryKeyIdentity);
+    });
   }
 
   count(): number {
@@ -83,7 +96,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
     }
   }
 
-  protected handleInverseSide(item: T, method: string): void {
+  protected handleInverseSide(item: T, method: 'add' | 'remove'): void {
     if (this.property.owner && this.property.inversedBy && item[this.property.inversedBy as keyof T].isInitialized()) {
       item[this.property.inversedBy as keyof T][method](this.owner);
     }

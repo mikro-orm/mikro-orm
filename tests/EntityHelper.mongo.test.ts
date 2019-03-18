@@ -95,7 +95,7 @@ describe('EntityAssignerMongo', () => {
     EntityAssigner.assign(book, { tags: [] });
     expect(book.tags.getIdentifiers()).toMatchObject([]);
     EntityAssigner.assign(book, { tags: [tag1.id, tag3.id] });
-    expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
+    expect(book.tags.getIdentifiers('id')).toMatchObject([tag1.id, tag3.id]);
     EntityAssigner.assign(book, { tags: [tag2] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(() => EntityAssigner.assign(book, { tags: [{ foo: 'bar' }] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [{"foo":"bar"}]`);
@@ -109,6 +109,9 @@ describe('EntityAssignerMongo', () => {
 
     author.id = '5b0d19b28b21c648c2c8a600';
     expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
+
+    author.id = '';
+    expect(author._id).toBeNull();
   });
 
   afterAll(async () => orm.close(true));

@@ -456,7 +456,7 @@ describe('EntityManagerSqlite', () => {
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tag1);
+    book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persist(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;

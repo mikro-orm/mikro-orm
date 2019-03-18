@@ -8,12 +8,15 @@ import { ReferenceType } from './enums';
 
 export class EntityAssigner {
 
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>): void {
-    const metadata = MetadataStorage.getMetadata();
-    const meta = metadata[entity.constructor.name];
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties = false): void {
+    const meta = MetadataStorage.getMetadata(entity.constructor.name);
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
+      if (onlyProperties && !props[prop]) {
+        return;
+      }
+
       const value = data[prop as keyof EntityData<T>];
 
       if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && value) {
@@ -40,10 +43,11 @@ export class EntityAssigner {
       return;
     }
 
-    const id = Utils.extractPK(value);
+    const meta = MetadataStorage.getMetadata(entity.constructor.name);
+    const id = Utils.extractPK(value, meta);
 
     if (id) {
-      const normalized = em.getDriver().normalizePrimaryKey(id);
+      const normalized = em.getDriver().getPlatform().normalizePrimaryKey(id);
       entity[prop.name as keyof T] = em.getReference(prop.type, normalized);
       return;
     }
@@ -60,7 +64,7 @@ export class EntityAssigner {
       }
 
       if (Utils.isPrimaryKey(item)) {
-        const id = em.getDriver().normalizePrimaryKey(item);
+        const id = em.getDriver().getPlatform().normalizePrimaryKey(item);
         return em.getReference(prop.type, id);
       }
 

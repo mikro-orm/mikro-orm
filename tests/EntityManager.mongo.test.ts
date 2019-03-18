@@ -77,8 +77,9 @@ describe('EntityManagerMongo', () => {
     expect(jon).toBe(await authorRepository.findOne(jon._id));
 
     // serialization test
-    const o = jon.toJSON();
+    const o = jon.toJSON(false);
     expect(o).toMatchObject({
+      id: jon.id,
       createdAt: jon.createdAt,
       updatedAt: jon.updatedAt,
       books: [
@@ -91,11 +92,11 @@ describe('EntityManagerMongo', () => {
       name: 'Jon Snow',
       foo: 'bar',
     });
-    expect(jon.toJSON()).toEqual(o);
+    expect(jon.toJSON(false)).toEqual(o);
     expect(jon.books.getIdentifiers('_id')).toBeInstanceOf(Array);
     expect(jon.books.getIdentifiers('_id')[0]).toBeInstanceOf(ObjectID);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
-    expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
+    expect(typeof jon.books.getIdentifiers('id')[0]).toBe('string');
 
     for (const author of authors) {
       expect(author.books).toBeInstanceOf(Collection);
@@ -198,7 +199,7 @@ describe('EntityManagerMongo', () => {
 
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
-    expect(() => orm.em.merge(Author, author)).toThrowError('You cannot merge entity without id!');
+    expect(() => orm.em.merge(Author, author)).toThrowError('You cannot merge entity without identifier!');
   });
 
   test('fork', async () => {
@@ -783,10 +784,10 @@ describe('EntityManagerMongo', () => {
 
     const ent = (await repo.findOne(publisher.id))!;
     await expect(ent.tests.count()).toBe(3);
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
 
     await ent.tests.init();
-    await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+    await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {
@@ -833,6 +834,12 @@ describe('EntityManagerMongo', () => {
 
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
+
+    const res7 = await orm.em.nativeInsert('test', { name: 'native name 1' });
+    expect(res7).toBeInstanceOf(ObjectID);
+
+    const res8 = await orm.em.nativeDelete('test', { name: 'native name 1' });
+    expect(res8).toBe(1);
   });
 
   test('1:m collection is initialized when entity loaded from EM', async () => {

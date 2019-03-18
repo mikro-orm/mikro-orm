@@ -1,4 +1,5 @@
-import { Collection, Configuration, EntityManager, MikroORM, Utils } from '../lib';
+import { v4 } from 'uuid';
+import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Utils } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
@@ -44,11 +45,11 @@ describe('EntityManagerMySql', () => {
     const driver = orm.em.getDriver<MySqlDriver>();
     expect(driver instanceof MySqlDriver).toBe(true);
     expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
-    expect(await driver.nativeInsert(Book2.name, { tags: [1] })).not.toBeNull();
+    expect(await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [1] })).not.toBeNull();
     const res = await driver.getConnection().execute('SELECT 1 as count');
     expect(res[0]).toEqual({ count: 1 });
-    expect(driver.denormalizePrimaryKey(1)).toBe(1);
-    expect(driver.denormalizePrimaryKey('1')).toBe('1');
+    expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
+    expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     expect(await driver.find(BookTag2.name, { books: { $in: [1] } })).not.toBeNull();
   });
 
@@ -186,11 +187,15 @@ describe('EntityManagerMySql', () => {
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
+    // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
     const book1 = new Book2('My Life on The Wall, part 1', author);
+    book1.createdAt = new Date(Date.now() + 1);
     book1.publisher = publisher;
     const book2 = new Book2('My Life on The Wall, part 2', author);
+    book2.createdAt = new Date(Date.now() + 2);
     book2.publisher = publisher;
     const book3 = new Book2('My Life on The Wall, part 3', author);
+    book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = publisher;
 
     const repo = orm.em.getRepository(Book2);
@@ -210,7 +215,7 @@ describe('EntityManagerMySql', () => {
     const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll(['author']);
     expect(books[0].author.isInitialized()).toBe(true);
-    expect(await authorRepository.findOne({ favouriteBook: bible.id })).not.toBe(null);
+    expect(await authorRepository.findOne({ favouriteBook: bible.uuid })).not.toBe(null);
     orm.em.clear();
 
     const noBooks = await booksRepository.find({ title: 'not existing' }, ['author']);
@@ -248,7 +253,7 @@ describe('EntityManagerMySql', () => {
     });
     expect(jon.toJSON()).toEqual(o);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
-    expect(typeof jon.books.getIdentifiers()[0]).toBe('number');
+    expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
 
     for (const author of authors) {
       expect(author.books).toBeInstanceOf(Collection);
@@ -285,7 +290,7 @@ describe('EntityManagerMySql', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0].id);
+    await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
@@ -354,7 +359,7 @@ describe('EntityManagerMySql', () => {
     const json = publisher.toJSON().books;
 
     for (const book of publisher.books) {
-      expect(json.find((b: Book2) => b.id === book.id)).toMatchObject({
+      expect(json.find((b: Book2) => b.uuid === book.uuid)).toMatchObject({
         author: book.author.id,
       });
     }
@@ -453,7 +458,7 @@ describe('EntityManagerMySql', () => {
     await tags[0].books.init();
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book2);
-    expect(tags[0].books.getItems()[0].id).toBeDefined();
+    expect(tags[0].books.getItems()[0].uuid).toBeDefined();
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
     expect(tags[0].books.isInitialized()).toBe(true);
     const old = tags[0];
@@ -481,14 +486,15 @@ describe('EntityManagerMySql', () => {
     book.tags.remove(tag1);
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tag1, new BookTag2('fresh'));
+    book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
+    book.tags.add(new BookTag2('fresh'));
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
     expect(book.tags.count()).toBe(3);
 
     // contains
@@ -502,7 +508,7 @@ describe('EntityManagerMySql', () => {
     book.tags.removeAll();
     await orm.em.persist(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -563,12 +569,18 @@ describe('EntityManagerMySql', () => {
     const book1 = new Book2('My Life on The Wall, part 1', author);
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
+
+    // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
+    book1.createdAt = new Date(Date.now() + 1);
     book1.publisher = new Publisher2('B1 publisher');
     book1.publisher.tests.add(Test2.create('t11'), Test2.create('t12'));
+    book2.createdAt = new Date(Date.now() + 2);
     book2.publisher = new Publisher2('B2 publisher');
     book2.publisher.tests.add(Test2.create('t21'), Test2.create('t22'));
+    book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = new Publisher2('B3 publisher');
     book3.publisher.tests.add(Test2.create('t31'), Test2.create('t32'));
+
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -598,7 +610,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author']);
+    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { createdAt: QueryOrder.ASC });
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
     expect(books[0].isInitialized()).toBe(true);
@@ -715,6 +727,12 @@ describe('EntityManagerMySql', () => {
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
+    const res6 = await orm.em.nativeUpdate('author2', { name: 'new native name' }, { name: 'native name 3' });
+    expect(res6).toBe(1);
+
+    const res7 = await orm.em.nativeDelete('author2', res4);
+    expect(res7).toBe(1);
+
     await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by MySqlDriver driver');
   });
 
@@ -726,8 +744,9 @@ describe('EntityManagerMySql', () => {
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);
     const diff = Utils.diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
-    expect(typeof diff.favouriteBook).toBe('number');
+    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
+    expect(typeof diff.favouriteBook).toBe('string');
+    expect(diff.favouriteBook).toBe(book.uuid);
   });
 
   test('self referencing (2 step)', async () => {
@@ -768,9 +787,9 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls.length).toBe(8);
     expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
     expect(mock.mock.calls[1][0]).toMatch('INSERT INTO `author2` (`name`, `email`, `created_at`, `updated_at`, `terms_accepted`) VALUES (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO `book2` (`title`, `author_id`) VALUES (?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('UPDATE `author2` SET `favourite_author_id` = ?, `updated_at` = ? WHERE `id` = ?');
     expect(mock.mock.calls[6][0]).toMatch('COMMIT');
     expect(mock.mock.calls[7][0]).toMatch('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`id` = ?');
