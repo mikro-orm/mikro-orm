@@ -79,8 +79,7 @@ export class MySqlConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    const file = readFileSync(path);
-    await this.query(file.toString());
+    await this.connection.query(readFileSync(path).toString());
   }
 
   private async query(sql: string): Promise<void> {

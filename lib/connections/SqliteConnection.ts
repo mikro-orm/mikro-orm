@@ -71,8 +71,7 @@ export class SqliteConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    const file = readFileSync(path);
-    await this.connection.exec(file.toString());
+    await this.connection.exec(readFileSync(path).toString());
   }
 
   private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
