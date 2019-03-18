@@ -13,7 +13,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: Record<string, QueryOrder>, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
-    const res = await this.connection.find<T>(this.metadata[entityName].collection, where, orderBy, limit, offset);
+    const res = await this.connection.find<T>(this.getCollectionName(entityName), where, orderBy, limit, offset);
 
     return res.map((r: T) => this.mapResult(r, this.metadata[entityName]));
   }
@@ -24,19 +24,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
-    const res = await this.connection.find<T>(this.metadata[entityName].collection, where, {}, 1);
+    const res = await this.connection.find<T>(this.getCollectionName(entityName), where, {}, 1);
 
     return this.mapResult(res[0], this.metadata[entityName]);
   }
 
   async count<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>): Promise<number> {
     where = this.renameFields(entityName, where);
-    return this.connection.countDocuments<T>(this.metadata[entityName].collection, where);
+    return this.connection.countDocuments<T>(this.getCollectionName(entityName), where);
   }
 
   async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<ObjectID> {
     data = this.renameFields(entityName, data);
-    const res = await this.connection.insertOne<EntityData<T>>(this.metadata[entityName].collection, data);
+    const res = await this.connection.insertOne<EntityData<T>>(this.getCollectionName(entityName), data);
 
     return res.insertedId;
   }
@@ -48,7 +48,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
     data = this.renameFields(entityName, data);
-    const res = await this.connection.updateMany<T>(this.metadata[entityName].collection, where, data);
+    const res = await this.connection.updateMany<T>(this.getCollectionName(entityName), where, data);
 
     return res.modifiedCount;
   }
@@ -59,25 +59,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
-    const res = await this.connection.deleteMany<T>(this.metadata[entityName].collection, where);
+    const res = await this.connection.deleteMany<T>(this.getCollectionName(entityName), where);
 
     return res.deletedCount || 0;
   }
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
-    return this.connection.aggregate(this.metadata[entityName].collection, pipeline);
-  }
-
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectID): T {
-    if (data instanceof ObjectID) {
-      return data.toHexString() as unknown as T;
-    }
-
-    return data as unknown as T;
-  }
-
-  denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return new ObjectID(data);
+    return this.connection.aggregate(this.getCollectionName(entityName), pipeline);
   }
 
   private renameFields(entityName: string, data: any): any {
@@ -96,6 +84,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     });
 
     return data;
+  }
+
+  private getCollectionName(entityName: string): string {
+    return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
   }
 
 }
