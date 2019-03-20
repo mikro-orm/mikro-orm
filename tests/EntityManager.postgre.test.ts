@@ -1,63 +1,63 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Utils } from '../lib';
+import { Collection, Configuration, EntityManager, MikroORM, Utils } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
+import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { Logger } from '../lib/utils';
 
 /**
- * @class EntityManagerMySqlTest
+ * @class EntityManagerPostgreTest
  */
-describe('EntityManagerMySql', () => {
+describe('EntityManagerPostgre', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeAll(async () => orm = await initORMPostgreSql());
+  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
 
   test('isConnected()', async () => {
-    expect(await orm.isConnected()).toBe(true);
+    await expect(orm.isConnected()).resolves.toBe(true);
     await orm.close(true);
-    expect(await orm.isConnected()).toBe(false);
+    await expect(orm.isConnected()).resolves.toBe(false);
     await orm.connect();
-    expect(await orm.isConnected()).toBe(true);
+    await expect(orm.isConnected()).resolves.toBe(true);
   });
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
       user: 'user',
       logger: jest.fn(),
     } as any, false);
-    const driver = new MySqlDriver(config);
+    const driver = new PostgreSqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
       database: 'db_name',
       host: '127.0.0.10',
       password: 'secret',
-      port: 3308,
+      port: 1234,
       user: 'user',
     });
   });
 
-  test('should return mysql driver', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
-    expect(driver instanceof MySqlDriver).toBe(true);
-    expect(await driver.findOne(Book2.name, { foo: 'bar' })).toBeNull();
-    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [1] })).insertId).not.toBeNull();
+  test('should return postgre driver', async () => {
+    const driver = orm.em.getDriver<PostgreSqlDriver>();
+    expect(driver).toBeInstanceOf(PostgreSqlDriver);
+    await expect(driver.findOne(Book2.name, { foo: 'bar' })).resolves.toBeNull();
+    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), tags: [1] })).resolves.not.toBeNull();
     const res = await driver.getConnection().execute('SELECT 1 as count');
     expect(res[0]).toEqual({ count: 1 });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    expect(await driver.find(BookTag2.name, { books: { $in: [1] } })).not.toBeNull();
+    await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
-    const err1 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)\n with params: ["bar"]`;
+    const driver = orm.em.getDriver<PostgreSqlDriver>();
+    const err1 = `relation "not_existing" does not exist\n in query: INSERT INTO "not_existing" ("foo") VALUES ($1)\n with params: ["bar"]`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: DELETE FROM \`not_existing\``;
+    const err2 = `relation "not_existing" does not exist\n in query: DELETE FROM "not_existing"`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -68,32 +68,7 @@ describe('EntityManagerMySql', () => {
     await repo.persist(author);
     await expect(repo.find(author)).rejects.toThrowError('Author2 entity provided in search condition. Please provide identifier instead.');
     await expect(repo.find({ author })).rejects.toThrowError(`Author2 entity provided in search condition in field 'author'. Please provide identifier instead.`);
-    expect(await repo.findOne({ termsAccepted: false })).toBeNull();
-  });
-
-  test('should work with boolean values', async () => {
-    const repo = orm.em.getRepository(Author2);
-    const author = new Author2('name', 'email');
-    await repo.persist(author);
-    expect(author.termsAccepted).toBe(false);
-    author.termsAccepted = true;
-    await repo.persist(author);
-    expect(author.termsAccepted).toBe(true);
-    orm.em.clear();
-
-    const a1 = await repo.findOne({ termsAccepted: false });
-    expect(a1).toBeNull();
-    const a2 = (await repo.findOne({ termsAccepted: true }))!;
-    expect(a2).not.toBeNull();
-    a2.termsAccepted = false;
-    await repo.persist(a2);
-    orm.em.clear();
-
-    const a3 = (await repo.findOne({ termsAccepted: false }))!;
-    expect(a3).not.toBeNull();
-    expect(a3.termsAccepted).toBe(false);
-    const a4 = await repo.findOne({ termsAccepted: true });
-    expect(a4).toBeNull();
+    await expect(repo.findOne({ termsAccepted: false })).resolves.toBeNull();
   });
 
   test('transactions', async () => {
@@ -133,27 +108,26 @@ describe('EntityManagerMySql', () => {
     }
   });
 
-  test('nested transactions', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+  test('nested transactions with save-points', async () => {
+    await orm.em.transactional(async em => {
+      const driver = em.getDriver();
+      const god1 = new Author2('God1', 'hello@heaven.god');
+      await driver.beginTransaction();
+      await em.persist(god1);
+      await driver.rollback();
+      const res1 = await em.findOne(Author2, { name: 'God1' });
+      expect(res1).toBeNull();
 
-    // start outer transaction
-    const transaction = orm.em.transactional(async em => {
-      // do stuff inside inner transaction
-      await em.transactional(async em2 => {
-        await em2.persist(new Author2('God', 'hello@heaven.god'), false);
-      });
+      await driver.beginTransaction();
+      const god2 = new Author2('God2', 'hello@heaven.god');
+      await em.persist(god2);
+      await driver.commit();
+      const res2 = await em.findOne(Author2, { name: 'God2' });
+      expect(res2).not.toBeNull();
     });
-
-    // try to commit the outer transaction
-    await expect(transaction).resolves.toBeUndefined();
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('[query-logger] START TRANSACTION');
-    expect(mock.mock.calls[2][0]).toMatch('[query-logger] COMMIT');
   });
 
-  test('nested transaction rollback will rollback the outer one as well', async () => {
+  test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.getConnection(), { logger });
@@ -162,15 +136,22 @@ describe('EntityManagerMySql', () => {
     const transaction = orm.em.transactional(async em => {
       // do stuff inside inner transaction and rollback
       await em.beginTransaction();
-      await em.persist(new Author2('God', 'hello@heaven.god'), false);
+      await em.persist(new Author2('God', 'hello@heaven.god'));
       await em.rollback();
+
+      await em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
     });
 
     // try to commit the outer transaction
-    await expect(transaction).rejects.toThrowError('Transaction commit failed because the transaction has been marked for rollback only');
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('[query-logger] START TRANSACTION');
-    expect(mock.mock.calls[2][0]).toMatch('[query-logger] ROLLBACK');
+    await expect(transaction).resolves.toBeUndefined();
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
+    expect(mock.mock.calls[1][0]).toMatch('SAVEPOINT PostgreSqlDriver_2');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO "author2" ("name", "email", "created_at", "updated_at", "terms_accepted") VALUES ($1, $2, $3, $4, $5) RETURNING "id"');
+    expect(mock.mock.calls[3][0]).toMatch('ROLLBACK TO SAVEPOINT PostgreSqlDriver_2');
+    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO "author2" ("name", "email", "created_at", "updated_at", "terms_accepted") VALUES ($1, $2, $3, $4, $5) RETURNING "id"');
+    expect(mock.mock.calls[5][0]).toMatch('[query-logger] COMMIT');
+    await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
   test('should load entities', async () => {
@@ -187,15 +168,11 @@ describe('EntityManagerMySql', () => {
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
-    // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
     const book1 = new Book2('My Life on The Wall, part 1', author);
-    book1.createdAt = new Date(Date.now() + 1);
     book1.publisher = publisher;
     const book2 = new Book2('My Life on The Wall, part 2', author);
-    book2.createdAt = new Date(Date.now() + 2);
     book2.publisher = publisher;
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = publisher;
 
     const repo = orm.em.getRepository(Book2);
@@ -215,7 +192,7 @@ describe('EntityManagerMySql', () => {
     const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll(['author']);
     expect(books[0].author.isInitialized()).toBe(true);
-    expect(await authorRepository.findOne({ favouriteBook: bible.uuid })).not.toBe(null);
+    await expect(authorRepository.findOne({ favouriteBook: bible.uuid })).resolves.not.toBe(null);
     orm.em.clear();
 
     const noBooks = await booksRepository.find({ title: 'not existing' }, ['author']);
@@ -224,7 +201,7 @@ describe('EntityManagerMySql', () => {
 
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']))!;
     const authors = await authorRepository.findAll(['books', 'favouriteBook']);
-    expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
+    await expect(authorRepository.findOne({ email: 'not existing' })).resolves.toBeNull();
 
     // count test
     const count = await authorRepository.count();
@@ -254,6 +231,7 @@ describe('EntityManagerMySql', () => {
     expect(jon.toJSON()).toEqual(o);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
     expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
+    expect(jon.books.getIdentifiers()[0]).toBe(book1.uuid);
 
     for (const author of authors) {
       expect(author.books).toBeInstanceOf(Collection);
@@ -490,8 +468,7 @@ describe('EntityManagerMySql', () => {
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
-    book.tags.add(new BookTag2('fresh'));
+    book.tags.add(tag1, new BookTag2('fresh'));
     await orm.em.persist(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
@@ -569,18 +546,12 @@ describe('EntityManagerMySql', () => {
     const book1 = new Book2('My Life on The Wall, part 1', author);
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
-
-    // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
-    book1.createdAt = new Date(Date.now() + 1);
     book1.publisher = new Publisher2('B1 publisher');
     book1.publisher.tests.add(Test2.create('t11'), Test2.create('t12'));
-    book2.createdAt = new Date(Date.now() + 2);
     book2.publisher = new Publisher2('B2 publisher');
     book2.publisher.tests.add(Test2.create('t21'), Test2.create('t22'));
-    book3.createdAt = new Date(Date.now() + 3);
     book3.publisher = new Publisher2('B3 publisher');
     book3.publisher.tests.add(Test2.create('t31'), Test2.create('t32'));
-
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -610,7 +581,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { createdAt: QueryOrder.ASC });
+    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author']);
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
     expect(books[0].isInitialized()).toBe(true);
@@ -727,13 +698,12 @@ describe('EntityManagerMySql', () => {
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
-    const res6 = await orm.em.nativeUpdate('author2', { name: 'new native name' }, { name: 'native name 3' });
-    expect(res6).toBe(1);
+    const b = orm.em.create(Book2, { uuid: v4(), title: 'native name 2' }); // do not provide createdAt, default value from DB will be used
+    await orm.em.persist(b);
+    expect(b.createdAt).toBeDefined();
+    expect(b.createdAt).toBeInstanceOf(Date);
 
-    const res7 = await orm.em.nativeDelete('author2', res4);
-    expect(res7).toBe(1);
-
-    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by MySqlDriver driver');
+    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by PostgreSqlDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {
@@ -786,13 +756,13 @@ describe('EntityManagerMySql', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(8);
     expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
-    expect(mock.mock.calls[1][0]).toMatch('INSERT INTO `author2` (`name`, `email`, `created_at`, `updated_at`, `terms_accepted`) VALUES (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[5][0]).toMatch('UPDATE `author2` SET `favourite_author_id` = ?, `updated_at` = ? WHERE `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('INSERT INTO "author2" ("name", "email", "created_at", "updated_at", "terms_accepted") VALUES ($1, $2, $3, $4, $5)');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO "book2" ("title", "uuid_pk", "created_at", "author_id") VALUES ($1, $2, $3, $4)');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO "book2" ("title", "uuid_pk", "created_at", "author_id") VALUES ($1, $2, $3, $4)');
+    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO "book2" ("title", "uuid_pk", "created_at", "author_id") VALUES ($1, $2, $3, $4)');
+    expect(mock.mock.calls[5][0]).toMatch('UPDATE "author2" SET "favourite_author_id" = $1, "updated_at" = $2 WHERE "id" = $3');
     expect(mock.mock.calls[6][0]).toMatch('COMMIT');
-    expect(mock.mock.calls[7][0]).toMatch('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`id` = ?');
+    expect(mock.mock.calls[7][0]).toMatch('SELECT "e0".* FROM "author2" AS "e0" WHERE "e0"."id" = $1');
   });
 
   test('EM supports smart search conditions', async () => {

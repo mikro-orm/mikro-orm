@@ -23,6 +23,14 @@ export abstract class Platform {
     return '"';
   }
 
+  getParameterPlaceholder(index?: number): string {
+    return '?';
+  }
+
+  usesReturningStatement(): boolean {
+    return false;
+  }
+
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
    */

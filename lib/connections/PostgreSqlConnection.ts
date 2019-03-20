@@ -1,29 +1,32 @@
-import * as sqlite from 'sqlite';
-import { Database } from 'sqlite';
+import { Client } from 'pg';
 import { readFileSync } from 'fs';
-
 import { Connection, QueryResult } from './Connection';
 import { EntityData, IEntity } from '../decorators';
 
-export class SqliteConnection extends Connection {
+export class PostgreSqlConnection extends Connection {
 
-  protected client: SqliteDatabase;
+  protected client: Client;
 
   async connect(): Promise<void> {
-    this.client = await sqlite.open(this.config.get('dbName')) as SqliteDatabase;
-    await this.client.exec('PRAGMA foreign_keys = ON');
+    this.client = new Client(this.getConnectionOptions());
+    await this.client.connect();
   }
 
   async close(force?: boolean): Promise<void> {
-    await this.client.close();
+    await this.client.end();
   }
 
   async isConnected(): Promise<boolean> {
-    return this.client['driver']['open'];
+    try {
+      await this.client.query('SELECT 1');
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async beginTransaction(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'BEGIN', [], 'run');
+    await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'START TRANSACTION', [], 'run');
   }
 
   async commit(savepoint?: string): Promise<void> {
@@ -35,48 +38,32 @@ export class SqliteConnection extends Connection {
   }
 
   getDefaultClientUrl(): string {
-    return '';
+    return 'postgre://postgres@127.0.0.1:5432';
   }
 
   async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
-    params = params.map(p => {
-      if (p instanceof Date) {
-        p = p.toISOString();
-      }
-
-      if (typeof p === 'boolean') {
-        p = +p;
-      }
-
-      return p;
-    });
-
-    const res = await this.executeQuery(query, params, async () => {
-      const statement = await this.client.prepare(query);
-      const result = await statement[method](...params);
-      await statement.finalize();
-
-      return result;
-    });
-
+    const res = await this.executeQuery(query, params, () => this.client.query(query, params));
     return this.transformResult(res, method);
   }
 
   async loadFile(path: string): Promise<void> {
-    await this.client.exec(readFileSync(path).toString());
+    await this.client.query(readFileSync(path).toString());
   }
 
   private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
+    if (method === 'get') {
+      return res.rows[0];
+    }
+
     if (method === 'run') {
       return {
-        affectedRows: res.changes,
-        insertId: res.lastID,
+        affectedRows: res.rowCount || 0,
+        insertId: res.rows[0] ? res.rows[0].id : 0,
+        row: res.rows[0],
       };
     }
 
-    return res;
+    return res.rows;
   }
 
 }
-
-export type SqliteDatabase = Database & { driver: { open: boolean } };

@@ -1,6 +1,5 @@
 # TODO list
 
-- postgres driver
 - schema generator for SQL drivers
 - single table inheritance
 - implement transactions in mongo driver

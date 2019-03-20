@@ -112,7 +112,7 @@ export class QueryBuilderHelper {
   }
 
   processJoins(leftJoins: Record<string, [string, string, string, string, string]>): string {
-    return Object.values(leftJoins).map(([table, alias, column, joinColumn, pk]) => {
+    return Object.values(leftJoins).map(([table, alias, column, , pk]) => {
       return ` LEFT JOIN ${this.wrap(table)} AS ${this.wrap(alias)} ON ${this.wrap(this.alias)}.${this.wrap(pk)} = ${this.wrap(alias)}.${this.wrap(column)}`;
     }).join('');
   }
@@ -204,6 +204,25 @@ export class QueryBuilderHelper {
     }
 
     return pagination;
+  }
+
+  finalize(type: QueryType, sql: string, meta?: EntityMetadata): string {
+    let append = '';
+    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement();
+
+    if (useReturningStatement && meta) {
+      const returningProps = Object.values(meta.properties).filter(prop => prop.primary || prop.default);
+      append = returningProps.length > 0 ? ` RETURNING ${returningProps.map(prop => this.wrap(prop.fieldName)).join(', ')}` : '';
+    }
+
+    if (this.platform.getParameterPlaceholder() === '?') {
+      return sql + append;
+    }
+
+    let index = 1;
+    return sql.replace(/(\?)/g, () => {
+      return this.platform.getParameterPlaceholder(index++);
+    }) + append;
   }
 
   private processValue(value: any): string | undefined {

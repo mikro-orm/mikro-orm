@@ -1,7 +1,7 @@
 import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
-import { Connection } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections/Connection';
 import { Configuration, Utils } from '../utils';
 import { QueryOrder } from '../query';
 import { Platform } from '../platforms/Platform';
@@ -21,11 +21,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
 
-  abstract async nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<IPrimaryKey>;
+  abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 
-  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<number>;
+  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
 
-  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<number>;
+  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<QueryResult>;
 
   abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
@@ -124,6 +124,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   getPlatform(): Platform {
     return this.platform;
+  }
+
+  protected getPrimaryKeyField(entityName: string): string {
+    return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
   }
 
   private async runTransaction(method: 'beginTransaction' | 'commit' | 'rollback'): Promise<void> {

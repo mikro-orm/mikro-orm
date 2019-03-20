@@ -9,6 +9,7 @@ node_js:
 services:
   - mongodb
   - mysql
+  - postgresql
 
 cache:
   directories:
@@ -20,6 +21,7 @@ script:
 
 before_install:
   - mysql -u root -e 'CREATE DATABASE mikro_orm_test;'
+  - psql -c 'create database mikro_orm_test;' -U postgres
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build

@@ -58,7 +58,6 @@ export class EntityFactory {
     // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
     const entity = Object.create(Entity.prototype);
     entity[meta.primaryKey] = data[meta.primaryKey];
-    this.unitOfWork.addToIdentityMap(entity);
 
     return entity;
   }
