@@ -10,7 +10,7 @@ export class Book2 {
   @PrimaryKey({ fieldName: 'uuid_pk' })
   uuid = v4();
 
-  @Property()
+  @Property({ default: 'NOW()' })
   createdAt = new Date();
 
   @Property()

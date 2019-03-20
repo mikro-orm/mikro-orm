@@ -210,9 +210,9 @@ export class QueryBuilderHelper {
     let append = '';
     const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement();
 
-    if (useReturningStatement && meta && meta.properties[meta.primaryKey]) {
-      const prop = meta.properties[meta.primaryKey];
-      append = ` RETURNING ${this.wrap(prop.fieldName)}`;
+    if (useReturningStatement && meta) {
+      const returningProps = Object.values(meta.properties).filter(prop => prop.primary || prop.default);
+      append = returningProps.length > 0 ? ` RETURNING ${returningProps.map(prop => this.wrap(prop.fieldName)).join(', ')}` : '';
     }
 
     if (this.platform.getParameterPlaceholder() === '?') {

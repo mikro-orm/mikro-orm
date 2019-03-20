@@ -1,6 +1,6 @@
 import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { DatabaseDriver } from './DatabaseDriver';
-import { Connection } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections/Connection';
 import { ReferenceType } from '../entity';
 import { FilterQuery } from './IDatabaseDriver';
 import { QueryBuilder, QueryOrder } from '../query';
@@ -41,7 +41,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return +res.count;
   }
 
-  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<number> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult> {
     const collections = this.extractManyToMany(entityName, data);
     const pk = this.getPrimaryKeyField(entityName);
 
@@ -51,13 +51,13 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
     const qb = this.createQueryBuilder(entityName);
     const res = await qb.insert(data).execute('run');
-    const id = res.insertId || data[pk];
-    await this.processManyToMany(entityName, id, collections);
+    res.insertId = res.insertId || data[pk];
+    await this.processManyToMany(entityName, res.insertId, collections);
 
-    return id;
+    return res;
   }
 
-  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>): Promise<QueryResult> {
     const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
 
     if (Utils.isPrimaryKey(where)) {
@@ -65,7 +65,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     }
 
     const collections = this.extractManyToMany(entityName, data);
-    let res: any;
+    let res: QueryResult = { affectedRows: 0, insertId: 0 };
 
     if (Object.keys(data).length) {
       const qb = this.createQueryBuilder(entityName);
@@ -74,19 +74,16 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
     await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata[entityName])!, collections);
 
-    return res ? res.affectedRows : 0;
+    return res;
   }
 
-  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       const pk = this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
       where = { [pk]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName);
-    const res = await qb.delete(where).execute('run');
-
-    return res.affectedRows;
+    return this.createQueryBuilder(entityName).delete(where).execute('run');
   }
 
   protected createQueryBuilder(entityName: string): QueryBuilder {
@@ -133,10 +130,6 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
         await qb2.insert({ [fk1]: pk, [fk2]: item }).execute();
       }
     }
-  }
-
-  protected getPrimaryKeyField(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
   }
 
 }

@@ -90,6 +90,7 @@ export abstract class Connection {
 export interface QueryResult {
   affectedRows: number;
   insertId: number;
+  row?: Record<string, any>,
 }
 
 export interface ConnectionConfig {

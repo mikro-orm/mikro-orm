@@ -1,8 +1,9 @@
 import { MetadataStorage } from '../metadata';
-import { EntityProperty, IEntityType } from '../decorators';
+import { EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { IDatabaseDriver } from '..';
+import { QueryResult } from '../connections/Connection';
 
 export class ChangeSetPersister {
 
@@ -20,19 +21,23 @@ export class ChangeSetPersister {
     }
 
     // persist the entity itself
-    await this.persistEntity(changeSet);
+    await this.persistEntity(changeSet, meta);
   }
 
-  private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
+  private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>): Promise<void> {
     if (changeSet.type === ChangeSetType.DELETE) {
       await this.driver.nativeDelete(changeSet.name, changeSet.entity.__primaryKey);
     } else if (changeSet.type === ChangeSetType.UPDATE) {
-      await this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+      const res = await this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+      this.mapReturnedValues(changeSet.entity, res, meta);
     } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
-      await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      this.mapReturnedValues(changeSet.entity, res, meta);
       delete changeSet.entity.__initialized;
     } else { // ChangeSetType.CREATE without primary key
-      changeSet.entity.__primaryKey = await this.driver.nativeInsert(changeSet.name, changeSet.payload) as T[keyof T];
+      const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      this.mapReturnedValues(changeSet.entity, res, meta);
+      changeSet.entity.__primaryKey = res.insertId;
       this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey);
       delete changeSet.entity.__initialized;
     }
@@ -49,6 +54,16 @@ export class ChangeSetPersister {
 
     if (prop.onUpdate) {
       changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name] = prop.onUpdate();
+    }
+  }
+
+  private mapReturnedValues<T extends IEntityType<T>>(entity: T, res: QueryResult, meta: EntityMetadata<T>): void {
+    if (res.row && Object.keys(res.row).length > 0) {
+      Object.values(meta.properties).forEach(prop => {
+        if (res.row![prop.fieldName]) {
+          entity[prop.name as keyof T] = res.row![prop.fieldName] as T[keyof T];
+        }
+      });
     }
   }
 

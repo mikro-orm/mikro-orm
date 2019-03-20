@@ -18,4 +18,5 @@ export type PropertyOptions = {
   referenceColumnName?: string;
   type?: any;
   onUpdate?: () => any;
+  default?: string;
 }

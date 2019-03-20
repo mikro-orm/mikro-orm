@@ -1,5 +1,5 @@
-import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, ObjectID, UpdateWriteOpResult } from 'mongodb';
-import { Connection } from './Connection';
+import { Collection, Db, MongoClient, ObjectID } from 'mongodb';
+import { Connection, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
 import { FilterQuery } from '..';
@@ -63,17 +63,17 @@ export class MongoConnection extends Connection {
     return res;
   }
 
-  async insertOne<T>(collection: string, data: Partial<T>): Promise<InsertOneWriteOpResult> {
+  async insertOne<T>(collection: string, data: Partial<T>): Promise<QueryResult> {
     data = this.convertObjectIds(data);
     const now = Date.now();
     const res = await this.getCollection(collection).insertOne(data);
     const query = `db.getCollection("${collection}").insertOne(${JSON.stringify(data)});`;
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
-    return res;
+    return this.transformResult(res);
   }
 
-  async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>): Promise<UpdateWriteOpResult> {
+  async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>): Promise<QueryResult> {
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
     const now = Date.now();
@@ -81,17 +81,17 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
-    return res;
+    return this.transformResult(res);
   }
 
-  async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<DeleteWriteOpResultObject> {
+  async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
     where = this.convertObjectIds(where);
     const res = await this.getCollection(collection).deleteMany(where);
     const query = `db.getCollection("${collection}").deleteMany()`;
     const now = Date.now();
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
-    return res;
+    return this.transformResult(res);
   }
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
@@ -133,6 +133,13 @@ export class MongoConnection extends Connection {
     }
 
     return payload;
+  }
+
+  private transformResult(res: any): QueryResult {
+    return {
+      affectedRows: res.modifiedCount || res.deletedCount || 0,
+      insertId: res.insertedId,
+    };
   }
 
 }

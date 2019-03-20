@@ -61,6 +61,7 @@ export interface EntityProperty {
   primary: boolean;
   reference: ReferenceType;
   fieldName: string;
+  default?: string;
   cascade: Cascade[];
   onUpdate?: () => any;
   owner: boolean;

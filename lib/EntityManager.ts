@@ -126,7 +126,9 @@ export class EntityManager {
   async nativeInsert<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<IPrimaryKey> {
     entityName = Utils.className(entityName);
     this.validator.validateParams(data, 'insert data');
-    return this.driver.nativeInsert(entityName, data);
+    const res = await this.driver.nativeInsert(entityName, data);
+
+    return res.insertId;
   }
 
   async nativeUpdate<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
@@ -134,14 +136,18 @@ export class EntityManager {
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
-    return this.driver.nativeUpdate(entityName, where, data);
+    const res = await this.driver.nativeUpdate(entityName, where, data);
+
+    return res.affectedRows;
   }
 
   async nativeDelete<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | string | any): Promise<number> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
     this.validator.validateParams(where, 'delete condition');
-    return this.driver.nativeDelete(entityName, where);
+    const res = await this.driver.nativeDelete(entityName, where);
+
+    return res.affectedRows;
   }
 
   /**
@@ -161,17 +167,17 @@ export class EntityManager {
     }
 
     const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data, true);
+    this.getUnitOfWork().addToIdentityMap(entity); // add to IM immediately - needed for self-references that can be part of `data`
     EntityAssigner.assign(entity, data, true);
-    this.getUnitOfWork().addToIdentityMap(entity);
+    this.getUnitOfWork().addToIdentityMap(entity); // add to IM again so we have correct payload saved to change set computation
 
-    return entity as T;
+    return entity;
   }
 
   /**
    * Creates new instance of given entity and populates it with given data
    */
   create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
-    entityName = Utils.className(entityName);
     return this.getEntityFactory().create<T>(entityName, data, false);
   }
 
@@ -185,7 +191,10 @@ export class EntityManager {
       return this.getUnitOfWork().getById<T>(entityName, id);
     }
 
-    return this.getEntityFactory().createReference<T>(entityName, id);
+    const entity = this.getEntityFactory().createReference<T>(entityName, id);
+    this.getUnitOfWork().addToIdentityMap(entity);
+
+    return entity;
   }
 
   async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {

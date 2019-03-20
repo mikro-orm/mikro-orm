@@ -57,8 +57,9 @@ export class PostgreSqlConnection extends Connection {
 
     if (method === 'run') {
       return {
-        affectedRows: res.rowCount,
+        affectedRows: res.rowCount || 0,
         insertId: res.rows[0] ? res.rows[0].id : 0,
+        row: res.rows[0],
       };
     }
 

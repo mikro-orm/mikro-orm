@@ -698,6 +698,11 @@ describe('EntityManagerPostgre', () => {
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
+    const b = orm.em.create(Book2, { uuid: v4(), title: 'native name 2' }); // do not provide createdAt, default value from DB will be used
+    await orm.em.persist(b);
+    expect(b.createdAt).toBeDefined();
+    expect(b.createdAt).toBeInstanceOf(Date);
+
     await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by PostgreSqlDriver driver');
   });
 

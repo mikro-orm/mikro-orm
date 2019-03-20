@@ -5,6 +5,7 @@ import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryOrder } from '../query';
 import { Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
+import { QueryResult } from '../connections/Connection';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -34,34 +35,30 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.connection.countDocuments<T>(this.getCollectionName(entityName), where);
   }
 
-  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<ObjectID> {
+  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult> {
     data = this.renameFields(entityName, data);
-    const res = await this.connection.insertOne<EntityData<T>>(this.getCollectionName(entityName), data);
-
-    return res.insertedId;
+    return this.connection.insertOne<EntityData<T>>(this.getCollectionName(entityName), data);
   }
 
-  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<number> {
+  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
     data = this.renameFields(entityName, data);
-    const res = await this.connection.updateMany<T>(this.getCollectionName(entityName), where, data);
 
-    return res.modifiedCount;
+    return this.connection.updateMany<T>(this.getCollectionName(entityName), where, data);
   }
 
-  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number> {
+  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
-    const res = await this.connection.deleteMany<T>(this.getCollectionName(entityName), where);
 
-    return res.deletedCount || 0;
+    return this.connection.deleteMany<T>(this.getCollectionName(entityName), where);
   }
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {

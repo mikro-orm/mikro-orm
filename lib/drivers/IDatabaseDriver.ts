@@ -1,5 +1,5 @@
 import { EntityData, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
-import { Connection } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections/Connection';
 import { QueryOrder } from '../query';
 import { Platform } from '../platforms/Platform';
 
@@ -17,11 +17,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T | null>;
 
-  nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<IPrimaryKey>;
+  nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 
-  nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<number>;
+  nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
 
-  nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<number>;
+  nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<QueryResult>;
 
   count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
