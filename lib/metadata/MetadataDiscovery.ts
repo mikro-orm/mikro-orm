@@ -28,6 +28,8 @@ export class MetadataDiscovery {
 
     if (this.config.get('entities').length > 0) {
       await Promise.all(this.config.get('entities').map(entity => this.discoverEntity(entity)));
+    } else if (process.argv[0].endsWith('ts-node')) {
+      await Promise.all(this.config.get('entitiesDirsTs').map(dir => this.discoverDirectory(dir)));
     } else {
       await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
     }

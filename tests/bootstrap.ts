@@ -23,8 +23,12 @@ export async function initORM() {
     hash = '-' + Math.random().toString(36).substring(6);
   }
 
+  // simulate ts-node to raise coverage
+  process.argv[0] = process.argv[0].replace(/node$/, 'ts-node');
+
   return MikroORM.init({
-    entitiesDirs: ['entities'],
+    entitiesDirs: ['dist/entities'], // will be ignored as we simulate ts-node
+    entitiesDirsTs: ['entities'],
     dbName: `mikro-orm-test${hash}`,
     baseDir: BASE_DIR,
     debug: true,
