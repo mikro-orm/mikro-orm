@@ -12,7 +12,7 @@ layout: homepage
 
 MikroORM is TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.
 
-Currently it supports MongoDB, MySQL and SQLite databases, but more can be supported via custom drivers right now. It has first class TypeScript support, while staying back compatible with Vanilla JavaScript.
+Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more can be supported via custom drivers right now. It has first class TypeScript support, while staying back compatible with Vanilla JavaScript.
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
