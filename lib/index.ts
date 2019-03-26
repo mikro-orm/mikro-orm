@@ -19,3 +19,4 @@ export {
 } from './decorators';
 export * from './decorators/hooks';
 export * from './query/enums';
+export * from './schema';

@@ -57,7 +57,7 @@ describe('QueryBuilder', () => {
   test('select by m:1', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ favouriteBook: 123 });
-    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`favourite_book_id` = ?');
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`favourite_book_uuid_pk` = ?');
     expect(qb.getParams()).toEqual([123]);
   });
 
@@ -196,7 +196,7 @@ describe('QueryBuilder', () => {
 
     const qb2 = orm.em.createQueryBuilder(Author2);
     qb2.insert({ name: 'test 123', favouriteBook: 2359, termsAccepted: true });
-    expect(qb2.getQuery()).toEqual('INSERT INTO `author2` (`name`, `favourite_book_id`, `terms_accepted`) VALUES (?, ?, ?)');
+    expect(qb2.getQuery()).toEqual('INSERT INTO `author2` (`name`, `favourite_book_uuid_pk`, `terms_accepted`) VALUES (?, ?, ?)');
     expect(qb2.getParams()).toEqual(['test 123', 2359, true]);
 
     const qb3 = orm.em.createQueryBuilder(BookTag2);

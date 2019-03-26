@@ -39,6 +39,7 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
   - [Naming strategy](naming-strategy.md)
   - [Metadata cache](metadata-cache.md)
   - [Debugging](debugging.md)
+  - [Schema generator](schema-generator.md)
 - Usage with different drivers
   - [Usage with MySQL and SQLite](usage-with-sql.md)
   - [Usage with MongoDB](usage-with-mongo.md)

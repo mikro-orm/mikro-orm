@@ -17,6 +17,7 @@ export type PropertyOptions = {
   fieldName?: string;
   referenceColumnName?: string;
   type?: any;
+  length?: any;
   onUpdate?: () => any;
   default?: string;
 }

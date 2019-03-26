@@ -2,11 +2,13 @@ import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers/IDatabaseDriver';
 import { MetadataDiscovery } from './metadata';
 import { Configuration, Logger, Options } from './utils';
+import { EntityMetadata } from './decorators';
 
 export class MikroORM {
 
   em: EntityManager;
   readonly config: Configuration;
+  private metadata: Record<string, EntityMetadata>;
   private readonly driver: IDatabaseDriver;
   private readonly logger: Logger;
 
@@ -17,7 +19,7 @@ export class MikroORM {
 
     try {
       const storage = new MetadataDiscovery(orm.em, orm.config, orm.logger);
-      await storage.discover();
+      orm.metadata = await storage.discover();
 
       return orm;
     } catch (e) {
@@ -52,6 +54,10 @@ export class MikroORM {
 
   async close(force = false): Promise<void> {
     return this.driver.getConnection().close(force);
+  }
+
+  getMetadata(): Record<string, EntityMetadata> {
+    return this.metadata;
   }
 
 }

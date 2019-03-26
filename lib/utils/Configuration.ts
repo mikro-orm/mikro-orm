@@ -9,6 +9,7 @@ import { EntityFactory } from '../entity';
 import { Logger, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
+import { Platform } from '../platforms/Platform';
 
 export class Configuration {
 
@@ -35,6 +36,7 @@ export class Configuration {
   private readonly options: MikroORMOptions;
   private readonly logger: Logger;
   private readonly driver: IDatabaseDriver;
+  private readonly platform: Platform;
   private readonly cache: Record<string, any> = {};
 
   constructor(options: Options, validate = true) {
@@ -46,6 +48,7 @@ export class Configuration {
 
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
+    this.platform = this.driver.getPlatform();
     this.init();
   }
 
@@ -70,7 +73,7 @@ export class Configuration {
   }
 
   getNamingStrategy(): NamingStrategy {
-    return this.cached(this.options.namingStrategy || this.driver.getPlatform().getNamingStrategy());
+    return this.cached(this.options.namingStrategy || this.platform.getNamingStrategy());
   }
 
   getHydrator(factory: EntityFactory): Hydrator {

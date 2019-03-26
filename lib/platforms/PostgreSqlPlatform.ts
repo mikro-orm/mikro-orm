@@ -1,7 +1,10 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { Platform } from './Platform';
+import { PostgreSqlSchemaHelper } from '../schema/PostgreSqlSchemaHelper';
 
 export class PostgreSqlPlatform extends Platform {
+
+  protected schemaHelper = new PostgreSqlSchemaHelper();
 
   supportsSavePoints(): boolean {
     return true;
@@ -11,15 +14,15 @@ export class PostgreSqlPlatform extends Platform {
     return UnderscoreNamingStrategy;
   }
 
-  getIdentifierQuoteCharacter(): string {
-    return '"';
-  }
-
   getParameterPlaceholder(index?: number): string {
     return '$' + index;
   }
 
   usesReturningStatement(): boolean {
+    return true;
+  }
+
+  usesCascadeStatement(): boolean {
     return true;
   }
 

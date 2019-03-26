@@ -12,10 +12,10 @@ export class Author2 extends BaseEntity2 {
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
-  @Property()
+  @Property({ length: 3 })
   createdAt = new Date();
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ onUpdate: () => new Date(), length: 3 })
   updatedAt = new Date();
 
   @Property()

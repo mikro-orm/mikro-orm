@@ -303,6 +303,7 @@ describe('EntityManagerMongo', () => {
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
+    expect(() => driver.getPlatform().getSchemaHelper()).toThrowError('MongoPlatform does not provide SchemaHelper');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
   });
 
@@ -433,7 +434,7 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tag1);
+    book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persist(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;

@@ -1,7 +1,10 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { IPrimaryKey } from '../decorators';
+import { SchemaHelper } from '../schema/SchemaHelper';
 
 export abstract class Platform {
+
+  protected abstract schemaHelper: SchemaHelper;
 
   usesPivotTable(): boolean {
     return true;
@@ -19,16 +22,20 @@ export abstract class Platform {
     return UnderscoreNamingStrategy;
   }
 
-  getIdentifierQuoteCharacter(): string {
-    return '"';
-  }
-
   getParameterPlaceholder(index?: number): string {
     return '?';
   }
 
   usesReturningStatement(): boolean {
     return false;
+  }
+
+  usesCascadeStatement(): boolean {
+    return false;
+  }
+
+  getSchemaHelper(): SchemaHelper {
+    return this.schemaHelper;
   }
 
   /**

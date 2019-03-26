@@ -21,7 +21,7 @@ export class QueryBuilderHelper {
     $ne: '!=',
   };
 
-  private readonly quoteChar = this.platform.getIdentifierQuoteCharacter();
+  private readonly quoteChar = this.platform.getSchemaHelper().getIdentifierQuoteCharacter();
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
@@ -212,7 +212,7 @@ export class QueryBuilderHelper {
 
     if (useReturningStatement && meta) {
       const returningProps = Object.values(meta.properties).filter(prop => prop.primary || prop.default);
-      append = returningProps.length > 0 ? ` RETURNING ${returningProps.map(prop => this.wrap(prop.fieldName)).join(', ')}` : '';
+      append = ` RETURNING ${returningProps.map(prop => this.wrap(prop.fieldName)).join(', ')}`;
     }
 
     if (this.platform.getParameterPlaceholder() === '?') {

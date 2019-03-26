@@ -1,10 +1,10 @@
 import { MySqlConnection } from '../connections/MySqlConnection';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
-import { MySqPlatform } from '../platforms/MySqPlatform';
+import { MySqlPlatform } from '../platforms/MySqlPlatform';
 
 export class MySqlDriver extends AbstractSqlDriver<MySqlConnection> {
 
   protected readonly connection = new MySqlConnection(this.config);
-  protected readonly platform = new MySqPlatform();
+  protected readonly platform = new MySqlPlatform();
 
 }
