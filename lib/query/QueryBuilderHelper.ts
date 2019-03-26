@@ -102,6 +102,10 @@ export class QueryBuilderHelper {
       if (this.metadata[this.entityName] && this.metadata[this.entityName].properties[k]) {
         const prop = this.metadata[this.entityName].properties[k];
 
+        if (Array.isArray(data[k])) {
+          data[k] = JSON.stringify(data[k]);
+        }
+
         if (prop.fieldName) {
           Utils.renameKey(data, k, prop.fieldName);
         }

@@ -273,6 +273,21 @@ describe('EntityManagerPostgre', () => {
     await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
   });
 
+  test('json properties', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    god.identities = ['fb-123', 'pw-231', 'tw-321'];
+    const bible = new Book2('Bible', god);
+    bible.meta = { category: 'god like', items: 3 };
+    await orm.em.persist(bible);
+    orm.em.clear();
+
+    const g = (await orm.em.findOne(Author2, god.id, ['books']))!;
+    expect(Array.isArray(g.identities)).toBe(true);
+    expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
+    expect(typeof g.books[0].meta).toBe('object');
+    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3 });
+  });
+
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
