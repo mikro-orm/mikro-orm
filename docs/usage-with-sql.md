@@ -1,13 +1,13 @@
 ---
 ---
 
-# Usage with MySQL and SQLite
+# Usage with MySQL, PostgreSQL or SQLite
 
-To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and provide
-`MySqlDriver` class when initializing ORM.
+To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and set 
+the type option to `mysql` when initializing ORM.
 
-Similarly for SQLite install `sqlite` dependency and provide `SqliteDriver`. For PostgreSQL
-install `pg` and provide `PostgreSqlDriver`.
+Similarly for SQLite install `sqlite` dependency and provide `sqlite` database type. For 
+PostgreSQL install `pg` and provide `postgresql` type.
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
@@ -15,11 +15,30 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
-  driver: MySqlDriver,
+  type: 'mysql', // or 'sqlite' or 'postgresql'
 });
 ```
 
-Currently you will need to maintain the database schema yourself. 
+## Custom driver
+
+If you want to use database that is not currently supported, you can implement your own driver.
+More information about how to create one can be [found here](custom-driver.md). Then provide the 
+driver class via `driver` configuration option: 
+
+```typescript
+import { MyCustomDriver } from './MyCustomDriver.ts';
+
+const orm = await MikroORM.init({
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  dbName: 'my-db-name',
+  driver: MyCustomDriver, // provide the class, not just its name
+});
+```
+
+## Schema
+
+Currently you will need to maintain the database schema yourself. For initial dump, you can 
+use [`SchemaGenerator` helper](schema-generator.md).  
 
 ## ManyToMany collections with pivot tables
 

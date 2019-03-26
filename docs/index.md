@@ -46,3 +46,4 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
 - Recipes
   - [Usage with NestJS](usage-with-nestjs.md)
   - [Usage with Vanilla JS](usage-with-js.md)
+  - [Creating custom driver](custom-driver.md)
