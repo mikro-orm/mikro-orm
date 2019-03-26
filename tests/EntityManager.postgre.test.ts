@@ -10,6 +10,7 @@ import { Logger } from '../lib/utils';
  */
 describe('EntityManagerPostgre', () => {
 
+  jest.setTimeout(10000);
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMPostgreSql());

@@ -10,6 +10,7 @@ import { Logger } from '../lib/utils';
  */
 describe('EntityManagerMySql', () => {
 
+  jest.setTimeout(10000);
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMySql());
