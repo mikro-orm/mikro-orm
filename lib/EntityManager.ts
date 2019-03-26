@@ -178,7 +178,7 @@ export class EntityManager {
    * Creates new instance of given entity and populates it with given data
    */
   create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
-    return this.getEntityFactory().create<T>(entityName, data, false);
+    return this.getEntityFactory().create(entityName, data, false);
   }
 
   /**

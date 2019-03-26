@@ -15,7 +15,7 @@ export class Publisher2 extends BaseEntity2 {
   @ManyToMany({ entity: () => Test2, owner: true })
   tests: Collection<Test2>;
 
-  @Property()
+  @Property({ type: 'string', length: 10 })
   type: PublisherType = PublisherType.LOCAL;
 
   constructor(name: string = 'asd', type: PublisherType = PublisherType.LOCAL) {

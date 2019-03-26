@@ -125,6 +125,10 @@ export class QueryBuilder {
 
     sql += this.helper.getQueryPagination(this._limit, this._offset);
 
+    if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
+      sql += ' CASCADE';
+    }
+
     return this.helper.finalize(this.type, sql, this.metadata[this.entityName]);
   }
 

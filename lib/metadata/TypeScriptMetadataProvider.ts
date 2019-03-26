@@ -32,14 +32,9 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     Object.values(meta.properties).forEach(prop => {
       if (prop.entity) {
         prop.type = Utils.className(prop.entity());
-      } else {
-        const old = prop.type;
+      } else if (!prop.type) {
         const property = properties.find(v => v.getName() === prop.name);
         prop.type = property!.getType().getText(property);
-
-        if (prop.type === 'any' && old) {
-          prop.type = old;
-        }
       }
     });
   }

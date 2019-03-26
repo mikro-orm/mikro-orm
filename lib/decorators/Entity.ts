@@ -59,6 +59,7 @@ export interface EntityProperty {
   entity: () => EntityName<IEntity>;
   type: string;
   primary: boolean;
+  length?: any;
   reference: ReferenceType;
   fieldName: string;
   default?: string;

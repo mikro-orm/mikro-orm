@@ -30,9 +30,12 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  addToIdentityMap(entity: IEntity): void {
+  addToIdentityMap(entity: IEntity, initialized = true): void {
     this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
-    this.originalEntityData[entity.__uuid] = Utils.copy(entity);
+
+    if (initialized) {
+      this.originalEntityData[entity.__uuid] = Utils.copy(entity);
+    }
   }
 
   getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
@@ -163,9 +166,9 @@ export class UnitOfWork {
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
       (reference as Collection<IEntity>).getItems()
-        .filter(item => !this.hasIdentifier(item))
+        .filter(item => !this.originalEntityData[item.__uuid])
         .forEach(item => this.findNewEntities(item));
-    } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.hasIdentifier(reference)) {
+    } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.originalEntityData[reference.__uuid]) {
       this.findNewEntities(reference);
     }
   }

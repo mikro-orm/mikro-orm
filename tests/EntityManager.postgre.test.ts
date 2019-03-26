@@ -45,7 +45,8 @@ describe('EntityManagerPostgre', () => {
     const driver = orm.em.getDriver<PostgreSqlDriver>();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);
     await expect(driver.findOne(Book2.name, { foo: 'bar' })).resolves.toBeNull();
-    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), tags: [1] })).resolves.not.toBeNull();
+    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name '});
+    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).resolves.not.toBeNull();
     const res = await driver.getConnection().execute('SELECT 1 as count');
     expect(res[0]).toEqual({ count: 1 });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
@@ -468,7 +469,8 @@ describe('EntityManagerPostgre', () => {
     expect(book.tags.count()).toBe(1);
 
     // add
-    book.tags.add(tag1, new BookTag2('fresh'));
+    book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
+    book.tags.add(new BookTag2('fresh'));
     await orm.em.persist(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;

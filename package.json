@@ -13,6 +13,7 @@
     "mongo",
     "mongodb",
     "mysql",
+    "postgresql",
     "sqlite",
     "ts",
     "typescript",

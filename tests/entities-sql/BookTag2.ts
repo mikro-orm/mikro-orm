@@ -5,7 +5,7 @@ import { BaseEntity2 } from './BaseEntity2';
 @Entity()
 export class BookTag2 extends BaseEntity2 {
 
-  @Property()
+  @Property({ length: 50 })
   name: string;
 
   @ManyToMany({ entity: () => Book2, mappedBy: 'tags' })
