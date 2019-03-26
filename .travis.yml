@@ -24,6 +24,7 @@ before_install:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
+  - yarn config set ignore-engines true
 
 before_script:
   - mysql -u root -e 'CREATE DATABASE mikro_orm_test;'
