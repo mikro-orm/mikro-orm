@@ -1,10 +1,10 @@
 import { Utils } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { Connection } from '../connections/Connection';
+import { Connection } from '../connections';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 /**
  * SQL query builder

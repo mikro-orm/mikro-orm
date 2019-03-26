@@ -1,6 +1,6 @@
 import { Cascade, IDatabaseDriver, ReferenceType } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 export class SchemaGenerator {
 

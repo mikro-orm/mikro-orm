@@ -1,7 +1,7 @@
 import { Utils } from '../utils';
 import { EntityMetadata } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 export class QueryBuilderHelper {
 

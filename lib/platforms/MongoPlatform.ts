@@ -2,7 +2,7 @@ import { ObjectID } from 'mongodb';
 import { Platform } from './Platform';
 import { MongoNamingStrategy, NamingStrategy } from '../naming-strategy';
 import { IPrimaryKey } from '../decorators';
-import { SchemaHelper } from '../schema/SchemaHelper';
+import { SchemaHelper } from '../schema';
 
 export class MongoPlatform extends Platform {
 

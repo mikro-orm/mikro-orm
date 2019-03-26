@@ -1,7 +1,7 @@
 import { EntityData, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
-import { Connection, QueryResult } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections';
 import { QueryOrder } from '../query';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 

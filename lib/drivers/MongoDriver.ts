@@ -5,7 +5,7 @@ import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryOrder } from '../query';
 import { Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
-import { QueryResult } from '../connections/Connection';
+import { QueryResult } from '../connections';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 

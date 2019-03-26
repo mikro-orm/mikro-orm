@@ -1,10 +1,10 @@
 import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
-import { Connection, QueryResult } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections';
 import { Configuration, Utils } from '../utils';
 import { QueryOrder } from '../query';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 

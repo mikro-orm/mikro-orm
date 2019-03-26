@@ -9,7 +9,7 @@ import { EntityFactory } from '../entity';
 import { Logger, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 
 export class Configuration {
 

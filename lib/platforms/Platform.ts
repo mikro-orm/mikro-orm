@@ -1,6 +1,6 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { IPrimaryKey } from '../decorators';
-import { SchemaHelper } from '../schema/SchemaHelper';
+import { SchemaHelper } from '../schema';
 
 export abstract class Platform {
 
