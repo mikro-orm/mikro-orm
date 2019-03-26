@@ -1,14 +1,12 @@
 import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-sql';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 import { SqliteConnection } from '../lib/connections/SqliteConnection';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { FooBar2 } from './entities-sql/FooBar2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
-import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
@@ -32,6 +30,7 @@ export async function initORM() {
     dbName: `mikro-orm-test${hash}`,
     baseDir: BASE_DIR,
     debug: true,
+    type: 'mongo',
   });
 }
 
@@ -48,9 +47,9 @@ export async function initORMMySql() {
     dbName: `mikro_orm_test`,
     port,
     baseDir: BASE_DIR,
-    driver: MySqlDriver,
     debug: true,
     multipleStatements: true,
+    type: 'mysql',
   });
 
   const connection = orm.em.getConnection<MySqlConnection>();
@@ -65,7 +64,7 @@ export async function initORMPostgreSql() {
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
-    driver: PostgreSqlDriver,
+    type: 'postgresql',
     debug: true,
   });
 

@@ -14,6 +14,7 @@ import { Platform } from '../platforms/Platform';
 export class Configuration {
 
   static readonly DEFAULTS = {
+    type: 'mongo',
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
@@ -31,6 +32,13 @@ export class Configuration {
       options: { cacheDir: process.cwd() + '/temp' },
     },
     metadataProvider: TypeScriptMetadataProvider,
+  };
+
+  static readonly PLATFORMS = {
+    mongo: 'MongoDriver',
+    mysql: 'MySqlDriver',
+    postgresql: 'PostgreSqlDriver',
+    sqlite: 'SqliteDriver',
   };
 
   private readonly options: MikroORMOptions;
@@ -123,7 +131,8 @@ export class Configuration {
 
   private initDriver(): IDatabaseDriver {
     if (!this.options.driver) {
-      this.options.driver = require('../drivers/MongoDriver').MongoDriver;
+      const driver = Configuration.PLATFORMS[this.options.type];
+      this.options.driver = require('../drivers/' + driver)[driver];
     }
 
     return new this.options.driver!(this);
@@ -147,6 +156,7 @@ export interface MikroORMOptions {
   entitiesDirsTs: string[];
   tsConfigPath: string;
   autoFlush: boolean;
+  type: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
