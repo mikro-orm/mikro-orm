@@ -1,5 +1,5 @@
 import { EntityManager } from './EntityManager';
-import { IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { IDatabaseDriver } from './drivers';
 import { MetadataDiscovery } from './metadata';
 import { Configuration, Logger, Options } from './utils';
 import { EntityMetadata } from './decorators';

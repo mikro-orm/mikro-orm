@@ -3,7 +3,7 @@ import { EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { IDatabaseDriver } from '..';
-import { QueryResult } from '../connections/Connection';
+import { QueryResult } from '../connections';
 
 export class ChangeSetPersister {
 

@@ -219,7 +219,7 @@ export class MetadataDiscovery {
   }
 
   private definePivotProperty(prop: EntityProperty, name: string): EntityProperty {
-    const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.REMOVE] } as EntityProperty;
+    const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.ALL] } as EntityProperty;
 
     if (name === prop.type) {
       const meta = this.metadata[name];

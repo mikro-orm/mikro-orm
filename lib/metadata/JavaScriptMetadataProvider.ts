@@ -45,7 +45,7 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
     }
 
     if (prop.reference !== ReferenceType.SCALAR && typeof prop.cascade === 'undefined') {
-      prop.cascade = [Cascade.PERSIST];
+      prop.cascade = [Cascade.PERSIST, Cascade.MERGE];
     }
   }
 

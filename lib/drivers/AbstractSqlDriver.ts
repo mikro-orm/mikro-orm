@@ -1,6 +1,6 @@
 import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { DatabaseDriver } from './DatabaseDriver';
-import { Connection, QueryResult } from '../connections/Connection';
+import { Connection, QueryResult } from '../connections';
 import { ReferenceType } from '../entity';
 import { FilterQuery } from './IDatabaseDriver';
 import { QueryBuilder, QueryOrder } from '../query';

@@ -1,5 +1,5 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityMetadata, EntityProperty, IEntityType } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
 
@@ -66,7 +66,13 @@ export class EntityValidator {
     }
   }
 
-  private validateCollection<T>(entity: IEntityType<T>, prop: EntityProperty): void {
+  validatePrimaryKey<T extends IEntityType<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
+    if (!entity || (!entity[meta.primaryKey] && !entity[meta.serializedPrimaryKey])) {
+      throw ValidationError.fromMergeWithoutPK(meta);
+    }
+  }
+
+  private validateCollection<T extends IEntityType<T>>(entity: T, prop: EntityProperty): void {
     if (!entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }

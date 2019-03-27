@@ -30,12 +30,10 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  addToIdentityMap(entity: IEntity, initialized = true): void {
+  merge<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
     this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
-
-    if (initialized) {
-      this.originalEntityData[entity.__uuid] = Utils.copy(entity);
-    }
+    this.originalEntityData[entity.__uuid] = Utils.copy(entity);
+    this.cascade(entity, Cascade.MERGE, visited);
   }
 
   getById<T extends IEntityType<T>>(entityName: string, id: IPrimaryKey): T {
@@ -179,7 +177,7 @@ export class UnitOfWork {
     await this.changeSetPersister.persistToDatabase(changeSet);
 
     if (changeSet.type !== ChangeSetType.DELETE) {
-      this.em.merge(changeSet.name, changeSet.entity);
+      this.em.merge(changeSet.entity);
     }
 
     await this.runHooks(`after${type}`, changeSet.entity);
@@ -234,7 +232,8 @@ export class UnitOfWork {
     visited.push(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist<T>(entity, visited); break;
+      case Cascade.PERSIST: this.persist(entity, visited); break;
+      case Cascade.MERGE: this.merge(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
@@ -246,7 +245,7 @@ export class UnitOfWork {
   }
 
   private cascadeReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty, type: Cascade, visited: IEntity[]): void {
-    if (!prop.cascade || !prop.cascade.includes(type)) {
+    if (!prop.cascade || !(prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL))) {
       return;
     }
 

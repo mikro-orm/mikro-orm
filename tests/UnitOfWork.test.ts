@@ -76,7 +76,7 @@ describe('UnitOfWork', () => {
   test('changeSet is null for empty payload', async () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
-    uow.addToIdentityMap(author); // add entity to IM first
+    uow.merge(author); // add entity to IM first
     const changeSet = await computer.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
     expect(uow.getIdentityMap()).not.toEqual({});

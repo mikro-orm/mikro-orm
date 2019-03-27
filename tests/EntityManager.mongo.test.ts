@@ -199,7 +199,7 @@ describe('EntityManagerMongo', () => {
 
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
-    expect(() => orm.em.merge(Author, author)).toThrowError('You cannot merge entity without identifier!');
+    expect(() => orm.em.merge(author)).toThrowError(`You cannot merge entity 'Author' without identifier!`);
   });
 
   test('fork', async () => {

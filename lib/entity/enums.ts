@@ -7,5 +7,7 @@ export enum ReferenceType {
 
 export enum Cascade {
   PERSIST = 'persist',
+  MERGE = 'merge',
   REMOVE = 'remove',
+  ALL = 'all',
 }
