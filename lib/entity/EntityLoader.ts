@@ -46,11 +46,6 @@ export class EntityLoader {
     }
 
     const data = await this.findChildren<T>(entities, prop);
-
-    if (data.length === 0) {
-      return [];
-    }
-
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;

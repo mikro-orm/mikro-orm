@@ -508,6 +508,20 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
   });
 
+  test('serializing empty initialized many to many collection', async () => {
+    let a = new Author('name', 'email');
+    await orm.em.persist(a);
+    expect(a.toJSON()).toMatchObject({
+      books: [],
+    });
+    orm.em.clear();
+
+    a = (await orm.em.findOne(Author, a.id, ['books']))!;
+    expect(a.toJSON()).toMatchObject({
+      books: [],
+    });
+  });
+
   test('cascade persist on owning side', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);
