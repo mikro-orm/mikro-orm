@@ -28,14 +28,6 @@ export class QueryBuilderHelper {
               private readonly metadata: Record<string, EntityMetadata>,
               private readonly platform: Platform) { }
 
-  private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
-    if (key === '$and' || key === '$or') {
-      return Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub)));
-    } else {
-      return this.getWhereParams(cond);
-    }
-  }
-
   getWhereParams(conditions: Record<string, any>): any[] {
     const ret: any[] = [];
 
@@ -50,19 +42,15 @@ export class QueryBuilderHelper {
         return ret.push(...this.getWhereParams({ $and: subConditions }));
       }
 
-      if (Utils.isObject(cond)) {
-        const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => cond[op])!;
-
-        if (cond[operator]) {
-          return ret.push(...(Array.isArray(cond[operator]) ? cond[operator] : [cond[operator]]));
-        }
-      }
-
       if (cond instanceof RegExp) {
         return ret.push(this.getRegExpParam(cond));
       }
 
-      ret.push(cond);
+      if (!Utils.isObject(cond) && !Array.isArray(cond)) {
+        return ret.push(cond);
+      }
+
+      ret.push(...this.processComplexParam(key, cond));
     });
 
     return ret;
@@ -77,18 +65,19 @@ export class QueryBuilderHelper {
   }
 
   mapper(type: QueryType, field: string, value?: any): string {
-    let ret = this.wrap(field);
+    let ret = field;
+    const customExpression = field.match(/\(.*\)/);
 
-    if (this.isQuoted(field)) {
-      const [a, f] = field.split('.');
-      ret = this.wrap(a) + '.' + this.wrap(f);
+    // do not wrap custom expressions
+    if (!customExpression) {
+      ret = this.prefixAndWrap(field);
     }
 
     if (typeof value !== 'undefined') {
       ret += this.processValue(value);
     }
 
-    if (type !== QueryType.SELECT || this.isQuoted(ret)) {
+    if (type !== QueryType.SELECT || customExpression || this.isQuoted(ret)) {
       return ret;
     }
 
@@ -227,6 +216,40 @@ export class QueryBuilderHelper {
     return sql.replace(/(\?)/g, () => {
       return this.platform.getParameterPlaceholder(index++);
     }) + append;
+  }
+
+  private processComplexParam(key: string, cond: any): any[] {
+    // unwind parameters when ? found in field name
+    if (key.includes('?') && Array.isArray(cond)) {
+      const count = key.match(/\?/g)!.length;
+      return cond.slice(0, count).map(c => JSON.stringify(c)).concat(cond.slice(count));
+    }
+
+    const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => cond[op])!;
+
+    if (cond[operator]) {
+      return Array.isArray(cond[operator]) ? cond[operator] : [cond[operator]];
+    }
+
+    return [cond];
+  }
+
+  private prefixAndWrap(field: string): string {
+    if (!this.isQuoted(field)) {
+      return this.wrap(field);
+    }
+
+    const [a, f] = field.split('.');
+
+    return this.wrap(a) + '.' + this.wrap(f);
+  }
+
+  private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
+    if (key === '$and' || key === '$or') {
+      return Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub)));
+    } else {
+      return this.getWhereParams(cond);
+    }
   }
 
   private processValue(value: any): string | undefined {

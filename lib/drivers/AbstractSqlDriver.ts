@@ -16,9 +16,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
       qb.limit(limit, offset);
     }
 
-    const res = await qb.execute('all');
-
-    return res.map((r: any) => this.mapResult(r, this.metadata[entityName]));
+    return qb.execute('all');
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
@@ -28,15 +26,14 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     }
 
     const qb = this.createQueryBuilder(entityName);
-    const res = await qb.select('*').populate(populate).where(where).limit(1).execute('get');
 
-    return this.mapResult(res, this.metadata[entityName]);
+    return qb.select('*').populate(populate).where(where).limit(1).execute('get');
   }
 
   async count(entityName: string, where: any): Promise<number> {
     const qb = this.createQueryBuilder(entityName);
     const pk = this.metadata[entityName].primaryKey;
-    const res = await qb.count(pk, true).where(where).execute('get');
+    const res = await qb.count(pk, true).where(where).execute('get', false);
 
     return +res.count;
   }
@@ -50,7 +47,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     }
 
     const qb = this.createQueryBuilder(entityName);
-    const res = await qb.insert(data).execute('run');
+    const res = await qb.insert(data).execute('run', false);
     res.insertId = res.insertId || data[pk];
     await this.processManyToMany(entityName, res.insertId, collections);
 
@@ -69,7 +66,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
     if (Object.keys(data).length) {
       const qb = this.createQueryBuilder(entityName);
-      res = await qb.update(data).where(where).execute('run');
+      res = await qb.update(data).where(where).execute('run', false);
     }
 
     await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata[entityName])!, collections);
@@ -83,11 +80,11 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
       where = { [pk]: where };
     }
 
-    return this.createQueryBuilder(entityName).delete(where).execute('run');
+    return this.createQueryBuilder(entityName).delete(where).execute('run', false);
   }
 
   protected createQueryBuilder(entityName: string): QueryBuilder {
-    return new QueryBuilder(entityName, this.metadata, this.connection, this.platform);
+    return new QueryBuilder(entityName, this.metadata, this);
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
@@ -123,11 +120,11 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
       const fk1 = prop.joinColumn;
       const fk2 = prop.inverseJoinColumn;
       const qb1 = this.createQueryBuilder(prop.pivotTable);
-      await qb1.delete({ [fk1]: pk }).execute();
+      await qb1.delete({ [fk1]: pk }).execute('run', false);
 
       for (const item of collections[k]) {
         const qb2 = this.createQueryBuilder(prop.pivotTable);
-        await qb2.insert({ [fk1]: pk, [fk2]: item }).execute();
+        await qb2.insert({ [fk1]: pk, [fk2]: item }).execute('run', false);
       }
     }
   }

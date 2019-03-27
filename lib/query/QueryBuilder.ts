@@ -1,10 +1,9 @@
 import { Utils } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { Connection } from '../connections';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
-import { Platform } from '../platforms';
+import { IDatabaseDriver } from '../drivers';
 
 /**
  * SQL query builder
@@ -12,23 +11,25 @@ import { Platform } from '../platforms';
 export class QueryBuilder {
 
   type: QueryType;
+  readonly alias = `e0`;
+
   private aliasCounter = 1;
   private flags: QueryFlag[] = [];
   private _fields: string[];
   private _populate: Record<string, string> = {};
   private _leftJoins: Record<string, [string, string, string, string, string]> = {};
-  private _cond: Record<string, any>;
+  private _cond: Record<string, any> = {};
   private _data: Record<string, any>;
   private _orderBy: Record<string, QueryOrder>;
   private _limit: number;
   private _offset: number;
-  private readonly alias = `e0`;
+  private readonly connection = this.driver.getConnection();
+  private readonly platform = this.driver.getPlatform();
   private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: Record<string, EntityMetadata>,
-              private readonly connection: Connection,
-              private readonly platform: Platform) { }
+              private readonly driver: IDatabaseDriver) { }
 
   select(fields: string | string[]): this {
     this._fields = Array.isArray(fields) ? fields : [fields];
@@ -156,8 +157,18 @@ export class QueryBuilder {
     return ret;
   }
 
-  async execute(method: 'all' | 'get' | 'run' = 'all'): Promise<any> {
-    return this.connection.execute(this.getQuery(), this.getParams(), method);
+  async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
+    const res = await this.connection.execute(this.getQuery(), this.getParams(), method);
+
+    if (!mapResults) {
+      return res;
+    }
+
+    if (method === 'all' && Array.isArray(res)) {
+      return res.map((r: any) => this.driver.mapResult(r, this.metadata[this.entityName]));
+    }
+
+    return this.driver.mapResult(res, this.metadata[this.entityName]);
   }
 
   private prepareFields(fields: string[], glue = ', '): string {

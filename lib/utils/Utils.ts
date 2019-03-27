@@ -24,7 +24,7 @@ export class Utils {
   }
 
   static flatten<T>(arrays: T[][]): T[] {
-    return [].concat.apply([], arrays as any);
+    return [].concat(...arrays as any[]);
   }
 
   static merge(target: any, ...sources: any[]): any {

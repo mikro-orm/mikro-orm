@@ -1,4 +1,4 @@
-import { EntityData, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { Connection, QueryResult } from '../connections';
 import { QueryOrder } from '../query';
 import { Platform } from '../platforms';
@@ -26,6 +26,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
+
+  mapResult<T extends IEntityType<T>>(result: T, meta: EntityMetadata): T;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
