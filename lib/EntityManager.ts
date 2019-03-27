@@ -1,11 +1,11 @@
 import { Configuration, RequestContext, Utils } from './utils';
-import { EntityRepository, EntityAssigner, EntityFactory, EntityLoader, EntityValidator, ReferenceType } from './entity';
+import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, ReferenceType } from './entity';
 import { UnitOfWork } from './unit-of-work';
-import { FilterQuery, IDatabaseDriver } from './drivers/IDatabaseDriver';
+import { FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
 import { QueryBuilder, QueryOrder, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
-import { Connection } from './connections/Connection';
+import { Connection } from './connections';
 
 export class EntityManager {
 
@@ -158,18 +158,21 @@ export class EntityManager {
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
-    entityName = Utils.className(entityName);
-    const meta = this.metadata[entityName];
-
-    if (!data || (!data[meta.primaryKey] && !data[meta.serializedPrimaryKey])) {
-      throw new Error('You cannot merge entity without identifier!');
+  merge<T extends IEntityType<T>>(entity: T): T;
+  merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T;
+  merge<T extends IEntityType<T>>(entityName: EntityName<T> | T, data?: EntityData<T>): T {
+    if (Utils.isEntity(entityName)) {
+      return this.merge(entityName.constructor.name, entityName as EntityData<T>);
     }
 
-    const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data, true);
-    this.getUnitOfWork().addToIdentityMap(entity); // add to IM immediately - needed for self-references that can be part of `data`
-    EntityAssigner.assign(entity, data, true);
-    this.getUnitOfWork().addToIdentityMap(entity); // add to IM again so we have correct payload saved to change set computation
+    entityName = Utils.className(entityName);
+    this.validator.validatePrimaryKey(data!, this.metadata[entityName]);
+    const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data!, true);
+
+    // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
+    this.getUnitOfWork().merge(entity, [entity]);
+    EntityAssigner.assign(entity, data!, true);
+    this.getUnitOfWork().merge(entity); // add to IM again so we have correct payload saved to change set computation
 
     return entity;
   }
@@ -192,7 +195,7 @@ export class EntityManager {
     }
 
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
-    this.getUnitOfWork().addToIdentityMap(entity);
+    this.getUnitOfWork().merge(entity);
 
     return entity;
   }

@@ -62,6 +62,10 @@ export class ValidationError extends Error {
     return ValidationError.fromMessage(meta, prop, `needs to have one of 'owner', 'mappedBy' or 'inversedBy' attributes`);
   }
 
+  static fromMergeWithoutPK(meta: EntityMetadata): void {
+    throw new Error(`You cannot merge entity '${meta.name}' without identifier!`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.name}.${prop.name} ${message}`);
   }

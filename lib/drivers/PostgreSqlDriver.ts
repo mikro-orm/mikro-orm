@@ -3,7 +3,7 @@ import { AbstractSqlDriver } from './AbstractSqlDriver';
 import { EntityData, IEntityType } from '../decorators';
 import { QueryType } from '../query';
 import { PostgreSqlPlatform } from '../platforms/PostgreSqlPlatform';
-import { QueryResult } from '../connections/Connection';
+import { QueryResult } from '../connections';
 
 export class PostgreSqlDriver extends AbstractSqlDriver<PostgreSqlConnection> {
 

@@ -14,7 +14,7 @@ export function OneToMany(options: OneToManyOptions): Function {
       throw new Error(`'@OneToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
-    const property = { name: propertyName, reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST] };
+    const property = { name: propertyName, reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE] };
     meta.properties[propertyName] = Object.assign(property, options) as EntityProperty;
   };
 }

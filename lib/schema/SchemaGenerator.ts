@@ -127,9 +127,10 @@ export class SchemaGenerator {
     const meta2 = this.metadata[prop.type];
     const pk2 = meta2.properties[meta2.primaryKey].fieldName;
     let ret = `REFERENCES ${this.helper.quoteIdentifier(meta2.collection)} (${this.helper.quoteIdentifier(pk2)})`;
-    ret += ` ON DELETE ${prop.cascade.includes(Cascade.REMOVE) ? 'CASCADE' : 'SET NULL'}`;
+    const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
+    ret += ` ON DELETE ${cascade ? 'CASCADE' : 'SET NULL'}`;
 
-    if (prop.cascade.includes(Cascade.PERSIST)) {
+    if (prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
       ret += ' ON UPDATE CASCADE';
     }
 
