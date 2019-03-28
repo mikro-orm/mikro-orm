@@ -45,7 +45,7 @@ export class EntityManager {
 
   createQueryBuilder(entityName: EntityName<IEntity>): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.getConnection(), this.driver.getPlatform());
+    return new QueryBuilder(entityName, this.metadata, this.driver);
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;

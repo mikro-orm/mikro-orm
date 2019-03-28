@@ -32,6 +32,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([false]);
   });
 
+  test('select with custom expression', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    qb1.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?)': [{ foo: 'bar' }, true] });
+    expect(qb1.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` WHERE JSON_CONTAINS(`e0`.`meta`, ?) = ?');
+    expect(qb1.getParams()).toEqual(['{"foo":"bar"}', true]);
+
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?)': [{ foo: 'baz' }, false] });
+    expect(qb2.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` WHERE JSON_CONTAINS(`e0`.`meta`, ?) = ?');
+    expect(qb2.getParams()).toEqual(['{"foo":"baz"}', false]);
+  });
+
   test('select by regexp', async () => {
     let qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').where({ name: /test/ });

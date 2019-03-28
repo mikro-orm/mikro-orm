@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS `book2`;
 
 CREATE TABLE `book2` (
   `uuid_pk` varchar(36) NOT NULL,
-  `created_at` datetime(3) DEFAULT CURRENT_TIMESTAMP(3),
+  `created_at` datetime(3) DEFAULT NOW(3),
   `title` varchar(255) DEFAULT NULL,
   `perex` text DEFAULT NULL,
   `price` float DEFAULT NULL,
