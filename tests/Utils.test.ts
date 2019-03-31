@@ -33,6 +33,11 @@ describe('Utils', () => {
     expect(Utils.isObject(Test)).toBe(false);
   });
 
+  test('isEntity', () => {
+    expect(Utils.isEntity(Author.prototype)).toBe(true);
+    expect(Utils.isEntity(new Author('a', 'b'))).toBe(true);
+  });
+
   test('isString', () => {
     expect(Utils.isString(undefined)).toBe(false);
     expect(Utils.isString('a')).toBe(true);
