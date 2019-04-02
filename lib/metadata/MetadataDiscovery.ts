@@ -25,10 +25,11 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     this.discovered.length = 0;
+    const tsNode = process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
 
     if (this.config.get('entities').length > 0) {
       await Promise.all(this.config.get('entities').map(entity => this.discoverEntity(entity)));
-    } else if (process.argv[0].endsWith('ts-node')) {
+    } else if (tsNode) {
       await Promise.all(this.config.get('entitiesDirsTs').map(dir => this.discoverDirectory(dir)));
     } else {
       await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
