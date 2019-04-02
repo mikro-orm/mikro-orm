@@ -953,6 +953,18 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.find\(.*\).toArray\(\);/);
   });
 
+  test('self referencing via another entity M:1 (1 step)', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    author.favouriteBook = book1; // author -> book1 -> author
+    await orm.em.persist(book1);
+    orm.em.clear();
+
+    const jon = await orm.em.findOne(Author, author.id, ['favouriteBook']);
+    expect(jon!.favouriteBook).toBeInstanceOf(Book);
+    expect(jon!.favouriteBook.title).toBe(book1.title);
+  });
+
   test('EM do not support transactions', async () => {
     await expect(orm.em.beginTransaction()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');

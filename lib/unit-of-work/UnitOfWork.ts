@@ -164,8 +164,8 @@ export class UnitOfWork {
   }
 
   private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty, reference: any, visited: IEntity[]): void {
-    if (parent === reference && !this.hasIdentifier(parent)) {
-      this.extraUpdates.push([parent, prop.name as keyof IEntity, parent]);
+    if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.hasIdentifier(reference) && visited.includes(reference)) {
+      this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
       delete parent[prop.name as keyof T];
 
       return;
