@@ -31,6 +31,10 @@ export class UnitOfWork {
   constructor(private readonly em: EntityManager) { }
 
   merge<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
+    if (!entity.__primaryKey) {
+      return;
+    }
+
     this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
     this.originalEntityData[entity.__uuid] = Utils.copy(entity);
     this.cascade(entity, Cascade.MERGE, visited);
@@ -133,7 +137,12 @@ export class UnitOfWork {
     }
   }
 
-  private findNewEntities<T extends IEntityType<T>>(entity: T): void {
+  private findNewEntities<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
+    if (visited.includes(entity)) {
+      return;
+    }
+
+    visited.push(entity);
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
 
     if (!entity.__primaryKey && !this.identifierMap[entity.__uuid]) {
@@ -142,7 +151,7 @@ export class UnitOfWork {
 
     for (const prop of Object.values(meta.properties)) {
       const reference = entity[prop.name as keyof T];
-      this.processReference(entity, prop, reference);
+      this.processReference(entity, prop, reference, visited);
     }
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
@@ -154,7 +163,7 @@ export class UnitOfWork {
     }
   }
 
-  private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty, reference: any): void {
+  private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty, reference: any, visited: IEntity[]): void {
     if (parent === reference && !this.hasIdentifier(parent)) {
       this.extraUpdates.push([parent, prop.name as keyof IEntity, parent]);
       delete parent[prop.name as keyof T];
@@ -165,9 +174,9 @@ export class UnitOfWork {
     if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
       (reference as Collection<IEntity>).getItems()
         .filter(item => !this.originalEntityData[item.__uuid])
-        .forEach(item => this.findNewEntities(item));
+        .forEach(item => this.findNewEntities(item, visited));
     } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.originalEntityData[reference.__uuid]) {
-      this.findNewEntities(reference);
+      this.findNewEntities(reference, visited);
     }
   }
 
