@@ -1,5 +1,5 @@
-import { Collection, Db, MongoClient, ObjectID } from 'mongodb';
-import { Connection, QueryResult } from './Connection';
+import { Collection, Db, MongoClient, MongoClientOptions, ObjectID } from 'mongodb';
+import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
 import { FilterQuery } from '..';
@@ -10,7 +10,7 @@ export class MongoConnection extends Connection {
   protected db: Db;
 
   async connect(): Promise<void> {
-    this.client = await MongoClient.connect(this.config.getClientUrl(), { useNewUrlParser: true });
+    this.client = await MongoClient.connect(this.config.getClientUrl(), this.getConnectionOptions());
     this.db = this.client.db(this.config.get('dbName'));
   }
 
@@ -28,6 +28,18 @@ export class MongoConnection extends Connection {
 
   getDefaultClientUrl(): string {
     return 'mongodb://localhost:27017';
+  }
+
+  getConnectionOptions(): MongoClientOptions & ConnectionConfig {
+    const ret: MongoClientOptions = { useNewUrlParser: true };
+    const user = this.config.get('user');
+    const password = this.config.get('password');
+
+    if (user && password) {
+      ret.auth = { user, password };
+    }
+
+    return ret;
   }
 
   async execute(query: string): Promise<any> {

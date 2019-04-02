@@ -1,10 +1,11 @@
 import { ObjectID } from 'mongodb';
-import { Collection, EntityManager, MikroORM, QueryOrder } from '../lib';
+import { Collection, Configuration, EntityManager, MikroORM, QueryOrder } from '../lib';
 import { EntityProperty } from '../lib/decorators';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { MongoConnection } from '../lib/connections/MongoConnection';
 import { Logger } from '../lib/utils';
 
 /**
@@ -305,6 +306,15 @@ describe('EntityManagerMongo', () => {
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
     expect(() => driver.getPlatform().getSchemaHelper()).toThrowError('MongoPlatform does not provide SchemaHelper');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
+  });
+
+  test('should use user and password as connection options', async () => {
+    const config = new Configuration({ user: 'usr', password: 'pw' } as any, false);
+    const connection = new MongoConnection(config);
+    await expect(connection.getConnectionOptions()).toEqual({
+      useNewUrlParser: true,
+      auth: { user: 'usr', password: 'pw' },
+    });
   });
 
   test('findOne by id', async () => {
