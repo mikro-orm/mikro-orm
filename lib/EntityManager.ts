@@ -188,12 +188,6 @@ export class EntityManager {
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
-    entityName = Utils.className(entityName);
-
-    if (this.getUnitOfWork().getById(entityName, id)) {
-      return this.getUnitOfWork().getById<T>(entityName, id);
-    }
-
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
     this.getUnitOfWork().merge(entity);
 

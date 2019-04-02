@@ -13,7 +13,7 @@ export class EntityAssigner {
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
-      if (onlyProperties && !props[prop]) {
+      if (onlyProperties && !(prop in props)) {
         return;
       }
 
@@ -33,7 +33,7 @@ export class EntityAssigner {
         entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
-      entity[prop as keyof T] = value as T[keyof T];
+      entity[prop as keyof T] = value;
     });
   }
 
@@ -43,12 +43,13 @@ export class EntityAssigner {
       return;
     }
 
-    const meta = MetadataStorage.getMetadata(entity.constructor.name);
-    const id = Utils.extractPK(value, meta);
+    if (Utils.isPrimaryKey(value)) {
+      entity[prop.name as keyof T] = em.getReference(prop.type, value);
+      return;
+    }
 
-    if (id) {
-      const normalized = em.getDriver().getPlatform().normalizePrimaryKey(id);
-      entity[prop.name as keyof T] = em.getReference(prop.type, normalized);
+    if (Utils.isObject(value)) {
+      entity[prop.name as keyof T] = em.create(prop.type, value) as T[keyof T];
       return;
     }
 
@@ -58,27 +59,32 @@ export class EntityAssigner {
 
   private static assignCollection<T extends IEntityType<T>>(entity: T, value: any[], prop: EntityProperty, em: EntityManager): void {
     const invalid: any[] = [];
-    const items = value.map((item: any) => {
-      if (Utils.isEntity(item)) {
-        return item;
-      }
-
-      if (Utils.isPrimaryKey(item)) {
-        const id = em.getDriver().getPlatform().normalizePrimaryKey(item);
-        return em.getReference(prop.type, id);
-      }
-
-      invalid.push(item);
-
-      return item;
-    });
+    const items = value.map((item: any) => this.createCollectionItem(item, em, prop, invalid));
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
     }
 
-    (entity[prop.name as keyof T] as Collection<IEntity>).set(items);
+    (entity[prop.name as keyof T] as Collection<IEntity>).set(items, true);
+  }
+
+  private static createCollectionItem(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): IEntity {
+    if (Utils.isEntity(item)) {
+      return item;
+    }
+
+    if (Utils.isPrimaryKey(item)) {
+      return em.getReference(prop.type, item);
+    }
+
+    if (Utils.isObject(item)) {
+      return em.create(prop.type, item);
+    }
+
+    invalid.push(item);
+
+    return item;
   }
 
 }

@@ -1,12 +1,12 @@
-import { EntityMetadata } from '../decorators';
+import { EntityMetadata, IEntityType } from '../decorators';
 
 export class MetadataStorage {
 
   private static readonly metadata: Record<string, EntityMetadata> = {};
 
   static getMetadata(): Record<string, EntityMetadata>;
-  static getMetadata(entity: string): EntityMetadata;
-  static getMetadata(entity?: string): Record<string, EntityMetadata> | EntityMetadata {
+  static getMetadata<T extends IEntityType<T> = any>(entity: string): EntityMetadata<T>;
+  static getMetadata<T extends IEntityType<T> = any>(entity?: string): Record<string, EntityMetadata> | EntityMetadata<T> {
     if (entity && !MetadataStorage.metadata[entity]) {
       MetadataStorage.metadata[entity] = { properties: {} } as EntityMetadata;
     }

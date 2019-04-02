@@ -138,10 +138,6 @@ export class UnitOfWork {
   }
 
   private findNewEntities<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
-    if (visited.includes(entity)) {
-      return;
-    }
-
     visited.push(entity);
     const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
 

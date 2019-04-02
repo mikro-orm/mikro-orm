@@ -450,6 +450,14 @@ describe('EntityManagerMongo', () => {
     book = (await orm.em.findOne(Book, book._id))!;
     expect(book.tags.count()).toBe(2);
 
+    // set
+    const items = book.tags.getIdentifiers().map(t => tagRepository.getReference(t));
+    book.tags.set(items);
+    await orm.em.persist(book);
+    orm.em.clear();
+    book = (await orm.em.findOne(Book, book._id))!;
+    expect(book.tags.count()).toBe(2);
+
     // contains
     expect(book.tags.contains(tag1)).toBe(true);
     expect(book.tags.contains(tag2)).toBe(false);
@@ -530,6 +538,63 @@ describe('EntityManagerMongo', () => {
     expect(a.toJSON()).toMatchObject({
       books: [],
     });
+  });
+
+  test('merging detached entity', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    author.favouriteBook = book1;
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persist([book1, book2, book3]);
+    orm.em.clear();
+
+    // cache author with favouriteBook and its tags
+    const jon = await orm.em.findOne(Author, author.id, ['favouriteBook.tags']);
+    const cache = jon!.toObject();
+
+    // merge cached author with his references
+    orm.em.clear();
+    const cachedAuthor = orm.em.merge(Author, cache);
+    expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
+    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([
+      'BookTag-' + tag1.id,
+      'BookTag-' + tag3.id,
+      'Author-' + author.id,
+      'Book-' + book1.id,
+    ]);
+    expect(author).not.toBe(cachedAuthor);
+    expect(author.id).toBe(cachedAuthor.id);
+    const book4 = new Book('My Life on The Wall, part 4', cachedAuthor);
+    await orm.em.persist(book4);
+
+    // merge detached author
+    orm.em.clear();
+    const cachedAuthor2 = orm.em.merge(author);
+    expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook.author);
+    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([
+      'Author-' + author.id,
+      'Book-' + book1.id,
+      'BookTag-' + tag1.id,
+      'Book-' + book2.id,
+      'BookTag-' + tag2.id,
+      'Book-' + book3.id,
+      'BookTag-' + tag4.id,
+      'BookTag-' + tag5.id,
+      'BookTag-' + tag3.id,
+    ]);
+    expect(author).toBe(cachedAuthor2);
+    expect(author.id).toBe(cachedAuthor2.id);
+    const book5 = new Book('My Life on The Wall, part 5', cachedAuthor2);
+    await orm.em.persist(book5);
   });
 
   test('cascade persist on owning side', async () => {
