@@ -4,6 +4,7 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger } from '../lib/utils';
+import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
 /**
  * @class EntityManagerMySqlTest
@@ -61,6 +62,13 @@ describe('EntityManagerMySql', () => {
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: DELETE FROM \`not_existing\``;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+  });
+
+  test('connection returns correct URL', async () => {
+    const config = new Configuration({ clientUrl: 'mysql://example.host.com', port: 1234, user: 'usr', password: 'pw' } as any, false);
+    const connection = new MySqlConnection(config);
+    await expect(connection.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
+    await expect(orm.em.getConnection().getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {

@@ -38,6 +38,10 @@ export class SqliteConnection extends Connection {
     return '';
   }
 
+  getClientUrl(): string {
+    return '';
+  }
+
   async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
     params = params.map(p => {
       if (p instanceof Date) {

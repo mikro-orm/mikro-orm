@@ -63,6 +63,13 @@ export abstract class Connection {
     return ret;
   }
 
+  getClientUrl(): string {
+    const options = this.getConnectionOptions();
+    const url = new URL(this.config.getClientUrl(true));
+
+    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
+  }
+
   protected async executeQuery<T>(query: string, params: any[], cb: () => Promise<T>): Promise<T> {
     try {
       const now = Date.now();

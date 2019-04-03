@@ -4,6 +4,7 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './en
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { Logger } from '../lib/utils';
+import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 /**
  * @class EntityManagerPostgreTest
@@ -61,6 +62,13 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `relation "not_existing" does not exist\n in query: DELETE FROM "not_existing"`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
+  });
+
+  test('connection returns correct URL', async () => {
+    const config = new Configuration({ clientUrl: 'postgre://example.host.com', port: 1234, user: 'usr', password: 'pw' } as any, false);
+    const connection = new PostgreSqlConnection(config);
+    await expect(connection.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
+    await expect(orm.em.getConnection().getClientUrl()).toBe('postgre://postgres@127.0.0.1:5432');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {
