@@ -65,10 +65,15 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('connection returns correct URL', async () => {
-    const config = new Configuration({ clientUrl: 'postgre://example.host.com', port: 1234, user: 'usr', password: 'pw' } as any, false);
-    const connection = new PostgreSqlConnection(config);
-    await expect(connection.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
-    await expect(orm.em.getConnection().getClientUrl()).toBe('postgre://postgres@127.0.0.1:5432');
+    const conn1 = new PostgreSqlConnection(new Configuration({
+      clientUrl: 'postgre://example.host.com',
+      port: 1234,
+      user: 'usr',
+      password: 'pw'
+    } as any, false));
+    await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
+    const conn2 = new PostgreSqlConnection(new Configuration({ type: 'postgresql', port: 5433 } as any, false));
+    await expect(conn2.getClientUrl()).toBe('postgre://postgres@127.0.0.1:5433');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {

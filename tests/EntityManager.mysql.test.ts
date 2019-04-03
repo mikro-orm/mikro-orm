@@ -65,10 +65,15 @@ describe('EntityManagerMySql', () => {
   });
 
   test('connection returns correct URL', async () => {
-    const config = new Configuration({ clientUrl: 'mysql://example.host.com', port: 1234, user: 'usr', password: 'pw' } as any, false);
-    const connection = new MySqlConnection(config);
-    await expect(connection.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
-    await expect(orm.em.getConnection().getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
+    const conn1 = new MySqlConnection(new Configuration({
+      clientUrl: 'mysql://example.host.com',
+      port: 1234,
+      user: 'usr',
+      password: 'pw'
+    } as any, false));
+    await expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
+    const conn2 = new MySqlConnection(new Configuration({ type: 'mysql', port: 3307 } as any, false));
+    await expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
   test('should throw when trying to search by entity instead of identifier', async () => {
