@@ -47,3 +47,7 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
   - [Usage with NestJS](usage-with-nestjs.md)
   - [Usage with Vanilla JS](usage-with-js.md)
   - [Creating custom driver](custom-driver.md)
+- Example integrations
+  - [Express + MongoDB + TypeScript](https://github.com/B4nan/mikro-orm-examples/tree/master/express-ts)
+  - [Nest + MySQL + TypeScript](https://github.com/B4nan/mikro-orm-examples/tree/master/nest)
+  - [Express + MongoDB + JavaScript](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js)

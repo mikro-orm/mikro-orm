@@ -31,6 +31,18 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 - [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
 - [Vanilla JS support](https://b4nan.github.io/mikro-orm/usage-with-js/)
 
+## Example integrations
+
+You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/B4nan/mikro-orm-examples): 
+
+### TypeScript examples
+
+- [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-ts)
+- [Nest + MySQL](https://github.com/B4nan/mikro-orm-examples/tree/master/nest)
+
+### JavaScript examples 
+- [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js)
+
 ## Quick start
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
