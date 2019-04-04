@@ -24,7 +24,7 @@ export abstract class Connection {
   abstract async close(force?: boolean): Promise<void>;
 
   /**
-   * Returns default client url for given driver (e.g. mongodb://localhost:27017 for mongodb)
+   * Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
    */
   abstract getDefaultClientUrl(): string;
 

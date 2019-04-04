@@ -27,7 +27,7 @@ export class MongoConnection extends Connection {
   }
 
   getDefaultClientUrl(): string {
-    return 'mongodb://localhost:27017';
+    return 'mongodb://127.0.0.1:27017';
   }
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
@@ -40,6 +40,14 @@ export class MongoConnection extends Connection {
     }
 
     return ret;
+  }
+
+  getClientUrl(): string {
+    const options = this.getConnectionOptions();
+    const clientUrl = this.config.getClientUrl(true);
+    const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
+
+    return match ? `${match[1]}://${options.auth ? options.auth.user + ':*****@' : ''}${match[2]}` : clientUrl;
   }
 
   async execute(query: string): Promise<any> {

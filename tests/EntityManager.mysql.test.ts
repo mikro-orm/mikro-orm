@@ -69,7 +69,7 @@ describe('EntityManagerMySql', () => {
       clientUrl: 'mysql://example.host.com',
       port: 1234,
       user: 'usr',
-      password: 'pw'
+      password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
     const conn2 = new MySqlConnection(new Configuration({ type: 'mysql', port: 3307 } as any, false));

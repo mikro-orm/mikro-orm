@@ -317,6 +317,23 @@ describe('EntityManagerMongo', () => {
     });
   });
 
+  test('connection returns correct URL', async () => {
+    const conn1 = new MongoConnection(new Configuration({
+      clientUrl: 'mongodb://example.host.com:34500',
+      dbName: 'test-db-name',
+      user: 'usr',
+      password: 'pw',
+    } as any, false));
+    await expect(conn1.getClientUrl()).toBe('mongodb://usr:*****@example.host.com:34500');
+    const conn2 = new MongoConnection(new Configuration({ type: 'mongo' } as any, false));
+    await expect(conn2.getClientUrl()).toBe('mongodb://127.0.0.1:27017');
+    const clientUrl = 'mongodb://user:Q#ais@2d-Aa_43:ui!0d.ai6d@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...';
+    const conn3 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl } as any, false));
+    await expect(conn3.getClientUrl()).toBe('mongodb://user:*****@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...');
+    const conn4 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
+    await expect(conn4.getClientUrl()).toBe('invalid-url-that-was-not-properly-parsed');
+  });
+
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author);
     const jon = new Author('Jon Snow', 'snow@wall.st');

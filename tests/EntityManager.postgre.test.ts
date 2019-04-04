@@ -69,7 +69,7 @@ describe('EntityManagerPostgre', () => {
       clientUrl: 'postgre://example.host.com',
       port: 1234,
       user: 'usr',
-      password: 'pw'
+      password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
     const conn2 = new PostgreSqlConnection(new Configuration({ type: 'postgresql', port: 5433 } as any, false));
