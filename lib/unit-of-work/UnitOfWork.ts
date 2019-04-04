@@ -259,8 +259,9 @@ export class UnitOfWork {
     }
 
     const collection = entity[prop.name as keyof T] as Collection<IEntity>;
+    const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(true)) {
+    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(requireFullyInitialized)) {
       collection.getItems().forEach(item => this.cascade(item, type, visited));
     }
   }
