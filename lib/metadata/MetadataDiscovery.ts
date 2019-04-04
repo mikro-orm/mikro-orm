@@ -1,4 +1,5 @@
 import { sync as globby } from 'globby';
+import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
@@ -79,10 +80,10 @@ export class MetadataDiscovery {
     this.logger.debug(`- processing entity ${entity.name}`);
 
     const meta = MetadataStorage.getMetadata(entity.name);
-    const cache = this.cache.get(entity.name);
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
     meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '');
+    const cache = meta.path && this.cache.get(entity.name + extname(meta.path));
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${entity.name}`);
@@ -108,7 +109,7 @@ export class MetadataDiscovery {
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
-      this.cache.set(entity.name, copy, meta.path);
+      this.cache.set(entity.name + extname(meta.path), copy, meta.path);
     }
   }
 

@@ -32,7 +32,7 @@ describe('EntityManagerSqlite', () => {
   test('onUpdate should be re-hydrated when loading metadata from cache', async () => {
     const provider = new JavaScriptMetadataProvider(orm.config);
     const cacheAdapter = orm.config.getCacheAdapter();
-    const cache = cacheAdapter.get('Author3');
+    const cache = cacheAdapter.get('Author3.js');
     const meta = {} as EntityMetadata;
     provider.loadFromCache(meta, cache);
     expect(meta.properties['updatedAt'].onUpdate).toBeDefined();
