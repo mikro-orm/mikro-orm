@@ -1,8 +1,39 @@
+<a name="2.1.0"></a>
+## [2.1.0](https://github.com/B4nan/mikro-orm/compare/v2.0.3...v2.1.0) (2019-04-04)
+
+### Bug Fixes
+
+* **core**: rename `IEntity.uuid` to `__uuid` to allow using uuid as property ([44eb778](https://github.com/B4nan/mikro-orm/commit/44eb778))
+* **core**: do not require PK when computing change set ([67415f6](https://github.com/B4nan/mikro-orm/commit/67415f6))
+* **core**: support custom `toJSON` implementation in complex structures ([2a9f6da](https://github.com/B4nan/mikro-orm/commit/2a9f6da))
+* **core**: support self-referencing in many to one association ([0fe4ec7](https://github.com/B4nan/mikro-orm/commit/0fe4ec7), [2499019](https://github.com/B4nan/mikro-orm/commit/2499019))
+* **drivers**: log correct client url (based on other connection options) ([79f37bd](https://github.com/B4nan/mikro-orm/commit/79f37bd)), closes [#29](https://github.com/B4nan/mikro-orm/issues/29)
+* **mysql**: convert numeric value of bool fields to boolean ([133afaa](https://github.com/B4nan/mikro-orm/commit/133afaa))
+* **serializing**: always initialize collections when populating ([5290737](https://github.com/B4nan/mikro-orm/commit/5290737))
+
+### Features
+
+* **core**: add support for complex query conditions in SQL QueryBuilder ([0ea3f41](https://github.com/B4nan/mikro-orm/commit/0ea3f41))
+* **core**: allow using different PK than id (e.g. uuid) ([40bcdc0](https://github.com/B4nan/mikro-orm/commit/40bcdc0))
+* **core**: improve support for ts-node ([220bcaa](https://github.com/B4nan/mikro-orm/commit/220bcaa))
+* **core**: implement `Cascade.MERGE` and `Cascade.ALL` ([#27](https://github.com/B4nan/mikro-orm/issues/27))), closes [#16](https://github.com/B4nan/mikro-orm/issues/16)
+* **core**: support cascade merging detached entity ([8801960](https://github.com/B4nan/mikro-orm/commit/8801960))
+* **core**: support smart search conditions ([5537156](https://github.com/B4nan/mikro-orm/commit/5537156)), closes [#20](https://github.com/B4nan/mikro-orm/issues/20)
+* **core**: support wrapped query with operator in QueryBuilder ([8a967b4](https://github.com/B4nan/mikro-orm/commit/8a967b4))
+* **drivers**: add support for **PostgreSQL** ([edb6eec](https://github.com/B4nan/mikro-orm/commit/edb6eec)), closes [#17](https://github.com/B4nan/mikro-orm/issues/17)
+* **drivers**: allow choosing driver via new `type` option ([9e765aa](https://github.com/B4nan/mikro-orm/commit/9e765aa))
+* **drivers**: allow ordering of 1:M collections ([8cfb62d](https://github.com/B4nan/mikro-orm/commit/8cfb62d))
+* **mongo**: support using native helpers on collections directly ([5d727e9](https://github.com/B4nan/mikro-orm/commit/5d727e9))
+* **mongo**: support user and password connection options ([a2d9250](https://github.com/B4nan/mikro-orm/commit/a2d9250))
+* **query-builder**: add support for custom query expressions ([#28](https://github.com/B4nan/mikro-orm/pull/28))
+* **schema**: add schema generator for SQL ([#26](https://github.com/B4nan/mikro-orm/pull/26))
+
+
+
 <a name="2.0.3"></a>
 ## [2.0.3](https://github.com/B4nan/mikro-orm/compare/v2.0.2...v2.0.3) (2019-03-12)
 
 ### Bug Fixes
-
 
 * allow masking of passwords with special characters ([e2bf26d](https://github.com/B4nan/mikro-orm/commit/e2bf26d))
 * do not cache Hydrator as it would have reference to wrong factory ([fd124d5](https://github.com/B4nan/mikro-orm/commit/fd124d5))
