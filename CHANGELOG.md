@@ -1,3 +1,12 @@
+<a name="2.1.1"></a>
+## [2.1.1](https://github.com/B4nan/mikro-orm/compare/v2.1.0...v2.1.1) (2019-04-05)
+
+### Features
+
+* **core**: add support for merging object properties in `IEntity.assign()` ([3b401ed](https://github.com/B4nan/mikro-orm/commit/3b401ed)), closes [#35](https://github.com/B4nan/mikro-orm/issues/35)
+
+
+
 <a name="2.1.0"></a>
 ## [2.1.0](https://github.com/B4nan/mikro-orm/compare/v2.0.3...v2.1.0) (2019-04-04)
 
