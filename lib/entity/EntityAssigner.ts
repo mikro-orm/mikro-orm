@@ -8,12 +8,15 @@ import { ReferenceType } from './enums';
 
 export class EntityAssigner {
 
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties = false): void {
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): void;
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): void;
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): void {
     const meta = MetadataStorage.getMetadata(entity.constructor.name);
     const props = meta.properties;
+    const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
 
     Object.keys(data).forEach(prop => {
-      if (onlyProperties && !(prop in props)) {
+      if (options.onlyProperties && !(prop in props)) {
         return;
       }
 
@@ -30,10 +33,14 @@ export class EntityAssigner {
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
-        entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
+        return entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
-      entity[prop as keyof T] = value;
+      if (options.mergeObjects) {
+        Utils.merge(entity[prop as keyof T], value);
+      } else {
+        entity[prop as keyof T] = value;
+      }
     });
   }
 
@@ -87,4 +94,9 @@ export class EntityAssigner {
     return item;
   }
 
+}
+
+export interface AssignOptions {
+  onlyProperties?: boolean;
+  mergeObjects?: boolean;
 }

@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { EntityManager } from '../EntityManager';
 import { IPrimaryKey } from './PrimaryKey';
-import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
+import { AssignOptions, Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
 
@@ -30,7 +30,7 @@ export interface IEntity<K = number | string> {
   init(populated?: boolean): Promise<this>;
   toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
-  assign(data: any): void;
+  assign(data: any, options?: AssignOptions): void;
   __uuid: string;
   __em: EntityManager;
   __initialized?: boolean;

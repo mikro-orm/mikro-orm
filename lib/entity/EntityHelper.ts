@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 import { EntityClass, EntityData, EntityMetadata, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { EntityTransformer } from './EntityTransformer';
-import { EntityAssigner } from './EntityAssigner';
+import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
 export class EntityHelper {
 
@@ -24,8 +24,8 @@ export class EntityHelper {
     EntityHelper.definePrimaryKeyProperties(meta);
 
     if (!meta.prototype.assign) { // assign can be overridden
-      meta.prototype.assign = function (data: EntityData<T>): void {
-        EntityAssigner.assign(this, data);
+      meta.prototype.assign = function (data: EntityData<T>, options?: AssignOptions): void {
+        EntityAssigner.assign(this, data, options);
       };
     }
 

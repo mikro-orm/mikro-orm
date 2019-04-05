@@ -28,4 +28,18 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
+By default, `IEntity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
+e.g. it does not merge things recursively. To enable deep merging of object properties, 
+use second parameter to enable `mergeObjects` flag:
+
+```typescript
+book.meta = { foo: 1, bar: 2 };
+
+book.assign({ meta: { foo: 3 } }, { mergeObjects: true });
+console.log(book.meta); // { foo: 3, bar: 2 }
+
+book.assign({ meta: { foo: 4 } });
+console.log(book.meta); // { foo: 4 }
+```
+
 [&larr; Back to table of contents](index.md#table-of-contents)

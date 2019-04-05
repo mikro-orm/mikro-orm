@@ -56,6 +56,18 @@ describe('EntityHelperMySql', () => {
     expect(book.tags.getIdentifiers()).toMatchObject([tag2.id]);
   });
 
+  test('#assign() allows deep merging of object properties [mysql]', async () => {
+    const jon = new Author2('Jon Snow', 'snow@wall.st');
+    const book = new Book2('Book2', jon);
+    book.meta = { items: 5, category: 'test' };
+    book.assign({ meta: { items: 3, category: 'foo' } });
+    expect(book.meta).toEqual({ items: 3, category: 'foo' });
+    book.assign({ meta: { category: 'bar' } }, { mergeObjects: true });
+    expect(book.meta).toEqual({ items: 3, category: 'bar' });
+    book.assign({ meta: { category: 'bar' } });
+    expect(book.meta).toEqual({ category: 'bar' });
+  });
+
   afterAll(async () => orm.close(true));
 
 });
