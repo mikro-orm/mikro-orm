@@ -66,6 +66,9 @@ describe('EntityHelperMySql', () => {
     expect(book.meta).toEqual({ items: 3, category: 'bar' });
     book.assign({ meta: { category: 'bar' } });
     expect(book.meta).toEqual({ category: 'bar' });
+    jon.identities = ['1', '2'];
+    jon.assign({ identities: ['3', '4'] }, { mergeObjects: true });
+    expect(jon.identities).toEqual(['3', '4']);
   });
 
   afterAll(async () => orm.close(true));

@@ -36,7 +36,7 @@ export class EntityAssigner {
         return entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
-      if (options.mergeObjects) {
+      if (options.mergeObjects && Utils.isObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
       } else {
         entity[prop as keyof T] = value;
