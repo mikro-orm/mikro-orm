@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Cascade, Collection, Entity, EntityAssigner, ManyToOne, OneToMany, Property,
+  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -33,6 +33,9 @@ export class Author extends BaseEntity {
 
   @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   books = new Collection<Book>(this);
+
+  @ManyToMany({ entity: () => Author, owner: true })
+  friends: Collection<Author> = new Collection<Author>(this);
 
   @ManyToOne()
   favouriteBook: Book;

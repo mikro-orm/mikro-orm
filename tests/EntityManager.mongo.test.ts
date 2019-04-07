@@ -1057,6 +1057,21 @@ describe('EntityManagerMongo', () => {
     expect(jon!.favouriteBook.title).toBe(book1.title);
   });
 
+  test('self referencing M:N (1 step)', async () => {
+    const a1 = new Author('A1', 'a1@wall.st');
+    const a2 = new Author('A2', 'a2@wall.st');
+    const a3 = new Author('A3', 'a3@wall.st');
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    author.friends.add(a1, a2, a3, author);
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const jon = await orm.em.findOne(Author, author.id, ['friends']);
+    const authors = await orm.em.find(Author, {}, { orderBy: { name: QueryOrder.ASC } });
+    expect(jon!.friends.isInitialized(true)).toBe(true);
+    expect(jon!.friends.toArray()).toMatchObject(authors.map(a => a.toJSON()));
+  });
+
   test('EM do not support transactions', async () => {
     await expect(orm.em.beginTransaction()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');

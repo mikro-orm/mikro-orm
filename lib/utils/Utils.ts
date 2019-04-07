@@ -2,8 +2,8 @@ import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityMetadata, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { ArrayCollection } from '../entity';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { ArrayCollection, Collection, ReferenceType } from '../entity';
 
 export class Utils {
 
@@ -201,6 +201,14 @@ export class Utils {
     }
 
     return ret;
+  }
+
+  static isCollection(item: any, prop?: EntityProperty, type?: ReferenceType): item is Collection<IEntity> {
+    if (!(item instanceof Collection)) {
+      return false;
+    }
+
+    return !(prop && type) || prop.reference === type;
   }
 
 }

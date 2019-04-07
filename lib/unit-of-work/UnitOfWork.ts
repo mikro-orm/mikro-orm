@@ -22,7 +22,7 @@ export class UnitOfWork {
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
   private readonly changeSets: ChangeSet<IEntity>[] = [];
-  private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity>][] = [];
+  private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity> | Collection<IEntity>][] = [];
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
@@ -159,7 +159,7 @@ export class UnitOfWork {
     }
   }
 
-  private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty, reference: any, visited: IEntity[]): void {
+  private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: IEntity[]): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.hasIdentifier(reference) && visited.includes(reference)) {
       this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
       delete parent[prop.name as keyof T];
@@ -167,8 +167,15 @@ export class UnitOfWork {
       return;
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && (reference as Collection<IEntity>).isDirty()) {
-      (reference as Collection<IEntity>).getItems()
+    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty() && this.isCollectionSelfReferenced(reference, visited)) {
+      this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
+      parent[prop.name] = new Collection<IEntity>(parent) as T[keyof T];
+
+      return;
+    }
+
+    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
+      reference.getItems()
         .filter(item => !this.originalEntityData[item.__uuid])
         .forEach(item => this.findNewEntities(item, visited));
     } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.originalEntityData[reference.__uuid]) {
@@ -264,6 +271,11 @@ export class UnitOfWork {
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(requireFullyInitialized)) {
       collection.getItems().forEach(item => this.cascade(item, type, visited));
     }
+  }
+
+  private isCollectionSelfReferenced(collection: Collection<IEntity>, visited: IEntity[]): boolean {
+    const filtered = collection.getItems().filter(item => !this.originalEntityData[item.__uuid]);
+    return filtered.some(items => visited.includes(items));
   }
 
 }
