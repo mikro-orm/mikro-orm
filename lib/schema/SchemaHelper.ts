@@ -74,4 +74,37 @@ export abstract class SchemaHelper {
     return true;
   }
 
+  createPrimaryKeyColumn(meta: EntityMetadata, prop: EntityProperty): string {
+    let ret = ' ' + this.getPrimaryKeySubtype(meta);
+
+    if (prop.type === 'number') {
+      ret += ' ' + this.getAutoIncrementStatement(meta);
+    }
+
+    return ret;
+  }
+
+  createColumn(meta: EntityMetadata, prop: EntityProperty, nullable: boolean): string {
+    let ret = '';
+
+    if (prop.unique) {
+      ret += ' UNIQUE';
+    }
+
+    if (!nullable) {
+      ret += ' NOT NULL';
+    }
+
+    // support falsy default values like `0`, `false or empty string
+    if (typeof prop.default !== 'undefined') {
+      return ret + ` DEFAULT ${prop.default}`;
+    }
+
+    if (nullable) {
+      return ret + ` DEFAULT NULL`;
+    }
+
+    return ret;
+  }
+
 }

@@ -13,19 +13,19 @@ export class Book2 {
   @Property({ default: 'CURRENT_TIMESTAMP(3)', length: 3 })
   createdAt = new Date();
 
-  @Property()
+  @Property({ nullable: true })
   title: string;
 
-  @Property({ type: 'text' })
+  @Property({ type: 'text', nullable: true })
   perex: string;
 
-  @Property({ type: 'float' })
+  @Property({ type: 'float', nullable: true })
   price: number;
 
-  @Property({ type: 'double' })
+  @Property({ type: 'double', nullable: true })
   double: number;
 
-  @Property()
+  @Property({ nullable: true })
   meta: Book2Meta;
 
   @ManyToOne({ cascade: [] })

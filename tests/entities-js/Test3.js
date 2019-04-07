@@ -25,6 +25,7 @@ const schema = {
   properties: {
     name: {
       type: 'string',
+      nullable: true,
     },
   },
   path: __filename,

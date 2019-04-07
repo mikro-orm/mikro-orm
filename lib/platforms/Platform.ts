@@ -38,6 +38,10 @@ export abstract class Platform {
     return this.schemaHelper;
   }
 
+  requiresNullableForAlteringColumn() {
+    return false;
+  }
+
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
    */

@@ -12,10 +12,10 @@ export class Author2 extends BaseEntity2 {
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
-  @Property({ length: 3 })
+  @Property({ length: 3, default: 'CURRENT_TIMESTAMP(3)' })
   createdAt = new Date();
 
-  @Property({ onUpdate: () => new Date(), length: 3 })
+  @Property({ onUpdate: () => new Date(), length: 3, default: 'CURRENT_TIMESTAMP(3)' })
   updatedAt = new Date();
 
   @Property()
@@ -24,16 +24,16 @@ export class Author2 extends BaseEntity2 {
   @Property({ unique: true })
   email: string;
 
-  @Property()
+  @Property({ nullable: true })
   age: number;
 
-  @Property()
+  @Property({ default: 0 })
   termsAccepted = false;
 
-  @Property()
+  @Property({ nullable: true })
   identities: string[];
 
-  @Property()
+  @Property({ nullable: true })
   born: Date;
 
   @OneToMany({ entity: () => Book2, fk: 'author', orderBy: { createdAt: QueryOrder.ASC } })

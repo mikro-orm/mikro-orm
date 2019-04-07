@@ -53,26 +53,16 @@ export class SchemaGenerator {
     return ret;
   }
 
-  private createTableColumn(meta: EntityMetadata, prop: EntityProperty): string {
+  private createTableColumn(meta: EntityMetadata, prop: EntityProperty, alter = false): string {
     const fieldName = prop.fieldName;
+    const ret = this.helper.quoteIdentifier(fieldName) + ' ' + this.type(prop);
+    const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
 
-    let ret = this.helper.quoteIdentifier(fieldName) + ' ' + this.type(prop);
-
-    if (prop.unique) {
-      ret += ' UNIQUE';
+    if (prop.primary) {
+      return ret + this.helper.createPrimaryKeyColumn(meta, prop);
     }
 
-    if (!prop.primary) {
-      return ret + ` DEFAULT ${prop.default || 'NULL'}`;
-    }
-
-    ret += ' ' + this.helper.getPrimaryKeySubtype(meta);
-
-    if (prop.type === 'number') {
-      ret += ' ' + this.helper.getAutoIncrementStatement(meta);
-    }
-
-    return ret;
+    return ret + this.helper.createColumn(meta, prop, nullable);
   }
 
   private createIndexes(meta: EntityMetadata): string {
@@ -113,7 +103,7 @@ export class SchemaGenerator {
       return this.createForeignConstraint(meta, prop, index);
     }
 
-    let ret = ' ADD ' + this.createTableColumn(meta, prop) + ' ';
+    let ret = ' ADD ' + this.createTableColumn(meta, prop, true) + ' ';
     ret += this.createForeignKeyReference(prop);
 
     return ret;

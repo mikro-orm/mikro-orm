@@ -9,4 +9,8 @@ export class SqlitePlatform extends Platform {
     return true;
   }
 
+  requiresNullableForAlteringColumn() {
+    return true;
+  }
+
 }

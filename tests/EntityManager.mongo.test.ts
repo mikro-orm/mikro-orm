@@ -303,6 +303,7 @@ describe('EntityManagerMongo', () => {
     expect(driver instanceof MongoDriver).toBe(true);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
+    expect(driver.getPlatform().requiresNullableForAlteringColumn()).toBe(false); // test default Platform value (not used by mongo)
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
     expect(() => driver.getPlatform().getSchemaHelper()).toThrowError('MongoPlatform does not provide SchemaHelper');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');

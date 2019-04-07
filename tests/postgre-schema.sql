@@ -8,12 +8,12 @@ DROP SEQUENCE IF EXISTS "author2_seq";
 CREATE SEQUENCE "author2_seq";
 CREATE TABLE "author2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('author2_seq'),
-  "created_at" timestamp(3) DEFAULT NULL,
-  "updated_at" timestamp(3) DEFAULT NULL,
-  "name" varchar(255) DEFAULT NULL,
-  "email" varchar(255) UNIQUE DEFAULT NULL,
+  "created_at" timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  "updated_at" timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  "name" varchar(255) NOT NULL,
+  "email" varchar(255) UNIQUE NOT NULL,
   "age" int DEFAULT NULL,
-  "terms_accepted" boolean DEFAULT NULL,
+  "terms_accepted" boolean NOT NULL DEFAULT false,
   "identities" json DEFAULT NULL,
   "born" timestamp DEFAULT NULL,
   "favourite_book_uuid_pk" varchar(36) DEFAULT NULL,
@@ -27,7 +27,7 @@ DROP SEQUENCE IF EXISTS "book2_seq";
 
 CREATE TABLE "book2" (
   "uuid_pk" varchar(36) NOT NULL,
-  "created_at" timestamp(3) DEFAULT CURRENT_TIMESTAMP(3),
+  "created_at" timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   "title" varchar(255) DEFAULT NULL,
   "perex" text DEFAULT NULL,
   "price" float DEFAULT NULL,
@@ -46,7 +46,7 @@ DROP SEQUENCE IF EXISTS "book_tag2_seq";
 CREATE SEQUENCE "book_tag2_seq";
 CREATE TABLE "book_tag2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('book_tag2_seq'),
-  "name" varchar(50) DEFAULT NULL,
+  "name" varchar(50) NOT NULL,
   PRIMARY KEY ("id")
 );
 
@@ -57,8 +57,8 @@ DROP SEQUENCE IF EXISTS "publisher2_seq";
 CREATE SEQUENCE "publisher2_seq";
 CREATE TABLE "publisher2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('publisher2_seq'),
-  "name" varchar(255) DEFAULT NULL,
-  "type" varchar(10) DEFAULT NULL,
+  "name" varchar(255) NOT NULL,
+  "type" varchar(10) NOT NULL,
   PRIMARY KEY ("id")
 );
 
@@ -80,7 +80,7 @@ DROP SEQUENCE IF EXISTS "foo_bar2_seq";
 CREATE SEQUENCE "foo_bar2_seq";
 CREATE TABLE "foo_bar2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('foo_bar2_seq'),
-  "name" varchar(255) DEFAULT NULL,
+  "name" varchar(255) NOT NULL,
   PRIMARY KEY ("id")
 );
 
@@ -91,8 +91,8 @@ DROP SEQUENCE IF EXISTS "book2_to_book_tag2_seq";
 CREATE SEQUENCE "book2_to_book_tag2_seq";
 CREATE TABLE "book2_to_book_tag2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('book2_to_book_tag2_seq'),
-  "book2_uuid_pk" varchar(36) DEFAULT NULL,
-  "book_tag2_id" int check ("book_tag2_id" > 0) DEFAULT NULL,
+  "book2_uuid_pk" varchar(36) NOT NULL,
+  "book_tag2_id" int check ("book_tag2_id" > 0) NOT NULL,
   PRIMARY KEY ("id")
 );
 
@@ -103,8 +103,8 @@ DROP SEQUENCE IF EXISTS "publisher2_to_test2_seq";
 CREATE SEQUENCE "publisher2_to_test2_seq";
 CREATE TABLE "publisher2_to_test2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('publisher2_to_test2_seq'),
-  "publisher2_id" int check ("publisher2_id" > 0) DEFAULT NULL,
-  "test2_id" int check ("test2_id" > 0) DEFAULT NULL,
+  "publisher2_id" int check ("publisher2_id" > 0) NOT NULL,
+  "test2_id" int check ("test2_id" > 0) NOT NULL,
   PRIMARY KEY ("id")
 );
 

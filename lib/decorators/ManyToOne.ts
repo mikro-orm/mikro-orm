@@ -9,7 +9,9 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE] };
-    meta.properties[propertyName] = Object.assign(property, options) as EntityProperty;
+    const prop = Object.assign(property, options) as EntityProperty;
+    prop.nullable = !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL);
+    meta.properties[propertyName] = prop;
   };
 }
 

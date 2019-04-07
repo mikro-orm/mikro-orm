@@ -6,7 +6,7 @@ export class Test2 {
   @PrimaryKey()
   id: number;
 
-  @Property()
+  @Property({ nullable: true })
   name: string;
 
   static create(name: string) {

@@ -64,9 +64,13 @@ const schema = {
   name: 'Author3',
   extends: 'BaseEntity4',
   properties: {
-    createdAt: 'Date',
+    createdAt: {
+      type: 'Date',
+      nullable: true,
+    },
     updatedAt: {
       type: 'Date',
+      nullable: true,
       onUpdate: () => new Date(),
     },
     name: 'string',
@@ -74,10 +78,22 @@ const schema = {
       type: 'string',
       unique: true,
     },
-    age: 'number',
-    termsAccepted: 'boolean',
-    identities: 'string[]',
-    born: 'Date',
+    age: {
+      type: 'number',
+      nullable: true,
+    },
+    termsAccepted: {
+      type: 'boolean',
+      default: 0,
+    },
+    identities: {
+      type: 'string[]',
+      nullable: true,
+    },
+    born: {
+      type: 'Date',
+      nullable: true,
+    },
     books: {
       reference: ReferenceType.ONE_TO_MANY,
       fk: 'author',
