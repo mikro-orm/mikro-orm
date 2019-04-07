@@ -64,6 +64,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   reference: ReferenceType;
   fieldName: string;
   default?: string;
+  unique?: boolean;
   cascade: Cascade[];
   onUpdate?: () => any;
   owner: boolean;

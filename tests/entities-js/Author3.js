@@ -70,7 +70,10 @@ const schema = {
       onUpdate: () => new Date(),
     },
     name: 'string',
-    email: 'string',
+    email: {
+      type: 'string',
+      unique: true,
+    },
     age: 'number',
     termsAccepted: 'boolean',
     identities: 'string[]',

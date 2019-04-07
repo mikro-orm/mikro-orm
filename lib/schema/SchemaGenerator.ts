@@ -58,6 +58,10 @@ export class SchemaGenerator {
 
     let ret = this.helper.quoteIdentifier(fieldName) + ' ' + this.type(prop);
 
+    if (prop.unique) {
+      ret += ' UNIQUE';
+    }
+
     if (!prop.primary) {
       return ret + ` DEFAULT ${prop.default || 'NULL'}`;
     }

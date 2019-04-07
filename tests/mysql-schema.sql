@@ -9,7 +9,7 @@ CREATE TABLE `author2` (
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
+  `email` varchar(255) UNIQUE DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
   `terms_accepted` tinyint(1) DEFAULT NULL,
   `identities` json DEFAULT NULL,

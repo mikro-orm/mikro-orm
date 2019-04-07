@@ -20,4 +20,5 @@ export type PropertyOptions = {
   length?: any;
   onUpdate?: () => any;
   default?: string;
+  unique?: boolean;
 }

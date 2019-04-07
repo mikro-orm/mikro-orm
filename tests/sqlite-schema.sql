@@ -8,7 +8,7 @@ CREATE TABLE "author3" (
   "created_at" TEXT DEFAULT NULL,
   "updated_at" TEXT DEFAULT NULL,
   "name" TEXT DEFAULT NULL,
-  "email" TEXT DEFAULT NULL,
+  "email" TEXT UNIQUE DEFAULT NULL,
   "age" INTEGER DEFAULT NULL,
   "terms_accepted" INTEGER DEFAULT NULL,
   "identities" TEXT DEFAULT NULL,

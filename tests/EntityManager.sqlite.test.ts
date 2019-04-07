@@ -65,7 +65,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('transactions', async () => {
-    const god1 = new Author3('God1', 'hello@heaven.god');
+    const god1 = new Author3('God1', 'hello@heaven1.god');
     await orm.em.beginTransaction();
     await orm.em.persist(god1);
     await orm.em.rollback();
@@ -73,14 +73,14 @@ describe('EntityManagerSqlite', () => {
     expect(res1).toBeNull();
 
     await orm.em.beginTransaction();
-    const god2 = new Author3('God2', 'hello@heaven.god');
+    const god2 = new Author3('God2', 'hello@heaven2.god');
     await orm.em.persist(god2);
     await orm.em.commit();
     const res2 = await orm.em.findOne(Author3, { name: 'God2' });
     expect(res2).not.toBeNull();
 
     await orm.em.transactional(async em => {
-      const god3 = new Author3('God3', 'hello@heaven.god');
+      const god3 = new Author3('God3', 'hello@heaven3.god');
       await em.persist(god3);
     });
     const res3 = await orm.em.findOne(Author3, { name: 'God3' });
@@ -90,7 +90,7 @@ describe('EntityManagerSqlite', () => {
 
     try {
       await orm.em.transactional(async em => {
-        const god4 = new Author3('God4', 'hello@heaven.god');
+        const god4 = new Author3('God4', 'hello@heaven4.god');
         await em.persist(god4);
         throw err;
       });
@@ -104,7 +104,7 @@ describe('EntityManagerSqlite', () => {
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
       const driver = em.getDriver();
-      const god1 = new Author3('God1', 'hello@heaven.god');
+      const god1 = new Author3('God1', 'hello@heaven1.god');
       await driver.beginTransaction();
       await em.persist(god1);
       await driver.rollback();
@@ -112,7 +112,7 @@ describe('EntityManagerSqlite', () => {
       expect(res1).toBeNull();
 
       await driver.beginTransaction();
-      const god2 = new Author3('God2', 'hello@heaven.god');
+      const god2 = new Author3('God2', 'hello@heaven2.god');
       await em.persist(god2);
       await driver.commit();
       const res2 = await em.findOne(Author3, { name: 'God2' });
@@ -636,9 +636,9 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author3('Name 1', 'e-mail');
+    const author1 = new Author3('Name 1', 'e-mail1');
     const book = new Book3('test', author1);
-    const author2 = new Author3('Name 2', 'e-mail');
+    const author2 = new Author3('Name 2', 'e-mail2');
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]);

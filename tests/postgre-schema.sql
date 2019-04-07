@@ -11,7 +11,7 @@ CREATE TABLE "author2" (
   "created_at" timestamp(3) DEFAULT NULL,
   "updated_at" timestamp(3) DEFAULT NULL,
   "name" varchar(255) DEFAULT NULL,
-  "email" varchar(255) DEFAULT NULL,
+  "email" varchar(255) UNIQUE DEFAULT NULL,
   "age" int DEFAULT NULL,
   "terms_accepted" boolean DEFAULT NULL,
   "identities" json DEFAULT NULL,
