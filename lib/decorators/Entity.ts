@@ -53,10 +53,10 @@ export type EntityName<T extends IEntityType<T>> = string | EntityClass<T>;
 
 export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPrimaryKey; } & Record<string, any>;
 
-export interface EntityProperty {
-  name: string;
+export interface EntityProperty<T extends IEntityType<T> = any> {
+  name: string & keyof T;
   fk: string;
-  entity: () => EntityName<IEntity>;
+  entity: () => EntityName<T>;
   type: string;
   primary: boolean;
   length?: any;
@@ -84,7 +84,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   path: string;
   primaryKey: keyof T & string;
   serializedPrimaryKey: keyof T & string;
-  properties: { [K in keyof T & string]: EntityProperty };
+  properties: { [K in keyof T & string]: EntityProperty<T> };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
   hooks: Record<string, string[]>;
   prototype: EntityClass<T> & IEntity;
