@@ -35,7 +35,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
       return [];
     }
 
-    field = field || this.items[0].__primaryKeyField;
+    field = field || this.items[0].__serializedPrimaryKeyField;
 
     return this.getItems().map(i => i[field as keyof T]);
   }

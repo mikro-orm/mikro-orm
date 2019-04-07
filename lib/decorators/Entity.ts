@@ -38,6 +38,7 @@ export interface IEntity<K = number | string> {
   __primaryKey: K;
   __primaryKeyField: string & keyof IEntity;
   __serializedPrimaryKey: string & keyof IEntity;
+  __serializedPrimaryKeyField: string;
 }
 
 export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;

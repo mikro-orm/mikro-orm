@@ -94,6 +94,7 @@ export class EntityHelper {
           this[meta.primaryKey] = id;
         },
       },
+      __serializedPrimaryKeyField: { value: meta.serializedPrimaryKey },
       __serializedPrimaryKey: {
         get(): IPrimaryKey {
           return this[meta.serializedPrimaryKey];
