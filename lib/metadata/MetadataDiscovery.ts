@@ -82,7 +82,7 @@ export class MetadataDiscovery {
     const meta = MetadataStorage.getMetadata(entity.name);
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
-    meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '');
+    meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
     const cache = meta.path && this.cache.get(entity.name + extname(meta.path));
 
     if (cache) {

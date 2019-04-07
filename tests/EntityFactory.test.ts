@@ -28,6 +28,7 @@ describe('EntityFactory', () => {
     expect(metadata[BaseEntity.name].properties['foo'].type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
     expect(metadata[Author.name].path).toBe(__dirname + '/entities/Author.ts');
+    expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties['books'].type).toBe(Book.name);
     expect(metadata[Author.name].properties['books'].reference).toBe(ReferenceType.ONE_TO_MANY);
