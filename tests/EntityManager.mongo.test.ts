@@ -198,6 +198,19 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({});
   });
 
+  test('removing persisted entity via PK', async () => {
+    const author = new Author('name', 'email');
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    await repo.persist(author);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+    await orm.em.remove(Author, author.id);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.deleteMany\({"_id":"\w+"}\)/);
+  });
+
   test('should throw when trying to merge entity without id', async () => {
     const author = new Author('test', 'test');
     expect(() => orm.em.merge(author)).toThrowError(`You cannot merge entity 'Author' without identifier!`);

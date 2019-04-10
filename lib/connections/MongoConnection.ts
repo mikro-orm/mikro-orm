@@ -107,7 +107,7 @@ export class MongoConnection extends Connection {
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
     where = this.convertObjectIds(where);
     const res = await this.getCollection(collection).deleteMany(where);
-    const query = `db.getCollection("${collection}").deleteMany()`;
+    const query = `db.getCollection("${collection}").deleteMany(${JSON.stringify(where)})`;
     const now = Date.now();
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
