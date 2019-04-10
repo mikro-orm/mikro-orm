@@ -126,7 +126,7 @@ export class MetadataDiscovery {
       this.initManyToManyFields(meta, prop);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.initOneToManyFields(meta, prop);
     }
   }
@@ -134,7 +134,7 @@ export class MetadataDiscovery {
   private initFieldName(prop: EntityProperty): void {
     if (prop.reference === ReferenceType.SCALAR) {
       prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
-    } else if (prop.reference === ReferenceType.MANY_TO_ONE) {
+    } else if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       prop.fieldName = this.initManyToOneFieldName(prop, prop.name);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
       prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
@@ -167,8 +167,12 @@ export class MetadataDiscovery {
   }
 
   private initOneToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!prop.joinColumn && prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (!prop.joinColumn) {
       prop.joinColumn = this.namingStrategy.joinColumnName(prop.name);
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.inverseJoinColumn && prop.mappedBy) {
+      prop.inverseJoinColumn = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
     }
 
     if (!prop.referenceColumnName) {

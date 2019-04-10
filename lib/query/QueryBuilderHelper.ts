@@ -2,6 +2,8 @@ import { Utils } from '../utils';
 import { EntityMetadata } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
 import { Platform } from '../platforms';
+import { JoinOptions } from './QueryBuilder';
+import { ReferenceType } from '../entity';
 
 export class QueryBuilderHelper {
 
@@ -64,7 +66,7 @@ export class QueryBuilderHelper {
     return this.quoteChar + field + this.quoteChar;
   }
 
-  mapper(type: QueryType, field: string, value?: any): string {
+  mapper(type: QueryType, field: string, value?: any, alias?: string): string {
     let ret = field;
     const customExpression = field.match(/\(.*\)/);
 
@@ -75,6 +77,10 @@ export class QueryBuilderHelper {
 
     if (typeof value !== 'undefined') {
       ret += this.processValue(value);
+    }
+
+    if (alias) {
+      ret += ' AS ' + this.wrap(alias);
     }
 
     if (type !== QueryType.SELECT || customExpression || this.isQuoted(ret)) {
@@ -104,17 +110,26 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  processJoins(leftJoins: Record<string, [string, string, string, string, string]>): string {
-    return Object.values(leftJoins).map(([table, alias, column, , pk]) => {
-      return ` LEFT JOIN ${this.wrap(table)} AS ${this.wrap(alias)} ON ${this.wrap(this.alias)}.${this.wrap(pk)} = ${this.wrap(alias)}.${this.wrap(column)}`;
+  processJoins(leftJoins: Record<string, JoinOptions>): string {
+    return Object.values(leftJoins).map(join => {
+      return ` LEFT JOIN ${this.wrap(join.table)} AS ${this.wrap(join.alias)} ON ${this.wrap(this.alias)}.${this.wrap(join.primaryKey!)} = ${this.wrap(join.alias)}.${this.wrap(join.joinColumn!)}`;
     }).join('');
   }
 
-  mapJoinColumns(type: QueryType, join: [string, string, string, string, string]): string[] {
+  mapJoinColumns(type: QueryType, join: JoinOptions): string[] {
+    if (join.prop && join.prop.reference === ReferenceType.ONE_TO_ONE && !join.prop.owner) {
+      return [this.mapper(type, `${join.alias}.${join.inverseJoinColumn}`, undefined, join.prop.fieldName)];
+    }
+
     return [
-      this.mapper(type, `${join[1]}.${join[2]}`),
-      this.mapper(type, `${join[1]}.${join[3]}`),
+      this.mapper(type, `${join.alias}.${join.joinColumn}`),
+      this.mapper(type, `${join.alias}.${join.inverseJoinColumn}`),
     ];
+  }
+
+  isOneToOneInverse(field: string): boolean {
+    const prop = this.metadata[this.entityName] && this.metadata[this.entityName].properties[field];
+    return prop && prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
   }
 
   getTableName(entityName: string, wrap = false): string {

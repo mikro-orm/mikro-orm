@@ -1,4 +1,4 @@
-import { ManyToMany, ManyToOne, OneToMany, Property } from '../lib';
+import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '../lib';
 import { Test } from './entities';
 import { MetadataStorage } from '../lib/metadata';
 import { ReferenceType } from '../lib/entity';
@@ -7,6 +7,7 @@ class Test2 {}
 class Test3 {}
 class Test4 {}
 class Test5 {}
+class Test6 {}
 
 describe('decorators', () => {
 
@@ -31,6 +32,17 @@ describe('decorators', () => {
       name: 'test1',
     });
     expect(storage.Test3.properties.test1.entity()).toBe(Test);
+  });
+
+  test('OneToOne', () => {
+    const storage = MetadataStorage.getMetadata();
+    OneToOne({ entity: () => Test, inversedBy: 'test5' })(new Test6(), 'test1');
+    expect(storage.Test6.properties.test1).toMatchObject({
+      reference: ReferenceType.ONE_TO_ONE,
+      name: 'test1',
+      owner: true,
+    });
+    expect(storage.Test6.properties.test1.entity()).toBe(Test);
   });
 
   test('OneToMany', () => {

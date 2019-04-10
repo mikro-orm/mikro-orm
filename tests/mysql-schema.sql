@@ -65,6 +65,7 @@ DROP TABLE IF EXISTS `test2`;
 CREATE TABLE `test2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
+  `book_uuid_pk` varchar(36) UNIQUE DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -72,6 +73,17 @@ CREATE TABLE `test2` (
 DROP TABLE IF EXISTS `foo_bar2`;
 
 CREATE TABLE `foo_bar2` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `baz_id` int(11) unsigned UNIQUE DEFAULT NULL,
+  `foo_bar_id` int(11) unsigned UNIQUE DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `foo_baz2`;
+
+CREATE TABLE `foo_baz2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
@@ -110,6 +122,15 @@ ALTER TABLE `author2`
 ALTER TABLE `book2`
   ADD CONSTRAINT `book2_ibfk_1` FOREIGN KEY (`author_id`) REFERENCES `author2` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `book2_ibfk_2` FOREIGN KEY (`publisher_id`) REFERENCES `publisher2` (`id`) ON DELETE SET NULL;
+
+
+ALTER TABLE `test2`
+  ADD CONSTRAINT `test2_ibfk_1` FOREIGN KEY (`book_uuid_pk`) REFERENCES `book2` (`uuid_pk`) ON DELETE SET NULL;
+
+
+ALTER TABLE `foo_bar2`
+  ADD CONSTRAINT `foo_bar2_ibfk_1` FOREIGN KEY (`baz_id`) REFERENCES `foo_baz2` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `foo_bar2_ibfk_2` FOREIGN KEY (`foo_bar_id`) REFERENCES `foo_bar2` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 
 ALTER TABLE `book2_to_book_tag2`

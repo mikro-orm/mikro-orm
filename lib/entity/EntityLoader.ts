@@ -129,19 +129,18 @@ export class EntityLoader {
     return children;
   }
 
-  private getChildReferences<T extends IEntityType<T>>(entities: T[], prop: EntityProperty): IEntity[] {
-    const name = prop.name as keyof T;
-    const filtered = this.filterCollections(entities, name);
+  private getChildReferences<T extends IEntityType<T>>(entities: T[], prop: EntityProperty<T>): IEntity[] {
+    const filtered = this.filterCollections(entities, prop.name);
     const children: IEntity[] = [];
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      children.push(...filtered.map(e => e[name].owner));
+      children.push(...filtered.map(e => e[prop.name].owner));
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      children.push(...filtered.reduce((a, b) => [...a, ...(b[name] as Collection<IEntity>).getItems()], [] as IEntity[]));
+      children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as Collection<IEntity>).getItems()], [] as IEntity[]));
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
       children.push(...filtered);
-    } else { // MANY_TO_ONE
-      children.push(...entities.filter(e => Utils.isEntity(e[name]) && !(e[name] as IEntity).isInitialized()).map(e => e[name]));
+    } else { // MANY_TO_ONE or ONE_TO_ONE
+      children.push(...entities.filter(e => Utils.isEntity(e[prop.name]) && !(e[prop.name] as IEntity).isInitialized()).map(e => e[prop.name]));
     }
 
     return children;

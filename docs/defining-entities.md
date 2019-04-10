@@ -54,7 +54,7 @@ methods added to your entity's prototype via `@Entity` decorator.
 > this only when you define your primary key as `_id` instead of `id`.
 
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
-of reference decorators: `@ManyToOne`, `@OneToMany` and `@ManyToMany`. 
+of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
 
 Here is another example of `Author` entity, that was referenced from the `Book` one:
 

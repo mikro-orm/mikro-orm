@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
-import { Collection, Entity, IEntity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Collection, Entity, IEntity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
+import { Test2 } from './Test2';
 
 @Entity()
 export class Book2 {
@@ -33,6 +34,9 @@ export class Book2 {
 
   @ManyToOne({ cascade: [] })
   publisher: Publisher2;
+
+  @OneToOne({ cascade: [], mappedBy: 'book' })
+  test: Test2;
 
   @ManyToMany({ entity: () => BookTag2, inversedBy: 'books', cascade: [] })
   tags = new Collection<BookTag2>(this);

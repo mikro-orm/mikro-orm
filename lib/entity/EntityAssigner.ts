@@ -22,7 +22,7 @@ export class EntityAssigner {
 
       const value = data[prop as keyof EntityData<T>];
 
-      if (props[prop] && props[prop].reference === ReferenceType.MANY_TO_ONE && value) {
+      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], entity.__em);
       }
 

@@ -15,7 +15,7 @@ export * from './metadata/JavaScriptMetadataProvider';
 export * from './metadata/TypeScriptMetadataProvider';
 export * from './cache';
 export {
-  Entity, IEntity, EntityOptions, OneToMany, OneToManyOptions, ManyToOne, ManyToOneOptions,
+  Entity, IEntity, EntityOptions, OneToMany, OneToManyOptions, OneToOne, OneToOneOptions, ManyToOne, ManyToOneOptions,
   ManyToMany, ManyToManyOptions, Property, PropertyOptions, IPrimaryKey, PrimaryKey, PrimaryKeyOptions,
 } from './decorators';
 export * from './decorators/hooks';

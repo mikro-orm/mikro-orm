@@ -70,6 +70,7 @@ CREATE SEQUENCE "test2_seq";
 CREATE TABLE "test2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('test2_seq'),
   "name" varchar(255) DEFAULT NULL,
+  "book_uuid_pk" varchar(36) UNIQUE DEFAULT NULL,
   PRIMARY KEY ("id")
 );
 
@@ -80,6 +81,19 @@ DROP SEQUENCE IF EXISTS "foo_bar2_seq";
 CREATE SEQUENCE "foo_bar2_seq";
 CREATE TABLE "foo_bar2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('foo_bar2_seq'),
+  "name" varchar(255) NOT NULL,
+  "baz_id" int check ("baz_id" > 0) UNIQUE DEFAULT NULL,
+  "foo_bar_id" int check ("foo_bar_id" > 0) UNIQUE DEFAULT NULL,
+  PRIMARY KEY ("id")
+);
+
+
+DROP TABLE IF EXISTS "foo_baz2" CASCADE;
+DROP SEQUENCE IF EXISTS "foo_baz2_seq";
+
+CREATE SEQUENCE "foo_baz2_seq";
+CREATE TABLE "foo_baz2" (
+  "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('foo_baz2_seq'),
   "name" varchar(255) NOT NULL,
   PRIMARY KEY ("id")
 );
@@ -117,6 +131,15 @@ ALTER TABLE "author2"
 ALTER TABLE "book2"
   ADD CONSTRAINT "book2_ibfk_1" FOREIGN KEY ("author_id") REFERENCES "author2" ("id") ON DELETE SET NULL,
   ADD CONSTRAINT "book2_ibfk_2" FOREIGN KEY ("publisher_id") REFERENCES "publisher2" ("id") ON DELETE SET NULL;
+
+
+ALTER TABLE "test2"
+  ADD CONSTRAINT "test2_ibfk_1" FOREIGN KEY ("book_uuid_pk") REFERENCES "book2" ("uuid_pk") ON DELETE SET NULL;
+
+
+ALTER TABLE "foo_bar2"
+  ADD CONSTRAINT "foo_bar2_ibfk_1" FOREIGN KEY ("baz_id") REFERENCES "foo_baz2" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT "foo_bar2_ibfk_2" FOREIGN KEY ("foo_bar_id") REFERENCES "foo_bar2" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 
 ALTER TABLE "book2_to_book_tag2"

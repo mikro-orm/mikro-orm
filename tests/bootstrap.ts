@@ -1,6 +1,6 @@
 import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, Publisher2, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 import { SqliteConnection } from '../lib/connections/SqliteConnection';
@@ -42,7 +42,7 @@ export async function initORMMySql() {
   }
 
   const orm = await MikroORM.init({
-    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, BaseEntity2, BaseEntity22],
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
     port,
@@ -60,7 +60,7 @@ export async function initORMMySql() {
 
 export async function initORMPostgreSql() {
   const orm = await MikroORM.init({
-    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, BaseEntity2, BaseEntity22],
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,

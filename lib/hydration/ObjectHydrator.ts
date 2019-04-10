@@ -6,7 +6,7 @@ import { Utils } from '../utils';
 export class ObjectHydrator extends Hydrator {
 
   protected hydrateProperty<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+    if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateManyToOne(value, entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this.hydrateOneToMany(entity, prop, value);

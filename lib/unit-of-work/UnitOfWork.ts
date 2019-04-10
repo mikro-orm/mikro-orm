@@ -160,27 +160,39 @@ export class UnitOfWork {
   }
 
   private processReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: IEntity[]): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.hasIdentifier(reference) && visited.includes(reference)) {
-      this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
-      delete parent[prop.name as keyof T];
+    const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
-      return;
+    if (isToOne && reference) {
+      return this.processToOneReference(parent, prop, reference, visited);
     }
 
-    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty() && this.isCollectionSelfReferenced(reference, visited)) {
+    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
+      this.processToManyReference(reference, visited, parent, prop);
+    }
+  }
+
+  private processToOneReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: IEntity[]): void {
+    if (!this.hasIdentifier(reference) && visited.includes(reference)) {
+      this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
+      delete parent[prop.name as keyof T];
+    }
+
+    if (!this.originalEntityData[reference.__uuid]) {
+      this.findNewEntities(reference, visited);
+    }
+  }
+
+  private processToManyReference<T extends IEntityType<T>>(reference: Collection<IEntity>, visited: IEntity[], parent: T, prop: EntityProperty<T>): void {
+    if (this.isCollectionSelfReferenced(reference, visited)) {
       this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
       parent[prop.name] = new Collection<IEntity>(parent) as T[keyof T];
 
       return;
     }
 
-    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
-      reference.getItems()
-        .filter(item => !this.originalEntityData[item.__uuid])
-        .forEach(item => this.findNewEntities(item, visited));
-    } else if (prop.reference === ReferenceType.MANY_TO_ONE && reference && !this.originalEntityData[reference.__uuid]) {
-      this.findNewEntities(reference, visited);
-    }
+    reference.getItems()
+      .filter(item => !this.originalEntityData[item.__uuid])
+      .forEach(item => this.findNewEntities(item, visited));
   }
 
   private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
@@ -261,7 +273,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE && entity[prop.name as keyof T]) {
+    if ((prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) && entity[prop.name as keyof T]) {
       return this.cascade(entity[prop.name as keyof T], type, visited);
     }
 
