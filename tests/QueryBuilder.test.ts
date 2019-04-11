@@ -1,4 +1,4 @@
-import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 import { MikroORM, QueryOrder } from '../lib';
 
@@ -78,6 +78,48 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ books: { $in: [123, 321] } });
     expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `author2` AS `e0` LEFT JOIN `book2` AS `e1` ON `e0`.`id` = `e1`.`author_id` WHERE `e1`.`id` IN (?, ?)');
     expect(qb.getParams()).toEqual([123, 321]);
+  });
+
+  test('select by 1:1', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2);
+    qb.select('*').where({ baz: 123 });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `foo_bar2` AS `e0` WHERE `e0`.`baz_id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed', async () => {
+    const qb = orm.em.createQueryBuilder(FooBaz2);
+    qb.select('*').where({ bar: 123 });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e1`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed with populate', async () => {
+    const qb = orm.em.createQueryBuilder(FooBaz2);
+    qb.select('*').where({ id: 123 }).populate(['bar']);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e0`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed (uuid pk)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.select('*').where({ test: 123 });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`id` AS `test_id` FROM `book2` AS `e0` LEFT JOIN `test2` AS `e1` ON `e0`.`uuid_pk` = `e1`.`book_uuid_pk` WHERE `e1`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed with populate (uuid pk)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.select('*').where({ test: 123 }).populate(['test']);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`id` AS `test_id` FROM `book2` AS `e0` LEFT JOIN `test2` AS `e1` ON `e0`.`uuid_pk` = `e1`.`book_uuid_pk` WHERE `e1`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed with populate() before where() (uuid pk)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.select('*').populate(['test']).where({ test: 123 });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.*, `e1`.`id` AS `test_id` FROM `book2` AS `e0` LEFT JOIN `test2` AS `e1` ON `e0`.`uuid_pk` = `e1`.`book_uuid_pk` WHERE `e1`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
   });
 
   test('select by m:n', async () => {

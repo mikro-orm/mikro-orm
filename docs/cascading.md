@@ -7,8 +7,8 @@ When persisting or removing entity, all your references are by default cascade p
 This means that by persisting any entity, ORM will automatically persist all of its 
 associations. 
 
-You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyToMany` and
-`@OneToMany` fields.
+You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyToMany`, 
+`@OneToMany` and `@OneToOne` fields.
 
 > New entities without primary key will be always persisted, regardless of `cascade` value. 
 

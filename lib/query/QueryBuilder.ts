@@ -15,9 +15,11 @@ export class QueryBuilder {
 
   private aliasCounter = 1;
   private flags: QueryFlag[] = [];
+  private finalized = false;
   private _fields: string[];
-  private _populate: Record<string, string> = {};
-  private _leftJoins: Record<string, [string, string, string, string, string]> = {};
+  private _populate: string[] = [];
+  private _populateMap: Record<string, string> = {};
+  private _leftJoins: Record<string, JoinOptions> = {};
   private _cond: Record<string, any> = {};
   private _data: Record<string, any>;
   private _orderBy: Record<string, QueryOrder>;
@@ -86,15 +88,7 @@ export class QueryBuilder {
   }
 
   populate(populate: string[]): this {
-    populate.forEach(field => {
-      if (this.metadata[field]) {
-        const prop = this.metadata[field].properties[this.entityName];
-        const alias = `e${this.aliasCounter++}`;
-        this._leftJoins[field] = [this.metadata[field].collection, alias, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
-        this._populate[field] = alias;
-      }
-    });
-
+    this._populate = populate;
     return this;
   }
 
@@ -114,6 +108,7 @@ export class QueryBuilder {
   }
 
   getQuery(): string {
+    this.finalize();
     let sql = this.getQueryBase();
 
     if (this._cond && Object.keys(this._cond).length > 0) {
@@ -121,7 +116,7 @@ export class QueryBuilder {
     }
 
     if (this._orderBy && Object.keys(this._orderBy).length > 0) {
-      sql += ' ORDER BY ' + this.helper.getQueryOrder(this.type, this._orderBy, this._populate).join(', ');
+      sql += ' ORDER BY ' + this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap).join(', ');
     }
 
     sql += this.helper.getQueryPagination(this._limit, this._offset);
@@ -134,6 +129,7 @@ export class QueryBuilder {
   }
 
   getParams(): any[] {
+    this.finalize();
     let ret: any[] = [];
 
     if (this.type === QueryType.INSERT && this._data) {
@@ -183,9 +179,14 @@ export class QueryBuilder {
       ret.push(this.helper.mapper(this.type, f));
     });
 
-    Object.keys(this._populate).forEach(f => {
-      ret.push(...this.helper.mapJoinColumns(this.type, this._leftJoins[f]));
-      Utils.renameKey(this._cond, this._leftJoins[f][3], `${this._leftJoins[f][1]}.${this._leftJoins[f][3]}`);
+    Object.keys(this._populateMap).forEach(f => {
+      if (!fields.includes(f)) {
+        ret.push(...this.helper.mapJoinColumns(this.type, this._leftJoins[f]));
+      }
+
+      if (this._leftJoins[f].prop.reference !== ReferenceType.ONE_TO_ONE) {
+        Utils.renameKey(this._cond, this._leftJoins[f].inverseJoinColumn!, `${this._leftJoins[f].alias}.${this._leftJoins[f].inverseJoinColumn!}`);
+      }
     });
 
     if (this.flags.includes(QueryFlag.COUNT)) {
@@ -210,7 +211,9 @@ export class QueryBuilder {
       const prop = this.metadata[this.entityName].properties[field];
 
       if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
-        this.processCollection(prop, cond, field);
+        this.processCollection(prop, cond);
+      } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
+        this.processOneToOne(prop, cond);
       } else {
         Utils.renameKey(cond, field, prop.fieldName);
       }
@@ -219,25 +222,55 @@ export class QueryBuilder {
     return cond;
   }
 
-  private processCollection(prop: EntityProperty, cond: any, field: string): void {
+  private processOneToOne(prop: EntityProperty, cond: any): void {
+    if (prop.owner) {
+      return Utils.renameKey(cond, prop.name, prop.fieldName);
+    }
+
+    this._fields.push(prop.name);
+    const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+    const alias2 = this.joinOneToReference(prop, prop2);
+    Utils.renameKey(cond, prop.name, `${alias2}.${prop2.referenceColumnName}`);
+  }
+
+  private processCollection(prop: EntityProperty, cond: any): void {
     if (prop.reference === ReferenceType.MANY_TO_MANY) {
       const alias1 = `e${this.aliasCounter++}`;
+      const join = {
+        alias: alias1,
+        joinColumn: prop.joinColumn,
+        inverseJoinColumn: prop.inverseJoinColumn,
+        primaryKey: prop.referenceColumnName,
+      } as JoinOptions;
 
       if (prop.owner) {
-        this._leftJoins[prop.name] = [prop.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
+        this._leftJoins[prop.name] = Object.assign(join, { table: prop.pivotTable });
       } else {
         const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-        this._leftJoins[prop.name] = [prop2.pivotTable, alias1, prop.joinColumn, prop.inverseJoinColumn, prop.referenceColumnName];
+        this._leftJoins[prop.name] = Object.assign(join, { table: prop2.pivotTable });
       }
 
       this._fields.push(prop.name);
-      Utils.renameKey(cond, field, `${alias1}.${prop.inverseJoinColumn}`);
+      Utils.renameKey(cond, prop.name, `${alias1}.${prop.inverseJoinColumn}`);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const alias2 = `e${this.aliasCounter++}`;
       const prop2 = this.metadata[prop.type].properties[prop.fk];
-      this._leftJoins[prop.name] = [this.helper.getTableName(prop.type), alias2, prop2.fieldName, prop.referenceColumnName, prop.referenceColumnName];
-      Utils.renameKey(cond, field, `${alias2}.${prop.referenceColumnName}`);
+      const alias2 = this.joinOneToReference(prop, prop2);
+      Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
     }
+  }
+
+  private joinOneToReference(prop: EntityProperty, prop2: EntityProperty): string {
+    const alias2 = `e${this.aliasCounter++}`;
+    this._leftJoins[prop.name] = {
+      table: this.helper.getTableName(prop.type),
+      alias: alias2,
+      joinColumn: prop2.fieldName,
+      inverseJoinColumn: prop2.referenceColumnName,
+      primaryKey: prop.referenceColumnName,
+      prop,
+    };
+
+    return alias2;
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
@@ -283,4 +316,45 @@ export class QueryBuilder {
     return sql;
   }
 
+  private finalize(): void {
+    if (this.finalized) {
+      return;
+    }
+
+    this._populate.forEach(field => {
+      if (this._leftJoins[field]) {
+        return this._populateMap[field] = this._leftJoins[field].alias;
+      }
+
+      if (this.metadata[field]) { // pivot table entity
+        const prop = this.metadata[field].properties[this.entityName];
+        this._leftJoins[field] = {
+          table: this.metadata[field].collection,
+          alias: `e${this.aliasCounter++}`,
+          joinColumn: prop.joinColumn,
+          inverseJoinColumn: prop.inverseJoinColumn,
+          primaryKey: prop.referenceColumnName,
+          prop,
+        };
+        this._populateMap[field] = this._leftJoins[field].alias;
+      } else if (this.helper.isOneToOneInverse(field)) {
+        const prop = this.metadata[this.entityName].properties[field];
+        const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+        this.joinOneToReference(prop, prop2);
+        this._populateMap[field] = this._leftJoins[field].alias;
+      }
+    });
+
+    this.finalized = true;
+  }
+
+}
+
+export interface JoinOptions {
+  table: string;
+  alias: string;
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  primaryKey?: string;
+  prop: EntityProperty;
 }

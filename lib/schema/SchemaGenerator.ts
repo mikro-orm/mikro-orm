@@ -39,7 +39,7 @@ export class SchemaGenerator {
 
     Object
       .values(meta.properties)
-      .filter(prop => (prop.reference === ReferenceType.SCALAR || (this.helper.supportsSchemaConstraints() && prop.reference === ReferenceType.MANY_TO_ONE)))
+      .filter(prop => this.shouldHaveColumn(prop))
       .forEach(prop => ret += '  ' + this.createTableColumn(meta, prop) + ',\n');
 
     if (this.helper.supportsSchemaConstraints()) {
@@ -51,6 +51,18 @@ export class SchemaGenerator {
     ret += `)${this.helper.getSchemaTableEnd()};\n\n`;
 
     return ret;
+  }
+
+  private shouldHaveColumn(prop: EntityProperty): boolean {
+    if (prop.reference === ReferenceType.SCALAR) {
+      return true;
+    }
+
+    if (!this.helper.supportsSchemaConstraints()) {
+      return false;
+    }
+
+    return prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
   private createTableColumn(meta: EntityMetadata, prop: EntityProperty, alter = false): string {
@@ -84,7 +96,7 @@ export class SchemaGenerator {
 
     const constraints = Object
       .values(meta.properties)
-      .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE)
+      .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
       .map(prop => this.createForeignKey(meta, prop, i++));
 
     if (constraints.length === 0) {

@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Utils } from '../lib';
-import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger } from '../lib/utils';
@@ -460,6 +460,59 @@ describe('EntityManagerMySql', () => {
     expect(jon.favouriteBook.title).toBe('Bible');
   });
 
+  test('populate OneToOne relation', async () => {
+    const bar = FooBar2.create('bar');
+    const baz = new FooBaz2('baz');
+    bar.baz = baz;
+    await orm.em.persist(bar);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, ['baz']))!;
+    expect(b1.baz).toBeInstanceOf(FooBaz2);
+    expect(b1.baz.id).toBe(baz.id);
+    expect(b1.toJSON()).toMatchObject({ baz: baz.toJSON() });
+  });
+
+  test('populate OneToOne relation on inverse side', async () => {
+    const bar = FooBar2.create('bar');
+    const baz = new FooBaz2('baz');
+    bar.baz = baz;
+    await orm.em.persist(bar);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
+    expect(mock.mock.calls[0][0]).toMatch('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e0`.`id` = ? LIMIT ?');
+    expect(mock.mock.calls[1][0]).toMatch('SELECT `e0`.* FROM `foo_bar2` AS `e0` WHERE `e0`.`id` IN (?) ORDER BY `e0`.`id` ASC');
+    expect(b1.bar).toBeInstanceOf(FooBar2);
+    expect(b1.bar.id).toBe(bar.id);
+    expect(b1.toJSON()).toMatchObject({ bar: bar.toJSON() });
+    orm.em.clear();
+
+    const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, ['bar']))!;
+    expect(mock.mock.calls[2][0]).toMatch('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e1`.`id` = ? LIMIT ?');
+    expect(mock.mock.calls[3][0]).toMatch('SELECT `e0`.* FROM `foo_bar2` AS `e0` WHERE `e0`.`id` IN (?) ORDER BY `e0`.`id` ASC');
+    expect(b2.bar).toBeInstanceOf(FooBar2);
+    expect(b2.bar.id).toBe(bar.id);
+    expect(b2.toJSON()).toMatchObject({ bar: bar.toJSON() });
+  });
+
+  test('populate OneToOne relation with uuid PK', async () => {
+    const author = new Author2('name', 'email');
+    const book = new Book2('b1', author);
+    const test = Test2.create('t');
+    test.book = book;
+    await orm.em.persist(test);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    expect(b1.id).not.toBeNull();
+    expect(b1.toJSON()).toMatchObject({ test: test.toJSON() });
+  });
+
   test('many to many relation', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     const book1 = new Book2('My Life on The Wall, part 1', author);
@@ -848,6 +901,18 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[5][0]).toMatch('UPDATE `author2` SET `favourite_author_id` = ?, `updated_at` = ? WHERE `id` = ?');
     expect(mock.mock.calls[6][0]).toMatch('COMMIT');
     expect(mock.mock.calls[7][0]).toMatch('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`id` = ?');
+  });
+
+  test('self referencing 1:1 (1 step)', async () => {
+    const bar = FooBar2.create('bar');
+    bar.fooBar = bar;
+    await orm.em.persist(bar);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }))!;
+    expect(b1).toBe(b1.fooBar);
+    expect(b1.id).not.toBeNull();
+    expect(b1.toJSON()).toMatchObject({ fooBar: b1.id });
   });
 
   test('EM supports smart search conditions', async () => {

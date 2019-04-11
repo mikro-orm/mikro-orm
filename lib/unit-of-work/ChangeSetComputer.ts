@@ -43,9 +43,11 @@ export class ChangeSetComputer {
   }
 
   private processReference<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty): void {
+    const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
       this.processManyToMany(changeSet, prop, changeSet.entity[prop.name as keyof T]);
-    } else if (prop.reference === ReferenceType.MANY_TO_ONE && changeSet.entity[prop.name as keyof T]) {
+    } else if (isToOneOwner && changeSet.entity[prop.name as keyof T]) {
       this.processManyToOne(prop, changeSet);
     }
   }
