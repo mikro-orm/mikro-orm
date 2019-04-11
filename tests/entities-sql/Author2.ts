@@ -45,7 +45,10 @@ export class Author2 extends BaseEntity2 {
   @ManyToOne()
   favouriteAuthor: Author2;
 
+  @Property({ persist: false })
   version: number;
+
+  @Property({ persist: false })
   versionAsString: string;
 
   constructor(name: string, email: string) {

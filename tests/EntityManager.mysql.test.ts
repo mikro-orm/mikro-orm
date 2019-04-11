@@ -86,6 +86,12 @@ describe('EntityManagerMySql', () => {
     expect(await repo.findOne({ termsAccepted: false })).toBeNull();
   });
 
+  test('should allow shadow properties in EM.create()', async () => {
+    const repo = orm.em.getRepository(Author2);
+    const author = repo.create({ name: 'name', email: 'email', version: 123 });
+    await expect(author.version).toBe(123);
+  });
+
   test('should work with boolean values', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');

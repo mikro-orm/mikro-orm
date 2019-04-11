@@ -54,6 +54,10 @@ export class SchemaGenerator {
   }
 
   private shouldHaveColumn(prop: EntityProperty): boolean {
+    if (prop.persist === false) {
+      return false;
+    }
+
     if (prop.reference === ReferenceType.SCALAR) {
       return true;
     }

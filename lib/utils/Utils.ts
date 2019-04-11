@@ -91,7 +91,7 @@ export class Utils {
 
     // remove unknown properties
     Object.keys(e).forEach(prop => {
-      if (!meta.properties[prop]) {
+      if (!meta.properties[prop] || meta.properties[prop].persist === false) {
         delete ret[prop];
       }
     });

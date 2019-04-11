@@ -108,6 +108,15 @@ describe('Utils', () => {
     expect(diff.favouriteBook instanceof ObjectID).toBe(true);
   });
 
+  test('prepareEntity ignores properties with `persist: false` flag', async () => {
+    const author = new Author('Name 1', 'e-mail');
+    author.version = 123;
+    author.versionAsString = 'v123';
+    const o = Utils.prepareEntity(author);
+    expect(o.version).toBeUndefined();
+    expect(o.versionAsString).toBeUndefined();
+  });
+
   test('copy', () => {
     const a = {a: 'a', b: 'c'};
     const b = Utils.copy(a);

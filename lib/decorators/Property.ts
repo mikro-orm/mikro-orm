@@ -22,4 +22,5 @@ export type PropertyOptions = {
   default?: any;
   unique?: boolean;
   nullable?: boolean;
+  persist?: boolean;
 }
