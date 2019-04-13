@@ -6,6 +6,7 @@ const methods = {
   persist: jest.fn(),
   persistAndFlush: jest.fn(),
   persistLater: jest.fn(),
+  createQueryBuilder: jest.fn(),
   findOne: jest.fn(),
   find: jest.fn(),
   remove: jest.fn(),
@@ -44,6 +45,8 @@ describe('EntityRepository', () => {
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', []]);
+    await repo.createQueryBuilder();
+    expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher]);
     await repo.remove('bar');
     expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
     const entity = {} as IEntity;

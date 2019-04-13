@@ -1,6 +1,6 @@
 import { EntityManager, FindOptions } from '../EntityManager';
 import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { QueryOrder } from '../query';
+import { QueryBuilder, QueryOrder } from '../query';
 import { FilterQuery } from '..';
 
 export class EntityRepository<T extends IEntityType<T>> {
@@ -18,6 +18,10 @@ export class EntityRepository<T extends IEntityType<T>> {
 
   persistLater(entity: IEntity | IEntity[]): void {
     this.em.persistLater(entity);
+  }
+
+  createQueryBuilder(): QueryBuilder {
+    return this.em.createQueryBuilder(this.entityName);
   }
 
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
