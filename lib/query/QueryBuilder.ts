@@ -65,9 +65,24 @@ export class QueryBuilder {
     return this;
   }
 
-  where(cond: any): this {
-    this._cond = this.processWhere(cond);
+  where(cond: any, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
+    if (!operator) {
+      this._cond = this.processWhere(cond);
+    } else if (Array.isArray(this._cond[operator])) {
+      this._cond[operator].push(this.processWhere(cond));
+    } else {
+      this._cond = { [operator]: [this._cond, this.processWhere(cond)] };
+    }
+
     return this;
+  }
+
+  andWhere(cond: any): this {
+    return this.where(cond, '$and');
+  }
+
+  orWhere(cond: any): this {
+    return this.where(cond, '$or');
   }
 
   orderBy(orderBy: Record<string, QueryOrder>): this {

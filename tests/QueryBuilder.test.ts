@@ -25,6 +25,41 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 'lol 321', PublisherType.GLOBAL, 2, 1]);
   });
 
+  test('select andWhere/orWhere', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*')
+      .where({ name: 'test 123' })
+      .andWhere({ type: PublisherType.GLOBAL })
+      .orWhere({ name: 'lol 321' })
+      .limit(2, 1);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE ((`e0`.`name` = ? AND `e0`.`type` = ?) OR `e0`.`name` = ?) LIMIT ? OFFSET ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'lol 321', 2, 1]);
+  });
+
+  test('select multiple andWhere', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*')
+      .where({ name: 'test 123' })
+      .andWhere({ type: PublisherType.GLOBAL })
+      .andWhere({ name: 'test 321' })
+      .andWhere({ name: 'lol 321' })
+      .limit(2, 1);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE (`e0`.`name` = ? AND `e0`.`type` = ? AND `e0`.`name` = ? AND `e0`.`name` = ?) LIMIT ? OFFSET ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'test 321', 'lol 321', 2, 1]);
+  });
+
+  test('select multiple orWhere', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*')
+      .where({ name: 'test 123' })
+      .orWhere({ type: PublisherType.GLOBAL })
+      .orWhere({ name: 'test 321' })
+      .orWhere({ name: 'lol 321' })
+      .limit(2, 1);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE (`e0`.`name` = ? OR `e0`.`type` = ? OR `e0`.`name` = ? OR `e0`.`name` = ?) LIMIT ? OFFSET ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'test 321', 'lol 321', 2, 1]);
+  });
+
   test('select with boolean', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ termsAccepted: false });
