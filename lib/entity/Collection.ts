@@ -113,7 +113,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     let orderBy = undefined;
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.fk as string] = this.owner.__primaryKey;
+      cond[this.property.mappedBy as string] = this.owner.__primaryKey;
       orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);

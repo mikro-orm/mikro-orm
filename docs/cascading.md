@@ -14,31 +14,31 @@ You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyTo
 
 ```typescript
 // cascade persist & merge is default value
-@OneToMany({ entity: () => Book, fk: 'author' })
+@OneToMany({ entity: () => Book, mappedBy: 'author' })
 books = new Collection<Book>(this);
 
 // same as previous definition
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE] })
 books = new Collection<Book>(this);
 
 // only cascade remove
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [Cascade.REMOVE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.REMOVE] })
 books = new Collection<Book>(this);
 
 // cascade persist and remove (but not merge)
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
 books = new Collection<Book>(this);
 
 // no cascade
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [] })
 books = new Collection<Book>(this);
 
 // cascade all (persist, merge and remove)
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [Cascade.ALL] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.ALL] })
 books = new Collection<Book>(this);
 
 // same as previous definition
-@OneToMany({ entity: () => Book, fk: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE, Cascade.REMOVE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE, Cascade.REMOVE] })
 books = new Collection<Book>(this);
 ```
 

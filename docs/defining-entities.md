@@ -91,7 +91,7 @@ export class Author {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author' })
+  @OneToMany({ entity: () => Book, mappedBy: 'author' })
   books = new Collection<Book>(this);
 
   @ManyToOne()

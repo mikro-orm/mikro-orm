@@ -49,11 +49,11 @@ describe('decorators', () => {
     expect(() => OneToMany({} as any)(new Test(), 'test')).toThrowError(`@OneToMany({ entity: string | Function })' is required in 'Test.test`);
 
     const storage = MetadataStorage.getMetadata();
-    OneToMany({ entity: () => Test, fk: 'test' })(new Test4(), 'test2');
+    OneToMany({ entity: () => Test, mappedBy: 'test' })(new Test4(), 'test2');
     expect(storage.Test4.properties.test2).toMatchObject({
       reference: ReferenceType.ONE_TO_MANY,
       name: 'test2',
-      fk: 'test',
+      mappedBy: 'test',
     });
     expect(storage.Test4.properties.test2.entity()).toBe(Test);
   });

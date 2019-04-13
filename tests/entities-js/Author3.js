@@ -96,13 +96,12 @@ const schema = {
     },
     books: {
       reference: ReferenceType.ONE_TO_MANY,
-      fk: 'author',
+      mappedBy: 'author',
       type: 'Book3',
     },
     favouriteBook: {
       reference: 'm:1',
       type: 'Book3',
-      fk: 'id',
     },
   },
   hooks: {

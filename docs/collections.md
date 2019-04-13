@@ -71,7 +71,7 @@ export class BookTag {
   @PrimaryKey()
   _id: ObjectID;
 
-  @OneToMany({ entity: () => Book, fk: 'author' })
+  @OneToMany({ entity: () => Book, mappedBy: 'author' })
   books = new Collection<Book>(this);
 
 }

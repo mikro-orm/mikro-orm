@@ -268,7 +268,7 @@ export class QueryBuilder {
       this._fields.push(prop.name);
       Utils.renameKey(cond, prop.name, `${alias1}.${prop.inverseJoinColumn}`);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const prop2 = this.metadata[prop.type].properties[prop.fk];
+      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
       const alias2 = this.joinOneToReference(prop, prop2);
       Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
     }

@@ -37,7 +37,7 @@ export class MetadataValidator {
 
   private validateCollection(meta: EntityMetadata, prop: EntityProperty, metadata: Record<string, EntityMetadata>): void {
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const owner = metadata[prop.type].properties[prop.fk];
+      const owner = metadata[prop.type].properties[prop.mappedBy];
       return this.validateOneToManyInverseSide(meta, prop, owner);
     }
 
@@ -56,14 +56,14 @@ export class MetadataValidator {
   }
 
   private validateOneToManyInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty): void {
-    // 1:m collection has existing `fk` reference
+    // 1:m collection has existing `mappedBy` reference
     if (!owner) {
-      throw ValidationError.fromWrongReference(meta, prop, 'fk');
+      throw ValidationError.fromWrongReference(meta, prop, 'mappedBy');
     }
 
-    // 1:m collection has correct `fk` reference type
+    // 1:m collection has correct `mappedBy` reference type
     if (owner.type !== meta.name) {
-      throw ValidationError.fromWrongReference(meta, prop, 'fk', owner);
+      throw ValidationError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
   }
 

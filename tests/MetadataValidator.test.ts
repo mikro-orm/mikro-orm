@@ -20,11 +20,11 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError('Author.test has unknown type: Test');
 
     meta.Test = { name: 'Test', properties: {} };
-    meta.Author.properties['tests'] = { name: 'tests', reference: ReferenceType.ONE_TO_MANY, type: 'Test', fk: 'foo' };
-    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Author.tests has unknown 'fk' reference: Test.foo`);
+    meta.Author.properties['tests'] = { name: 'tests', reference: ReferenceType.ONE_TO_MANY, type: 'Test', mappedBy: 'foo' };
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Author.tests has unknown 'mappedBy' reference: Test.foo`);
 
-    meta.Test.properties['foo'] = { name: 'foo', reference: ReferenceType.MANY_TO_ONE, type: 'Wrong', fk: 'foo' };
-    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Author.tests has wrong 'fk' reference type: Wrong instead of Author`);
+    meta.Test.properties['foo'] = { name: 'foo', reference: ReferenceType.MANY_TO_ONE, type: 'Wrong', mappedBy: 'foo' };
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Author.tests has wrong 'mappedBy' reference type: Wrong instead of Author`);
 
     meta.Test.properties['foo'].type = 'Author';
     meta.Author.properties['books'] = { name: 'books', reference: ReferenceType.MANY_TO_MANY, type: 'Book' };

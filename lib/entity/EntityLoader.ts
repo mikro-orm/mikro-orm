@@ -63,7 +63,7 @@ export class EntityLoader {
 
   private initializeOneToMany<T extends IEntityType<T>>(filtered: T[], children: IEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
-      const items = children.filter(child => child[(prop.fk as keyof IEntity)] as object === entity);
+      const items = children.filter(child => child[(prop.mappedBy as keyof IEntity)] as object === entity);
       (entity[field] as Collection<IEntity>).set(items, true);
     }
   }
@@ -79,9 +79,7 @@ export class EntityLoader {
     const children = this.getChildReferences<T>(entities, prop);
     let fk = this.metadata[prop.type].primaryKey;
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      fk = this.metadata[prop.type].properties[prop.fk].fieldName;
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner) {
+    if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
       fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
     }
 

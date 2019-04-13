@@ -11,6 +11,7 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE] };
     const prop = Object.assign(property, options) as EntityProperty;
     prop.nullable = !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL);
+    Utils.renameKey(prop, 'fk', 'inversedBy');
     meta.properties[propertyName] = prop;
   };
 }
@@ -18,5 +19,6 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
 export interface ManyToOneOptions extends PropertyOptions {
   entity?: () => string | Function,
   fk?: string;
+  inversedBy?: string;
   cascade?: Cascade[];
 }

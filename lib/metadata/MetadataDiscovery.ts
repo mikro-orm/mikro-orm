@@ -114,10 +114,6 @@ export class MetadataDiscovery {
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE && !prop.fk) {
-      prop.fk = meta.properties[meta.primaryKey].fieldName;
-    }
-
     if (!prop.fieldName) {
       this.initFieldName(prop);
     }
@@ -182,6 +178,12 @@ export class MetadataDiscovery {
 
   private processEntity(meta: EntityMetadata): EntityMetadata[] {
     this.defineBaseEntityProperties(meta);
+
+    // BC with 1:m `fk` option
+    Object.values(meta.properties)
+      .filter(prop => prop.reference === ReferenceType.ONE_TO_MANY)
+      .forEach(prop => Utils.renameKey(prop, 'fk', 'mappedBy'));
+
     this.validator.validateEntityDefinition(this.metadata, meta.name);
     Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
