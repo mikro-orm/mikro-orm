@@ -26,4 +26,7 @@ export interface ManyToManyOptions extends PropertyOptions {
   mappedBy?: string;
   cascade?: Cascade[];
   pivotTable?: string;
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  referenceColumnName?: string;
 }

@@ -24,4 +24,7 @@ export interface OneToManyOptions extends PropertyOptions {
   fk: string;
   cascade?: Cascade[];
   orderBy?: { [field: string]: QueryOrder },
+  joinColumn?: string;
+  inverseJoinColumn?: string;
+  referenceColumnName?: string;
 }
