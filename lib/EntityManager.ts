@@ -125,6 +125,7 @@ export class EntityManager {
 
   async nativeInsert<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<IPrimaryKey> {
     entityName = Utils.className(entityName);
+    data = SmartQueryHelper.processParams(data);
     this.validator.validateParams(data, 'insert data');
     const res = await this.driver.nativeInsert(entityName, data);
 
@@ -133,6 +134,7 @@ export class EntityManager {
 
   async nativeUpdate<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
+    data = SmartQueryHelper.processParams(data);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');

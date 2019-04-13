@@ -1,11 +1,35 @@
-import { FilterQuery, Utils } from '..';
+import { FilterQuery, IEntity, Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 
 export class SmartQueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
+  static processParams(params: any, field?: string): any {
+    if (Utils.isEntity(params)) {
+      return SmartQueryHelper.processEntity(params, field);
+    }
+
+    if (params === undefined) {
+      return null;
+    }
+
+    if (Array.isArray(params)) {
+      return params.map(item => SmartQueryHelper.processParams(item, field));
+    }
+
+    if (Utils.isObject(params)) {
+      Object.keys(params).forEach(k => {
+        params[k] = SmartQueryHelper.processParams(params[k], k);
+      });
+    }
+
+    return params;
+  }
+
   static processWhere<T>(where: FilterQuery<T>): FilterQuery<T> {
+    where = this.processParams(where);
+
     if (!Utils.isObject(where)) {
       return where;
     }
@@ -31,6 +55,14 @@ export class SmartQueryHelper {
     });
 
     return where;
+  }
+
+  private static processEntity(entity: IEntity, field?: string): any {
+    if (field) {
+      return entity.__primaryKey;
+    }
+
+    return { [entity.__primaryKeyField]: entity.__primaryKey };
   }
 
   private static processExpression<T>(expr: string, value: T): Record<string, T> {

@@ -162,12 +162,14 @@ describe('EntityManagerMongo', () => {
     expect(repo.magic('test')).toBe('111 test 222');
   });
 
-  test('should throw when trying to search by entity instead of identifier', async () => {
+  test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     const author = new Author('name', 'email');
     await repo.persist(author);
-    await expect(repo.find(author)).rejects.toThrowError('Author entity provided in search condition. Please provide identifier instead.');
-    await expect(repo.find({ author })).rejects.toThrowError(`Author entity provided in search condition in field 'author'. Please provide identifier instead.`);
+    const a = await repo.findOne(author);
+    const authors = await repo.find({ id: author });
+    expect(a).toBe(author);
+    expect(authors[0]).toBe(author);
   });
 
   test('removing not yet persisted entity will not make db call', async () => {

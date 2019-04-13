@@ -76,13 +76,15 @@ describe('EntityManagerPostgre', () => {
     await expect(conn2.getClientUrl()).toBe('postgre://postgres@127.0.0.1:5433');
   });
 
-  test('should throw when trying to search by entity instead of identifier', async () => {
+  test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
     await repo.persist(author);
-    await expect(repo.find(author)).rejects.toThrowError('Author2 entity provided in search condition. Please provide identifier instead.');
-    await expect(repo.find({ author })).rejects.toThrowError(`Author2 entity provided in search condition in field 'author'. Please provide identifier instead.`);
+    const a = await repo.findOne(author);
+    const authors = await repo.find({ id: author });
+    expect(a).toBe(author);
+    expect(authors[0]).toBe(author);
     await expect(repo.findOne({ termsAccepted: false })).resolves.toBeNull();
   });
 

@@ -17,13 +17,6 @@ export class ValidationError extends Error {
     return new ValidationError(msg);
   }
 
-  static fromEntityInsteadOfIdentifier(entity: IEntity, type: string, field?: string): ValidationError {
-    const entityName = entity.constructor.name;
-    const msg = `${entityName} entity provided in ${type}${field ? ` in field '${field}'` : ''}. Please provide identifier instead.`;
-
-    return new ValidationError(msg);
-  }
-
   static fromCollectionNotInitialized(entity: IEntity, prop: EntityProperty): ValidationError {
     const entityName = entity.constructor.name;
     const msg = `${entityName}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`;

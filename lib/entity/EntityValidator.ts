@@ -47,16 +47,12 @@ export class EntityValidator {
   }
 
   validateParams(params: any, type = 'search condition', field?: string): void {
-    if (Utils.isPrimaryKey(params)) {
+    if (Utils.isPrimaryKey(params) || Utils.isEntity(params)) {
       return;
     }
 
-    if (Utils.isEntity(params)) {
-      throw ValidationError.fromEntityInsteadOfIdentifier(params, type, field);
-    }
-
     if (Array.isArray(params)) {
-      return params.forEach((item: any) => this.validateParams(item, type), field);
+      return params.forEach((item: any) => this.validateParams(item, type, field));
     }
 
     if (Utils.isObject(params)) {

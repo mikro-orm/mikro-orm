@@ -56,12 +56,14 @@ describe('EntityManagerSqlite', () => {
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
-  test('should throw when trying to search by entity instead of identifier', async () => {
+  test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author3);
     const author = new Author3('name', 'email');
     await repo.persist(author);
-    await expect(repo.find(author)).rejects.toThrowError('Author3 entity provided in search condition. Please provide identifier instead.');
-    await expect(repo.find({ author })).rejects.toThrowError(`Author3 entity provided in search condition in field 'author'. Please provide identifier instead.`);
+    const a = await repo.findOne(author);
+    const authors = await repo.find({ id: author });
+    expect(a).toBe(author);
+    expect(authors[0]).toBe(author);
   });
 
   test('transactions', async () => {
