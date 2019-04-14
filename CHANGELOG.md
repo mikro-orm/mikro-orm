@@ -1,3 +1,30 @@
+<a name="2.2.0"></a>
+## [2.2.0](https://github.com/B4nan/mikro-orm/compare/v2.1.1...v2.2.0) (2019-04-14)
+
+### Bug Fixes
+
+* **core**: ignore rest parameter in `entity.toJSON()` ([147de7d](https://github.com/B4nan/mikro-orm/commit/147de7d))
+* **core**: merge only objects in `assign()` with `mergeObjects` flag ([749ca6f](https://github.com/B4nan/mikro-orm/commit/749ca6f))
+* **core**: use serialized PK in `Collection.getIdentifiers()` ([a24b6bc](https://github.com/B4nan/mikro-orm/commit/a24b6bc))
+* **mongo**: include missing query condition in logger in `deleteMany()` ([bf280b4](https://github.com/B4nan/mikro-orm/commit/bf280b4))
+
+### Features
+
+* **core**: add `@OneToOne` decorator ([#42](https://github.com/B4nan/mikro-orm/pull/42)), closes [#37](https://github.com/B4nan/mikro-orm/issues/37)
+* **core**: add `createQueryBuilder()` to `EntityRepository` API ([a8ab04e](https://github.com/B4nan/mikro-orm/commit/a8ab04e))
+* **core**: add support for `nullable` columns in schema generator ([8e508d3](https://github.com/B4nan/mikro-orm/commit/8e508d3)), closes [#39](https://github.com/B4nan/mikro-orm/issues/39)
+* **core**: add support for `unique` index in schema generator ([f8a614b](https://github.com/B4nan/mikro-orm/commit/f8a614b)), closes [#38](https://github.com/B4nan/mikro-orm/issues/38)
+* **core**: allow changing join columns in 1:m, m:n and 1:1 ([dd97760](https://github.com/B4nan/mikro-orm/commit/dd97760))
+* **core**: allow entities in query data and where (convert them to PK) ([e3a4962](https://github.com/B4nan/mikro-orm/commit/e3a4962))
+* **core**: allow orderBy in `EM.findOne()` and support `FindOneOptions` ([0c61703](https://github.com/B4nan/mikro-orm/commit/0c61703))
+* **core**: allow self-referencing in M:N collections ([5fda213](https://github.com/B4nan/mikro-orm/commit/5fda213))
+* **core**: implement shadow properties - `@Property({ persist: false })` ([6062118](https://github.com/B4nan/mikro-orm/commit/6062118)), closes [#40](https://github.com/B4nan/mikro-orm/issues/40)
+* **mapping**: use `mappedBy`/`inversedBy` in 1:m/m:1 to be consistent ([305dc6e](https://github.com/B4nan/mikro-orm/commit/305dc6e))
+* **metadata**: do not require source files when type provided ([f9a237f](https://github.com/B4nan/mikro-orm/commit/f9a237f))
+* **query-builder**: add `andWhere()` and `orWhere()` to `QueryBuilder` ([d1a1127](https://github.com/B4nan/mikro-orm/commit/d1a1127))
+
+
+
 <a name="2.1.1"></a>
 ## [2.1.1](https://github.com/B4nan/mikro-orm/compare/v2.1.0...v2.1.1) (2019-04-05)
 
