@@ -1,9 +1,9 @@
-import Project, { ClassInstancePropertyTypes, SourceFile } from 'ts-morph';
+import Project, { SourceFile } from 'ts-morph';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../decorators';
 import { Utils } from '../utils';
 
 export class TypeScriptMetadataProvider extends MetadataProvider {
@@ -16,35 +16,41 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       return;
     }
 
-    const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
-    const source = this.getSourceFile(file);
-
-    if (!source) {
-      throw new Error(`Source file for entity ${name} not found, check your 'entitiesDirsTs' option`);
-    }
-
-    const properties = source.getClass(name)!.getInstanceProperties();
-    this.initProperties(meta, properties);
+    this.initProperties(meta, name);
   }
 
-  private initProperties(meta: EntityMetadata, properties: ClassInstancePropertyTypes[]): void {
+  private initProperties(meta: EntityMetadata, name: string): void {
     // init types and column names
     Object.values(meta.properties).forEach(prop => {
       if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
-        const property = properties.find(v => v.getName() === prop.name);
-        prop.type = property!.getType().getText(property);
+        const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
+        prop.type = this.readTypeFromSource(file, name, prop);
       }
     });
   }
 
-  private getSourceFile(file: string): SourceFile | undefined {
+  private readTypeFromSource(file: string, name: string, prop: EntityProperty): string {
+    const source = this.getSourceFile(file);
+    const properties = source.getClass(name)!.getInstanceProperties();
+    const property = properties.find(v => v.getName() === prop.name);
+
+    return property!.getType().getText(property);
+  }
+
+  private getSourceFile(file: string): SourceFile {
     if (!this.sources) {
       this.initSourceFiles();
     }
 
-    return this.sources.find(s => s.getFilePath().endsWith(file));
+    const source = this.sources.find(s => s.getFilePath().endsWith(file));
+
+    if (!source) {
+      throw new Error(`Source file for entity ${name} not found, check your 'entitiesDirsTs' option`);
+    }
+
+    return source;
   }
 
   private initSourceFiles(): void {
