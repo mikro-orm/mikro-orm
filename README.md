@@ -84,7 +84,7 @@ console.log(orm.em); // access EntityManager via `em` property
 ```
 
 There are more ways to configure your entities, take a look at 
-[installation page](https://b4nan.github.io/mikro-orm/identity-map/#request-context).
+[installation page](https://b4nan.github.io/mikro-orm/installation/).
 
 Then you will need to fork entity manager for each request so their 
 [identity maps](https://b4nan.github.io/mikro-orm/identity-map/) will not collide. 
