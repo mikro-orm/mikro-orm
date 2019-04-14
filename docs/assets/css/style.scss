@@ -22,7 +22,12 @@ $sidebar-width: 200px;
     text-align: left;
 
     span {
-      font-weight: 400;
+      display: none;
+    }
+
+    svg {
+      position: relative;
+      top: 6px;
     }
 
     a {
@@ -71,6 +76,16 @@ aside#sidebar {
   position: relative;
   width: auto;
   margin: 0 auto;
+}
+
+@media only screen and (max-width: 374px) {
+  .page-header {
+    .project-name {
+      svg {
+        width: 150px;
+      }
+    }
+  }
 }
 
 @media only screen and (min-width: 768px) {
