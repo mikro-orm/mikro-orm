@@ -25,7 +25,7 @@ $sidebar-width: 200px;
       display: none;
     }
 
-    svg {
+    img {
       position: relative;
       top: 6px;
     }
@@ -81,7 +81,7 @@ aside#sidebar {
 @media only screen and (max-width: 374px) {
   .page-header {
     .project-name {
-      svg {
+      img {
         width: 150px;
       }
     }
