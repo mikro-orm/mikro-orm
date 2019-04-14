@@ -1,6 +1,6 @@
 <h1 align="center" style="margin: 50px 0 70px">
   <span style="display: none">MikroORM</span>
-  <img src="https://raw.githubusercontent.com/b4nan/mikro-orm/master/docs/assets/img/logo.svg" alt="MikroORM" height="70px">
+  <img src="https://raw.githubusercontent.com/b4nan/mikro-orm/master/docs/assets/img/logo.svg?sanitize=true" alt="MikroORM" height="70px">
 </h1>
 
 Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB,
