@@ -73,30 +73,30 @@ export class EntityManager {
     return ret;
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOptions): Promise<T | null>;
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: Record<string, QueryOrder>): Promise<T | null> {
     entityName = Utils.className(entityName);
-
-    if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
-      throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-    }
+    this.validator.validateEmptyWhere(where);
 
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
+    const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
 
     if (entity && entity.isInitialized()) {
-      await this.entityLoader.populate(entityName, [entity], populate);
+      await this.entityLoader.populate(entityName, [entity], options.populate || []);
       return entity;
     }
 
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, populate);
+    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy);
 
     if (!data) {
       return null;
     }
 
     entity = this.merge(entityName, data) as T;
-    await this.entityLoader.populate(entityName, [entity], populate);
+    await this.entityLoader.populate(entityName, [entity], options.populate || []);
 
     return entity;
   }
@@ -309,4 +309,9 @@ export interface FindOptions {
   orderBy?: Record<string, QueryOrder>;
   limit?: number;
   offset?: number;
+}
+
+export interface FindOneOptions {
+  populate?: string[];
+  orderBy?: Record<string, QueryOrder>;
 }

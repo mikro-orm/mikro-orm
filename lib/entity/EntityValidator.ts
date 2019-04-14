@@ -1,7 +1,8 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityData, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
+import { FilterQuery } from '../drivers';
 
 export class EntityValidator {
 
@@ -65,6 +66,12 @@ export class EntityValidator {
   validatePrimaryKey<T extends IEntityType<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
     if (!entity || (!entity[meta.primaryKey] && !entity[meta.serializedPrimaryKey])) {
       throw ValidationError.fromMergeWithoutPK(meta);
+    }
+  }
+
+  validateEmptyWhere<T extends IEntityType<T>>(where: FilterQuery<T> | IPrimaryKey): void {
+    if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
+      throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
   }
 

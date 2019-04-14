@@ -15,7 +15,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T | null>;
+  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
 
   nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 

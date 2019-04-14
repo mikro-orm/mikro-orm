@@ -162,6 +162,32 @@ describe('EntityManagerMongo', () => {
     expect(repo.magic('test')).toBe('111 test 222');
   });
 
+  test('findOne should work with options parameter', async () => {
+    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const author = new Author('name 1', 'email');
+    const author2 = new Author('name 2', 'email');
+    await repo.persist([author, author2]);
+    orm.em.clear();
+
+    const a2 = await repo.findOne({ name: /^name/ }, {
+      populate: ['books'],
+      orderBy: { name: QueryOrder.DESC },
+    });
+    expect(a2).not.toBeNull();
+    expect(a2!.id).toBe(author2.id);
+    expect(a2!.books.isInitialized()).toBe(true);
+
+    const a1 = await repo.findOne({ name: /^name/ }, {
+      orderBy: { name: QueryOrder.ASC },
+    });
+    expect(a1).not.toBeNull();
+    expect(a1!.id).toBe(author.id);
+    expect(a1!.books.isInitialized()).toBe(false);
+
+    const a3 = await repo.findOne({ name: /^name/ }, [], { name: QueryOrder.ASC });
+    expect(a3).toBe(a1);
+  });
+
   test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     const author = new Author('name', 'email');

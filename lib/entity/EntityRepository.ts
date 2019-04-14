@@ -1,4 +1,4 @@
-import { EntityManager, FindOptions } from '../EntityManager';
+import { EntityManager, FindOneOptions, FindOptions } from '../EntityManager';
 import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryBuilder, QueryOrder } from '../query';
 import { FilterQuery } from '..';
@@ -24,8 +24,10 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.createQueryBuilder(this.entityName);
   }
 
-  async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
-    return this.em.findOne<T>(this.entityName, where, populate);
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: FindOneOptions, orderBy?: Record<string, QueryOrder>): Promise<T | null>;
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOneOptions = [], orderBy?: Record<string, QueryOrder>): Promise<T | null> {
+    return this.em.findOne<T>(this.entityName, where, populate as string[], orderBy);
   }
 
   async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>;

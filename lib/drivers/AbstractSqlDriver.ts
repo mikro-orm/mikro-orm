@@ -19,7 +19,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return qb.execute('all');
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       const pk = this.metadata[entityName].primaryKey;
       where = { [pk]: where };
@@ -27,7 +27,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
     const qb = this.createQueryBuilder(entityName);
 
-    return qb.select('*').populate(populate).where(where).limit(1).execute('get');
+    return qb.select('*').populate(populate).where(where).orderBy(orderBy).limit(1).execute('get');
   }
 
   async count(entityName: string, where: any): Promise<number> {

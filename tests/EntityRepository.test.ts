@@ -44,7 +44,7 @@ describe('EntityRepository', () => {
     await repo.find({ foo: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
-    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', []]);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher]);
     await repo.remove('bar');
@@ -77,6 +77,16 @@ describe('EntityRepository', () => {
     methods.find.mock.calls = [];
     await repo.find({ foo: 'bar' }, options);
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, options, {}, undefined, undefined]);
+  });
+
+  test('findOne() supports calling with config object', async () => {
+    const options = {
+      populate: ['test'],
+      orderBy: { test: -1 },
+    };
+    methods.findOne.mock.calls = [];
+    await repo.findOne({ foo: 'bar' }, options);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, options, undefined]);
   });
 
 });

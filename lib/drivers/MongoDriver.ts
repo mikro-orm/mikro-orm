@@ -19,13 +19,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map((r: T) => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = []): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as string) };
     }
 
     where = this.renameFields(entityName, where) as FilterQuery<T>;
-    const res = await this.connection.find<T>(this.getCollectionName(entityName), where, {}, 1);
+    const res = await this.connection.find<T>(this.getCollectionName(entityName), where, orderBy, 1);
 
     return this.mapResult(res[0], this.metadata[entityName]);
   }
