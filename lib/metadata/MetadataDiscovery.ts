@@ -122,6 +122,11 @@ export class MetadataDiscovery {
       this.initManyToManyFields(meta, prop);
     }
 
+    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+      const meta2 = this.metadata[prop.type];
+      prop.inverseJoinColumn = meta2.properties[meta2.primaryKey].fieldName;
+    }
+
     if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.initOneToManyFields(meta, prop);
     }
@@ -219,14 +224,14 @@ export class MetadataDiscovery {
         primaryKey: pk,
         properties: {
           [pk]: primaryProp,
-          [meta.name]: this.definePivotProperty(prop, meta.name),
-          [prop.type]: this.definePivotProperty(prop, prop.type),
+          [meta.name]: this.definePivotProperty(prop, meta.name, prop.type),
+          [prop.type]: this.definePivotProperty(prop, prop.type, meta.name),
         },
       } as EntityMetadata;
     }
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string): EntityProperty {
+  private definePivotProperty(prop: EntityProperty, name: string, inverse: string): EntityProperty {
     const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.ALL] } as EntityProperty;
 
     if (name === prop.type) {
@@ -237,13 +242,17 @@ export class MetadataDiscovery {
         this.initFieldName(prop2);
       }
 
+      ret.owner = false;
+      ret.mappedBy = inverse;
       ret.referenceColumnName = prop2.fieldName;
       ret.fieldName = ret.joinColumn = prop.inverseJoinColumn;
-      ret.inverseJoinColumn = prop.joinColumn;
+      ret.inverseJoinColumn = prop2.fieldName;
     } else {
+      ret.owner = true;
+      ret.inversedBy = inverse;
       ret.referenceColumnName = prop.referenceColumnName;
       ret.fieldName = ret.joinColumn = prop.joinColumn;
-      ret.inverseJoinColumn = prop.inverseJoinColumn;
+      ret.inverseJoinColumn = prop.referenceColumnName;
     }
 
     return ret;

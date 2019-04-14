@@ -43,9 +43,9 @@ export class EntityManager {
     return this.validator;
   }
 
-  createQueryBuilder(entityName: EntityName<IEntity>): QueryBuilder {
+  createQueryBuilder(entityName: EntityName<IEntity>, alias?: string): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.driver);
+    return new QueryBuilder(entityName, this.metadata, this.driver, alias);
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;

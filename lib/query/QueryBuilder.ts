@@ -11,7 +11,6 @@ import { IDatabaseDriver } from '../drivers';
 export class QueryBuilder {
 
   type: QueryType;
-  readonly alias = `e0`;
 
   private aliasCounter = 1;
   private flags: QueryFlag[] = [];
@@ -19,7 +18,8 @@ export class QueryBuilder {
   private _fields: string[];
   private _populate: string[] = [];
   private _populateMap: Record<string, string> = {};
-  private _leftJoins: Record<string, JoinOptions> = {};
+  private _joins: Record<string, JoinOptions> = {};
+  private _aliasMap: Record<string, string> = {};
   private _cond: Record<string, any> = {};
   private _data: Record<string, any>;
   private _orderBy: Record<string, QueryOrder>;
@@ -31,7 +31,8 @@ export class QueryBuilder {
 
   constructor(private readonly entityName: string,
               private readonly metadata: Record<string, EntityMetadata>,
-              private readonly driver: IDatabaseDriver) { }
+              private readonly driver: IDatabaseDriver,
+              readonly alias = `e0`) { }
 
   select(fields: string | string[]): this {
     this._fields = Array.isArray(fields) ? fields : [fields];
@@ -63,6 +64,32 @@ export class QueryBuilder {
     }
 
     return this;
+  }
+
+  join(field: string, alias: string, type: 'left' | 'inner' = 'inner'): this {
+    const [fromAlias, fromField] = this.helper.splitField(field);
+    const entityName = this._aliasMap[fromAlias];
+    const prop = this.metadata[entityName].properties[fromField];
+    this._aliasMap[alias] = prop.type;
+
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type);
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      const pivotAlias = `e${this.aliasCounter++}`;
+      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type);
+      this._fields.push(`${pivotAlias}.${prop.name}`);
+      Object.assign(this._joins, joins);
+    } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
+      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type);
+    } else { // MANY_TO_ONE
+      this._joins[prop.name] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type);
+    }
+
+    return this;
+  }
+
+  leftJoin(field: string, alias: string): this {
+    return this.join(field, alias, 'left');
   }
 
   where(cond: any, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
@@ -186,8 +213,8 @@ export class QueryBuilder {
     const ret: string[] = [];
 
     fields.forEach(f => {
-      if (this._leftJoins[f]) {
-        ret.push(...this.helper.mapJoinColumns(this.type, this._leftJoins[f]));
+      if (this._joins[f]) {
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]));
         return;
       }
 
@@ -196,11 +223,11 @@ export class QueryBuilder {
 
     Object.keys(this._populateMap).forEach(f => {
       if (!fields.includes(f)) {
-        ret.push(...this.helper.mapJoinColumns(this.type, this._leftJoins[f]));
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]));
       }
 
-      if (this._leftJoins[f].prop.reference !== ReferenceType.ONE_TO_ONE) {
-        Utils.renameKey(this._cond, this._leftJoins[f].inverseJoinColumn!, `${this._leftJoins[f].alias}.${this._leftJoins[f].inverseJoinColumn!}`);
+      if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE) {
+        Utils.renameKey(this._cond, this._joins[f].inverseJoinColumn!, `${this._joins[f].alias}.${this._joins[f].inverseJoinColumn!}`);
       }
     });
 
@@ -245,8 +272,9 @@ export class QueryBuilder {
     }
 
     this._fields.push(prop.name);
+    const alias2 = `e${this.aliasCounter++}`;
+    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
     const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-    const alias2 = this.joinOneToReference(prop, prop2);
     Utils.renameKey(cond, prop.name, `${alias2}.${prop2.referenceColumnName}`);
   }
 
@@ -254,44 +282,33 @@ export class QueryBuilder {
     if (prop.reference === ReferenceType.MANY_TO_MANY) {
       const alias1 = `e${this.aliasCounter++}`;
       const join = {
+        type: 'left',
         alias: alias1,
+        ownerAlias: this.alias,
         joinColumn: prop.joinColumn,
         inverseJoinColumn: prop.inverseJoinColumn,
         primaryKey: prop.referenceColumnName,
       } as JoinOptions;
 
       if (prop.owner) {
-        this._leftJoins[prop.name] = Object.assign(join, { table: prop.pivotTable });
+        this._joins[prop.name] = Object.assign(join, { table: prop.pivotTable });
       } else {
         const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-        this._leftJoins[prop.name] = Object.assign(join, { table: prop2.pivotTable });
+        this._joins[prop.name] = Object.assign(join, { table: prop2.pivotTable });
       }
 
       this._fields.push(prop.name);
       Utils.renameKey(cond, prop.name, `${alias1}.${prop.inverseJoinColumn}`);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-      const alias2 = this.joinOneToReference(prop, prop2);
+      const alias2 = `e${this.aliasCounter++}`;
+      this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
       Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
     }
   }
 
-  private joinOneToReference(prop: EntityProperty, prop2: EntityProperty): string {
-    const alias2 = `e${this.aliasCounter++}`;
-    this._leftJoins[prop.name] = {
-      table: this.helper.getTableName(prop.type),
-      alias: alias2,
-      joinColumn: prop2.fieldName,
-      inverseJoinColumn: prop2.referenceColumnName,
-      primaryKey: prop.referenceColumnName,
-      prop,
-    };
-
-    return alias2;
-  }
-
   private init(type: QueryType, data?: any, cond?: any): this {
     this.type = type;
+    this._aliasMap[this.alias] = this.entityName;
 
     if (data) {
       this._data = this.helper.processData(data);
@@ -311,7 +328,7 @@ export class QueryBuilder {
       case QueryType.SELECT:
         sql += this.prepareFields(this._fields);
         sql += ` FROM ${this.helper.getTableName(this.entityName, true)} AS ${this.helper.wrap(this.alias)}`;
-        sql += this.helper.processJoins(this._leftJoins);
+        sql += this.helper.processJoins(this._joins);
         break;
       case QueryType.INSERT:
         sql += `INTO ${this.helper.getTableName(this.entityName, true)}`;
@@ -339,26 +356,18 @@ export class QueryBuilder {
     }
 
     this._populate.forEach(field => {
-      if (this._leftJoins[field]) {
-        return this._populateMap[field] = this._leftJoins[field].alias;
+      if (this._joins[field]) {
+        return this._populateMap[field] = this._joins[field].alias;
       }
 
       if (this.metadata[field]) { // pivot table entity
         const prop = this.metadata[field].properties[this.entityName];
-        this._leftJoins[field] = {
-          table: this.metadata[field].collection,
-          alias: `e${this.aliasCounter++}`,
-          joinColumn: prop.joinColumn,
-          inverseJoinColumn: prop.inverseJoinColumn,
-          primaryKey: prop.referenceColumnName,
-          prop,
-        };
-        this._populateMap[field] = this._leftJoins[field].alias;
+        this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, `e${this.aliasCounter++}`, 'left');
+        this._populateMap[field] = this._joins[field].alias;
       } else if (this.helper.isOneToOneInverse(field)) {
         const prop = this.metadata[this.entityName].properties[field];
-        const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-        this.joinOneToReference(prop, prop2);
-        this._populateMap[field] = this._leftJoins[field].alias;
+        this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'left');
+        this._populateMap[field] = this._joins[field].alias;
       }
     });
 
@@ -369,7 +378,9 @@ export class QueryBuilder {
 
 export interface JoinOptions {
   table: string;
+  type: 'left' | 'inner';
   alias: string;
+  ownerAlias: string;
   joinColumn?: string;
   inverseJoinColumn?: string;
   primaryKey?: string;

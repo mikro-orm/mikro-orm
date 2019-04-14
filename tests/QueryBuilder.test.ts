@@ -60,6 +60,111 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'test 321', 'lol 321', 2, 1]);
   });
 
+  test('select leftJoin 1:1 owner', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb.select(['fb.*', 'fz.*'])
+      .leftJoin('fb.baz', 'fz')
+      .where({ 'fz.name': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `fb`.*, `fz`.* FROM `foo_bar2` AS `fb` ' +
+      'LEFT JOIN `foo_baz2` AS `fz` ON `fb`.`baz_id` = `fz`.`id` ' +
+      'WHERE `fz`.`name` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin 1:1 inverse', async () => {
+    const qb = orm.em.createQueryBuilder(FooBaz2, 'fz');
+    qb.select(['fb.*', 'fz.*'])
+      .leftJoin('fz.bar', 'fb')
+      .where({ 'fb.name': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `fb`.*, `fz`.* FROM `foo_baz2` AS `fz` ' +
+      'LEFT JOIN `foo_bar2` AS `fb` ON `fz`.`id` = `fb`.`baz_id` ' +
+      'WHERE `fb`.`name` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin m:1', async () => {
+    const qb = orm.em.createQueryBuilder(Book2, 'b');
+    qb.select(['a.*', 'b.*'])
+      .leftJoin('b.author', 'a')
+      .where({ 'a.name': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `a`.*, `b`.* FROM `book2` AS `b` ' +
+      'LEFT JOIN `author2` AS `a` ON `b`.`author_id` = `a`.`id` ' +
+      'WHERE `a`.`name` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin 1:m', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select(['a.*', 'b.*'])
+      .leftJoin('a.books', 'b')
+      .where({ 'b.title': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `a`.*, `b`.* FROM `author2` AS `a` ' +
+      'LEFT JOIN `book2` AS `b` ON `a`.`id` = `b`.`author_id` ' +
+      'WHERE `b`.`title` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin m:n owner', async () => {
+    const qb = orm.em.createQueryBuilder(Book2, 'b');
+    qb.select(['b.*', 't.*'])
+      .leftJoin('b.tags', 't')
+      .where({ 't.name': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `b`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` FROM `book2` AS `b` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'LEFT JOIN `book_tag2` AS `t` ON `e1`.`book_tag2_id` = `t`.`id` ' +
+      'WHERE `t`.`name` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin m:n inverse', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['b.*', 't.*'])
+      .leftJoin('t.books', 'b')
+      .where({ 'b.title': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE `b`.`title` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select join and leftJoin combined', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p');
+    qb.select(['p.*', 'b.*', 'a.*', 't.*'])
+      .leftJoin('books', 'b')
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .where({ 'p.name': 'test 123', 'b.title': /3$/ })
+      .limit(2, 1);
+    const sql = 'SELECT `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` FROM `publisher2` AS `p` ' +
+      'LEFT JOIN `book2` AS `b` ON `p`.`id` = `b`.`publisher_id` ' +
+      'JOIN `author2` AS `a` ON `b`.`author_id` = `a`.`id` ' +
+      'JOIN `book2_to_book_tag2` AS `e1` ON `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'JOIN `book_tag2` AS `t` ON `e1`.`book_tag2_id` = `t`.`id` ' +
+      'WHERE `p`.`name` = ? AND `b`.`title` LIKE ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', '%3', 2, 1]);
+  });
+
   test('select with boolean', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ termsAccepted: false });
@@ -173,7 +278,7 @@ describe('QueryBuilder', () => {
 
   test('select by m:n with populate', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
-    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { $in: [ 1, 2 ] } }).orderBy({ ['publisher2_to_test2.id']: QueryOrder.ASC });
+    qb.select('*').populate(['publisher2_to_test2']).where({ publisher2_id: { $in: [ 1, 2 ] } }).orderBy({ 'publisher2_to_test2.id': QueryOrder.ASC });
     let sql = 'SELECT `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` FROM `test2` AS `e0`';
     sql += ' LEFT JOIN `publisher2_to_test2` AS `e1` ON `e0`.`id` = `e1`.`test2_id`';
     sql += ' WHERE `e1`.`publisher2_id` IN (?, ?)';

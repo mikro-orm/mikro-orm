@@ -3,13 +3,13 @@ version: "2"
 checks:
   file-lines:
     config:
-      threshold: 300
+      threshold: 350
   method-lines:
     config:
       threshold: 30
   method-count:
     config:
-      threshold: 25
+      threshold: 30
 
 engines:
   duplication:

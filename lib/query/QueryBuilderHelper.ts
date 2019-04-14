@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { EntityMetadata } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
@@ -83,7 +83,7 @@ export class QueryBuilderHelper {
       ret += ' AS ' + this.wrap(alias);
     }
 
-    if (type !== QueryType.SELECT || customExpression || this.isQuoted(ret)) {
+    if (type !== QueryType.SELECT || customExpression || this.isPrefixed(ret)) {
       return ret;
     }
 
@@ -110,9 +110,81 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  processJoins(leftJoins: Record<string, JoinOptions>): string {
-    return Object.values(leftJoins).map(join => {
-      return ` LEFT JOIN ${this.wrap(join.table)} AS ${this.wrap(join.alias)} ON ${this.wrap(this.alias)}.${this.wrap(join.primaryKey!)} = ${this.wrap(join.alias)}.${this.wrap(join.joinColumn!)}`;
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+    const prop2 = this.metadata[prop.type].properties[prop.mappedBy || prop.inversedBy];
+    return {
+      table: this.getTableName(prop.type),
+      joinColumn: prop.owner ? prop2.referenceColumnName : prop2.fieldName,
+      inverseJoinColumn: prop2.referenceColumnName,
+      primaryKey: prop.owner ? prop.joinColumn : prop.referenceColumnName,
+      ownerAlias,
+      alias,
+      prop,
+      type,
+    };
+  }
+
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+    return {
+      table: this.getTableName(prop.type),
+      joinColumn: prop.inverseJoinColumn,
+      primaryKey: prop.fieldName,
+      ownerAlias,
+      alias,
+      prop,
+      type,
+    };
+  }
+
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'left' | 'inner'): Record<string, JoinOptions> {
+    const join = {
+      type,
+      ownerAlias,
+      alias: pivotAlias,
+      joinColumn: prop.joinColumn,
+      inverseJoinColumn: prop.inverseJoinColumn,
+      primaryKey: prop.referenceColumnName,
+    } as JoinOptions;
+    const name = `${pivotAlias}.${prop.name}`;
+    const ret: Record<string, JoinOptions> = {};
+
+    if (prop.owner) {
+      ret[name] = Object.assign(join, { table: prop.pivotTable });
+    } else {
+      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+      ret[name] = Object.assign(join, { table: prop2.pivotTable });
+    }
+
+    if (prop.owner) {
+      const prop2 = this.metadata[prop.pivotTable].properties[prop.type];
+      ret[prop2.name] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+    } else {
+      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+      const prop3 = this.metadata[prop2.pivotTable].properties[prop.type];
+      ret[prop3.name] = this.joinManyToOneReference(prop3, pivotAlias, alias, type);
+    }
+
+    return ret;
+  }
+
+  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+    const prop2 = this.metadata[field].properties[prop.mappedBy || prop.inversedBy];
+    return {
+      table: this.metadata[field].collection,
+      joinColumn: prop.joinColumn,
+      inverseJoinColumn: prop2.joinColumn,
+      primaryKey: prop.referenceColumnName,
+      ownerAlias,
+      alias,
+      prop,
+      type,
+    };
+  }
+
+  processJoins(joins: Record<string, JoinOptions>): string {
+    return Object.values(joins).map(join => {
+      const type = join.type === 'inner' ? '' : join.type.toUpperCase() + ' ';
+      return ` ${type}JOIN ${this.wrap(join.table)} AS ${this.wrap(join.alias)} ON ${this.wrap(join.ownerAlias)}.${this.wrap(join.primaryKey!)} = ${this.wrap(join.alias)}.${this.wrap(join.joinColumn!)}`;
     }).join('');
   }
 
@@ -233,6 +305,14 @@ export class QueryBuilderHelper {
     }) + append;
   }
 
+  splitField(field: string): [string, string] {
+    const [a, b] = field.split('.');
+    const fromAlias = b ? a : this.alias;
+    const fromField = b || a;
+
+    return [fromAlias, fromField];
+  }
+
   replaceEmptyInConditions(cond: any, field: string): void {
     if (QueryBuilderHelper.GROUP_OPERATORS[field as '$and' | '$or']) {
       cond[field].forEach((subCond: any) => Object.keys(subCond).forEach(key => this.replaceEmptyInConditions(subCond, key)));
@@ -272,7 +352,7 @@ export class QueryBuilderHelper {
   }
 
   private prefixAndWrap(field: string): string {
-    if (!this.isQuoted(field)) {
+    if (!this.isPrefixed(field)) {
       return this.wrap(field);
     }
 
@@ -319,8 +399,8 @@ export class QueryBuilderHelper {
     return '(' + group.join(` ${glue} `) + ')';
   }
 
-  private isQuoted(field: string): boolean {
-    return new RegExp(`${this.quoteChar}?\\w{2}${this.quoteChar}?\\.`).test(field);
+  private isPrefixed(field: string): boolean {
+    return new RegExp(`${this.quoteChar}?\\w+${this.quoteChar}?\\.`).test(field);
   }
 
 }
