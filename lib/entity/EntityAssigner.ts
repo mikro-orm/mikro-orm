@@ -26,10 +26,8 @@ export class EntityAssigner {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], entity.__em);
       }
 
-      const isCollection = props[prop] && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference);
-
-      if (isCollection && Array.isArray(value)) {
-        return EntityAssigner.assignCollection<T>(entity, value, props[prop], entity.__em);
+      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value)) {
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T], value, props[prop], entity.__em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
@@ -64,7 +62,7 @@ export class EntityAssigner {
     throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
   }
 
-  private static assignCollection<T extends IEntityType<T>>(entity: T, value: any[], prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection<T extends IEntityType<T>>(entity: T, collection: Collection<IEntity>, value: any[], prop: EntityProperty, em: EntityManager): void {
     const invalid: any[] = [];
     const items = value.map((item: any) => this.createCollectionItem(item, em, prop, invalid));
 
@@ -73,7 +71,8 @@ export class EntityAssigner {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
     }
 
-    (entity[prop.name as keyof T] as Collection<IEntity>).set(items, true);
+    collection.set(items, true);
+    collection.setDirty();
   }
 
   private static createCollectionItem(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): IEntity {

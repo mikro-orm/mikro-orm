@@ -29,10 +29,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     }
 
     super.set(items);
-
-    if (initialize) {
-      this.dirty = false;
-    }
+    this.dirty = !initialize;
   }
 
   remove(...items: T[]): void {
