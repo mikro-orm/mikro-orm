@@ -288,8 +288,14 @@ export class EntityManager {
     return ret;
   }
 
-  fork(): EntityManager {
-    return new EntityManager(this.config, this.driver);
+  fork(clear = true): EntityManager {
+    const em = new EntityManager(this.config, this.driver);
+
+    if (!clear) {
+      Object.values(this.getUnitOfWork().getIdentityMap()).forEach(entity => em.merge(entity));
+    }
+
+    return em;
   }
 
   getUnitOfWork(): UnitOfWork {

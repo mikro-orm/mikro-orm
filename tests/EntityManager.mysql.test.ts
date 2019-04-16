@@ -923,6 +923,22 @@ describe('EntityManagerMySql', () => {
     expect(b1.toJSON()).toMatchObject({ fooBar: b1.id });
   });
 
+  test('persisting entities in parallel inside forked EM with copied IM', async () => {
+    const author = new Author2('name', 'email');
+    await orm.em.persistAndFlush(author); // we need to flush here so the entity gets inside IM
+
+    // fork EM without clearing the IM (once for each process), so author entity will be there
+    await Promise.all([
+      orm.em.fork(false).persistAndFlush(new Book2('b1', author)),
+      orm.em.fork(false).persistAndFlush(new Book2('b2', author)),
+      orm.em.fork(false).persistAndFlush(new Book2('b3', author)),
+    ]);
+
+    orm.em.clear();
+    const a1 = (await orm.em.findOne(Author2, author.id, { populate: ['books'] }))!;
+    expect(a1.books.count()).toBe(3);
+  });
+
   test('EM supports smart search conditions', async () => {
     const author = new Author2('name', 'email');
     const b1 = new Book2('b1', author);
