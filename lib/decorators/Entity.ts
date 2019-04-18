@@ -28,13 +28,14 @@ export interface IEntity<K = number | string> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?: boolean): Promise<this>;
-  toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
+  toObject(ignoreFields?: string[]): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   assign(data: any, options?: AssignOptions | boolean): void;
   __uuid: string;
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
+  __lazyInitialized: boolean;
   __primaryKey: K;
   __primaryKeyField: string & keyof IEntity;
   __serializedPrimaryKey: string & keyof IEntity;

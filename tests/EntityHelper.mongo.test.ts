@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { Author, Book, BookTag } from './entities';
+import { Author, Book, BookTag, Publisher } from './entities';
 import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 
@@ -38,15 +38,30 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persist([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = (await orm.em.findOne(Author, god.id))!;
-    const books = await orm.em.find(Book, { author: god.id });
-    await newGod.init();
+    const newGod = (await orm.em.findOne(Author, god.id, ['books.author']))!;
 
-    for (const book of books) {
+    for (const book of newGod.books) {
       expect(book.toJSON()).toMatchObject({
         author: { name: book.author.name },
       });
     }
+  });
+
+  test('#toObject complex serialization (1:m -> m:1)', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    god.favouriteAuthor = god;
+    bible.publisher = new Publisher('Publisher 1');
+    await orm.em.persist(bible);
+    orm.em.clear();
+
+    const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author', 'books.publisher']))!;
+    const json = author.toObject();
+    expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
+    expect(json.books[0]).toMatchObject({
+      author: { name: bible.author.name },
+      publisher: { name: bible.publisher.name },
+    });
   });
 
   test('#init() should populate the entity', async () => {

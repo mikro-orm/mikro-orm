@@ -6,7 +6,7 @@ import { MetadataStorage } from '../metadata';
 
 export class EntityTransformer {
 
-  static toObject<T extends IEntityType<T>>(entity: T, parent?: IEntity, isCollection = false): EntityData<T> {
+  static toObject<T extends IEntityType<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
     const platform = entity.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(entity.__primaryKeyField);
     const ret = (entity.__primaryKey ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
@@ -16,33 +16,33 @@ export class EntityTransformer {
     }
 
     Object.keys(entity)
-      .filter(prop => prop !== entity.__primaryKeyField && !prop.startsWith('_'))
-      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, parent || entity, isCollection)])
+      .filter(prop => prop !== entity.__primaryKeyField && !prop.startsWith('_') && !ignoreFields.includes(prop))
+      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields)])
       .filter(([, value]) => !!value)
       .forEach(([prop, value]) => ret[prop!] = value);
 
     return ret;
   }
 
-  private static processProperty<T extends IEntityType<T>>(prop: keyof T, entity: T, parent: IEntity, isCollection: boolean): T[keyof T] | undefined {
+  private static processProperty<T extends IEntityType<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {
     if (entity[prop] as object instanceof ArrayCollection) {
       return EntityTransformer.processCollection(prop, entity);
     }
 
     if (Utils.isEntity(entity[prop])) {
-      return EntityTransformer.processEntity(prop, entity, parent, isCollection);
+      return EntityTransformer.processEntity(prop, entity, ignoreFields);
     }
 
     return entity[prop];
   }
 
-  private static processEntity<T extends IEntityType<T>>(prop: keyof T, entity: T, parent: IEntity, isCollection: boolean): T[keyof T] | undefined {
+  private static processEntity<T extends IEntityType<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {
     const child = entity[prop] as IEntity;
     const platform = child.__em.getDriver().getPlatform();
 
-    if (child.isInitialized() && child.__populated && !isCollection && child !== parent) {
+    if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
       const meta = MetadataStorage.getMetadata(child.constructor.name);
-      const args = [...meta.toJsonParams.map(() => undefined), entity];
+      const args = [...meta.toJsonParams.map(() => undefined), ignoreFields];
 
       return child.toJSON(...args) as T[keyof T];
     }
@@ -54,7 +54,7 @@ export class EntityTransformer {
     const col = entity[prop] as Collection<IEntity>;
 
     if (col.isInitialized(true) && col.shouldPopulate()) {
-      return col.toArray(entity) as T[keyof T];
+      return col.toArray() as T[keyof T];
     }
 
     if (col.isInitialized()) {

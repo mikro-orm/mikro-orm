@@ -19,10 +19,10 @@ export class ArrayCollection<T extends IEntityType<T>> {
     return [...this.items];
   }
 
-  toArray(parent: IEntity = this.owner): Record<string, any>[] {
+  toArray(): Record<string, any>[] {
     return this.getItems().map(item => {
       const meta = MetadataStorage.getMetadata(item.constructor.name);
-      const args = [...meta.toJsonParams.map(() => undefined), parent, true];
+      const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return item.toJSON(...args);
     });

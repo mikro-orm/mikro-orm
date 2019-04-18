@@ -1111,7 +1111,7 @@ describe('EntityManagerMongo', () => {
     const jon = await orm.em.findOne(Author, author.id, ['friends']);
     const authors = await orm.em.find(Author, {}, { orderBy: { name: QueryOrder.ASC } });
     expect(jon!.friends.isInitialized(true)).toBe(true);
-    expect(jon!.friends.toArray()).toMatchObject(authors.map(a => a.toJSON()));
+    expect(jon!.friends.toArray()).toMatchObject(authors.map(a => a.toJSON(true, ['id', 'email', 'friends'])));
   });
 
   test('EM do not support transactions', async () => {
