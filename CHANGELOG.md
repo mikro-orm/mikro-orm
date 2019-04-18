@@ -1,3 +1,18 @@
+<a name="2.2.1"></a>
+## [2.2.1](https://github.com/B4nan/mikro-orm/compare/v2.2.0...v2.2.1) (2019-04-18)
+
+### Bug Fixes
+
+* **entity**: allow boolean onlyProperties parameter in entity.assign() ([9f318f7](https://github.com/B4nan/mikro-orm/commit/9f318f7))
+* **entity**: set dirty flag on collections updated via entity.assign() ([d9d71fe](https://github.com/B4nan/mikro-orm/commit/d9d71fe))
+* **sql-drivers**: work around empty IN () and NOT IN () conditions ([13a1832](https://github.com/B4nan/mikro-orm/commit/13a1832))
+
+### Features
+
+* **core**: allow forking EM without clearing identity map ([5e4603c](https://github.com/B4nan/mikro-orm/commit/5e4603c))
+
+
+
 <a name="2.2.0"></a>
 ## [2.2.0](https://github.com/B4nan/mikro-orm/compare/v2.1.1...v2.2.0) (2019-04-14)
 

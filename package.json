@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JS.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
