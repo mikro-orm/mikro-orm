@@ -46,7 +46,7 @@ describe('EntityRepository', () => {
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
-    expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher]);
+    expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.remove('bar');
     expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
     const entity = {} as IEntity;

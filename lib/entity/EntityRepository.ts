@@ -20,8 +20,8 @@ export class EntityRepository<T extends IEntityType<T>> {
     this.em.persistLater(entity);
   }
 
-  createQueryBuilder(): QueryBuilder {
-    return this.em.createQueryBuilder(this.entityName);
+  createQueryBuilder(alias?: string): QueryBuilder {
+    return this.em.createQueryBuilder(this.entityName, alias);
   }
 
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
