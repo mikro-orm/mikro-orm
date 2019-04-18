@@ -1,3 +1,12 @@
+<a name="2.2.2"></a>
+## [2.2.2](https://github.com/B4nan/mikro-orm/compare/v2.2.1...v2.2.2) (2019-04-18)
+
+### Bug Fixes
+
+* **serializing**: allow serializing deeply nested structures ([04c5190](https://github.com/B4nan/mikro-orm/commit/04c5190))
+
+
+
 <a name="2.2.1"></a>
 ## [2.2.1](https://github.com/B4nan/mikro-orm/compare/v2.2.0...v2.2.1) (2019-04-18)
 
