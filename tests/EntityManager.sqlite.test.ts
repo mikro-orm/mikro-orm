@@ -666,6 +666,11 @@ describe('EntityManagerSqlite', () => {
     const a3 = (await orm.em.findOne(Author3, { 'id:nin': [2, 3, 4] }))!;
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
+    const a4 = (await orm.em.findOne(Author3, { 'id:in': [] }))!;
+    expect(a4).toBeNull();
+    const a5 = (await orm.em.findOne(Author3, { 'id:nin': [] }))!;
+    expect(a5).not.toBeNull();
+    expect(a5.id).toBe(author.id);
   });
 
   afterAll(async () => {

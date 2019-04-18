@@ -233,6 +233,28 @@ export class QueryBuilderHelper {
     }) + append;
   }
 
+  replaceEmptyInConditions(cond: any, field: string): void {
+    if (QueryBuilderHelper.GROUP_OPERATORS[field as '$and' | '$or']) {
+      cond[field].forEach((subCond: any) => Object.keys(subCond).forEach(key => this.replaceEmptyInConditions(subCond, key)));
+      cond[field] = cond[field].filter((subCond: any) => !Utils.isObject(subCond) || Object.keys(subCond).length > 0);
+      return;
+    }
+
+    if (!Utils.isObject(cond[field]) || cond[field] instanceof RegExp) {
+      return;
+    }
+
+    // IN () is always false
+    if (cond[field] && cond[field].$in && cond[field].$in.length === 0) {
+      cond[field].$in = [null];
+    }
+
+    // NOT IN () is always true
+    if (cond[field] && cond[field].$nin && cond[field].$nin.length === 0) {
+      delete cond[field];
+    }
+  }
+
   private processComplexParam(key: string, cond: any): any[] {
     // unwind parameters when ? found in field name
     if (key.includes('?') && Array.isArray(cond)) {

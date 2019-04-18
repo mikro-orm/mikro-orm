@@ -219,6 +219,8 @@ export class QueryBuilder {
     cond = Object.assign({}, cond); // copy first
 
     Object.keys(cond).forEach(field => {
+      this.helper.replaceEmptyInConditions(cond, field);
+
       if (!this.metadata[this.entityName] || !this.metadata[this.entityName].properties[field]) {
         return;
       }

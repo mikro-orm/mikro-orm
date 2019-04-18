@@ -956,6 +956,14 @@ describe('EntityManagerMySql', () => {
     const a3 = (await orm.em.findOne(Author2, { 'id:nin': [2, 3, 4] }))!;
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
+    const a4 = (await orm.em.findOne(Author2, { 'id:in': [] }))!;
+    expect(a4).toBeNull();
+    const a5 = (await orm.em.findOne(Author2, { 'id:nin': [] }))!;
+    expect(a5).not.toBeNull();
+    expect(a5.id).toBe(author.id);
+    const a6 = (await orm.em.findOne(Author2, { $and: [{ 'id:nin': [] }, { email: 'email' }] }))!;
+    expect(a6).not.toBeNull();
+    expect(a6.id).toBe(author.id);
   });
 
   afterAll(async () => orm.close(true));
