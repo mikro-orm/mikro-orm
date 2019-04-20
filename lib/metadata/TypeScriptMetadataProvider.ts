@@ -1,4 +1,4 @@
-import Project, { SourceFile } from 'ts-morph';
+import { Project, SourceFile } from 'ts-morph';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
