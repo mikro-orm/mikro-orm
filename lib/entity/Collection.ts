@@ -21,6 +21,10 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
   add(...items: T[]): void {
     this.modify('add', items);
+
+    for (const item of items) {
+      this.owner.__em.getUnitOfWork().cancelOrphanRemoval(item);
+    }
   }
 
   set(items: T[], initialize = false): void {
@@ -30,10 +34,20 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
     super.set(items);
     this.dirty = !initialize;
+
+    for (const item of items) {
+      this.owner.__em.getUnitOfWork().cancelOrphanRemoval(item);
+    }
   }
 
   remove(...items: T[]): void {
     this.modify('remove', items);
+
+    if (this.property.orphanRemoval) {
+      for (const item of items) {
+        this.owner.__em.getUnitOfWork().scheduleOrphanRemoval(item);
+      }
+    }
   }
 
   contains(item: T): boolean {

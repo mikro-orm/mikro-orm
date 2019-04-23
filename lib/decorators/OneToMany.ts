@@ -24,6 +24,7 @@ export function OneToMany(options: OneToManyOptions): Function {
 export type OneToManyOptions = PropertyOptions & {
   entity: () => string | Function;
   cascade?: Cascade[];
+  orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder },
   joinColumn?: string;
   inverseJoinColumn?: string;

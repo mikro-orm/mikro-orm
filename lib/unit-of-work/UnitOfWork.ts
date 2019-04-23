@@ -21,6 +21,7 @@ export class UnitOfWork {
 
   private readonly persistStack: IEntity[] = [];
   private readonly removeStack: IEntity[] = [];
+  private readonly orphanRemoveStack: IEntity[] = [];
   private readonly changeSets: ChangeSet<IEntity>[] = [];
   private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity> | Collection<IEntity>][] = [];
   private readonly metadata = MetadataStorage.getMetadata();
@@ -131,10 +132,22 @@ export class UnitOfWork {
       this.changeSets.push(changeSet);
     }
 
+    for (const entity of Object.values(this.orphanRemoveStack)) {
+      this.remove(entity);
+    }
+
     for (const entity of Object.values(this.removeStack)) {
       const meta = this.metadata[entity.constructor.name];
       this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
     }
+  }
+
+  scheduleOrphanRemoval(entity: IEntity): void {
+    this.orphanRemoveStack.push(entity);
+  }
+
+  cancelOrphanRemoval(entity: IEntity): void {
+    this.cleanUpStack(this.orphanRemoveStack, entity);
   }
 
   private findNewEntities<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
@@ -235,6 +248,7 @@ export class UnitOfWork {
     Object.keys(this.identifierMap).forEach(key => delete this.identifierMap[key]);
     this.persistStack.length = 0;
     this.removeStack.length = 0;
+    this.orphanRemoveStack.length = 0;
     this.changeSets.length = 0;
   }
 
@@ -269,7 +283,7 @@ export class UnitOfWork {
   }
 
   private cascadeReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty, type: Cascade, visited: IEntity[]): void {
-    if (!prop.cascade || !(prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL))) {
+    if (!this.shouldCascade(prop, type)) {
       return;
     }
 
@@ -288,6 +302,14 @@ export class UnitOfWork {
   private isCollectionSelfReferenced(collection: Collection<IEntity>, visited: IEntity[]): boolean {
     const filtered = collection.getItems().filter(item => !this.originalEntityData[item.__uuid]);
     return filtered.some(items => visited.includes(items));
+  }
+
+  private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
+    if (type === Cascade.REMOVE && prop.orphanRemoval) {
+      return true;
+    }
+
+    return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 
 }
