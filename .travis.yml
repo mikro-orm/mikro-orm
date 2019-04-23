@@ -5,7 +5,7 @@ node_js:
   - '8'
   - '9'
   - '10'
-  - 'node'
+  - '11'
 
 services:
   - mongodb
