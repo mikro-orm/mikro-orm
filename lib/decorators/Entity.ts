@@ -69,6 +69,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   nullable?: boolean;
   persist?: boolean;
   cascade: Cascade[];
+  orphanRemoval?: boolean;
   onUpdate?: () => any;
   owner: boolean;
   inversedBy: string;

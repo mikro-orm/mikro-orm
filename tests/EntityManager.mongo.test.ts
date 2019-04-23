@@ -7,6 +7,8 @@ import { initORM, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { MongoConnection } from '../lib/connections/MongoConnection';
 import { Logger } from '../lib/utils';
+import { FooBar } from './entities/FooBar';
+import { FooBaz } from './entities/FooBaz';
 
 /**
  * @class EntityManagerMongoTest
@@ -1112,6 +1114,57 @@ describe('EntityManagerMongo', () => {
     const authors = await orm.em.find(Author, {}, { orderBy: { name: QueryOrder.ASC } });
     expect(jon!.friends.isInitialized(true)).toBe(true);
     expect(jon!.friends.toArray()).toMatchObject(authors.map(a => a.toJSON(true, ['id', 'email', 'friends'])));
+  });
+
+  test('orphan removal 1:M', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const b1 = new Book('b1', author);
+    const b2 = new Book('b2', author);
+    const b3 = new Book('b3', author);
+    author.books.add(b1, b2, b3);
+    await orm.em.persist(author);
+
+    // removing book from collection will trigger orphan removal
+    author.books.remove(b1);
+    await orm.em.persist(author);
+    await expect(orm.em.findOne(Book, b1)).resolves.toBeNull();
+    await expect(orm.em.findOne(Book, b3)).resolves.not.toBeNull();
+
+    // replacing collection items will trigger orphan removal
+    author.books.remove(b2);
+    author.books.set([b1, b2]);
+    await orm.em.persist(author);
+    await expect(orm.em.findOne(Book, b1)).resolves.not.toBeNull();
+    await expect(orm.em.findOne(Book, b3)).resolves.toBeNull();
+
+    // removing author will cascade the operation as orphan removal behaves also like cascade remove
+    await orm.em.removeEntity(author);
+    await expect(orm.em.count(Book, { author })).resolves.toBe(0);
+  });
+
+  test('orphan removal 1:1', async () => {
+    const bar = FooBar.create('fb');
+    const baz1 = FooBaz.create('fz1');
+    const baz2 = FooBaz.create('fz2');
+    bar.baz = baz1;
+    await orm.em.persist(bar);
+
+    // replacing reference with value will trigger orphan removal
+    bar.baz = baz2;
+    await orm.em.persist(bar);
+    await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
+    await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
+
+    // replacing reference with null will trigger orphan removal
+    bar.baz = null;
+    await orm.em.persist(bar);
+    await expect(orm.em.findOne(FooBaz, baz2)).resolves.toBeNull();
+
+    // removing bar will cascade the operation as orphan removal behaves also like cascade remove
+    bar.baz = baz1;
+    await orm.em.persist(bar);
+    await orm.em.removeEntity(bar);
+    await expect(orm.em.count(FooBaz, { bar })).resolves.toBe(0);
   });
 
   test('EM do not support transactions', async () => {
