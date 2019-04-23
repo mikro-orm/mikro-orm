@@ -114,3 +114,33 @@ await orm.em.removeEntity(book1); // this will remove book1 and its publisher
 // but we still have reference to removed publisher here
 console.log(book2.publisher, book3.publisher);
 ```
+
+## Orphan removal
+
+In addition to `Cascade.REMOVE`, there is also additional and more aggressive remove 
+cascading mode which can be specified using the `orphanRemoval` flag of the `@OneToOne`
+and `@OneToMany` properties:
+
+```typescript
+export class Author {
+  @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
+  books = new Collection<Book>(this);
+}
+```
+
+> `orphanRemoval` flag behaves just like `Cascade.REMOVE` for remove operation, so specifying 
+> both is redundant.
+
+With simple `Cascade.REMOVE`, you wound need to remove the `Author` entity to cascade 
+the operation down to all loaded `Book`s. By enabling orphan removal on the collection, 
+`Book`s will be also removed when they get disconnected from the collection (either via 
+`remove()`, or by replacing collection items via `set()`):
+
+```typescript
+await author.books.set([book1, book2]); // replace whole collection
+await author.books.remove(book1); // remove book from collection
+await orm.em.persistAndFlush(author); // book1 will be removed, as well as all original items (before we called `set()`)
+```
+
+In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no remove operation
+was executed. 
