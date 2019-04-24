@@ -1,3 +1,19 @@
+<a name="2.3.0"></a>
+## [2.3.0](https://github.com/B4nan/mikro-orm/compare/v2.2.2...v2.3.0) (2019-04-24)
+
+### Bug Fixes
+
+* **deps**: update dependency ts-morph to v2 ([#47](https://github.com/B4nan/mikro-orm/issues/47))
+* **sql**: support custom field names in select clause of query builder ([b10c67f](https://github.com/B4nan/mikro-orm/commit/b10c67f))
+
+### Features
+
+* **core**: implement orphan removal ([#48](https://github.com/B4nan/mikro-orm/issues/48)), closes [#36](https://github.com/B4nan/mikro-orm/issues/36)
+* **core**: support lookup by array instead of explicit `$in` condition ([4f600d6](https://github.com/B4nan/mikro-orm/commit/4f600d6))
+* **query-builder**: add support for `join()` and `leftJoin()` ([#46](https://github.com/B4nan/mikro-orm/issues/46)), closes [#45](https://github.com/B4nan/mikro-orm/issues/45)
+
+
+
 <a name="2.2.2"></a>
 ## [2.2.2](https://github.com/B4nan/mikro-orm/compare/v2.2.1...v2.2.2) (2019-04-18)
 
