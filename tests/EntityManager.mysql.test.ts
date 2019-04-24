@@ -966,6 +966,17 @@ describe('EntityManagerMySql', () => {
     expect(a6.id).toBe(author.id);
   });
 
+  test('lookup by array', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    author.books.add(book1, book2, book3);
+    await orm.em.persist(author);
+    await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

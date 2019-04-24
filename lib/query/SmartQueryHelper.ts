@@ -1,13 +1,17 @@
 import { FilterQuery, IEntity, Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
+import { IEntityType } from '../decorators';
+import { MetadataStorage } from '../metadata';
 
 export class SmartQueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
-  static processParams(params: any, field?: string): any {
+  private static readonly metadata = MetadataStorage.getMetadata();
+
+  static processParams(params: any, root?: boolean): any {
     if (Utils.isEntity(params)) {
-      return SmartQueryHelper.processEntity(params, field);
+      return SmartQueryHelper.processEntity(params, root);
     }
 
     if (params === undefined) {
@@ -15,28 +19,37 @@ export class SmartQueryHelper {
     }
 
     if (Array.isArray(params)) {
-      return params.map(item => SmartQueryHelper.processParams(item, field));
+      return params.map(item => SmartQueryHelper.processParams(item, true));
     }
 
     if (Utils.isObject(params)) {
       Object.keys(params).forEach(k => {
-        params[k] = SmartQueryHelper.processParams(params[k], k);
+        params[k] = SmartQueryHelper.processParams(params[k], !!k);
       });
     }
 
     return params;
   }
 
-  static processWhere<T>(where: FilterQuery<T>): FilterQuery<T> {
+  static processWhere<T extends IEntityType<T>>(where: FilterQuery<T>, entityName: string): FilterQuery<T> {
     where = this.processParams(where);
+    const rootPrimaryKey = this.metadata[entityName] ? this.metadata[entityName].primaryKey : entityName;
+
+    if (Array.isArray(where)) {
+      return { [rootPrimaryKey]: { $in: where.map(sub => this.processWhere(sub, entityName)) } };
+    }
 
     if (!Utils.isObject(where)) {
       return where;
     }
 
-    Object.entries(where).map(([key, value]) => {
+    Object.entries(where).forEach(([key, value]) => {
       if (QueryBuilderHelper.GROUP_OPERATORS[key as '$and' | '$or']) {
-        return value.map((sub: any) => this.processWhere(sub));
+        return value.map((sub: any) => this.processWhere(sub, entityName));
+      }
+
+      if (Array.isArray(value) && !SmartQueryHelper.isSupported(key) && !key.includes('?')) {
+        return where[key as keyof typeof where] = { $in: value };
       }
 
       if (!SmartQueryHelper.isSupported(key)) {
@@ -57,8 +70,8 @@ export class SmartQueryHelper {
     return where;
   }
 
-  private static processEntity(entity: IEntity, field?: string): any {
-    if (field) {
+  private static processEntity(entity: IEntity, root?: boolean): any {
+    if (root) {
       return entity.__primaryKey;
     }
 

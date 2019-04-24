@@ -15,7 +15,7 @@ const res = await orm.em.find(Author, { $and: [
   { id: { $gte: 7 }, },
   { id: { $lte: 8 }, },
   { id: { $ne: 9 }, },
-] })
+] });
 ```
 
 For AND condition with single field, you can also do this:
@@ -31,7 +31,7 @@ const res = await orm.em.find(Author, {
     $lte: 8,
     $ne: 9,
   },
-})
+});
 ```
 
 Another way to do this by including the operator in your keys:
@@ -45,7 +45,7 @@ const res = await orm.em.find(Author, { $and: [
   { 'id:gte': 7 },
   { 'id:lte': 8 },
   { 'id:ne': 9 },
-] })
+] });
 ```
 
 For comparison operators, you can also use their mathematical symbols:
@@ -57,5 +57,18 @@ const res = await orm.em.find(Author, { $and: [
   { 'id >=': 7 },
   { 'id <=': 8 },
   { 'id !=': 9 },
-] })
+] });
+```
+
+There is also shortcut for `$in` - simply provide array as value and it 
+will be converted automatically:
+
+```typescript
+const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
+```
+
+For primary key lookup, you can provide the array directly to `EntityManager.find()`:
+
+```typescript
+const res = await orm.em.find(Author, [1, 2, 7]);
 ```

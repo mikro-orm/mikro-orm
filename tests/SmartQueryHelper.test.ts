@@ -23,7 +23,7 @@ describe('SmartQueryHelper', () => {
       'key4<=': 123,
       'key5!=': 123,
       'key6!': 123,
-    })).toEqual({
+    }, 'id')).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -38,7 +38,7 @@ describe('SmartQueryHelper', () => {
       'key4 <=': 123,
       'key5 !=': 123,
       'key6 !': 123,
-    })).toEqual({
+    }, 'id')).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -58,7 +58,7 @@ describe('SmartQueryHelper', () => {
       'key6:not': 123,
       'key7:in': [123],
       'key8:nin': [123],
-    })).toEqual({
+    }, 'id')).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -73,13 +73,26 @@ describe('SmartQueryHelper', () => {
   test('test entity conversion to PK', async () => {
     const test = Test2.create('t123');
     test.id = 123;
-    // expect(SmartQueryHelper.processParams({ test })).toEqual({ test: test.id });
-    // expect(SmartQueryHelper.processParams(test)).toEqual({ id: test.id });
+    expect(SmartQueryHelper.processParams({ test })).toEqual({ test: test.id });
+    expect(SmartQueryHelper.processParams(test)).toEqual({ id: test.id });
     const author = new Author2('name', 'mail');
     const book = new Book2('test', author);
     expect(SmartQueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
     const field = undefined;
     expect(SmartQueryHelper.processParams({ field })).toEqual({ field: null });
+  });
+
+  test('test array conversion to $in query', async () => {
+    const author = new Author2('name', 'mail');
+    const book1 = new Book2('b1', author);
+    const book2 = new Book2('b2', author);
+    const book3 = new Book2('b3', author);
+    expect(SmartQueryHelper.processWhere([1, 2, 3], 'uuid')).toEqual({ uuid: { $in: [1, 2, 3] } });
+    expect(SmartQueryHelper.processWhere([book1, book2, book3], 'uuid')).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
+    expect(SmartQueryHelper.processWhere({ arr: [1, 2, 3] }, 'id')).toEqual({ arr: { $in: [1, 2, 3] } });
+    expect(SmartQueryHelper.processWhere({ $or: [{ arr: [1, 2, 3] }, { arr: [7, 8, 9] }] }, 'id')).toEqual({
+      $or: [{ arr: { $in: [1, 2, 3] } }, { arr: { $in: [7, 8, 9] } }],
+    });
   });
 
 });

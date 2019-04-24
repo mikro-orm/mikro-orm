@@ -52,7 +52,7 @@ export class EntityManager {
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where);
+    where = SmartQueryHelper.processWhere(where, entityName);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
     const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset);
@@ -87,7 +87,7 @@ export class EntityManager {
       return entity;
     }
 
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where);
     const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy);
 
@@ -135,7 +135,7 @@ export class EntityManager {
   async nativeUpdate<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data);
@@ -145,7 +145,7 @@ export class EntityManager {
 
   async nativeDelete<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | string | any): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where);
 
@@ -198,7 +198,7 @@ export class EntityManager {
 
   async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where);
     return this.driver.count(entityName, where);
   }
