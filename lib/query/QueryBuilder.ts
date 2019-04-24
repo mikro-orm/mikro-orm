@@ -218,7 +218,8 @@ export class QueryBuilder {
         return;
       }
 
-      ret.push(this.helper.mapper(this.type, f));
+      const prop = this.metadata[this.entityName].properties[f];
+      ret.push(this.helper.mapper(this.type, prop ? prop.fieldName : f));
     });
 
     Object.keys(this._populateMap).forEach(f => {

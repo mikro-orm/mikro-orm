@@ -382,6 +382,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
+  test('select count with non-standard PK field name (uuid_pk)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.count().where({ title: 'test 123' });
+    expect(qb.getQuery()).toEqual('SELECT COUNT(`e0`.`uuid_pk`) AS `count` FROM `book2` AS `e0` WHERE `e0`.`title` = ?');
+    expect(qb.getParams()).toEqual(['test 123']);
+  });
+
   test('insert query', async () => {
     const qb1 = orm.em.createQueryBuilder(Publisher2);
     qb1.insert({ name: 'test 123', type: PublisherType.GLOBAL });
