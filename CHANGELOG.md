@@ -1,3 +1,12 @@
+<a name="2.3.1"></a>
+## [2.3.1](https://github.com/B4nan/mikro-orm/compare/v2.3.0...v2.3.1) (2019-04-25)
+
+### Bug Fixes
+
+* **core**: do not override loaded entity state when loading it again ([79fabcb](https://github.com/B4nan/mikro-orm/commit/79fabcb))
+
+
+
 <a name="2.3.0"></a>
 ## [2.3.0](https://github.com/B4nan/mikro-orm/compare/v2.2.2...v2.3.0) (2019-04-24)
 
