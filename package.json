@@ -9,7 +9,7 @@
     "url": "git+ssh://git@github.com/B4nan/mikro-orm.git"
   },
   "keywords": [
-    "ORM",
+    "orm",
     "mongo",
     "mongodb",
     "mysql",
@@ -20,7 +20,7 @@
     "js",
     "javascript",
     "entity",
-    "DDD",
+    "ddd",
     "mikro-orm",
     "unit-of-work",
     "data-mapper",
