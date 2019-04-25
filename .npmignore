@@ -1,0 +1,9 @@
+/node_modules
+/lib
+/docs
+/tests
+/coverage
+/temp
+/yarn-error.log
+/mikro_orm_test.db
+/.*
