@@ -8,6 +8,8 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { FooBar2 } from './entities-sql/FooBar2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
+import { FooBaz } from './entities/FooBaz';
+import { FooBar } from './entities/FooBar';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -96,6 +98,8 @@ export async function wipeDatabase(em: EntityManager) {
   await em.getRepository(BookTag).remove({});
   await em.getRepository(Publisher).remove({});
   await em.getRepository(Test).remove({});
+  await em.getRepository(FooBar).remove({});
+  await em.getRepository(FooBaz).remove({});
   em.clear();
 }
 

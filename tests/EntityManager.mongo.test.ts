@@ -1148,10 +1148,12 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persist(bar);
+    expect(orm.em.getUnitOfWork()['originalEntityData'][bar.__uuid].baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persist(bar);
+    expect(orm.em.getUnitOfWork()['originalEntityData'][bar.__uuid].baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
@@ -1171,6 +1173,56 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.beginTransaction()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(orm.em.commit()).rejects.toThrowError('Transactions are not supported by current driver');
+  });
+
+  test('loading connected entity will not update identity map for associations', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    author.favouriteBook = new Book('b1', author);
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a = (await orm.em.findOne(Author, author, ['favouriteBook']))!;
+    expect(a).not.toBe(author);
+    a.name = 'test 1';
+    a.favouriteBook.title = 'test 2';
+    const a1 = (await orm.em.findOne(Author, { favouriteBook: a.favouriteBook }))!;
+    const b1 = (await orm.em.findOne(Book, { author }))!;
+    expect(a.name).toBe('test 1');
+    expect(a.favouriteBook.title).toBe('test 2');
+    expect(a1.name).toBe('test 1');
+    expect(b1.title).toBe('test 2');
+    await orm.em.persist(a);
+    orm.em.clear();
+
+    const a2 = (await orm.em.findOne(Author, author))!;
+    const b2 = (await orm.em.findOne(Book, { author }))!;
+    expect(a2.name).toBe('test 1');
+    expect(b2.title).toBe('test 2');
+  });
+
+  test('getReference will not update identity map copy', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    author.favouriteBook = new Book('b1', author);
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a = (await orm.em.findOne(Author, author, ['favouriteBook']))!;
+    expect(a).not.toBe(author);
+    a.name = 'test 1';
+    a.favouriteBook.title = 'test 2';
+    const a1 = orm.em.getReference(Author, a.id)!;
+    const b1 = orm.em.getReference(Book, a.favouriteBook.id)!;
+    expect(a.name).toBe('test 1');
+    expect(a.favouriteBook.title).toBe('test 2');
+    expect(a1.name).toBe('test 1');
+    expect(b1.title).toBe('test 2');
+    await orm.em.persist(a);
+    orm.em.clear();
+
+    const a2 = (await orm.em.findOne(Author, author))!;
+    const b2 = (await orm.em.findOne(Book, { author }))!;
+    expect(a2.name).toBe('test 1');
+    expect(b2.title).toBe('test 2');
   });
 
   afterAll(async () => orm.close(true));

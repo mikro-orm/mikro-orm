@@ -78,7 +78,7 @@ export class EntityManager {
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: Record<string, QueryOrder>): Promise<T | null> {
     entityName = Utils.className(entityName);
     this.validator.validateEmptyWhere(where);
-
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
 
@@ -87,7 +87,6 @@ export class EntityManager {
       return entity;
     }
 
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where);
     const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy);
 
@@ -169,7 +168,13 @@ export class EntityManager {
 
     entityName = Utils.className(entityName);
     this.validator.validatePrimaryKey(data!, this.metadata[entityName]);
-    const entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data!, true);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data!);
+
+    if (entity && entity.isInitialized()) {
+      return entity;
+    }
+
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data!, true);
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);
@@ -191,7 +196,7 @@ export class EntityManager {
    */
   getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
-    this.getUnitOfWork().merge(entity);
+    this.getUnitOfWork().merge(entity, [], false);
 
     return entity;
   }

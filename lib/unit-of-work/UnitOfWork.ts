@@ -14,7 +14,7 @@ export class UnitOfWork {
   private readonly identityMap = {} as Record<string, IEntity>;
 
   /** holds copy of identity map so we can compute changes when persisting managed entities */
-  private readonly originalEntityData = {} as Record<string, IEntity>;
+  private readonly originalEntityData = {} as Record<string, EntityData<IEntity>>;
 
   /** map of wrapped primary keys so we can compute change set without eager commit */
   private readonly identifierMap = {} as Record<string, EntityIdentifier>;
@@ -31,13 +31,17 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  merge<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
+  merge<T extends IEntityType<T>>(entity: T, visited: IEntity[] = [], mergeData = true): void {
     if (!entity.__primaryKey) {
       return;
     }
 
     this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
-    this.originalEntityData[entity.__uuid] = Utils.copy(entity);
+
+    if (!this.originalEntityData[entity.__uuid] || mergeData) {
+      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity);
+    }
+
     this.cascade(entity, Cascade.MERGE, visited);
   }
 
@@ -47,11 +51,13 @@ export class UnitOfWork {
   }
 
   tryGetById<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): T | null {
-    if (!Utils.isPrimaryKey(where)) {
+    const pk = Utils.extractPK(where, this.metadata[entityName]);
+
+    if (!pk) {
       return null;
     }
 
-    return this.getById<T>(entityName, where);
+    return this.getById<T>(entityName, pk);
   }
 
   getIdentityMap(): Record<string, IEntity> {
@@ -168,7 +174,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.cleanUpStack(this.persistStack, entity);
-      this.originalEntityData[entity.__uuid] = Utils.copy(entity);
+      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity);
     }
   }
 
@@ -213,8 +219,10 @@ export class UnitOfWork {
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet);
 
-    if (changeSet.type !== ChangeSetType.DELETE) {
-      this.em.merge(changeSet.entity);
+    switch (changeSet.type) {
+      case ChangeSetType.CREATE: this.em.merge(changeSet.entity); break;
+      case ChangeSetType.UPDATE: this.merge(changeSet.entity); break;
+      case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity); break;
     }
 
     await this.runHooks(`after${type}`, changeSet.entity);
@@ -271,7 +279,7 @@ export class UnitOfWork {
 
     switch (type) {
       case Cascade.PERSIST: this.persist(entity, visited); break;
-      case Cascade.MERGE: this.merge(entity, visited); break;
+      case Cascade.MERGE: this.merge(entity, visited, false); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
