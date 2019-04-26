@@ -36,6 +36,24 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'lol 321', 2, 1]);
   });
 
+  test('select andWhere/orWhere as first where condition', async () => {
+    const qb1 = orm.em.createQueryBuilder(Publisher2)
+      .select('*')
+      .andWhere({ type: PublisherType.GLOBAL })
+      .orWhere({ name: 'lol 321' })
+      .limit(2, 1);
+    expect(qb1.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE (`e0`.`type` = ? OR `e0`.`name` = ?) LIMIT ? OFFSET ?');
+    expect(qb1.getParams()).toEqual([PublisherType.GLOBAL, 'lol 321', 2, 1]);
+
+    const qb2 = orm.em.createQueryBuilder(Publisher2)
+      .select('*')
+      .orWhere({ name: 'lol 321' })
+      .andWhere({ type: PublisherType.GLOBAL })
+      .limit(2, 1);
+    expect(qb2.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE (`e0`.`name` = ? AND `e0`.`type` = ?) LIMIT ? OFFSET ?');
+    expect(qb2.getParams()).toEqual(['lol 321', PublisherType.GLOBAL, 2, 1]);
+  });
+
   test('select multiple andWhere', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*')

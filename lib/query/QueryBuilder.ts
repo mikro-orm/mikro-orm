@@ -93,7 +93,7 @@ export class QueryBuilder {
   }
 
   where(cond: any, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    if (!operator) {
+    if (!operator || Object.keys(this._cond).length === 0) {
       this._cond = this.processWhere(cond);
     } else if (Array.isArray(this._cond[operator])) {
       this._cond[operator].push(this.processWhere(cond));
