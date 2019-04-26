@@ -338,6 +338,21 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([3, 4]);
   });
 
+  test('select distinct id with left join', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['DISTINCT b.id', 'b.*', 't.*'])
+      .leftJoin('t.books', 'b')
+      .where({ 'b.title': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT DISTINCT b.id, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE `b`.`title` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
   test('select with operator (AND)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $and: [
