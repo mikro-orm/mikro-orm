@@ -968,7 +968,10 @@ describe('EntityManagerMongo', () => {
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {
-    orm.config.getLogger().setDebugMode(false);
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
     const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectID);
 
@@ -988,11 +991,25 @@ describe('EntityManagerMongo', () => {
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.nativeInsert('test', { name: 'native name 1' });
+    const res7 = await orm.em.nativeInsert('test', { name: 'native name 1', test: 'abc' });
     expect(res7).toBeInstanceOf(ObjectID);
 
-    const res8 = await orm.em.nativeDelete('test', { name: 'native name 1' });
+    const res8 = await orm.em.nativeUpdate('test', { name: 'native name 1' }, { $unset: { test: 1 } });
     expect(res8).toBe(1);
+
+    const res9 = await orm.em.nativeDelete('test', { name: 'native name 1' });
+    expect(res9).toBe(1);
+
+    expect(mock.mock.calls.length).toBe(9);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"name":"native name 1","_id":".*"}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"name":"native name 1"}, {"\$set":{"name":"new native name"}}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("author"\)\.aggregate\(\[{"\$match":{"name":"new native name"}}]\)\.toArray\(\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\("author"\)\.deleteMany\({"name":"new native name"}\)/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","name":"native name 2","_id":".*"}\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"name":"native name 2"}, {"\$set":{"name":"new native name","updatedAt":".*"}}\);/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\("test"\)\.insertOne\({"name":"native name 1","test":"abc","_id":".*"}\);/);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\("test"\)\.updateMany\({"name":"native name 1"}, {"\$unset":{"test":1}}\);/);
+    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\("test"\)\.deleteMany\({"name":"native name 1"}\)/);
   });
 
   test('1:m collection is initialized when entity loaded from EM', async () => {
@@ -1087,8 +1104,8 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b1","author":".*","_id":".*"}\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b2","author":".*","_id":".*"}\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b3","author":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"_id":".*"}, { \$set: {"favouriteAuthor":".*","updatedAt":".*"} }\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.find\(.*\).toArray\(\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"_id":".*"}, {"\$set":{"favouriteAuthor":".*","updatedAt":".*"}}\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.find\(.*\)\.toArray\(\);/);
   });
 
   test('self referencing via another entity M:1 (1 step)', async () => {

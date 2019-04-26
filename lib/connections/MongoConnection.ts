@@ -100,9 +100,10 @@ export class MongoConnection extends Connection {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
+    const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
     const now = Date.now();
-    const res = await this.getCollection(collection).updateMany(where, { $set: data });
-    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, { $set: ${JSON.stringify(data)} });`;
+    const res = await this.getCollection(collection).updateMany(where, payload);
+    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, ${JSON.stringify(payload)});`;
     this.logQuery(`${query} [took ${Date.now() - now} ms]`);
 
     return this.transformResult(res);
