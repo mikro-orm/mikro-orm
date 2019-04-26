@@ -392,9 +392,12 @@ export class QueryBuilderHelper {
     }
   }
 
-  private getGroupQueryCondition(type: QueryType, operator: '$and' | '$or', subCondition: any): string {
+  private getGroupQueryCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[]): string {
     const glue = QueryBuilderHelper.GROUP_OPERATORS[operator];
-    const group = subCondition.map((sub: any) => this.getQueryCondition(type, sub)[0]);
+    const group = subCondition.map(sub => {
+      const cond = this.getQueryCondition(type, sub);
+      return cond.length > 1 ? '(' + cond.join(` AND `) + ')' : cond[0];
+    });
 
     return '(' + group.join(` ${glue} `) + ')';
   }
