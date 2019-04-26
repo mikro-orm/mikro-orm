@@ -18,7 +18,7 @@ export class EntityTransformer {
     Object.keys(entity)
       .filter(prop => prop !== entity.__primaryKeyField && !prop.startsWith('_') && !ignoreFields.includes(prop))
       .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields)])
-      .filter(([, value]) => !!value)
+      .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[prop!] = value);
 
     return ret;

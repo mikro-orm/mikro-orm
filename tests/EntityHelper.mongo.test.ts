@@ -57,6 +57,7 @@ describe('EntityAssignerMongo', () => {
 
     const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author', 'books.publisher']))!;
     const json = author.toObject();
+    expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books[0]).toMatchObject({
       author: { name: bible.author.name },
