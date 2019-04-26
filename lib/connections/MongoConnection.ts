@@ -2,7 +2,8 @@ import { Collection, Db, MongoClient, MongoClientOptions, ObjectID } from 'mongo
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
-import { FilterQuery } from '..';
+import { FilterQuery, IEntity } from '..';
+import { EntityName } from '../decorators';
 
 export class MongoConnection extends Connection {
 
@@ -22,8 +23,8 @@ export class MongoConnection extends Connection {
     return this.client.isConnected();
   }
 
-  getCollection(name: string): Collection {
-    return this.db.collection(name);
+  getCollection(name: EntityName<IEntity>): Collection {
+    return this.db.collection(this.getCollectionName(name));
   }
 
   getDefaultClientUrl(): string {
@@ -55,6 +56,7 @@ export class MongoConnection extends Connection {
   }
 
   async find<T>(collection: string, where: FilterQuery<T>, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
+    collection = this.getCollectionName(collection);
     let query = `db.getCollection("${collection}").find`;
     where = this.convertObjectIds(where);
     const resultSet = this.getCollection(collection).find(where);
@@ -84,6 +86,7 @@ export class MongoConnection extends Connection {
   }
 
   async insertOne<T>(collection: string, data: Partial<T>): Promise<QueryResult> {
+    collection = this.getCollectionName(collection);
     data = this.convertObjectIds(data);
     const now = Date.now();
     const res = await this.getCollection(collection).insertOne(data);
@@ -94,6 +97,7 @@ export class MongoConnection extends Connection {
   }
 
   async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>): Promise<QueryResult> {
+    collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
     const now = Date.now();
@@ -105,6 +109,7 @@ export class MongoConnection extends Connection {
   }
 
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
+    collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
     const res = await this.getCollection(collection).deleteMany(where);
     const query = `db.getCollection("${collection}").deleteMany(${JSON.stringify(where)})`;
@@ -115,6 +120,7 @@ export class MongoConnection extends Connection {
   }
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
+    collection = this.getCollectionName(collection);
     const query = `db.getCollection("${collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate(pipeline).toArray();
@@ -124,6 +130,7 @@ export class MongoConnection extends Connection {
   }
 
   async countDocuments<T>(collection: string, where: FilterQuery<T>): Promise<number> {
+    collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
     const query = `db.getCollection("${collection}").countDocuments(${JSON.stringify(where)})`;
     const now = Date.now();
@@ -160,6 +167,11 @@ export class MongoConnection extends Connection {
       affectedRows: res.modifiedCount || res.deletedCount || 0,
       insertId: res.insertedId,
     };
+  }
+
+  private getCollectionName(name: EntityName<IEntity>): string {
+    name = Utils.className(name);
+    return this.metadata[name] ? this.metadata[name].collection : name;
   }
 
 }

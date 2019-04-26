@@ -1,9 +1,11 @@
 import { URL } from 'url';
 import { Configuration } from '../utils';
+import { MetadataStorage } from '../metadata';
 
 export abstract class Connection {
 
   protected readonly logger = this.config.getLogger();
+  protected readonly metadata = MetadataStorage.getMetadata();
   protected abstract client: any;
 
   constructor(protected readonly config: Configuration) { }

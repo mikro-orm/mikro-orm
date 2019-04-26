@@ -350,6 +350,8 @@ describe('EntityManagerMongo', () => {
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
     expect(() => driver.getPlatform().getSchemaHelper()).toThrowError('MongoPlatform does not provide SchemaHelper');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
+    expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
+    expect(driver.getConnection().getCollection(BookTag.name).collectionName).toBe('book-tag');
   });
 
   test('should use user and password as connection options', async () => {
