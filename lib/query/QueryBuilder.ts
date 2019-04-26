@@ -209,6 +209,17 @@ export class QueryBuilder {
     return this.driver.mapResult(res, this.metadata[this.entityName]);
   }
 
+  clone(): QueryBuilder {
+    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.alias);
+    Object.assign(qb, this);
+
+    // clone array/object properties
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy'];
+    properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
+
+    return qb;
+  }
+
   private prepareFields(fields: string[], glue = ', '): string {
     const ret: string[] = [];
 

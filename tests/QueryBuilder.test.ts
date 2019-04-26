@@ -438,6 +438,57 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
+  test('clone QB', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p')
+      .select(['p.*', 'b.*', 'a.*', 't.*'])
+      .leftJoin('books', 'b')
+      .join('b.author', 'a')
+      .join('b.tags', 't')
+      .where({ 'p.name': 'test 123', 'b.title': /3$/ })
+      .orderBy({ 'b.title': QueryOrder.DESC })
+      .limit(2, 1);
+
+    const clone = qb.clone();
+    expect(clone.type).toBe(qb.type);
+    expect(clone['aliasCounter']).toBe(qb['aliasCounter']);
+    expect(clone['flags']).not.toBe(qb['flags']);
+    expect(clone['finalized']).toBe(qb['finalized']);
+    expect(clone['_fields']).not.toBe(qb['_fields']);
+    expect(clone['_populate']).not.toBe(qb['_populate']);
+    expect(clone['_populateMap']).not.toBe(qb['_populateMap']);
+    expect(clone['_joins']).not.toBe(qb['_joins']);
+    expect(clone['_aliasMap']).not.toBe(qb['_aliasMap']);
+    expect(clone['_cond']).not.toBe(qb['_cond']);
+    expect(clone['_orderBy']).not.toBe(qb['_orderBy']);
+    expect(clone['_limit']).toBe(qb['_limit']);
+    expect(clone['_offset']).toBe(qb['_offset']);
+
+    clone.orWhere({ 'p.name': 'or this name' }).orderBy({ 'p.name': QueryOrder.ASC }).limit(10, 5);
+    clone.limit(10, 5);
+
+    const sql = 'SELECT `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` FROM `publisher2` AS `p` ' +
+      'LEFT JOIN `book2` AS `b` ON `p`.`id` = `b`.`publisher_id` ' +
+      'JOIN `author2` AS `a` ON `b`.`author_id` = `a`.`id` ' +
+      'JOIN `book2_to_book_tag2` AS `e1` ON `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'JOIN `book_tag2` AS `t` ON `e1`.`book_tag2_id` = `t`.`id` ' +
+      'WHERE `p`.`name` = ? AND `b`.`title` LIKE ? ' +
+      'ORDER BY `b`.`title` DESC ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', '%3', 2, 1]);
+
+    const sql2 = 'SELECT `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` FROM `publisher2` AS `p` ' +
+      'LEFT JOIN `book2` AS `b` ON `p`.`id` = `b`.`publisher_id` ' +
+      'JOIN `author2` AS `a` ON `b`.`author_id` = `a`.`id` ' +
+      'JOIN `book2_to_book_tag2` AS `e1` ON `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'JOIN `book_tag2` AS `t` ON `e1`.`book_tag2_id` = `t`.`id` ' +
+      'WHERE ((`p`.`name` = ? AND `b`.`title` LIKE ?) OR `p`.`name` = ?) ' +
+      'ORDER BY `p`.`name` ASC ' +
+      'LIMIT ? OFFSET ?';
+    expect(clone.getQuery()).toEqual(sql2);
+    expect(clone.getParams()).toEqual(['test 123', '%3', 'or this name', 10, 5]);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
