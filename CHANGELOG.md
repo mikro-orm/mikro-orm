@@ -1,3 +1,14 @@
+<a name="2.3.2"></a>
+## [2.3.2](https://github.com/B4nan/mikro-orm/compare/v2.3.1...v2.3.2) (2019-04-26)
+
+### Bug Fixes
+
+* **mongo**: support entity names in mongo connection API ([c719b1e](https://github.com/B4nan/mikro-orm/commit/c719b1e))
+* **mongo**: support other top level keys than $set in `EM.nativeUpdate()` ([d12bd78](https://github.com/B4nan/mikro-orm/commit/d12bd78))
+* **serializing**: do not strip falsy values from serialized DTO ([93e806f](https://github.com/B4nan/mikro-orm/commit/93e806f))
+
+
+
 <a name="2.3.1"></a>
 ## [2.3.1](https://github.com/B4nan/mikro-orm/compare/v2.3.0...v2.3.1) (2019-04-25)
 
