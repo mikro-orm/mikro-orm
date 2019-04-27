@@ -359,6 +359,21 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 2, 1]);
   });
 
+  test('select distinct via flag', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['b.uuid', 'b.*', 't.*'], true)
+      .leftJoin('t.books', 'b')
+      .where({ 'b.title': 'test 123' })
+      .limit(2, 1);
+    const sql = 'SELECT DISTINCT `b`.`uuid_pk`, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE `b`.`title` = ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
   test('select where string literal', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
     qb.select(['b.*', 't.*'])

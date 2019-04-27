@@ -37,8 +37,13 @@ export class QueryBuilder {
               private readonly driver: IDatabaseDriver,
               readonly alias = `e0`) { }
 
-  select(fields: string | string[]): this {
+  select(fields: string | string[], distinct = false): this {
     this._fields = Utils.asArray(fields);
+
+    if (distinct) {
+      this.flags.push(QueryFlag.DISTINCT);
+    }
+
     return this.init(QueryType.SELECT);
   }
 
@@ -367,6 +372,7 @@ export class QueryBuilder {
 
     switch (this.type) {
       case QueryType.SELECT:
+        sql += this.flags.includes(QueryFlag.DISTINCT) && !this.flags.includes(QueryFlag.COUNT) ? 'DISTINCT ' : '';
         sql += this.prepareFields(this._fields);
         sql += ` FROM ${this.helper.getTableName(this.entityName, true)} AS ${this.helper.wrap(this.alias)}`;
         sql += this.helper.processJoins(this._joins);
