@@ -82,10 +82,10 @@ console.log(qb.getParams());
 // ['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]
 
 // run the query
-const driver = orm.em.getDriver<MySqlDriver>();
-const res1 = await driver.execute(qb);
+const res1 = await qb.execute();
 
 // or run query without using QueryBuilder
+const driver = orm.em.getDriver<MySqlDriver>();
 const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
 ```
 
@@ -97,12 +97,19 @@ QueryBuilder.insert(data: any): QueryBuilder;
 QueryBuilder.update(data: any): QueryBuilder;
 QueryBuilder.delete(cond: any): QueryBuilder;
 QueryBuilder.count(fields: string | string[]): QueryBuilder;
-QueryBuilder.where(cond: any): QueryBuilder;
+QueryBuilder.join(fields: string | string[]): QueryBuilder;
+QueryBuilder.leftJoin(fields: string | string[]): QueryBuilder;
+QueryBuilder.where(cond: any, operator: '$and' | '$or'): QueryBuilder;
+QueryBuilder.andWhere(cond: any): QueryBuilder;
+QueryBuilder.orWhere(cond: any): QueryBuilder;
+QueryBuilder.groupBy(fields: string | string[]): QueryBuilder;
+QueryBuilder.having(cond: any): QueryBuilder;
 QueryBuilder.populate(populate: string[]): QueryBuilder;
 QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
 QueryBuilder.offset(offset: number): QueryBuilder;
 QueryBuilder.getQuery(): string;
 QueryBuilder.getParams(): any;
+QueryBuilder.clone(): QueryBuilder;
 ```
 
 For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in 
