@@ -345,7 +345,7 @@ export class QueryBuilderHelper {
       return Utils.asArray(cond[operator]);
     }
 
-    return [cond];
+    return Utils.asArray(cond);
   }
 
   private prefixAndWrap(field: string): string {

@@ -338,6 +338,12 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([3, 4]);
   });
 
+  test('select with unsupported operator', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({ $test: { foo: 'bar'} });
+    expect(qb.getParams()).toEqual([{ foo: 'bar'}]);
+  });
+
   test('select distinct id with left join', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
     qb.select(['DISTINCT b.uuid_pk', 'b.*', 't.*'])
@@ -456,6 +462,28 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([1, 2, 7, 3, 4, 5, 10, 7, 8, 9, 10]);
   });
 
+  test('select with smart query conditions', async () => {
+    const qb = orm.em.createQueryBuilder(Test2);
+    qb.select('*').where({
+      'key1:gt': 1,
+      'key2:lt': 2,
+      'key3:gte': 3,
+      'key4:lte': 4,
+      'key5:ne': 5,
+      'key6:in': [6, 7],
+      'key7:nin': [8, 9],
+    });
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` ' +
+      'WHERE `e0`.`key1` > ? ' +
+      'AND `e0`.`key2` < ? ' +
+      'AND `e0`.`key3` >= ? ' +
+      'AND `e0`.`key4` <= ? ' +
+      'AND `e0`.`key5` != ? ' +
+      'AND `e0`.`key6` IN (?, ?) ' +
+      'AND `e0`.`key7` NOT IN (?, ?)');
+    expect(qb.getParams()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
   test('select count query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.count().where({ name: 'test 123', type: PublisherType.GLOBAL });
@@ -499,6 +527,15 @@ describe('QueryBuilder', () => {
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
     expect(qb.getQuery()).toEqual('UPDATE `publisher2` SET `name` = ?, `type` = ? WHERE `id` = ? AND `type` = ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]);
+  });
+
+  test('update query with entity in data', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    const test = Test2.create('test');
+    test.id = 321;
+    qb.update({ name: 'test 123', test }).where({ id: 123, type: PublisherType.LOCAL });
+    expect(qb.getQuery()).toEqual('UPDATE `publisher2` SET `name` = ?, `test` = ? WHERE `id` = ? AND `type` = ?');
+    expect(qb.getParams()).toEqual(['test 123', 321, 123, PublisherType.LOCAL]);
   });
 
   test('delete query', async () => {

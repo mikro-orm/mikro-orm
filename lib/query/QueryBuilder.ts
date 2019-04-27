@@ -1,5 +1,6 @@
 import { Utils } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
+import { SmartQueryHelper } from './SmartQueryHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
@@ -97,6 +98,8 @@ export class QueryBuilder {
   where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
   where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
+    cond = SmartQueryHelper.processWhere(cond, this.entityName);
+
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
@@ -219,7 +222,7 @@ export class QueryBuilder {
       ret.push(this._offset);
     }
 
-    return ret;
+    return SmartQueryHelper.processParams(ret);
   }
 
   async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
