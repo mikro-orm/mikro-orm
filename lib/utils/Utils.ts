@@ -103,6 +103,14 @@ export class Utils {
     return clone(entity);
   }
 
+  static asArray<T>(data?: T | T[]): T[] {
+    if (typeof data === 'undefined') {
+      return [];
+    }
+
+    return Array.isArray(data!) ? data : [data!];
+  }
+
   static renameKey(payload: any, from: string, to: string): void {
     if (Utils.isObject(payload) && from in payload && !(to in payload)) {
       payload[to] = payload[from];
@@ -140,7 +148,7 @@ export class Utils {
   }
 
   static isPrimaryKey(key: any): key is IPrimaryKey {
-    return typeof key === 'string' || typeof key === 'number' || Utils.isObjectID(key);
+    return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key);
   }
 
   static extractPK(data: any, meta?: EntityMetadata): IPrimaryKey | null {
@@ -164,7 +172,7 @@ export class Utils {
   }
 
   static className(classOrName: string | Function): string {
-    if (typeof classOrName === 'string') {
+    if (Utils.isString(classOrName)) {
       return classOrName;
     }
 

@@ -353,6 +353,23 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 2, 1]);
   });
 
+  test('select where string literal', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['b.*', 't.*'])
+      .leftJoin('t.books', 'b')
+      .where('b.title = ? OR b.title = ?', ['test 123', 'lol 321'])
+      .andWhere('1 = 1')
+      .orWhere('1 = 2')
+      .limit(2, 1);
+    const sql = 'SELECT `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE (((b.title = ? OR b.title = ?) AND (1 = 1)) OR (1 = 2)) ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 'lol 321', 2, 1]);
+  });
+
   test('select with operator (AND)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $and: [

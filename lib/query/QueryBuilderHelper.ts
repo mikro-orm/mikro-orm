@@ -76,7 +76,7 @@ export class QueryBuilderHelper {
     }
 
     if (typeof value !== 'undefined') {
-      ret += this.processValue(value);
+      ret += this.processValue(field, value);
     }
 
     if (alias) {
@@ -337,15 +337,17 @@ export class QueryBuilderHelper {
 
   private processComplexParam(key: string, cond: any): any[] {
     // unwind parameters when ? found in field name
-    if (key.includes('?') && Array.isArray(cond)) {
-      const count = key.match(/\?/g)!.length;
-      return cond.slice(0, count).map(c => JSON.stringify(c)).concat(cond.slice(count));
+    const customExpression = key.match(/\(.*\)| |\?/) && Array.isArray(cond);
+
+    if (customExpression) {
+      const count = key.concat('?').match(/\?/g)!.length - 1;
+      return cond.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c).concat(cond.slice(count));
     }
 
     const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => cond[op])!;
 
     if (cond[operator]) {
-      return Array.isArray(cond[operator]) ? cond[operator] : [cond[operator]];
+      return Utils.asArray(cond[operator]);
     }
 
     return [cond];
@@ -369,13 +371,19 @@ export class QueryBuilderHelper {
     }
   }
 
-  private processValue(value: any): string | undefined {
+  private processValue(field: string, value: any): string | undefined {
     if (value instanceof RegExp) {
       return ' LIKE ?';
     }
 
     if (Utils.isObject(value)) {
       return this.processObjectValue(value);
+    }
+
+    const wildcards = field.concat('?').match(/\?/g)!.length - 1;
+
+    if (Array.isArray(value) && value.length === wildcards) {
+      return '';
     }
 
     return ' = ?';

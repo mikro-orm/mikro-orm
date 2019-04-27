@@ -35,7 +35,7 @@ export class QueryBuilder {
               readonly alias = `e0`) { }
 
   select(fields: string | string[]): this {
-    this._fields = Array.isArray(fields) ? fields : [fields];
+    this._fields = Utils.asArray(fields);
     return this.init(QueryType.SELECT);
   }
 
@@ -92,24 +92,39 @@ export class QueryBuilder {
     return this.join(field, alias, 'left');
   }
 
-  where(cond: any, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    if (!operator || Object.keys(this._cond).length === 0) {
+  where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
+  where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
+  where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
+    if (Utils.isString(cond)) {
+      cond = { [`(${cond})`]: Utils.asArray(params) };
+      operator = operator || '$and';
+    }
+
+    const op = operator || params as keyof typeof QueryBuilderHelper.GROUP_OPERATORS;
+    const topLevel = !op || Object.keys(this._cond).length === 0;
+
+    if (topLevel) {
       this._cond = this.processWhere(cond);
-    } else if (Array.isArray(this._cond[operator])) {
-      this._cond[operator].push(this.processWhere(cond));
+    } else if (Array.isArray(this._cond[op])) {
+      this._cond[op].push(this.processWhere(cond));
     } else {
-      this._cond = { [operator]: [this._cond, this.processWhere(cond)] };
+      const cond1 = [this._cond, this.processWhere(cond)];
+      this._cond = { [op]: cond1 };
     }
 
     return this;
   }
 
-  andWhere(cond: any): this {
-    return this.where(cond, '$and');
+  andWhere(cond: Record<string, any>): this;
+  andWhere(cond: string, params?: any[]): this;
+  andWhere(cond: Record<string, any> | string, params?: any[]): this {
+    return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: any): this {
-    return this.where(cond, '$or');
+  orWhere(cond: Record<string, any>): this;
+  orWhere(cond: string, params?: any[]): this;
+  orWhere(cond: Record<string, any> | string, params?: any[]): this {
+    return this.where(cond as string, params, '$or');
   }
 
   orderBy(orderBy: Record<string, QueryOrder>): this {

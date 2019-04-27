@@ -217,7 +217,7 @@ export class EntityManager {
   }
 
   async persistAndFlush(entity: IEntity | IEntity[]): Promise<void> {
-    entity = Array.isArray(entity) ? entity : [entity];
+    entity = Utils.asArray(entity);
 
     for (const ent of entity) {
       this.getUnitOfWork().persist(ent);
@@ -227,7 +227,7 @@ export class EntityManager {
   }
 
   persistLater(entity: IEntity | IEntity[]): void {
-    entity = Array.isArray(entity) ? entity : [entity];
+    entity = Utils.asArray(entity);
 
     for (const ent of entity) {
       this.getUnitOfWork().persist(ent);
