@@ -340,11 +340,11 @@ describe('QueryBuilder', () => {
 
   test('select distinct id with left join', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['DISTINCT b.id', 'b.*', 't.*'])
+    qb.select(['DISTINCT b.uuid_pk', 'b.*', 't.*'])
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' })
       .limit(2, 1);
-    const sql = 'SELECT DISTINCT b.id, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+    const sql = 'SELECT DISTINCT b.uuid_pk, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
       'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
       'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'WHERE `b`.`title` = ? ' +
@@ -368,6 +368,44 @@ describe('QueryBuilder', () => {
       'LIMIT ? OFFSET ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['test 123', 'lol 321', 2, 1]);
+  });
+
+  test('select with group by and having', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['b.*', 't.*', 'COUNT(t.id) as tags'])
+      .leftJoin('t.books', 'b')
+      .where('b.title = ? OR b.title = ?', ['test 123', 'lol 321'])
+      .groupBy('b.uuid')
+      .having('tags > ?', [0])
+      .limit(2, 1);
+    const sql = 'SELECT `b`.*, `t`.*, COUNT(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE (b.title = ? OR b.title = ?) ' +
+      'GROUP BY `b`.`uuid_pk` ' +
+      'HAVING (tags > ?) ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 'lol 321', 0, 2, 1]);
+  });
+
+  test('select with group by and having with object', async () => {
+    const qb = orm.em.createQueryBuilder(BookTag2, 't');
+    qb.select(['b.*', 't.*', 'COUNT(t.id) as tags'])
+      .leftJoin('t.books', 'b')
+      .where('b.title = ? OR b.title = ?', ['test 123', 'lol 321'])
+      .groupBy('b.uuid')
+      .having({ 'b.uuid': '...', 'COUNT(t.id)': { $gt: 0 } })
+      .limit(2, 1);
+    const sql = 'SELECT `b`.*, `t`.*, COUNT(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` FROM `book_tag2` AS `t` ' +
+      'LEFT JOIN `book2_to_book_tag2` AS `e1` ON `t`.`id` = `e1`.`book_tag2_id` ' +
+      'LEFT JOIN `book2` AS `b` ON `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
+      'WHERE (b.title = ? OR b.title = ?) ' +
+      'GROUP BY `b`.`uuid_pk` ' +
+      'HAVING `b`.`uuid_pk` = ? AND COUNT(t.id) > ? ' +
+      'LIMIT ? OFFSET ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', 'lol 321', '...', 0, 2, 1]);
   });
 
   test('select with operator (AND)', async () => {

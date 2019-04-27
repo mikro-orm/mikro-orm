@@ -171,6 +171,18 @@ export class Utils {
     return Utils.isObject(key) && key.constructor.name === 'ObjectID';
   }
 
+  static isEmpty(data: any): boolean {
+    if (Array.isArray(data)) {
+      return data.length === 0;
+    }
+
+    if (Utils.isObject(data)) {
+      return Object.keys(data).length === 0;
+    }
+
+    return !data;
+  }
+
   static className(classOrName: string | Function): string {
     if (Utils.isString(classOrName)) {
       return classOrName;

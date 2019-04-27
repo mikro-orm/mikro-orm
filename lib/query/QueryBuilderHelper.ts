@@ -27,6 +27,7 @@ export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
+              private readonly aliasMap: Record<string, string>,
               private readonly metadata: Record<string, EntityMetadata>,
               private readonly platform: Platform) { }
 
@@ -272,18 +273,12 @@ export class QueryBuilderHelper {
     });
   }
 
-  getQueryPagination(limit?: number, offset?: number): string {
-    let pagination = '';
-
-    if (limit) {
-      pagination += ' LIMIT ?';
+  getClause(type: string, clause: string, data: any): string {
+    if (Utils.isEmpty(data)) {
+      return '';
     }
 
-    if (offset) {
-      pagination += ' OFFSET ?';
-    }
-
-    return pagination;
+    return ` ${type} ${clause}`;
   }
 
   finalize(type: QueryType, sql: string, meta?: EntityMetadata): string {
@@ -344,9 +339,9 @@ export class QueryBuilderHelper {
       return cond.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c).concat(cond.slice(count));
     }
 
-    const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => cond[op])!;
+    const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => op in cond)!;
 
-    if (cond[operator]) {
+    if (operator) {
       return Utils.asArray(cond[operator]);
     }
 
@@ -355,12 +350,12 @@ export class QueryBuilderHelper {
 
   private prefixAndWrap(field: string): string {
     if (!this.isPrefixed(field)) {
-      return this.wrap(field);
+      return this.wrap(this.fieldName(field, this.alias));
     }
 
     const [a, f] = field.split('.');
 
-    return this.wrap(a) + '.' + this.wrap(f);
+    return this.wrap(a) + '.' + this.wrap(this.fieldName(f, a));
   }
 
   private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
@@ -391,7 +386,7 @@ export class QueryBuilderHelper {
 
   private processObjectValue(value: any): string | undefined {
     for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
-      if (!value[op]) {
+      if (!(op in value)) {
         continue;
       }
 
@@ -412,6 +407,13 @@ export class QueryBuilderHelper {
 
   private isPrefixed(field: string): boolean {
     return new RegExp(`${this.quoteChar}?\\w+${this.quoteChar}?\\.`).test(field);
+  }
+
+  private fieldName(field: string, alias?: string): string {
+    const entityName = this.aliasMap[alias!] || this.entityName;
+    const prop = this.metadata[entityName] ? this.metadata[entityName].properties[field] : false;
+
+    return prop ? prop.fieldName : field;
   }
 
 }

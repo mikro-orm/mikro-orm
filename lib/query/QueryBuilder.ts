@@ -22,12 +22,14 @@ export class QueryBuilder {
   private _aliasMap: Record<string, string> = {};
   private _cond: Record<string, any> = {};
   private _data: Record<string, any>;
-  private _orderBy: Record<string, QueryOrder>;
+  private _orderBy: Record<string, QueryOrder> = {};
+  private _groupBy: string[] = [];
+  private _having: Record<string, any> = {};
   private _limit: number;
   private _offset: number;
   private readonly connection = this.driver.getConnection();
   private readonly platform = this.driver.getPlatform();
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this.metadata, this.platform);
+  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: Record<string, EntityMetadata>,
@@ -144,6 +146,20 @@ export class QueryBuilder {
     return this;
   }
 
+  groupBy(fields: string | string[]): this {
+    this._groupBy = Utils.asArray(fields);
+    return this;
+  }
+
+  having(cond: Record<string, any> | string, params?: any[]): this {
+    if (Utils.isString(cond)) {
+      cond = { [`(${cond})`]: Utils.asArray(params) };
+    }
+
+    this._having = this.processWhere(cond);
+    return this;
+  }
+
   populate(populate: string[]): this {
     this._populate = populate;
     return this;
@@ -168,15 +184,12 @@ export class QueryBuilder {
     this.finalize();
     let sql = this.getQueryBase();
 
-    if (this._cond && Object.keys(this._cond).length > 0) {
-      sql += ' WHERE ' + this.helper.getQueryCondition(this.type, this._cond).join(' AND ');
-    }
-
-    if (this._orderBy && Object.keys(this._orderBy).length > 0) {
-      sql += ' ORDER BY ' + this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap).join(', ');
-    }
-
-    sql += this.helper.getQueryPagination(this._limit, this._offset);
+    sql += this.helper.getClause('WHERE', this.helper.getQueryCondition(this.type, this._cond).join(' AND '), this._cond);
+    sql += this.helper.getClause('GROUP BY', this.prepareFields(this._groupBy), this._groupBy);
+    sql += this.helper.getClause('HAVING', this.helper.getQueryCondition(this.type, this._having).join(' AND '), this._having);
+    sql += this.helper.getClause('ORDER BY', this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap).join(', '), this._orderBy);
+    sql += this.helper.getClause('LIMIT', '?', this._limit);
+    sql += this.helper.getClause('OFFSET', '?', this._offset);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       sql += ' CASCADE';
@@ -195,9 +208,8 @@ export class QueryBuilder {
       ret = Object.values(this._data);
     }
 
-    if (this._cond) {
-      ret = ret.concat(this.helper.getWhereParams(this._cond));
-    }
+    ret = ret.concat(this.helper.getWhereParams(this._cond));
+    ret = ret.concat(this.helper.getWhereParams(this._having));
 
     if (this._limit) {
       ret.push(this._limit);
@@ -244,8 +256,7 @@ export class QueryBuilder {
         return;
       }
 
-      const prop = this.metadata[this.entityName].properties[f];
-      ret.push(this.helper.mapper(this.type, prop ? prop.fieldName : f));
+      ret.push(this.helper.mapper(this.type, f));
     });
 
     Object.keys(this._populateMap).forEach(f => {
