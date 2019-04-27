@@ -1,4 +1,23 @@
 <a name="2.3.2"></a>
+# [2.4.0](https://github.com/B4nan/mikro-orm/compare/v2.3.2...v2.4.0) (2019-04-27)
+
+### Bug Fixes
+
+* query-builder: do not ignore nested and group conditions ([ab64d5a](https://github.com/B4nan/mikro-orm/commit/ab64d5a))
+* query-builder: support calling `andWhere()`/`orWhere()` without previous `where()` ([516e863](https://github.com/B4nan/mikro-orm/commit/516e863))
+
+### Features
+
+* query-builder: add `groupBy()` and `having()` to `QueryBuilder` ([1487803](https://github.com/B4nan/mikro-orm/commit/1487803))
+* query-builder: add `QueryBuilder.clone()` method ([313deb1](https://github.com/B4nan/mikro-orm/commit/313deb1))
+* query-builder: allow DISTINCT selects via `qb.select('...', true)` ([31d6079](https://github.com/B4nan/mikro-orm/commit/31d6079))
+* query-builder: do not wrap fields that contain space ([7ee2e5a](https://github.com/B4nan/mikro-orm/commit/7ee2e5a))
+* query-builder: allow string literals in where conditions ([ec27c33](https://github.com/B4nan/mikro-orm/commit/ec27c33))
+* query-builder: support smart query conditions in `QueryBuilder` ([2c5bca4](https://github.com/B4nan/mikro-orm/commit/2c5bca4))
+
+
+
+<a name="2.3.2"></a>
 ## [2.3.2](https://github.com/B4nan/mikro-orm/compare/v2.3.1...v2.3.2) (2019-04-26)
 
 ### Bug Fixes
