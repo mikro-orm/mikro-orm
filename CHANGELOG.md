@@ -38,7 +38,7 @@
 
 
 <a name="2.3.0"></a>
-## [2.3.0](https://github.com/B4nan/mikro-orm/compare/v2.2.2...v2.3.0) (2019-04-24)
+# [2.3.0](https://github.com/B4nan/mikro-orm/compare/v2.2.2...v2.3.0) (2019-04-24)
 
 ### Bug Fixes
 
@@ -78,7 +78,7 @@
 
 
 <a name="2.2.0"></a>
-## [2.2.0](https://github.com/B4nan/mikro-orm/compare/v2.1.1...v2.2.0) (2019-04-14)
+# [2.2.0](https://github.com/B4nan/mikro-orm/compare/v2.1.1...v2.2.0) (2019-04-14)
 
 ### Bug Fixes
 
@@ -114,7 +114,7 @@
 
 
 <a name="2.1.0"></a>
-## [2.1.0](https://github.com/B4nan/mikro-orm/compare/v2.0.3...v2.1.0) (2019-04-04)
+# [2.1.0](https://github.com/B4nan/mikro-orm/compare/v2.0.3...v2.1.0) (2019-04-04)
 
 ### Bug Fixes
 
@@ -179,7 +179,7 @@
 
 
 <a name="2.0.0"></a>
-## [2.0.0](https://github.com/B4nan/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
+# [2.0.0](https://github.com/B4nan/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
 
 ### Bug Fixes
 
