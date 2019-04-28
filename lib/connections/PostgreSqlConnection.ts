@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { readFileSync } from 'fs';
+import { readFile } from 'fs-extra';
 import { Connection, QueryResult } from './Connection';
 import { EntityData, IEntity } from '../decorators';
 
@@ -47,7 +47,7 @@ export class PostgreSqlConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    await this.client.query(readFileSync(path).toString());
+    await this.client.query((await readFile(path)).toString());
   }
 
   private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {

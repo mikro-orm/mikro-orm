@@ -1,44 +1,41 @@
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { ensureDir, pathExists, readJSON, stat, writeJSON } from 'fs-extra';
 import { CacheAdapter } from './CacheAdapter';
 
 export class FileCacheAdapter implements CacheAdapter {
 
-  constructor(private readonly options: { cacheDir: string }) {
-    if (!existsSync(this.options.cacheDir)) {
-      mkdirSync(this.options.cacheDir);
-    }
-  }
+  constructor(private readonly options: { cacheDir: string }) { }
 
-  get(name: string): any {
-    if (!existsSync(this.path(name))) {
+  async get(name: string): Promise<any> {
+    const path = await this.path(name);
+
+    if (!await pathExists(path)) {
       return null;
     }
 
-    const buffer = readFileSync(this.path(name));
-    const payload = JSON.parse(buffer.toString());
+    const payload = await readJSON(path);
+    const modified = await this.getModifiedTime(payload.origin);
 
-    if (!existsSync(payload.origin) || payload.modified !== this.getModifiedTime(payload.origin)) {
+    if (!await pathExists(payload.origin) || payload.modified !== modified) {
       return null;
     }
 
     return payload.data;
   }
 
-  set(name: string, data: any, origin: string): void {
-    const payload = {
-      modified: this.getModifiedTime(origin),
-      data,
-      origin,
-    };
-    writeFileSync(this.path(name), JSON.stringify(payload));
+  async set(name: string, data: any, origin: string): Promise<void> {
+    const modified = await this.getModifiedTime(origin);
+    const path = await this.path(name);
+    await writeJSON(path, { modified, data, origin });
   }
 
-  private path(name: string): string {
+  private async path(name: string): Promise<string> {
+    await ensureDir(this.options.cacheDir);
     return `${this.options.cacheDir}/${name}.json`;
   }
 
-  private getModifiedTime(origin: string): number {
-    return statSync(origin).mtimeMs;
+  private async getModifiedTime(origin: string): Promise<number> {
+    const stats = await stat(origin);
+    return stats.mtimeMs;
   }
 
 }

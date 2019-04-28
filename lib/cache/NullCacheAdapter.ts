@@ -2,11 +2,11 @@ import { CacheAdapter } from './CacheAdapter';
 
 export class NullCacheAdapter implements CacheAdapter {
 
-  get(name: string): any {
+  async get(name: string): Promise<any> {
     return null;
   }
 
-  set(name: string, data: any, origin: string): void {
+  async set(name: string, data: any, origin: string): Promise<void> {
     // ignore
   }
 

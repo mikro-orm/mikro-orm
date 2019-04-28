@@ -1,4 +1,4 @@
-import { sync as globby } from 'globby';
+import globby from 'globby';
 import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
@@ -29,11 +29,11 @@ export class MetadataDiscovery {
     const tsNode = process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
 
     if (this.config.get('entities').length > 0) {
-      await Promise.all(this.config.get('entities').map(entity => this.discoverEntity(entity)));
+      await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
     } else if (tsNode) {
-      await Promise.all(this.config.get('entitiesDirsTs').map(dir => this.discoverDirectory(dir)));
+      await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
-      await Promise.all(this.config.get('entitiesDirs').map(dir => this.discoverDirectory(dir)));
+      await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
     }
 
     // ignore base entities (not annotated with @Entity)
@@ -53,7 +53,7 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = globby('*', { cwd: `${this.config.get('baseDir')}/${basePath}` });
+    const files = await globby('*', { cwd: `${this.config.get('baseDir')}/${basePath}` });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
@@ -83,7 +83,7 @@ export class MetadataDiscovery {
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
     meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
-    const cache = meta.path && this.cache.get(entity.name + extname(meta.path));
+    const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${entity.name}`);
@@ -99,17 +99,17 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    this.saveToCache(meta, entity);
+    await this.saveToCache(meta, entity);
     this.discovered.push(meta);
   }
 
-  private saveToCache<T extends IEntityType<T>>(meta: EntityMetadata, entity: EntityClass<T>): void {
+  private async saveToCache<T extends IEntityType<T>>(meta: EntityMetadata, entity: EntityClass<T>): Promise<void> {
     const copy = Object.assign({}, meta);
     delete copy.prototype;
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
-      this.cache.set(entity.name + extname(meta.path), copy, meta.path);
+      await this.cache.set(entity.name + extname(meta.path), copy, meta.path);
     }
   }
 

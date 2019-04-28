@@ -1,5 +1,5 @@
 import { Connection as MySql2Connection, ConnectionOptions, createConnection } from 'mysql2/promise';
-import { readFileSync } from 'fs';
+import { readFile } from 'fs-extra';
 import { Connection, QueryResult } from './Connection';
 
 export class MySqlConnection extends Connection {
@@ -60,7 +60,7 @@ export class MySqlConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    await this.client.query(readFileSync(path).toString());
+    await this.client.query((await readFile(path)).toString());
   }
 
   private async query(sql: string): Promise<void> {

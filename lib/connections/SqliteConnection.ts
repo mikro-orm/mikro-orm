@@ -1,6 +1,6 @@
 import * as sqlite from 'sqlite';
 import { Database } from 'sqlite';
-import { readFileSync } from 'fs';
+import { readFile } from 'fs-extra';
 
 import { Connection, QueryResult } from './Connection';
 import { EntityData, IEntity } from '../decorators';
@@ -67,7 +67,7 @@ export class SqliteConnection extends Connection {
   }
 
   async loadFile(path: string): Promise<void> {
-    await this.client.exec(readFileSync(path).toString());
+    await this.client.exec((await readFile(path)).toString());
   }
 
   private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {

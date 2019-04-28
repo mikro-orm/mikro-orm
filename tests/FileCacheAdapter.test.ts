@@ -11,12 +11,12 @@ describe('FileCacheAdapter', () => {
     const origin = TEMP_DIR + '/.origin';
     const cache = new FileCacheAdapter({ cacheDir: TEMP_DIR });
     writeFileSync(origin, 123);
-    cache.set('cache-test-handle', 123, origin);
-    expect(cache.get('cache-test-handle')).toBe(123);
+    await cache.set('cache-test-handle', 123, origin);
+    await expect(cache.get('cache-test-handle')).resolves.toBe(123);
 
     await new Promise(resolve => setTimeout(resolve, 10));
     writeFileSync(origin, '321');
-    expect(cache.get('cache-test-handle')).toBeNull();
+    await expect(cache.get('cache-test-handle')).resolves.toBeNull();
   });
 
 });
