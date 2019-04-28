@@ -92,13 +92,13 @@ const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
 `QueryBuilder` provides fluent interface with these methods:
 
 ```typescript
-QueryBuilder.select(fields: string | string[]): QueryBuilder;
+QueryBuilder.select(fields: string | string[], distinct?: boolean): QueryBuilder;
 QueryBuilder.insert(data: any): QueryBuilder;
 QueryBuilder.update(data: any): QueryBuilder;
 QueryBuilder.delete(cond: any): QueryBuilder;
-QueryBuilder.count(fields: string | string[]): QueryBuilder;
-QueryBuilder.join(fields: string | string[]): QueryBuilder;
-QueryBuilder.leftJoin(fields: string | string[]): QueryBuilder;
+QueryBuilder.count(fields: string | string[], distinct?: boolean): QueryBuilder;
+QueryBuilder.join(field: string, alias?: string): QueryBuilder;
+QueryBuilder.leftJoin(field: string, alias?: string): QueryBuilder;
 QueryBuilder.where(cond: any, operator: '$and' | '$or'): QueryBuilder;
 QueryBuilder.andWhere(cond: any): QueryBuilder;
 QueryBuilder.orWhere(cond: any): QueryBuilder;

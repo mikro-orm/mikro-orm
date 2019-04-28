@@ -28,6 +28,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 - [Using entity constructors](https://b4nan.github.io/mikro-orm/using-entity-constructors/)
 - [Collections](https://b4nan.github.io/mikro-orm/collections/)
 - [Cascading persist and remove](https://b4nan.github.io/mikro-orm/cascading/)
+- [Using `QueryBuilder`](https://b4nan.github.io/mikro-orm/query-builder/)
 - [Preloading deeply nested structures via populate](https://b4nan.github.io/mikro-orm/nested-populate/)
 - [Property validation](https://b4nan.github.io/mikro-orm/property-validation/)
 - [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)

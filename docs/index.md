@@ -32,6 +32,7 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
 - Advanced features
   - [Smart nested populate](nested-populate.md)
   - [Smart query conditions](query-conditions.md)
+  - [Using `QueryBuilder`](query-builder.md)
   - [Serializing](serializing.md)
   - [Updating entity values with `IEntity.assign()`](entity-helper.md)
   - [Property validation](property-validation.md)

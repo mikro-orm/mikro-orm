@@ -3,17 +3,17 @@
 
 ### Bug Fixes
 
-* query-builder: do not ignore nested and group conditions ([ab64d5a](https://github.com/B4nan/mikro-orm/commit/ab64d5a))
-* query-builder: support calling `andWhere()`/`orWhere()` without previous `where()` ([516e863](https://github.com/B4nan/mikro-orm/commit/516e863))
+* **query-builder**: do not ignore nested and group conditions ([ab64d5a](https://github.com/B4nan/mikro-orm/commit/ab64d5a))
+* **query-builder**: support calling `andWhere()`/`orWhere()` without previous `where()` ([516e863](https://github.com/B4nan/mikro-orm/commit/516e863))
 
 ### Features
 
-* query-builder: add `groupBy()` and `having()` to `QueryBuilder` ([1487803](https://github.com/B4nan/mikro-orm/commit/1487803))
-* query-builder: add `QueryBuilder.clone()` method ([313deb1](https://github.com/B4nan/mikro-orm/commit/313deb1))
-* query-builder: allow DISTINCT selects via `qb.select('...', true)` ([31d6079](https://github.com/B4nan/mikro-orm/commit/31d6079))
-* query-builder: do not wrap fields that contain space ([7ee2e5a](https://github.com/B4nan/mikro-orm/commit/7ee2e5a))
-* query-builder: allow string literals in where conditions ([ec27c33](https://github.com/B4nan/mikro-orm/commit/ec27c33))
-* query-builder: support smart query conditions in `QueryBuilder` ([2c5bca4](https://github.com/B4nan/mikro-orm/commit/2c5bca4))
+* **query-builder**: add `groupBy()` and `having()` to `QueryBuilder` ([1487803](https://github.com/B4nan/mikro-orm/commit/1487803))
+* **query-builder**: add `QueryBuilder.clone()` method ([313deb1](https://github.com/B4nan/mikro-orm/commit/313deb1))
+* **query-builder**: allow DISTINCT selects via `qb.select('...', true)` ([31d6079](https://github.com/B4nan/mikro-orm/commit/31d6079))
+* **query-builder**: do not wrap fields that contain space ([7ee2e5a](https://github.com/B4nan/mikro-orm/commit/7ee2e5a))
+* **query-builder**: allow string literals in where conditions ([ec27c33](https://github.com/B4nan/mikro-orm/commit/ec27c33))
+* **query-builder**: support smart query conditions in `QueryBuilder` ([2c5bca4](https://github.com/B4nan/mikro-orm/commit/2c5bca4))
 
 
 
@@ -131,7 +131,7 @@
 * **core**: add support for complex query conditions in SQL QueryBuilder ([0ea3f41](https://github.com/B4nan/mikro-orm/commit/0ea3f41))
 * **core**: allow using different PK than id (e.g. uuid) ([40bcdc0](https://github.com/B4nan/mikro-orm/commit/40bcdc0))
 * **core**: improve support for ts-node ([220bcaa](https://github.com/B4nan/mikro-orm/commit/220bcaa))
-* **core**: implement `Cascade.MERGE` and `Cascade.ALL` ([#27](https://github.com/B4nan/mikro-orm/issues/27))), closes [#16](https://github.com/B4nan/mikro-orm/issues/16)
+* **core**: implement `Cascade.MERGE` and `Cascade.ALL` ([#27](https://github.com/B4nan/mikro-orm/issues/27)), closes [#16](https://github.com/B4nan/mikro-orm/issues/16)
 * **core**: support cascade merging detached entity ([8801960](https://github.com/B4nan/mikro-orm/commit/8801960))
 * **core**: support smart search conditions ([5537156](https://github.com/B4nan/mikro-orm/commit/5537156)), closes [#20](https://github.com/B4nan/mikro-orm/issues/20)
 * **core**: support wrapped query with operator in QueryBuilder ([8a967b4](https://github.com/B4nan/mikro-orm/commit/8a967b4))
