@@ -51,7 +51,7 @@ const book = await orm.em.findOne(Book, 'id', ['author', 'tags']);
 book.author.name = 'Foo Bar';
 book.tags[0].name = 'new name 1';
 book.tags[1].name = 'new name 2';
-await orm.em.persist(book); // all book tags and author will be persisted too
+await orm.em.persistAndFlush(book); // all book tags and author will be persisted too
 ```
 
 > When cascade persisting collections, keep in mind only fully initialized collections 

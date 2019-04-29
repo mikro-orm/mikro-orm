@@ -27,6 +27,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 - [Entity references](https://b4nan.github.io/mikro-orm/entity-references/)
 - [Using entity constructors](https://b4nan.github.io/mikro-orm/using-entity-constructors/)
 - [Collections](https://b4nan.github.io/mikro-orm/collections/)
+- [Unit of Work and transactions](https://b4nan.github.io/mikro-orm/unit-of-work/)
 - [Cascading persist and remove](https://b4nan.github.io/mikro-orm/cascading/)
 - [Using `QueryBuilder`](https://b4nan.github.io/mikro-orm/query-builder/)
 - [Preloading deeply nested structures via populate](https://b4nan.github.io/mikro-orm/nested-populate/)
@@ -80,6 +81,7 @@ const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
+  autoFlush: false, // read more here: https://b4nan.github.io/mikro-orm/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```

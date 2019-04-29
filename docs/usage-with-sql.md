@@ -117,8 +117,11 @@ For more examples of how to work with `QueryBuilder`, take a look at `QueryBuild
 
 ## Transactions
 
-MySQL driver provides basic support for transactions via `beginTransaction/commit/rollback` methods on both 
-`MySqlDriver` and their shortcuts on `EntityManager` as well. 
+When you call `EntityManager#flush()`, all computed changes are queried [inside a database
+transaction](unit-of-work.md) by default, so you do not have to handle transactions manually. 
+
+When you need to explicitly handle the transaction, you can use `beginTransaction/commit/rollback` 
+methods on both `MySqlDriver` and their shortcuts on `EntityManager`. 
 
 You can also use `EntityManager.transactional(cb)` helper to run callback in transaction. It will
 provide forked `EntityManager` as a parameter with clear clear isolated identity map - please use that
@@ -128,7 +131,7 @@ to make changes.
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
 await orm.em.transactional(async (em: EntityManager) => {
   const god = new Author('God', 'hello@heaven.god');
-  await em.persist(god);
+  await em.persistAndFlush(god);
 });
 ```
 
@@ -139,8 +142,6 @@ EntityManager.rollback(): Promise<void>;
 EntityManager.transactional(cb: (em: EntityManager) => Promise<any>): Promise<any>;
 ```
 
-Keep in mind transactions are supported only in MySQL driver currently. 
-
 ## LIKE queries
 
 SQL do support LIKE queries via native JS regular expressions:
@@ -149,7 +150,7 @@ SQL do support LIKE queries via native JS regular expressions:
 const author1 = new Author2('Author 1', 'a1@example.com');
 const author2 = new Author2('Author 2', 'a2@example.com');
 const author3 = new Author2('Author 3', 'a3@example.com');
-await orm.em.persist([author1, author2, author3]);
+await orm.em.persistAndFlush([author1, author2, author3]);
 
 // finds authors with email like '%exa%le.c_m'
 const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ }); 
