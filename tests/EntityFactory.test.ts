@@ -115,6 +115,13 @@ describe('EntityFactory', () => {
     expect(p1.tests).toBeInstanceOf(Collection);
   });
 
+  test('create should ignore invalid reference values', async () => {
+    const a = factory.create(Author, { favouriteAuthor: false } as any);
+    expect(a).toBeInstanceOf(Author);
+    expect(a.name).toBeUndefined();
+    expect(a.favouriteAuthor).toBeUndefined();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

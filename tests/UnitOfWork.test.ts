@@ -1,7 +1,8 @@
 import { Author } from './entities';
-import { MikroORM } from '../lib';
+import { EntityValidator, MikroORM } from '../lib';
 import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
 import { initORM, wipeDatabase } from './bootstrap';
+import { MetadataStorage } from '../lib/metadata';
 
 /**
  * @class UnitOfWorkTest
@@ -71,6 +72,15 @@ describe('UnitOfWork', () => {
     // missing collection instance in m:n and 1:m relations
     delete author.books;
     expect(() => computer.computeChangeSet(author)).toThrowError(`Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
+  });
+
+  test('entity validation when persisting [strict]', async () => {
+    const validator = new EntityValidator(true);
+    const author = new Author('test', 'test');
+
+    // string date with correct format will not be auto-corrected in strict mode
+    const payload = { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 };
+    expect(() => validator.validate(author, payload, MetadataStorage.getMetadata(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
   });
 
   test('changeSet is null for empty payload', async () => {

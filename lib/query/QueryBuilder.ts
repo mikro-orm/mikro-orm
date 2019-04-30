@@ -300,8 +300,10 @@ export class QueryBuilder {
 
       const prop = this.metadata[this.entityName].properties[field];
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
-        this.processCollection(prop, cond);
+      if (prop.reference === ReferenceType.MANY_TO_MANY) {
+        this.processManyToMany(prop, cond);
+      } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
+        this.processOneToMany(prop, cond);
       } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
         this.processOneToOne(prop, cond);
       } else {
@@ -324,32 +326,32 @@ export class QueryBuilder {
     Utils.renameKey(cond, prop.name, `${alias2}.${prop2.referenceColumnName}`);
   }
 
-  private processCollection(prop: EntityProperty, cond: any): void {
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      const alias1 = `e${this.aliasCounter++}`;
-      const join = {
-        type: 'left',
-        alias: alias1,
-        ownerAlias: this.alias,
-        joinColumn: prop.joinColumn,
-        inverseJoinColumn: prop.inverseJoinColumn,
-        primaryKey: prop.referenceColumnName,
-      } as JoinOptions;
+  private processManyToMany(prop: EntityProperty, cond: any): void {
+    const alias1 = `e${this.aliasCounter++}`;
+    const join = {
+      type: 'left',
+      alias: alias1,
+      ownerAlias: this.alias,
+      joinColumn: prop.joinColumn,
+      inverseJoinColumn: prop.inverseJoinColumn,
+      primaryKey: prop.referenceColumnName,
+    } as JoinOptions;
 
-      if (prop.owner) {
-        this._joins[prop.name] = Object.assign(join, { table: prop.pivotTable });
-      } else {
-        const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-        this._joins[prop.name] = Object.assign(join, { table: prop2.pivotTable });
-      }
-
-      this._fields.push(prop.name);
-      Utils.renameKey(cond, prop.name, `${alias1}.${prop.inverseJoinColumn}`);
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const alias2 = `e${this.aliasCounter++}`;
-      this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
-      Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
+    if (prop.owner) {
+      this._joins[prop.name] = Object.assign(join, { table: prop.pivotTable });
+    } else {
+      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+      this._joins[prop.name] = Object.assign(join, { table: prop2.pivotTable });
     }
+
+    this._fields.push(prop.name);
+    Utils.renameKey(cond, prop.name, `${alias1}.${prop.inverseJoinColumn}`);
+  }
+
+  private processOneToMany(prop: EntityProperty, cond: any): void {
+    const alias2 = `e${this.aliasCounter++}`;
+    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
+    Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
