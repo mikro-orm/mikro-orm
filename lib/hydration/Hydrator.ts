@@ -8,7 +8,9 @@ export abstract class Hydrator {
               protected readonly driver: IDatabaseDriver) { }
 
   hydrate<T extends IEntityType<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>): void {
-    entity.__primaryKey = data[meta.primaryKey];
+    if (data[meta.primaryKey]) {
+      entity.__primaryKey = data[meta.primaryKey];
+    }
 
     // then process user defined properties (ignore not defined keys in `data`)
     Object.values(meta.properties).forEach(prop => {

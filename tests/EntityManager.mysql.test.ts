@@ -94,6 +94,12 @@ describe('EntityManagerMySql', () => {
     await expect(author.version).toBe(123);
   });
 
+  test('should create UUID value when using EM.create()', async () => {
+    const repo = orm.em.getRepository(Book2);
+    const book = repo.create({ title: 'name', author: 123 });
+    expect(book.uuid).toBeDefined();
+  });
+
   test('should work with boolean values', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
