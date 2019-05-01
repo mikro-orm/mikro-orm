@@ -40,6 +40,24 @@ even if it was executed just before. But instead of creating a second `Author` o
 first gets the primary key from the row and checks if it already has an object inside the 
 `UnitOfWork` with that primary key. 
 
+## Persisting managed entities
+
+The identity map has a second use-case. When you call `EntityManager#flush()`, MikroORM will 
+ask the identity map for all objects that are currently managed. This means you don't have to 
+call `EntityManager#persistLater()` over and over again to pass known objects to the 
+`EntityManager`. This is a NO-OP for known entities, but leads to much code written that is 
+confusing to other developers.
+
+The following code WILL update your database with the changes made to the `Author` object, 
+even if you did not call `EntityManager#persistLater()`:
+
+```typescript
+const authorRepository = orm.em.getRepository(Author);
+const jon = await authorRepository.findOne(1);
+jon.email = 'foo@bar.com';
+await authorRepository.flush(); // calling orm.em.flush() has same effect
+```
+
 ## How MikroORM detects changes
 
 MikroORM is a data-mapper that tries to achieve persistence-ignorance (PI). This means you 

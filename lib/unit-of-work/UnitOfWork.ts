@@ -127,6 +127,10 @@ export class UnitOfWork {
   computeChangeSets(): void {
     this.changeSets.length = 0;
 
+    Object.values(this.identityMap)
+      .filter(entity => !this.removeStack.includes(entity) && !this.orphanRemoveStack.includes(entity))
+      .forEach(entity => this.persist(entity));
+
     while (this.persistStack.length) {
       this.findNewEntities(this.persistStack.shift()!);
     }

@@ -765,6 +765,10 @@ describe('EntityManagerMongo', () => {
     expect(books[0].publisher.id).toBeDefined();
     expect(await orm.em.count(Publisher, {})).toBe(1);
 
+    // we need to remove those books from IM or ORM will try to persist them automatically (and they still have link to the publisher)
+    orm.em.getUnitOfWork().unsetIdentity(books[1]);
+    orm.em.getUnitOfWork().unsetIdentity(books[2]);
+
     // by removing one book, publisher will be cascade removed and other books will remain its identifier
     await orm.em.removeEntity(books[0]);
     orm.em.clear();
@@ -889,7 +893,7 @@ describe('EntityManagerMongo', () => {
     expect(author.versionAsString).toBe('v1');
 
     author.name = 'John Snow';
-    await repo.persist(author);
+    await repo.flush();
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
 
@@ -953,7 +957,7 @@ describe('EntityManagerMongo', () => {
     await repo.persist(author);
 
     author.name = 'name1';
-    await repo.persist(author);
+    await repo.flush();
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
@@ -1071,7 +1075,7 @@ describe('EntityManagerMongo', () => {
     const b3 = new Book('b3', author);
     await orm.em.persist([b1, b2, b3]);
     author.favouriteAuthor = author;
-    await orm.em.persist(author);
+    await orm.em.flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne(Author, { id: author.id }))!;
@@ -1145,14 +1149,14 @@ describe('EntityManagerMongo', () => {
 
     // removing book from collection will trigger orphan removal
     author.books.remove(b1);
-    await orm.em.persist(author);
+    await orm.em.flush();
     await expect(orm.em.findOne(Book, b1)).resolves.toBeNull();
     await expect(orm.em.findOne(Book, b3)).resolves.not.toBeNull();
 
     // replacing collection items will trigger orphan removal
     author.books.remove(b2);
     author.books.set([b1, b2]);
-    await orm.em.persist(author);
+    await orm.em.flush();
     await expect(orm.em.findOne(Book, b1)).resolves.not.toBeNull();
     await expect(orm.em.findOne(Book, b3)).resolves.toBeNull();
 
