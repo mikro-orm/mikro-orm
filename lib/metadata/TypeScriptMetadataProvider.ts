@@ -47,7 +47,7 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     const source = this.sources.find(s => s.getFilePath().endsWith(file));
 
     if (!source) {
-      throw new Error(`Source file for entity ${name} not found, check your 'entitiesDirsTs' option`);
+      throw new Error(`Source file for entity ${file} not found, check your 'entitiesDirsTs' option`);
     }
 
     return source;
