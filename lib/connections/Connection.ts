@@ -76,7 +76,7 @@ export abstract class Connection {
     try {
       const now = Date.now();
       const res = await cb();
-      this.logQuery(query + ` [took ${Date.now() - now} ms]`);
+      this.logQuery(query, Date.now() - now);
 
       return res;
     } catch (e) {
@@ -90,8 +90,8 @@ export abstract class Connection {
     }
   }
 
-  protected logQuery(query: string): void {
-    this.logger.debug(`[query-logger] ${query}`);
+  protected logQuery(query: string, took: number): void {
+    this.logger.debug(`[query-logger] ${query} [took ${took} ms]`);
   }
 
 }

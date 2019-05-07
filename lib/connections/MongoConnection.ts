@@ -80,7 +80,7 @@ export class MongoConnection extends Connection {
     }
 
     const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray(); [took ${Date.now() - now} ms]`);
+    this.logQuery(`${query}.toArray();`, Date.now() - now);
 
     return res;
   }
@@ -91,7 +91,7 @@ export class MongoConnection extends Connection {
     const now = Date.now();
     const res = await this.getCollection(collection).insertOne(data);
     const query = `db.getCollection("${collection}").insertOne(${JSON.stringify(data)});`;
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    this.logQuery(query, Date.now() - now);
 
     return this.transformResult(res);
   }
@@ -101,10 +101,10 @@ export class MongoConnection extends Connection {
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
     const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
+    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, ${JSON.stringify(payload)});`;
     const now = Date.now();
     const res = await this.getCollection(collection).updateMany(where, payload);
-    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, ${JSON.stringify(payload)});`;
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    this.logQuery(query, Date.now() - now);
 
     return this.transformResult(res);
   }
@@ -112,10 +112,10 @@ export class MongoConnection extends Connection {
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
-    const res = await this.getCollection(collection).deleteMany(where);
     const query = `db.getCollection("${collection}").deleteMany(${JSON.stringify(where)})`;
     const now = Date.now();
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    const res = await this.getCollection(collection).deleteMany(where);
+    this.logQuery(query, Date.now() - now);
 
     return this.transformResult(res);
   }
@@ -125,7 +125,7 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection("${collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate(pipeline).toArray();
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    this.logQuery(query, Date.now() - now);
 
     return res;
   }
@@ -136,7 +136,7 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection("${collection}").countDocuments(${JSON.stringify(where)})`;
     const now = Date.now();
     const res = await this.getCollection(collection).countDocuments(where);
-    this.logQuery(`${query} [took ${Date.now() - now} ms]`);
+    this.logQuery(query, Date.now() - now);
 
     return res;
   }

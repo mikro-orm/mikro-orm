@@ -66,7 +66,7 @@ export class MySqlConnection extends Connection {
   private async query(sql: string): Promise<void> {
     const now = Date.now();
     await this.client.query(sql);
-    this.logQuery(`${sql} [took ${Date.now() - now} ms]`);
+    this.logQuery(sql, Date.now() - now);
   }
 
 }
