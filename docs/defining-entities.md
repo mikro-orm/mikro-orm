@@ -132,6 +132,9 @@ add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 You can define your own base entity with properties that you require on all entities, like
 primary key and created/updated time. 
 
+> If you are initializing the ORM via `entities` option, you need to specify all your
+> base entities as well.
+
 **`./entities/BaseEntity.ts`**
 
 ```typescript
