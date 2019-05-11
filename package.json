@@ -81,7 +81,7 @@
   "dependencies": {
     "clone": "^2.1.2",
     "fast-deep-equal": "^2.0.1",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^8.0.0",
     "globby": "^9.2.0",
     "ts-morph": "^2.0.0",
     "typescript": "^3.4.3",
