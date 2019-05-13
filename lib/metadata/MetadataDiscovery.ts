@@ -3,7 +3,7 @@ import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
-import { Configuration, Logger, Utils } from '../utils';
+import { Configuration, Logger, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, EntityHelper, ReferenceType } from '../entity';
@@ -35,6 +35,11 @@ export class MetadataDiscovery {
     } else {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
     }
+
+    // validate base entities
+    this.discovered
+      .filter(meta => meta.extends && !this.discovered.find(m => m.prototype.constructor.name === meta.extends))
+      .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);

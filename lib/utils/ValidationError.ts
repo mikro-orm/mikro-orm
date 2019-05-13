@@ -59,6 +59,10 @@ export class ValidationError extends Error {
     throw new Error(`You cannot merge entity '${meta.name}' without identifier!`);
   }
 
+  static fromUnknownBaseEntity(meta: EntityMetadata): ValidationError {
+    return new Error(`Entity '${meta.name}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.name}.${prop.name} ${message}`);
   }

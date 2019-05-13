@@ -1,5 +1,8 @@
 import { ReferenceType } from '../lib/entity';
 import { MetadataValidator } from '../lib/metadata';
+import { MikroORM } from '../lib';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
+import { BASE_DIR } from './bootstrap';
 
 /**
  * @class MetadataValidatorTest
@@ -55,6 +58,34 @@ describe('MetadataValidator', () => {
 
     meta.Book.properties['authors'] = { name: 'authors', reference: ReferenceType.MANY_TO_MANY, type: 'Author', mappedBy: 'books' };
     expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Both Author.books and Book.authors are defined as inverse sides, use inversedBy on one of them`);
+  });
+
+  test('validates missing base entity definition', async () => {
+    let port = 3307;
+
+    if (process.env.ORM_PORT) {
+      port = +process.env.ORM_PORT;
+    }
+
+    // base entity with properties
+    await expect(MikroORM.init({
+      entities: [FooBar2, FooBaz2],
+      dbName: `mikro_orm_test`,
+      port,
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      type: 'mysql',
+      baseDir: BASE_DIR,
+    })).rejects.toThrowError(`Entity 'FooBar2' extends unknown base entity 'BaseEntity22', please make sure to provide it in 'entities' array when initializing the ORM`);
+
+    // base entity without properties
+    await expect(MikroORM.init({
+      entities: [Author2, Book2, BookTag2, Publisher2, Test2],
+      dbName: `mikro_orm_test`,
+      port,
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      type: 'mysql',
+      baseDir: BASE_DIR,
+    })).rejects.toThrowError(`Entity 'Author2' extends unknown base entity 'BaseEntity2', please make sure to provide it in 'entities' array when initializing the ORM`);
   });
 
 });
