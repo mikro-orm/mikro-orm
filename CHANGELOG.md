@@ -1,4 +1,22 @@
-<a name="2.3.2"></a>
+<a name="2.5.0"></a>
+# [2.5.0](https://github.com/B4nan/mikro-orm/compare/v2.4.0...v2.5.0) (2019-05-13)
+
+### Bug Fixes
+
+* **core**: support creating entity with client side UUID via `EM.create()` ([0752fa4](https://github.com/B4nan/mikro-orm/commit/0752fa4))
+* **deps**: update dependencies to support **node 12** ([#52](https://github.com/B4nan/mikro-orm/issues/52)), closes [#50](https://github.com/B4nan/mikro-orm/issues/50)
+* **deps**: update dependency fs-extra to v8 ([#54](https://github.com/B4nan/mikro-orm/issues/54))
+* **metadata**: fix error message for missing TS source file ([cb799ca](https://github.com/B4nan/mikro-orm/commit/cb799ca))
+* **mongo**: log correct taken time in `deleteMany` ([f6fe821](https://github.com/B4nan/mikro-orm/commit/f6fe821))
+
+### Features
+
+* **core**: persist all managed entities automatically when flushing ([dbf6b43](https://github.com/B4nan/mikro-orm/commit/dbf6b43)), closes [#51](https://github.com/B4nan/mikro-orm/issues/51)
+* **metadata**: validate missing base entities ([03d61a8](https://github.com/B4nan/mikro-orm/commit/03d61a8))
+
+
+
+<a name="2.4.0"></a>
 # [2.4.0](https://github.com/B4nan/mikro-orm/compare/v2.3.2...v2.4.0) (2019-04-27)
 
 ### Bug Fixes
