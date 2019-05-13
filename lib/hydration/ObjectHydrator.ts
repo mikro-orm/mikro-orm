@@ -28,9 +28,9 @@ export class ObjectHydrator extends Hydrator {
   private hydrateManyToMany<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (prop.owner) {
       return this.hydrateManyToManyOwner(entity, prop, value);
-    } else if (!entity[prop.name as keyof T]) {
-      this.hydrateManyToManyInverse(entity, prop);
     }
+
+    this.hydrateManyToManyInverse(entity, prop);
   }
 
   private hydrateManyToManyOwner<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
@@ -50,7 +50,7 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private hydrateManyToOne<T extends IEntityType<T>>(value: any, entity: T, prop: EntityProperty): void {
-    if (!value) {
+    if (typeof value === 'undefined') {
       return;
     }
 
