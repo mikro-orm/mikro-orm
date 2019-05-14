@@ -22,6 +22,45 @@ const res1 = await qb.execute();
 
 `QueryBuilder` also supports [smart query conditions](query-conditions.md).
 
+## Running native SQL query
+
+You can run native SQL via underlying connection
+
+```typescript
+const connection = orm.em.getConnection();
+const res = await connection.execute('SELECT 1 as count');
+console.log(res); // res is array of objects: `[ { count: 1 } ]`
+```
+
+## Executing the query
+
+You can use `execute(method = 'all', mapResults = true)`'s parameters to control form of result:
+
+```typescript
+const res1 = await qb.execute('all'); // returns array of objects, default behavior
+const res2 = await qb.execute('get'); // returns single object
+const res3 = await qb.execute('run'); // returns object like `{ affectedRows: number, insertId: number, row: any }`
+```
+
+Second argument can be used to disable mapping of database columns to property names (which 
+is enabled by default). In following example, `Book` entity has `createdAt` property defined 
+with implicit underscored field name `created_at`:
+
+```typescript
+const res4 = await orm.em.createQueryBuilder(Book).select('*').execute('get', true);
+console.log(res4); // `createdAt` will be defined, while `created_at` will be missing
+const res5 = await orm.em.createQueryBuilder(Book).select('*').execute('get', false);
+console.log(res5); // `created_at` will be defined, while `createdAt` will be missing
+```
+
+To create entities from query builder result, you can use `merge()` method of `EntityManager`:
+
+```typescript
+const res6 = await orm.em.createQueryBuilder(Book).select('*').execute();
+const entities = res6.map(data => orm.em.merge(Book, data));
+console.log(entities); // array of Book entities
+```
+
 ## Implicit joining
 
 `QueryBuilder` supports automatic joining based on entity metadata:
