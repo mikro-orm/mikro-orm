@@ -9,6 +9,9 @@ export class Test {
   @Property({ type: 'string' })
   name: any;
 
+  @Property({ hidden: true })
+  hiddenField = Date.now();
+
   static create(name: string) {
     const t = new Test();
     t.name = name;

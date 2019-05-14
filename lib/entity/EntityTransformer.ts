@@ -1,7 +1,7 @@
 import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
-import { EntityData, IEntity, IEntityType } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType } from '../decorators';
 import { MetadataStorage } from '../metadata';
 
 export class EntityTransformer {
@@ -9,19 +9,26 @@ export class EntityTransformer {
   static toObject<T extends IEntityType<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
     const platform = entity.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(entity.__primaryKeyField);
-    const ret = (entity.__primaryKey ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
+    const meta = MetadataStorage.getMetadata(entity.constructor.name);
+    const pkProp = meta.properties[meta.primaryKey];
+    const ret = (entity.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
 
     if (!entity.isInitialized() && entity.__primaryKey) {
       return ret;
     }
 
     Object.keys(entity)
-      .filter(prop => prop !== entity.__primaryKeyField && !prop.startsWith('_') && !ignoreFields.includes(prop))
+      .filter(prop => this.isVisible(meta, prop, entity, ignoreFields))
       .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields)])
       .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[prop!] = value);
 
     return ret;
+  }
+
+  private static isVisible<T extends IEntityType<T>>(meta: EntityMetadata<T>, prop: keyof T & string, entity: T, ignoreFields: string[]): boolean {
+    const hidden = meta.properties[prop] && !meta.properties[prop].hidden;
+    return hidden && prop !== entity.__primaryKeyField && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
   private static processProperty<T extends IEntityType<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {

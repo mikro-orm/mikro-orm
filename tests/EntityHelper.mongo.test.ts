@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { Author, Book, BookTag, Publisher } from './entities';
+import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 
@@ -18,6 +18,12 @@ describe('EntityAssignerMongo', () => {
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
     expect(author.toObject()).toBeInstanceOf(Object);
+  });
+
+  test('#toObject() should ignore properties marked with hidden flag', async () => {
+    const test = Test.create('Bible');
+    expect(test.hiddenField).toBeDefined();
+    expect(test.toJSON().hiddenField).not.toBeDefined();
   });
 
   test('#toJSON() should return DTO', async () => {
