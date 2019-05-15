@@ -82,6 +82,18 @@ describe('EntityAssignerMongo', () => {
     expect(jon.isInitialized()).toBe(true);
   });
 
+  test('#init() should refresh the entity if its already loaded', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const jon = await orm.em.findOne(Author, author.id);
+    await orm.em.nativeUpdate(Author, { id: author.id }, { name: 'Changed!' });
+    expect(jon!.name).toBe('Jon Snow');
+    await EntityHelper.init(jon!);
+    expect(jon!.name).toBe('Changed!');
+  });
+
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');

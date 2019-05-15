@@ -7,7 +7,7 @@ import { AssignOptions, EntityAssigner } from './EntityAssigner';
 export class EntityHelper {
 
   static async init(entity: IEntity, populated = true): Promise<IEntity> {
-    await entity.__em.findOne(entity.constructor.name, entity.__primaryKey);
+    await entity.__em.findOne(entity.constructor.name, entity.__primaryKey, { refresh: true });
     entity.populated(populated);
     entity.__lazyInitialized = true;
 

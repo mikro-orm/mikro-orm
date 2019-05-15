@@ -82,7 +82,7 @@ export class EntityManager {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
 
-    if (entity && entity.isInitialized()) {
+    if (entity && entity.isInitialized() && !options.refresh) {
       await this.entityLoader.populate(entityName, [entity], options.populate || []);
       return entity;
     }
@@ -94,7 +94,7 @@ export class EntityManager {
       return null;
     }
 
-    entity = this.merge(entityName, data) as T;
+    entity = this.merge(entityName, data, options.refresh) as T;
     await this.entityLoader.populate(entityName, [entity], options.populate || []);
 
     return entity;
@@ -159,26 +159,26 @@ export class EntityManager {
     return this.driver.aggregate(entityName, pipeline);
   }
 
-  merge<T extends IEntityType<T>>(entity: T): T;
-  merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): T;
-  merge<T extends IEntityType<T>>(entityName: EntityName<T> | T, data?: EntityData<T>): T {
+  merge<T extends IEntityType<T>>(entity: T, refresh?: boolean): T;
+  merge<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>, refresh?: boolean): T;
+  merge<T extends IEntityType<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean): T {
     if (Utils.isEntity(entityName)) {
-      return this.merge(entityName.constructor.name, entityName as EntityData<T>);
+      return this.merge(entityName.constructor.name, entityName as EntityData<T>, data as boolean);
     }
 
     entityName = Utils.className(entityName);
-    this.validator.validatePrimaryKey(data!, this.metadata[entityName]);
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data!);
+    this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata[entityName]);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as EntityData<T>);
 
-    if (entity && entity.isInitialized()) {
+    if (entity && entity.isInitialized() && !refresh) {
       return entity;
     }
 
-    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data!, true);
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, true);
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);
-    EntityAssigner.assign(entity, data!, true);
+    EntityAssigner.assign(entity, data as EntityData<T>, true);
     this.getUnitOfWork().merge(entity); // add to IM again so we have correct payload saved to change set computation
 
     return entity;
@@ -325,4 +325,5 @@ export interface FindOptions {
 export interface FindOneOptions {
   populate?: string[];
   orderBy?: Record<string, QueryOrder>;
+  refresh?: boolean;
 }
