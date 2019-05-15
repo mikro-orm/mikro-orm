@@ -18,6 +18,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 2, 1]);
   });
 
+  test('select constant expression', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('1').where({ id: 123 });
+    expect(qb.getQuery()).toEqual('SELECT 1 FROM `publisher2` AS `e0` WHERE `e0`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
   test('select in query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select(['id', 'name', 'type']).where({ name: { $in: ['test 123', 'lol 321'] }, type: PublisherType.GLOBAL }).limit(2, 1);

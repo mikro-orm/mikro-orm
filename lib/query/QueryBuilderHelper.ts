@@ -69,7 +69,7 @@ export class QueryBuilderHelper {
 
   mapper(type: QueryType, field: string, value?: any, alias?: string): string {
     let ret = field;
-    const customExpression = field.match(/\(.*\)| /);
+    const customExpression = field.match(/\(.*\)| |^\d/);
 
     // do not wrap custom expressions
     if (!customExpression) {
