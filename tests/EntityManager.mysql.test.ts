@@ -983,6 +983,18 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
   });
 
+  test('partial selects', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    author.born = new Date();
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a = (await orm.em.findOne(Author2, author, { fields: ['name'] }))!;
+    expect(a.name).toBe('Jon Snow');
+    expect(a.email).toBeUndefined();
+    expect(a.born).toBeUndefined();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

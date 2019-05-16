@@ -55,14 +55,17 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
+  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    let query = `db.getCollection("${collection}").find`;
     where = this.convertObjectIds(where);
-    const resultSet = this.getCollection(collection).find(where);
-    const now = Date.now();
+    const options = {} as Record<string, any>;
 
-    query += `(${JSON.stringify(where)})`;
+    if (fields) {
+      options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
+    }
+
+    const resultSet = this.getCollection(collection).find(where, options);
+    let query = `db.getCollection("${collection}").find(${JSON.stringify(where)}, ${JSON.stringify(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
       query += `.sort(${JSON.stringify(orderBy)})`;
@@ -79,6 +82,7 @@ export class MongoConnection extends Connection {
       resultSet.skip(offset);
     }
 
+    const now = Date.now();
     const res = await resultSet.toArray();
     this.logQuery(`${query}.toArray();`, Date.now() - now);
 

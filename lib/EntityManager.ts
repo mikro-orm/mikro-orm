@@ -88,7 +88,7 @@ export class EntityManager {
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy);
+    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields);
 
     if (!data) {
       return null;
@@ -326,4 +326,5 @@ export interface FindOneOptions {
   populate?: string[];
   orderBy?: Record<string, QueryOrder>;
   refresh?: boolean;
+  fields?: string[];
 }

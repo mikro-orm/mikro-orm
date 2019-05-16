@@ -76,6 +76,17 @@ for (const author of authors) {
 }
 ```
 
+### Fetching partial entities
+
+When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
+
+```typescript
+const author = await orm.em.findOne(Author, '...', { fields: ['name', 'born'] });
+console.log(author.id); // PK is always selected
+console.log(author.name); // Jon Snow
+console.log(author.email); // undefined
+```
+
 ## Type of fetched entities
 
 Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types.

@@ -1248,6 +1248,18 @@ describe('EntityManagerMongo', () => {
     expect(b2.title).toBe('test 2');
   });
 
+  test('partial selects', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    author.born = new Date();
+    await orm.em.persist(author);
+    orm.em.clear();
+
+    const a = (await orm.em.findOne(Author, author, { fields: ['name'] }))!;
+    expect(a.name).toBe('Jon Snow');
+    expect(a.email).toBeUndefined();
+    expect(a.born).toBeUndefined();
+  });
+
   afterAll(async () => orm.close(true));
 
 });
