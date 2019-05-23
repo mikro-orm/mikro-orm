@@ -1,6 +1,6 @@
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
-import { MikroORM, QueryOrder } from '../lib';
+import { LockMode, MikroORM, QueryOrder } from '../lib';
 
 /**
  * @class QueryBuilderTest
@@ -525,6 +525,35 @@ describe('QueryBuilder', () => {
     qb.count().where({ title: 'test 123' });
     expect(qb.getQuery()).toEqual('SELECT COUNT(`e0`.`uuid_pk`) AS `count` FROM `book2` AS `e0` WHERE `e0`.`title` = ?');
     expect(qb.getParams()).toEqual(['test 123']);
+  });
+
+  test('select with locking', async () => {
+    const qb1 = orm.em.createQueryBuilder(Test2);
+    qb1.select('*').where({ title: 'test 123' }).setLockMode(LockMode.OPTIMISTIC);
+    expect(qb1.getQuery()).toEqual('SELECT `e0`.* FROM `test2` AS `e0` WHERE `e0`.`title` = ?');
+
+    await orm.em.beginTransaction();
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({ title: 'test 123' }).setLockMode(LockMode.NONE);
+    expect(qb2.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` WHERE `e0`.`title` = ?');
+
+    const qb3 = orm.em.createQueryBuilder(Book2);
+    qb3.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_READ);
+    expect(qb3.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` WHERE `e0`.`title` = ? LOCK IN SHARE MODE');
+
+    const qb4 = orm.em.createQueryBuilder(Book2);
+    qb4.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE);
+    expect(qb4.getQuery()).toEqual('SELECT `e0`.* FROM `book2` AS `e0` WHERE `e0`.`title` = ? FOR UPDATE');
+    await orm.em.commit();
+  });
+
+  test('pessimistic locking requires active transaction', async () => {
+    const qb = orm.em.createQueryBuilder(Author2);
+    qb.select('*').where({ name: '...' });
+    expect(() => qb.setLockMode(LockMode.NONE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrowError('The optimistic lock on entity Author2 failed');
   });
 
   test('insert query', async () => {

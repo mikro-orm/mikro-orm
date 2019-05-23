@@ -148,6 +148,16 @@ console.log(qb.getQuery());
 // SELECT `e0`.* FROM `test` AS `e0` WHERE (`e0`.`id` NOT IN (?, ?) AND `e0`.`id` > ?)
 ```
 
+## Locking support
+
+```typescript
+const qb = orm.em.createQueryBuilder(Test);
+qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ);
+
+console.log(qb.getQuery()); // for MySQL
+// SELECT `e0`.* FROM `test` AS `e0` WHERE `e0`.`name` = ? LOCK IN SHARE MODE
+```
+
 ## QueryBuilder API
 
 `QueryBuilder` provides fluent interface with these methods:
@@ -168,6 +178,7 @@ QueryBuilder.having(cond: any): QueryBuilder;
 QueryBuilder.populate(populate: string[]): QueryBuilder;
 QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
 QueryBuilder.offset(offset: number): QueryBuilder;
+QueryBuilder.setLockMode(mode: LockMode): QueryBuilder;
 QueryBuilder.getQuery(): string;
 QueryBuilder.getParams(): any;
 QueryBuilder.clone(): QueryBuilder;

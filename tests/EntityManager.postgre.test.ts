@@ -1,9 +1,9 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, MikroORM, Utils } from '../lib';
-import { Author2, Book2, BookTag2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, Utils } from '../lib';
+import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
-import { Logger } from '../lib/utils';
+import { Logger, ValidationError } from '../lib/utils';
 import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 /**
@@ -328,6 +328,151 @@ describe('EntityManagerPostgre', () => {
     expect(authors[0].name).toBe('Author 1');
     expect(authors[1].name).toBe('Author 2');
     expect(authors[2].name).toBe('Author 3');
+  });
+
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    const test = new Test2();
+
+    for (let i = 0; i < 5; i++) {
+      test.name = 'test' + i;
+      await orm.em.persistAndFlush(test);
+      expect(typeof test.version).toBe('number');
+      expect(test.version).toBe(i + 1);
+    }
+  });
+
+  test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    expect(typeof test.version).toBe('number');
+    expect(test.version).toBe(1);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test2, test.id);
+    await orm.em.nativeUpdate(Test2, { id: test.id }, { name: 'Changed!' }); // simulate concurrent update
+    test2!.name = 'WHATT???';
+
+    try {
+      await orm.em.flush();
+      expect(1).toBe('should be unreachable');
+    } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
+      expect(e.message).toBe(`The optimistic lock on entity Test2 failed`);
+      expect((e as ValidationError).getEntity()).toBe(test2);
+    }
+  });
+
+  test('findOne supports optimistic locking [versioned proxy]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const proxy = orm.em.getReference(Test2, test.id);
+    await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
+    expect(proxy.isInitialized()).toBe(true);
+  });
+
+  test('findOne supports optimistic locking [versioned proxy]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test2, test.id);
+    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
+  });
+
+  test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
+    const bar = FooBar2.create('Testing');
+    expect(bar.version).toBeUndefined();
+    await orm.em.persistAndFlush(bar);
+    expect(bar.version).toBeInstanceOf(Date);
+    orm.em.clear();
+
+    const bar2 = (await orm.em.findOne(FooBar2, bar.id))!;
+    expect(bar2.version).toBeInstanceOf(Date);
+
+    try {
+      // Try to lock the record with an older timestamp and it should throw an exception
+      const expectedVersionExpired = new Date(+bar2.version - 3600);
+      await orm.em.lock(bar2, LockMode.OPTIMISTIC, expectedVersionExpired);
+      expect(1).toBe('should be unreachable');
+    } catch (e) {
+      expect((e as ValidationError).getEntity()).toBe(bar2);
+    }
+  });
+
+  test('findOne supports optimistic locking [unversioned entity]', async () => {
+    const author = new Author2('name', 'email');
+    await orm.em.persistAndFlush(author);
+    await expect(orm.em.lock(author, LockMode.OPTIMISTIC)).rejects.toThrowError('Cannot obtain optimistic lock on unversioned entity Author2');
+  });
+
+  test('findOne supports optimistic locking [versioned entity]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    await orm.em.lock(test, LockMode.OPTIMISTIC, test.version);
+  });
+
+  test('findOne supports optimistic locking [version mismatch]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
+  });
+
+  test('findOne supports optimistic locking [testLockUnmanagedEntityThrowsException]', async () => {
+    const test = new Test2();
+    test.name = 'test';
+    await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+  });
+
+  test('pessimistic locking requires active transaction', async () => {
+    const test = Test2.create('Lock test');
+    await orm.em.persistAndFlush(test);
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.findOne(Test2, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.lock(test, LockMode.PESSIMISTIC_WRITE)).rejects.toThrowError('An open transaction is required for this operation');
+  });
+
+  test('findOne supports pessimistic locking [pessimistic write]', async () => {
+    const author = new Author2('name', 'email');
+    await orm.em.persistAndFlush(author);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_WRITE);
+    });
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
+    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM "author2" AS "e0" WHERE "e0"."id" = $1 FOR UPDATE');
+    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
+  });
+
+  test('findOne supports pessimistic locking [pessimistic read]', async () => {
+    const author = new Author2('name', 'email');
+    await orm.em.persistAndFlush(author);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_READ);
+    });
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
+    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM "author2" AS "e0" WHERE "e0"."id" = $1 FOR SHARE');
+    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
   });
 
   test('stable results of serialization', async () => {

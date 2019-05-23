@@ -2,6 +2,7 @@ import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrim
 import { Connection, QueryResult } from '../connections';
 import { QueryOrder } from '../query';
 import { Platform } from '../platforms';
+import { LockMode } from '../unit-of-work';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -15,7 +16,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>, fields?: string[]): Promise<T | null>;
+  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>, fields?: string[], lockMode?: LockMode): Promise<T | null>;
 
   nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 

@@ -1,6 +1,7 @@
 export * from './MikroORM';
 export * from './entity';
 export * from './EntityManager';
+export * from './unit-of-work';
 export * from './utils/RequestContext';
 export * from './utils/Utils';
 export * from './utils/Configuration';

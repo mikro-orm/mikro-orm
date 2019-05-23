@@ -7,6 +7,10 @@ import { ArrayCollection, Collection, ReferenceType } from '../entity';
 
 export class Utils {
 
+  static isDefined(data: any): data is object {
+    return typeof data !== 'undefined';
+  }
+
   static isObject<T = Record<string, any>>(o: any): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o);
   }

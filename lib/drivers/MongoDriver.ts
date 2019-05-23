@@ -6,6 +6,7 @@ import { QueryOrder } from '../query';
 import { Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { QueryResult } from '../connections';
+import { LockMode } from '../unit-of-work';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -19,7 +20,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map((r: T) => this.mapResult(r, this.metadata[entityName]));
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[]): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as string) };
     }

@@ -4,6 +4,7 @@ import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { IDatabaseDriver } from '..';
 import { QueryResult } from '../connections';
+import { ValidationError } from '../utils';
 
 export class ChangeSetPersister {
 
@@ -25,21 +26,49 @@ export class ChangeSetPersister {
   }
 
   private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>): Promise<void> {
+    let res: QueryResult | undefined;
+
     if (changeSet.type === ChangeSetType.DELETE) {
       await this.driver.nativeDelete(changeSet.name, changeSet.entity.__primaryKey);
     } else if (changeSet.type === ChangeSetType.UPDATE) {
-      const res = await this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+      res = await this.updateEntity(meta, changeSet);
       this.mapReturnedValues(changeSet.entity, res, meta);
     } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
-      const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
       this.mapReturnedValues(changeSet.entity, res, meta);
       delete changeSet.entity.__initialized;
     } else { // ChangeSetType.CREATE without primary key
-      const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
       this.mapReturnedValues(changeSet.entity, res, meta);
       changeSet.entity.__primaryKey = res.insertId;
       this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey);
       delete changeSet.entity.__initialized;
+    }
+
+    await this.processOptimisticLock(meta, changeSet, res);
+  }
+
+  private async updateEntity<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>): Promise<QueryResult> {
+    if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
+      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+    }
+
+    const cond = {
+      [changeSet.entity.__primaryKeyField]: changeSet.entity.__primaryKey,
+      [meta.versionProperty]: changeSet.entity[meta.versionProperty],
+    };
+
+    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload);
+  }
+
+  private async processOptimisticLock<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined) {
+    if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
+      throw ValidationError.lockFailed(changeSet.entity);
+    }
+
+    if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
+      const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__primaryKey, [], {}, [meta.versionProperty]);
+      changeSet.entity[meta.versionProperty] = e![meta.versionProperty] as T[keyof T];
     }
   }
 

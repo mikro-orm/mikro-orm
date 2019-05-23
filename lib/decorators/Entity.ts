@@ -4,6 +4,7 @@ import { IPrimaryKey } from './PrimaryKey';
 import { AssignOptions, Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
+import { LockMode } from '../unit-of-work';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -27,7 +28,7 @@ export interface IEntity<K = number | string> {
   id: K;
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?: boolean): Promise<this>;
+  init(populated?: boolean, lockMode?: LockMode): Promise<this>;
   toObject(ignoreFields?: string[]): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   assign(data: any, options?: AssignOptions | boolean): void;
@@ -69,6 +70,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   nullable?: boolean;
   persist?: boolean;
   hidden?: boolean;
+  version?: boolean;
   cascade: Cascade[];
   orphanRemoval?: boolean;
   onUpdate?: () => any;
@@ -90,6 +92,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   collection: string;
   path: string;
   primaryKey: keyof T & string;
+  versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };

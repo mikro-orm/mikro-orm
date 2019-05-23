@@ -1,13 +1,18 @@
 import { EntityMetadata, EntityProperty, IEntity } from '../decorators';
+import { Utils } from './Utils';
 
 export class ValidationError extends Error {
 
-  constructor(message: string) {
+  constructor(message: string, private readonly entity?: IEntity) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
 
     this.name = this.constructor.name;
     this.message = message;
+  }
+
+  getEntity(): IEntity | undefined {
+    return this.entity;
   }
 
   static fromWrongPropertyType(entity: IEntity, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
@@ -56,11 +61,37 @@ export class ValidationError extends Error {
   }
 
   static fromMergeWithoutPK(meta: EntityMetadata): void {
-    throw new Error(`You cannot merge entity '${meta.name}' without identifier!`);
+    throw new ValidationError(`You cannot merge entity '${meta.name}' without identifier!`);
   }
 
   static fromUnknownBaseEntity(meta: EntityMetadata): ValidationError {
-    return new Error(`Entity '${meta.name}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
+    return new ValidationError(`Entity '${meta.name}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
+  }
+
+  static transactionRequired(): ValidationError {
+    return new ValidationError('An open transaction is required for this operation');
+  }
+
+  static entityNotManaged(entity: IEntity): ValidationError {
+    return new ValidationError(`Entity ${entity.constructor.name} is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()`);
+  }
+
+  static notVersioned(meta: EntityMetadata): ValidationError {
+    return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.name}`);
+  }
+
+  static lockFailed(entityOrName: IEntity | string): ValidationError {
+    const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
+    const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
+
+    return new ValidationError(`The optimistic lock on entity ${name} failed`, entity);
+  }
+
+  static lockFailedVersionMismatch(entity: IEntity, expectedLockVersion: number | Date, actualLockVersion: number | Date): ValidationError {
+    expectedLockVersion = expectedLockVersion instanceof Date ? expectedLockVersion.getTime() : expectedLockVersion;
+    actualLockVersion = actualLockVersion instanceof Date ? actualLockVersion.getTime() : actualLockVersion;
+
+    return new ValidationError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {

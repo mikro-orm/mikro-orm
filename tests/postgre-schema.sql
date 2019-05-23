@@ -71,6 +71,7 @@ CREATE TABLE "test2" (
   "id" int check ("id" > 0) NOT NULL DEFAULT NEXTVAL('test2_seq'),
   "name" varchar(255) DEFAULT NULL,
   "book_uuid_pk" varchar(36) UNIQUE DEFAULT NULL,
+  "version" int NOT NULL DEFAULT 1,
   PRIMARY KEY ("id")
 );
 
@@ -84,6 +85,7 @@ CREATE TABLE "foo_bar2" (
   "name" varchar(255) NOT NULL,
   "baz_id" int check ("baz_id" > 0) UNIQUE DEFAULT NULL,
   "foo_bar_id" int check ("foo_bar_id" > 0) UNIQUE DEFAULT NULL,
+  "version" timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY ("id")
 );
 

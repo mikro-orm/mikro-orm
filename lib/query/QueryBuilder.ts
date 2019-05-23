@@ -1,10 +1,11 @@
-import { Utils } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrder, QueryType } from './enums';
 import { IDatabaseDriver } from '../drivers';
+import { LockMode } from '../unit-of-work';
 
 /**
  * SQL query builder
@@ -28,6 +29,7 @@ export class QueryBuilder {
   private _having: Record<string, any> = {};
   private _limit: number;
   private _offset: number;
+  private lockMode?: LockMode;
   private readonly connection = this.driver.getConnection();
   private readonly platform = this.driver.getPlatform();
   private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.platform);
@@ -188,6 +190,16 @@ export class QueryBuilder {
     return this;
   }
 
+  setLockMode(mode?: LockMode): this {
+    if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.driver.isInTransaction()) {
+      throw ValidationError.transactionRequired();
+    }
+
+    this.lockMode = mode;
+
+    return this;
+  }
+
   getQuery(): string {
     this.finalize();
     let sql = this.getQueryBase();
@@ -202,6 +214,8 @@ export class QueryBuilder {
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       sql += ' CASCADE';
     }
+
+    sql += this.helper.getLockSQL(this.lockMode);
 
     return this.helper.finalize(this.type, sql, this.metadata[this.entityName]);
   }
@@ -386,7 +400,9 @@ export class QueryBuilder {
         break;
       case QueryType.UPDATE:
         sql += this.helper.getTableName(this.entityName, true);
-        sql += ' SET ' + Object.keys(this._data).map(k => this.helper.wrap(k) + ' = ?').join(', ');
+        const set = Object.keys(this._data).map(k => this.helper.wrap(k) + ' = ?');
+        this.helper.updateVersionProperty(set);
+        sql += ' SET ' + set.join(', ');
         break;
       case QueryType.DELETE:
         sql += 'FROM ' + this.helper.getTableName(this.entityName, true);

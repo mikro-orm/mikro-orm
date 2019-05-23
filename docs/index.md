@@ -28,7 +28,8 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
   - [Entity references](entity-references.md)
   - [Using entity constructors](entity-constructors.md)
   - [Collections](collections.md)
-  - [Unit of Work and transactions](unit-of-work.md)
+  - [Unit of Work](unit-of-work.md)
+  - [Transactions](transactions.md)
   - [Cascading persist and remove](cascading.md)
 - Advanced features
   - [Smart nested populate](nested-populate.md)

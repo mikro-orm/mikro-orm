@@ -1,3 +1,4 @@
+export * from './enums';
 export * from './ChangeSet';
 export * from './ChangeSetComputer';
 export * from './ChangeSetPersister';

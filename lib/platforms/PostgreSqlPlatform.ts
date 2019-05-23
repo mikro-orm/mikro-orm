@@ -26,4 +26,8 @@ export class PostgreSqlPlatform extends Platform {
     return true;
   }
 
+  getReadLockSQL(): string {
+    return 'FOR SHARE';
+  }
+
 }
