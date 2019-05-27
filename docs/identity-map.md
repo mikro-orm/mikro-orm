@@ -38,9 +38,10 @@ If you use dependency injection container like `inversify` or the one in `nestjs
 can be hard to achieve this, because you usually want to access your repositories via DI container,
 but it will always provide you with the same instance, rather than new one for each request. 
 
-To solve this, you can use `RequestContext` helper, that will use `node`'s async hooks in the background
-to isolate the request context. MikroORM will always use request specific (forked) entity manager 
-if available, so all you need to do is to create new request context preferably in middle:
+To solve this, you can use `RequestContext` helper, that will use `node`'s Domain API in the 
+background to isolate the request context. MikroORM will always use request specific (forked) 
+entity manager if available, so all you need to do is to create new request context preferably 
+in middle:
 
 ```typescript
 app.use((req, res, next) => {

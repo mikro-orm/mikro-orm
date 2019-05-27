@@ -13,4 +13,12 @@ export class SqlitePlatform extends Platform {
     return true;
   }
 
+  getCurrentTimestampSQL(length: number): string {
+    return super.getCurrentTimestampSQL(0);
+  }
+
+  getForUpdateSQL(): string {
+    return '';
+  }
+
 }

@@ -23,4 +23,5 @@ export type PropertyOptions = {
   nullable?: boolean;
   persist?: boolean;
   hidden?: boolean;
+  version?: boolean;
 }

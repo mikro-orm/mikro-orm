@@ -81,6 +81,9 @@ transaction (if supported by given driver). This means that you can control the 
 of transactions simply by calling `EntityManager#persistLater()` and once all your changes 
 are ready, simply calling `flush()` will run them inside a transaction. 
 
+You can find more information about transactions in [Transactions and concurrency](transactions.md) 
+page.
+
 ### Beware: Auto-flushing and transactions
 
 Originally there was only `EntityManager#persist(entity, flush = true)` method, that was

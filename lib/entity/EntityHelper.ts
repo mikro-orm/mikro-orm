@@ -3,11 +3,12 @@ import { EntityManager } from '../EntityManager';
 import { EntityClass, EntityData, EntityMetadata, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
+import { LockMode } from '../unit-of-work';
 
 export class EntityHelper {
 
-  static async init(entity: IEntity, populated = true): Promise<IEntity> {
-    await entity.__em.findOne(entity.constructor.name, entity.__primaryKey, { refresh: true });
+  static async init(entity: IEntity, populated = true, lockMode?: LockMode): Promise<IEntity> {
+    await entity.__em.findOne(entity.constructor.name, entity.__primaryKey, { refresh: true, lockMode });
     entity.populated(populated);
     entity.__lazyInitialized = true;
 

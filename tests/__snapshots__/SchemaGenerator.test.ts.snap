@@ -68,6 +68,7 @@ CREATE TABLE \`test2\` (
   \`id\` int(11) unsigned NOT NULL AUTO_INCREMENT,
   \`name\` varchar(255) DEFAULT NULL,
   \`book_uuid_pk\` varchar(36) UNIQUE DEFAULT NULL,
+  \`version\` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -79,6 +80,7 @@ CREATE TABLE \`foo_bar2\` (
   \`name\` varchar(255) NOT NULL,
   \`baz_id\` int(11) unsigned UNIQUE DEFAULT NULL,
   \`foo_bar_id\` int(11) unsigned UNIQUE DEFAULT NULL,
+  \`version\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -222,6 +224,7 @@ CREATE TABLE \\"test2\\" (
   \\"id\\" int check (\\"id\\" > 0) NOT NULL DEFAULT NEXTVAL('test2_seq'),
   \\"name\\" varchar(255) DEFAULT NULL,
   \\"book_uuid_pk\\" varchar(36) UNIQUE DEFAULT NULL,
+  \\"version\\" int NOT NULL DEFAULT 1,
   PRIMARY KEY (\\"id\\")
 );
 
@@ -235,6 +238,7 @@ CREATE TABLE \\"foo_bar2\\" (
   \\"name\\" varchar(255) NOT NULL,
   \\"baz_id\\" int check (\\"baz_id\\" > 0) UNIQUE DEFAULT NULL,
   \\"foo_bar_id\\" int check (\\"foo_bar_id\\" > 0) UNIQUE DEFAULT NULL,
+  \\"version\\" timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (\\"id\\")
 );
 
@@ -338,7 +342,8 @@ DROP TABLE IF EXISTS \\"book_tag3\\";
 
 CREATE TABLE \\"book_tag3\\" (
   \\"id\\" INTEGER PRIMARY KEY AUTOINCREMENT,
-  \\"name\\" TEXT NOT NULL
+  \\"name\\" TEXT NOT NULL,
+  \\"version\\" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -355,7 +360,8 @@ DROP TABLE IF EXISTS \\"test3\\";
 
 CREATE TABLE \\"test3\\" (
   \\"id\\" INTEGER PRIMARY KEY AUTOINCREMENT,
-  \\"name\\" TEXT DEFAULT NULL
+  \\"name\\" TEXT DEFAULT NULL,
+  \\"version\\" INTEGER NOT NULL DEFAULT 1
 );
 
 

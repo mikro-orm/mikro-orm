@@ -29,6 +29,10 @@ const schema = {
       mappedBy: 'tags',
       type: 'Book3',
     },
+    version: {
+      version: true,
+      type: 'Date',
+    },
   },
   path: __filename,
 };

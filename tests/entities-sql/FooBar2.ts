@@ -17,6 +17,9 @@ export class FooBar2 extends BaseEntity22 {
   @OneToOne({ owner: true })
   fooBar: FooBar2;
 
+  @Property({ version: true })
+  version: Date;
+
   static create(name: string) {
     const bar = new FooBar2();
     bar.name = name;

@@ -66,6 +66,7 @@ CREATE TABLE `test2` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `book_uuid_pk` varchar(36) UNIQUE DEFAULT NULL,
+  `version` int(11) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -77,6 +78,7 @@ CREATE TABLE `foo_bar2` (
   `name` varchar(255) NOT NULL,
   `baz_id` int(11) unsigned UNIQUE DEFAULT NULL,
   `foo_bar_id` int(11) unsigned UNIQUE DEFAULT NULL,
+  `version` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

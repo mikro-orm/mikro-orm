@@ -195,7 +195,14 @@ export class MetadataDiscovery {
       .forEach(prop => Utils.renameKey(prop, 'fk', 'mappedBy'));
 
     this.validator.validateEntityDefinition(this.metadata, meta.name);
-    Object.values(meta.properties).forEach(prop => this.applyNamingStrategy(meta, prop));
+    Object.values(meta.properties).forEach(prop => {
+      this.applyNamingStrategy(meta, prop);
+
+      if (prop.version) {
+        meta.versionProperty = prop.name;
+        prop.default = this.getDefaultVersionValue(prop);
+      }
+    });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
 
     if (!Utils.isEntity(meta.prototype)) {
@@ -283,6 +290,19 @@ export class MetadataDiscovery {
     if (primary && !meta.primaryKey) {
       meta.primaryKey = primary.name;
     }
+  }
+
+  private getDefaultVersionValue(prop: EntityProperty): string {
+    if (prop.default) {
+      return prop.default;
+    }
+
+    if (prop.type.toLowerCase() === 'date') {
+      prop.length = prop.length || 3;
+      return this.platform.getCurrentTimestampSQL(prop.length);
+    }
+
+    return '1';
   }
 
 }

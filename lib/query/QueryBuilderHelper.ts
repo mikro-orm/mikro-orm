@@ -1,9 +1,10 @@
-import { Utils } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { QueryOrder, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
+import { LockMode } from '../unit-of-work';
 
 export class QueryBuilderHelper {
 
@@ -330,6 +331,41 @@ export class QueryBuilderHelper {
     }
   }
 
+  getLockSQL(lockMode?: LockMode): string {
+    if (lockMode === LockMode.PESSIMISTIC_READ) {
+      return ' ' + this.platform.getReadLockSQL();
+    }
+
+    if (lockMode === LockMode.PESSIMISTIC_WRITE) {
+      return ' ' + this.platform.getWriteLockSQL();
+    }
+
+    if (lockMode === LockMode.OPTIMISTIC && this.metadata[this.entityName] && !this.metadata[this.entityName].versionProperty) {
+      throw ValidationError.lockFailed(this.entityName);
+    }
+
+    return '';
+  }
+
+  updateVersionProperty(set: string[]): void {
+    const meta = this.metadata[this.entityName];
+
+    if (!meta || !meta.versionProperty) {
+      return;
+    }
+
+    const versionProperty = meta.properties[meta.versionProperty];
+    let sql = `${this.wrap(versionProperty.fieldName)} = `;
+
+    if (versionProperty.type.toLowerCase() === 'date') {
+      sql += this.platform.getCurrentTimestampSQL(versionProperty.length);
+    } else {
+      sql += this.wrap(versionProperty.fieldName) + ' + 1';
+    }
+
+    set.push(sql);
+  }
+
   private processComplexParam(key: string, cond: any): any[] {
     // unwind parameters when ? found in field name
     const customExpression = key.match(/\(.*\)| |\?/) && Array.isArray(cond);
@@ -371,7 +407,7 @@ export class QueryBuilderHelper {
       return ' LIKE ?';
     }
 
-    if (Utils.isObject(value)) {
+    if (Utils.isObject(value) && !(value instanceof Date)) {
       return this.processObjectValue(value);
     }
 

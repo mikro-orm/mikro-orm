@@ -1,8 +1,8 @@
-import { Configuration, RequestContext, Utils } from './utils';
+import { Configuration, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, ReferenceType } from './entity';
-import { UnitOfWork } from './unit-of-work';
+import { LockMode, UnitOfWork } from './unit-of-work';
 import { FilterQuery, IDatabaseDriver } from './drivers';
-import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
+import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
 import { QueryBuilder, QueryOrder, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
 import { Connection } from './connections';
@@ -77,25 +77,26 @@ export class EntityManager {
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: Record<string, QueryOrder>): Promise<T | null> {
     entityName = Utils.className(entityName);
+    const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
     this.validator.validateEmptyWhere(where);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
+    this.checkLockRequirements(options.lockMode, this.metadata[entityName]);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
-    const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
+    const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
-    if (entity && entity.isInitialized() && !options.refresh) {
-      await this.entityLoader.populate(entityName, [entity], options.populate || []);
-      return entity;
+    if (entity && entity.isInitialized() && !options.refresh && isOptimisticLocking) {
+      return this.lockAndPopulate(entity, options);
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields);
+    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields, options.lockMode);
 
     if (!data) {
       return null;
     }
 
     entity = this.merge(entityName, data, options.refresh) as T;
-    await this.entityLoader.populate(entityName, [entity], options.populate || []);
+    await this.lockAndPopulate(entity, options);
 
     return entity;
   }
@@ -113,13 +114,17 @@ export class EntityManager {
   }
 
   async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {
-    const em = this.fork();
+    const em = this.fork(false);
     await em.getDriver().transactional(async () => {
       const ret = await cb(em);
       await em.flush();
 
       return ret;
     });
+  }
+
+  async lock(entity: IEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {
+    await this.getUnitOfWork().lock(entity, lockMode, lockVersion);
   }
 
   async nativeInsert<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<IPrimaryKey> {
@@ -313,6 +318,30 @@ export class EntityManager {
     return em.entityFactory;
   }
 
+  private checkLockRequirements(mode: LockMode | undefined, meta: EntityMetadata): void {
+    if (!mode) {
+      return;
+    }
+
+    if (mode === LockMode.OPTIMISTIC && !meta.versionProperty) {
+      throw ValidationError.notVersioned(meta);
+    }
+
+    if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode) && !this.getDriver().isInTransaction()) {
+      throw ValidationError.transactionRequired();
+    }
+  }
+
+  private async lockAndPopulate<T extends IEntityType<T>>(entity: T, options: FindOneOptions): Promise<T> {
+    if (options.lockMode === LockMode.OPTIMISTIC) {
+      await this.lock(entity, options.lockMode, options.lockVersion);
+    }
+
+    await this.entityLoader.populate(entity.constructor.name, [entity], options.populate || []);
+
+    return entity;
+  }
+
 }
 
 export interface FindOptions {
@@ -325,6 +354,8 @@ export interface FindOptions {
 export interface FindOneOptions {
   populate?: string[];
   orderBy?: Record<string, QueryOrder>;
+  lockMode?: LockMode;
+  lockVersion?: number | Date;
   refresh?: boolean;
   fields?: string[];
 }

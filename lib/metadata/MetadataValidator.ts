@@ -12,6 +12,7 @@ export class MetadataValidator {
       throw ValidationError.fromMissingPrimaryKey(meta);
     }
 
+    this.validateVersionField(meta);
     const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
 
     for (const prop of references) {
@@ -98,6 +99,13 @@ export class MetadataValidator {
     // m:n collection owning side is not defined as inverse
     if (owner.mappedBy) {
       throw ValidationError.fromWrongOwnership(meta, prop, 'mappedBy');
+    }
+  }
+
+  private validateVersionField(meta: EntityMetadata): void {
+    // TODO validate there is only one version field and its type is either Date or number
+    for (const prop of Object.values(meta.properties)) {
+      // ...
     }
   }
 

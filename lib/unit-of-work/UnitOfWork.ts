@@ -5,8 +5,8 @@ import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
-import { Utils } from '../utils';
-import { FilterQuery } from '..';
+import { Utils, ValidationError } from '../utils';
+import { FilterQuery, LockMode } from '..';
 
 export class UnitOfWork {
 
@@ -110,6 +110,20 @@ export class UnitOfWork {
     }
 
     this.postCommitCleanup();
+  }
+
+  async lock<T extends IEntityType<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
+    if (!this.getById(entity.constructor.name, entity.__primaryKey)) {
+      throw ValidationError.entityNotManaged(entity);
+    }
+
+    const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
+
+    if (mode === LockMode.OPTIMISTIC) {
+      await this.lockOptimistic(entity, meta, version!);
+    } else if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode)) {
+      await this.lockPessimistic(entity, mode);
+    }
   }
 
   clear(): void {
@@ -322,6 +336,33 @@ export class UnitOfWork {
     }
 
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
+  }
+
+  private async lockPessimistic<T extends IEntityType<T>>(entity: T, mode: LockMode): Promise<void> {
+    if (!this.em.getDriver().isInTransaction()) {
+      throw ValidationError.transactionRequired();
+    }
+
+    const qb = this.em.createQueryBuilder(entity.constructor.name);
+    await qb.select('1').where({ [entity.__primaryKeyField]: entity.__primaryKey }).setLockMode(mode).execute();
+  }
+
+  private async lockOptimistic<T extends IEntityType<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
+    if (!meta.versionProperty) {
+      throw ValidationError.notVersioned(meta);
+    }
+
+    if (!Utils.isDefined(version)) {
+      return;
+    }
+
+    if (!entity.isInitialized()) {
+      await entity.init();
+    }
+
+    if (entity[meta.versionProperty] !== version) {
+      throw ValidationError.lockFailedVersionMismatch(entity, version, entity[meta.versionProperty]);
+    }
   }
 
 }

@@ -27,6 +27,10 @@ const schema = {
       type: 'string',
       nullable: true,
     },
+    version: {
+      version: true,
+      type: 'number',
+    },
   },
   path: __filename,
 };

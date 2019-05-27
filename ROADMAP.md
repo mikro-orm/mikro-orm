@@ -12,7 +12,6 @@ discuss specifics.
 - Association scopes
 - Value transformers (e.g. mapping of `Date` object to formatted string)
 - Support for connection pooling in MySQL and PostgresQL
-- Support for transaction locking
 - Computing schema difference based on current database state
 - Schema sync (allow automatic synchronization during development)
 - Allow generating entities from existing database schema

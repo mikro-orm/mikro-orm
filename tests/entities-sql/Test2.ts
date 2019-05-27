@@ -13,6 +13,9 @@ export class Test2 {
   @OneToOne({ cascade: [], inversedBy: 'test' })
   book: Book2;
 
+  @Property({ version: true })
+  version: number;
+
   static create(name: string) {
     const t = new Test2();
     t.name = name;

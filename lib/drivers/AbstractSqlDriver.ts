@@ -5,6 +5,7 @@ import { ReferenceType } from '../entity';
 import { FilterQuery } from './IDatabaseDriver';
 import { QueryBuilder, QueryOrder } from '../query';
 import { Utils } from '../utils';
+import { LockMode } from '../unit-of-work';
 
 export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDriver<C> {
 
@@ -19,20 +20,25 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return qb.execute('all');
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[]): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
+    const pk = this.metadata[entityName].primaryKey;
+
     if (Utils.isPrimaryKey(where)) {
-      const pk = this.metadata[entityName].primaryKey;
       where = { [pk]: where };
     }
-
-    const qb = this.createQueryBuilder(entityName);
-    const pk = this.metadata[entityName].primaryKey;
 
     if (fields && !fields.includes(pk)) {
       fields.unshift(pk);
     }
 
-    return qb.select(fields || '*').populate(populate).where(where).orderBy(orderBy).limit(1).execute('get');
+    return this.createQueryBuilder(entityName)
+      .select(fields || '*')
+      .populate(populate)
+      .where(where)
+      .orderBy(orderBy)
+      .limit(1)
+      .setLockMode(lockMode)
+      .execute('get');
   }
 
   async count(entityName: string, where: any): Promise<number> {

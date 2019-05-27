@@ -5,6 +5,7 @@ import { Connection, QueryResult } from '../connections';
 import { Configuration, Utils } from '../utils';
 import { QueryOrder } from '../query';
 import { Platform } from '../platforms';
+import { LockMode } from '../unit-of-work';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -19,7 +20,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
 
-  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: Record<string, QueryOrder>, fields?: string[]): Promise<T | null>;
+  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: Record<string, QueryOrder>, fields?: string[], lockMode?: LockMode): Promise<T | null>;
 
   abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 
