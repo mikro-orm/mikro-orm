@@ -1,3 +1,20 @@
+<a name="2.6.0"></a>
+# [2.6.0](https://github.com/B4nan/mikro-orm/compare/v2.5.0...v2.6.0) (2019-05-27)
+
+### Features
+
+* **core**: add support for partial selects ([bcc005e](https://github.com/B4nan/mikro-orm/commit/bcc005e))
+* **core**: add support for refreshing managed entity via `init()` ([8ae5323](https://github.com/B4nan/mikro-orm/commit/8ae5323))
+* **core**: add support for transaction locking ([#57](https://github.com/B4nan/mikro-orm/issues/57)), closes [#41](https://github.com/B4nan/mikro-orm/issues/41)
+* **query-builder**: allow selecting numeric literals ([280e6ea](https://github.com/B4nan/mikro-orm/commit/280e6ea))
+* **serializing**: add support for hidden properties ([4f6f013](https://github.com/B4nan/mikro-orm/commit/4f6f013))
+
+### Performance Improvements
+
+* **context**: use Domain API instead of async_hooks ([#58](https://github.com/B4nan/mikro-orm/issues/58))
+
+
+
 <a name="2.5.0"></a>
 # [2.5.0](https://github.com/B4nan/mikro-orm/compare/v2.4.0...v2.5.0) (2019-05-13)
 
