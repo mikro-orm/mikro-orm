@@ -13,18 +13,15 @@ describe('RequestContext', () => {
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('create new context', async () => {
-    expect(RequestContext.getEntityManager()).toBeNull();
+    expect(RequestContext.getEntityManager()).toBeUndefined();
     RequestContext.create(orm.em, () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       // access UoW via property so we do not get the one from request context automatically
       expect(em['unitOfWork'].getIdentityMap()).not.toBe(orm.em['unitOfWork'].getIdentityMap());
+      expect(RequestContext.currentRequestContext()).not.toBeUndefined();
     });
-    expect(RequestContext.currentRequestContext()).not.toBeNull();
-
-    // on node 12, destroy hook is called after the test is done
-    // await new Promise(resolve => setTimeout(resolve, 100)); // wait for GC
-    // expect(RequestContext.currentRequestContext()).toBeNull();
+    expect(RequestContext.currentRequestContext()).toBeUndefined();
   });
 
   test('request context does not break population', async () => {
