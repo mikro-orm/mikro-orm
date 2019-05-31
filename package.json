@@ -94,8 +94,8 @@
     "sqlite": "^3.0.3"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
-    "@commitlint/config-conventional": "^7.5.0",
+    "@commitlint/cli": "^8.0.0",
+    "@commitlint/config-conventional": "^8.0.0",
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^7.0.0",
     "@types/jest": "^24.0.11",
