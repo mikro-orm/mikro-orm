@@ -70,6 +70,10 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.nativeDelete(this.entityName, where)
   }
 
+  map(result: EntityData<T>): T {
+    return this.em.map(this.entityName, result);
+  }
+
   async aggregate(pipeline: any[]): Promise<any[]> {
     return this.em.aggregate(this.entityName, pipeline)
   }

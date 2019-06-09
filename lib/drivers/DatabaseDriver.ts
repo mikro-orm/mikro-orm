@@ -56,9 +56,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return map;
   }
 
-  mapResult<T extends IEntityType<T>>(result: T, meta: EntityMetadata): T {
+  mapResult<T extends IEntityType<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
     if (!result || !meta) {
-      return result || null;
+      return null;
     }
 
     const ret = Object.assign({}, result);
@@ -73,7 +73,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
     });
 
-    return ret;
+    return ret as T;
   }
 
   getConnection(): C {

@@ -61,6 +61,25 @@ const entities = res6.map(data => orm.em.merge(Book, data));
 console.log(entities); // array of Book entities
 ```
 
+## Mapping raw results to entities
+
+Another way to create entity from raw results (that are not necessarily mapped to entity properties)
+is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results
+via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at`
+to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed. 
+
+This method comes handy when you want to use 3rd party query builder like [Knex.js](https://knexjs.org/), 
+where the result is not mapped to entity properties automatically:
+
+```typescript
+const results = await knex.select('*').from('users').where(knex.raw('id = ?', [id]));
+const users = results.map(user => orm.em.map(User, user));
+
+// or use EntityRepository.map()
+const repo = orm.em.getRepository(User);
+const users = results.map(user => repo.map(user));
+```
+
 ## Implicit joining
 
 `QueryBuilder` supports automatic joining based on entity metadata:

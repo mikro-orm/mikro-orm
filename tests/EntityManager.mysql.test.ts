@@ -100,6 +100,31 @@ describe('EntityManagerMySql', () => {
     expect(book.uuid).toBeDefined();
   });
 
+  test('manual mapping of raw DB results to entities vie EM.map()', async () => {
+    const repo = orm.em.getRepository(Book2);
+    const book = repo.map({
+      uuid_pk: '123-dsa',
+      title: 'name',
+      created_at: '2019-06-09T07:50:25.722Z',
+      author_id: 123,
+      publisher_id: 321,
+      tags: [1, 2, 3],
+    })!;
+    expect(book.uuid).toBe('123-dsa');
+    expect(book.title).toBe('name');
+    expect(book.createdAt).toBeInstanceOf(Date);
+    expect(book.author).toBeInstanceOf(Author2);
+    expect(book.author.id).toBe(123);
+    expect(book.publisher).toBeInstanceOf(Publisher2);
+    expect(book.publisher.id).toBe(321);
+    expect(book.tags.length).toBe(3);
+    expect(book.tags[0]).toBeInstanceOf(BookTag2);
+    expect(book.tags[0].id).toBe(1);
+    expect(book.tags[1].id).toBe(2);
+    expect(book.tags[2].id).toBe(3);
+    expect(repo.getReference(book.uuid)).toBe(book);
+  });
+
   test('should work with boolean values', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');

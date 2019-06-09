@@ -156,6 +156,14 @@ export class EntityManager {
     return res.affectedRows;
   }
 
+  map<T extends IEntityType<T>>(entityName: EntityName<T>, result: EntityData<T>): T {
+    entityName = Utils.className(entityName);
+    const meta = this.metadata[entityName];
+    const data = this.driver.mapResult(result, meta)!;
+
+    return this.merge<T>(entityName, data, true);
+  }
+
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */

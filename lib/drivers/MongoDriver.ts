@@ -17,7 +17,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where);
     const res = await this.connection.find<T>(entityName, where, orderBy, limit, offset);
 
-    return res.map((r: T) => this.mapResult(r, this.metadata[entityName]));
+    return res.map((r: T) => this.mapResult<T>(r, this.metadata[entityName])!);
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
@@ -28,7 +28,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where) as FilterQuery<T>;
     const res = await this.connection.find<T>(entityName, where, orderBy, 1, undefined, fields);
 
-    return this.mapResult(res[0], this.metadata[entityName]);
+    return this.mapResult<T>(res[0], this.metadata[entityName]);
   }
 
   async count<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>): Promise<number> {
