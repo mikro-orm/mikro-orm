@@ -28,7 +28,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends IEntityType<T>>(result: T, meta: EntityMetadata): T;
+  mapResult<T extends IEntityType<T>>(result: EntityData<T>, meta: EntityMetadata): T | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them

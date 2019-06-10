@@ -155,6 +155,13 @@ This is useful when you want to work with cached entities.
 
 ---
 
+#### `map<T extends IEntity>(entityName: string | EntityClass<T>, data: EntityData<T>): T`
+
+Maps raw DB result to entity, adding it to current Identity Map. Equivalent to 
+`IDatabaseDriver.mapResult()` followed by `EntityManager.merge()`.
+
+---
+
 #### `getReference<T extends IEntity>(entityName: string | EntityClass<T>, id: string): T`
 
 Gets a reference to the entity identified by the given type and identifier without actually 
