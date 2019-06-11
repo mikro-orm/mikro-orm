@@ -1260,6 +1260,55 @@ describe('EntityManagerMongo', () => {
     expect(a.born).toBeUndefined();
   });
 
+  test('automatically fix PK instead of entity when flushing (m:1)', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    Object.assign(author, { favouriteBook: '0000007b5c9c61c332380f78' });
+    expect(author.favouriteBook).not.toBeInstanceOf(Book);
+    expect(author.favouriteBook).toBe('0000007b5c9c61c332380f78');
+    await orm.em.persist(author);
+    expect(author.favouriteBook).toBeInstanceOf(Book);
+    expect(author.favouriteBook.id).toBe('0000007b5c9c61c332380f78');
+  });
+
+  test('automatically fix array of PKs instead of collection when flushing (m:n)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.getConnection(), { logger });
+
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book = new Book('B123', author);
+    await orm.em.persistAndFlush(book);
+
+    const tag = orm.em.getReference(BookTag, '0000007b5c9c61c332380f79')
+    Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
+    expect(book.tags).not.toBeInstanceOf(Collection);
+    expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
+    await orm.em.persistLater(book);
+    expect(book.tags).toBeInstanceOf(Collection);
+    expect(book.tags[0]).toBeInstanceOf(BookTag);
+    expect(book.tags[1]).toBeInstanceOf(BookTag);
+    expect(book.tags[0].id).toBe('0000007b5c9c61c332380f78');
+    expect(book.tags[1].id).toBe('0000007b5c9c61c332380f79');
+    expect(book.tags.isInitialized()).toBe(true);
+    expect(book.tags.isDirty()).toBe(true);
+
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","termsAccepted":false,"name":"Jon Snow","email":"snow@wall\.st","foo":"bar","_id":".*"}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"B123","author":".*","_id":".*"}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("books-table"\)\.updateMany\({"_id":".*"}, {"\$set":{"tags":\["0000007b5c9c61c332380f78","0000007b5c9c61c332380f79"]}}\);/);
+  });
+
+  test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book = new Book('B123', author);
+    book.tags.set(['0000007b5c9c61c332380f78' as any]);
+    expect(book.tags).not.toBeInstanceOf(BookTag);
+    expect(book.tags[0]).toBeInstanceOf(BookTag);
+    expect(book.tags[0].id).toBe('0000007b5c9c61c332380f78');
+    expect(book.tags.isInitialized()).toBe(true);
+    expect(book.tags.isDirty()).toBe(true);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

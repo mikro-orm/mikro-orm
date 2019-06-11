@@ -1,4 +1,4 @@
-import { EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
 
 export class ArrayCollection<T extends IEntityType<T>> {
@@ -76,9 +76,9 @@ export class ArrayCollection<T extends IEntityType<T>> {
   contains(item: T): boolean {
     return !!this.items.find(i => {
       const objectIdentity = i === item;
-      const primaryKeyIdentity = i.__primaryKey && item.__primaryKey && i.__serializedPrimaryKey === item.__serializedPrimaryKey;
+      const primaryKeyIdentity = !!i.__primaryKey && !!item.__primaryKey && i.__serializedPrimaryKey === item.__serializedPrimaryKey;
 
-      return !!(objectIdentity || primaryKeyIdentity);
+      return objectIdentity || primaryKeyIdentity;
     });
   }
 
