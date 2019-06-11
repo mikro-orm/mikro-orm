@@ -183,7 +183,7 @@ export class UnitOfWork {
     }
 
     for (const prop of Object.values(meta.properties)) {
-      const reference = entity[prop.name as keyof T];
+      const reference = entity[prop.name];
       this.processReference(entity, prop, reference, visited);
     }
 
@@ -211,7 +211,7 @@ export class UnitOfWork {
   private processToOneReference<T extends IEntityType<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: IEntity[]): void {
     if (!this.hasIdentifier(reference) && visited.includes(reference)) {
       this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
-      delete parent[prop.name as keyof T];
+      delete parent[prop.name];
     }
 
     if (!this.originalEntityData[reference.__uuid]) {
@@ -308,16 +308,18 @@ export class UnitOfWork {
     }
   }
 
-  private cascadeReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty, type: Cascade, visited: IEntity[]): void {
+  private cascadeReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: IEntity[]): void {
+    this.fixMissingReference(entity, prop);
+
     if (!this.shouldCascade(prop, type)) {
       return;
     }
 
-    if ((prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) && entity[prop.name as keyof T]) {
-      return this.cascade(entity[prop.name as keyof T], type, visited);
+    if ((prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) && entity[prop.name]) {
+      return this.cascade(entity[prop.name], type, visited);
     }
 
-    const collection = entity[prop.name as keyof T] as Collection<IEntity>;
+    const collection = entity[prop.name] as Collection<IEntity>;
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(requireFullyInitialized)) {
@@ -362,6 +364,22 @@ export class UnitOfWork {
 
     if (entity[meta.versionProperty] !== version) {
       throw ValidationError.lockFailedVersionMismatch(entity, version, entity[meta.versionProperty]);
+    }
+  }
+
+  private fixMissingReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty<T>): void {
+    const reference = entity[prop.name] as IEntity | Collection<IEntity> | IPrimaryKey | (IEntity | IPrimaryKey)[];
+
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference)) {
+      entity[prop.name] = this.em.getReference(prop.type, reference as IPrimaryKey);
+    }
+
+    const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+
+    if (isCollection && Array.isArray(reference)) {
+      entity[prop.name] = new Collection<IEntity>(entity) as T[keyof T];
+      (entity[prop.name] as Collection<IEntity>).set(reference as IEntity[]);
+      (entity[prop.name] as Collection<IEntity>).setDirty();
     }
   }
 

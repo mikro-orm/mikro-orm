@@ -1,6 +1,6 @@
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { Connection, QueryResult } from '../connections';
-import { QueryOrder } from '../query';
+import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
 import { LockMode } from '../unit-of-work';
 

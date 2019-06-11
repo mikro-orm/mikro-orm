@@ -1,4 +1,4 @@
-import { FilterQuery, QueryOrder, QueryOrderMap } from '..';
+import { FilterQuery, QueryOrder, QueryOrderMap, Utils } from '..';
 import { IEntityType } from '../decorators';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
@@ -32,7 +32,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
       this.initialized = true;
     }
 
-    super.set(items);
+    super.set(items.map(item => Utils.isEntity(item) ? item : this.owner.__em.getReference(this.property.type, item)));
     this.dirty = !initialize;
 
     for (const item of items) {
