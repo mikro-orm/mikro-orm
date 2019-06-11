@@ -1,3 +1,14 @@
+<a name="2.7.0"></a>
+# [2.7.0](https://github.com/B4nan/mikro-orm/compare/v2.6.0...v2.7.0) (2019-06-11)
+
+### Features
+
+* **core:** add support for mapping raw DB results via EM.map() ([#61](https://github.com/B4nan/mikro-orm/issues/61)) ([5d227ae](https://github.com/B4nan/mikro-orm/commit/5d227ae)), closes [#56](https://github.com/B4nan/mikro-orm/issues/56)
+* **core:** automatically fix wrongly assigned associations ([#62](https://github.com/B4nan/mikro-orm/issues/62)) ([05e6ce5](https://github.com/B4nan/mikro-orm/commit/05e6ce5))
+* **core:** change `QueryOrder` enum values to `ASC/DESC/asc/desc` ([5c18fda](https://github.com/B4nan/mikro-orm/commit/5c18fda))
+
+
+
 <a name="2.6.0"></a>
 # [2.6.0](https://github.com/B4nan/mikro-orm/compare/v2.5.0...v2.6.0) (2019-05-27)
 
