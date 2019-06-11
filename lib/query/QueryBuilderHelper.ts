@@ -1,6 +1,6 @@
 import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { QueryOrder, QueryType } from './enums';
+import { QueryOrderMap, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
@@ -259,7 +259,7 @@ export class QueryBuilderHelper {
     });
   }
 
-  getQueryOrder(type: QueryType, orderBy: Record<string, QueryOrder>, populate: Record<string, string>): string[] {
+  getQueryOrder(type: QueryType, orderBy: QueryOrderMap, populate: Record<string, string>): string[] {
     return Object.keys(orderBy).map(k => {
       let alias = this.alias;
       let field = k;
@@ -270,7 +270,7 @@ export class QueryBuilderHelper {
 
       alias = populate[alias] || alias;
 
-      return this.mapper(type, `${alias}.${field}`) + ' ' + QueryOrder[orderBy[k]];
+      return this.mapper(type, `${alias}.${field}`) + ' ' + orderBy[k];
     });
   }
 

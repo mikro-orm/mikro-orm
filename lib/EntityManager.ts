@@ -3,7 +3,7 @@ import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityVa
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
-import { QueryBuilder, QueryOrder, SmartQueryHelper } from './query';
+import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
 import { Connection } from './connections';
 
@@ -49,8 +49,8 @@ export class EntityManager {
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName);
     this.validator.validateParams(where);
@@ -74,8 +74,8 @@ export class EntityManager {
   }
 
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOptions): Promise<T | null>;
-  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>): Promise<T | null>;
-  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: Record<string, QueryOrder>): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T | null>;
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
     this.validator.validateEmptyWhere(where);
@@ -354,14 +354,14 @@ export class EntityManager {
 
 export interface FindOptions {
   populate?: string[];
-  orderBy?: Record<string, QueryOrder>;
+  orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
 }
 
 export interface FindOneOptions {
   populate?: string[];
-  orderBy?: Record<string, QueryOrder>;
+  orderBy?: QueryOrderMap;
   lockMode?: LockMode;
   lockVersion?: number | Date;
   refresh?: boolean;

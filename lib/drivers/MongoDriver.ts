@@ -2,7 +2,7 @@ import { FilterQuery, ObjectID } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
 import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
-import { QueryOrder } from '../query';
+import { QueryOrderMap } from '../query';
 import { Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { QueryResult } from '../connections';
@@ -13,14 +13,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   protected readonly connection = new MongoConnection(this.config);
   protected readonly platform = new MongoPlatform();
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: Record<string, QueryOrder>, limit: number, offset: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: QueryOrderMap, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
     const res = await this.connection.find<T>(entityName, where, orderBy, limit, offset);
 
     return res.map((r: T) => this.mapResult<T>(r, this.metadata[entityName])!);
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectID(where as string) };
     }

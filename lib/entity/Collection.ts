@@ -1,4 +1,4 @@
-import { FilterQuery, QueryOrder } from '..';
+import { FilterQuery, QueryOrder, QueryOrderMap } from '..';
 import { IEntityType } from '../decorators';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
@@ -119,7 +119,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     return this;
   }
 
-  private createCondition<T>(): { cond: FilterQuery<T>, orderBy?: Record<string, QueryOrder> } {
+  private createCondition<T>(): { cond: FilterQuery<T>, orderBy?: QueryOrderMap } {
     const cond: Record<string, any> = {};
     let orderBy = undefined;
 

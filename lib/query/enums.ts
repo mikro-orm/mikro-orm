@@ -12,6 +12,10 @@ export enum QueryFlag {
 }
 
 export enum QueryOrder {
-  ASC = 1,
-  DESC = -1,
+  ASC = 'ASC',
+  DESC = 'DESC',
+  asc = 'asc',
+  desc = 'desc',
 }
+
+export type QueryOrderMap = Record<string, QueryOrder | keyof typeof QueryOrder>;

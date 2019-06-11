@@ -3,7 +3,7 @@ import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { ReferenceType } from '../entity';
-import { QueryFlag, QueryOrder, QueryType } from './enums';
+import { QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { IDatabaseDriver } from '../drivers';
 import { LockMode } from '../unit-of-work';
 
@@ -24,7 +24,7 @@ export class QueryBuilder {
   private _aliasMap: Record<string, string> = {};
   private _cond: Record<string, any> = {};
   private _data: Record<string, any>;
-  private _orderBy: Record<string, QueryOrder> = {};
+  private _orderBy: QueryOrderMap = {};
   private _groupBy: string[] = [];
   private _having: Record<string, any> = {};
   private _limit: number;
@@ -139,7 +139,7 @@ export class QueryBuilder {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: Record<string, QueryOrder>): this {
+  orderBy(orderBy: QueryOrderMap): this {
     orderBy = Object.assign({}, orderBy); // copy first
 
     Object.keys(orderBy).forEach(field => {

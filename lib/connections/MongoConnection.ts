@@ -1,7 +1,7 @@
 import { Collection, Db, MongoClient, MongoClientOptions, ObjectID } from 'mongodb';
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
-import { QueryOrder } from '../query';
+import { QueryOrder, QueryOrderMap } from '../query';
 import { FilterQuery, IEntity } from '..';
 import { EntityName } from '../decorators';
 
@@ -55,7 +55,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
+  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
     const options = {} as Record<string, any>;
@@ -68,6 +68,7 @@ export class MongoConnection extends Connection {
     let query = `db.getCollection("${collection}").find(${JSON.stringify(where)}, ${JSON.stringify(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
+      orderBy = Object.keys(orderBy).reduce((p, c) => ({ ...p, [c]: orderBy![c].toUpperCase() === QueryOrder.ASC ? 1 : -1 }), {});
       query += `.sort(${JSON.stringify(orderBy)})`;
       resultSet.sort(orderBy);
     }

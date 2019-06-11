@@ -11,12 +11,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: Record<string, QueryOrder>, fields?: string[], lockMode?: LockMode): Promise<T | null>;
+  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode): Promise<T | null>;
 
   nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
 

@@ -21,7 +21,6 @@ discuss specifics.
 - Collection expressions - support querying parts of collection
 - Collection pagination
 - Nestjs helper repository
-- Allow sorting via string values `ASC/DESC` as well as `asc/desc`, so one does not have to use `QueryOrder` enum
 - Eager loading of associations (allow having some relationship always fetched)
 - Embedded entities (allow in-lining child entity into parent one with prefixed keys)
 - Slow query log

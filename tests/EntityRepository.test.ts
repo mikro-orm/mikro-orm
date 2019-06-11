@@ -1,4 +1,4 @@
-import { EntityRepository, EntityManager, IEntity, Configuration } from '../lib';
+import { EntityRepository, EntityManager, IEntity, Configuration, QueryOrder } from '../lib';
 import { Publisher } from './entities';
 
 const methods = {
@@ -70,7 +70,7 @@ describe('EntityRepository', () => {
   test('find() supports calling with config object', async () => {
     const options = {
       populate: ['test'],
-      orderBy: { test: -1 },
+      orderBy: { test: QueryOrder.DESC },
       limit: 123,
       offset: 321,
     };
@@ -82,7 +82,7 @@ describe('EntityRepository', () => {
   test('findOne() supports calling with config object', async () => {
     const options = {
       populate: ['test'],
-      orderBy: { test: -1 },
+      orderBy: { test: QueryOrder.DESC },
     };
     methods.findOne.mock.calls = [];
     await repo.findOne({ foo: 'bar' }, options);

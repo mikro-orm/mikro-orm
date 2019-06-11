@@ -3,13 +3,13 @@ import { DatabaseDriver } from './DatabaseDriver';
 import { Connection, QueryResult } from '../connections';
 import { ReferenceType } from '../entity';
 import { FilterQuery } from './IDatabaseDriver';
-import { QueryBuilder, QueryOrder } from '../query';
+import { QueryBuilder, QueryOrderMap } from '../query';
 import { Utils } from '../utils';
 import { LockMode } from '../unit-of-work';
 
 export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDriver<C> {
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<T[]> {
     const qb = this.createQueryBuilder(entityName);
     qb.select('*').populate(populate).where(where).orderBy(orderBy);
 
@@ -20,7 +20,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
     return qb.execute('all');
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: Record<string, QueryOrder> = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
     const pk = this.metadata[entityName].primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
