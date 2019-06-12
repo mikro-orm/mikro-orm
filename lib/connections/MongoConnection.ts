@@ -68,7 +68,10 @@ export class MongoConnection extends Connection {
     let query = `db.getCollection("${collection}").find(${JSON.stringify(where)}, ${JSON.stringify(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
-      orderBy = Object.keys(orderBy).reduce((p, c) => ({ ...p, [c]: orderBy![c].toUpperCase() === QueryOrder.ASC ? 1 : -1 }), {});
+      orderBy = Object.keys(orderBy).reduce((p, c) => {
+        const direction = orderBy![c];
+        return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
+      }, {});
       query += `.sort(${JSON.stringify(orderBy)})`;
       resultSet.sort(orderBy);
     }

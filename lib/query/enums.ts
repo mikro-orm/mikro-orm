@@ -18,4 +18,9 @@ export enum QueryOrder {
   desc = 'desc',
 }
 
-export type QueryOrderMap = Record<string, QueryOrder | keyof typeof QueryOrder>;
+export enum QueryOrderNumeric {
+  ASC = 1,
+  DESC = -1,
+}
+
+export type QueryOrderMap = Record<string, QueryOrder | QueryOrderNumeric | keyof typeof QueryOrder>;

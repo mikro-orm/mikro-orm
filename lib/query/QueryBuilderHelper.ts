@@ -1,6 +1,6 @@
 import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { QueryOrderMap, QueryType } from './enums';
+import { QueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
@@ -269,8 +269,10 @@ export class QueryBuilderHelper {
       }
 
       alias = populate[alias] || alias;
+      const direction = orderBy[k];
+      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
-      return this.mapper(type, `${alias}.${field}`) + ' ' + orderBy[k];
+      return this.mapper(type, `${alias}.${field}`) + ' ' + order;
     });
   }
 

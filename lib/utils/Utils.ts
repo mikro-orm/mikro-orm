@@ -19,6 +19,10 @@ export class Utils {
     return typeof s === 'string';
   }
 
+  static isNumber<T = number>(s: any): s is T {
+    return typeof s === 'number';
+  }
+
   static equals(a: any, b: any): boolean {
     return fastEqual(a, b);
   }
