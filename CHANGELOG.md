@@ -1,3 +1,12 @@
+<a name="2.7.1"></a>
+## [2.7.1](https://github.com/B4nan/mikro-orm/compare/v2.7.0...v2.7.1) (2019-06-12)
+
+### Bug Fixes
+
+* **core**: allow 1 and -1 in `QueryOrderMap` to maintain BC ([3024386](https://github.com/B4nan/mikro-orm/commit/3024386))
+
+
+
 <a name="2.7.0"></a>
 # [2.7.0](https://github.com/B4nan/mikro-orm/compare/v2.6.0...v2.7.0) (2019-06-11)
 
