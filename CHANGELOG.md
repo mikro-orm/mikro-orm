@@ -1,3 +1,12 @@
+<a name="2.7.2"></a>
+## [2.7.2](https://github.com/B4nan/mikro-orm/compare/v2.7.1...v2.7.2) (2019-06-14)
+
+### Bug Fixes
+
+* **sql**: support `IS NULL` queries in `QueryBuilder` ([fd6edd5](https://github.com/B4nan/mikro-orm/commit/fd6edd5))
+
+
+
 <a name="2.7.1"></a>
 ## [2.7.1](https://github.com/B4nan/mikro-orm/compare/v2.7.0...v2.7.1) (2019-06-12)
 
