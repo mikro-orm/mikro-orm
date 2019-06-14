@@ -10,6 +10,9 @@ checks:
   method-count:
     config:
       threshold: 40
+  return-statements:
+    config:
+      threshold: 5
 
 engines:
   duplication:

@@ -18,6 +18,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 2, 1]);
   });
 
+  test('select where is null', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ type: null }).limit(2, 1);
+    expect(qb.getQuery()).toEqual('SELECT `e0`.* FROM `publisher2` AS `e0` WHERE `e0`.`type` IS NULL LIMIT ? OFFSET ?');
+    expect(qb.getParams()).toEqual([2, 1]);
+  });
+
   test('select query with order by variants', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').where({ name: 'test 123' }).orderBy({ a: QueryOrder.DESC, b: 'ASC', c: 'desc', d: -1 }).limit(2, 1);

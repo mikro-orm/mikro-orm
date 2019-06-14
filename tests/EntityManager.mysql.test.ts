@@ -82,7 +82,7 @@ describe('EntityManagerMySql', () => {
     author.termsAccepted = true;
     await repo.persist(author);
     const a = await repo.findOne(author);
-    const authors = await repo.find({ id: author });
+    const authors = await repo.find({ id: author, favouriteBook: null });
     expect(a).toBe(author);
     expect(authors[0]).toBe(author);
     expect(await repo.findOne({ termsAccepted: false })).toBeNull();

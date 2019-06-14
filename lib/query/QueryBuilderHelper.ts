@@ -40,6 +40,10 @@ export class QueryBuilderHelper {
         return ret.push(...this.getGroupWhereParams(key, cond));
       }
 
+      if (cond === null) {
+        return;
+      }
+
       // grouped condition for one field
       if (Utils.isObject(cond) && Object.keys(cond).length > 1) {
         const subConditions = Object.entries(cond).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
@@ -404,7 +408,11 @@ export class QueryBuilderHelper {
     }
   }
 
-  private processValue(field: string, value: any): string | undefined {
+  private processValue(field: string, value: any): string {
+    if (value === null) {
+      return ' IS NULL';
+    }
+
     if (value instanceof RegExp) {
       return ' LIKE ?';
     }
@@ -422,15 +430,21 @@ export class QueryBuilderHelper {
     return ' = ?';
   }
 
-  private processObjectValue(value: any): string | undefined {
+  private processObjectValue(value: any): string {
+    let ret = '';
+
     for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
       if (!(op in value)) {
         continue;
       }
 
       const token = Array.isArray(value[op]) ? `(${value[op].map(() => '?').join(', ')})` : '?';
-      return ` ${replacement} ${token}`;
+      ret = ` ${replacement} ${token}`;
+
+      break;
     }
+
+    return ret;
   }
 
   private getGroupQueryCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[]): string {
