@@ -21,7 +21,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://b4nan.github.io/mikro-orm/.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
-(via `semantic-release`). Be sure to check it to known where
+(via `semantic-release`). 
 
 ## ✨ Core features
 
