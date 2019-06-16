@@ -20,7 +20,6 @@ discuss specifics.
 - Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination
-- Nestjs helper repository
 - Eager loading of associations (allow having some relationship always fetched)
 - Embedded entities (allow in-lining child entity into parent one with prefixed keys)
 - Slow query log

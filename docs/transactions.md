@@ -47,6 +47,7 @@ The code then looks like this:
 
 ```typescript
 await orm.em.beginTransaction(); // suspend auto-commit
+
 try {
   //... do some work
   const user = new User(...);
@@ -101,8 +102,9 @@ transaction was rolled back. The state of the objects is in no way rolled back a
 objects are now out of sync with the database. The application can continue to use the detached 
 objects, knowing that their state is potentially no longer accurate.
 
-If you intend to start another unit of work after an exception has occurred you should do that 
-with a new EntityManager.
+If you intend to start another unit of work after an exception has occurred you should do 
+that with a new `EntityManager`. Simply use `EntityManager.fork()` to obtain fresh copy 
+with cleared identity map. 
 
 ## Locking Support
 
@@ -130,24 +132,22 @@ is thrown, indicating that the entity has been modified by someone else already.
 You designate a version field in an entity as follows. In this example we'll use an integer.
 
 ```typescript
-export class User
-{
-    // ...
-    @Property({ version: true })
-    version: number;
-    // ...
+export class User {
+  // ...
+  @Property({ version: true })
+  version: number;
+  // ...
 }
 ```
 
 Alternatively a datetime type can be used (which maps to a SQL timestamp or datetime):
 
 ```typescript
-export class User
-{
-    // ...
-    @Property({ version: true })
-    version: Date;
-    // ...
+export class User {
+  // ...
+  @Property({ version: true })
+  version: Date;
+  // ...
 }
 ```
 

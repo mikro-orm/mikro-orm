@@ -5,83 +5,56 @@
 
 ## Installation
 
-First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
+Easiest way to integrate MikroORM to Nest is via [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm).
+Simply install it next to Nest, MikroORM and underlying driver: 
 
 ```
-$ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2 # for mysql
-$ yarn add mikro-orm sqlite # for sqlite
+$ yarn add mikro-orm nestjs-mikro-orm mongodb # for mongo
+$ yarn add mikro-orm nestjs-mikro-orm mysql2  # for mysql
+$ yarn add mikro-orm nestjs-mikro-orm pg      # for postgre
+$ yarn add mikro-orm nestjs-mikro-orm sqlite  # for sqlite
 ```
 
 or
 
 ```
-$ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2 # for mysql
-$ npm i -s mikro-orm sqlite # for sqlite
+$ npm i -s mikro-orm nestjs-mikro-orm mongodb # for mongo
+$ npm i -s mikro-orm nestjs-mikro-orm mysql2  # for mysql
+$ npm i -s mikro-orm nestjs-mikro-orm pg      # for postgre
+$ npm i -s mikro-orm nestjs-mikro-orm sqlite  # for sqlite
 ```
 
-## RequestContext middleware
-
-**`mikro-orm.middleware.ts`**
-
-```typescript
-import { Injectable, NestMiddleware, MiddlewareFunction } from '@nestjs/common';
-import { MikroORM, RequestContext } from 'mikro-orm';
-
-@Injectable()
-export class MikroOrmMiddleware implements NestMiddleware {
-
-  constructor(private readonly orm: MikroORM) { }
-
-  resolve(...args: any[]): MiddlewareFunction {
-    return (req, res, next) => {
-      RequestContext.create(this.orm.em, next);
-    };
-  }
-
-}
-```
-
-## Dependency Injection
+Then import the `MikroOrmModule` in your top level module (usually called `AppModule`) via 
+`forRoot()`, which will register `MikroORM` and `EntityManager` services. It will also 
+create the request context for you automatically.
 
 ```typescript
-import { Logger, Module } from '@nestjs/common';
-import { EntityManager, MikroORM } from 'mikro-orm';
-import { MikroOrmMiddleware } from './mikro-orm.middleware';
-
 @Module({
-  providers: [
-    MikroOrmMiddleware,
-    { provide: MikroORM, useFactory: async () => {
-      const logger = new Logger(MikroORM.name);
-      return MikroORM.init({
-        entitiesDirs: ['./src/entities'],
-        dbName: '...',
-        logger: logger.log.bind(logger),
-      });
-    }},
-    { provide: EntityManager, useFactory: (orm: MikroORM) => orm.em, inject: [MikroORM] },
-    { provide: 'UserRepository', useFactory: (em: EntityManager) => em.getRepository(User), inject: [EntityManager] },
+  imports: [
+    MikroOrmModule.forRoot({
+      entitiesDirs: ['dist/entities'],
+      entitiesDirsTs: ['src/entities'],
+      dbName: 'my-db-name.sqlite3',
+      type: 'sqlite',
+      autoFlush: false, // read more here: https://b4nan.github.io/mikro-orm/unit-of-work/
+    }),
+    // ... your feature modules
   ],
 })
 export class AppModule {}
 ```
 
-### @InjectRepository() decorator
+Then use `forFeature()` to register entity repositories at feature module level:
 
 ```typescript
-import { Inject } from '@nestjs/common';
-export const InjectRepository = (entity: any) => Inject(`${entity.name}Repository`);
+@Module({
+  imports: [MikroOrmModule.forFeature([Photo])],
+  providers: [PhotoService],
+  controllers: [PhotoController],
+})
+export class PhotoModule {}
 ```
 
-and use it like this:
-
-```typescript
-constructor(
-  @InjectRepository(File) 
-  private readonly fileRepository: EntityRepository<File>
-) { }
-```
+> Don't forget to import the feature module in your top level module.
 
 [&larr; Back to table of contents](index.md#table-of-contents)

@@ -1,11 +1,11 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/b4nan/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM">
+  <a href="https://b4nan.github.io/mikro-orm/"><img src="https://raw.githubusercontent.com/b4nan/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
-Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB,
+Simple TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB,
 MySQL, PostgreSQL and SQLite databases. 
 
-Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
+> Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
@@ -15,12 +15,15 @@ Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras O
 [![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/B4nan/mikro-orm/maintainability)
 
-## Documentation
+## 📖 Documentation
 
 MikroORM's documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://b4nan.github.io/mikro-orm/.
 
-## Core features
+There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
+(via `semantic-release`). Be sure to check it to known where
+
+## ✨ Core features
 
 - [Clean and simple entity definition](https://b4nan.github.io/mikro-orm/defining-entities/)
 - [Identity Map](https://b4nan.github.io/mikro-orm/identity-map/)
@@ -36,7 +39,7 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 - [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
 - [Vanilla JS support](https://b4nan.github.io/mikro-orm/usage-with-js/)
 
-## Example integrations
+## 📦 Example integrations
 
 You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/B4nan/mikro-orm-examples): 
 
@@ -44,11 +47,12 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 - [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-ts)
 - [Nest + MySQL](https://github.com/B4nan/mikro-orm-examples/tree/master/nest)
+- [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
 
 ### JavaScript examples 
 - [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js)
 
-## Quick start
+## 🚀 Quick start
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
@@ -205,3 +209,28 @@ console.log(books); // Book[]
 
 Take a look at docs about [working with `EntityManager`](https://b4nan.github.io/mikro-orm/entity-manager/)
 or [using `EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/).
+
+## 🤝 Contributing
+
+Contributions, issues and feature requests are welcome. Please read 
+[CONTRIBUTING.md](CONTRIBUTING.md) 
+for details on the process for submitting pull requests to us.
+
+## Authors
+
+👤 **Martin Adámek**
+
+- Twitter: [@B4nan](https://twitter.com/B4nan)
+- Github: [@b4nan](https://github.com/b4nan)
+
+See also the list of contributors who [participated](https://github.com/b4nan/mikro-orm/contributors) in this project.
+
+## Show your support
+
+Please ⭐️ this repository if this project helped you!
+
+## 📝 License
+
+Copyright © 2018 [Martin Adámek](https://github.com/b4nan).
+
+This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
