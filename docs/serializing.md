@@ -13,7 +13,7 @@ export interface IEntity<K = number | string> {
 }
 ```
 
-When you serialize your entity via `JSON.strinfigy(entity)`, its `toJSON` method will be 
+When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method will be 
 called automatically. You can provide custom implementation for `toJSON`, while using 
 `toObject` for initial serialization:
 
