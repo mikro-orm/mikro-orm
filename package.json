@@ -97,7 +97,7 @@
     "@commitlint/cli": "^8.0.0",
     "@commitlint/config-conventional": "^8.0.0",
     "@types/clone": "^0.1.30",
-    "@types/fs-extra": "^7.0.0",
+    "@types/fs-extra": "^8.0.0",
     "@types/jest": "^24.0.11",
     "@types/mongodb": "^3.1.23",
     "@types/mysql2": "types/mysql2",
