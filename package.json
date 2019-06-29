@@ -83,7 +83,7 @@
     "fast-deep-equal": "^2.0.1",
     "fs-extra": "^8.0.0",
     "globby": "^9.2.0",
-    "ts-morph": "^2.0.0",
+    "ts-morph": "^3.0.0",
     "typescript": "^3.4.3",
     "uuid": "^3.3.2"
   },
