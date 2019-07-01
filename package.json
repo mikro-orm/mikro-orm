@@ -107,7 +107,7 @@
     "coveralls": "^3.0.3",
     "husky": "^2.0.0",
     "jest": "^24.7.1",
-    "lint-staged": "^8.1.5",
+    "lint-staged": "^9.0.0",
     "mongodb": "^3.2.3",
     "mysql2": "^1.6.5",
     "pg": "^7.10.0",
