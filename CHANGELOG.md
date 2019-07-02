@@ -1,3 +1,15 @@
+<a name="2.7.3"></a>
+## [2.7.3](https://github.com/B4nan/mikro-orm/compare/v2.7.2...v2.7.3) (2019-07-02)
+
+### Bug Fixes
+
+* **deps**: update dependency globby to v10 ([#72](https://github.com/B4nan/mikro-orm/issues/72)) ([4fdda82](https://github.com/B4nan/mikro-orm/commit/4fdda82))
+* **deps**: update dependency ts-morph to v3 ([#71](https://github.com/B4nan/mikro-orm/issues/71)) ([abf671b](https://github.com/B4nan/mikro-orm/commit/abf671b))
+* **mapping**: map raw results to entities when setting collection items ([b562ec1](https://github.com/B4nan/mikro-orm/commit/b562ec1)), closes [#67](https://github.com/B4nan/mikro-orm/issues/67)
+* **metadata**: implement version property validation ([37a9cf2](https://github.com/B4nan/mikro-orm/commit/37a9cf2))
+
+
+
 <a name="2.7.2"></a>
 ## [2.7.2](https://github.com/B4nan/mikro-orm/compare/v2.7.1...v2.7.2) (2019-06-14)
 
