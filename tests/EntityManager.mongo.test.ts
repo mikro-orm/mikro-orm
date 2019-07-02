@@ -1279,7 +1279,7 @@ describe('EntityManagerMongo', () => {
     const book = new Book('B123', author);
     await orm.em.persistAndFlush(book);
 
-    const tag = orm.em.getReference(BookTag, '0000007b5c9c61c332380f79')
+    const tag = orm.em.getReference(BookTag, '0000007b5c9c61c332380f79');
     Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
@@ -1307,6 +1307,13 @@ describe('EntityManagerMongo', () => {
     expect(book.tags[0].id).toBe('0000007b5c9c61c332380f78');
     expect(book.tags.isInitialized()).toBe(true);
     expect(book.tags.isDirty()).toBe(true);
+  });
+
+  test('automatically map raw results to entities when setting collection items', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bookData = { title: 'Bible', author: god.id };
+    god.books.add(bookData as any);
+    expect(god.books[0]).toBeInstanceOf(Book);
   });
 
   afterAll(async () => orm.close(true));

@@ -1,5 +1,5 @@
-import { FilterQuery, QueryOrder, QueryOrderMap, Utils } from '..';
-import { IEntityType } from '../decorators';
+import { FilterQuery, IPrimaryKey, QueryOrder, QueryOrderMap, Utils } from '..';
+import { EntityData, IEntityType } from '../decorators';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 
@@ -20,6 +20,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
   }
 
   add(...items: T[]): void {
+    items = items.map(item => this.mapToEntity(item));
     this.modify('add', items);
 
     for (const item of items) {
@@ -32,7 +33,8 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
       this.initialized = true;
     }
 
-    super.set(items.map(item => Utils.isEntity(item) ? item : this.owner.__em.getReference(this.property.type, item)));
+    items = items.map(item => this.mapToEntity(item));
+    super.set(items);
     this.dirty = !initialize;
 
     for (const item of items) {
@@ -161,6 +163,27 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
       items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     }
+  }
+
+  private mapToEntity(item: T | IPrimaryKey | EntityData<T>): T {
+    if (Utils.isEntity(item)) {
+      return item;
+    }
+
+    const em = this.owner.__em;
+    let entity: T;
+
+    if (Utils.isPrimaryKey(item)) {
+      entity = em.getReference<T>(this.property.type, item);
+    } else {
+      entity = em.create<T>(this.property.type, item);
+    }
+
+    if (entity.__primaryKey) {
+      return em.merge<T>(this.property.type, entity);
+    }
+
+    return entity;
   }
 
 }
