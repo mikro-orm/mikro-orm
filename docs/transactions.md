@@ -13,7 +13,7 @@ is wrapped in a small transaction. Without any explicit transaction demarcation 
 side, this quickly results in poor performance because transactions are not cheap. 
 
 For the most part, MikroORM already takes care of proper transaction demarcation for you: 
-All the write operations (INSERT/UPDATE/DELETE) are queued until `EntityManager.flush()` 
+All the write operations (INSERT/UPDATE/DELETE) are queued until `em.flush()` 
 is invoked which wraps all of these changes in a single transaction.
 
 However, MikroORM also allows (and encourages) you to take over and control transaction 
@@ -34,7 +34,7 @@ user.name = 'George';
 await orm.em.persistAndFlush(user);
 ```
 
-Since we do not do any custom transaction demarcation in the above code, `EntityManager.flush()` 
+Since we do not do any custom transaction demarcation in the above code, `em.flush()` 
 will begin and commit/rollback a transaction. This behavior is made possible by the 
 aggregation of the DML operations by the MikroORM and is sufficient if all the data 
 manipulation that is part of a unit of work happens through the domain model and thus 
@@ -66,7 +66,7 @@ that require an active transaction. Such methods will throw a `ValidationError` 
 you of that requirement.
 
 A more convenient alternative for explicit transaction demarcation is the use of provided 
-control abstractions in the form of `EntityManager.transactional(cb)`. When used, these 
+control abstractions in the form of `em.transactional(cb)`. When used, these 
 control abstractions ensure that you never forget to rollback the transaction, in addition 
 to the obvious code reduction. An example that is functionally equivalent to the previously 
 shown code looks as follows:
@@ -80,13 +80,13 @@ orm.em.transactional(_em => {
 });
 ```
 
-`EntityManager.transactional(cb)` will flush the inner `EntityManager` prior to transaction 
+`em.transactional(cb)` will flush the inner `EntityManager` prior to transaction 
 commit.
 
 ### Exception Handling
 
 When using implicit transaction demarcation and an exception occurs during 
-`EntityManager.flush()`, the transaction is automatically rolled back.
+`em.flush()`, the transaction is automatically rolled back.
 
 When using explicit transaction demarcation and an exception occurs, the transaction should 
 be rolled back immediately as demonstrated in the example above. This can be handled elegantly 
@@ -103,14 +103,24 @@ objects are now out of sync with the database. The application can continue to u
 objects, knowing that their state is potentially no longer accurate.
 
 If you intend to start another unit of work after an exception has occurred you should do 
-that with a new `EntityManager`. Simply use `EntityManager.fork()` to obtain fresh copy 
+that with a new `EntityManager`. Simply use `em.fork()` to obtain fresh copy 
 with cleared identity map. 
 
 ## Locking Support
 
-MikroORM offers support for Pessimistic and Optimistic locking strategies natively. This allows 
-to take very fine-grained control over what kind of locking is required for your Entities in your 
-application.
+### Why we need concurrency control?
+
+If transactions are executed serially (one at a time), no transaction concurrency exists. 
+However, if concurrent transactions with interleaving operations are allowed, you may easily 
+run into one of those problems:
+
+1. The lost update problem
+2. The dirty read problem
+3. The incorrect summary problem
+
+To mitigate those problems, MikroORM offers support for Pessimistic and Optimistic locking 
+strategies natively. This allows you to take very fine-grained control over what kind of 
+locking is required for your entities in your application.
 
 ### Optimistic Locking
 
@@ -155,7 +165,7 @@ Version numbers (not timestamps) should however be preferred as they can not pot
 conflict in a highly concurrent environment, unlike timestamps where this is a possibility, 
 depending on the resolution of the timestamp on the particular database platform.
 
-When a version conflict is encountered during `EntityManager.flush()`, a `ValidationError` 
+When a version conflict is encountered during `em.flush()`, a `ValidationError` 
 is thrown and the active transaction rolled back (or marked for rollback). This exception 
 can be caught and handled. Potential responses to a `ValidationError` are to present the 
 conflict to the user or to refresh or reload objects in a new transaction and then retrying 
@@ -167,14 +177,14 @@ in that time frame you want to know directly when retrieving the entity that you
 an optimistic locking exception:
 
 You can always verify the version of an entity during a request either when calling 
-`EntityManager.findOne()`:
+`em.findOne()`:
 
 ```typescript
 const theEntityId = 1;
 const expectedVersion = 184;
 
 try {
-  const entity = await orm.em.findOne(User, theEntityId, LockMode.OPTIMISTIC, expectedVersion);
+  const entity = await orm.em.findOne(User, theEntityId, { lockMode: LockMode.OPTIMISTIC, lockVersion: expectedVersion });
 
   // do the work
 
@@ -184,7 +194,7 @@ try {
 }
 ```
 
-Or you can use `EntityManager.lock()` to find out:
+Or you can use `em.lock()` to find out:
 
 ```typescript
 const theEntityId = 1;
@@ -219,22 +229,47 @@ the one being originally read from the database when Alice performed her GET req
 blog post. If this happens you might see lost updates you wanted to prevent with Optimistic 
 Locking.
 
-See the example code, The form (GET Request):
+See the example code (frontend):
 
 ```typescript
-const post = await orm.em.findOne(BlogPost, 123456);
-let html = '';
-html += `<input type="hidden" name="id" value="${post.id}" />`;
-html += `<input type="hidden" name="version" value="${post.version}" />`;
+const res = await fetch('api.example.com/book/123');
+const book = res.json();
+console.log(book.version); // prints the current version
+
+// user does some changes and calls the PUT handler
+const changes = { title: 'new title' };
+await fetch('api.example.com/book/123', {
+  method: 'PUT',
+  body: {
+    ...changes,
+    version: book.version,
+  },
+});
 ```
 
-And the change headline action (POST Request):
+And the corresponding API endpoints:
 
 ```typescript
-const postId = +req.query.id;
-const postVersion = +req.query.version;
-const post = await orm.em.findOne(BlogPost, postId, LockMode.OPTIMISTIC, postVersion);
+// GET /book/:id
+async findOne(req, res) {
+  const book = await this.em.findOne(Book, +req.query.id);
+  res.json(book);
+}
+
+// PUT /book/:id
+async update(req, res) {
+  const book = await this.em.findOne(Book, +req.query.id, { lockMode: LockMode.OPTIMISTIC, lockVersion: req.body.version });
+  book.assign(req.body);
+  await this.em.flush();
+
+  res.json(book);
+}
 ```
+
+Your frontend app loads an entity from API, the response includes the version property. 
+User makes some changes and fires PUT request back to the API, with version field included 
+in the payload. The PUT handler of the API then reads the version and passes it to the 
+`em.findOne()` call.
 
 ### Pessimistic Locking
 
@@ -255,8 +290,8 @@ MikroORM currently supports two pessimistic lock modes:
 
 You can use pessimistic locks in three different scenarios:
 
-1. Using `EntityManager.findOne(className, id, LockMode.PESSIMISTIC_WRITE)` or `EntityManager.findOne(className, id, LockMode.PESSIMISTIC_READ)`
-2. Using `EntityManager.lock(entity, LockMode.PESSIMISTIC_WRITE)` or `EntityManager.lock(entity, LockMode.PESSIMISTIC_READ)`
+1. Using `em.findOne(className, id, { lockMode: LockMode.PESSIMISTIC_WRITE })` or `em.findOne(className, id, { lockMode: LockMode.PESSIMISTIC_READ })`
+2. Using `em.lock(entity, LockMode.PESSIMISTIC_WRITE)` or `em.lock(entity, LockMode.PESSIMISTIC_READ)`
 3. Using `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_WRITE)` or `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_READ)`
 
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html)

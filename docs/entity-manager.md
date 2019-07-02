@@ -3,6 +3,25 @@
 
 # Working with EntityManager
 
+## Persist and flush
+
+There are 2 methods we should first describe to understand how persisting works in MikroORM: 
+`em.persist()` and `em.flush()`.
+
+`em.persist(entity, flush?: boolean)` is used to mark new entities for future persisting. 
+It will make the entity managed by given `EntityManager` and once `flush` will be called, it 
+will be written to the database. Second boolean parameter can be used to invoke `flush` 
+immediately. Its default value is configurable via `autoFlush` option.
+
+To understand `flush`, lets first define what managed entity is: An entity is managed if 
+it’s fetched from the database (via `em.find()`, `em.findOne()` or via other managed entity) 
+or registered as new through `em.persist()`.
+
+`em.flush()` will go through all managed entities, compute appropriate change sets and 
+perform according database queries. As an entity loaded from database becomes managed 
+automatically, you do not have to call persist on those, and flush is enough to update 
+them.
+
 ## Persisting and cascading
 
 To save entity state to database, you need to persist it. Persist takes care or deciding 
@@ -49,6 +68,10 @@ await orm.em.persist(new Entity()); // no auto-flushing now
 await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
+
+> Default value of `autoFlush` is currently set to `true`, which will change in upcoming major 
+> release. Users are encouraged to either set `autoFlush` to `false` or use `em.persistLater()` 
+> (equal to `em.persist(entity, false)`) and `em.persistAndFlush()` methods instead. 
 
 ## Fetching entities with EntityManager
 
