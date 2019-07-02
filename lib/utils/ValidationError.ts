@@ -80,6 +80,15 @@ export class ValidationError extends Error {
     return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.name}`);
   }
 
+  static multipleVersionFields(meta: EntityMetadata, fields: string[]): ValidationError {
+    return new ValidationError(`Entity ${meta.name} has multiple version properties defined: '${fields.join("', '")}'. Only one version property is allowed per entity.`);
+  }
+
+  static invalidVersionFieldType(meta: EntityMetadata): ValidationError {
+    const prop = meta.properties[meta.versionProperty];
+    return new ValidationError(`Version property ${meta.name}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
+  }
+
   static lockFailed(entityOrName: IEntity | string): ValidationError {
     const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
     const entity = Utils.isString(entityOrName) ? undefined : entityOrName;

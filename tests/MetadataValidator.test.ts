@@ -58,6 +58,24 @@ describe('MetadataValidator', () => {
 
     meta.Book.properties['authors'] = { name: 'authors', reference: ReferenceType.MANY_TO_MANY, type: 'Author', mappedBy: 'books' };
     expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Both Author.books and Book.authors are defined as inverse sides, use inversedBy on one of them`);
+
+    // version field
+    meta.Book.properties['authors'] = { name: 'authors', reference: ReferenceType.MANY_TO_MANY, type: 'Author', inversedBy: 'books' };
+    meta.Author.properties['version'] = { name: 'version', reference: ReferenceType.SCALAR, type: 'Test', version: true };
+    meta.Author.versionProperty = 'version';
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Version property Author.version has unsupported type 'Test'. Only 'number' and 'Date' are allowed.`);
+    meta.Author.properties['version'].type = 'number';
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).not.toThrowError();
+    meta.Author.properties['version'].type = 'Date';
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).not.toThrowError();
+    meta.Author.properties['version'].type = 'timestamp(3)';
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).not.toThrowError();
+    meta.Author.properties['version'].type = 'datetime(6)';
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).not.toThrowError();
+    meta.Author.properties['version2'] = { name: 'version2', reference: ReferenceType.SCALAR, type: 'number', version: true };
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).toThrowError(`Entity Author has multiple version properties defined: 'version', 'version2'. Only one version property is allowed per entity.`);
+    delete meta.Author.properties['version2'];
+    expect(() => validator.validateEntityDefinition(meta as any, 'Author')).not.toThrowError();
   });
 
   test('validates missing base entity definition', async () => {

@@ -103,9 +103,21 @@ export class MetadataValidator {
   }
 
   private validateVersionField(meta: EntityMetadata): void {
-    // TODO validate there is only one version field and its type is either Date or number
-    for (const prop of Object.values(meta.properties)) {
-      // ...
+    if (!meta.versionProperty) {
+      return;
+    }
+
+    const props = Object.values(meta.properties).filter(p => p.version);
+
+    if (props.length > 1) {
+      throw ValidationError.multipleVersionFields(meta, props.map(p => p.name));
+    }
+
+    const prop = meta.properties[meta.versionProperty];
+    const type = prop.type.toLowerCase();
+
+    if (type !== 'number' && type !== 'date' && !type.startsWith('timestamp') && !type.startsWith('datetime')) {
+      throw ValidationError.invalidVersionFieldType(meta);
     }
   }
 
