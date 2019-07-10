@@ -21,6 +21,7 @@ export type PropertyOptions = {
   default?: any;
   unique?: boolean;
   nullable?: boolean;
+  unsigned?: boolean;
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;

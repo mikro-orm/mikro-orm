@@ -1,4 +1,5 @@
-import { Cascade, IDatabaseDriver, ReferenceType } from '..';
+import { ColumnBuilder, TableBuilder } from 'knex';
+import { AbstractSqlDriver, Cascade, ReferenceType, Utils } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { Platform } from '../platforms';
 
@@ -6,20 +7,20 @@ export class SchemaGenerator {
 
   private readonly platform: Platform = this.driver.getPlatform();
   private readonly helper = this.platform.getSchemaHelper();
+  private readonly knex = this.driver.getConnection().getKnex();
 
-  constructor(private readonly driver: IDatabaseDriver,
+  constructor(private readonly driver: AbstractSqlDriver,
               private readonly metadata: Record<string, EntityMetadata>) { }
 
   generate(): string {
     let ret = this.helper.getSchemaBeginning();
 
+    Object.values(this.metadata).forEach(meta => ret += this.knex.schema.dropTableIfExists(meta.collection).toQuery() + ';\n');
+    ret += '\n';
+    Object.values(this.metadata).forEach(meta => ret += this.createTable(meta));
     Object.values(this.metadata).forEach(meta => {
-      ret += this.helper.dropTable(meta) + '\n';
-      ret += this.createTable(meta) + '\n';
-    });
-
-    Object.values(this.metadata).forEach(meta => {
-      ret += this.createForeignKeys(meta);
+      const alter = this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)).toQuery();
+      ret += alter ? alter + ';\n\n' : '';
     });
 
     ret += this.helper.getSchemaEnd();
@@ -28,29 +29,13 @@ export class SchemaGenerator {
   }
 
   private createTable(meta: EntityMetadata): string {
-    const pkProp = meta.properties[meta.primaryKey];
-    let ret = '';
-
-    if (this.helper.supportsSequences() && pkProp.type === 'number') {
-      ret += `CREATE SEQUENCE ${this.helper.quoteIdentifier(meta.collection + '_seq')};\n`;
-    }
-
-    ret += `CREATE TABLE ${this.helper.quoteIdentifier(meta.collection)} (\n`;
-
-    Object
-      .values(meta.properties)
-      .filter(prop => this.shouldHaveColumn(prop))
-      .forEach(prop => ret += '  ' + this.createTableColumn(meta, prop) + ',\n');
-
-    if (this.helper.supportsSchemaConstraints()) {
-      ret += this.createIndexes(meta);
-    } else {
-      ret = ret.substr(0, ret.length - 2) + '\n';
-    }
-
-    ret += `)${this.helper.getSchemaTableEnd()};\n\n`;
-
-    return ret;
+    return this.knex.schema.createTable(meta.collection, table => {
+      Object
+        .values(meta.properties)
+        .filter(prop => this.shouldHaveColumn(prop))
+        .forEach(prop => this.createTableColumn(table, prop));
+      this.helper.finalizeTable(table);
+    }).toQuery() + ';\n\n';
   }
 
   private shouldHaveColumn(prop: EntityProperty): boolean {
@@ -69,97 +54,79 @@ export class SchemaGenerator {
     return prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
-  private createTableColumn(meta: EntityMetadata, prop: EntityProperty, alter = false): string {
-    const fieldName = prop.fieldName;
-    const ret = this.helper.quoteIdentifier(fieldName) + ' ' + this.type(prop);
+  private createTableColumn(table: TableBuilder, prop: EntityProperty, alter = false): ColumnBuilder {
+    if (prop.primary && prop.type === 'number') {
+      return table.increments(prop.fieldName);
+    }
+
+    const type = this.type(prop);
+    const col = table.specificType(prop.fieldName, type);
+    this.configureColumn(prop, col, alter);
+
+    return col;
+  }
+
+  private configureColumn(prop: EntityProperty, col: ColumnBuilder, alter: boolean) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
+    const indexed = prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys();
+    const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
 
-    if (prop.primary) {
-      return ret + this.helper.createPrimaryKeyColumn(meta, prop);
-    }
-
-    return ret + this.helper.createColumn(meta, prop, nullable);
+    Utils.runIfNotEmpty(() => col.unique(), prop.unique);
+    Utils.runIfNotEmpty(() => col.nullable(), nullable);
+    Utils.runIfNotEmpty(() => col.notNullable(), !nullable);
+    Utils.runIfNotEmpty(() => col.primary(), prop.primary);
+    Utils.runIfNotEmpty(() => col.unsigned(), this.isUnsigned(prop));
+    Utils.runIfNotEmpty(() => col.index(), indexed);
+    Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
   }
 
-  private createIndexes(meta: EntityMetadata): string {
-    let ret = `  PRIMARY KEY (${this.helper.quoteIdentifier(meta.properties[meta.primaryKey].fieldName)})`;
+  private isUnsigned(prop: EntityProperty): boolean {
+    if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+      const meta2 = this.metadata[prop.type];
+      const pk = meta2.properties[meta2.primaryKey];
 
-    if (this.helper.indexForeignKeys()) {
-      Object
-        .values(meta.properties)
-        .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE)
-        .forEach(prop => ret += `,\n  KEY ${this.helper.quoteIdentifier(prop.fieldName)} (${this.helper.quoteIdentifier(prop.fieldName)})`);
+      return pk.type === 'number';
     }
 
-    return ret + '\n';
+    return (prop.primary || prop.unsigned) && prop.type === 'number';
   }
 
-  private createForeignKeys(meta: EntityMetadata): string {
-    const ret = `ALTER TABLE ${this.helper.quoteIdentifier(meta.collection)}`;
-    let i = 1;
-
-    const constraints = Object
-      .values(meta.properties)
+  private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {
+    Object.values(meta.properties)
       .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
-      .map(prop => this.createForeignKey(meta, prop, i++));
-
-    if (constraints.length === 0) {
-      return '';
-    }
-
-    if (this.helper.supportsSchemaMultiAlter()) {
-      return ret + '\n ' + constraints.join(',\n ') + ';\n\n\n';
-    }
-
-    return constraints.map(c => ret + c + ';').join('\n') + '\n\n';
+      .forEach(prop => this.createForeignKey(table, prop));
   }
 
-  private createForeignKey(meta: EntityMetadata, prop: EntityProperty, index: number): string {
+  private createForeignKey(table: TableBuilder, prop: EntityProperty): void {
     if (this.helper.supportsSchemaConstraints()) {
-      return this.createForeignConstraint(meta, prop, index);
+      this.createForeignKeyReference(table.foreign(prop.fieldName) as ColumnBuilder, prop);
+
+      return;
     }
 
-    let ret = ' ADD ' + this.createTableColumn(meta, prop, true) + ' ';
-    ret += this.createForeignKeyReference(prop);
-
-    return ret;
+    const col = this.createTableColumn(table, prop, true);
+    this.createForeignKeyReference(col, prop);
   }
 
-  private createForeignConstraint(meta: EntityMetadata, prop: EntityProperty, index: number): string {
-    let ret = ' ADD CONSTRAINT ' + this.helper.quoteIdentifier(meta.collection + '_ibfk_' + index);
-    ret += ` FOREIGN KEY (${this.helper.quoteIdentifier(prop.fieldName)}) `;
-    ret += this.createForeignKeyReference(prop);
-
-    return ret;
-  }
-
-  private createForeignKeyReference(prop: EntityProperty): string {
+  private createForeignKeyReference(col: ColumnBuilder, prop: EntityProperty): void {
     const meta2 = this.metadata[prop.type];
-    const pk2 = meta2.properties[meta2.primaryKey].fieldName;
-    let ret = `REFERENCES ${this.helper.quoteIdentifier(meta2.collection)} (${this.helper.quoteIdentifier(pk2)})`;
+    const pk2 = meta2.properties[meta2.primaryKey];
+    col.references(pk2.fieldName).inTable(meta2.collection);
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
-    ret += ` ON DELETE ${cascade ? 'CASCADE' : 'SET NULL'}`;
+    col.onDelete(cascade ? 'cascade' : 'set null');
 
     if (prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
-      ret += ' ON UPDATE CASCADE';
+      col.onUpdate('cascade');
     }
-
-    return ret;
   }
 
-  private type(prop: EntityProperty, foreignKey?: EntityProperty): string {
-    const type = this.helper.getTypeDefinition(prop);
-
-    if (prop.reference !== ReferenceType.SCALAR) {
-      const meta = this.metadata[prop.type];
-      return this.type(meta.properties[meta.primaryKey], prop);
+  private type(prop: EntityProperty): string {
+    if (prop.reference === ReferenceType.SCALAR) {
+      return this.helper.getTypeDefinition(prop);
     }
 
-    if (prop.type === 'number' && prop.primary) {
-      return type + this.helper.getUnsignedSuffix(foreignKey || prop);
-    }
-
-    return type;
+    const meta = this.metadata[prop.type];
+    return this.helper.getTypeDefinition(meta.properties[meta.primaryKey]);
   }
 
 }

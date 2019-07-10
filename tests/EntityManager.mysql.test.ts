@@ -47,10 +47,23 @@ describe('EntityManagerMySql', () => {
     const driver = orm.em.getDriver<MySqlDriver>();
     expect(driver instanceof MySqlDriver).toBe(true);
     await expect(driver.findOne(Book2.name, { foo: 'bar' })).resolves.toBeNull();
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name '});
+    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).insertId).not.toBeNull();
-    const res = await driver.getConnection().execute('SELECT 1 as count');
-    expect(res[0]).toEqual({ count: 1 });
+    await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
+    await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
+    await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);
+    await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 1,
+    });
+    await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 0,
+    });
+    await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 0,
+    });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
@@ -58,9 +71,9 @@ describe('EntityManagerMySql', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver<MySqlDriver>();
-    const err1 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: INSERT INTO \`not_existing\` (\`foo\`) VALUES (?)\n with params: ["bar"]`;
+    const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `Table 'mikro_orm_test.not_existing' doesn't exist\n in query: DELETE FROM \`not_existing\``;
+    const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -152,62 +165,64 @@ describe('EntityManagerMySql', () => {
 
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
-    await orm.em.beginTransaction();
-    await orm.em.persistAndFlush(god1);
-    await orm.em.rollback();
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      });
+    } catch { }
+
     const res1 = await orm.em.findOne(Author2, { name: 'God1' });
     expect(res1).toBeNull();
 
-    await orm.em.beginTransaction();
-    const god2 = new Author2('God2', 'hello@heaven2.god');
-    await orm.em.persistAndFlush(god2);
-    await orm.em.commit();
+    await orm.em.transactional(async em => {
+      const god2 = new Author2('God2', 'hello@heaven2.god');
+      await em.persist(god2);
+    });
+
     const res2 = await orm.em.findOne(Author2, { name: 'God2' });
     expect(res2).not.toBeNull();
-
-    await orm.em.transactional(async em => {
-      const god3 = new Author2('God3', 'hello@heaven3.god');
-      await em.persist(god3);
-    });
-    const res3 = await orm.em.findOne(Author2, { name: 'God3' });
-    expect(res3).not.toBeNull();
 
     const err = new Error('Test');
 
     try {
       await orm.em.transactional(async em => {
-        const god4 = new Author2('God4', 'hello@heaven4.god');
-        await em.persist(god4);
+        const god3 = new Author2('God4', 'hello@heaven4.god');
+        await em.persist(god3);
         throw err;
       });
     } catch (e) {
       expect(e).toBe(err);
-      const res4 = await orm.em.findOne(Author2, { name: 'God4' });
-      expect(res4).toBeNull();
+      const res3 = await orm.em.findOne(Author2, { name: 'God4' });
+      expect(res3).toBeNull();
     }
   });
 
-  test('nested transactions', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+  test('nested transactions with save-points', async () => {
+    await orm.em.transactional(async em => {
+      const god1 = new Author2('God1', 'hello1@heaven.god');
 
-    // start outer transaction
-    const transaction = orm.em.transactional(async em => {
-      // do stuff inside inner transaction
+      try {
+        await em.transactional(async em2 => {
+          await em2.persist(god1);
+          throw new Error(); // rollback the transaction
+        });
+      } catch { }
+
+      const res1 = await em.findOne(Author2, { name: 'God1' });
+      expect(res1).toBeNull();
+
       await em.transactional(async em2 => {
-        await em2.persist(new Author2('God', 'hello@heaven.god'));
+        const god2 = new Author2('God2', 'hello2@heaven.god');
+        em2.persist(god2);
       });
-    });
 
-    // try to commit the outer transaction
-    await expect(transaction).resolves.toBeUndefined();
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('[query-logger] START TRANSACTION');
-    expect(mock.mock.calls[2][0]).toMatch('[query-logger] COMMIT');
+      const res2 = await em.findOne(Author2, { name: 'God2' });
+      expect(res2).not.toBeNull();
+    });
   });
 
-  test('nested transaction rollback will rollback the outer one as well', async () => {
+  test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.getConnection(), { logger });
@@ -215,16 +230,26 @@ describe('EntityManagerMySql', () => {
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
       // do stuff inside inner transaction and rollback
-      await em.beginTransaction();
-      await em.persist(new Author2('God', 'hello@heaven.god'));
-      await em.rollback();
+      try {
+        await em.transactional(async em2 => {
+          await em2.persistAndFlush(new Author2('God', 'hello@heaven.god'));
+          throw new Error(); // rollback the transaction
+        });
+      } catch { }
+
+      await em.persist(new Author2('God Persisted!', 'hello-persisted@heaven.god'));
     });
 
     // try to commit the outer transaction
-    await expect(transaction).rejects.toThrowError('Transaction commit failed because the transaction has been marked for rollback only');
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('[query-logger] START TRANSACTION');
-    expect(mock.mock.calls[2][0]).toMatch('[query-logger] ROLLBACK');
+    await expect(transaction).resolves.toBeUndefined();
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
+    await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
   test('should load entities', async () => {
@@ -516,9 +541,9 @@ describe('EntityManagerMySql', () => {
     });
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
-    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM `author2` AS `e0` WHERE `e0`.`id` = ? FOR UPDATE');
-    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `e0` where `e0`.`id` = ? for update');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('lock supports pessimistic locking [pessimistic read]', async () => {
@@ -534,9 +559,9 @@ describe('EntityManagerMySql', () => {
     });
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
-    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM `author2` AS `e0` WHERE `e0`.`id` = ? LOCK IN SHARE MODE');
-    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `e0` where `e0`.`id` = ? lock in share mode');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('custom query expressions via query builder', async () => {
@@ -674,16 +699,16 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.em.getConnection(), { logger });
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
-    expect(mock.mock.calls[0][0]).toMatch('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e0`.`id` = ? LIMIT ?');
-    expect(mock.mock.calls[1][0]).toMatch('SELECT `e0`.* FROM `foo_bar2` AS `e0` WHERE `e0`.`id` IN (?) ORDER BY `e0`.`id` ASC');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar.id).toBe(bar.id);
     expect(b1.toJSON()).toMatchObject({ bar: bar.toJSON() });
     orm.em.clear();
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, ['bar']))!;
-    expect(mock.mock.calls[2][0]).toMatch('SELECT `e0`.*, `e1`.`id` AS `bar_id` FROM `foo_baz2` AS `e0` LEFT JOIN `foo_bar2` AS `e1` ON `e0`.`id` = `e1`.`baz_id` WHERE `e1`.`id` = ? LIMIT ?');
-    expect(mock.mock.calls[3][0]).toMatch('SELECT `e0`.* FROM `foo_bar2` AS `e0` WHERE `e0`.`id` IN (?) ORDER BY `e0`.`id` ASC');
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar.id).toBe(bar.id);
     expect(b2.toJSON()).toMatchObject({ bar: bar.toJSON() });
@@ -1082,14 +1107,14 @@ describe('EntityManagerMySql', () => {
 
     // check fired queries
     expect(mock.mock.calls.length).toBe(8);
-    expect(mock.mock.calls[0][0]).toMatch('START TRANSACTION');
-    expect(mock.mock.calls[1][0]).toMatch('INSERT INTO `author2` (`name`, `email`, `created_at`, `updated_at`, `terms_accepted`) VALUES (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('INSERT INTO `book2` (`title`, `uuid_pk`, `created_at`, `author_id`) VALUES (?, ?, ?, ?)');
-    expect(mock.mock.calls[5][0]).toMatch('UPDATE `author2` SET `favourite_author_id` = ?, `updated_at` = ? WHERE `id` = ?');
-    expect(mock.mock.calls[6][0]).toMatch('COMMIT');
-    expect(mock.mock.calls[7][0]).toMatch('SELECT `e0`.* FROM `author2` AS `e0` WHERE `e0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
+    expect(mock.mock.calls[5][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
+    expect(mock.mock.calls[6][0]).toMatch('commit');
+    expect(mock.mock.calls[7][0]).toMatch('select `e0`.* from `author2` as `e0` where `e0`.`id` = ?');
   });
 
   test('self referencing 1:1 (1 step)', async () => {

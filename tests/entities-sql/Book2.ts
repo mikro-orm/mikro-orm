@@ -11,7 +11,7 @@ export class Book2 {
   @PrimaryKey({ fieldName: 'uuid_pk', length: 36 })
   uuid = v4();
 
-  @Property({ default: 'CURRENT_TIMESTAMP(3)', length: 3 })
+  @Property({ default: 'current_timestamp(3)', length: 3 })
   createdAt = new Date();
 
   @Property({ nullable: true })
