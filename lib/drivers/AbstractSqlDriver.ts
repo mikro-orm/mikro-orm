@@ -51,10 +51,10 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
 
   async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult> {
     const collections = this.extractManyToMany(entityName, data);
-    const pk = this.getPrimaryKeyField(entityName);
+    const pk = this.getPrimaryKeyField(entityName) as keyof T;
 
     if (Object.keys(data).length === 0) {
-      data[pk] = null;
+      data[pk] = null as T[keyof T];
     }
 
     const qb = this.createQueryBuilder(entityName);
@@ -110,7 +110,7 @@ export abstract class AbstractSqlDriver<C extends Connection> extends DatabaseDr
       const prop = props[k];
 
       if (prop && prop.reference === ReferenceType.MANY_TO_MANY) {
-        ret[k] = data[k];
+        ret[k as keyof T] = data[k];
         delete data[k];
       }
     }

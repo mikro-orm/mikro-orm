@@ -79,19 +79,19 @@
     "pinVersions": false
   },
   "dependencies": {
-    "clone": "^2.1.2",
-    "fast-deep-equal": "^2.0.1",
+    "clone": "^2.1.0",
+    "fast-deep-equal": "^2.0.0",
     "fs-extra": "^8.0.0",
     "globby": "^10.0.0",
     "ts-morph": "^3.0.0",
-    "typescript": "^3.4.3",
+    "typescript": "^3.5.0",
     "uuid": "^3.3.2"
   },
   "peerDependencies": {
-    "mongodb": "^3.2.3",
-    "mysql2": "^1.6.5",
+    "mongodb": "^3.2.0",
+    "mysql2": "^1.6.0",
     "pg": "^7.10.0",
-    "sqlite": "^3.0.3"
+    "sqlite": "^3.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.0.0",

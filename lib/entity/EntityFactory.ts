@@ -27,7 +27,7 @@ export class EntityFactory {
     if (data[pk] || data[meta.primaryKey]) {
       const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
       delete data[pk];
-      data[meta.primaryKey] = id;
+      data[meta.primaryKey as keyof T] = id as T[keyof T];
     }
 
     const entity = this.createEntity(data, meta);

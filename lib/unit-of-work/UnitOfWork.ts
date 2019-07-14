@@ -222,7 +222,7 @@ export class UnitOfWork {
   private processToManyReference<T extends IEntityType<T>>(reference: Collection<IEntity>, visited: IEntity[], parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(reference, visited)) {
       this.extraUpdates.push([parent, prop.name as keyof IEntity, reference]);
-      parent[prop.name] = new Collection<IEntity>(parent) as T[keyof T];
+      parent[prop.name as keyof T] = new Collection<IEntity>(parent) as T[keyof T];
 
       return;
     }
@@ -377,7 +377,7 @@ export class UnitOfWork {
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
 
     if (isCollection && Array.isArray(reference)) {
-      entity[prop.name] = new Collection<IEntity>(entity) as T[keyof T];
+      entity[prop.name as keyof T] = new Collection<IEntity>(entity) as T[keyof T];
       (entity[prop.name] as Collection<IEntity>).set(reference as IEntity[]);
       (entity[prop.name] as Collection<IEntity>).setDirty();
     }

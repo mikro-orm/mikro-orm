@@ -68,7 +68,7 @@ export class ChangeSetPersister {
 
     if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
       const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__primaryKey, [], {}, [meta.versionProperty]);
-      changeSet.entity[meta.versionProperty] = e![meta.versionProperty] as T[keyof T];
+      changeSet.entity[meta.versionProperty as keyof T] = e![meta.versionProperty] as T[keyof T];
     }
   }
 
@@ -76,13 +76,13 @@ export class ChangeSetPersister {
     const value = changeSet.payload[prop.name];
 
     if (value instanceof EntityIdentifier) {
-      changeSet.payload[prop.name] = value.getValue();
+      changeSet.payload[prop.name as keyof T] = value.getValue();
     } else if (Array.isArray(value) && value.some(item => item instanceof EntityIdentifier)) {
-      changeSet.payload[prop.name] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item);
+      changeSet.payload[prop.name as keyof T] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item) as T[keyof T];
     }
 
     if (prop.onUpdate) {
-      changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name] = prop.onUpdate();
+      changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name as keyof T] = prop.onUpdate();
     }
   }
 

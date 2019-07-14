@@ -94,7 +94,7 @@ export class Configuration {
   }
 
   getCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.cache.adapter, this.options.cache.options);
+    return this.cached(this.options.cache.adapter!, this.options.cache.options);
   }
 
   getRepositoryClass(customRepository: EntityOptions['customRepository']): MikroORMOptions['entityRepository'] {
@@ -172,9 +172,9 @@ export interface MikroORMOptions {
   debug: boolean;
   baseDir: string;
   cache: {
-    enabled: boolean,
-    adapter: { new (...params: any[]): CacheAdapter },
-    options: Record<string, any>,
+    enabled?: boolean,
+    adapter?: { new (...params: any[]): CacheAdapter },
+    options?: Record<string, any>,
   },
   metadataProvider: { new (config: Configuration): MetadataProvider },
 }
