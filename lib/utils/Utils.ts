@@ -212,7 +212,7 @@ export class Utils {
     const line = stack.find(line => line.includes('__decorate'))!;
 
     if (line) {
-      meta.path = line.match(/\((.*):\d+:\d+\)/)![1];
+      meta.path = Utils.normalizePath(line.match(/\((.*):\d+:\d+\)/)![1]);
     }
   }
 
@@ -237,6 +237,10 @@ export class Utils {
     }
 
     return !(prop && type) || prop.reference === type;
+  }
+
+  static normalizePath(...parts: string[]): string {
+    return parts.join('/').replace(/\\/g, '/');
   }
 
 }

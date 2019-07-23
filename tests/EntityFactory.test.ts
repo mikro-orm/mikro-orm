@@ -1,6 +1,6 @@
 import { ObjectID } from 'mongodb';
 import { Book, Author, Publisher } from './entities';
-import { MikroORM, Collection } from '../lib';
+import { MikroORM, Collection, Utils } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
@@ -27,7 +27,7 @@ describe('EntityFactory', () => {
     expect(metadata).toBeInstanceOf(Object);
     expect(metadata[BaseEntity.name].properties['foo'].type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
-    expect(metadata[Author.name].path).toBe(__dirname + '/entities/Author.ts');
+    expect(metadata[Author.name].path).toBe(Utils.normalizePath(__dirname, 'entities/Author.ts'));
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties['books'].type).toBe(Book.name);

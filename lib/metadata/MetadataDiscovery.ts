@@ -58,7 +58,7 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = await globby('*', { cwd: `${this.config.get('baseDir')}/${basePath}` });
+    const files = await globby('*', { cwd: Utils.normalizePath(this.config.get('baseDir'), basePath) });
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
@@ -74,7 +74,7 @@ export class MetadataDiscovery {
       }
 
       const name = this.getClassName(file);
-      const path = `${this.config.get('baseDir')}/${basePath}/${file}`;
+      const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
       const target = require(path)[name]; // include the file to trigger loading of metadata
       await this.discoverEntity(target, path);
     }

@@ -68,13 +68,13 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     const ret: string[] = [];
 
     for (const dir of dirs) {
-      const path = join(this.config.get('baseDir'), dir);
+      const path = Utils.normalizePath(this.config.get('baseDir'), dir);
 
       if (!await pathExists(path)) {
         throw new Error(`Path ${path} does not exist`);
       }
 
-      ret.push(join(path, '**', '*.ts'));
+      ret.push(Utils.normalizePath(path, '**', '*.ts'));
     }
 
     return ret;
