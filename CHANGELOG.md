@@ -1,3 +1,12 @@
+<a name="2.7.4"></a>
+## [2.7.4](https://github.com/B4nan/mikro-orm/compare/v2.7.3...v2.7.4) (2019-07-23)
+
+### Bug Fixes
+
+* **core**: normalize path to entity to unix style separators ([c5933c7](https://github.com/B4nan/mikro-orm/commit/c5933c7))
+
+
+
 <a name="2.7.3"></a>
 ## [2.7.3](https://github.com/B4nan/mikro-orm/compare/v2.7.2...v2.7.3) (2019-07-02)
 
