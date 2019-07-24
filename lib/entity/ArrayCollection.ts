@@ -1,5 +1,7 @@
 import { EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
+import { ReferenceType } from './enums';
+import { Collection } from './Collection';
 
 export class ArrayCollection<T extends IEntityType<T>> {
 
@@ -43,12 +45,12 @@ export class ArrayCollection<T extends IEntityType<T>> {
   add(...items: T[]): void {
     for (const item of items) {
       if (!this.contains(item)) {
-        this.handleInverseSide(item, 'add');
         this.items.push(item);
+        this.propagate(item, 'add');
       }
     }
 
-    Object.assign(this, items);
+    Object.assign(this, this.items);
   }
 
   set(items: T[]): void {
@@ -58,7 +60,6 @@ export class ArrayCollection<T extends IEntityType<T>> {
 
   remove(...items: T[]): void {
     for (const item of items) {
-      this.handleInverseSide(item, 'remove');
       const idx = this.items.findIndex(i => i.__serializedPrimaryKey === item.__serializedPrimaryKey);
 
       if (idx !== -1) {
@@ -66,6 +67,8 @@ export class ArrayCollection<T extends IEntityType<T>> {
         this.items.splice(idx, 1);
         Object.assign(this, this.items); // reassign array access
       }
+
+      this.propagate(item, 'remove');
     }
   }
 
@@ -96,10 +99,44 @@ export class ArrayCollection<T extends IEntityType<T>> {
     }
   }
 
-  protected handleInverseSide(item: T, method: 'add' | 'remove'): void {
-    if (this.property.owner && this.property.inversedBy && item[this.property.inversedBy as keyof T].isInitialized()) {
-      item[this.property.inversedBy as keyof T][method](this.owner);
+  protected propagate(item: T, method: 'add' | 'remove'): void {
+    if (this.property.owner && this.property.inversedBy) {
+      this.propagateToInverseSide(item, method);
+    } else if (!this.property.owner && this.property.mappedBy) {
+      this.propagateToOwningSide(item, method);
     }
+  }
+
+  protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
+    const collection = item[this.property.inversedBy as keyof T] as Collection<T>;
+
+    if (this.shouldPropagateToCollection(collection, method)) {
+      collection[method](this.owner);
+    }
+  }
+
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
+    const collection = item[this.property.mappedBy as keyof T] as Collection<T>;
+
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
+      collection[method](this.owner);
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      const value = method === 'add' ? this.owner : null;
+      item[this.property.mappedBy as keyof T] = value as T[keyof T];
+    }
+  }
+
+  protected shouldPropagateToCollection(collection: Collection<T>, method: 'add' | 'remove'): boolean {
+    if (!collection.isInitialized()) {
+      return false;
+    }
+
+    if (method === 'add') {
+      return !collection.contains(this.owner);
+    }
+
+    // remove
+    return collection.contains(this.owner);
   }
 
   protected get property() {

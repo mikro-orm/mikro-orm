@@ -660,11 +660,63 @@ describe('EntityManagerMongo', () => {
     await orm.em.persist(book5);
   });
 
+  test('one to many collection sets inverse side reference after adding', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1');
+    const book2 = new Book('My Life on The Wall, part 2');
+    const book3 = new Book('My Life on The Wall, part 3');
+    author.books.add(book1, book2, book3);
+    expect(book1.author).toBe(author);
+    expect(book3.author).toBe(author);
+    expect(book3.author).toBe(author);
+  });
+
+  test('many to many collection sets inverse side reference after adding', async () => {
+    const book1 = new Book('My Life on The Wall, part 1');
+    const book2 = new Book('My Life on The Wall, part 2');
+    const book3 = new Book('My Life on The Wall, part 3');
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2);
+    book3.tags.add(tag2);
+    expect(tag1.books[0]).toBe(book1);
+    expect(tag1.books[1]).toBe(book2);
+    expect(tag1.books.length).toBe(2);
+    expect(tag2.books[0]).toBe(book2);
+    expect(tag2.books[1]).toBe(book3);
+    expect(tag2.books.length).toBe(2);
+    expect(tag3.books[0]).toBe(book1);
+    expect(tag3.books.length).toBe(1);
+  });
+
+  test('many to many collection sets owning side reference after adding', async () => {
+    const book1 = new Book('My Life on The Wall, part 1');
+    const book2 = new Book('My Life on The Wall, part 2');
+    const book3 = new Book('My Life on The Wall, part 3');
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    tag1.books.add(book1, book2);
+    tag2.books.add(book2, book3);
+    tag3.books.add(book1);
+    expect(tag1.books[0]).toBe(book1);
+    expect(tag1.books[1]).toBe(book2);
+    expect(tag1.books.length).toBe(2);
+    expect(tag2.books[0]).toBe(book2);
+    expect(tag2.books[1]).toBe(book3);
+    expect(tag2.books.length).toBe(2);
+    expect(tag3.books[0]).toBe(book1);
+    expect(tag3.books.length).toBe(1);
+  });
+
   test('cascade persist on owning side', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    const book1 = new Book('My Life on The Wall, part 1', author);
-    const book2 = new Book('My Life on The Wall, part 2', author);
-    const book3 = new Book('My Life on The Wall, part 3', author);
+    const book1 = new Book('My Life on The Wall, part 1');
+    const book2 = new Book('My Life on The Wall, part 2');
+    const book3 = new Book('My Life on The Wall, part 3');
+    author.books.add(book1, book2, book3);
     const tag1 = new BookTag('silly');
     const tag2 = new BookTag('funny');
     const tag3 = new BookTag('sick');
@@ -673,7 +725,7 @@ describe('EntityManagerMongo', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persist([book1, book2, book3]);
+    await orm.em.persist(author);
     orm.em.clear();
 
     const repo = orm.em.getRepository(Book);

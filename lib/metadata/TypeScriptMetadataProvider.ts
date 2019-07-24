@@ -1,5 +1,4 @@
 import { Project, SourceFile } from 'ts-morph';
-import { join } from 'path';
 import { pathExists } from 'fs-extra';
 
 import { MetadataProvider } from './MetadataProvider';
