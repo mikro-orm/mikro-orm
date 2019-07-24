@@ -103,7 +103,7 @@ describe('Utils', () => {
     const author2 = new Author('Name 2', 'e-mail');
     author2.favouriteBook = book;
     author2.version = 123;
-    await orm.em.persist(author2);
+    await orm.em.persistAndFlush(author2);
     const diff = Utils.diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
     expect(diff.favouriteBook instanceof ObjectID).toBe(true);
