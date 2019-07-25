@@ -1245,9 +1245,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('EM do not support transactions', async () => {
-    await expect(orm.em.beginTransaction()).rejects.toThrowError('Transactions are not supported by current driver');
-    await expect(orm.em.rollback()).rejects.toThrowError('Transactions are not supported by current driver');
-    await expect(orm.em.commit()).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(orm.em.transactional(async em => em)).rejects.toThrowError('Transactions are not supported by current driver');
   });
 
   test('loading connected entity will not update identity map for associations', async () => {
