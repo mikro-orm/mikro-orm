@@ -19,7 +19,7 @@ export class Configuration {
     entitiesDirs: [],
     entitiesDirsTs: [],
     tsConfigPath: process.cwd() + '/tsconfig.json',
-    autoFlush: true,
+    autoFlush: false,
     strict: false,
     logger: () => undefined,
     baseDir: process.cwd(),

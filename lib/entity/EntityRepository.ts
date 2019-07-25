@@ -8,8 +8,8 @@ export class EntityRepository<T extends IEntityType<T>> {
   constructor(private readonly em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
 
-  async persist(entity: T | IEntity[], flush = this.em.config.get('autoFlush')): Promise<void> {
-    await this.em.persist(entity, flush);
+  persist(entity: T | IEntity[], flush = this.em.config.get('autoFlush')): void | Promise<void> {
+    return this.em.persist(entity, flush);
   }
 
   async persistAndFlush(entity: IEntity | IEntity[]): Promise<void> {
@@ -42,7 +42,7 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 
-  async remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this.em.config.get('autoFlush')): Promise<number> {
+  remove(where: T | FilterQuery<T> | IPrimaryKey, flush = this.em.config.get('autoFlush')): void | Promise<number> {
     return this.em.remove(this.entityName, where, flush);
   }
 
