@@ -1,5 +1,5 @@
 import { SchemaHelper } from './SchemaHelper';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { EntityProperty } from '../decorators';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -20,38 +20,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   };
 
   getSchemaBeginning(): string {
-    return `SET NAMES 'utf8';\nSET session_replication_role = 'replica';\n\n\n`;
+    return `set names 'utf8';\nset session_replication_role = 'replica';\n\n`;
   }
 
   getSchemaEnd(): string {
-    return `SET session_replication_role = 'origin';\n`;
-  }
-
-  getAutoIncrementStatement(meta: EntityMetadata): string {
-    return `DEFAULT NEXTVAL('${meta.collection}_seq')`;
+    return `set session_replication_role = 'origin';\n`;
   }
 
   getTypeDefinition(prop: EntityProperty): string {
     return super.getTypeDefinition(prop, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_TYPE_LENGTHS);
   }
 
-  getUnsignedSuffix(prop: EntityProperty): string {
-    return ` check (${this.quoteIdentifier(prop.fieldName)} > 0)`;
-  }
-
-  supportsSequences(): boolean {
-    return true;
-  }
-
   indexForeignKeys() {
     return false;
-  }
-
-  dropTable(meta: EntityMetadata): string {
-    let ret = `DROP TABLE IF EXISTS ${this.quoteIdentifier(meta.collection)} CASCADE;\n`;
-    ret += `DROP SEQUENCE IF EXISTS ${this.quoteIdentifier(meta.collection + '_seq')};\n`;
-
-    return ret;
   }
 
 }

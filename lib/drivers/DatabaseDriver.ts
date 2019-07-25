@@ -1,7 +1,7 @@
 import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
-import { Connection, QueryResult } from '../connections';
+import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
@@ -13,20 +13,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly platform: Platform;
   protected readonly metadata = MetadataStorage.getMetadata();
   protected readonly logger = this.config.getLogger();
-  protected transactionLevel = 0;
-  protected transactionRolledBack = false;
 
   constructor(protected readonly config: Configuration) { }
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
-  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode): Promise<T | null>;
+  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
 
-  abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
+  abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
+  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<QueryResult>;
+  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, ctx?: Transaction): Promise<QueryResult>;
 
   abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
@@ -34,7 +32,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<Record<string, T[]>> {
+  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[], ctx?: Transaction): Promise<Record<string, T[]>> {
     if (!this.platform.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -43,7 +41,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const fk2 = prop.inverseJoinColumn;
     const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
     const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
-    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
+    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy, undefined, undefined, ctx) : [];
 
     const map: Record<string, T[]> = {};
     owners.forEach(owner => map['' + owner] = []);
@@ -80,66 +78,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connection as C;
   }
 
-  async beginTransaction(): Promise<void> {
-    this.transactionLevel++;
-    await this.runTransaction('beginTransaction');
-  }
-
-  async commit(): Promise<void> {
-    if (this.transactionRolledBack) {
-      throw new Error('Transaction commit failed because the transaction has been marked for rollback only');
-    }
-
-    await this.runTransaction('commit');
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
-  }
-
-  async rollback(): Promise<void> {
-    await this.runTransaction('rollback');
-
-    if (this.transactionLevel === 1) {
-      this.transactionRolledBack = false;
-    } else if (!this.platform.supportsSavePoints()) {
-      this.transactionRolledBack = true;
-    }
-
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
-  }
-
-  async transactional(cb: () => Promise<any>): Promise<any> {
-    try {
-      await this.beginTransaction();
-      const ret = await cb();
-      await this.commit();
-
-      return ret;
-    } catch (e) {
-      await this.rollback();
-      throw e;
-    }
-  }
-
-  isInTransaction(): boolean {
-    return this.transactionLevel > 0;
-  }
-
   getPlatform(): Platform {
     return this.platform;
   }
 
   protected getPrimaryKeyField(entityName: string): string {
     return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
-  }
-
-  private async runTransaction(method: 'beginTransaction' | 'commit' | 'rollback'): Promise<void> {
-    if (this.transactionLevel === 1 || this.platform.supportsSavePoints()) {
-      const useSavepoint = this.transactionLevel !== 1 && this.platform.supportsSavePoints();
-      await this.connection[method](useSavepoint ? this.getSavePointName() : undefined);
-    }
-  }
-
-  private getSavePointName(): string {
-    return `${this.constructor.name}_${this.transactionLevel}`;
   }
 
 }
