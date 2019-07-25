@@ -5,7 +5,7 @@ import { FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
-import { Connection } from './connections';
+import { Connection, Transaction } from './connections';
 
 export class EntityManager {
 
@@ -15,6 +15,7 @@ export class EntityManager {
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config);
+  private transactionContext: Transaction;
 
   constructor(readonly config: Configuration,
               private readonly driver: IDatabaseDriver<Connection>) { }
@@ -45,7 +46,7 @@ export class EntityManager {
 
   createQueryBuilder(entityName: EntityName<IEntity>, alias?: string): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.driver, alias);
+    return new QueryBuilder(entityName, this.metadata, this.driver, this.transactionContext, alias);
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
@@ -55,7 +56,7 @@ export class EntityManager {
     where = SmartQueryHelper.processWhere(where, entityName);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
-    const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset);
+    const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset, this.transactionContext);
 
     if (results.length === 0) {
       return [];
@@ -89,7 +90,7 @@ export class EntityManager {
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields, options.lockMode);
+    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields, options.lockMode, this.transactionContext);
 
     if (!data) {
       return null;
@@ -101,26 +102,15 @@ export class EntityManager {
     return entity;
   }
 
-  async beginTransaction(): Promise<void> {
-    await this.driver.beginTransaction();
-  }
-
-  async commit(): Promise<void> {
-    await this.driver.commit();
-  }
-
-  async rollback(): Promise<void> {
-    await this.driver.rollback();
-  }
-
-  async transactional(cb: (em: EntityManager) => Promise<any>): Promise<any> {
+  async transactional(cb: (em: EntityManager) => Promise<any>, ctx = this.transactionContext): Promise<any> {
     const em = this.fork(false);
-    await em.getDriver().transactional(async () => {
+    await em.getConnection().transactional(async trx => {
+      em.transactionContext = trx;
       const ret = await cb(em);
       await em.flush();
 
       return ret;
-    });
+    }, ctx);
   }
 
   async lock(entity: IEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {
@@ -131,7 +121,7 @@ export class EntityManager {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
     this.validator.validateParams(data, 'insert data');
-    const res = await this.driver.nativeInsert(entityName, data);
+    const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
 
     return res.insertId;
   }
@@ -142,7 +132,7 @@ export class EntityManager {
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
-    const res = await this.driver.nativeUpdate(entityName, where, data);
+    const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
 
     return res.affectedRows;
   }
@@ -151,7 +141,7 @@ export class EntityManager {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where, 'delete condition');
-    const res = await this.driver.nativeDelete(entityName, where);
+    const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
     return res.affectedRows;
   }
@@ -218,7 +208,8 @@ export class EntityManager {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
     this.validator.validateParams(where);
-    return this.driver.count(entityName, where);
+
+    return this.driver.count(entityName, where, this.transactionContext);
   }
 
   persist(entity: IEntity | IEntity[], flush = this.config.get('autoFlush')): void | Promise<void> {
@@ -326,6 +317,14 @@ export class EntityManager {
     return em.entityFactory;
   }
 
+  isInTransaction(): boolean {
+    return !!this.transactionContext;
+  }
+
+  getTransactionContext<T extends Transaction = Transaction>(): T {
+    return this.transactionContext as T;
+  }
+
   private checkLockRequirements(mode: LockMode | undefined, meta: EntityMetadata): void {
     if (!mode) {
       return;
@@ -335,7 +334,7 @@ export class EntityManager {
       throw ValidationError.notVersioned(meta);
     }
 
-    if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode) && !this.getDriver().isInTransaction()) {
+    if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode) && !this.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
   }

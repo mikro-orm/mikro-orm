@@ -115,7 +115,7 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends IEntityType<T>>(filtered: T[], prop: EntityProperty, field: keyof T): Promise<IEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.__primaryKey));
+    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.__primaryKey), this.em.getTransactionContext());
     const children: IEntity[] = [];
 
     for (const entity of filtered) {

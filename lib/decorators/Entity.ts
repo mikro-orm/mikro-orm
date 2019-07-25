@@ -65,9 +65,10 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   length?: any;
   reference: ReferenceType;
   fieldName: string;
-  default?: string;
+  default?: any;
   unique?: boolean;
   nullable?: boolean;
+  unsigned: boolean;
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;

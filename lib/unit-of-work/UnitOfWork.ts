@@ -6,7 +6,7 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
 import { Utils, ValidationError } from '../utils';
-import { FilterQuery, LockMode } from '..';
+import { FilterQuery, LockMode, Transaction } from '..';
 
 export class UnitOfWork {
 
@@ -99,14 +99,13 @@ export class UnitOfWork {
       return this.postCommitCleanup(); // nothing to do, do not start transaction
     }
 
-    const driver = this.em.getDriver();
-    const runInTransaction = !driver.isInTransaction() && driver.getPlatform().supportsTransactions();
-    const promise = Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet));
+    const runInTransaction = !this.em.isInTransaction() && this.em.getDriver().getPlatform().supportsTransactions();
+    const promise = async (tx: Transaction) => await Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet, tx));
 
     if (runInTransaction) {
-      await driver.transactional(() => promise);
+      await this.em.getConnection().transactional(trx => promise(trx));
     } else {
-      await promise;
+      await promise(this.em.getTransactionContext());
     }
 
     this.postCommitCleanup();
@@ -232,10 +231,10 @@ export class UnitOfWork {
       .forEach(item => this.findNewEntities(item, visited));
   }
 
-  private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
+  private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>, ctx: Transaction): Promise<void> {
     const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
     await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
-    await this.changeSetPersister.persistToDatabase(changeSet);
+    await this.changeSetPersister.persistToDatabase(changeSet, ctx);
 
     switch (changeSet.type) {
       case ChangeSetType.CREATE: this.em.merge(changeSet.entity); break;
@@ -341,7 +340,7 @@ export class UnitOfWork {
   }
 
   private async lockPessimistic<T extends IEntityType<T>>(entity: T, mode: LockMode): Promise<void> {
-    if (!this.em.getDriver().isInTransaction()) {
+    if (!this.em.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
 

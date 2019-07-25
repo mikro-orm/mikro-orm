@@ -1,3 +1,5 @@
+import * as Knex from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { QueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
@@ -9,14 +11,14 @@ import { LockMode } from '../unit-of-work';
 export class QueryBuilderHelper {
 
   static readonly GROUP_OPERATORS = {
-    $and: 'AND',
-    $or: 'OR',
+    $and: 'and',
+    $or: 'or',
   };
 
   static readonly OPERATORS = {
     $eq: '=',
-    $in: 'IN',
-    $nin: 'NOT IN',
+    $in: 'in',
+    $nin: 'not in',
     $gt: '>',
     $gte: '>=',
     $lt: '<',
@@ -24,76 +26,35 @@ export class QueryBuilderHelper {
     $ne: '!=',
   };
 
-  private readonly quoteChar = this.platform.getSchemaHelper().getIdentifierQuoteCharacter();
-
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly aliasMap: Record<string, string>,
               private readonly metadata: Record<string, EntityMetadata>,
+              private readonly knex: Knex,
               private readonly platform: Platform) { }
 
-  getWhereParams(conditions: Record<string, any>): any[] {
-    const ret: any[] = [];
-
-    Object.entries(conditions).forEach(([key, cond]) => {
-      if (['$and', '$or', '$not'].includes(key)) {
-        return ret.push(...this.getGroupWhereParams(key, cond));
-      }
-
-      if (cond === null) {
-        return;
-      }
-
-      // grouped condition for one field
-      if (Utils.isObject(cond) && Object.keys(cond).length > 1) {
-        const subConditions = Object.entries(cond).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-        return ret.push(...this.getWhereParams({ $and: subConditions }));
-      }
-
-      if (cond instanceof RegExp) {
-        return ret.push(this.getRegExpParam(cond));
-      }
-
-      if (!Utils.isObject(cond) && !Array.isArray(cond)) {
-        return ret.push(cond);
-      }
-
-      ret.push(...this.processComplexParam(key, cond));
-    });
-
-    return ret;
-  }
-
-  wrap(field: string) {
-    if (field === '*') {
-      return field;
-    }
-
-    return this.quoteChar + field + this.quoteChar;
-  }
-
-  mapper(type: QueryType, field: string, value?: any, alias?: string): string {
+  mapper(type: QueryType, field: string, value?: any, alias?: string): string | Raw {
     let ret = field;
-    const customExpression = field.match(/\(.*\)| |^\d/);
+    const customExpression = this.isCustomExpression(field);
 
     // do not wrap custom expressions
     if (!customExpression) {
-      ret = this.prefixAndWrap(field);
-    }
-
-    if (typeof value !== 'undefined') {
-      ret += this.processValue(field, value);
+      ret = this.prefix(field);
     }
 
     if (alias) {
-      ret += ' AS ' + this.wrap(alias);
+      ret += ' as ' + alias;
     }
 
-    if (type !== QueryType.SELECT || customExpression || this.isPrefixed(ret)) {
+    if (customExpression) {
+      return this.knex.raw(ret, value);
+    }
+
+    if (![QueryType.SELECT, QueryType.COUNT].includes(type) || this.isPrefixed(ret)) {
       return ret;
     }
 
-    return this.wrap(this.alias) + '.' + ret;
+    return this.alias + '.' + ret;
   }
 
   processData(data: any): any {
@@ -103,7 +64,7 @@ export class QueryBuilderHelper {
       if (this.metadata[this.entityName] && this.metadata[this.entityName].properties[k]) {
         const prop = this.metadata[this.entityName].properties[k];
 
-        if (Array.isArray(data[k])) {
+        if (Array.isArray(data[k]) || (Utils.isObject(data[k]) && !(data[k] instanceof Date))) {
           data[k] = JSON.stringify(data[k]);
         }
 
@@ -116,7 +77,7 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin'): JoinOptions {
     const prop2 = this.metadata[prop.type].properties[prop.mappedBy || prop.inversedBy];
     return {
       table: this.getTableName(prop.type),
@@ -130,7 +91,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin'): JoinOptions {
     return {
       table: this.getTableName(prop.type),
       joinColumn: prop.inverseJoinColumn,
@@ -142,7 +103,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'left' | 'inner'): Record<string, JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin'): Record<string, JoinOptions> {
     const join = {
       type,
       ownerAlias,
@@ -173,7 +134,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'left' | 'inner'): JoinOptions {
+  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin'): JoinOptions {
     const prop2 = this.metadata[field].properties[prop.mappedBy || prop.inversedBy];
     return {
       table: this.metadata[field].collection,
@@ -187,14 +148,16 @@ export class QueryBuilderHelper {
     };
   }
 
-  processJoins(joins: Record<string, JoinOptions>): string {
-    return Object.values(joins).map(join => {
-      const type = join.type === 'inner' ? '' : join.type.toUpperCase() + ' ';
-      return ` ${type}JOIN ${this.wrap(join.table)} AS ${this.wrap(join.alias)} ON ${this.wrap(join.ownerAlias)}.${this.wrap(join.primaryKey!)} = ${this.wrap(join.alias)}.${this.wrap(join.joinColumn!)}`;
-    }).join('');
+  processJoins(qb: KnexQueryBuilder, joins: Record<string, JoinOptions>): void {
+    Object.values(joins).forEach(join => {
+      const table = `${join.table} as ${join.alias}`;
+      const left = `${join.ownerAlias}.${join.primaryKey!}`;
+      const right = `${join.alias}.${join.joinColumn!}`;
+      qb[join.type](table, left, right);
+    });
   }
 
-  mapJoinColumns(type: QueryType, join: JoinOptions): string[] {
+  mapJoinColumns(type: QueryType, join: JoinOptions): (string | Raw)[] {
     if (join.prop && join.prop.reference === ReferenceType.ONE_TO_ONE && !join.prop.owner) {
       return [this.mapper(type, `${join.alias}.${join.inverseJoinColumn}`, undefined, join.prop.fieldName)];
     }
@@ -210,14 +173,8 @@ export class QueryBuilderHelper {
     return prop && prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
   }
 
-  getTableName(entityName: string, wrap = false): string {
-    const name = this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
-
-    if (wrap) {
-      return this.wrap(name);
-    }
-
-    return name;
+  getTableName(entityName: string): string {
+    return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
   }
 
   getRegExpParam(re: RegExp): string {
@@ -243,27 +200,74 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  getQueryCondition(type: QueryType, cond: any): string[] {
-    return Object.keys(cond).map(k => {
+  appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+    Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
-        return this.getGroupQueryCondition(type, k, cond[k]);
+        return this.appendGroupCondition(type, qb, k, method, cond[k]);
       }
 
       if (k === '$not') {
-        return 'NOT (' + this.getQueryCondition(type, cond[k])[0] + ')';
+        const m = operator === '$or' ? 'orWhereNot' : 'whereNot';
+        return qb[m](inner => this.appendQueryCondition(type, cond[k], inner));
       }
 
-      // grouped condition for one field
-      if (Utils.isObject(cond[k]) && Object.keys(cond[k]).length > 1) {
-        const subCondition = Object.entries(cond[k]).map(([subKey, subValue]) => ({ [k]: { [subKey]: subValue } }));
-        return this.getGroupQueryCondition(type, '$and', subCondition);
-      }
-
-      return this.mapper(type, k, cond[k]);
+      this.appendQuerySubCondition(qb, type, method, cond, k, operator);
     });
   }
 
-  getQueryOrder(type: QueryType, orderBy: QueryOrderMap, populate: Record<string, string>): string[] {
+  private appendQuerySubCondition(qb: KnexQueryBuilder, type: QueryType, method: 'where' | 'having', cond: any, key: string, operator?: '$and' | '$or'): void {
+    const m = operator === '$or' ? 'orWhere' : method;
+
+    if (cond[key] instanceof RegExp) {
+      return void qb[m](this.mapper(type, key) as string, 'like', this.getRegExpParam(cond[key]));
+    }
+
+    if (Utils.isObject(cond[key]) && !(cond[key] instanceof Date)) {
+      return this.processObjectSubCondition(cond, key, qb, method, m, type);
+    }
+
+    if (this.isCustomExpression(key)) {
+      return this.processCustomExpression(key, cond, qb, m, type);
+    }
+
+    const op = cond[key] === null ? 'is' : '=';
+
+    qb[m](this.mapper(type, key, cond[key]) as string, op, cond[key]);
+  }
+
+  private processCustomExpression(key: string, cond: any, qb: KnexQueryBuilder, m: 'where' | 'orWhere' | 'having', type: QueryType): void {
+    // unwind parameters when ? found in field name
+    const count = key.concat('?').match(/\?/g)!.length - 1;
+    const params1 = cond[key].slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c);
+    const params2 = cond[key].slice(count);
+
+    if (params2.length > 0) {
+      return void qb[m](this.mapper(type, key, params1) as string, params2);
+    }
+
+    qb[m](this.mapper(type, key, params1) as string);
+  }
+
+  private processObjectSubCondition(cond: any, key: string, qb: Knex.QueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
+    // grouped condition for one field
+    if (Object.keys(cond[key]).length > 1) {
+      const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+      return void qb[m](inner => subCondition.map((sub: any) => this.appendQueryCondition(type, sub, inner, '$and', method)));
+    }
+
+    // operators
+    for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
+      if (!(op in cond[key])) {
+        continue;
+      }
+
+      qb[m](this.mapper(type, key) as string, replacement, cond[key][op]);
+
+      break;
+    }
+  }
+
+  getQueryOrder(type: QueryType, orderBy: QueryOrderMap, populate: Record<string, string>): { column: string, order: string }[] {
     return Object.keys(orderBy).map(k => {
       let alias = this.alias;
       let field = k;
@@ -276,35 +280,17 @@ export class QueryBuilderHelper {
       const direction = orderBy[k];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
-      return this.mapper(type, `${alias}.${field}`) + ' ' + order;
+      return { column: this.mapper(type, `${alias}.${field}`) as string, order: order.toLowerCase() };
     });
   }
 
-  getClause(type: string, clause: string, data: any): string {
-    if (Utils.isEmpty(data)) {
-      return '';
-    }
-
-    return ` ${type} ${clause}`;
-  }
-
-  finalize(type: QueryType, sql: string, meta?: EntityMetadata): string {
-    let append = '';
+  finalize(type: QueryType, qb: KnexQueryBuilder, meta?: EntityMetadata): void {
     const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement();
 
     if (useReturningStatement && meta) {
       const returningProps = Object.values(meta.properties).filter(prop => prop.primary || prop.default);
-      append = ` RETURNING ${returningProps.map(prop => this.wrap(prop.fieldName)).join(', ')}`;
+      qb.returning(returningProps.map(prop => prop.fieldName));
     }
-
-    if (this.platform.getParameterPlaceholder() === '?') {
-      return sql + append;
-    }
-
-    let index = 1;
-    return sql.replace(/(\?)/g, () => {
-      return this.platform.getParameterPlaceholder(index++);
-    }) + append;
   }
 
   splitField(field: string): [string, string] {
@@ -337,23 +323,21 @@ export class QueryBuilderHelper {
     }
   }
 
-  getLockSQL(lockMode?: LockMode): string {
+  getLockSQL(qb: KnexQueryBuilder, lockMode?: LockMode): void {
     if (lockMode === LockMode.PESSIMISTIC_READ) {
-      return ' ' + this.platform.getReadLockSQL();
+      return void qb.forShare();
     }
 
     if (lockMode === LockMode.PESSIMISTIC_WRITE) {
-      return ' ' + this.platform.getWriteLockSQL();
+      return void qb.forUpdate();
     }
 
     if (lockMode === LockMode.OPTIMISTIC && this.metadata[this.entityName] && !this.metadata[this.entityName].versionProperty) {
       throw ValidationError.lockFailed(this.entityName);
     }
-
-    return '';
   }
 
-  updateVersionProperty(set: string[]): void {
+  updateVersionProperty(qb: KnexQueryBuilder): void {
     const meta = this.metadata[this.entityName];
 
     if (!meta || !meta.versionProperty) {
@@ -361,104 +345,42 @@ export class QueryBuilderHelper {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    let sql = `${this.wrap(versionProperty.fieldName)} = `;
+    let sql = versionProperty.fieldName + ' + 1';
 
     if (versionProperty.type.toLowerCase() === 'date') {
-      sql += this.platform.getCurrentTimestampSQL(versionProperty.length);
-    } else {
-      sql += this.wrap(versionProperty.fieldName) + ' + 1';
+      sql = this.platform.getCurrentTimestampSQL(versionProperty.length);
     }
 
-    set.push(sql);
+    qb.update(versionProperty.fieldName, this.knex.raw(sql));
   }
 
-  private processComplexParam(key: string, cond: any): any[] {
-    // unwind parameters when ? found in field name
-    const customExpression = key.match(/\(.*\)| |\?/) && Array.isArray(cond);
-
-    if (customExpression) {
-      const count = key.concat('?').match(/\?/g)!.length - 1;
-      return cond.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c).concat(cond.slice(count));
-    }
-
-    const operator = Object.keys(QueryBuilderHelper.OPERATORS).find(op => op in cond)!;
-
-    if (operator) {
-      return Utils.asArray(cond[operator]);
-    }
-
-    return Utils.asArray(cond);
+  private isCustomExpression(field: string): boolean {
+    return !!field.match(/[ ?<>=()]|^\d/);
   }
 
-  private prefixAndWrap(field: string): string {
+  private prefix(field: string): string {
     if (!this.isPrefixed(field)) {
-      return this.wrap(this.fieldName(field, this.alias));
+      return this.fieldName(field, this.alias);
     }
 
     const [a, f] = field.split('.');
 
-    return this.wrap(a) + '.' + this.wrap(this.fieldName(f, a));
+    return a + '.' + this.fieldName(f, a);
   }
 
-  private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
-    if (key === '$and' || key === '$or') {
-      return Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub)));
-    } else {
-      return this.getWhereParams(cond);
-    }
-  }
-
-  private processValue(field: string, value: any): string {
-    if (value === null) {
-      return ' IS NULL';
-    }
-
-    if (value instanceof RegExp) {
-      return ' LIKE ?';
-    }
-
-    if (Utils.isObject(value) && !(value instanceof Date)) {
-      return this.processObjectValue(value);
-    }
-
-    const wildcards = field.concat('?').match(/\?/g)!.length - 1;
-
-    if (Array.isArray(value) && value.length === wildcards) {
-      return '';
-    }
-
-    return ' = ?';
-  }
-
-  private processObjectValue(value: any): string {
-    let ret = '';
-
-    for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
-      if (!(op in value)) {
-        continue;
+  private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
+    const m = operator === '$or' ? 'orWhere' : 'andWhere';
+    qb[method](outer => subCondition.forEach((sub: any) => {
+      if (Object.keys(sub).length === 1) {
+        return this.appendQueryCondition(type, sub, outer, operator);
       }
 
-      const token = Array.isArray(value[op]) ? `(${value[op].map(() => '?').join(', ')})` : '?';
-      ret = ` ${replacement} ${token}`;
-
-      break;
-    }
-
-    return ret;
-  }
-
-  private getGroupQueryCondition(type: QueryType, operator: '$and' | '$or', subCondition: any[]): string {
-    const glue = QueryBuilderHelper.GROUP_OPERATORS[operator];
-    const group = subCondition.map(sub => {
-      const cond = this.getQueryCondition(type, sub);
-      return cond.length > 1 ? '(' + cond.join(` AND `) + ')' : cond[0];
-    });
-
-    return '(' + group.join(` ${glue} `) + ')';
+      outer[m](inner => this.appendQueryCondition(type, sub, inner, '$and'));
+    }));
   }
 
   private isPrefixed(field: string): boolean {
-    return new RegExp(`${this.quoteChar}?\\w+${this.quoteChar}?\\.`).test(field);
+    return !!field.match(/\w+\./);
   }
 
   private fieldName(field: string, alias?: string): string {
