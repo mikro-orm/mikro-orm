@@ -1,5 +1,6 @@
 import { URL } from 'url';
-import { Configuration } from '../utils';
+import { Transaction as KnexTransaction } from 'knex';
+import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 
 export abstract class Connection {
@@ -30,24 +31,7 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  /**
-   * Begins a transaction (if supported)
-   */
-  async beginTransaction(savepoint?: string): Promise<void> {
-    throw new Error(`Transactions are not supported by current driver`);
-  }
-
-  /**
-   * Commits statements in a transaction
-   */
-  async commit(savepoint?: string): Promise<void> {
-    throw new Error(`Transactions are not supported by current driver`);
-  }
-
-  /**
-   * Rollback changes in a transaction
-   */
-  async rollback(savepoint?: string): Promise<void> {
+  async transactional(cb: (trx: Transaction) => Promise<any>, ctx?: Transaction): Promise<any> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
@@ -73,25 +57,15 @@ export abstract class Connection {
   }
 
   protected async executeQuery<T>(query: string, params: any[], cb: () => Promise<T>): Promise<T> {
-    try {
-      const now = Date.now();
-      const res = await cb();
-      this.logQuery(query, Date.now() - now);
+    const now = Date.now();
+    const res = await cb();
+    this.logQuery(query, Date.now() - now);
 
-      return res;
-    } catch (e) {
-      e.message += `\n in query: ${query}`;
-
-      if (params && params.length) {
-        e.message += `\n with params: ${JSON.stringify(params)}`;
-      }
-
-      throw e;
-    }
+    return res;
   }
 
-  protected logQuery(query: string, took: number): void {
-    this.logger.debug(`[query-logger] ${query} [took ${took} ms]`);
+  protected logQuery(query: string, took?: number): void {
+    this.logger.debug(`[query-logger] ${query}` + (Utils.isDefined(took) ? ` [took ${took} ms]` : ''));
   }
 
 }
@@ -109,3 +83,5 @@ export interface ConnectionConfig {
   password?: string;
   database?: string;
 }
+
+export type Transaction = KnexTransaction;

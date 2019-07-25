@@ -1,29 +1,21 @@
 import { SchemaHelper } from './SchemaHelper';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { EntityProperty } from '../decorators';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: 'INTEGER',
-    boolean: 'INTEGER',
-    date: 'TEXT',
-    string: 'TEXT',
+    number: 'integer',
+    boolean: 'integer',
+    date: 'text',
+    string: 'text',
   };
 
-  getAutoIncrementStatement(meta: EntityMetadata): string {
-    return 'AUTOINCREMENT';
-  }
-
   getSchemaBeginning(): string {
-    return 'PRAGMA foreign_keys=OFF;\n\n\n';
+    return 'pragma foreign_keys = off;\n\n';
   }
 
   getSchemaEnd(): string {
-    return 'PRAGMA foreign_keys=ON;\n';
-  }
-
-  getPrimaryKeySubtype(meta: EntityMetadata): string {
-    return 'PRIMARY KEY';
+    return 'pragma foreign_keys = on;\n';
   }
 
   getTypeDefinition(prop: EntityProperty): string {
@@ -32,10 +24,6 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   supportsSchemaConstraints(): boolean {
-    return false;
-  }
-
-  supportsSchemaMultiAlter(): boolean {
     return false;
   }
 
