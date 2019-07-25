@@ -28,7 +28,7 @@ describe('RequestContext', () => {
     const bible = new Book('Bible', new Author('God', 'hello@heaven.god'));
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = bible;
-    await orm.em.persist(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     await new Promise(resolve => {
