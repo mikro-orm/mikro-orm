@@ -221,9 +221,9 @@ export class EntityManager {
     return this.driver.count(entityName, where);
   }
 
-  async persist(entity: IEntity | IEntity[], flush = this.config.get('autoFlush')): Promise<void> {
+  persist(entity: IEntity | IEntity[], flush = this.config.get('autoFlush')): void | Promise<void> {
     if (flush) {
-      await this.persistAndFlush(entity);
+      return this.persistAndFlush(entity);
     } else {
       this.persistLater(entity);
     }
@@ -247,20 +247,20 @@ export class EntityManager {
     }
   }
 
-  async remove<T extends IEntityType<T>>(entityName: EntityName<T>, where: T | any, flush = this.config.get('autoFlush')): Promise<number> {
+  remove<T extends IEntityType<T>>(entityName: EntityName<T>, where: any, flush = this.config.get('autoFlush')): void | Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
-      await this.removeEntity(where, flush);
-      return 1;
+      const ret = this.removeEntity(where, flush);
+      return ret ? ret.then(() => 1) : ret;
     }
 
     return this.nativeDelete(entityName, where);
   }
 
-  async removeEntity(entity: IEntity, flush = this.config.get('autoFlush')): Promise<void> {
+  removeEntity<T extends IEntityType<T>>(entity: T, flush = this.config.get('autoFlush')): void | Promise<void> {
     if (flush) {
-      await this.removeAndFlush(entity);
+      return this.removeAndFlush(entity);
     } else {
       this.removeLater(entity);
     }
