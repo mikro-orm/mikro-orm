@@ -41,7 +41,7 @@ describe('EntityAssignerMongo', () => {
     const bible = new Book('Bible', god);
     const bible2 = new Book('Bible pt. 2', god);
     const bible3 = new Book('Bible pt. 3', new Author('Lol', 'lol@lol.lol'));
-    await orm.em.persist([bible, bible2, bible3]);
+    await orm.em.persistAndFlush([bible, bible2, bible3]);
     orm.em.clear();
 
     const newGod = (await orm.em.findOne(Author, god.id, ['books.author']))!;
@@ -58,7 +58,7 @@ describe('EntityAssignerMongo', () => {
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
     bible.publisher = new Publisher('Publisher 1');
-    await orm.em.persist(bible);
+    await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
     const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author', 'books.publisher']))!;
@@ -73,7 +73,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#init() should populate the entity', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persist(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     const jon = orm.em.getReference(Author, author.id!);
@@ -84,7 +84,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#init() should refresh the entity if its already loaded', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    await orm.em.persist(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     const jon = await orm.em.findOne(Author, author.id);
@@ -98,13 +98,13 @@ describe('EntityAssignerMongo', () => {
     const god = new Author('God', 'hello@heaven.god');
     const jon = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('Book2', jon);
-    await orm.em.persist(book);
+    await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
     EntityAssigner.assign(book, { title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
-    await orm.em.persist(god);
+    await orm.em.persistAndFlush(god);
     EntityAssigner.assign(book, { title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
     EntityAssigner.assign(book, { title: 'Better Book2 3', author: jon._id });
@@ -114,7 +114,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should update entity collection', async () => {
     const other = new BookTag('other');
-    await orm.em.persist(other);
+    await orm.em.persistAndFlush(other);
     const jon = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('Book2', jon);
     const tag1 = new BookTag('tag 1');
@@ -123,7 +123,7 @@ describe('EntityAssignerMongo', () => {
     book.tags.add(tag1);
     book.tags.add(tag2);
     book.tags.add(tag3);
-    await orm.em.persist(book);
+    await orm.em.persistAndFlush(book);
     EntityAssigner.assign(book, { tags: [other._id] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
     EntityAssigner.assign(book, { tags: [] });
