@@ -31,10 +31,6 @@ export class Utils {
     return [...new Set(items)];
   }
 
-  static flatten<T>(arrays: T[][]): T[] {
-    return [].concat(...arrays as any[]);
-  }
-
   static merge(target: any, ...sources: any[]): any {
     if (!sources.length) {
       return target;
@@ -249,6 +245,12 @@ export class Utils {
 
   static normalizePath(...parts: string[]): string {
     return parts.join('/').replace(/\\/g, '/');
+  }
+
+  static runIfNotEmpty(clause: () => any, data: any): void {
+    if (!Utils.isEmpty(data)) {
+      clause();
+    }
   }
 
 }

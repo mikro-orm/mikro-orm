@@ -2,7 +2,7 @@ import { MetadataStorage } from '../metadata';
 import { EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { IDatabaseDriver } from '..';
+import { IDatabaseDriver, Transaction } from '..';
 import { QueryResult } from '../connections';
 import { ValidationError } from '../utils';
 
@@ -13,7 +13,7 @@ export class ChangeSetPersister {
   constructor(private readonly driver: IDatabaseDriver,
               private readonly identifierMap: Record<string, EntityIdentifier>) { }
 
-  async persistToDatabase<T extends IEntityType<T>>(changeSet: ChangeSet<T>): Promise<void> {
+  async persistToDatabase<T extends IEntityType<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata[changeSet.name];
 
     // process references first
@@ -22,35 +22,35 @@ export class ChangeSetPersister {
     }
 
     // persist the entity itself
-    await this.persistEntity(changeSet, meta);
+    await this.persistEntity(changeSet, meta, ctx);
   }
 
-  private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>): Promise<void> {
+  private async persistEntity<T extends IEntityType<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>, ctx?: Transaction): Promise<void> {
     let res: QueryResult | undefined;
 
     if (changeSet.type === ChangeSetType.DELETE) {
-      await this.driver.nativeDelete(changeSet.name, changeSet.entity.__primaryKey);
+      await this.driver.nativeDelete(changeSet.name, changeSet.entity.__primaryKey, ctx);
     } else if (changeSet.type === ChangeSetType.UPDATE) {
-      res = await this.updateEntity(meta, changeSet);
+      res = await this.updateEntity(meta, changeSet, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
     } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
-      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
       delete changeSet.entity.__initialized;
     } else { // ChangeSetType.CREATE without primary key
-      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload);
+      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-      changeSet.entity.__primaryKey = res.insertId;
+      changeSet.entity.__primaryKey = changeSet.entity.__primaryKey || res.insertId;
       this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey);
       delete changeSet.entity.__initialized;
     }
 
-    await this.processOptimisticLock(meta, changeSet, res);
+    await this.processOptimisticLock(meta, changeSet, res, ctx);
   }
 
-  private async updateEntity<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>): Promise<QueryResult> {
+  private async updateEntity<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__primaryKey, changeSet.payload, ctx);
     }
 
     const cond = {
@@ -58,16 +58,16 @@ export class ChangeSetPersister {
       [meta.versionProperty]: changeSet.entity[meta.versionProperty],
     };
 
-    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload);
+    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
   }
 
-  private async processOptimisticLock<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined) {
+  private async processOptimisticLock<T extends IEntityType<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined, ctx?: Transaction) {
     if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
       throw ValidationError.lockFailed(changeSet.entity);
     }
 
     if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
-      const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__primaryKey, [], {}, [meta.versionProperty]);
+      const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__primaryKey, [], {}, [meta.versionProperty], undefined, ctx);
       changeSet.entity[meta.versionProperty as keyof T] = e![meta.versionProperty] as T[keyof T];
     }
   }
