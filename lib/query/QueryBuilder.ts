@@ -1,11 +1,13 @@
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrderMap, QueryType } from './enums';
-import { IDatabaseDriver } from '../drivers';
 import { LockMode } from '../unit-of-work';
+import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { IDatabaseDriver } from '../drivers';
 
 /**
  * SQL query builder
@@ -30,13 +32,15 @@ export class QueryBuilder {
   private _limit: number;
   private _offset: number;
   private lockMode?: LockMode;
-  private readonly connection = this.driver.getConnection();
+  private readonly connection = this.driver.getConnection() as AbstractSqlConnection;
   private readonly platform = this.driver.getPlatform();
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.platform);
+  private readonly knex = this.connection.getKnex();
+  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.knex, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: Record<string, EntityMetadata>,
               private readonly driver: IDatabaseDriver,
+              private readonly context?: Transaction,
               readonly alias = `e0`) { }
 
   select(fields: string | string[], distinct = false): this {
@@ -66,17 +70,16 @@ export class QueryBuilder {
   }
 
   count(field?: string, distinct = false): this {
-    this.select(field || this.metadata[this.entityName].primaryKey);
-    this.flags.push(QueryFlag.COUNT);
+    this._fields = [field || this.metadata[this.entityName].primaryKey];
 
     if (distinct) {
       this.flags.push(QueryFlag.DISTINCT);
     }
 
-    return this;
+    return this.init(QueryType.COUNT);
   }
 
-  join(field: string, alias: string, type: 'left' | 'inner' = 'inner'): this {
+  join(field: string, alias: string, type: 'leftJoin' | 'innerJoin' = 'innerJoin'): this {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata[entityName].properties[fromField];
@@ -99,7 +102,7 @@ export class QueryBuilder {
   }
 
   leftJoin(field: string, alias: string): this {
-    return this.join(field, alias, 'left');
+    return this.join(field, alias, 'leftJoin');
   }
 
   where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
@@ -191,7 +194,7 @@ export class QueryBuilder {
   }
 
   setLockMode(mode?: LockMode): this {
-    if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.driver.isInTransaction()) {
+    if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.context) {
       throw ValidationError.transactionRequired();
     }
 
@@ -200,52 +203,37 @@ export class QueryBuilder {
     return this;
   }
 
-  getQuery(): string {
+  getKnexQuery(): KnexQueryBuilder {
     this.finalize();
-    let sql = this.getQueryBase();
+    const qb = this.getQueryBase();
 
-    sql += this.helper.getClause('WHERE', this.helper.getQueryCondition(this.type, this._cond).join(' AND '), this._cond);
-    sql += this.helper.getClause('GROUP BY', this.prepareFields(this._groupBy), this._groupBy);
-    sql += this.helper.getClause('HAVING', this.helper.getQueryCondition(this.type, this._having).join(' AND '), this._having);
-    sql += this.helper.getClause('ORDER BY', this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap).join(', '), this._orderBy);
-    sql += this.helper.getClause('LIMIT', '?', this._limit);
-    sql += this.helper.getClause('OFFSET', '?', this._offset);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond);
+    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy)), this._groupBy);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap)), this._orderBy);
+    Utils.runIfNotEmpty(() => qb.limit(this._limit), this._limit);
+    Utils.runIfNotEmpty(() => qb.offset(this._offset), this._offset);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
-      sql += ' CASCADE';
+      return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
-    sql += this.helper.getLockSQL(this.lockMode);
+    this.helper.getLockSQL(qb, this.lockMode);
+    this.helper.finalize(this.type, qb, this.metadata[this.entityName]);
 
-    return this.helper.finalize(this.type, sql, this.metadata[this.entityName]);
+    return qb;
+  }
+
+  getQuery(): string {
+    return this.getKnexQuery().toSQL().toNative().sql;
   }
 
   getParams(): any[] {
-    this.finalize();
-    let ret: any[] = [];
-
-    if (this.type === QueryType.INSERT && this._data) {
-      ret = Object.values(this._data);
-    } else if (this.type === QueryType.UPDATE) {
-      ret = Object.values(this._data);
-    }
-
-    ret = ret.concat(this.helper.getWhereParams(this._cond));
-    ret = ret.concat(this.helper.getWhereParams(this._having));
-
-    if (this._limit) {
-      ret.push(this._limit);
-    }
-
-    if (this._offset) {
-      ret.push(this._offset);
-    }
-
-    return SmartQueryHelper.processParams(ret);
+    return this.getKnexQuery().toSQL().toNative().bindings;
   }
 
   async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
-    const res = await this.connection.execute(this.getQuery(), this.getParams(), method);
+    const res = await this.connection.execute(this.getKnexQuery(), [], method);
 
     if (!mapResults) {
       return res;
@@ -259,31 +247,31 @@ export class QueryBuilder {
   }
 
   clone(): QueryBuilder {
-    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.alias);
+    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.context, this.alias);
     Object.assign(qb, this);
 
     // clone array/object properties
     const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
+    qb.finalized = false;
 
     return qb;
   }
 
-  private prepareFields(fields: string[], glue = ', '): string {
+  private prepareFields(fields: string[]): (string | Raw)[] {
     const ret: string[] = [];
 
     fields.forEach(f => {
       if (this._joins[f]) {
-        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]));
-        return;
+        return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
-      ret.push(this.helper.mapper(this.type, f));
+      ret.push(this.helper.mapper(this.type, f) as string);
     });
 
     Object.keys(this._populateMap).forEach(f => {
       if (!fields.includes(f)) {
-        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]));
+        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
       if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE) {
@@ -291,15 +279,7 @@ export class QueryBuilder {
       }
     });
 
-    if (this.flags.includes(QueryFlag.COUNT)) {
-      if (this.flags.includes(QueryFlag.DISTINCT)) {
-        return `COUNT(DISTINCT ${ret[0]}) AS ${this.helper.wrap('count')}`;
-      }
-
-      return `COUNT(${ret[0]}) AS ${this.helper.wrap('count')}`;
-    }
-
-    return ret.join(glue);
+    return ret;
   }
 
   private processWhere(cond: any): any {
@@ -335,7 +315,7 @@ export class QueryBuilder {
 
     this._fields.push(prop.name);
     const alias2 = `e${this.aliasCounter++}`;
-    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
+    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'leftJoin');
     const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
     Utils.renameKey(cond, prop.name, `${alias2}.${prop2.referenceColumnName}`);
   }
@@ -343,7 +323,7 @@ export class QueryBuilder {
   private processManyToMany(prop: EntityProperty, cond: any): void {
     const alias1 = `e${this.aliasCounter++}`;
     const join = {
-      type: 'left',
+      type: 'leftJoin',
       alias: alias1,
       ownerAlias: this.alias,
       joinColumn: prop.joinColumn,
@@ -364,7 +344,7 @@ export class QueryBuilder {
 
   private processOneToMany(prop: EntityProperty, cond: any): void {
     const alias2 = `e${this.aliasCounter++}`;
-    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'left');
+    this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'leftJoin');
     Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
   }
 
@@ -383,36 +363,50 @@ export class QueryBuilder {
     return this;
   }
 
-  private getQueryBase(): string {
-    let sql = this.type + ' ';
+  private getQueryBase(): KnexQueryBuilder {
+    const qb = this.createBuilder();
 
     switch (this.type) {
       case QueryType.SELECT:
-        sql += this.flags.includes(QueryFlag.DISTINCT) && !this.flags.includes(QueryFlag.COUNT) ? 'DISTINCT ' : '';
-        sql += this.prepareFields(this._fields);
-        sql += ` FROM ${this.helper.getTableName(this.entityName, true)} AS ${this.helper.wrap(this.alias)}`;
-        sql += this.helper.processJoins(this._joins);
+        qb.select(this.prepareFields(this._fields));
+
+        if (this.flags.includes(QueryFlag.DISTINCT)) {
+          qb.distinct();
+        }
+
+        this.helper.processJoins(qb, this._joins);
+        break;
+      case QueryType.COUNT:
+        const m = this.flags.includes(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
+        qb[m](this.helper.mapper(this.type, this._fields[0], undefined, 'count'));
+        this.helper.processJoins(qb, this._joins);
         break;
       case QueryType.INSERT:
-        sql += `INTO ${this.helper.getTableName(this.entityName, true)}`;
-        sql += ' (' + Object.keys(this._data).map(k => this.helper.wrap(k)).join(', ') + ')';
-        sql += ' VALUES (' + Object.keys(this._data).map(() => '?').join(', ') + ')';
+        qb.insert(this._data);
         break;
       case QueryType.UPDATE:
-        sql += this.helper.getTableName(this.entityName, true);
-        const set = Object.keys(this._data).map(k => this.helper.wrap(k) + ' = ?');
-        this.helper.updateVersionProperty(set);
-        sql += ' SET ' + set.join(', ');
+        qb.update(this._data);
+        this.helper.updateVersionProperty(qb);
         break;
       case QueryType.DELETE:
-        sql += 'FROM ' + this.helper.getTableName(this.entityName, true);
+        qb.delete();
         break;
       case QueryType.TRUNCATE:
-        sql += 'TABLE ' + this.helper.getTableName(this.entityName, true);
+        qb.truncate();
         break;
     }
 
-    return sql;
+    return qb;
+  }
+
+  private createBuilder(): KnexQueryBuilder {
+    const tableName = this.helper.getTableName(this.entityName) + ([QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
+    const qb = this.knex(tableName);
+
+    if (this.context) {
+      qb.transacting(this.context);
+    }
+    return qb;
   }
 
   private finalize(): void {
@@ -427,15 +421,16 @@ export class QueryBuilder {
 
       if (this.metadata[field]) { // pivot table entity
         const prop = this.metadata[field].properties[this.entityName];
-        this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, `e${this.aliasCounter++}`, 'left');
+        this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
         this._populateMap[field] = this._joins[field].alias;
       } else if (this.helper.isOneToOneInverse(field)) {
         const prop = this.metadata[this.entityName].properties[field];
-        this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'left');
+        this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
         this._populateMap[field] = this._joins[field].alias;
       }
     });
 
+    SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
   }
 
@@ -443,7 +438,7 @@ export class QueryBuilder {
 
 export interface JoinOptions {
   table: string;
-  type: 'left' | 'inner';
+  type: 'leftJoin' | 'innerJoin';
   alias: string;
   ownerAlias: string;
   joinColumn?: string;

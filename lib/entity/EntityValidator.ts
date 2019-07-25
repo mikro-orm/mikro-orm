@@ -98,7 +98,7 @@ export class EntityValidator {
   }
 
   private fixDateType(givenValue: string): Date | string {
-    const date = new Date(givenValue);
+    const date = new Date(parseFloat(givenValue) || givenValue);
     return date.toString() !== 'Invalid Date' ? date : givenValue;
   }
 

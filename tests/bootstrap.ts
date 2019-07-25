@@ -1,6 +1,6 @@
 import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, FooBaz2, Publisher2, Test2, FooBar2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 import { SqliteConnection } from '../lib/connections/SqliteConnection';

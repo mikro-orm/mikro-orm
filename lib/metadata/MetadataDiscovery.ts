@@ -227,7 +227,7 @@ export class MetadataDiscovery {
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata | undefined {
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable) {
       const pk = this.namingStrategy.referenceColumnName();
-      const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true } as EntityProperty;
+      const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
       this.initFieldName(primaryProp);
 
       return this.metadata[prop.pivotTable] = {
@@ -297,7 +297,7 @@ export class MetadataDiscovery {
     });
   }
 
-  private getDefaultVersionValue(prop: EntityProperty): string {
+  private getDefaultVersionValue(prop: EntityProperty): any {
     if (prop.default) {
       return prop.default;
     }
@@ -307,7 +307,7 @@ export class MetadataDiscovery {
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
 
-    return '1';
+    return 1;
   }
 
 }

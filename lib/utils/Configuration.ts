@@ -11,11 +11,13 @@ import { Logger, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
+import { PoolConfig } from 'knex';
 
 export class Configuration {
 
   static readonly DEFAULTS = {
     type: 'mongo',
+    pool: {},
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
@@ -168,6 +170,7 @@ export interface MikroORMOptions {
   user?: string;
   password?: string;
   multipleStatements?: boolean; // for mysql driver
+  pool: PoolConfig;
   strict: boolean;
   logger: (message: string) => void;
   debug: boolean;

@@ -83,6 +83,7 @@
     "fast-deep-equal": "^2.0.0",
     "fs-extra": "^8.0.0",
     "globby": "^10.0.0",
+    "knex": "^0.19.0",
     "ts-morph": "^3.0.0",
     "typescript": "^3.5.0",
     "uuid": "^3.3.2"
@@ -92,6 +93,20 @@
     "mysql2": "^1.6.0",
     "pg": "^7.10.0",
     "sqlite": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "mongodb": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "sqlite": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^8.0.0",
