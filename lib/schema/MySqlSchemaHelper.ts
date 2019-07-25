@@ -1,5 +1,6 @@
 import { SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
+import { MySqlTableBuilder } from 'knex';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -20,28 +21,21 @@ export class MySqlSchemaHelper extends SchemaHelper {
     date: 0,
   };
 
-  getIdentifierQuoteCharacter(): string {
-    return '`';
-  }
-
   getSchemaBeginning(): string {
-    return 'SET NAMES utf8;\nSET FOREIGN_KEY_CHECKS=0;\n\n\n';
+    return 'set names utf8;\nset foreign_key_checks = 0;\n\n';
   }
 
   getSchemaEnd(): string {
-    return 'SET FOREIGN_KEY_CHECKS=1;\n';
+    return 'set foreign_key_checks = 1;\n';
   }
 
-  getSchemaTableEnd(): string {
-    return ' ENGINE=InnoDB DEFAULT CHARSET=utf8';
+  finalizeTable(table: MySqlTableBuilder): void {
+    table.engine('InnoDB');
+    table.charset('utf8');
   }
 
   getTypeDefinition(prop: EntityProperty): string {
     return super.getTypeDefinition(prop, MySqlSchemaHelper.TYPES, MySqlSchemaHelper.DEFAULT_TYPE_LENGTHS);
-  }
-
-  getUnsignedSuffix(prop: EntityProperty): string {
-    return ' unsigned';
   }
 
 }

@@ -44,15 +44,28 @@ describe('EntityManagerSqlite', () => {
     expect(driver instanceof SqliteDriver).toBe(true);
     expect(await driver.findOne(Book3.name, { foo: 'bar' })).toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
-    expect(await driver.getConnection().execute('SELECT 1 as count')).toEqual([{ count: 1 }]);
+    await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
+    await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
+    await expect(driver.getConnection().execute('insert into test3 (name) values (?)', ['test'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 1,
+    });
+    await expect(driver.getConnection().execute('update test3 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 1,
+    });
+    await expect(driver.getConnection().execute('delete from test3 where name = ?', ['test 2'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 1,
+    });
     expect(await driver.find(BookTag3.name, { books: [1] })).not.toBeNull();
   });
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver<SqliteDriver>();
-    const err1 = `SQLITE_ERROR: no such table: not_existing\n in query: INSERT INTO "not_existing" ("foo") VALUES (?)\n with params: ["bar"]`;
+    const err1 = "insert into `not_existing` (`foo`) values ('bar') - SQLITE_ERROR: no such table: not_existing";
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
-    const err2 = `SQLITE_ERROR: no such table: not_existing\n in query: DELETE FROM "not_existing"`;
+    const err2 = 'delete from `not_existing` - SQLITE_ERROR: no such table: not_existing';
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
   });
 
@@ -68,55 +81,59 @@ describe('EntityManagerSqlite', () => {
 
   test('transactions', async () => {
     const god1 = new Author3('God1', 'hello@heaven1.god');
-    await orm.em.beginTransaction();
-    await orm.em.persist(god1, true);
-    await orm.em.rollback();
+
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      });
+    } catch { }
+
     const res1 = await orm.em.findOne(Author3, { name: 'God1' });
     expect(res1).toBeNull();
 
-    await orm.em.beginTransaction();
-    const god2 = new Author3('God2', 'hello@heaven2.god');
-    await orm.em.persist(god2, true);
-    await orm.em.commit();
+    await orm.em.transactional(async em => {
+      const god2 = new Author3('God2', 'hello@heaven2.god');
+      await em.persist(god2);
+    });
+
     const res2 = await orm.em.findOne(Author3, { name: 'God2' });
     expect(res2).not.toBeNull();
-
-    await orm.em.transactional(async em => {
-      const god3 = new Author3('God3', 'hello@heaven3.god');
-      await em.persist(god3);
-    });
-    const res3 = await orm.em.findOne(Author3, { name: 'God3' });
-    expect(res3).not.toBeNull();
 
     const err = new Error('Test');
 
     try {
       await orm.em.transactional(async em => {
-        const god4 = new Author3('God4', 'hello@heaven4.god');
-        await em.persist(god4);
+        const god3 = new Author3('God4', 'hello@heaven4.god');
+        await em.persist(god3);
         throw err;
       });
     } catch (e) {
       expect(e).toBe(err);
-      const res4 = await orm.em.findOne(Author3, { name: 'God4' });
-      expect(res4).toBeNull();
+      const res3 = await orm.em.findOne(Author3, { name: 'God4' });
+      expect(res3).toBeNull();
     }
   });
 
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
-      const driver = em.getDriver();
-      const god1 = new Author3('God1', 'hello@heaven1.god');
-      await driver.beginTransaction();
-      await em.persistAndFlush(god1);
-      await driver.rollback();
+      const god1 = new Author3('God1', 'hello1@heaven.god');
+
+      try {
+        await em.transactional(async em2 => {
+          await em2.persistAndFlush(god1);
+          throw new Error(); // rollback the transaction
+        });
+      } catch { }
+
       const res1 = await em.findOne(Author3, { name: 'God1' });
       expect(res1).toBeNull();
 
-      await driver.beginTransaction();
-      const god2 = new Author3('God2', 'hello@heaven2.god');
-      await em.persistAndFlush(god2);
-      await driver.commit();
+      await em.transactional(async em2 => {
+        const god2 = new Author3('God2', 'hello2@heaven.god');
+        await em2.persistAndFlush(god2);
+      });
+
       const res2 = await em.findOne(Author3, { name: 'God2' });
       expect(res2).not.toBeNull();
     });
@@ -130,19 +147,26 @@ describe('EntityManagerSqlite', () => {
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
       // do stuff inside inner transaction and rollback
-      await em.beginTransaction();
-      await em.persist(new Author3('God', 'hello@heaven.god'));
-      await em.rollback();
+      try {
+        await em.transactional(async em2 => {
+          await em2.persistAndFlush(new Author3('God', 'hello@heaven.god'));
+          throw new Error(); // rollback the transaction
+        });
+      } catch { }
 
-      await em.persist(new Author3('God Persisted!', 'hello-persisted@heaven.god'));
+      await em.persistAndFlush(new Author3('God Persisted!', 'hello-persisted@heaven.god'));
     });
 
     // try to commit the outer transaction
     await expect(transaction).resolves.toBeUndefined();
     expect(mock.mock.calls.length).toBe(6);
-    expect(mock.mock.calls[0][0]).toMatch('[query-logger] BEGIN');
-    expect(mock.mock.calls[5][0]).toMatch('[query-logger] COMMIT');
-    expect(await orm.em.findOne(Author3, { name: 'God Persisted!' })).not.toBeNull();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author3` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `author3` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
+    await expect(orm.em.findOne(Author3, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
   test('should load entities', async () => {
@@ -410,9 +434,9 @@ describe('EntityManagerSqlite', () => {
     });
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('BEGIN');
-    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM "author3" AS "e0" WHERE "e0"."id" = ?');
-    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author3` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('findOne does not support pessimistic locking [pessimistic read]', async () => {
@@ -428,9 +452,9 @@ describe('EntityManagerSqlite', () => {
     });
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('BEGIN');
-    expect(mock.mock.calls[1][0]).toMatch('SELECT 1 FROM "author3" AS "e0" WHERE "e0"."id" = ?');
-    expect(mock.mock.calls[2][0]).toMatch('COMMIT');
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author3` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('stable results of serialization', async () => {
