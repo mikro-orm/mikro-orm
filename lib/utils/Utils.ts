@@ -1,4 +1,4 @@
-import { normalize, join } from 'path';
+import { normalize, join, isAbsolute } from 'path';
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
@@ -241,5 +241,13 @@ export class Utils {
 
   static normalizePath(...parts: string[]): string {
     return normalize(join(...parts));
+  }
+
+  static toAbsolutePath(dir: string, baseDir: string) {
+    if (!isAbsolute(dir)) {
+      return Utils.normalizePath(dir);
+    } else {
+      return Utils.normalizePath(baseDir, dir);
+    }
   }
 }

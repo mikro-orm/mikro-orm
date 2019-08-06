@@ -77,26 +77,29 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
 
   private async validateDirectory(dir: string, baseDir: string): Promise<string[]> {
     const ret: string[] = [];
-    let path;
-    if (isAbsolute(dir)) {
-      path = dir;
-    } else {
-      path = Utils.normalizePath(baseDir, dir);
-    }
+    const path = Utils.toAbsolutePath(dir, baseDir);
 
     if (globby.hasMagic(path)) {
-      const dirs = await globby(path, {
-        cwd: this.config.get('baseDir'),
-        onlyDirectories: true
-      });
-      for (const file of dirs) {
-        ret.push(...(await this.validateDirectory(file, baseDir)));
-      }
-    } else {
-      if (!(await pathExists(path))) {
-        throw new Error(`Path ${path} does not exist`);
-      }
-      ret.push(Utils.normalizePath(path, '**', '*.ts'));
+      return this.validateDirGlob(path, baseDir)
+    }
+
+    if (!(await pathExists(path))) {
+      throw new Error(`Path ${path} does not exist`);
+    }
+    ret.push(Utils.normalizePath(path, '**', '*.ts'));
+
+    return ret;
+  }
+
+  private async validateDirGlob(dirGlob: string, baseDir: string): Promise<string[]> {
+    const ret: string[] = [];
+    const dirs = await globby(dirGlob, {
+      cwd: baseDir,
+      onlyDirectories: true
+    });
+
+    for (const dir of dirs) {
+      ret.push(...(await this.validateDirectory(dir, baseDir)));
     }
     return ret;
   }
