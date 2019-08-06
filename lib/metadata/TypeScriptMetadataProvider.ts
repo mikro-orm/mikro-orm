@@ -1,4 +1,3 @@
-import { isAbsolute } from 'path';
 import { Project, SourceFile } from 'ts-morph';
 import { pathExists } from 'fs-extra';
 
