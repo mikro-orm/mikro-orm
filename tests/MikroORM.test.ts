@@ -27,6 +27,14 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
   });
 
+  test('should work with globs', async () => {
+    // todo: confirm that entities are loaded correctly
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['./entities-nested/**/entities'], cache: { enabled: false }, entitiesDirsTs: ['./entities-nested/**/entities'] })).not.toThrowError();
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['entities-nested/**/entities'], cache: { enabled: false }, entitiesDirsTs: ['entities-nested/**/entities'] })).not.toThrowError();
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['entities-nested/**/entities/'], cache: { enabled: false }, entitiesDirsTs: ['entities-nested/**/entities/'] })).not.toThrowError();
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['./entities-nested/**/entities'], cache: { enabled: false } })).not.toThrowError();
+  });
+
   test('should init itself with entity manager', async () => {
     const orm = await MikroORM.init({
       entitiesDirs: ['entities'],
