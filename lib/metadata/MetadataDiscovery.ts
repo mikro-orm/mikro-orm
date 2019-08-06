@@ -1,15 +1,14 @@
+import { extname, parse } from 'path';
 import * as globby from 'globby';
-import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { EntityManager } from '../EntityManager';
 import { Configuration, Logger, Utils, ValidationError } from '../utils';
+import { Cascade, EntityHelper, ReferenceType } from '../entity';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { Cascade, EntityHelper, ReferenceType } from '../entity';
 
 export class MetadataDiscovery {
-
   private readonly metadata = MetadataStorage.getMetadata();
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
@@ -18,13 +17,15 @@ export class MetadataDiscovery {
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
-  constructor(private readonly em: EntityManager,
-              private readonly config: Configuration,
-              private readonly logger: Logger) { }
+  constructor(
+    private readonly em: EntityManager,
+    private readonly config: Configuration,
+    private readonly logger: Logger
+  ) {}
 
   async discover(): Promise<Record<string, EntityMetadata>> {
     const startTime = Date.now();
-    this.logger.debug(`ORM entity discovery started`);
+    this.logger.debug('ORM entity discovery started');
     this.discovered.length = 0;
     const tsNode = process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
 
@@ -39,7 +40,9 @@ export class MetadataDiscovery {
     // validate base entities
     this.discovered
       .filter(meta => meta.extends && !this.discovered.find(m => m.prototype.constructor.name === meta.extends))
-      .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
+      .forEach(meta => {
+        throw ValidationError.fromUnknownBaseEntity(meta);
+      });
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
@@ -50,37 +53,30 @@ export class MetadataDiscovery {
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
 
     const discovered: Record<string, EntityMetadata> = {};
-    this.discovered
-      .filter(meta => meta.name)
-      .forEach(meta => discovered[meta.name] = meta );
+    this.discovered.filter(meta => meta.name).forEach(meta => (discovered[meta.name] = meta));
 
     return discovered;
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = await globby('*', { cwd: Utils.normalizePath(this.config.get('baseDir'), basePath) });
+    const globsToIgnore = ['*.js.map', '*.d.ts', '.*', 'index.[jt]s'];
+    const glob = [`${basePath}/(*.[jt]s)`, `**/!{${globsToIgnore.join(',')}}`];
+    const files = await globby(glob, { cwd: this.config.get('baseDir') });
+
     this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
-      if (
-        !file.match(/\.[jt]s$/) ||
-        file.endsWith('.js.map') ||
-        file.endsWith('.d.ts') ||
-        file.startsWith('.') ||
-        file.match(/index\.[jt]s$/)
-      ) {
-        this.logger.debug(`- ignoring file ${file}`);
-        continue;
-      }
-
       const name = this.getClassName(file);
-      const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
+      const path = Utils.normalizePath(this.config.get('baseDir'), file);
       const target = require(path)[name]; // include the file to trigger loading of metadata
       await this.discoverEntity(target, path);
     }
   }
 
-  private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
+  private async discoverEntity<T extends IEntityType<T>>(
+    entity: EntityClass<T> | EntityClassGroup<T>,
+    path?: string
+  ): Promise<void> {
     entity = this.metadataProvider.prepare(entity);
     this.logger.debug(`- processing entity ${entity.name}`);
 
@@ -88,7 +84,7 @@ export class MetadataDiscovery {
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
     meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
-    const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
+    const cache = meta.path && (await this.cache.get(entity.name + extname(meta.path)));
 
     if (cache) {
       this.logger.debug(`- using cached metadata for entity ${entity.name}`);
@@ -227,19 +223,24 @@ export class MetadataDiscovery {
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata | undefined {
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable) {
       const pk = this.namingStrategy.referenceColumnName();
-      const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true } as EntityProperty;
+      const primaryProp = {
+        name: pk,
+        type: 'number',
+        reference: ReferenceType.SCALAR,
+        primary: true
+      } as EntityProperty;
       this.initFieldName(primaryProp);
 
-      return this.metadata[prop.pivotTable] = {
+      return (this.metadata[prop.pivotTable] = {
         name: prop.pivotTable,
         collection: prop.pivotTable,
         primaryKey: pk,
         properties: {
           [pk]: primaryProp,
           [meta.name]: this.definePivotProperty(prop, meta.name, prop.type),
-          [prop.type]: this.definePivotProperty(prop, prop.type, meta.name),
-        },
-      } as EntityMetadata;
+          [prop.type]: this.definePivotProperty(prop, prop.type, meta.name)
+        }
+      } as EntityMetadata);
     }
   }
 
@@ -271,7 +272,8 @@ export class MetadataDiscovery {
   }
 
   private getClassName(file: string): string {
-    const name = file.split('.')[0];
+    const filename = parse(file).name;
+    const name = filename.split('.')[0];
     const ret = name.replace(/-(\w)/, m => m[1].toUpperCase());
 
     return ret.charAt(0).toUpperCase() + ret.slice(1);
@@ -304,5 +306,4 @@ export class MetadataDiscovery {
 
     return '1';
   }
-
 }

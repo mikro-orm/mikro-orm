@@ -1,12 +1,13 @@
+import { isAbsolute } from 'path';
 import { Project, SourceFile } from 'ts-morph';
 import { pathExists } from 'fs-extra';
 
-import { MetadataProvider } from './MetadataProvider';
+import * as globby from 'globby';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { Utils } from '../utils';
+import { MetadataProvider } from './MetadataProvider';
 
 export class TypeScriptMetadataProvider extends MetadataProvider {
-
   private readonly project = new Project();
   private sources: SourceFile[];
 
@@ -54,29 +55,49 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
 
   private async initSourceFiles(): Promise<void> {
     const tsDirs = this.config.get('entitiesDirsTs');
+    const baseDir = this.config.get('baseDir');
 
     if (tsDirs.length > 0) {
-      const dirs = await this.validateDirectories(tsDirs);
+      const dirs = await this.validateDirectories(tsDirs, baseDir);
       this.sources = this.project.addExistingSourceFiles(dirs);
     } else {
       this.sources = this.project.addSourceFilesFromTsConfig(this.config.get('tsConfigPath'));
     }
   }
 
-  private async validateDirectories(dirs: string[]): Promise<string[]> {
+  private async validateDirectories(dirs: string[], baseDir: string): Promise<string[]> {
     const ret: string[] = [];
 
     for (const dir of dirs) {
-      const path = Utils.normalizePath(this.config.get('baseDir'), dir);
-
-      if (!await pathExists(path)) {
-        throw new Error(`Path ${path} does not exist`);
-      }
-
-      ret.push(Utils.normalizePath(path, '**', '*.ts'));
+      ret.push(...(await this.validateDirectory(dir, baseDir)));
     }
 
     return ret;
   }
 
+  private async validateDirectory(dir: string, baseDir: string): Promise<string[]> {
+    const ret: string[] = [];
+    let path;
+    if (isAbsolute(dir)) {
+      path = dir;
+    } else {
+      path = Utils.normalizePath(baseDir, dir);
+    }
+
+    if (globby.hasMagic(path)) {
+      const dirs = await globby(path, {
+        cwd: this.config.get('baseDir'),
+        onlyDirectories: true
+      });
+      for (const file of dirs) {
+        ret.push(...(await this.validateDirectory(file, baseDir)));
+      }
+    } else {
+      if (!(await pathExists(path))) {
+        throw new Error(`Path ${path} does not exist`);
+      }
+      ret.push(Utils.normalizePath(path, '**', '*.ts'));
+    }
+    return ret;
+  }
 }

@@ -1,3 +1,4 @@
+import { normalize, join } from 'path';
 import * as fastEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 
@@ -6,7 +7,6 @@ import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrim
 import { ArrayCollection, Collection, ReferenceType } from '../entity';
 
 export class Utils {
-
   static isDefined(data: any): data is object {
     return typeof data !== 'undefined';
   }
@@ -32,7 +32,7 @@ export class Utils {
   }
 
   static flatten<T>(arrays: T[][]): T[] {
-    return [].concat(...arrays as any[]);
+    return [].concat(...(arrays as any[]));
   }
 
   static merge(target: any, ...sources: any[]): any {
@@ -88,12 +88,12 @@ export class Utils {
       const pk = () => metadata[prop.type].primaryKey;
       const name = prop.name as keyof T;
 
-      if (e[name] as any instanceof ArrayCollection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
+      if ((e[name] as any) instanceof ArrayCollection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
         return delete ret[name];
       }
 
       if (Utils.isEntity(e[name])) {
-        return ret[prop.name] = ret[prop.name][pk()];
+        return (ret[prop.name] = ret[prop.name][pk()]);
       }
     });
 
@@ -127,7 +127,7 @@ export class Utils {
   }
 
   static getParamNames(func: Function | string): string[] {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm;
     const ARGUMENT_NAMES = /([^\s,]+)/g;
     const fnStr = func.toString().replace(STRIP_COMMENTS, ''); // strip comments
     let paramsStr = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')); // extract params
@@ -240,7 +240,6 @@ export class Utils {
   }
 
   static normalizePath(...parts: string[]): string {
-    return parts.join('/').replace(/\\/g, '/');
+    return normalize(join(...parts));
   }
-
 }
