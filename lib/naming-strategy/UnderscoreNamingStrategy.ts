@@ -1,6 +1,6 @@
-import { NamingStrategy } from './NamingStrategy';
+import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
-export class UnderscoreNamingStrategy implements NamingStrategy {
+export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
 
   classToTableName(entityName: string): string {
     return this.underscore(entityName);
