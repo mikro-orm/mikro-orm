@@ -1,4 +1,4 @@
-import * as domain from 'domain';
+import domain from 'domain';
 import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 

@@ -59,15 +59,15 @@ export class EntityRepository<T extends IEntityType<T>> {
   }
 
   async nativeInsert(data: EntityData<T>): Promise<IPrimaryKey> {
-    return this.em.nativeInsert(this.entityName, data)
+    return this.em.nativeInsert(this.entityName, data);
   }
 
   async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
-    return this.em.nativeUpdate(this.entityName, where, data)
+    return this.em.nativeUpdate(this.entityName, where, data);
   }
 
   async nativeDelete(where: FilterQuery<T> | any): Promise<number> {
-    return this.em.nativeDelete(this.entityName, where)
+    return this.em.nativeDelete(this.entityName, where);
   }
 
   map(result: EntityData<T>): T {
@@ -75,7 +75,7 @@ export class EntityRepository<T extends IEntityType<T>> {
   }
 
   async aggregate(pipeline: any[]): Promise<any[]> {
-    return this.em.aggregate(this.entityName, pipeline)
+    return this.em.aggregate(this.entityName, pipeline);
   }
 
   /**

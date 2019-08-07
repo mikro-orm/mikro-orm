@@ -18,7 +18,7 @@ export class EntityHelper {
   static decorate<T extends IEntityType<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
     const pk = meta.properties[meta.primaryKey];
 
-    if (pk.name === '_id' && !meta.properties['id']) {
+    if (pk.name === '_id' && !meta.properties.id) {
       EntityHelper.defineIdProperty(meta, em);
     }
 
@@ -81,7 +81,7 @@ export class EntityHelper {
       return EntityTransformer.toObject(this, ignoreFields);
     };
 
-    meta.prototype.init = async function (populated = true) {
+    meta.prototype.init = function (populated = true) {
       return EntityHelper.init(this, populated) as Promise<EntityClass<T> & T>;
     };
   }

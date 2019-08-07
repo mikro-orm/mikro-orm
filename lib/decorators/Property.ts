@@ -24,4 +24,4 @@ export type PropertyOptions = {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
-}
+};

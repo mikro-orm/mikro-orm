@@ -22,7 +22,7 @@ export function Entity(options: EntityOptions = {}): Function {
 export type EntityOptions = {
   collection?: string;
   customRepository?: () => { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
-}
+};
 
 export interface IEntity<K = number | string> {
   id: K;
@@ -48,8 +48,8 @@ export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | a
 export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
 
 export type EntityClassGroup<T extends IEntityType<T>> = {
-  entity: EntityClass<T>
-  schema: EntityMetadata<T>,
+  entity: EntityClass<T>;
+  schema: EntityMetadata<T>;
 };
 
 export type EntityName<T extends IEntityType<T>> = string | EntityClass<T>;
@@ -77,7 +77,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   owner: boolean;
   inversedBy: string;
   mappedBy: string;
-  orderBy?: { [field: string]: QueryOrder },
+  orderBy?: { [field: string]: QueryOrder };
   pivotTable: string;
   joinColumn: string;
   inverseJoinColumn: string;

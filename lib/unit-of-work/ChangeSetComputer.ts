@@ -37,9 +37,9 @@ export class ChangeSetComputer {
   private computePayload<T extends IEntityType<T>>(entity: T): EntityData<T> {
     if (this.originalEntityData[entity.__uuid]) {
       return Utils.diffEntities<T>(this.originalEntityData[entity.__uuid] as T, entity);
-    } else {
-      return Utils.prepareEntity(entity);
     }
+
+    return Utils.prepareEntity(entity);
   }
 
   private processReference<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

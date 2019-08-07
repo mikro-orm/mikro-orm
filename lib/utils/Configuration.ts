@@ -1,11 +1,10 @@
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { TypeScriptMetadataProvider } from '../metadata/TypeScriptMetadataProvider'; // we need to import this directly to fix circular deps
-import { EntityRepository } from '../entity';
+import { EntityFactory, EntityRepository } from '../entity';
 import { MetadataProvider } from '../metadata';
 import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';
 import { Hydrator, ObjectHydrator } from '../hydration';
-import { EntityFactory } from '../entity';
 import { Logger, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
@@ -100,9 +99,9 @@ export class Configuration {
   getRepositoryClass(customRepository: EntityOptions['customRepository']): MikroORMOptions['entityRepository'] {
     if (customRepository) {
       return customRepository();
-    } else {
-      return this.options.entityRepository;
     }
+
+    return this.options.entityRepository;
   }
 
   private init(): void {
@@ -172,11 +171,11 @@ export interface MikroORMOptions {
   debug: boolean;
   baseDir: string;
   cache: {
-    enabled?: boolean,
-    adapter?: { new (...params: any[]): CacheAdapter },
-    options?: Record<string, any>,
-  },
-  metadataProvider: { new (config: Configuration): MetadataProvider },
+    enabled?: boolean;
+    adapter?: { new (...params: any[]): CacheAdapter };
+    options?: Record<string, any>;
+  };
+  metadataProvider: { new (config: Configuration): MetadataProvider };
 }
 
 export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions;

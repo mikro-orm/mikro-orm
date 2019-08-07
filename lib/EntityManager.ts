@@ -17,9 +17,9 @@ export class EntityManager {
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config);
 
   constructor(readonly config: Configuration,
-              private readonly driver: IDatabaseDriver<Connection>) { }
+              private readonly driver: IDatabaseDriver) { }
 
-  getDriver<D extends IDatabaseDriver<Connection> = IDatabaseDriver<Connection>>(): D {
+  getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
     return this.driver as D;
   }
 

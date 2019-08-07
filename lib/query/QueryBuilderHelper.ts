@@ -403,9 +403,9 @@ export class QueryBuilderHelper {
   private getGroupWhereParams(key: string, cond: Record<string, any>): any[] {
     if (key === '$and' || key === '$or') {
       return Utils.flatten(cond.map((sub: any) => this.getWhereParams(sub)));
-    } else {
-      return this.getWhereParams(cond);
     }
+
+    return this.getWhereParams(cond);
   }
 
   private processValue(field: string, value: any): string {

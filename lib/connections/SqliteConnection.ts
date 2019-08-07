@@ -1,5 +1,4 @@
-import * as sqlite from 'sqlite';
-import { Database } from 'sqlite';
+import sqlite, { Database } from 'sqlite';
 import { readFile } from 'fs-extra';
 
 import { Connection, QueryResult } from './Connection';
@@ -19,7 +18,7 @@ export class SqliteConnection extends Connection {
   }
 
   async isConnected(): Promise<boolean> {
-    return this.client['driver']['open'];
+    return this.client.driver.open;
   }
 
   async beginTransaction(savepoint?: string): Promise<void> {

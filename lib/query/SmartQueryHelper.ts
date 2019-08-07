@@ -80,12 +80,12 @@ export class SmartQueryHelper {
 
   private static processExpression<T>(expr: string, value: T): Record<string, T> {
     switch (expr) {
-      case '>': return { '$gt': value };
-      case '<': return { '$lt': value };
-      case '>=': return { '$gte': value };
-      case '<=': return { '$lte': value };
-      case '!=': return { '$ne': value };
-      case '!': return { '$not': value };
+      case '>': return { $gt: value };
+      case '<': return { $lt: value };
+      case '>=': return { $gte: value };
+      case '<=': return { $lte: value };
+      case '!=': return { $ne: value };
+      case '!': return { $not: value };
       default: return { ['$' + expr]: value };
     }
   }

@@ -1,5 +1,5 @@
-import * as fastEqual from 'fast-deep-equal';
-import * as clone from 'clone';
+import fastEqual from 'fast-deep-equal';
+import clone from 'clone';
 
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
