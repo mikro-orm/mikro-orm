@@ -102,8 +102,8 @@ export class QueryBuilder {
     return this.join(field, alias, 'left');
   }
 
-  where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
-  where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
+  where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
+  where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
     cond = SmartQueryHelper.processWhere(cond, this.entityName);
 
@@ -127,14 +127,14 @@ export class QueryBuilder {
     return this;
   }
 
-  andWhere(cond: Record<string, any>): this;
-  andWhere(cond: string, params?: any[]): this;
+  andWhere(cond: Record<string, any>): this; // tslint:disable-next-line:lines-between-class-members
+  andWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
   andWhere(cond: Record<string, any> | string, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: Record<string, any>): this;
-  orWhere(cond: string, params?: any[]): this;
+  orWhere(cond: Record<string, any>): this; // tslint:disable-next-line:lines-between-class-members
+  orWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
   orWhere(cond: Record<string, any> | string, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
