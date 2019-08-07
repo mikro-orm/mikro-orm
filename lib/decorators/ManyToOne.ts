@@ -17,7 +17,7 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
 }
 
 export interface ManyToOneOptions extends PropertyOptions {
-  entity?: () => string | Function,
+  entity?: () => string | Function;
   fk?: string;
   inversedBy?: string;
   cascade?: Cascade[];

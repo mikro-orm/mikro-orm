@@ -22,7 +22,7 @@ export function OneToOne(options: OneToOneOptions): Function {
 }
 
 export interface OneToOneOptions extends PropertyOptions {
-  entity?: () => string | Function,
+  entity?: () => string | Function;
   owner?: boolean;
   inversedBy?: string;
   mappedBy?: string;

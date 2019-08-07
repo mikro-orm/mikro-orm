@@ -18,4 +18,4 @@ export interface PrimaryKeyOptions extends PropertyOptions {
   type?: any;
 }
 
-export type IPrimaryKey = number | string | { toString?(): string, toHexString?(): string };
+export type IPrimaryKey = number | string | { toString?(): string; toHexString?(): string };

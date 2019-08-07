@@ -121,9 +121,9 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     return this;
   }
 
-  private createCondition<T>(): { cond: FilterQuery<T>, orderBy?: QueryOrderMap } {
+  private createCondition<T>(): { cond: FilterQuery<T>; orderBy?: QueryOrderMap } {
     const cond: Record<string, any> = {};
-    let orderBy = undefined;
+    let orderBy;
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy as string] = this.owner.__primaryKey;

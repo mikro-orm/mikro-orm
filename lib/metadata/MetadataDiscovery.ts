@@ -1,4 +1,4 @@
-import * as globby from 'globby';
+import globby from 'globby';
 import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
