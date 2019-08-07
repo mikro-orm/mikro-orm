@@ -25,6 +25,7 @@ describe('decorators', () => {
   });
 
   test('ManyToOne', () => {
+    expect(() => ManyToOne({ entity: () => Test, fk: 'test' } as any)(new Test3(), 'test1')).toThrowError(`@ManyToOne({ fk })' is deprecated, use 'inversedBy' instead in 'Test3.test1`);
     const storage = MetadataStorage.getMetadata();
     ManyToOne({ entity: () => Test })(new Test3(), 'test1');
     expect(storage.Test3.properties.test1).toMatchObject({
@@ -47,6 +48,7 @@ describe('decorators', () => {
 
   test('OneToMany', () => {
     expect(() => OneToMany({} as any)(new Test(), 'test')).toThrowError(`@OneToMany({ entity: string | Function })' is required in 'Test.test`);
+    expect(() => OneToMany({ entity: () => Test, fk: 'test' } as any)(new Test(), 'test')).toThrowError(`@OneToMany({ fk })' is deprecated, use 'mappedBy' instead in 'Test.test`);
 
     const storage = MetadataStorage.getMetadata();
     OneToMany({ entity: () => Test, mappedBy: 'test' })(new Test4(), 'test2');
