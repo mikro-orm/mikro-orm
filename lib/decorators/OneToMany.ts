@@ -14,9 +14,12 @@ export function OneToMany(options: OneToManyOptions): Function {
       throw new Error(`'@OneToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
     }
 
+    if ((options as any).fk) {
+      throw new Error(`@OneToMany({ fk })' is deprecated, use 'mappedBy' instead in '${target.constructor.name}.${propertyName}'`);
+    }
+
     const prop = { name: propertyName, reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE] };
     Object.assign(prop, options);
-    Utils.renameKey(prop, 'fk', 'mappedBy');
     meta.properties[propertyName] = prop as EntityProperty;
   };
 }
@@ -29,4 +32,5 @@ export type OneToManyOptions = PropertyOptions & {
   joinColumn?: string;
   inverseJoinColumn?: string;
   referenceColumnName?: string;
-} & ({ fk: string } | { mappedBy: string });
+  mappedBy: string;
+};
