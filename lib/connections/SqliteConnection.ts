@@ -1,5 +1,6 @@
 import { readFile } from 'fs-extra';
 import { Config } from 'knex';
+
 const Bluebird = require('bluebird');
 
 import { AbstractSqlConnection } from './AbstractSqlConnection';
