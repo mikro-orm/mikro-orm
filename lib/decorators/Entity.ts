@@ -58,7 +58,6 @@ export type EntityData<T extends IEntityType<T>> = { [P in keyof T]?: T[P] | IPr
 
 export interface EntityProperty<T extends IEntityType<T> = any> {
   name: string & keyof T;
-  fk: string;
   entity: () => EntityName<T>;
   type: string;
   primary: boolean;
