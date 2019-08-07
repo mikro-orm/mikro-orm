@@ -73,7 +73,7 @@ export class MetadataDiscovery {
         continue;
       }
 
-      const name = this.getClassName(file);
+      const name = this.namingStrategy.getClassName(file);
       const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
       const target = require(path)[name]; // include the file to trigger loading of metadata
       await this.discoverEntity(target, path);
@@ -268,13 +268,6 @@ export class MetadataDiscovery {
     }
 
     return ret;
-  }
-
-  private getClassName(file: string): string {
-    const name = file.split('.')[0];
-    const ret = name.replace(/-(\w)/, m => m[1].toUpperCase());
-
-    return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): void {
