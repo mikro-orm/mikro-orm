@@ -31,7 +31,7 @@ export class Author extends BaseEntity {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+  @OneToMany({ entity: () => Book, mappedBy: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
   books = new Collection<Book>(this);
 
   @ManyToMany({ entity: () => Author, owner: true })
