@@ -12,7 +12,7 @@ export class Publisher {
   @Property()
   name: string;
 
-  @OneToMany({ entity: () => Book.name, fk: 'publisher' })
+  @OneToMany({ entity: () => Book.name, mappedBy: 'publisher' })
   books = new Collection<Book>(this);
 
   @ManyToMany({ entity: () => Test.name, owner: true })
