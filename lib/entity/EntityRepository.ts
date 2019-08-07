@@ -24,20 +24,20 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.createQueryBuilder(this.entityName, alias);
   }
 
-  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T | null>;
-  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null>;
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T | null>; // tslint:disable-next-line:lines-between-class-members
+  async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null>; // tslint:disable-next-line:lines-between-class-members
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOneOptions = [], orderBy?: QueryOrderMap): Promise<T | null> {
     return this.em.findOne<T>(this.entityName, where, populate as string[], orderBy);
   }
 
-  async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>;
-  async find(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
+  async find(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
   async find(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOptions = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
   }
 
-  async findAll(options?: FindOptions): Promise<T[]>;
-  async findAll(populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async findAll(options?: FindOptions): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
+  async findAll(populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
   async findAll(populate: string[] | FindOptions = [], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }

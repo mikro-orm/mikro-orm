@@ -1,6 +1,8 @@
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-import { TypeScriptMetadataProvider } from '../metadata/TypeScriptMetadataProvider'; // we need to import this directly to fix circular deps
+
+// we need to import this directly to fix circular deps
+import { TypeScriptMetadataProvider } from '../metadata/TypeScriptMetadataProvider';
 import { EntityFactory, EntityRepository } from '../entity';
 import { MetadataProvider } from '../metadata';
 import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';

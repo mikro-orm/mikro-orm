@@ -89,6 +89,14 @@
     "no-string-literal": true,
     "align": true,
     "prefer-const": true,
-    "jsdoc-format": true
-  }
+    "jsdoc-format": true,
+    "lines-between-class-members": [true, 1, {"exceptAfterSingleLine": true}],
+    "ter-padded-blocks": [true, {"classes": "always"}],
+    "tir-newline-after-import": [true]
+  },
+  "rulesDirectory": [
+    "node_modules/tslint-eslint-rules/dist/rules",
+    "node_modules/tslint-import-rules/dist/rules",
+    "node_modules/tslint-lines-between-class-members"
+  ]
 }
