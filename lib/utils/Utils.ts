@@ -244,7 +244,7 @@ export class Utils {
   }
 
   static toAbsolutePath(dir: string, baseDir: string) {
-    if (!isAbsolute(dir)) {
+    if (isAbsolute(dir)) {
       return Utils.normalizePath(dir);
     } else {
       return Utils.normalizePath(baseDir, dir);
