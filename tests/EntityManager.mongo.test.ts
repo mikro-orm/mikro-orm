@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Collection, Configuration, EntityManager, MikroORM, QueryOrder } from '../lib';
 import { EntityProperty } from '../lib/decorators';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
@@ -94,7 +94,7 @@ describe('EntityManagerMongo', () => {
     });
     expect(jon.toJSON(false)).toEqual(o);
     expect(jon.books.getIdentifiers('_id')).toBeInstanceOf(Array);
-    expect(jon.books.getIdentifiers('_id')[0]).toBeInstanceOf(ObjectID);
+    expect(jon.books.getIdentifiers('_id')[0]).toBeInstanceOf(ObjectId);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
     expect(typeof jon.books.getIdentifiers('id')[0]).toBe('string');
 
@@ -250,6 +250,7 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
+    // @ts-ignore
     expect(fork.metadata).toBe(orm.em.metadata);
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
 
@@ -1026,7 +1027,7 @@ describe('EntityManagerMongo', () => {
     Object.assign(orm.em.getConnection(), { logger });
 
     const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
-    expect(res1).toBeInstanceOf(ObjectID);
+    expect(res1).toBeInstanceOf(ObjectId);
 
     const res2 = await orm.em.nativeUpdate(Author, { name: 'native name 1' }, { name: 'new native name' });
     expect(res2).toBe(1);
@@ -1039,13 +1040,13 @@ describe('EntityManagerMongo', () => {
     expect(res4).toBe(1);
 
     const res5 = await orm.em.nativeInsert(Author, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
-    expect(res5).toBeInstanceOf(ObjectID);
+    expect(res5).toBeInstanceOf(ObjectId);
 
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
     const res7 = await orm.em.nativeInsert('test', { name: 'native name 1', test: 'abc' });
-    expect(res7).toBeInstanceOf(ObjectID);
+    expect(res7).toBeInstanceOf(ObjectId);
 
     const res8 = await orm.em.nativeUpdate('test', { name: 'native name 1' }, { $unset: { test: 1 } });
     expect(res8).toBe(1);
@@ -1220,11 +1221,13 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
+    // @ts-ignore
     expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persistAndFlush(bar);
+    // @ts-ignore
     expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();

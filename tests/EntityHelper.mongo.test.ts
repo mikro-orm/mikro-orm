@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -138,11 +138,11 @@ describe('EntityAssignerMongo', () => {
 
   test('should have string id getter and setter', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author._id = new ObjectID('5b0ff0619fbec620008d2414');
+    author._id = new ObjectId('5b0ff0619fbec620008d2414');
     expect(author.id).toBe('5b0ff0619fbec620008d2414');
 
     author.id = '5b0d19b28b21c648c2c8a600';
-    expect(author._id).toEqual(new ObjectID('5b0d19b28b21c648c2c8a600'));
+    expect(author._id).toEqual(new ObjectId('5b0d19b28b21c648c2c8a600'));
 
     author.id = '';
     expect(author._id).toBeNull();
