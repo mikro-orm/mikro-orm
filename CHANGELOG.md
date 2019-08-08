@@ -1,3 +1,12 @@
+<a name="2.7.5"></a>
+## [2.7.5](https://github.com/B4nan/mikro-orm/compare/v2.7.4...v2.7.5) (2019-08-08)
+
+### Features
+
+* **core**: propagate changes in collections to both inverse/owner sides ([c10f8e8](https://github.com/B4nan/mikro-orm/commit/c10f8e8))
+
+
+
 <a name="2.7.4"></a>
 ## [2.7.4](https://github.com/B4nan/mikro-orm/compare/v2.7.3...v2.7.4) (2019-07-23)
 
