@@ -3,9 +3,6 @@ import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2 } from './entities-sql';
 import { MetadataDiscovery } from '../lib/metadata';
 
-/**
- * @class EntityHelperMySqlTest
- */
 describe('EntityHelperMySql', () => {
 
   let orm: MikroORM;
