@@ -15,7 +15,7 @@ to [use entity constructors](entity-constructors.md), just do not forget to spec
 export class Book {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   createdAt = new Date();
@@ -65,7 +65,7 @@ Here is another example of `Author` entity, that was referenced from the `Book` 
 export class Author {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   createdAt = new Date();
@@ -141,7 +141,7 @@ primary key and created/updated time.
 export abstract class BaseEntity {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   createdAt = new Date();
@@ -154,7 +154,7 @@ export abstract class BaseEntity {
 
 ## Note about SQL drivers and @PrimaryKey
 
-All entities described above were defined with `_id: ObjectID` primary key - those were Mongo
+All entities described above were defined with `_id: ObjectId` primary key - those were Mongo
 entities. 
 
 For SQL drivers, you will want to define your primary key as `id: number` instead:

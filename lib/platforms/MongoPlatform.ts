@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Platform } from './Platform';
 import { MongoNamingStrategy, NamingStrategy } from '../naming-strategy';
 import { IPrimaryKey } from '../decorators';
@@ -20,8 +20,8 @@ export class MongoPlatform extends Platform {
     return MongoNamingStrategy;
   }
 
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectID): T {
-    if (data instanceof ObjectID) {
+  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectId): T {
+    if (data instanceof ObjectId) {
       return data.toHexString() as unknown as T;
     }
 
@@ -29,7 +29,7 @@ export class MongoPlatform extends Platform {
   }
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return new ObjectID(data);
+    return new ObjectId(data);
   }
 
   getSerializedPrimaryKeyField(field: string): string {

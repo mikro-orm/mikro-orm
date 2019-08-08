@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBar } from './FooBar';
 
@@ -6,7 +6,7 @@ import { FooBar } from './FooBar';
 export class FooBaz {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   name: string;

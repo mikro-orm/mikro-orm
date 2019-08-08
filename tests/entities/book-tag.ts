@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Collection, Entity, ManyToMany, PrimaryKey, Property, IEntity } from '../../lib';
 import { Book } from './Book';
 
@@ -6,7 +6,7 @@ import { Book } from './Book';
 export class BookTag {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   name: string;
