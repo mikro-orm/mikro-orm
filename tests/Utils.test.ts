@@ -7,9 +7,6 @@ import { Book2 } from './entities-sql';
 
 class Test {}
 
-/**
- * @class UtilsTest
- */
 describe('Utils', () => {
 
   let orm: MikroORM;
@@ -26,7 +23,7 @@ describe('Utils', () => {
     expect(Utils.isObject(['a'])).toBe(false);
     expect(Utils.isObject(null)).toBe(false);
     expect(Utils.isObject(() => 1)).toBe(false);
-    expect(Utils.isObject(function() { return 1; })).toBe(false);
+    expect(Utils.isObject(function () { return 1; })).toBe(false);
     expect(Utils.isObject({})).toBe(true);
     expect(Utils.isObject(new Test())).toBe(true);
     expect(Utils.isObject(new Date())).toBe(true);

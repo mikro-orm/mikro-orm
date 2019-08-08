@@ -2,9 +2,6 @@ import { RequestContext, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 import { Author, Book } from './entities';
 
-/**
- * @class RequestContextTest
- */
 describe('RequestContext', () => {
 
   let orm: MikroORM;
@@ -18,7 +15,7 @@ describe('RequestContext', () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       // access UoW via property so we do not get the one from request context automatically
-      expect(em['unitOfWork'].getIdentityMap()).not.toBe(orm.em['unitOfWork'].getIdentityMap());
+      expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
     });
     expect(RequestContext.currentRequestContext()).toBeUndefined();

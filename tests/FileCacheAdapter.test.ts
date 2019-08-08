@@ -2,9 +2,6 @@ import { writeFileSync } from 'fs';
 import { FileCacheAdapter } from '../lib/cache';
 import { TEMP_DIR } from './bootstrap';
 
-/**
- * @class FileCacheAdapterTest
- */
 describe('FileCacheAdapter', () => {
 
   test('should ignore old cache', async () => {
