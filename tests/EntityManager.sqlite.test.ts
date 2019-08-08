@@ -11,9 +11,6 @@ const { BookTag3 } = require('./entities-js').BookTag3;
 const { Publisher3 } = require('./entities-js').Publisher3;
 const { Test3 } = require('./entities-js').Test3;
 
-/**
- * @class EntityManagerSqliteTest
- */
 describe('EntityManagerSqlite', () => {
 
   let orm: MikroORM;
@@ -35,8 +32,8 @@ describe('EntityManagerSqlite', () => {
     const cache = await cacheAdapter.get('Author3.js');
     const meta = {} as EntityMetadata;
     provider.loadFromCache(meta, cache);
-    expect(meta.properties['updatedAt'].onUpdate).toBeDefined();
-    expect(meta.properties['updatedAt'].onUpdate!()).toBeInstanceOf(Date);
+    expect(meta.properties.updatedAt.onUpdate).toBeDefined();
+    expect(meta.properties.updatedAt.onUpdate!()).toBeInstanceOf(Date);
   });
 
   test('should return sqlite driver', async () => {

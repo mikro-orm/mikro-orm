@@ -1,9 +1,6 @@
 import { NullCacheAdapter } from '../lib/cache';
 import { TEMP_DIR } from './bootstrap';
 
-/**
- * @class FileCacheAdapterTest
- */
 describe('NullCacheAdapter', () => {
 
   test('should ignore old cache', async () => {

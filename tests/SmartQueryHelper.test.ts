@@ -3,9 +3,6 @@ import { initORMMySql } from './bootstrap';
 import { SmartQueryHelper } from '../lib/query';
 import { Author2, Book2, Test2 } from './entities-sql';
 
-/**
- * @class SmartQueryHelperTest
- */
 describe('SmartQueryHelper', () => {
 
   jest.setTimeout(10000);

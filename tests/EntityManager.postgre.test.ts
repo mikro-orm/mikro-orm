@@ -6,9 +6,6 @@ import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
-/**
- * @class EntityManagerPostgreTest
- */
 describe('EntityManagerPostgre', () => {
 
   jest.setTimeout(10000);

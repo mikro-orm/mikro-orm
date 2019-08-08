@@ -3,9 +3,6 @@ import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
 import { initORM, wipeDatabase } from './bootstrap';
 
-/**
- * @class EntityAssignerMongoTest
- */
 describe('EntityAssignerMongo', () => {
 
   let orm: MikroORM;
