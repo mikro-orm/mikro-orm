@@ -13,6 +13,7 @@ describe('UnitOfWork', () => {
   beforeAll(async () => {
     orm = await initORM();
     uow = new UnitOfWork(orm.em);
+    // @ts-ignore
     computer = uow.changeSetComputer;
   });
   beforeEach(async () => wipeDatabase(orm.em));
@@ -95,13 +96,18 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.persist(author);
+    // @ts-ignore
     expect(uow.persistStack.length).toBe(1);
     uow.persist(author);
+    // @ts-ignore
     expect(uow.persistStack.length).toBe(1);
     uow.remove(author);
+    // @ts-ignore
     expect(uow.persistStack.length).toBe(0);
+    // @ts-ignore
     expect(uow.removeStack.length).toBe(1);
     uow.remove(author);
+    // @ts-ignore
     expect(uow.removeStack.length).toBe(1);
   });
 

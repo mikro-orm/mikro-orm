@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Collection, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
@@ -83,7 +83,7 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
-    expect(Utils.diff({a: new ObjectID('00000001885f0a3cc37dc9f0')}, {a: new ObjectID('00000001885f0a3cc37dc9f0')})).toEqual({});
+    expect(Utils.diff({a: new ObjectId('00000001885f0a3cc37dc9f0')}, {a: new ObjectId('00000001885f0a3cc37dc9f0')})).toEqual({});
   });
 
   test('diffEntities ignores collections', () => {
@@ -103,7 +103,7 @@ describe('Utils', () => {
     await orm.em.persistAndFlush(author2);
     const diff = Utils.diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
-    expect(diff.favouriteBook instanceof ObjectID).toBe(true);
+    expect(diff.favouriteBook instanceof ObjectId).toBe(true);
   });
 
   test('prepareEntity ignores properties with `persist: false` flag', async () => {
@@ -150,7 +150,7 @@ describe('Utils', () => {
     const meta = MetadataStorage.getMetadata(Author.name);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
-    const id = new ObjectID(1);
+    const id = new ObjectId(1);
     expect(Utils.extractPK(id)).toBe(id);
     expect(Utils.extractPK({ id }, meta)).toBe(id);
     expect(Utils.extractPK({ _id: id }, meta)).toBe(id);

@@ -620,17 +620,29 @@ describe('QueryBuilder', () => {
 
     const clone = qb.clone();
     expect(clone.type).toBe(qb.type);
+    // @ts-ignore
     expect(clone.aliasCounter).toBe(qb.aliasCounter);
+    // @ts-ignore
     expect(clone.flags).not.toBe(qb.flags);
+    // @ts-ignore
     expect(clone.finalized).toBe(qb.finalized);
+    // @ts-ignore
     expect(clone._fields).not.toBe(qb._fields);
+    // @ts-ignore
     expect(clone._populate).not.toBe(qb._populate);
+    // @ts-ignore
     expect(clone._populateMap).not.toBe(qb._populateMap);
+    // @ts-ignore
     expect(clone._joins).not.toBe(qb._joins);
+    // @ts-ignore
     expect(clone._aliasMap).not.toBe(qb._aliasMap);
+    // @ts-ignore
     expect(clone._cond).not.toBe(qb._cond);
+    // @ts-ignore
     expect(clone._orderBy).not.toBe(qb._orderBy);
+    // @ts-ignore
     expect(clone._limit).toBe(qb._limit);
+    // @ts-ignore
     expect(clone._offset).toBe(qb._offset);
 
     clone.orWhere({ 'p.name': 'or this name' }).orderBy({ 'p.name': QueryOrder.ASC }).limit(10, 5);

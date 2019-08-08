@@ -1,10 +1,10 @@
 import { IEntity, PrimaryKey, Property } from '../../lib';
-import { ObjectID } from 'bson';
+import { ObjectId } from 'bson';
 
 export abstract class BaseEntity {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   createdAt = new Date();

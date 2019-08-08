@@ -172,7 +172,7 @@ export class Utils {
   }
 
   static isObjectID(key: any) {
-    return Utils.isObject(key) && key.constructor.name === 'ObjectID';
+    return Utils.isObject(key) && key.constructor.name.toLowerCase() === 'objectid';
   }
 
   static isEmpty(data: any): boolean {
