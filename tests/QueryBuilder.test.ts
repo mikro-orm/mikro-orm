@@ -2,9 +2,6 @@ import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, 
 import { initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryOrder } from '../lib';
 
-/**
- * @class QueryBuilderTest
- */
 describe('QueryBuilder', () => {
 
   let orm: MikroORM;
@@ -454,13 +451,13 @@ describe('QueryBuilder', () => {
   test('select with operator (and)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $and: [
-      { id: { $in: [1, 2, 7] }, },
-      { id: { $nin: [3, 4] }, },
-      { id: { $gt: 5 }, },
-      { id: { $lt: 10 }, },
-      { id: { $gte: 7 }, },
-      { id: { $lte: 8 }, },
-      { id: { $ne: 9 }, },
+      { id: { $in: [1, 2, 7] } },
+      { id: { $nin: [3, 4] } },
+      { id: { $gt: 5 } },
+      { id: { $lt: 10 } },
+      { id: { $gte: 7 } },
+      { id: { $lte: 8 } },
+      { id: { $ne: 9 } },
       { $not: { id: { $eq: 10 } } },
     ] });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
@@ -478,13 +475,13 @@ describe('QueryBuilder', () => {
   test('select with operator (or)', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').where({ $or: [
-      { id: { $in: [1, 2, 7] }, },
-      { id: { $nin: [3, 4] }, },
-      { id: { $gt: 5 }, },
-      { id: { $lt: 10 }, },
-      { id: { $gte: 7 }, },
-      { id: { $lte: 8 }, },
-      { id: { $ne: 9 }, },
+      { id: { $in: [1, 2, 7] } },
+      { id: { $nin: [3, 4] } },
+      { id: { $gt: 5 } },
+      { id: { $lt: 10 } },
+      { id: { $gte: 7 } },
+      { id: { $lte: 8 } },
+      { id: { $ne: 9 } },
       { $not: { id: { $eq: 10 } } },
     ] });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
@@ -623,18 +620,18 @@ describe('QueryBuilder', () => {
 
     const clone = qb.clone();
     expect(clone.type).toBe(qb.type);
-    expect(clone['aliasCounter']).toBe(qb['aliasCounter']);
-    expect(clone['flags']).not.toBe(qb['flags']);
-    expect(clone['finalized']).toBe(qb['finalized']);
-    expect(clone['_fields']).not.toBe(qb['_fields']);
-    expect(clone['_populate']).not.toBe(qb['_populate']);
-    expect(clone['_populateMap']).not.toBe(qb['_populateMap']);
-    expect(clone['_joins']).not.toBe(qb['_joins']);
-    expect(clone['_aliasMap']).not.toBe(qb['_aliasMap']);
-    expect(clone['_cond']).not.toBe(qb['_cond']);
-    expect(clone['_orderBy']).not.toBe(qb['_orderBy']);
-    expect(clone['_limit']).toBe(qb['_limit']);
-    expect(clone['_offset']).toBe(qb['_offset']);
+    expect(clone.aliasCounter).toBe(qb.aliasCounter);
+    expect(clone.flags).not.toBe(qb.flags);
+    expect(clone.finalized).toBe(qb.finalized);
+    expect(clone._fields).not.toBe(qb._fields);
+    expect(clone._populate).not.toBe(qb._populate);
+    expect(clone._populateMap).not.toBe(qb._populateMap);
+    expect(clone._joins).not.toBe(qb._joins);
+    expect(clone._aliasMap).not.toBe(qb._aliasMap);
+    expect(clone._cond).not.toBe(qb._cond);
+    expect(clone._orderBy).not.toBe(qb._orderBy);
+    expect(clone._limit).toBe(qb._limit);
+    expect(clone._offset).toBe(qb._offset);
 
     clone.orWhere({ 'p.name': 'or this name' }).orderBy({ 'p.name': QueryOrder.ASC }).limit(10, 5);
 

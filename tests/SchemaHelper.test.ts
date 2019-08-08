@@ -2,9 +2,6 @@ import { SchemaHelper } from '../lib/schema';
 
 class SchemaHelperTest extends SchemaHelper { }
 
-/**
- * @class SchemaHelperTest
- */
 describe('SchemaHelper', () => {
 
   test('default schema helpers', async () => {
