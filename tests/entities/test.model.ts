@@ -3,7 +3,7 @@ import { Entity, IEntity, PrimaryKey, Property } from '../../lib';
 @Entity()
 export class Test {
 
-  @PrimaryKey({ type: 'ObjectID' })
+  @PrimaryKey({ type: 'ObjectId' })
   _id: any;
 
   @Property({ type: 'string' })

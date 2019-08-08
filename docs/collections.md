@@ -42,7 +42,7 @@ console.log(author.books.contains(book)); // false
 console.log(author.books.count()); // 0
 console.log(author.books.getItems()); // Book[]
 console.log(author.books.getIdentifiers()); // array of string | number
-console.log(author.books.getIdentifiers('_id')); // array of ObjectID
+console.log(author.books.getIdentifiers('_id')); // array of ObjectId
 
 // array access works as well
 console.log(author.books[1]); // Book
@@ -58,7 +58,7 @@ console.log(author.books[12345]); // undefined, even if the collection is not in
 export class Book {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @ManyToOne()
   author: Author;
@@ -69,7 +69,7 @@ export class Book {
 export class Author {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @OneToMany({ entity: () => Book, mappedBy: 'author' })
   books = new Collection<Book>(this);
@@ -80,7 +80,7 @@ export class Author {
 ## ManyToMany collections
 
 As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
-All references are stored as an array of `ObjectID`s on owning entity. 
+All references are stored as an array of `ObjectId`s on owning entity. 
 
 ### Unidirectional
 

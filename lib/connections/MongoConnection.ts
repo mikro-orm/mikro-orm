@@ -1,4 +1,4 @@
-import { Collection, Db, MongoClient, MongoClientOptions, ObjectID } from 'mongodb';
+import { Collection, Db, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
@@ -150,12 +150,12 @@ export class MongoConnection extends Connection {
   }
 
   private convertObjectIds(payload: any): any {
-    if (payload instanceof ObjectID) {
+    if (payload instanceof ObjectId) {
       return payload;
     }
 
     if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectID(payload);
+      return new ObjectId(payload);
     }
 
     if (Array.isArray(payload)) {
