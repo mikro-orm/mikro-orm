@@ -6,9 +6,6 @@ import { initORM, wipeDatabase } from './bootstrap';
 import { BaseEntity } from './entities/BaseEntity';
 import { MetadataDiscovery, MetadataStorage } from '../lib/metadata';
 
-/**
- * @class EntityFactoryTest
- */
 describe('EntityFactory', () => {
 
   let orm: MikroORM;
@@ -25,17 +22,17 @@ describe('EntityFactory', () => {
   test('should load entities', async () => {
     const metadata = MetadataStorage.getMetadata();
     expect(metadata).toBeInstanceOf(Object);
-    expect(metadata[BaseEntity.name].properties['foo'].type).toBe('string');
+    expect(metadata[BaseEntity.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
     expect(metadata[Author.name].path).toBe(Utils.normalizePath(__dirname, 'entities/Author.ts'));
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
-    expect(metadata[Author.name].properties['books'].type).toBe(Book.name);
-    expect(metadata[Author.name].properties['books'].reference).toBe(ReferenceType.ONE_TO_MANY);
-    expect(metadata[Author.name].properties['foo'].type).toBe('string');
-    expect(metadata[Book.name].properties['author'].type).toBe(Author.name);
-    expect(metadata[Book.name].properties['author'].reference).toBe(ReferenceType.MANY_TO_ONE);
-    expect(metadata[Publisher.name].properties['tests'].owner).toBe(true);
+    expect(metadata[Author.name].properties.books.type).toBe(Book.name);
+    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.foo.type).toBe('string');
+    expect(metadata[Book.name].properties.author.type).toBe(Author.name);
+    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
 
   test('should return reference', async () => {

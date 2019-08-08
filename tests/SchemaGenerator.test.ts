@@ -1,9 +1,6 @@
 import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
 
-/**
- * @class SchemaGeneratorTest
- */
 describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {

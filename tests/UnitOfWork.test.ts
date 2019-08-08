@@ -4,9 +4,6 @@ import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
 import { initORM, wipeDatabase } from './bootstrap';
 import { MetadataStorage } from '../lib/metadata';
 
-/**
- * @class UnitOfWorkTest
- */
 describe('UnitOfWork', () => {
 
   let orm: MikroORM;
@@ -16,7 +13,7 @@ describe('UnitOfWork', () => {
   beforeAll(async () => {
     orm = await initORM();
     uow = new UnitOfWork(orm.em);
-    computer = uow['changeSetComputer'];
+    computer = uow.changeSetComputer;
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
@@ -98,14 +95,14 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.persist(author);
-    expect(uow['persistStack'].length).toBe(1);
+    expect(uow.persistStack.length).toBe(1);
     uow.persist(author);
-    expect(uow['persistStack'].length).toBe(1);
+    expect(uow.persistStack.length).toBe(1);
     uow.remove(author);
-    expect(uow['persistStack'].length).toBe(0);
-    expect(uow['removeStack'].length).toBe(1);
+    expect(uow.persistStack.length).toBe(0);
+    expect(uow.removeStack.length).toBe(1);
     uow.remove(author);
-    expect(uow['removeStack'].length).toBe(1);
+    expect(uow.removeStack.length).toBe(1);
   });
 
   afterAll(async () => orm.close(true));
