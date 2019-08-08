@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, IEntity, BeforeCreate } from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
@@ -7,7 +7,7 @@ import { Test } from './test.model';
 export class Publisher {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   name: string;

@@ -35,14 +35,14 @@ export abstract class Platform {
   }
 
   /**
-   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
+   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
    */
   normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
     return data as T;
   }
 
   /**
-   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectID)
+   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectId)
    */
   denormalizePrimaryKey(data: IPrimaryKey): IPrimaryKey {
     return data;

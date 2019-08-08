@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection, Utils } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
@@ -38,7 +38,7 @@ describe('EntityFactory', () => {
   test('should return reference', async () => {
     const ref = factory.createReference(Book, '5b0d19b28b21c648c2c8a600');
     expect(ref).toBeInstanceOf(Book);
-    expect(ref._id).toBeInstanceOf(ObjectID);
+    expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.title).toBeUndefined();
     expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
