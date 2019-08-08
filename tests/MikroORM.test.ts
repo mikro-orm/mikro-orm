@@ -3,9 +3,6 @@ import { Author } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
 
-/**
- * @class MikroORMTest
- */
 describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {

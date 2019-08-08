@@ -26,9 +26,6 @@ const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
 const repo = new EntityRepository(em, Publisher);
 
-/**
- * @class EntityRepositoryTest
- */
 describe('EntityRepository', () => {
 
   test('should forward calls to EntityManager', async () => {
