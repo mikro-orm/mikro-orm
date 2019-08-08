@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Cascade, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
@@ -9,7 +9,7 @@ import { BaseEntity3 } from './BaseEntity3';
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   title: string;

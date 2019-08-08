@@ -15,7 +15,7 @@ but `publisher` will be optional:
 export class Book {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id: ObjectId;
 
   @Property()
   title: string;
