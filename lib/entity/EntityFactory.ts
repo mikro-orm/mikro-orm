@@ -9,17 +9,17 @@ export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 export class EntityFactory {
 
-  private readonly metadata = MetadataStorage.getMetadata();
   private readonly hydrator = this.config.getHydrator(this);
 
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly driver: IDatabaseDriver,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration,
+              private readonly metadata: MetadataStorage) { }
 
   create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true): T {
     entityName = Utils.className(entityName);
     data = Object.assign({}, data);
-    const meta = this.metadata[entityName];
+    const meta = this.metadata.get(entityName);
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
 
@@ -64,7 +64,7 @@ export class EntityFactory {
 
   createReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
-    const meta = this.metadata[entityName];
+    const meta = this.metadata.get(entityName);
 
     if (this.unitOfWork.getById(entityName, id)) {
       return this.unitOfWork.getById<T>(entityName, id);

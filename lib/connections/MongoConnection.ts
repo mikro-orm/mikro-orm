@@ -180,7 +180,9 @@ export class MongoConnection extends Connection {
 
   private getCollectionName(name: EntityName<IEntity>): string {
     name = Utils.className(name);
-    return this.metadata[name] ? this.metadata[name].collection : name;
+    const meta = this.metadata.get(name);
+
+    return meta ? meta.collection : name;
   }
 
 }

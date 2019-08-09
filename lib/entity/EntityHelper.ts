@@ -57,7 +57,7 @@ export class EntityHelper {
       __populated: { value: false, writable: true },
       __lazyInitialized: { value: false, writable: true },
       __entity: { value: true },
-      __em: { value: em },
+      __em: { value: em, writable: true },
       __uuid: {
         get(): string {
           if (!this.___uuid) {

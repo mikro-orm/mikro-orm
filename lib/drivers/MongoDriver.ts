@@ -17,7 +17,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where);
     const res = await this.connection.find<T>(entityName, where, orderBy, limit, offset);
 
-    return res.map((r: T) => this.mapResult<T>(r, this.metadata[entityName])!);
+    return res.map((r: T) => this.mapResult<T>(r, this.metadata.get(entityName))!);
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
@@ -28,7 +28,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where) as FilterQuery<T>;
     const res = await this.connection.find<T>(entityName, where, orderBy, 1, undefined, fields);
 
-    return this.mapResult<T>(res[0], this.metadata[entityName]);
+    return this.mapResult<T>(res[0], this.metadata.get(entityName));
   }
 
   async count<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>): Promise<number> {
@@ -69,7 +69,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private renameFields(entityName: string, data: any): any {
     data = Object.assign({}, data); // copy first
     Utils.renameKey(data, 'id', '_id');
-    const meta = this.metadata[entityName];
+    const meta = this.metadata.get(entityName);
 
     Object.keys(data).forEach(k => {
       if (meta && meta.properties[k]) {

@@ -6,7 +6,7 @@ import { MetadataStorage } from '../metadata';
 export abstract class Connection {
 
   protected readonly logger = this.config.getLogger();
-  protected readonly metadata = MetadataStorage.getMetadata();
+  protected metadata: MetadataStorage;
   protected abstract client: any;
 
   constructor(protected readonly config: Configuration) { }
@@ -54,6 +54,10 @@ export abstract class Connection {
     const url = new URL(this.config.getClientUrl(true));
 
     return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
+  }
+
+  setMetadata(metadata: MetadataStorage): void {
+    this.metadata = metadata;
   }
 
   protected async executeQuery<T>(query: string, params: any[], cb: () => Promise<T>): Promise<T> {

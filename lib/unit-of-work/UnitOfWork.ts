@@ -1,5 +1,4 @@
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { MetadataStorage } from '../metadata';
 import { Cascade, Collection, EntityIdentifier, ReferenceType } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
@@ -24,10 +23,10 @@ export class UnitOfWork {
   private readonly orphanRemoveStack: IEntity[] = [];
   private readonly changeSets: ChangeSet<IEntity>[] = [];
   private readonly extraUpdates: [IEntityType<IEntity>, string & keyof IEntity, IEntityType<IEntity> | Collection<IEntity>][] = [];
-  private readonly metadata = MetadataStorage.getMetadata();
+  private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap);
-  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.metadata);
+  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata);
 
   constructor(private readonly em: EntityManager) { }
 
@@ -39,7 +38,7 @@ export class UnitOfWork {
     this.identityMap[`${entity.constructor.name}-${entity.__serializedPrimaryKey}`] = entity;
 
     if (!this.originalEntityData[entity.__uuid] || mergeData) {
-      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity);
+      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity, this.metadata);
     }
 
     this.cascade(entity, Cascade.MERGE, visited);
@@ -51,7 +50,7 @@ export class UnitOfWork {
   }
 
   tryGetById<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | IPrimaryKey): T | null {
-    const pk = Utils.extractPK(where, this.metadata[entityName]);
+    const pk = Utils.extractPK(where, this.metadata.get(entityName));
 
     if (!pk) {
       return null;
@@ -116,7 +115,7 @@ export class UnitOfWork {
       throw ValidationError.entityNotManaged(entity);
     }
 
-    const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
+    const meta = this.metadata.get<T>(entity.constructor.name);
 
     if (mode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, version!);
@@ -160,7 +159,7 @@ export class UnitOfWork {
     }
 
     for (const entity of Object.values(this.removeStack)) {
-      const meta = this.metadata[entity.constructor.name];
+      const meta = this.metadata.get(entity.constructor.name);
       this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<IEntity>);
     }
   }
@@ -175,7 +174,7 @@ export class UnitOfWork {
 
   private findNewEntities<T extends IEntityType<T>>(entity: T, visited: IEntity[] = []): void {
     visited.push(entity);
-    const meta = this.metadata[entity.constructor.name] as EntityMetadata<T>;
+    const meta = this.metadata.get<T>(entity.constructor.name);
 
     if (!entity.__primaryKey && !this.identifierMap[entity.__uuid]) {
       this.identifierMap[entity.__uuid] = new EntityIdentifier();
@@ -191,7 +190,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.cleanUpStack(this.persistStack, entity);
-      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity);
+      this.originalEntityData[entity.__uuid] = Utils.prepareEntity(entity, this.metadata);
     }
   }
 
@@ -246,14 +245,14 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends IEntityType<T>>(type: string, entity: IEntityType<T>, payload?: EntityData<T>) {
-    const hooks = this.metadata[entity.constructor.name].hooks;
+    const hooks = this.metadata.get(entity.constructor.name).hooks;
 
     if (hooks && hooks[type] && hooks[type].length > 0) {
       const copy = Utils.copy(entity);
       await Utils.runSerial(hooks[type], hook => entity[hook as keyof T]());
 
       if (payload) {
-        Object.assign(payload, Utils.diffEntities(copy, entity));
+        Object.assign(payload, Utils.diffEntities(copy, entity, this.metadata));
       }
     }
   }
@@ -278,7 +277,7 @@ export class UnitOfWork {
   }
 
   private hasIdentifier<T extends IEntityType<T>>(entity: T): boolean {
-    const pk = this.metadata[entity.constructor.name].primaryKey as keyof T;
+    const pk = this.metadata.get<T>(entity.constructor.name).primaryKey;
 
     if (entity[pk]) {
       return true;
@@ -300,7 +299,7 @@ export class UnitOfWork {
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
-    const meta = this.metadata[entity.constructor.name];
+    const meta = this.metadata.get<T>(entity.constructor.name);
 
     for (const prop of Object.values(meta.properties)) {
       this.cascadeReference<T>(entity, prop, type, visited);

@@ -1,11 +1,12 @@
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { ValidationError } from '../utils';
 import { ReferenceType } from '../entity';
+import { MetadataStorage } from './MetadataStorage';
 
 export class MetadataValidator {
 
-  validateEntityDefinition(metadata: Record<string, EntityMetadata>, name: string): void {
-    const meta = metadata[name];
+  validateEntityDefinition(metadata: MetadataStorage, name: string): void {
+    const meta = metadata.get(name);
 
     // entities have PK
     if (!meta.primaryKey) {
@@ -24,21 +25,21 @@ export class MetadataValidator {
     }
   }
 
-  private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: Record<string, EntityMetadata>): void {
+  private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
     // references do have types
     if (!prop.type) {
       throw ValidationError.fromWrongTypeDefinition(meta, prop);
     }
 
     // references do have type of known entity
-    if (!metadata[prop.type]) {
+    if (!metadata.get(prop.type)) {
       throw ValidationError.fromWrongTypeDefinition(meta, prop);
     }
   }
 
-  private validateCollection(meta: EntityMetadata, prop: EntityProperty, metadata: Record<string, EntityMetadata>): void {
+  private validateCollection(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const owner = metadata[prop.type].properties[prop.mappedBy];
+      const owner = metadata.get(prop.type).properties[prop.mappedBy];
       return this.validateOneToManyInverseSide(meta, prop, owner);
     }
 
@@ -48,10 +49,10 @@ export class MetadataValidator {
     }
 
     if (prop.inversedBy) {
-      const inverse = metadata[prop.type].properties[prop.inversedBy];
+      const inverse = metadata.get(prop.type).properties[prop.inversedBy];
       this.validateManyToManyOwningSide(meta, prop, inverse);
     } else if (prop.mappedBy) {
-      const inverse = metadata[prop.type].properties[prop.mappedBy];
+      const inverse = metadata.get(prop.type).properties[prop.mappedBy];
       this.validateManyToManyInverseSide(meta, prop, inverse);
     }
   }

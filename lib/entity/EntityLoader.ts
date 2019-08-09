@@ -1,5 +1,4 @@
 import { EntityProperty, IEntity, IEntityType } from '../decorators';
-import { MetadataStorage } from '../metadata';
 import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
 import { Utils } from '../utils';
@@ -8,7 +7,7 @@ import { QueryOrder } from '../query';
 
 export class EntityLoader {
 
-  private readonly metadata = MetadataStorage.getMetadata();
+  private readonly metadata = this.em.getMetadata();
   private readonly driver = this.em.getDriver();
 
   constructor(private readonly em: EntityManager) { }
@@ -38,7 +37,7 @@ export class EntityLoader {
       }
     });
 
-    const prop = this.metadata[entityName].properties[field as string];
+    const prop = this.metadata.get(entityName).properties[field as string];
     const filtered = this.filterCollections<T>(entities, field);
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
@@ -77,10 +76,11 @@ export class EntityLoader {
 
   private async findChildren<T extends IEntityType<T>>(entities: T[], prop: EntityProperty): Promise<IEntityType<any>[]> {
     const children = this.getChildReferences<T>(entities, prop);
-    let fk = this.metadata[prop.type].primaryKey;
+    const meta = this.metadata.get(prop.type);
+    let fk = meta.primaryKey;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
-      fk = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
+      fk = meta.properties[prop.mappedBy].fieldName;
     }
 
     if (children.length === 0) {
@@ -107,7 +107,7 @@ export class EntityLoader {
         }
       });
       const filtered = Utils.unique(children);
-      const prop = this.metadata[entityName].properties[f];
+      const prop = this.metadata.get(entityName).properties[f];
       await this.populate(prop.type, filtered, [parts.join('.')], false);
     } else {
       await this.populateMany<T>(entityName, entities, field as keyof T);
