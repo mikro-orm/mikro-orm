@@ -2,8 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Collection, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MetadataStorage } from '../lib/metadata';
-import { Book2 } from './entities-sql';
+import { EntityMetadata } from '../lib/decorators';
 
 class Test {}
 
@@ -91,7 +90,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2);
-    expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
+    expect(Utils.diffEntities(author1, author2, orm.getMetadata()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -101,7 +100,7 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush(author2);
-    const diff = Utils.diffEntities(author1, author2);
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
     expect(diff.favouriteBook instanceof ObjectId).toBe(true);
   });
@@ -110,7 +109,7 @@ describe('Utils', () => {
     const author = new Author('Name 1', 'e-mail');
     author.version = 123;
     author.versionAsString = 'v123';
-    const o = Utils.prepareEntity(author);
+    const o = Utils.prepareEntity(author, orm.getMetadata());
     expect(o.version).toBeUndefined();
     expect(o.versionAsString).toBeUndefined();
   });
@@ -147,7 +146,7 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK id/_id', () => {
-    const meta = MetadataStorage.getMetadata(Author.name);
+    const meta = orm.getMetadata().get(Author.name);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
     const id = new ObjectId(1);
@@ -160,7 +159,7 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK uuid', () => {
-    const meta = MetadataStorage.getMetadata(Book2.name);
+    const meta = { primaryKey: 'uuid' } as EntityMetadata;
     expect(Utils.extractPK({ id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ _id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ foo: 'bar' }, meta)).toBeNull();

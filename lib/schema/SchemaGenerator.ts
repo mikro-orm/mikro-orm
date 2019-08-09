@@ -2,6 +2,7 @@ import { ColumnBuilder, TableBuilder } from 'knex';
 import { AbstractSqlDriver, Cascade, ReferenceType, Utils } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { Platform } from '../platforms';
+import { MetadataStorage } from '../metadata';
 
 export class SchemaGenerator {
 
@@ -10,15 +11,15 @@ export class SchemaGenerator {
   private readonly knex = this.driver.getConnection().getKnex();
 
   constructor(private readonly driver: AbstractSqlDriver,
-              private readonly metadata: Record<string, EntityMetadata>) { }
+              private readonly metadata: MetadataStorage) { }
 
   generate(): string {
     let ret = this.helper.getSchemaBeginning();
 
-    Object.values(this.metadata).forEach(meta => ret += this.knex.schema.dropTableIfExists(meta.collection).toQuery() + ';\n');
+    Object.values(this.metadata.getAll()).forEach(meta => ret += this.knex.schema.dropTableIfExists(meta.collection).toQuery() + ';\n');
     ret += '\n';
-    Object.values(this.metadata).forEach(meta => ret += this.createTable(meta));
-    Object.values(this.metadata).forEach(meta => {
+    Object.values(this.metadata.getAll()).forEach(meta => ret += this.createTable(meta));
+    Object.values(this.metadata.getAll()).forEach(meta => {
       const alter = this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)).toQuery();
       ret += alter ? alter + ';\n\n' : '';
     });
@@ -82,7 +83,7 @@ export class SchemaGenerator {
 
   private isUnsigned(prop: EntityProperty): boolean {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-      const meta2 = this.metadata[prop.type];
+      const meta2 = this.metadata.get(prop.type);
       const pk = meta2.properties[meta2.primaryKey];
 
       return pk.type === 'number';
@@ -109,7 +110,7 @@ export class SchemaGenerator {
   }
 
   private createForeignKeyReference(col: ColumnBuilder, prop: EntityProperty): void {
-    const meta2 = this.metadata[prop.type];
+    const meta2 = this.metadata.get(prop.type);
     const pk2 = meta2.properties[meta2.primaryKey];
     col.references(pk2.fieldName).inTable(meta2.collection);
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
@@ -125,7 +126,7 @@ export class SchemaGenerator {
       return this.helper.getTypeDefinition(prop);
     }
 
-    const meta = this.metadata[prop.type];
+    const meta = this.metadata.get(prop.type);
     return this.helper.getTypeDefinition(meta.properties[meta.primaryKey]);
   }
 
