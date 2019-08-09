@@ -71,6 +71,9 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
+  setter?: boolean;
+  getter?: boolean;
+  getterName?: keyof T;
   cascade: Cascade[];
   orphanRemoval?: boolean;
   onUpdate?: () => any;
