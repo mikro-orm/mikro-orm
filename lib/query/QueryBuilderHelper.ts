@@ -6,6 +6,7 @@ import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
 import { LockMode } from '../unit-of-work';
+import { MetadataStorage } from '../metadata';
 
 export class QueryBuilderHelper {
 
@@ -28,7 +29,7 @@ export class QueryBuilderHelper {
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly aliasMap: Record<string, string>,
-              private readonly metadata: Record<string, EntityMetadata>,
+              private readonly metadata: MetadataStorage,
               private readonly knex: Knex,
               private readonly platform: Platform) { }
 
@@ -58,10 +59,11 @@ export class QueryBuilderHelper {
 
   processData(data: any): any {
     data = Object.assign({}, data); // copy first
+    const meta = this.metadata.get(this.entityName);
 
     Object.keys(data).forEach(k => {
-      if (this.metadata[this.entityName] && this.metadata[this.entityName].properties[k]) {
-        const prop = this.metadata[this.entityName].properties[k];
+      if (meta && meta.properties[k]) {
+        const prop = meta.properties[k];
 
         if (Array.isArray(data[k]) || (Utils.isObject(data[k]) && !(data[k] instanceof Date))) {
           data[k] = JSON.stringify(data[k]);
@@ -77,7 +79,9 @@ export class QueryBuilderHelper {
   }
 
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin'): JoinOptions {
-    const prop2 = this.metadata[prop.type].properties[prop.mappedBy || prop.inversedBy];
+    const meta = this.metadata.get(prop.type);
+    const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
+
     return {
       table: this.getTableName(prop.type),
       joinColumn: prop.owner ? prop2.referenceColumnName : prop2.fieldName,
@@ -117,16 +121,17 @@ export class QueryBuilderHelper {
     if (prop.owner) {
       ret[name] = Object.assign(join, { table: prop.pivotTable });
     } else {
-      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
+      const meta = this.metadata.get(prop.type);
+      const prop2 = meta.properties[prop.mappedBy];
       ret[name] = Object.assign(join, { table: prop2.pivotTable });
     }
 
     if (prop.owner) {
-      const prop2 = this.metadata[prop.pivotTable].properties[prop.type];
+      const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type];
       ret[prop2.name] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
     } else {
-      const prop2 = this.metadata[prop.type].properties[prop.mappedBy];
-      const prop3 = this.metadata[prop2.pivotTable].properties[prop.type];
+      const prop2 = this.metadata.get(prop.type).properties[prop.mappedBy];
+      const prop3 = this.metadata.get(prop2.pivotTable).properties[prop.type];
       ret[prop3.name] = this.joinManyToOneReference(prop3, pivotAlias, alias, type);
     }
 
@@ -134,9 +139,9 @@ export class QueryBuilderHelper {
   }
 
   joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin'): JoinOptions {
-    const prop2 = this.metadata[field].properties[prop.mappedBy || prop.inversedBy];
+    const prop2 = this.metadata.get(field).properties[prop.mappedBy || prop.inversedBy];
     return {
-      table: this.metadata[field].collection,
+      table: this.metadata.get(field).collection,
       joinColumn: prop.joinColumn,
       inverseJoinColumn: prop2.joinColumn,
       primaryKey: prop.referenceColumnName,
@@ -168,12 +173,15 @@ export class QueryBuilderHelper {
   }
 
   isOneToOneInverse(field: string): boolean {
-    const prop = this.metadata[this.entityName] && this.metadata[this.entityName].properties[field];
+    const meta = this.metadata.get(this.entityName);
+    const prop = meta && meta.properties[field];
+
     return prop && prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
   }
 
   getTableName(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].collection : entityName;
+    const meta = this.metadata.get(entityName);
+    return meta ? meta.collection : entityName;
   }
 
   getRegExpParam(re: RegExp): string {
@@ -331,13 +339,15 @@ export class QueryBuilderHelper {
       return void qb.forUpdate();
     }
 
-    if (lockMode === LockMode.OPTIMISTIC && this.metadata[this.entityName] && !this.metadata[this.entityName].versionProperty) {
+    const meta = this.metadata.get(this.entityName);
+
+    if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
       throw ValidationError.lockFailed(this.entityName);
     }
   }
 
   updateVersionProperty(qb: KnexQueryBuilder): void {
-    const meta = this.metadata[this.entityName];
+    const meta = this.metadata.get(this.entityName);
 
     if (!meta || !meta.versionProperty) {
       return;
@@ -384,7 +394,8 @@ export class QueryBuilderHelper {
 
   private fieldName(field: string, alias?: string): string {
     const entityName = this.aliasMap[alias!] || this.entityName;
-    const prop = this.metadata[entityName] ? this.metadata[entityName].properties[field] : false;
+    const meta = this.metadata.get(entityName);
+    const prop = meta ? meta.properties[field] : false;
 
     return prop ? prop.fieldName : field;
   }

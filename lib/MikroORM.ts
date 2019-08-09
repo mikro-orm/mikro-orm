@@ -1,25 +1,26 @@
 import { EntityManager } from './EntityManager';
 import { IDatabaseDriver } from './drivers';
-import { MetadataDiscovery } from './metadata';
+import { MetadataDiscovery, MetadataStorage } from './metadata';
 import { Configuration, Logger, Options } from './utils';
-import { EntityMetadata } from './decorators';
 
 export class MikroORM {
 
   em: EntityManager;
   readonly config: Configuration;
-  private metadata: Record<string, EntityMetadata>;
+  private metadata: MetadataStorage;
   private readonly driver: IDatabaseDriver;
   private readonly logger: Logger;
 
   static async init(options: Options): Promise<MikroORM> {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
-    orm.em = new EntityManager(orm.config, driver);
 
     try {
-      const storage = new MetadataDiscovery(orm.em, orm.config, orm.logger);
-      orm.metadata = await storage.discover();
+      const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config, orm.logger);
+      orm.metadata = await discovery.discover();
+      orm.em = new EntityManager(orm.config, driver, orm.metadata);
+      orm.metadata.decorate(orm.em);
+      driver.setMetadata(orm.metadata);
 
       return orm;
     } catch (e) {
@@ -57,7 +58,7 @@ export class MikroORM {
     return this.driver.getConnection().close(force);
   }
 
-  getMetadata(): Record<string, EntityMetadata> {
+  getMetadata(): MetadataStorage {
     return this.metadata;
   }
 

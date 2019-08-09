@@ -69,32 +69,31 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities<T extends IEntityType<T>>(a: T, b: T): EntityData<T> {
-    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b)) as EntityData<T>;
+  static diffEntities<T extends IEntityType<T>>(a: T, b: T, metadata: MetadataStorage): EntityData<T> {
+    return Utils.diff(Utils.prepareEntity(a, metadata), Utils.prepareEntity(b, metadata)) as EntityData<T>;
   }
 
-  static prepareEntity<T extends IEntityType<T>>(e: T): EntityData<T> {
-    const metadata = MetadataStorage.getMetadata();
-    const meta = metadata[e.constructor.name];
-    const ret = Utils.copy(e);
+  static prepareEntity<T extends IEntityType<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
+    const meta = metadata.get(entity.constructor.name);
+    const ret = Utils.copy(entity);
     delete ret.__initialized;
 
     // remove collections and references
     Object.values(meta.properties).forEach(prop => {
-      const pk = () => metadata[prop.type].primaryKey;
+      const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
 
-      if (e[name] as any instanceof ArrayCollection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
+      if (entity[name] as any instanceof ArrayCollection || (Utils.isEntity(entity[name]) && !entity[name][pk()])) {
         return delete ret[name];
       }
 
-      if (Utils.isEntity(e[name])) {
+      if (Utils.isEntity(entity[name])) {
         return ret[prop.name] = ret[prop.name][pk()];
       }
     });
 
     // remove unknown properties
-    Object.keys(e).forEach(prop => {
+    Object.keys(entity).forEach(prop => {
       if (!meta.properties[prop] || meta.properties[prop].persist === false) {
         delete ret[prop];
       }

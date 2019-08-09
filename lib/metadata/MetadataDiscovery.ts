@@ -2,27 +2,26 @@ import globby from 'globby';
 import { extname } from 'path';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
-import { EntityManager } from '../EntityManager';
 import { Configuration, Logger, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { Cascade, EntityHelper, ReferenceType } from '../entity';
+import { Cascade, ReferenceType } from '../entity';
+import { Platform } from '../platforms';
 
 export class MetadataDiscovery {
 
-  private readonly metadata = MetadataStorage.getMetadata();
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
   private readonly cache = this.config.getCacheAdapter();
-  private readonly platform = this.em.getDriver().getPlatform();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
-  constructor(private readonly em: EntityManager,
+  constructor(private readonly metadata: MetadataStorage,
+              private readonly platform: Platform,
               private readonly config: Configuration,
               private readonly logger: Logger) { }
 
-  async discover(): Promise<Record<string, EntityMetadata>> {
+  async discover(): Promise<MetadataStorage> {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     this.discovered.length = 0;
@@ -49,10 +48,11 @@ export class MetadataDiscovery {
     const diff = Date.now() - startTime;
     this.logger.debug(`- entity discovery finished after ${diff} ms`);
 
-    const discovered: Record<string, EntityMetadata> = {};
+    const discovered = new MetadataStorage();
+
     this.discovered
       .filter(meta => meta.name)
-      .forEach(meta => discovered[meta.name] = meta );
+      .forEach(meta => discovered.set(meta.name, meta));
 
     return discovered;
   }
@@ -80,11 +80,24 @@ export class MetadataDiscovery {
     }
   }
 
+  private prepare<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>): EntityClass<T> {
+    // save path to entity from schema
+    if ('entity' in entity && 'schema' in entity) {
+      const schema = entity.schema;
+      const meta = this.metadata.get(entity.entity.name, true);
+      meta.path = schema.path;
+
+      return entity.entity;
+    }
+
+    return entity;
+  }
+
   private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
-    entity = this.metadataProvider.prepare(entity);
+    entity = this.prepare(entity);
     this.logger.debug(`- processing entity ${entity.name}`);
 
-    const meta = MetadataStorage.getMetadata(entity.name);
+    const meta = this.metadata.get(entity.name, true);
     meta.prototype = entity.prototype;
     meta.path = path || meta.path;
     meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
@@ -128,7 +141,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.reference === ReferenceType.MANY_TO_ONE) {
-      const meta2 = this.metadata[prop.type];
+      const meta2 = this.metadata.get(prop.type);
       prop.inverseJoinColumn = meta2.properties[meta2.primaryKey].fieldName;
     }
 
@@ -148,7 +161,7 @@ export class MetadataDiscovery {
   }
 
   private initManyToOneFieldName(prop: EntityProperty, name: string): string {
-    const meta2 = this.metadata[prop.type];
+    const meta2 = this.metadata.get(prop.type);
     const referenceColumnName = meta2.properties[meta2.primaryKey].fieldName;
 
     return this.namingStrategy.joinKeyColumnName(name, referenceColumnName);
@@ -178,7 +191,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.inverseJoinColumn && prop.mappedBy) {
-      prop.inverseJoinColumn = this.metadata[prop.type].properties[prop.mappedBy].fieldName;
+      prop.inverseJoinColumn = this.metadata.get(prop.type).properties[prop.mappedBy].fieldName;
     }
 
     if (!prop.referenceColumnName) {
@@ -198,11 +211,6 @@ export class MetadataDiscovery {
       }
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
-
-    if (!Utils.isEntity(meta.prototype)) {
-      EntityHelper.decorate(meta, this.em);
-    }
-
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
@@ -224,7 +232,7 @@ export class MetadataDiscovery {
       const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
       this.initFieldName(primaryProp);
 
-      return this.metadata[prop.pivotTable] = {
+      return this.metadata.set(prop.pivotTable, {
         name: prop.pivotTable,
         collection: prop.pivotTable,
         primaryKey: pk,
@@ -233,7 +241,7 @@ export class MetadataDiscovery {
           [meta.name]: this.definePivotProperty(prop, meta.name, prop.type),
           [prop.type]: this.definePivotProperty(prop, prop.type, meta.name),
         },
-      } as EntityMetadata;
+      } as EntityMetadata);
     }
   }
 
@@ -241,7 +249,7 @@ export class MetadataDiscovery {
     const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.ALL] } as EntityProperty;
 
     if (name === prop.type) {
-      const meta = this.metadata[name];
+      const meta = this.metadata.get(name);
       const prop2 = meta.properties[meta.primaryKey];
 
       if (!prop2.fieldName) {
@@ -265,7 +273,7 @@ export class MetadataDiscovery {
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): void {
-    const base = this.metadata[meta.extends];
+    const base = this.metadata.get(meta.extends);
 
     if (!meta.extends || !base) {
       return;
@@ -285,7 +293,7 @@ export class MetadataDiscovery {
   }
 
   private getDefaultVersionValue(prop: EntityProperty): any {
-    if (prop.default) {
+    if (typeof prop.default !== 'undefined') {
       return prop.default;
     }
 
