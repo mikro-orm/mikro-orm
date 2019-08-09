@@ -56,6 +56,16 @@ export class Author extends BaseEntity {
     this.foo = 'bar';
   }
 
+  @Property({ name: 'code' })
+  getCode() {
+    return `${this.email} - ${this.name}`;
+  }
+
+  @Property({ persist: false })
+  get code2() {
+    return `${this.email} - ${this.name}`;
+  }
+
   @BeforeCreate()
   beforeCreate() {
     this.version = 1;
