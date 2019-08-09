@@ -84,6 +84,8 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   referenceColumnName: string;
 }
 
+export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate' | 'afterUpdate' | 'beforeDelete' | 'afterDelete';
+
 export interface EntityMetadata<T extends IEntityType<T> = any> {
   name: string;
   constructorParams: (keyof T & string)[];
@@ -96,6 +98,6 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
-  hooks: Record<string, string[]>;
+  hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: EntityClass<T> & IEntity;
 }

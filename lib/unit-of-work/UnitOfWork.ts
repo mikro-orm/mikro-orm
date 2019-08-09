@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, HookType, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { Cascade, Collection, EntityIdentifier, ReferenceType } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
@@ -232,7 +232,7 @@ export class UnitOfWork {
 
   private async commitChangeSet<T extends IEntityType<T>>(changeSet: ChangeSet<T>, ctx: Transaction): Promise<void> {
     const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
-    await this.runHooks(`before${type}`, changeSet.entity, changeSet.payload);
+    await this.runHooks(`before${type}` as HookType, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet, ctx);
 
     switch (changeSet.type) {
@@ -241,15 +241,15 @@ export class UnitOfWork {
       case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity); break;
     }
 
-    await this.runHooks(`after${type}`, changeSet.entity);
+    await this.runHooks(`after${type}` as HookType, changeSet.entity);
   }
 
-  private async runHooks<T extends IEntityType<T>>(type: string, entity: IEntityType<T>, payload?: EntityData<T>) {
-    const hooks = this.metadata.get(entity.constructor.name).hooks;
+  private async runHooks<T extends IEntityType<T>>(type: HookType, entity: IEntityType<T>, payload?: EntityData<T>) {
+    const hooks = this.metadata.get<T>(entity.constructor.name).hooks;
 
-    if (hooks && hooks[type] && hooks[type].length > 0) {
+    if (hooks && hooks[type] && hooks[type]!.length > 0) {
       const copy = Utils.copy(entity);
-      await Utils.runSerial(hooks[type], hook => entity[hook as keyof T]());
+      await Utils.runSerial(hooks[type]!, hook => entity[hook]());
 
       if (payload) {
         Object.assign(payload, Utils.diffEntities(copy, entity, this.metadata));
