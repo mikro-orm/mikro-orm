@@ -1,4 +1,4 @@
-import { Utils, Configuration } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { EntityData, EntityMetadata, EntityName, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
 import { UnitOfWork } from '../unit-of-work';
@@ -42,26 +42,6 @@ export class EntityFactory {
     return entity;
   }
 
-  private createEntity<T extends IEntityType<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
-    const Entity = require(meta.path)[meta.name];
-
-    if (!data[meta.primaryKey]) {
-      const params = this.extractConstructorParams<T>(meta, data);
-      meta.constructorParams.forEach(prop => delete data[prop]);
-      return new Entity(...params);
-    }
-
-    if (this.unitOfWork.getById(meta.name, data[meta.primaryKey])) {
-      return this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey]);
-    }
-
-    // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
-    const entity = Object.create(Entity.prototype);
-    entity[meta.primaryKey] = data[meta.primaryKey];
-
-    return entity;
-  }
-
   createReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
@@ -71,6 +51,30 @@ export class EntityFactory {
     }
 
     return this.create<T>(entityName, { [meta.primaryKey]: id } as EntityData<T>, false);
+  }
+
+  private createEntity<T extends IEntityType<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
+    const Entity = require(meta.path)[meta.name];
+
+    if (!data[meta.primaryKey]) {
+      const params = this.extractConstructorParams<T>(meta, data);
+      meta.constructorParams.forEach(prop => delete data[prop]);
+      const entity = new Entity(...params);
+      this.runHooks(entity, meta);
+
+      return entity;
+    }
+
+    if (this.unitOfWork.getById(meta.name, data[meta.primaryKey])) {
+      return this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey]);
+    }
+
+    // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
+    const entity = Object.create(Entity.prototype);
+    entity[meta.primaryKey] = data[meta.primaryKey];
+    this.runHooks(entity, meta);
+
+    return entity;
   }
 
   /**
@@ -85,6 +89,12 @@ export class EntityFactory {
 
       return data[k];
     });
+  }
+
+  private runHooks<T extends IEntityType<T>>(entity: T, meta: EntityMetadata<T>): void {
+    if (meta.hooks && meta.hooks.onInit && meta.hooks.onInit.length > 0) {
+      meta.hooks.onInit.forEach(hook => entity[hook]());
+    }
   }
 
 }

@@ -802,10 +802,11 @@ describe('EntityManagerPostgre', () => {
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;
     const repo = orm.em.getRepository(Author2);
-    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const author = repo.create({ name: 'Jon Snow', email: 'snow@wall.st' });
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
+    expect(author.code).toBe('snow@wall.st - Jon Snow');
 
     await repo.persistAndFlush(author);
     expect(author.id).toBeDefined();
