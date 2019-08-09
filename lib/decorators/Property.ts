@@ -7,8 +7,20 @@ export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
-    options.name = propertyName;
-    meta.properties[propertyName] = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
+    options.name = options.name || propertyName;
+    const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
+    const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
+    prop.getter = !!desc.get;
+    prop.setter = !!desc.set;
+
+    if (desc.value instanceof Function) {
+      prop.getter = true;
+      prop.persist = false;
+      prop.type = 'method';
+      prop.getterName = propertyName;
+    }
+
+    meta.properties[prop.name] = prop;
   };
 }
 

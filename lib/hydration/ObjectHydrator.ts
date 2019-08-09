@@ -12,7 +12,7 @@ export class ObjectHydrator extends Hydrator {
       this.hydrateOneToMany(entity, prop, value);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
       this.hydrateManyToMany(entity, prop, value);
-    } else if (value) { // ReferenceType.SCALAR
+    } else { // ReferenceType.SCALAR
       this.hydrateScalar(entity, prop, value);
     }
   }
@@ -22,6 +22,10 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private hydrateScalar<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
+    if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
+      return;
+    }
+
     entity[prop.name as keyof T] = value;
   }
 
