@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder,
+  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit,
 } from '../../lib';
 
 import { Book2 } from './Book2';
@@ -51,10 +51,18 @@ export class Author2 extends BaseEntity2 {
   @Property({ persist: false })
   versionAsString: string;
 
+  @Property({ persist: false })
+  code: string;
+
   constructor(name: string, email: string) {
     super();
     this.name = name;
     this.email = email;
+  }
+
+  @OnInit()
+  onInit() {
+    this.code = `${this.email} - ${this.name}`;
   }
 
   @BeforeCreate()
