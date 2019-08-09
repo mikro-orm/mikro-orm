@@ -3,7 +3,6 @@ import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
 import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
 import { Utils } from '../utils';
-import { MetadataStorage } from '../metadata';
 import { ReferenceType } from './enums';
 
 export class EntityAssigner {
@@ -11,7 +10,7 @@ export class EntityAssigner {
   static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): void;
   static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): void;
   static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): void {
-    const meta = MetadataStorage.getMetadata(entity.constructor.name);
+    const meta = entity.__em.getMetadata().get(entity.constructor.name);
     const props = meta.properties;
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
 

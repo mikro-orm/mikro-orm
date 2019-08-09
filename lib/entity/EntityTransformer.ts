@@ -2,14 +2,13 @@ import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
 import { EntityData, EntityMetadata, IEntity, IEntityType } from '../decorators';
-import { MetadataStorage } from '../metadata';
 
 export class EntityTransformer {
 
   static toObject<T extends IEntityType<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
     const platform = entity.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(entity.__primaryKeyField);
-    const meta = MetadataStorage.getMetadata(entity.constructor.name);
+    const meta = entity.__em.getMetadata().get(entity.constructor.name);
     const pkProp = meta.properties[meta.primaryKey];
     const ret = (entity.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
 
@@ -48,7 +47,7 @@ export class EntityTransformer {
     const platform = child.__em.getDriver().getPlatform();
 
     if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
-      const meta = MetadataStorage.getMetadata(child.constructor.name);
+      const meta = entity.__em.getMetadata().get(child.constructor.name);
       const args = [...meta.toJsonParams.map(() => undefined), ignoreFields];
 
       return child.toJSON(...args) as T[keyof T];

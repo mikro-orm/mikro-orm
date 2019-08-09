@@ -2,7 +2,6 @@ import { Author } from './entities';
 import { EntityValidator, MikroORM } from '../lib';
 import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
 import { initORM, wipeDatabase } from './bootstrap';
-import { MetadataStorage } from '../lib/metadata';
 
 describe('UnitOfWork', () => {
 
@@ -78,7 +77,7 @@ describe('UnitOfWork', () => {
 
     // string date with correct format will not be auto-corrected in strict mode
     const payload = { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 };
-    expect(() => validator.validate(author, payload, MetadataStorage.getMetadata(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
+    expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
   });
 
   test('changeSet is null for empty payload', async () => {

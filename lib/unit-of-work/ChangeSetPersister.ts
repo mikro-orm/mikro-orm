@@ -8,13 +8,12 @@ import { ValidationError } from '../utils';
 
 export class ChangeSetPersister {
 
-  private readonly metadata = MetadataStorage.getMetadata();
-
   constructor(private readonly driver: IDatabaseDriver,
-              private readonly identifierMap: Record<string, EntityIdentifier>) { }
+              private readonly identifierMap: Record<string, EntityIdentifier>,
+              private readonly metadata: MetadataStorage) { }
 
   async persistToDatabase<T extends IEntityType<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
-    const meta = this.metadata[changeSet.name];
+    const meta = this.metadata.get(changeSet.name);
 
     // process references first
     for (const prop of Object.values(meta.properties)) {

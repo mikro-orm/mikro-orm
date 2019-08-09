@@ -11,8 +11,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected readonly connection: C;
   protected readonly platform: Platform;
-  protected readonly metadata = MetadataStorage.getMetadata();
   protected readonly logger = this.config.getLogger();
+  protected metadata: MetadataStorage;
 
   constructor(protected readonly config: Configuration) { }
 
@@ -39,8 +39,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     const fk1 = prop.joinColumn;
     const fk2 = prop.inverseJoinColumn;
-    const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
-    const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
+    const pivotTable = prop.owner ? prop.pivotTable : this.metadata.get(prop.type).properties[prop.mappedBy].pivotTable;
+    const orderBy = { [`${pivotTable}.${this.metadata.get(pivotTable).primaryKey}`]: QueryOrder.ASC };
     const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy, undefined, undefined, ctx) : [];
 
     const map: Record<string, T[]> = {};
@@ -82,8 +82,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.platform;
   }
 
+  setMetadata(metadata: MetadataStorage): void {
+    this.metadata = metadata;
+    this.connection.setMetadata(metadata);
+  }
+
   protected getPrimaryKeyField(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
+    const meta = this.metadata.get(entityName);
+    return meta ? meta.primaryKey : this.config.getNamingStrategy().referenceColumnName();
   }
 
 }
