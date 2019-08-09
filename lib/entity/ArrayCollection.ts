@@ -1,5 +1,4 @@
 import { EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
-import { MetadataStorage } from '../metadata';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
 
@@ -23,7 +22,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
 
   toArray(): Record<string, any>[] {
     return this.getItems().map(item => {
-      const meta = MetadataStorage.getMetadata(item.constructor.name);
+      const meta = this.owner.__em.getMetadata().get(item.constructor.name);
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return item.toJSON(...args);
@@ -141,7 +140,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
 
   protected get property() {
     if (!this._property) {
-      const meta = MetadataStorage.getMetadata(this.owner.constructor.name);
+      const meta = this.owner.__em.getMetadata().get(this.owner.constructor.name);
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

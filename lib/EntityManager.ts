@@ -12,13 +12,13 @@ export class EntityManager {
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Record<string, EntityRepository<IEntity>> = {};
   private readonly entityLoader = new EntityLoader(this);
-  private readonly metadata = MetadataStorage.getMetadata();
   private readonly unitOfWork = new UnitOfWork(this);
-  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config, this.metadata);
   private transactionContext: Transaction;
 
   constructor(readonly config: Configuration,
-              private readonly driver: IDatabaseDriver) { }
+              private readonly driver: IDatabaseDriver,
+              private readonly metadata: MetadataStorage) { }
 
   getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
     return this.driver as D;
@@ -32,7 +32,7 @@ export class EntityManager {
     entityName = Utils.className(entityName);
 
     if (!this.repositoryMap[entityName]) {
-      const meta = this.metadata[entityName];
+      const meta = this.metadata.get(entityName);
       const RepositoryClass = this.config.getRepositoryClass(meta.customRepository);
       this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
@@ -53,7 +53,7 @@ export class EntityManager {
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where, entityName);
+    where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
     const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset, this.transactionContext);
@@ -79,9 +79,10 @@ export class EntityManager {
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
+    const meta = this.metadata.get(entityName);
     this.validator.validateEmptyWhere(where);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
-    this.checkLockRequirements(options.lockMode, this.metadata[entityName]);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, meta);
+    this.checkLockRequirements(options.lockMode, meta);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
@@ -129,7 +130,7 @@ export class EntityManager {
   async nativeUpdate<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName));
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
@@ -139,7 +140,7 @@ export class EntityManager {
 
   async nativeDelete<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | string | any): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
@@ -148,7 +149,7 @@ export class EntityManager {
 
   map<T extends IEntityType<T>>(entityName: EntityName<T>, result: EntityData<T>): T {
     entityName = Utils.className(entityName);
-    const meta = this.metadata[entityName];
+    const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta)!;
 
     return this.merge<T>(entityName, data, true);
@@ -170,8 +171,12 @@ export class EntityManager {
     }
 
     entityName = Utils.className(entityName);
-    this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata[entityName]);
+    this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as EntityData<T>);
+
+    if (entity) {
+      entity.__em = this;
+    }
 
     if (entity && entity.isInitialized() && !refresh) {
       return entity;
@@ -206,7 +211,7 @@ export class EntityManager {
 
   async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
 
     return this.driver.count(entityName, where, this.transactionContext);
@@ -283,7 +288,7 @@ export class EntityManager {
   canPopulate(entityName: string | Function, property: string): boolean {
     entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
-    const props = this.metadata[entityName].properties;
+    const props = this.metadata.get(entityName).properties;
     const ret = p in props && props[p].reference !== ReferenceType.SCALAR;
 
     if (!ret) {
@@ -298,7 +303,7 @@ export class EntityManager {
   }
 
   fork(clear = true): EntityManager {
-    const em = new EntityManager(this.config, this.driver);
+    const em = new EntityManager(this.config, this.driver, this.metadata);
 
     if (!clear) {
       Object.values(this.getUnitOfWork().getIdentityMap()).forEach(entity => em.merge(entity));
@@ -323,6 +328,10 @@ export class EntityManager {
 
   getTransactionContext<T extends Transaction = Transaction>(): T {
     return this.transactionContext as T;
+  }
+
+  getMetadata(): MetadataStorage {
+    return this.metadata;
   }
 
   private checkLockRequirements(mode: LockMode | undefined, meta: EntityMetadata): void {

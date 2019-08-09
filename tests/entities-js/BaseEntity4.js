@@ -1,4 +1,3 @@
-const { MetadataStorage } = require('../../lib/metadata');
 const { Collection, ReferenceType } = require('../../lib');
 
 /**
@@ -7,7 +6,7 @@ const { Collection, ReferenceType } = require('../../lib');
 class BaseEntity4 {
 
   constructor() {
-    const meta = MetadataStorage.getMetadata(this.constructor.name);
+    const meta = this['__em'].getMetadata().get(this.constructor.name);
     const props = meta.properties;
 
     Object.keys(props).forEach(prop => {

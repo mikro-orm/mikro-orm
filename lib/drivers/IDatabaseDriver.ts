@@ -3,6 +3,7 @@ import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
 import { LockMode } from '../unit-of-work';
+import { MetadataStorage } from '../metadata';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -36,6 +37,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[], ctx?: Transaction): Promise<Record<string, T[]>>;
 
   getPlatform(): Platform;
+
+  setMetadata(metadata: MetadataStorage): void;
 
 }
 
