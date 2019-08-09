@@ -927,6 +927,17 @@ describe('EntityManagerMongo', () => {
     expect(author.books.count()).toBe(3);
   });
 
+  test('getter as a property', async () => {
+    const repo = orm.em.getRepository(Author);
+    const author = repo.create({ name: 'Jon Snow', email: 'snow@wall.st' });
+    expect(author.code2).toBe('snow@wall.st - Jon Snow');
+    expect(author.getCode()).toBe('snow@wall.st - Jon Snow');
+    expect(author.toJSON()).toMatchObject({
+      code: 'snow@wall.st - Jon Snow',
+      code2: 'snow@wall.st - Jon Snow',
+    });
+  });
+
   test('hooks', async () => {
     Author.beforeDestroyCalled = 0;
     Author.afterDestroyCalled = 0;

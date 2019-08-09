@@ -29,13 +29,13 @@ export class EntityAssigner {
         return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T], value, props[prop], entity.__em);
       }
 
-      if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type)) {
+      if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (!props[prop].getter || props[prop].setter)) {
         return entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
       }
 
       if (options.mergeObjects && Utils.isObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
-      } else {
+      } else if (!props[prop] || !props[prop].getter || props[prop].setter) {
         entity[prop as keyof T] = value;
       }
     });

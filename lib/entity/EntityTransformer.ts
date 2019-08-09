@@ -8,7 +8,7 @@ export class EntityTransformer {
   static toObject<T extends IEntityType<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
     const platform = entity.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(entity.__primaryKeyField);
-    const meta = entity.__em.getMetadata().get(entity.constructor.name);
+    const meta = entity.__em.getMetadata().get<T>(entity.constructor.name);
     const pkProp = meta.properties[meta.primaryKey];
     const ret = (entity.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(entity.__primaryKey) } : {}) as EntityData<T>;
 
@@ -16,11 +16,22 @@ export class EntityTransformer {
       return ret;
     }
 
+    // normal properties
     Object.keys(entity)
-      .filter(prop => this.isVisible(meta, prop, entity, ignoreFields))
+      .filter(prop => this.isVisible(meta, prop as keyof T & string, entity, ignoreFields))
       .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields)])
       .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[prop!] = value);
+
+    // decorated getters
+    Object.values(meta.properties)
+      .filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined')
+      .forEach(prop => ret[prop.name] = entity[prop.name]);
+
+    // decorated get methods
+    Object.values(meta.properties)
+      .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as object instanceof Function)
+      .forEach(prop => ret[prop.name] = entity[prop.getterName!]());
 
     return ret;
   }
