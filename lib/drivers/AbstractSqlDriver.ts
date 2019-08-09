@@ -23,7 +23,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
-    const pk = this.metadata[entityName].primaryKey;
+    const pk = this.metadata.get(entityName).primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
       where = { [pk]: where };
@@ -45,7 +45,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async count(entityName: string, where: any, ctx?: Transaction): Promise<number> {
     const qb = this.createQueryBuilder(entityName, ctx);
-    const pk = this.metadata[entityName].primaryKey;
+    const pk = this.metadata.get(entityName).primaryKey;
     const res = await qb.count(pk, true).where(where).execute('get', false);
 
     return +res.count;
@@ -78,7 +78,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await qb.update(data).where(where).execute('run', false);
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata[entityName])!, collections, ctx);
+    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName))!, collections, ctx);
 
     return res;
   }
@@ -97,11 +97,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
-    if (!this.metadata[entityName]) {
+    if (!this.metadata.get(entityName)) {
       return {};
     }
 
-    const props = this.metadata[entityName].properties;
+    const props = this.metadata.get(entityName).properties;
     const ret: EntityData<T> = {};
 
     for (const k of Object.keys(data)) {
@@ -117,11 +117,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>, ctx?: Transaction) {
-    if (!this.metadata[entityName]) {
+    if (!this.metadata.get(entityName)) {
       return;
     }
 
-    const props = this.metadata[entityName].properties;
+    const props = this.metadata.get(entityName).properties;
     const owners = Object.keys(collections).filter(k => props[k].owner);
 
     for (const k of owners) {

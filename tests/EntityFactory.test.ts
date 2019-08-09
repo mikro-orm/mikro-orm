@@ -3,8 +3,7 @@ import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection, Utils } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORM, wipeDatabase } from './bootstrap';
-import { BaseEntity } from './entities/BaseEntity';
-import { MetadataDiscovery, MetadataStorage } from '../lib/metadata';
+import { MetadataDiscovery } from '../lib/metadata';
 
 describe('EntityFactory', () => {
 
@@ -13,16 +12,15 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORM();
-    await new MetadataDiscovery(orm.em, orm.config, orm.config.getLogger()).discover();
-    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config);
+    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config, orm.config.getLogger()).discover();
+    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config, orm.getMetadata());
     expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {
-    const metadata = MetadataStorage.getMetadata();
+    const metadata = orm.getMetadata().getAll();
     expect(metadata).toBeInstanceOf(Object);
-    expect(metadata[BaseEntity.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
     expect(metadata[Author.name].path).toBe(Utils.normalizePath(__dirname, 'entities/Author.ts'));
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
