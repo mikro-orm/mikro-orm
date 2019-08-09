@@ -250,8 +250,7 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
-    // @ts-ignore
-    expect(fork.metadata).toBe(orm.em.metadata);
+    expect(fork.getMetadata()).toBe(orm.em.getMetadata());
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
 
     // request context is not started so we can use UoW and EF getters

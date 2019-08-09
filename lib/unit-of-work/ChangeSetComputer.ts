@@ -6,15 +6,14 @@ import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '..
 
 export class ChangeSetComputer {
 
-  private readonly metadata = MetadataStorage.getMetadata();
-
   constructor(private readonly validator: EntityValidator,
               private readonly originalEntityData: Record<string, EntityData<IEntity>>,
-              private readonly identifierMap: Record<string, EntityIdentifier>) { }
+              private readonly identifierMap: Record<string, EntityIdentifier>,
+              private readonly metadata: MetadataStorage) { }
 
   computeChangeSet<T extends IEntityType<T>>(entity: T): ChangeSet<T> | null {
     const changeSet = { entity } as ChangeSet<T>;
-    const meta = this.metadata[entity.constructor.name];
+    const meta = this.metadata.get(entity.constructor.name);
 
     changeSet.name = meta.name;
     changeSet.type = this.originalEntityData[entity.__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
@@ -36,10 +35,10 @@ export class ChangeSetComputer {
 
   private computePayload<T extends IEntityType<T>>(entity: T): EntityData<T> {
     if (this.originalEntityData[entity.__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[entity.__uuid] as T, entity);
+      return Utils.diffEntities<T>(this.originalEntityData[entity.__uuid] as T, entity, this.metadata);
     }
 
-    return Utils.prepareEntity(entity);
+    return Utils.prepareEntity(entity, this.metadata);
   }
 
   private processReference<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
@@ -57,7 +56,7 @@ export class ChangeSetComputer {
   }
 
   private processManyToOne<T extends IEntityType<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const pk = this.metadata[prop.type].primaryKey as keyof T;
+    const pk = this.metadata.get(prop.type).primaryKey as keyof T;
     const entity = changeSet.entity[prop.name as keyof T] as T;
 
     if (!entity[pk]) {
@@ -67,7 +66,7 @@ export class ChangeSetComputer {
 
   private processManyToMany<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<IEntity>): void {
     if (collection.isDirty()) {
-      const pk = this.metadata[prop.type].primaryKey as keyof IEntity;
+      const pk = this.metadata.get(prop.type).primaryKey as keyof IEntity;
       changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.__uuid]);
       collection.setDirty(false);
     }

@@ -1062,7 +1062,7 @@ describe('EntityManagerMySql', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2);
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
     expect(typeof diff.favouriteBook).toBe('string');
     expect(diff.favouriteBook).toBe(book.uuid);
