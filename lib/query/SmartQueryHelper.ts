@@ -36,35 +36,35 @@ export class SmartQueryHelper {
       return { [rootPrimaryKey]: { $in: where.map(sub => this.processWhere(sub, entityName, meta)) } };
     }
 
-    if (!Utils.isObject(where)) {
+    if (!Utils.isObject(where) || Utils.isPrimaryKey(where)) {
       return where;
     }
 
-    Object.entries(where).forEach(([key, value]) => {
-      if (QueryBuilderHelper.GROUP_OPERATORS[key as '$and' | '$or']) {
-        return value.map((sub: any) => this.processWhere(sub, entityName, meta));
+    return Object.keys(where).reduce((o, key) => {
+      const value = where[key as keyof typeof where];
+
+      if (key in QueryBuilderHelper.GROUP_OPERATORS) {
+        o[key] = value.map((sub: any) => this.processWhere(sub, entityName, meta));
+        return o;
       }
 
       if (Array.isArray(value) && !SmartQueryHelper.isSupported(key) && !key.includes('?')) {
-        return where[key as keyof typeof where] = { $in: value };
+        o[key] = { $in: value };
+        return o;
       }
 
       if (!SmartQueryHelper.isSupported(key)) {
-        return where;
-      }
-
-      delete where[key as keyof typeof where];
-
-      if (key.includes(':')) {
+        o[key] = where[key as keyof typeof where];
+      } else if (key.includes(':')) {
         const [k, expr] = key.split(':');
-        where[k as keyof typeof where] = SmartQueryHelper.processExpression(expr, value);
+        o[k] = SmartQueryHelper.processExpression(expr, value);
       } else {
         const m = key.match(/([\w-]+) ?([<>=!]+)$/)!;
-        where[m[1] as keyof typeof where] = SmartQueryHelper.processExpression(m[2], value);
+        o[m[1]] = SmartQueryHelper.processExpression(m[2], value);
       }
-    });
 
-    return where;
+      return o;
+    }, {} as Record<string, any>);
   }
 
   private static processEntity(entity: IEntity, root?: boolean): any {

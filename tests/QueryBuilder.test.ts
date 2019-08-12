@@ -96,6 +96,15 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'test 321', 'lol 321', 2, 1]);
   });
 
+  test('select complex where', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*')
+      .where({ name: 'test 123', $or: [{ name: 'test 321' }, { type: PublisherType.GLOBAL }] })
+      .limit(2, 1);
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and (`e0`.`name` = ? or `e0`.`type` = ?) limit ? offset ?');
+    expect(qb.getParams()).toEqual(['test 123', 'test 321', PublisherType.GLOBAL, 2, 1]);
+  });
+
   test('select leftJoin 1:1 owner', async () => {
     const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
     qb.select(['fb.*', 'fz.*'])
@@ -150,6 +159,32 @@ describe('QueryBuilder', () => {
       'limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['test 123', 2, 1]);
+  });
+
+  test('select leftJoin 1:m with multiple conditions', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select(['a.*', 'b.*'])
+      .leftJoin('a.books', 'b', {
+        'b.foo:gte': '123',
+        'b.baz': { $gt: 1, $lte: 10 },
+        '$or': [
+          { 'b.foo': null, 'b.baz': 0, 'b.bar:ne': 1 },
+          { 'b.bar': /321.*/ },
+          { $and: [
+            { 'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }] },
+            { 'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false] },
+            { 'lower(b.bar)': '321' },
+          ] },
+        ],
+      })
+      .where({ 'b.title': 'test 123' })
+      .limit(2, 1);
+    const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
+      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and `b`.`foo` >= ? and (`b`.`baz` > ? and `b`.`baz` <= ?) and ((`b`.`foo` is ? and `b`.`baz` = ? and `b`.`bar` != ?) or `b`.`bar` like ? or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
+      'where `b`.`title` = ? ' +
+      'limit ? offset ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['123', 1, 10, null, 0, 1, '%321%%', '{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123', 2, 1]);
   });
 
   test('select leftJoin m:n owner', async () => {
@@ -210,13 +245,13 @@ describe('QueryBuilder', () => {
 
   test('select with custom expression', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
-    qb1.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?)': [{ foo: 'bar' }] });
-    expect(qb1.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where JSON_CONTAINS(`e0`.`meta`, ?)');
+    qb1.select('*').where({ 'json_contains(`e0`.`meta`, ?)': [{ foo: 'bar' }] });
+    expect(qb1.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where json_contains(`e0`.`meta`, ?)');
     expect(qb1.getParams()).toEqual(['{"foo":"bar"}']);
 
     const qb2 = orm.em.createQueryBuilder(Book2);
-    qb2.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?) = ?': [{ foo: 'baz' }, false] });
-    expect(qb2.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where JSON_CONTAINS(`e0`.`meta`, ?) = ?');
+    qb2.select('*').where({ 'json_contains(`e0`.`meta`, ?) = ?': [{ foo: 'baz' }, false] });
+    expect(qb2.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where json_contains(`e0`.`meta`, ?) = ?');
     expect(qb2.getParams()).toEqual(['{"foo":"baz"}', false]);
   });
 
