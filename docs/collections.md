@@ -66,7 +66,7 @@ export class Book {
 }
 
 @Entity()
-export class BookTag {
+export class Author {
 
   @PrimaryKey()
   _id: ObjectID;
