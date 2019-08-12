@@ -80,30 +80,31 @@ export class QueryBuilder {
     return this.init(QueryType.COUNT);
   }
 
-  join(field: string, alias: string, type: 'leftJoin' | 'innerJoin' = 'innerJoin'): this {
+  join(field: string, alias: string, cond: Record<string, any> = {}, type: 'leftJoin' | 'innerJoin' = 'innerJoin'): this {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
+    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName));
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type);
+      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
       const pivotAlias = `e${this.aliasCounter++}`;
-      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type);
+      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
       this._fields.push(`${pivotAlias}.${prop.name}`);
       Object.assign(this._joins, joins);
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
-      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type);
+      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else { // MANY_TO_ONE
-      this._joins[prop.name] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type);
+      this._joins[prop.name] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
     }
 
     return this;
   }
 
-  leftJoin(field: string, alias: string): this {
-    return this.join(field, alias, 'leftJoin');
+  leftJoin(field: string, alias: string, cond: Record<string, any> = {}): this {
+    return this.join(field, alias, cond, 'leftJoin');
   }
 
   where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
@@ -269,7 +270,7 @@ export class QueryBuilder {
         return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
-      ret.push(this.helper.mapper(this.type, f) as string);
+      ret.push(this.helper.mapper(f, this.type) as string);
     });
 
     Object.keys(this._populateMap).forEach(f => {
@@ -383,7 +384,7 @@ export class QueryBuilder {
         break;
       case QueryType.COUNT:
         const m = this.flags.includes(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m](this.helper.mapper(this.type, this._fields[0], undefined, 'count'));
+        qb[m](this.helper.mapper(this._fields[0], this.type, undefined, 'count'));
         this.helper.processJoins(qb, this._joins);
         break;
       case QueryType.INSERT:
@@ -450,4 +451,5 @@ export interface JoinOptions {
   inverseJoinColumn?: string;
   primaryKey?: string;
   prop: EntityProperty;
+  cond: Record<string, any>;
 }
