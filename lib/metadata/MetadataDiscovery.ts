@@ -13,6 +13,7 @@ export class MetadataDiscovery {
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
   private readonly cache = this.config.getCacheAdapter();
+  private readonly schemaHelper = this.platform.getSchemaHelper();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
@@ -204,6 +205,7 @@ export class MetadataDiscovery {
     this.validator.validateEntityDefinition(this.metadata, meta.name);
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
+      this.initColumnType(prop);
 
       if (prop.version) {
         meta.versionProperty = prop.name;
@@ -231,6 +233,7 @@ export class MetadataDiscovery {
       const pk = this.namingStrategy.referenceColumnName();
       const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
       this.initFieldName(primaryProp);
+      this.initColumnType(primaryProp);
 
       return this.metadata.set(prop.pivotTable, {
         name: prop.pivotTable,
@@ -269,6 +272,8 @@ export class MetadataDiscovery {
       ret.inverseJoinColumn = prop.referenceColumnName;
     }
 
+    this.initColumnType(ret);
+
     return ret;
   }
 
@@ -303,6 +308,20 @@ export class MetadataDiscovery {
     }
 
     return 1;
+  }
+
+  private initColumnType(prop: EntityProperty): void {
+    if (prop.columnType || !this.schemaHelper) {
+      return;
+    }
+
+    if (prop.reference === ReferenceType.SCALAR) {
+      prop.columnType = this.schemaHelper.getTypeDefinition(prop);
+      return;
+    }
+
+    const meta = this.metadata.get(prop.type);
+    prop.columnType = this.schemaHelper.getTypeDefinition(meta.properties[meta.primaryKey]);
   }
 
 }

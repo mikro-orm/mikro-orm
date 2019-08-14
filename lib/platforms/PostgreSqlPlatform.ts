@@ -3,7 +3,7 @@ import { PostgreSqlSchemaHelper } from '../schema/PostgreSqlSchemaHelper';
 
 export class PostgreSqlPlatform extends Platform {
 
-  protected schemaHelper = new PostgreSqlSchemaHelper();
+  protected readonly schemaHelper = new PostgreSqlSchemaHelper();
 
   usesReturningStatement(): boolean {
     return true;

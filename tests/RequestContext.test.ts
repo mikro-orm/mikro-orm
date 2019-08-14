@@ -1,12 +1,12 @@
 import { RequestContext, MikroORM } from '../lib';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 import { Author, Book } from './entities';
 
 describe('RequestContext', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('create new context', async () => {
