@@ -9,6 +9,10 @@ describe('SchemaHelper', () => {
     expect(helper.getSchemaBeginning()).toBe('');
     expect(helper.getSchemaEnd()).toBe('');
     expect(helper.getTypeDefinition({ type: 'test' } as any)).toBe('test');
+    expect(() => helper.getListTablesSQL()).toThrowError('Not supported by given driver');
+    expect(() => helper.getForeignKeysSQL('table')).toThrowError('Not supported by given driver');
+    await expect(helper.getColumns({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
+    await expect(helper.getIndexes({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
   });
 
 });

@@ -17,7 +17,7 @@ export class FooBar2 extends BaseEntity22 {
   @OneToOne({ owner: true })
   fooBar: FooBar2;
 
-  @Property({ version: true })
+  @Property({ version: true, length: 3 })
   version: Date;
 
   static create(name: string) {

@@ -13,6 +13,9 @@ export class FooBaz2 {
   @OneToOne({ mappedBy: 'baz' })
   bar: FooBar2;
 
+  @Property({ version: true })
+  version: Date;
+
   constructor(name: string) {
     this.name = name;
   }

@@ -2,9 +2,9 @@ import { NamingStrategy } from './NamingStrategy';
 
 export abstract class AbstractNamingStrategy implements NamingStrategy {
 
-  getClassName(file: string): string {
+  getClassName(file: string, separator = '-'): string {
     const name = file.split('.')[0];
-    const ret = name.replace(/-(\w)/, m => m[1].toUpperCase());
+    const ret = name.replace(new RegExp(`${separator}+(\\w)`, 'g'), m => m[1].toUpperCase());
 
     return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
