@@ -1,7 +1,7 @@
 import { Author } from './entities';
 import { EntityValidator, MikroORM } from '../lib';
 import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 
 describe('UnitOfWork', () => {
 
@@ -10,7 +10,7 @@ describe('UnitOfWork', () => {
   let computer: ChangeSetComputer;
 
   beforeAll(async () => {
-    orm = await initORM();
+    orm = await initORMMongo();
     uow = new UnitOfWork(orm.em);
     // @ts-ignore
     computer = uow.changeSetComputer;

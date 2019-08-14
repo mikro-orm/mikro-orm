@@ -1,4 +1,4 @@
-import { MikroORM, EntityManager, Configuration } from '../lib';
+import { MikroORM, EntityManager, Configuration, SchemaGenerator } from '../lib';
 import { Author } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
@@ -33,6 +33,7 @@ describe('MikroORM', () => {
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     expect(await orm.isConnected()).toBe(true);
 
     await orm.close();
