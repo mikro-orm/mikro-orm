@@ -111,7 +111,7 @@
     "mongodb": "^3.2.3",
     "mysql2": "^1.6.5",
     "pg": "^7.10.0",
-    "rimraf": "^2.6.3",
+    "rimraf": "^3.0.0",
     "semantic-release": "^15.13.3",
     "sqlite": "^3.0.3",
     "ts-jest": "^24.0.2",
