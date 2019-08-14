@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Book, Author, Publisher } from './entities';
 import { MikroORM, Collection, Utils } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
 
 describe('EntityFactory', () => {
@@ -11,7 +11,7 @@ describe('EntityFactory', () => {
   let factory: EntityFactory;
 
   beforeAll(async () => {
-    orm = await initORM();
+    orm = await initORMMongo();
     await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config, orm.config.getLogger()).discover();
     factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config, orm.getMetadata());
     expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');

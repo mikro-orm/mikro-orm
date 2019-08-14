@@ -4,7 +4,7 @@ import { SchemaHelper } from '../schema';
 
 export abstract class Platform {
 
-  protected abstract schemaHelper: SchemaHelper;
+  protected readonly abstract schemaHelper?: SchemaHelper;
 
   usesPivotTable(): boolean {
     return true;
@@ -26,7 +26,7 @@ export abstract class Platform {
     return false;
   }
 
-  getSchemaHelper(): SchemaHelper {
+  getSchemaHelper(): SchemaHelper | undefined {
     return this.schemaHelper;
   }
 

@@ -15,7 +15,7 @@ const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
 
-export async function initORM() {
+export async function initORMMongo() {
   let hash = '';
 
   if (process.env.ORM_PARALLEL) {
