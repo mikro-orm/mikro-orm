@@ -3,7 +3,7 @@ import { SqliteSchemaHelper } from '../schema/SqliteSchemaHelper';
 
 export class SqlitePlatform extends Platform {
 
-  protected schemaHelper = new SqliteSchemaHelper();
+  protected readonly schemaHelper = new SqliteSchemaHelper();
 
   requiresNullableForAlteringColumn() {
     return true;

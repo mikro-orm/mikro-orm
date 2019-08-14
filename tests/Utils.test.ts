@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Collection, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 import { EntityMetadata } from '../lib/decorators';
 
 class Test {}
@@ -10,7 +10,7 @@ describe('Utils', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('isObject', () => {

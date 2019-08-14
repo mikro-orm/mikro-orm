@@ -1,17 +1,23 @@
+import { ColumnInfo } from 'knex';
 import { SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: 'int',
-    float: 'float',
-    double: 'double precision',
-    string: 'varchar(?)',
-    date: 'timestamp(?)',
-    boolean: 'boolean',
-    text: 'text',
-    json: 'json',
+    number: ['int', 'int8', 'integer', 'float', 'float8', 'double', 'double precision', 'bigint', 'smallint', 'decimal', 'numeric', 'real'],
+    float: ['float'],
+    double: ['double', 'double precision', 'float8'],
+    string: ['varchar(?)', 'character varying', 'text', 'character', 'char'],
+    date: ['datetime(?)', 'timestamp(?)', 'timestamp without time zone', 'timestamptz', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
+    boolean: ['boolean', 'bool'],
+    text: ['text'],
+    json: ['json'],
+  };
+
+  static readonly DEFAULT_VALUES = {
+    'now()': ['now()', 'current_timestamp'],
+    "('now'::text)::timestamp(?) with time zone": ['current_timestamp(?)'],
   };
 
   static readonly DEFAULT_TYPE_LENGTHS = {

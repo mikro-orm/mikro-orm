@@ -1,4 +1,4 @@
-import { TableBuilder } from 'knex';
+import { ColumnInfo, TableBuilder } from 'knex';
 import { EntityProperty } from '../decorators';
 
 export abstract class SchemaHelper {
@@ -15,9 +15,9 @@ export abstract class SchemaHelper {
     //
   }
 
-  getTypeDefinition(prop: EntityProperty, types: Record<string, string> = {}, lengths: Record<string, number> = {}): string {
+  getTypeDefinition(prop: EntityProperty, types: Record<string, string[]> = {}, lengths: Record<string, number> = {}): string {
     const t = prop.type.toLowerCase();
-    let type = types[t] || types.json || types.text || t;
+    let type = (types[t] || types.json || types.text || [t])[0];
 
     if (type.includes('(?)')) {
       const length = prop.length || lengths[t];

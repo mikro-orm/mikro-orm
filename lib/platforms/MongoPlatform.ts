@@ -6,7 +6,7 @@ import { SchemaHelper } from '../schema';
 
 export class MongoPlatform extends Platform {
 
-  protected schemaHelper: SchemaHelper;
+  protected readonly schemaHelper?: SchemaHelper;
 
   usesPivotTable(): boolean {
     return false;
@@ -34,10 +34,6 @@ export class MongoPlatform extends Platform {
 
   getSerializedPrimaryKeyField(field: string): string {
     return 'id';
-  }
-
-  getSchemaHelper(): SchemaHelper {
-    throw new Error(`${MongoPlatform.name} does not provide SchemaHelper`);
   }
 
 }

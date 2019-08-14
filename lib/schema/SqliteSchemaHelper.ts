@@ -1,13 +1,14 @@
 import { SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
+import { ColumnInfo } from 'knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: 'integer',
-    boolean: 'integer',
-    date: 'text',
-    string: 'text',
+    number: ['integer'],
+    boolean: ['integer'],
+    date: ['text'],
+    string: ['text'],
   };
 
   getSchemaBeginning(): string {
@@ -20,7 +21,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   getTypeDefinition(prop: EntityProperty): string {
     const t = prop.type.toLowerCase() as keyof typeof SqliteSchemaHelper.TYPES;
-    return SqliteSchemaHelper.TYPES[t] || SqliteSchemaHelper.TYPES.string;
+    return (SqliteSchemaHelper.TYPES[t] || SqliteSchemaHelper.TYPES.string)[0];
   }
 
   supportsSchemaConstraints(): boolean {
