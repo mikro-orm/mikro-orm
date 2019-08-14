@@ -86,6 +86,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   joinColumn: string;
   inverseJoinColumn: string;
   referenceColumnName: string;
+  referencedTableName: string;
 }
 
 export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate' | 'afterUpdate' | 'beforeDelete' | 'afterDelete';

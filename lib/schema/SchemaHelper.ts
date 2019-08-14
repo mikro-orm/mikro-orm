@@ -1,6 +1,8 @@
 import { TableBuilder } from 'knex';
 import { EntityProperty } from '../decorators';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { Column, Index } from './DatabaseTable';
+import { ReferenceType } from '../entity';
 
 export abstract class SchemaHelper {
 
@@ -27,6 +29,16 @@ export abstract class SchemaHelper {
     return type;
   }
 
+  isSame(prop: EntityProperty, column: Column, types: Record<string, string[]> = {}, defaultValues: Record<string, string[]> = {}): IsSame {
+    const sameTypes = this.hasSameType(prop, column.type, types);
+    const sameNullable = column.nullable === !!prop.nullable;
+    const sameDefault = this.hasSameDefaultValue(column, prop, defaultValues);
+    const sameIndex = this.hasSameIndex(prop, column);
+    const all = sameTypes && sameNullable && sameDefault && sameIndex;
+
+    return { all, sameTypes, sameNullable, sameDefault, sameIndex };
+  }
+
   supportsSchemaConstraints(): boolean {
     return true;
   }
@@ -43,7 +55,7 @@ export abstract class SchemaHelper {
       .map(([t]) => t)[0];
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Record<string, any[]>, tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Record<string, Index[]>, tableName: string, schemaName?: string): Promise<string[]> {
     const ret = [];
 
     for (const idx of Object.values(indexes)) {
@@ -54,8 +66,17 @@ export abstract class SchemaHelper {
     return ret;
   }
 
+  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Record<string, any>> {
+    const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
+    return this.mapForeignKeys(fks);
+  }
+
   getListTablesSQL(): string {
     throw new Error('Not supported by given driver');
+  }
+
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, quote = '"'): string {
+    return `alter table ${quote}${tableName}${quote} rename column ${quote}${from.name}${quote} to ${quote}${to.fieldName}${quote}`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
@@ -97,4 +118,77 @@ export abstract class SchemaHelper {
     return type;
   }
 
+  supportsColumnAlter(): boolean {
+    return true;
+  }
+
+  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Record<string, string[]> = {}) {
+    const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();
+    const norm = defaultValues[genericValue];
+
+    if (!norm) {
+      return defaultValue;
+    }
+
+    return norm[0].replace('(?)', `(${length})`);
+  }
+
+  private hasSameType(prop: EntityProperty, infoType: string, types: Record<string, string[]>): boolean {
+    const columnType = prop.columnType && prop.columnType.replace(/\([?\d]+\)/, '').toLowerCase();
+    infoType = infoType.replace(/\([?\d]+\)/, '').toLowerCase();
+
+    if (columnType === infoType) {
+      return true;
+    }
+
+    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([?\d]+\)/, '').toLowerCase() === infoType));
+
+    if (!type) {
+      return false;
+    }
+
+    const propTypes = type.map(t => t.replace(/\([?\d]+\)/, '').toLowerCase());
+
+    return propTypes.includes(columnType);
+  }
+
+  private hasSameDefaultValue(info: Column, prop: EntityProperty, defaultValues: Record<string, string[]>): boolean {
+    if (info.defaultValue && prop.default) {
+      const defaultValue = info.defaultValue.toString().replace(/\([?\d]+\)/, '').toLowerCase();
+      const propDefault = prop.default.toString().toLowerCase();
+      const same = prop.default.toString() === info.defaultValue.toString().toLowerCase();
+      const equal = same || propDefault === defaultValue;
+
+      return equal || Object.keys(defaultValues).map(t => t.replace(/\([?\d]+\)/, '').toLowerCase()).includes(defaultValue);
+    }
+
+    if (info.defaultValue === null || info.defaultValue.toString().startsWith('nextval(')) {
+      return prop.default === undefined;
+    }
+
+    if (prop.type === 'boolean') {
+      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(info.defaultValue);
+      return defaultValue === !!prop.default;
+    }
+
+    // tslint:disable-next-line:triple-equals
+    return info.defaultValue == prop.default; // == intentionally
+  }
+
+  private hasSameIndex(prop: EntityProperty, column: Column): boolean {
+    if (prop.reference === ReferenceType.SCALAR) {
+      return true;
+    }
+
+    return !!column.fk && prop.referenceColumnName === column.fk.referencedColumnName && prop.referencedTableName === column.fk.referencedTableName;
+  }
+
+}
+
+export interface IsSame {
+  all: boolean;
+  sameTypes: boolean;
+  sameNullable: boolean;
+  sameDefault: boolean;
+  sameIndex: boolean;
 }

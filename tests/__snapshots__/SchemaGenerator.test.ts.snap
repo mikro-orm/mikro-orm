@@ -146,6 +146,22 @@ set foreign_key_checks = 1;
 "
 `;
 
+exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-update-schema-dump 1`] = `
+"set names utf8;
+set foreign_key_checks = 0;
+
+alter table \`book2\` drop \`foo\`;
+
+alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_foo___bar_index\`;
+alter table \`test2\` drop \`foo___bar\`;
+alter table \`test2\` drop \`foo___baz\`;
+
+set foreign_key_checks = 1;
+"
+`;
+
 exports[`SchemaGenerator generate schema from metadata [postgres]: postgres-create-schema-dump 1`] = `
 "set names 'utf8';
 set session_replication_role = 'replica';
@@ -270,6 +286,16 @@ set session_replication_role = 'origin';
 "
 `;
 
+exports[`SchemaGenerator generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+alter table \\"book2\\" drop column \\"foo\\";
+
+set session_replication_role = 'origin';
+"
+`;
+
 exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-create-schema-dump 1`] = `
 "pragma foreign_keys = off;
 
@@ -370,5 +396,132 @@ create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test
 create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
 
 pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-update-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-column 1`] = `
+"alter table \`author2\` add \`favourite_book_uuid_pk\` varchar(36) null;
+alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
+
+alter table \`new_table\` add \`id\` int unsigned not null auto_increment primary key, add \`updated_at\` datetime(3) not null default current_timestamp(3);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column 1`] = `
+"alter table \`author2\` modify \`age\` int(11) null default 42, modify \`born\` int not null default 42;
+alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
+alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`book_tag2\` (\`id\`) on update cascade on delete set null;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table 1`] = `
+"alter table \`book2\` drop \`foo\`;
+
+alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_foo___bar_index\`;
+alter table \`test2\` drop \`foo___bar\`;
+alter table \`test2\` drop \`foo___baz\`;
+
+create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8 engine = InnoDB;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-column 1`] = `
+"alter table \`author2\` drop foreign key \`author2_favourite_book_uuid_pk_foreign\`;
+alter table \`author2\` drop index \`author2_favourite_book_uuid_pk_index\`;
+alter table \`author2\` drop \`favourite_book_uuid_pk\`;
+
+alter table \`new_table\` drop \`id\`;
+alter table \`new_table\` drop \`updated_at\`;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table 1`] = `
+"drop table if exists \`author2\`;
+
+drop table if exists \`new_table\`;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-rename-column 1`] = `
+"alter table \`author2\` change \`age\` \`age_in_years\` int(11) null default 42;
+
+
+alter table \`author2\` change \`favourite_author_id\` \`favourite_writer_id\` int(11) unsigned null;
+
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-add-column 1`] = `
+"alter table \\"author2\\" add column \\"favourite_book_uuid_pk\\" varchar(36) null;
+
+alter table \\"new_table\\" add column \\"id\\" serial primary key, add column \\"updated_at\\" timestamp(3) not null default current_timestamp(3);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-alter-column 1`] = `
+"alter table \\"author2\\" alter column \\"name\\" drop default;
+alter table \\"author2\\" alter column \\"name\\" drop not null;
+alter table \\"author2\\" alter column \\"name\\" type int4 using (\\"name\\"::int4);
+alter table \\"author2\\" alter column \\"name\\" set default 42;
+alter table \\"author2\\" alter column \\"name\\" set not null;
+alter table \\"author2\\" alter column \\"age\\" drop default;
+alter table \\"author2\\" alter column \\"age\\" drop not null;
+alter table \\"author2\\" alter column \\"age\\" type int4 using (\\"age\\"::int4);
+alter table \\"author2\\" alter column \\"age\\" set default 42;
+alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete set null;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-create-table 1`] = `
+"alter table \\"book2\\" drop column \\"foo\\";
+
+create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-drop-column 1`] = `
+"alter table \\"author2\\" drop constraint \\"author2_favourite_book_uuid_pk_foreign\\";
+alter table \\"author2\\" drop column \\"favourite_book_uuid_pk\\";
+
+alter table \\"new_table\\" drop column \\"id\\";
+alter table \\"new_table\\" drop column \\"updated_at\\";
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-drop-table 1`] = `
+"drop table if exists \\"author2\\" cascade;
+
+drop table if exists \\"new_table\\" cascade;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-rename-column 1`] = `
+"alter table \\"author2\\" rename column \\"age\\" to \\"age_in_years\\";
+
+
+alter table \\"author2\\" rename column \\"favourite_author_id\\" to \\"favourite_writer_id\\";
+
+
 "
 `;

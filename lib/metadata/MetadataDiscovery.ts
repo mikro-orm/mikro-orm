@@ -44,6 +44,8 @@ export class MetadataDiscovery {
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
 
     const diff = Date.now() - startTime;
@@ -141,20 +143,19 @@ export class MetadataDiscovery {
       this.initManyToManyFields(meta, prop);
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE) {
-      const meta2 = this.metadata.get(prop.type);
-      prop.inverseJoinColumn = meta2.properties[meta2.primaryKey].fieldName;
-    }
-
     if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.initOneToManyFields(meta, prop);
     }
   }
 
   private initFieldName(prop: EntityProperty): void {
+    if (prop.fieldName) {
+      return;
+    }
+
     if (prop.reference === ReferenceType.SCALAR) {
       prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
-    } else if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+    } else if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
       prop.fieldName = this.initManyToOneFieldName(prop, prop.name);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
       prop.fieldName = this.namingStrategy.propertyToColumnName(prop.name);
@@ -230,6 +231,7 @@ export class MetadataDiscovery {
       const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
       this.initFieldName(primaryProp);
       this.initColumnType(primaryProp);
+      this.initUnsigned(primaryProp);
 
       return this.metadata.set(prop.pivotTable, {
         name: prop.pivotTable,
@@ -250,11 +252,6 @@ export class MetadataDiscovery {
     if (name === prop.type) {
       const meta = this.metadata.get(name);
       const prop2 = meta.properties[meta.primaryKey];
-
-      if (!prop2.fieldName) {
-        this.initFieldName(prop2);
-      }
-
       ret.owner = false;
       ret.mappedBy = inverse;
       ret.referenceColumnName = prop2.fieldName;
@@ -269,6 +266,7 @@ export class MetadataDiscovery {
     }
 
     this.initColumnType(ret);
+    this.initUnsigned(ret);
 
     return ret;
   }
@@ -322,6 +320,20 @@ export class MetadataDiscovery {
 
     const meta = this.metadata.get(prop.type);
     prop.columnType = this.schemaHelper.getTypeDefinition(meta.properties[meta.primaryKey]);
+  }
+
+  private initUnsigned(prop: EntityProperty): void {
+    if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+      const meta2 = this.metadata.get(prop.type);
+      const pk = meta2.properties[meta2.primaryKey];
+      prop.unsigned = pk.type === 'number';
+      prop.referenceColumnName = pk.fieldName;
+      prop.referencedTableName = meta2.collection;
+
+      return;
+    }
+
+    prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
   }
 
 }

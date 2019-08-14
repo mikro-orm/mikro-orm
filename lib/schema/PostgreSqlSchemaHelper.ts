@@ -1,6 +1,7 @@
-import { SchemaHelper } from './SchemaHelper';
+import { IsSame, SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { Column } from './DatabaseTable';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -22,6 +23,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     date: 0,
   };
 
+  static readonly DEFAULT_VALUES = {
+    'now()': ['now()', 'current_timestamp'],
+    "('now'::text)::timestamp(?) with time zone": ['current_timestamp(?)'],
+  };
+
   getSchemaBeginning(): string {
     return `set names 'utf8';\nset session_replication_role = 'replica';\n\n`;
   }
@@ -36,6 +42,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   getTypeFromDefinition(type: string): string {
     return super.getTypeFromDefinition(type, PostgreSqlSchemaHelper.TYPES);
+  }
+
+  isSame(prop: EntityProperty, column: Column): IsSame {
+    return super.isSame(prop, column, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 
   indexForeignKeys() {
@@ -95,6 +105,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         and kcu.ordinal_position = rel_kcu.ordinal_position
       where tco.table_name = '${tableName}' and tco.table_schema = '${schemaName}' and tco.constraint_schema = '${schemaName}' and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position`;
+  }
+
+  normalizeDefaultValue(defaultValue: string, length: number) {
+    return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 
   private getIndexesSQL(tableName: string, schemaName: string): string {
