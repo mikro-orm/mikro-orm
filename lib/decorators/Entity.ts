@@ -60,6 +60,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
   type: string;
+  columnType: string;
   primary: boolean;
   length?: any;
   reference: ReferenceType;

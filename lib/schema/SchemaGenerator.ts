@@ -1,4 +1,4 @@
-import { ColumnBuilder, TableBuilder } from 'knex';
+import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
 import { AbstractSqlDriver, Cascade, ReferenceType, Utils } from '..';
 import { EntityMetadata, EntityProperty } from '../decorators';
 import { Platform } from '../platforms';
@@ -7,52 +7,104 @@ import { MetadataStorage } from '../metadata';
 export class SchemaGenerator {
 
   private readonly platform: Platform = this.driver.getPlatform();
-  private readonly helper = this.platform.getSchemaHelper();
-  private readonly knex = this.driver.getConnection().getKnex();
+  private readonly helper = this.platform.getSchemaHelper()!;
+  private readonly connection = this.driver.getConnection();
+  private readonly knex = this.connection.getKnex();
 
   constructor(private readonly driver: AbstractSqlDriver,
               private readonly metadata: MetadataStorage) { }
 
-  generate(): string {
+  async generate(): Promise<string> {
+    let ret = await this.getDropSchemaSQL(false);
+    ret += await this.getCreateSchemaSQL(false);
+
+    return this.wrapSchema(ret);
+  }
+
+  async createSchema(wrap = true): Promise<void> {
+    const sql = await this.getCreateSchemaSQL(wrap);
+    await this.execute(sql);
+  }
+
+  async getCreateSchemaSQL(wrap = true): Promise<string> {
+    let ret = '';
+
+    for (const meta of Object.values(this.metadata.getAll())) {
+      ret += this.dump(this.createTable(meta));
+    }
+
+    for (const meta of Object.values(this.metadata.getAll())) {
+      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
+    }
+
+    return this.wrapSchema(ret, wrap);
+  }
+
+  async dropSchema(wrap = true): Promise<void> {
+    const sql = await this.getDropSchemaSQL(wrap);
+    await this.execute(sql);
+  }
+
+  async getDropSchemaSQL(wrap = true): Promise<string> {
+    let ret = '';
+
+    for (const meta of Object.values(this.metadata.getAll())) {
+      ret += this.dump(this.dropTable(meta.collection), '\n');
+    }
+
+    return this.wrapSchema(ret + '\n', wrap);
+  }
+
+  async execute(sql: string) {
+    const lines = sql.split('\n').filter(i => i.trim());
+
+    for (const line of lines) {
+      await this.connection.getKnex().schema.raw(line);
+    }
+  }
+
+  private async wrapSchema(sql: string, wrap = true): Promise<string> {
+    if (!wrap) {
+      return sql;
+    }
+
     let ret = this.helper.getSchemaBeginning();
-
-    Object.values(this.metadata.getAll()).forEach(meta => ret += this.knex.schema.dropTableIfExists(meta.collection).toQuery() + ';\n');
-    ret += '\n';
-    Object.values(this.metadata.getAll()).forEach(meta => ret += this.createTable(meta));
-    Object.values(this.metadata.getAll()).forEach(meta => {
-      const alter = this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)).toQuery();
-      ret += alter ? alter + ';\n\n' : '';
-    });
-
+    ret += sql;
     ret += this.helper.getSchemaEnd();
 
     return ret;
   }
 
-  private createTable(meta: EntityMetadata): string {
+  private createTable(meta: EntityMetadata): SchemaBuilder {
     return this.knex.schema.createTable(meta.collection, table => {
       Object
         .values(meta.properties)
         .filter(prop => this.shouldHaveColumn(prop))
         .forEach(prop => this.createTableColumn(table, prop));
       this.helper.finalizeTable(table);
-    }).toQuery() + ';\n\n';
+    });
   }
 
-  private shouldHaveColumn(prop: EntityProperty): boolean {
+  private dropTable(name: string): SchemaBuilder {
+    let builder = this.knex.schema.dropTableIfExists(name);
+
+    if (this.platform.usesCascadeStatement()) {
+      builder = this.knex.schema.raw(builder.toQuery() + ' cascade');
+    }
+
+    return builder;
+  }
+
+  private shouldHaveColumn(prop: EntityProperty, update = false): boolean {
     if (prop.persist === false) {
       return false;
     }
 
-    if (prop.reference === ReferenceType.SCALAR) {
-      return true;
-    }
-
-    if (!this.helper.supportsSchemaConstraints()) {
+    if (prop.reference !== ReferenceType.SCALAR && !this.helper.supportsSchemaConstraints() && !update) {
       return false;
     }
 
-    return prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
   private createTableColumn(table: TableBuilder, prop: EntityProperty, alter = false): ColumnBuilder {
@@ -60,8 +112,7 @@ export class SchemaGenerator {
       return table.increments(prop.fieldName);
     }
 
-    const type = this.type(prop);
-    const col = table.specificType(prop.fieldName, type);
+    const col = table.specificType(prop.fieldName, prop.columnType);
     this.configureColumn(prop, col, alter);
 
     return col;
@@ -121,13 +172,9 @@ export class SchemaGenerator {
     }
   }
 
-  private type(prop: EntityProperty): string {
-    if (prop.reference === ReferenceType.SCALAR) {
-      return this.helper.getTypeDefinition(prop);
-    }
-
-    const meta = this.metadata.get(prop.type);
-    return this.helper.getTypeDefinition(meta.properties[meta.primaryKey]);
+  private dump(builder: SchemaBuilder, append = '\n\n'): string {
+    const sql = builder.toQuery();
+    return sql.length > 0 ? `${sql};${append}` : '';
   }
 
 }

@@ -1,3 +1,4 @@
+import { PoolConfig } from 'knex';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { MetadataProvider, TypeScriptMetadataProvider } from '../metadata';
@@ -8,7 +9,6 @@ import { Logger, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
-import { PoolConfig } from 'knex';
 
 export class Configuration {
 

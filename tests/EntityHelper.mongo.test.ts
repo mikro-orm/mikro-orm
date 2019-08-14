@@ -1,13 +1,13 @@
 import { ObjectId } from 'mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
-import { initORM, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 
 describe('EntityAssignerMongo', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('#toObject() should return DTO', async () => {

@@ -1,18 +1,18 @@
+import { MySqlTableBuilder } from 'knex';
 import { SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
-import { MySqlTableBuilder } from 'knex';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: 'int(?)',
-    float: 'float',
-    double: 'double',
-    string: 'varchar(?)',
-    date: 'datetime(?)',
-    boolean: 'tinyint(1)',
-    text: 'text',
-    json: 'json',
+    number: ['int(?)', 'float', 'double'],
+    float: ['float'],
+    double: ['double'],
+    string: ['varchar(?)', 'text'],
+    date: ['datetime(?)', 'timestamp(?)'],
+    boolean: ['tinyint(1)'],
+    text: ['text'],
+    json: ['json'],
   };
 
   static readonly DEFAULT_TYPE_LENGTHS = {
