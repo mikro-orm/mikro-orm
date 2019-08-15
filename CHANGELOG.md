@@ -1,3 +1,12 @@
+<a name="2.7.6"></a>
+## [2.7.6](https://github.com/B4nan/mikro-orm/compare/v2.7.5...v2.7.6) (2019-08-15)
+
+### Bug Fixes
+
+* **metadata**: add support for `tslib` ([5ffcb24](https://github.com/B4nan/mikro-orm/commit/5ffcb24)), closes [#100](https://github.com/B4nan/mikro-orm/issues/100)
+
+
+
 <a name="2.7.5"></a>
 ## [2.7.5](https://github.com/B4nan/mikro-orm/compare/v2.7.4...v2.7.5) (2019-08-08)
 
