@@ -202,18 +202,26 @@ export class Utils {
   /**
    * uses some dark magic to get source path to caller where decorator is used
    */
-  static lookupPathFromDecorator(meta: EntityMetadata): void {
+  static lookupPathFromDecorator(meta: EntityMetadata, stack?: string[]): string {
     if (meta.path) {
-      return;
+      return meta.path;
     }
 
     // use some dark magic to get source path to caller
-    const stack = new Error().stack!.split('\n');
-    const line = stack.find(line => line.includes('__decorate'))!;
+    stack = stack || new Error().stack!.split('\n');
+    let line = stack.findIndex(line => line.includes('__decorate'))!;
 
-    if (line) {
-      meta.path = Utils.normalizePath(line.match(/\((.*):\d+:\d+\)/)![1]);
+    if (line === -1) {
+      return meta.path;
     }
+
+    if (stack[line].includes('node_modules/tslib/tslib')) {
+      line++;
+    }
+
+    meta.path = Utils.normalizePath(stack[line].match(/\((.*):\d+:\d+\)/)![1]);
+
+    return meta.path;
   }
 
   static getObjectType(value: any): string {

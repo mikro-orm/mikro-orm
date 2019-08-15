@@ -7,9 +7,6 @@ import { Book2 } from './entities-sql';
 
 class Test {}
 
-/**
- * @class UtilsTest
- */
 describe('Utils', () => {
 
   let orm: MikroORM;
@@ -26,7 +23,7 @@ describe('Utils', () => {
     expect(Utils.isObject(['a'])).toBe(false);
     expect(Utils.isObject(null)).toBe(false);
     expect(Utils.isObject(() => 1)).toBe(false);
-    expect(Utils.isObject(function() { return 1; })).toBe(false);
+    expect(Utils.isObject(function () { return 1; })).toBe(false);
     expect(Utils.isObject({})).toBe(true);
     expect(Utils.isObject(new Test())).toBe(true);
     expect(Utils.isObject(new Date())).toBe(true);
@@ -168,6 +165,38 @@ describe('Utils', () => {
     expect(Utils.extractPK({ _id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ foo: 'bar' }, meta)).toBeNull();
     expect(Utils.extractPK({ uuid: 'uuid-123' }, meta)).toBe('uuid-123');
+  });
+
+  test('lookup path from decorator', () => {
+    // with tslib, compiled
+    const stack1 = [
+      '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
+      '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
+      '    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)',
+      '    at Object.<anonymous> (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
+      '    at Module._compile (internal/modules/cjs/loader.js:776:30)',
+      '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:787:10)',
+      '    at Module.load (internal/modules/cjs/loader.js:643:32)',
+      '    at Function.Module._load (internal/modules/cjs/loader.js:556:12)',
+    ];
+    expect(Utils.lookupPathFromDecorator({} as any, stack1)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+
+    // no tslib, via ts-node
+    const stack2 = [
+      '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
+      '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+      '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
+      '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
+      '    at __decorate (/usr/local/var/www/my-project/src/entities/Customer.ts:4:92)',
+      '    at Object.<anonymous> (/usr/local/var/www/my-project/src/entities/Customer.ts:9:3)',
+      '    at Module._compile (internal/modules/cjs/loader.js:776:30)',
+      '    at Module.m._compile (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:473:23)',
+      '    at Module._extensions..js (internal/modules/cjs/loader.js:787:10)',
+      '    at Object.require.extensions.<computed> [as .ts] (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:476:12)',
+    ];
+    expect(Utils.lookupPathFromDecorator({} as any, stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
   });
 
   afterAll(async () => orm.close(true));
