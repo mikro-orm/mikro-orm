@@ -11,16 +11,15 @@ discuss specifics.
 
 - Association scopes
 - Value transformers (e.g. mapping of `Date` object to formatted string)
-- Support for connection pooling in MySQL and PostgresQL
-- Computing schema difference based on current database state
 - Schema sync (allow automatic synchronization during development)
-- Allow generating entities from existing database schema
 - Migrations via `umzug`
 - Improved support for data types like date, time, enum, timestamp
 - Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination
 - Eager loading of associations (allow having some relationship always fetched)
+- Composite primary keys
+- Map collections
+- Single table inheritance #33
 - Embedded entities (allow in-lining child entity into parent one with prefixed keys)
 - Slow query log
-- Optional query params logging
