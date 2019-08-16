@@ -9,7 +9,7 @@ alter table \`author2\` add unique \`author2_email_unique\`(\`email\`);
 alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
 alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);
 
-create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
@@ -96,7 +96,7 @@ alter table \`author2\` add unique \`author2_email_unique\`(\`email\`);
 alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
 alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);
 
-create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
@@ -153,7 +153,7 @@ set session_replication_role = 'replica';
 create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default 0, \\"identities\\" json null, \\"born\\" timestamp(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
 alter table \\"author2\\" add constraint \\"author2_email_unique\\" unique (\\"email\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 not null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
@@ -229,7 +229,7 @@ drop table if exists \\"publisher2_to_test2\\" cascade;
 create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default 0, \\"identities\\" json null, \\"born\\" timestamp(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
 alter table \\"author2\\" add constraint \\"author2_email_unique\\" unique (\\"email\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 not null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
