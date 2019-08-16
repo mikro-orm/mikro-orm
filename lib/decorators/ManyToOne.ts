@@ -14,7 +14,7 @@ export function ManyToOne(options: ManyToOneOptions = {}): Function {
     Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE] };
     const prop = Object.assign(property, options) as EntityProperty;
-    prop.nullable = !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL);
+    Utils.defaultValue(prop, 'nullable', !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL));
     meta.properties[propertyName] = prop;
   };
 }
