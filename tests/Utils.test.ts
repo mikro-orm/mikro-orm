@@ -166,6 +166,13 @@ describe('Utils', () => {
     expect(Utils.extractPK({ uuid: 'uuid-123' }, meta)).toBe('uuid-123');
   });
 
+  test('normalizePath always returns absolute path', () => {
+    expect(Utils.normalizePath()).toBe(process.cwd());
+    expect(Utils.normalizePath('./test')).toBe(process.cwd() + '/test');
+    expect(Utils.normalizePath('test')).toBe(process.cwd() + '/test');
+    expect(Utils.normalizePath('/test')).toBe('/test');
+  });
+
   test('lookup path from decorator', () => {
     // with tslib, compiled
     const stack1 = [

@@ -35,7 +35,7 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest --runInBand",
-    "coverage": "rimraf temp && jest --runInBand --coverage",
+    "coverage": "rimraf temp tests/generated-entities && jest --runInBand --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "tslint -p ."
   },

@@ -2,6 +2,7 @@
 /dist
 /coverage
 /temp
+/tests/generated-entities
 /.idea
 /yarn-error.log
 /.coveralls.yml

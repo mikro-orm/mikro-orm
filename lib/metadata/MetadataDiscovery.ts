@@ -205,12 +205,8 @@ export class MetadataDiscovery {
     this.validator.validateEntityDefinition(this.metadata, meta.name);
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
+      this.initVersionProperty(meta, prop);
       this.initColumnType(prop);
-
-      if (prop.version) {
-        meta.versionProperty = prop.name;
-        prop.default = this.getDefaultVersionValue(prop);
-      }
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
     const ret: EntityMetadata[] = [];
@@ -298,11 +294,20 @@ export class MetadataDiscovery {
     }
 
     if (prop.type.toLowerCase() === 'date') {
-      prop.length = prop.length || 3;
+      prop.length = typeof prop.length === 'undefined' ? 3 : prop.length;
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
 
     return 1;
+  }
+
+  private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
+    if (!prop.version) {
+      return;
+    }
+
+    meta.versionProperty = prop.name;
+    prop.default = this.getDefaultVersionValue(prop);
   }
 
   private initColumnType(prop: EntityProperty): void {

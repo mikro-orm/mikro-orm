@@ -4,6 +4,7 @@ import clone from 'clone';
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { ArrayCollection, Collection, ReferenceType } from '../entity';
+import { isAbsolute, normalize } from 'path';
 
 export class Utils {
 
@@ -243,7 +244,13 @@ export class Utils {
   }
 
   static normalizePath(...parts: string[]): string {
-    return parts.join('/').replace(/\\/g, '/');
+    let path = parts.join('/');
+
+    if (!isAbsolute(path)) {
+      path = process.cwd() + (path ? '/' + path : '');
+    }
+
+    return normalize(path).replace(/\\/g, '/');
   }
 
   static runIfNotEmpty(clause: () => any, data: any): void {
