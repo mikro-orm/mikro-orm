@@ -4,6 +4,11 @@ import { EntityMetadata, EntityProperty } from '../decorators';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 
+export interface TableDefinition {
+  table_name: string;
+  schema_name?: string;
+}
+
 export class SchemaGenerator {
 
   private readonly platform: Platform = this.driver.getPlatform();

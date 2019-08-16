@@ -82,7 +82,7 @@ export class EntityValidator {
   }
 
   private fixTypes(expectedType: string, givenType: string, givenValue: any): any {
-    if (expectedType === 'date' && givenType === 'string') {
+    if (expectedType === 'date' && ['string', 'number'].includes(givenType)) {
       givenValue = this.fixDateType(givenValue);
     }
 
