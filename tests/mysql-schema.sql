@@ -25,9 +25,11 @@ create table `book_tag2` (`id` int unsigned not null auto_increment primary key,
 
 create table `publisher2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` varchar(10) not null) default character set utf8 engine = InnoDB;
 
-create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `version` int(11) not null default 1) default character set utf8 engine = InnoDB;
+create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
 alter table `test2` add index `test2_book_uuid_pk_index`(`book_uuid_pk`);
+alter table `test2` add unique `test2_foo___bar_unique`(`foo___bar`);
+alter table `test2` add index `test2_foo___bar_index`(`foo___bar`);
 
 create table `foo_bar2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `baz_id` int(11) unsigned null, `foo_bar_id` int(11) unsigned null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
 alter table `foo_bar2` add unique `foo_bar2_baz_id_unique`(`baz_id`);
@@ -35,7 +37,7 @@ alter table `foo_bar2` add index `foo_bar2_baz_id_index`(`baz_id`);
 alter table `foo_bar2` add unique `foo_bar2_foo_bar_id_unique`(`foo_bar_id`);
 alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 
-create table `foo_baz2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null) default character set utf8 engine = InnoDB;
+create table `foo_baz2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
 
 create table `book2_to_book_tag2` (`id` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book2_uuid_pk_index`(`book2_uuid_pk`);
@@ -49,9 +51,10 @@ alter table `author2` add constraint `author2_favourite_book_uuid_pk_foreign` fo
 alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on update cascade on delete set null;
 
 alter table `book2` add constraint `book2_author_id_foreign` foreign key (`author_id`) references `author2` (`id`) on delete set null;
-alter table `book2` add constraint `book2_publisher_id_foreign` foreign key (`publisher_id`) references `publisher2` (`id`) on delete set null;
+alter table `book2` add constraint `book2_publisher_id_foreign` foreign key (`publisher_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 
 alter table `test2` add constraint `test2_book_uuid_pk_foreign` foreign key (`book_uuid_pk`) references `book2` (`uuid_pk`) on delete set null;
+alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo___bar`) references `foo_bar2` (`id`) on update cascade on delete set null;
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;
