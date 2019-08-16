@@ -15,7 +15,7 @@ export function OneToOne(options: OneToOneOptions): Function {
       cascade: [Cascade.PERSIST, Cascade.MERGE],
     };
     const prop = Object.assign(property, options) as EntityProperty;
-    prop.nullable = !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL);
+    Utils.defaultValue(prop, 'nullable', !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL));
     prop.unique = prop.owner;
     meta.properties[propertyName] = prop;
   };
