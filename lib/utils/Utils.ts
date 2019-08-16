@@ -259,4 +259,8 @@ export class Utils {
     }
   }
 
+  static defaultValue(prop: Record<string, any>, option: string, defaultValue: any): void {
+    prop[option] = option in prop ? prop[option] : defaultValue;
+  }
+
 }

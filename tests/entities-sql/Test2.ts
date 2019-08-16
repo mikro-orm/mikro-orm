@@ -10,7 +10,7 @@ export class Test2 {
   @Property({ nullable: true })
   name: string;
 
-  @OneToOne({ cascade: [], inversedBy: 'test' })
+  @OneToOne({ cascade: [], inversedBy: 'test', nullable: true })
   book: Book2;
 
   @Property({ version: true })

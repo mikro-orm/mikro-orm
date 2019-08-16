@@ -32,7 +32,7 @@ export class Book2 {
   @ManyToOne({ cascade: [] })
   author: Author2;
 
-  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   publisher: Publisher2;
 
   @OneToOne({ cascade: [], mappedBy: 'book' })
