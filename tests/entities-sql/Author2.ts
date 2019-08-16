@@ -33,7 +33,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true })
   identities: string[];
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, length: 0 })
   born: Date;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { createdAt: QueryOrder.ASC } })

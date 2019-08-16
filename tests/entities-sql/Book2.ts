@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, Entity, IEntity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Cascade, Collection, Entity, IEntity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -32,7 +32,7 @@ export class Book2 {
   @ManyToOne({ cascade: [] })
   author: Author2;
 
-  @ManyToOne({ cascade: [] })
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   publisher: Publisher2;
 
   @OneToOne({ cascade: [], mappedBy: 'book' })

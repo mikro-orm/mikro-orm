@@ -8,16 +8,16 @@ drop table if exists `test3`;
 drop table if exists `book3_to_book_tag3`;
 drop table if exists `publisher3_to_test3`;
 
-create table `author3` (`id` integer not null primary key autoincrement, `created_at` text null, `updated_at` text null, `name` text not null, `email` text not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` text null, `born` text null);
+create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` varchar not null, `email` varchar not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` varchar null, `born` datetime null);
 create unique index `author3_email_unique` on `author3` (`email`);
 
-create table `book3` (`id` integer not null primary key autoincrement, `title` text not null, `foo` text null);
+create table `book3` (`id` integer not null primary key autoincrement, `title` varchar not null, `foo` varchar null);
 
-create table `book_tag3` (`id` integer not null primary key autoincrement, `name` text not null, `version` text not null default current_timestamp);
+create table `book_tag3` (`id` integer not null primary key autoincrement, `name` varchar not null, `version` datetime not null default current_timestamp);
 
-create table `publisher3` (`id` integer not null primary key autoincrement, `name` text not null, `type` text not null);
+create table `publisher3` (`id` integer not null primary key autoincrement, `name` varchar not null, `type` varchar not null);
 
-create table `test3` (`id` integer not null primary key autoincrement, `name` text null, `version` integer not null default 1);
+create table `test3` (`id` integer not null primary key autoincrement, `name` varchar null, `version` integer not null default 1);
 
 create table `book3_to_book_tag3` (`id` integer not null primary key autoincrement);
 

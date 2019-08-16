@@ -13,4 +13,8 @@ export class PostgreSqlPlatform extends Platform {
     return true;
   }
 
+  getCurrentTimestampSQL(length: number): string {
+    return `current_timestamp(${length})`;
+  }
+
 }

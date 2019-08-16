@@ -3,6 +3,7 @@ import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage } from './metadata';
 import { Configuration, Logger, Options } from './utils';
 import { SchemaGenerator } from './schema';
+import { EntityGenerator } from './schema/EntityGenerator';
 
 export class MikroORM {
 
@@ -65,6 +66,10 @@ export class MikroORM {
 
   getSchemaGenerator(): SchemaGenerator {
     return new SchemaGenerator(this.driver as AbstractSqlDriver, this.metadata);
+  }
+
+  getEntityGenerator(): EntityGenerator {
+    return new EntityGenerator(this.driver as AbstractSqlDriver, this.config);
   }
 
 }
