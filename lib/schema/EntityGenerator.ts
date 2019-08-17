@@ -1,9 +1,10 @@
 import { CodeBlockWriter, Project, QuoteKind, SourceFile } from 'ts-morph';
 import { ensureDir, writeFile } from 'fs-extra';
 
-import { AbstractSqlDriver, Configuration, TableDefinition, Utils } from '..';
+import { AbstractSqlDriver, Configuration, DatabaseSchema, Utils } from '..';
 import { Platform } from '../platforms';
 import { EntityProperty } from '../decorators';
+import { Column, DatabaseTable } from './DatabaseTable';
 
 export class EntityGenerator {
 
@@ -21,10 +22,10 @@ export class EntityGenerator {
 
   async generate(options: { baseDir?: string; save?: boolean } = {}): Promise<string[]> {
     const baseDir = options.baseDir || Utils.normalizePath(this.config.get('baseDir'), 'generated-entities');
-    const tables = await this.connection.execute<TableDefinition[]>(this.helper.getListTablesSQL());
+    const schema = await DatabaseSchema.create(this.connection, this.helper);
 
-    for (const table of tables) {
-      await this.createEntity(table.table_name, table.schema_name);
+    for (const table of schema.getTables()) {
+      await this.createEntity(table);
     }
 
     this.sources.forEach(entity => {
@@ -41,33 +42,24 @@ export class EntityGenerator {
     return this.sources.map(e => e.getFullText());
   }
 
-  async createEntity(tableName: string, schemaName?: string): Promise<void> {
-    const cols = await this.helper.getColumns(this.connection, tableName, schemaName);
-    const indexes = await this.helper.getIndexes(this.connection, tableName, schemaName);
-    const pks = await this.helper.getPrimaryKeys(this.connection, indexes, tableName, schemaName);
-    const fks = await this.getForeignKeys(tableName, schemaName);
-    const entity = this.project.createSourceFile(this.namingStrategy.getClassName(tableName, '_') + '.ts', writer => {
+  async createEntity(table: DatabaseTable): Promise<void> {
+    const entity = this.project.createSourceFile(this.namingStrategy.getClassName(table.name, '_') + '.ts', writer => {
       writer.writeLine(`import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, OneToOne, ManyToMany, Cascade } from 'mikro-orm';`);
       writer.blankLine();
       writer.writeLine('@Entity()');
-      writer.write(`export class ${this.namingStrategy.getClassName(tableName, '_')}`);
-      writer.block(() => cols.forEach(def => this.createProperty(writer, def, pks, indexes[def.name], fks[def.name])));
+      writer.write(`export class ${this.namingStrategy.getClassName(table.name, '_')}`);
+      writer.block(() => table.getColumns().forEach(column => this.createProperty(writer, column)));
       writer.write('');
     });
 
     this.sources.push(entity);
   }
 
-  private async getForeignKeys(tableName: string, schemaName?: string): Promise<Record<string, any>> {
-    const fks = await this.connection.execute<any[]>(this.helper.getForeignKeysSQL(tableName, schemaName));
-    return this.helper.mapForeignKeys(fks);
-  }
-
-  private createProperty(writer: CodeBlockWriter, def: any, pks: string[], index: any[], fk: any): void {
-    const prop = this.getPropertyName(def.name, fk);
-    const type = this.getPropertyType(def.type, fk);
-    const defaultValue = this.getPropertyDefaultValue(def, type);
-    const decorator = this.getPropertyDecorator(prop, def, type, defaultValue, pks, index, fk);
+  private createProperty(writer: CodeBlockWriter, column: Column): void {
+    const prop = this.getPropertyName(column);
+    const type = this.getPropertyType(column);
+    const defaultValue = this.getPropertyDefaultValue(column, type);
+    const decorator = this.getPropertyDecorator(prop, column, type, defaultValue);
     const definition = this.getPropertyDefinition(prop, type, defaultValue);
 
     writer.blankLineIfLastNot();
@@ -85,17 +77,17 @@ export class EntityGenerator {
     return `${prop}: ${type} = ${defaultValue};`;
   }
 
-  private getPropertyDecorator(prop: string, def: Record<string, any>, type: string, defaultValue: any, pks: string[], index: any[], fk: any): string {
+  private getPropertyDecorator(prop: string, column: Column, type: string, defaultValue: any): string {
     const options = {} as any;
-    const decorator = this.getDecoratorType(def, pks, index, fk);
+    const decorator = this.getDecoratorType(column);
 
-    if (fk) {
-      this.getForeignKeyDecoratorOptions(options, fk, def, prop);
+    if (column.fk) {
+      this.getForeignKeyDecoratorOptions(options, column, prop);
     } else {
-      this.getScalarPropertyDecoratorOptions(type, def, options, prop);
+      this.getScalarPropertyDecoratorOptions(type, column, options, prop);
     }
 
-    this.getCommonDecoratorOptions(def, options, defaultValue);
+    this.getCommonDecoratorOptions(column, options, defaultValue);
 
     if (Object.keys(options).length === 0) {
       return decorator + '()';
@@ -104,8 +96,8 @@ export class EntityGenerator {
     return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })`;
   }
 
-  private getCommonDecoratorOptions(def: any, options: Record<string, any>, defaultValue: any) {
-    if (def.nullable) {
+  private getCommonDecoratorOptions(column: any, options: Record<string, any>, defaultValue: any) {
+    if (column.nullable) {
       options.nullable = true;
     }
 
@@ -114,39 +106,39 @@ export class EntityGenerator {
     }
   }
 
-  private getScalarPropertyDecoratorOptions(type: string, def: any, options: Record<string, any>, prop: string) {
+  private getScalarPropertyDecoratorOptions(type: string, column: any, options: Record<string, any>, prop: string) {
     const defaultColumnType = this.helper.getTypeDefinition({
       type,
-      length: def.maxLength,
+      length: column.maxLength,
     } as EntityProperty).replace(/\(\d+\)/, '');
 
-    if (def.type !== defaultColumnType) {
-      options.type = `'${def.type}'`;
+    if (column.type !== defaultColumnType) {
+      options.type = `'${column.type}'`;
     }
 
-    if (def.name !== this.namingStrategy.propertyToColumnName(prop)) {
-      options.fieldName = `'${def.name}'`;
+    if (column.name !== this.namingStrategy.propertyToColumnName(prop)) {
+      options.fieldName = `'${column.name}'`;
     }
 
-    if (def.maxLength) {
-      options.length = def.maxLength;
+    if (column.maxLength) {
+      options.length = column.maxLength;
     }
   }
 
-  private getForeignKeyDecoratorOptions(options: Record<string, any>, fk: any, def: any, prop: string) {
-    options.entity = `() => ${this.namingStrategy.getClassName(fk.referencedTableName, '_')}`;
+  private getForeignKeyDecoratorOptions(options: Record<string, any>, column: Column, prop: string) {
+    options.entity = `() => ${this.namingStrategy.getClassName(column.fk.referencedTableName, '_')}`;
 
-    if (def.name !== this.namingStrategy.joinKeyColumnName(prop, fk.referencedColumnName)) {
-      options.fieldName = `'${def.name}'`;
+    if (column.name !== this.namingStrategy.joinKeyColumnName(prop, column.fk.referencedColumnName)) {
+      options.fieldName = `'${column.name}'`;
     }
 
     const cascade = ['Cascade.MERGE'];
 
-    if (fk.updateRule.toLowerCase() === 'cascade') {
+    if (column.fk.updateRule.toLowerCase() === 'cascade') {
       cascade.push('Cascade.PERSIST');
     }
 
-    if (fk.deleteRule.toLowerCase() === 'cascade') {
+    if (column.fk.deleteRule.toLowerCase() === 'cascade') {
       cascade.push('Cascade.REMOVE');
     }
 
@@ -160,58 +152,58 @@ export class EntityGenerator {
     }
   }
 
-  private getDecoratorType(def: any, pks: string[], index: any[], fk: any): string {
-    const primary = pks.includes(def.name);
-
-    if (primary) {
+  private getDecoratorType(column: Column): string {
+    if (column.primary) {
       return '@PrimaryKey';
     }
 
-    if (fk && index && index.some(i => i.unique)) {
+    if (column.fk && column.unique) {
       return '@OneToOne';
     }
 
-    if (fk) {
+    if (column.fk) {
       return '@ManyToOne';
     }
 
     return '@Property';
   }
 
-  private getPropertyName(field: string, fk: any): string {
-    if (fk) {
-      field = field.replace(new RegExp(`_${fk.referencedColumnName}$`), '');
+  private getPropertyName(column: Column): string {
+    let field = column.name;
+
+    if (column.fk) {
+      field = field.replace(new RegExp(`_${column.fk.referencedColumnName}$`), '');
     }
 
     return field.replace(/_(\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
   }
 
-  private getPropertyType(type: string, fk: any): string {
-    if (fk) {
-      return this.namingStrategy.getClassName(fk.referencedTableName, '_');
+  private getPropertyType(column: Column): string {
+    if (column.fk) {
+      return this.namingStrategy.getClassName(column.fk.referencedTableName, '_');
     }
 
-    return this.helper.getTypeFromDefinition(type);
+    return this.helper.getTypeFromDefinition(column.type);
   }
 
-  private getPropertyDefaultValue(def: any, propType: string): any {
-    if (!def.nullable && def.defaultValue === null) {
+  private getPropertyDefaultValue(column: any, propType: string): any {
+    if (!column.nullable && column.defaultValue === null) {
       return;
     }
 
-    if (!def.defaultValue) {
+    if (!column.defaultValue) {
       return;
     }
 
     if (propType === 'boolean') {
-      return !!def.defaultValue;
+      return !!column.defaultValue;
     }
 
     if (propType === 'number') {
-      return +def.defaultValue;
+      return +column.defaultValue;
     }
 
-    return '' + def.defaultValue;
+    return '' + this.helper.normalizeDefaultValue(column.defaultValue, column.maxLength);
   }
 
 }

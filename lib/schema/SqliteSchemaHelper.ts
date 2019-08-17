@@ -1,6 +1,7 @@
-import { SchemaHelper } from './SchemaHelper';
+import { IsSame, SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { Column } from './DatabaseTable';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -20,6 +21,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   getSchemaEnd(): string {
     return 'pragma foreign_keys = on;\n';
+  }
+
+  isSame(prop: EntityProperty, type: Column): IsSame {
+    return super.isSame(prop, type, SqliteSchemaHelper.TYPES);
   }
 
   getTypeDefinition(prop: EntityProperty): string {
@@ -79,6 +84,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {});
   }
 
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty): string {
+    return super.getRenameColumnSQL(tableName, from, to, '`');
+  }
+
   getForeignKeysSQL(tableName: string): string {
     return `pragma foreign_key_list(\`${tableName}\`)`;
   }
@@ -95,6 +104,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
       return ret;
     }, {});
+  }
+
+  supportsColumnAlter(): boolean {
+    return false;
   }
 
 }
