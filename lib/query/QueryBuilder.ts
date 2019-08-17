@@ -321,9 +321,7 @@ export class QueryBuilder {
     this._fields.push(prop.name);
     const alias2 = `e${this.aliasCounter++}`;
     this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, alias2, 'leftJoin');
-    const meta = this.metadata.get(prop.type);
-    const prop2 = meta.properties[prop.mappedBy];
-    Utils.renameKey(cond, prop.name, `${alias2}.${prop2.referenceColumnName}`);
+    Utils.renameKey(cond, prop.name, `${alias2}.${prop.referenceColumnName}`);
   }
 
   private processManyToMany(prop: EntityProperty, cond: any): void {

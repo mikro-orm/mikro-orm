@@ -1,10 +1,10 @@
 import fastEqual from 'fast-deep-equal';
 import clone from 'clone';
+import { isAbsolute, normalize } from 'path';
 
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { ArrayCollection, Collection, ReferenceType } from '../entity';
-import { isAbsolute, normalize } from 'path';
 
 export class Utils {
 
@@ -75,7 +75,7 @@ export class Utils {
   }
 
   static prepareEntity<T extends IEntityType<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
-    const meta = metadata.get(entity.constructor.name);
+    const meta = metadata.get<T>(entity.constructor.name);
     const ret = Utils.copy(entity);
     delete ret.__initialized;
 
@@ -95,15 +95,15 @@ export class Utils {
 
     // remove unknown properties
     Object.keys(entity).forEach(prop => {
-      if (!meta.properties[prop] || meta.properties[prop].persist === false) {
-        delete ret[prop];
+      if (!meta.properties[prop as keyof T & string] || meta.properties[prop as keyof T & string].persist === false) {
+        delete ret[prop as keyof T];
       }
     });
 
     return ret;
   }
 
-  static copy(entity: any): any {
+  static copy<T>(entity: T): T {
     return clone(entity);
   }
 

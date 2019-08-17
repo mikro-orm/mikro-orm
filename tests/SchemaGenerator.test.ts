@@ -1,10 +1,13 @@
 import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
+import { ReferenceType } from '../lib/entity';
+import { Utils } from '../lib/utils';
 
 describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
+    orm.em.getConnection().execute('drop table if exists new_table');
     const generator = orm.getSchemaGenerator();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
@@ -14,6 +17,104 @@ describe('SchemaGenerator', () => {
 
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('mysql-create-schema-dump');
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('mysql-update-schema-dump');
+
+    await orm.close(true);
+  });
+
+  test('update schema [mysql]', async () => {
+    const orm = await initORMMySql();
+    orm.em.getConnection().execute('drop table if exists new_table');
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em.getDriver(), meta);
+
+    const newTableMeta = {
+      properties: {
+        id: {
+          reference: ReferenceType.SCALAR,
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int(11)',
+        },
+        createdAt: {
+          reference: ReferenceType.SCALAR,
+          length: 3,
+          default: 'current_timestamp(3)',
+          name: 'createdAt',
+          type: 'Date',
+          fieldName: 'created_at',
+          columnType: 'datetime(3)',
+        },
+        updatedAt: {
+          reference: ReferenceType.SCALAR,
+          length: 3,
+          default: 'current_timestamp(3)',
+          name: 'updatedAt',
+          type: 'Date',
+          fieldName: 'updated_at',
+          columnType: 'datetime(3)',
+        },
+        name: {
+          reference: ReferenceType.SCALAR,
+          name: 'name',
+          type: 'string',
+          fieldName: 'name',
+          columnType: 'varchar(255)',
+        },
+      },
+      name: 'NewTable',
+      collection: 'new_table',
+      primaryKey: 'id',
+    } as any;
+    meta.set('NewTable', newTableMeta);
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
+    await generator.updateSchema();
+
+    const authorMeta = meta.get('Author2');
+    const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
+    authorMeta.properties.born.type = 'number';
+    authorMeta.properties.born.columnType = 'int';
+    authorMeta.properties.born.nullable = false;
+    authorMeta.properties.born.default = 42;
+    authorMeta.properties.age.default = 42;
+    authorMeta.properties.favouriteAuthor.type = 'BookTag2';
+    authorMeta.properties.favouriteAuthor.referencedTableName = 'book_tag2';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-alter-column');
+    await generator.updateSchema();
+
+    const idProp = newTableMeta.properties.id;
+    const updatedAtProp = newTableMeta.properties.updatedAt;
+    delete newTableMeta.properties.id;
+    delete newTableMeta.properties.updatedAt;
+    delete authorMeta.properties.favouriteBook;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-column');
+    await generator.updateSchema();
+
+    const ageProp = authorMeta.properties.age;
+    ageProp.name = 'ageInYears';
+    ageProp.fieldName = 'age_in_years';
+    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
+    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.fieldName = 'favourite_writer_id';
+    delete authorMeta.properties.favouriteAuthor;
+    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
+    await generator.updateSchema();
+
+    newTableMeta.properties.id = idProp;
+    newTableMeta.properties.updatedAt = updatedAtProp;
+    authorMeta.properties.favouriteBook = favouriteBookProp;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-column');
+    await generator.updateSchema();
+
+    meta.reset('Author2');
+    meta.reset('NewTable');
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table');
+    await generator.updateSchema();
 
     await orm.close(true);
   });
@@ -32,11 +133,16 @@ describe('SchemaGenerator', () => {
     expect(createDump).toMatchSnapshot('sqlite-create-schema-dump');
     await generator.createSchema();
 
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('sqlite-update-schema-dump');
+    await generator.updateSchema();
+
     await orm.close(true);
   });
 
   test('generate schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
+    orm.em.getConnection().execute('drop table if exists new_table cascade');
     const generator = orm.getSchemaGenerator();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-schema-dump');
@@ -46,6 +152,105 @@ describe('SchemaGenerator', () => {
 
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('postgres-create-schema-dump');
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('postgres-update-schema-dump');
+
+    await orm.close(true);
+  });
+
+  test('update schema [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    orm.em.getConnection().execute('drop table if exists new_table cascade');
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em.getDriver(), meta);
+
+    const newTableMeta = {
+      properties: {
+        id: {
+          reference: ReferenceType.SCALAR,
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int4',
+        },
+        createdAt: {
+          reference: ReferenceType.SCALAR,
+          length: 3,
+          default: 'current_timestamp(3)',
+          name: 'createdAt',
+          type: 'Date',
+          fieldName: 'created_at',
+          columnType: 'timestamp(3)',
+        },
+        updatedAt: {
+          reference: ReferenceType.SCALAR,
+          length: 3,
+          default: 'current_timestamp(3)',
+          name: 'updatedAt',
+          type: 'Date',
+          fieldName: 'updated_at',
+          columnType: 'timestamp(3)',
+        },
+        name: {
+          reference: ReferenceType.SCALAR,
+          name: 'name',
+          type: 'string',
+          fieldName: 'name',
+          columnType: 'varchar(255)',
+        },
+      },
+      name: 'NewTable',
+      collection: 'new_table',
+      primaryKey: 'id',
+    } as any;
+    meta.set('NewTable', newTableMeta);
+    const authorMeta = meta.get('Author2');
+    authorMeta.properties.termsAccepted.default = false;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-create-table');
+    await generator.updateSchema();
+
+    const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
+    authorMeta.properties.name.type = 'number';
+    authorMeta.properties.name.columnType = 'int4';
+    authorMeta.properties.name.nullable = false;
+    authorMeta.properties.name.default = 42;
+    authorMeta.properties.age.default = 42;
+    authorMeta.properties.favouriteAuthor.type = 'BookTag2';
+    authorMeta.properties.favouriteAuthor.referencedTableName = 'book_tag2';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-column');
+    await generator.updateSchema();
+
+    const idProp = newTableMeta.properties.id;
+    const updatedAtProp = newTableMeta.properties.updatedAt;
+    delete newTableMeta.properties.id;
+    delete newTableMeta.properties.updatedAt;
+    delete authorMeta.properties.favouriteBook;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-column');
+    await generator.updateSchema();
+
+    const ageProp = authorMeta.properties.age;
+    ageProp.name = 'ageInYears';
+    ageProp.fieldName = 'age_in_years';
+    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
+    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.fieldName = 'favourite_writer_id';
+    delete authorMeta.properties.favouriteAuthor;
+    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-rename-column');
+    await generator.updateSchema();
+
+    newTableMeta.properties.id = idProp;
+    newTableMeta.properties.updatedAt = updatedAtProp;
+    authorMeta.properties.favouriteBook = favouriteBookProp;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-column');
+    await generator.updateSchema();
+
+    meta.reset('Author2');
+    meta.reset('NewTable');
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-table');
+    await generator.updateSchema();
 
     await orm.close(true);
   });

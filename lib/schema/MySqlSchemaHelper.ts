@@ -1,7 +1,8 @@
 import { MySqlTableBuilder } from 'knex';
-import { SchemaHelper } from './SchemaHelper';
+import { IsSame, SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../decorators';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { Column } from './DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -49,6 +50,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty): string {
+    const type = `${to.columnType}${to.unsigned ? ' unsigned' : ''} ${to.nullable ? 'null' : 'not null'}${to.default ? ' default ' + to.default : ''}`;
+    return `alter table \`${tableName}\` change \`${from.name}\` \`${to.fieldName}\` ${type}`;
+  }
+
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
     return `select distinct k.constraint_name, k.column_name, k.referenced_table_name, k.referenced_column_name, c.update_rule, c.delete_rule `
       + `from information_schema.key_column_usage k `
@@ -87,6 +93,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
       return ret;
     }, {});
+  }
+
+  isSame(prop: EntityProperty, column: Column): IsSame {
+    return super.isSame(prop, column, MySqlSchemaHelper.TYPES);
   }
 
 }
