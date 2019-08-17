@@ -34,9 +34,8 @@ export class QueryBuilderHelper {
               private readonly platform: Platform) { }
 
   mapper(field: string, type?: QueryType): string; // tslint:disable-next-line:lines-between-class-members
-  mapper(field: string, type?: QueryType, value?: undefined, alias?: string): string; // tslint:disable-next-line:lines-between-class-members
   mapper(field: string, type?: QueryType, value?: any, alias?: string): string; // tslint:disable-next-line:lines-between-class-members
-  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Knex.Raw {
+  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Raw {
     let ret = field;
     const customExpression = this.isCustomExpression(field);
 
@@ -88,8 +87,8 @@ export class QueryBuilderHelper {
     return {
       table: this.getTableName(prop.type),
       joinColumn: prop.owner ? prop2.referenceColumnName : prop2.fieldName,
-      inverseJoinColumn: prop2.referenceColumnName,
-      primaryKey: prop.owner ? prop.joinColumn : prop.referenceColumnName,
+      inverseJoinColumn: prop.owner ? prop2.referenceColumnName : prop.referenceColumnName,
+      primaryKey: prop.owner ? prop.joinColumn : prop2.referenceColumnName,
       ownerAlias,
       alias,
       prop,
@@ -101,7 +100,7 @@ export class QueryBuilderHelper {
   joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any> = {}): JoinOptions {
     return {
       table: this.getTableName(prop.type),
-      joinColumn: prop.inverseJoinColumn,
+      joinColumn: prop.referenceColumnName,
       primaryKey: prop.fieldName,
       ownerAlias,
       alias,
