@@ -50,6 +50,10 @@ export class MetadataStorage {
     return this.metadata[entity] = meta;
   }
 
+  reset(entity: string): void {
+    delete this.metadata[entity];
+  }
+
   decorate(em: EntityManager): void {
     Object.values(this.metadata)
       .filter(meta => meta.prototype && !Utils.isEntity(meta.prototype))
