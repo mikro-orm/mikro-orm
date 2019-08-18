@@ -1,4 +1,5 @@
-import { ensureDir, pathExists, readJSON, stat, writeJSON } from 'fs-extra';
+import globby from 'globby';
+import { ensureDir, pathExists, readJSON, stat, unlink, writeJSON } from 'fs-extra';
 import { CacheAdapter } from './CacheAdapter';
 
 export class FileCacheAdapter implements CacheAdapter {
@@ -26,6 +27,15 @@ export class FileCacheAdapter implements CacheAdapter {
     const modified = await this.getModifiedTime(origin);
     const path = await this.path(name);
     await writeJSON(path, { modified, data, origin });
+  }
+
+  async clear(): Promise<void> {
+    const path = await this.path('*');
+    const files = await globby(path);
+
+    for (const file of files) {
+      await unlink(file);
+    }
   }
 
   private async path(name: string): Promise<string> {

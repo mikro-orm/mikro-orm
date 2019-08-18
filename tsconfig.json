@@ -11,10 +11,12 @@
     "experimentalDecorators": true
   },
   "files": [
-    "lib/index.ts"
+    "lib/index.ts",
+    "lib/cli.ts"
   ],
   "include": [
-    "lib/drivers"
+    "lib/drivers",
+    "lib/cli"
   ],
   "exclude": [
     "node_modules"

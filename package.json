@@ -39,6 +39,9 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "tslint -p ."
   },
+  "bin": {
+    "mikro-orm": "./dist/cli.js"
+  },
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
@@ -53,6 +56,9 @@
     "collectCoverage": false,
     "collectCoverageFrom": [
       "lib/**/*.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+      "lib/cli.ts"
     ]
   },
   "commitlint": {
@@ -79,6 +85,7 @@
     "pinVersions": false
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "clone": "^2.1.0",
     "fast-deep-equal": "^2.0.0",
     "fs-extra": "^8.0.0",
@@ -86,7 +93,9 @@
     "knex": "^0.19.0",
     "ts-morph": "^3.0.0",
     "typescript": "^3.5.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "yargonaut": "^1.1.4",
+    "yargs": "^13.3.0"
   },
   "peerDependencies": {
     "mongodb": "^3.2.0",
