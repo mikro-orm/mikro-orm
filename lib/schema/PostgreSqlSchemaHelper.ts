@@ -25,7 +25,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
+    'current_timestamp(?)': ['current_timestamp(?)'],
     "('now'::text)::timestamp(?) with time zone": ['current_timestamp(?)'],
+    'null::character varying': ['null'],
+    'null::timestamp without time zone': ['null'],
   };
 
   getSchemaBeginning(): string {
@@ -53,7 +56,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
-    return 'select quote_ident(table_name) as table_name, table_schema as schema_name '
+    return 'select table_name, table_schema as schema_name '
       + `from information_schema.tables where table_schema not like 'pg\_%' and table_schema != 'information_schema' `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }

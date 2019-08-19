@@ -26,7 +26,7 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.debug(`ORM entity discovery started`);
     this.discovered.length = 0;
-    const tsNode = process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
+    const tsNode = this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
 
     if (this.config.get('entities').length > 0) {
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
@@ -285,7 +285,7 @@ export class MetadataDiscovery {
       meta.primaryKey = primary.name;
     }
 
-    Object.keys(base.hooks).forEach(type => {
+    Object.keys(base.hooks || {}).forEach(type => {
       meta.hooks[type] = meta.hooks[type] || [];
       meta.hooks[type].unshift(...base.hooks[type]);
     });

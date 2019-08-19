@@ -13,7 +13,7 @@ export class MikroORM {
   private readonly driver: IDatabaseDriver;
   private readonly logger: Logger;
 
-  static async init(options: Options): Promise<MikroORM> {
+  static async init(options: Options | Configuration): Promise<MikroORM> {
     const orm = new MikroORM(options);
     const driver = await orm.connect();
 

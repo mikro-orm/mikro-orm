@@ -10,4 +10,8 @@ export class NullCacheAdapter implements CacheAdapter {
     // ignore
   }
 
+  async clear(): Promise<void> {
+    // ignore
+  }
+
 }

@@ -55,7 +55,7 @@ export class EntityGenerator {
     this.sources.push(entity);
   }
 
-  private createProperty(writer: CodeBlockWriter, column: Column): void {
+  createProperty(writer: CodeBlockWriter, column: Column): void {
     const prop = this.getPropertyName(column);
     const type = this.getPropertyType(column);
     const defaultValue = this.getPropertyDefaultValue(column, type);
@@ -187,11 +187,13 @@ export class EntityGenerator {
   }
 
   private getPropertyDefaultValue(column: any, propType: string): any {
-    if (!column.nullable && column.defaultValue === null) {
+    if (!column.defaultValue) {
       return;
     }
 
-    if (!column.defaultValue) {
+    const val = this.helper.normalizeDefaultValue(column.defaultValue, column.maxLength);
+
+    if (column.nullable && val === 'null') {
       return;
     }
 
@@ -203,7 +205,7 @@ export class EntityGenerator {
       return +column.defaultValue;
     }
 
-    return '' + this.helper.normalizeDefaultValue(column.defaultValue, column.maxLength);
+    return '' + val;
   }
 
 }

@@ -14,6 +14,7 @@ describe('FileCacheAdapter', () => {
     await new Promise(resolve => setTimeout(resolve, 10));
     writeFileSync(origin, '321');
     await expect(cache.get('cache-test-handle')).resolves.toBeNull();
+    await cache.clear();
   });
 
 });

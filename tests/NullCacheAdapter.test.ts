@@ -8,6 +8,7 @@ describe('NullCacheAdapter', () => {
     const cache = new NullCacheAdapter();
     await cache.set('cache-test-handle', 123, origin);
     await expect(cache.get('cache-test-handle')).resolves.toBeNull();
+    await cache.clear();
   });
 
 });
