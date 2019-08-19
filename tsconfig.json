@@ -7,11 +7,13 @@
     "outDir": "./dist",
     "strict": true,
     "strictPropertyInitialization": false,
+    "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
     "experimentalDecorators": true
   },
   "files": [
-    "lib/index.ts"
+    "lib/index.ts",
+    "lib/cli.ts"
   ],
   "include": [
     "lib/drivers"

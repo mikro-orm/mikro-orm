@@ -11,10 +11,10 @@ export class Author2 {
     @PrimaryKey()
     id: number;
 
-    @Property({ length: 3, default: \`CURRENT_TIMESTAMP(3)\` })
+    @Property({ length: 3, default: \`current_timestamp(3)\` })
     createdAt: Date;
 
-    @Property({ length: 3, default: \`CURRENT_TIMESTAMP(3)\` })
+    @Property({ length: 3, default: \`current_timestamp(3)\` })
     updatedAt: Date;
 
     @Property({ length: 255 })
@@ -53,7 +53,7 @@ export class Book2 {
     @PrimaryKey({ length: 36 })
     uuidPk: string;
 
-    @Property({ length: 3, default: \`CURRENT_TIMESTAMP(3)\` })
+    @Property({ length: 3, default: \`current_timestamp(3)\` })
     createdAt: Date;
 
     @Property({ length: 255, nullable: true })
@@ -131,7 +131,7 @@ export class FooBar2 {
     @OneToOne({ entity: () => FooBar2, nullable: true })
     fooBar: FooBar2;
 
-    @Property({ length: 3, default: \`CURRENT_TIMESTAMP(3)\` })
+    @Property({ length: 3, default: \`current_timestamp(3)\` })
     version: Date;
 
 }
@@ -147,7 +147,7 @@ export class FooBaz2 {
     @Property({ length: 255 })
     name: string;
 
-    @Property({ length: 3, default: \`CURRENT_TIMESTAMP(3)\` })
+    @Property({ length: 3, default: \`current_timestamp(3)\` })
     version: Date;
 
 }

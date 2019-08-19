@@ -156,7 +156,7 @@ export abstract class SchemaHelper {
     if (info.defaultValue && prop.default) {
       const defaultValue = info.defaultValue.toString().replace(/\([?\d]+\)/, '').toLowerCase();
       const propDefault = prop.default.toString().toLowerCase();
-      const same = prop.default.toString() === info.defaultValue.toString().toLowerCase();
+      const same = propDefault === info.defaultValue.toString().toLowerCase();
       const equal = same || propDefault === defaultValue;
 
       return equal || Object.keys(defaultValues).map(t => t.replace(/\([?\d]+\)/, '').toLowerCase()).includes(defaultValue);

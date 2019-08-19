@@ -25,6 +25,7 @@ export class Configuration {
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
+    tsNode: false,
     debug: false,
     cache: {
       enabled: true,
@@ -60,8 +61,12 @@ export class Configuration {
     this.init();
   }
 
-  get<T extends keyof MikroORMOptions, U>(key: T, defaultValue?: U): MikroORMOptions[T] {
-    return (this.options[key] || defaultValue) as MikroORMOptions[T];
+  get<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, defaultValue?: U): MikroORMOptions[T] {
+    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as MikroORMOptions[T];
+  }
+
+  set<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, value: U): void {
+    this.options[key] = value;
   }
 
   getLogger(): Logger {
@@ -171,6 +176,7 @@ export interface MikroORMOptions {
   strict: boolean;
   logger: (message: string) => void;
   debug: boolean;
+  tsNode: boolean;
   baseDir: string;
   cache: {
     enabled?: boolean;

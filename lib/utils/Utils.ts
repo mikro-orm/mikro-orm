@@ -42,7 +42,7 @@ export class Utils {
     if (Utils.isObject(target) && Utils.isObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
         if (Utils.isObject(value)) {
-          if (!target[key]) {
+          if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
 

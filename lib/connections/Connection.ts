@@ -60,7 +60,7 @@ export abstract class Connection {
     this.metadata = metadata;
   }
 
-  protected async executeQuery<T>(query: string, params: any[], cb: () => Promise<T>): Promise<T> {
+  protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {
     const now = Date.now();
     const res = await cb();
     this.logQuery(query, Date.now() - now);

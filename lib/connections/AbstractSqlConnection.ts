@@ -40,12 +40,13 @@ export abstract class AbstractSqlConnection extends Connection {
     });
   }
 
-  async execute<T = QueryResult | EntityData<IEntity> | EntityData<IEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
+  async execute<T extends QueryResult | EntityData<IEntity> | EntityData<IEntity>[] = EntityData<IEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
       return await this.executeKnex(queryOrKnex, method);
     }
 
-    const res = await this.executeQuery<any>(queryOrKnex, params, () => this.client.raw(queryOrKnex, params));
+    const sql = this.client.client.positionBindings(queryOrKnex);
+    const res = await this.executeQuery<any>(sql, () => this.client.raw(queryOrKnex, params));
     return this.transformRawResult<T>(res, method);
   }
 
@@ -74,7 +75,7 @@ export abstract class AbstractSqlConnection extends Connection {
   protected async executeKnex(qb: QueryBuilder | Raw, method: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]> {
     const q = qb.toSQL();
     const query = q.toNative ? q.toNative() : q;
-    const res = await this.executeQuery(query.sql, query.bindings, () => qb);
+    const res = await this.executeQuery(query.sql, () => qb);
 
     return this.transformKnexResult(res, method);
   }
