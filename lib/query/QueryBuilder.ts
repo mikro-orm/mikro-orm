@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
-import { EntityProperty } from '../decorators';
+import { EntityProperty, IEntity } from '../decorators';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
@@ -244,10 +244,10 @@ export class QueryBuilder {
     }
 
     if (method === 'all' && Array.isArray(res)) {
-      return res.map((r: any) => this.driver.mapResult(r, meta));
+      return res.map(r => this.driver.mapResult(r, meta));
     }
 
-    return this.driver.mapResult(res, meta);
+    return this.driver.mapResult<IEntity>(res, meta);
   }
 
   clone(): QueryBuilder {

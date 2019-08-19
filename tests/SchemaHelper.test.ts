@@ -1,6 +1,7 @@
 import { SchemaHelper } from '../lib/schema';
 import { SqliteSchemaHelper } from '../lib/schema/SqliteSchemaHelper';
 import { MySqlSchemaHelper } from '../lib/schema/MySqlSchemaHelper';
+import { PostgreSqlSchemaHelper } from '../lib/schema/PostgreSqlSchemaHelper';
 
 class SchemaHelperTest extends SchemaHelper { }
 
@@ -31,6 +32,11 @@ describe('SchemaHelper', () => {
     const helper = new SqliteSchemaHelper();
     expect(helper.isSame({ reference: 'scalar', type: 'number', nullable: false, columnType: 'integer', default: 42 } as any, { type: 'integer', nullable: false, defaultValue: '42' } as any).all).toBe(true);
     expect(helper.getRenameColumnSQL('table', { name: 'test1' } as any, { fieldName: 'test_123' } as any)).toBe('alter table `table` rename column `test1` to `test_123`');
+  });
+
+  test('postgres schema helper', async () => {
+    const helper = new PostgreSqlSchemaHelper();
+    expect(helper.isSame({ reference: 'scalar', type: 'Date', nullable: false, columnType: 'timestamp(3)', default: 'current_timestamp(3)' } as any, { type: 'timestamp(3)', nullable: false, defaultValue: `('now'::text)::timestamp(3) with time zone` } as any).all).toBe(true);
   });
 
 });

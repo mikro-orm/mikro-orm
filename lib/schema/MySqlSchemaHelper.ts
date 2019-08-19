@@ -25,6 +25,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     date: 0,
   };
 
+  static readonly DEFAULT_VALUES = {
+    'now()': ['now()', 'current_timestamp'],
+    'current_timestamp(?)': ['current_timestamp(?)'],
+  };
+
   getSchemaBeginning(): string {
     return 'set names utf8;\nset foreign_key_checks = 0;\n\n';
   }
@@ -96,7 +101,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   isSame(prop: EntityProperty, column: Column): IsSame {
-    return super.isSame(prop, column, MySqlSchemaHelper.TYPES);
+    return super.isSame(prop, column, MySqlSchemaHelper.TYPES, MySqlSchemaHelper.DEFAULT_VALUES);
+  }
+
+  normalizeDefaultValue(defaultValue: string, length: number) {
+    return super.normalizeDefaultValue(defaultValue, length, MySqlSchemaHelper.DEFAULT_VALUES);
   }
 
 }
