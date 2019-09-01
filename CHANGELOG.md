@@ -1,3 +1,12 @@
+<a name="2.7.7"></a>
+## [2.7.7](https://github.com/B4nan/mikro-orm/compare/v2.7.6...v2.7.7) (2019-09-01)
+
+### Bug Fixes
+
+* **mapping**: allow defining hooks on base entities ([6938398](https://github.com/B4nan/mikro-orm/commit/6938398)), closes [#104](https://github.com/B4nan/mikro-orm/issues/104)
+
+
+
 <a name="2.7.6"></a>
 ## [2.7.6](https://github.com/B4nan/mikro-orm/compare/v2.7.5...v2.7.6) (2019-08-15)
 
