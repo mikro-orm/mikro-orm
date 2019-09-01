@@ -1,4 +1,4 @@
-import { IEntity, PrimaryKey, Property } from '../../lib';
+import { BeforeCreate, IEntity, PrimaryKey, Property } from '../../lib';
 import { ObjectID } from 'bson';
 
 export abstract class BaseEntity {
@@ -14,6 +14,14 @@ export abstract class BaseEntity {
 
   @Property()
   foo: string;
+
+  @Property({ persist: false })
+  hookTest = false;
+
+  @BeforeCreate()
+  baseBeforeCreate() {
+    this.hookTest = true;
+  }
 
 }
 

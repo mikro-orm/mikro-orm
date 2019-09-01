@@ -34,10 +34,6 @@ function hook(type: string) {
   return function (target: any, method: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
 
-    if (!meta.hooks) {
-      meta.hooks = {};
-    }
-
     if (!meta.hooks[type]) {
       meta.hooks[type] = [];
     }

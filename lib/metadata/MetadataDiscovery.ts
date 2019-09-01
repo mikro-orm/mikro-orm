@@ -290,6 +290,11 @@ export class MetadataDiscovery {
     if (primary && !meta.primaryKey) {
       meta.primaryKey = primary.name;
     }
+
+    Object.keys(base.hooks).forEach(type => {
+      meta.hooks[type] = meta.hooks[type] || [];
+      meta.hooks[type].unshift(...base.hooks[type]);
+    });
   }
 
   private getDefaultVersionValue(prop: EntityProperty): string {

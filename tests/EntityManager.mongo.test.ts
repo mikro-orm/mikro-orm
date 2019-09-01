@@ -10,9 +10,6 @@ import { Logger } from '../lib/utils';
 import { FooBar } from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
-/**
- * @class EntityManagerMongoTest
- */
 describe('EntityManagerMongo', () => {
 
   let orm: MikroORM;
@@ -253,7 +250,7 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
-    expect(fork['metadata']).toBe(orm.em['metadata']);
+    expect(fork.metadata).toBe(orm.em.metadata);
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
 
     // request context is not started so we can use UoW and EF getters
@@ -938,11 +935,13 @@ describe('EntityManagerMongo', () => {
     expect(author.id).toBeNull();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
+    expect(author.hookTest).toBe(false);
 
     await repo.persist(author);
     expect(author.id).not.toBeNull();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
+    expect(author.hookTest).toBe(true);
 
     author.name = 'John Snow';
     await repo.flush();
@@ -1223,12 +1222,12 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persist(bar);
-    expect(orm.em.getUnitOfWork()['originalEntityData'][bar.__uuid].baz).toEqual(baz1._id);
+    expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persist(bar);
-    expect(orm.em.getUnitOfWork()['originalEntityData'][bar.__uuid].baz).toEqual(baz2._id);
+    expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 

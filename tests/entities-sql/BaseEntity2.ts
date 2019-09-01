@@ -1,4 +1,4 @@
-import { Collection, IEntity, PrimaryKey } from '../../lib';
+import { BeforeCreate, Collection, IEntity, PrimaryKey, Property } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata';
 import { ReferenceType } from '../../lib/entity';
 
@@ -6,6 +6,9 @@ export abstract class BaseEntity2 {
 
   @PrimaryKey()
   id: number;
+
+  @Property({ persist: false })
+  hookTest = false;
 
   protected constructor() {
     const meta = MetadataStorage.getMetadata(this.constructor.name);
@@ -16,6 +19,11 @@ export abstract class BaseEntity2 {
         (this as any)[prop] = new Collection(this);
       }
     });
+  }
+
+  @BeforeCreate()
+  baseBeforeCreate() {
+    this.hookTest = true;
   }
 
 }
