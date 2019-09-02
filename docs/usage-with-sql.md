@@ -113,7 +113,7 @@ QueryBuilder.clone(): QueryBuilder;
 ```
 
 For more examples of how to work with `QueryBuilder`, take a look at `QueryBuilder` tests in 
-[`tests/QueryBuilder.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/QueryBuilder.test.ts).
+[`tests/QueryBuilder.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/QueryBuilder.test.ts).
 
 ## Transactions
 

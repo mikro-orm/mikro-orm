@@ -250,6 +250,7 @@ describe('EntityManagerMongo', () => {
     const fork = orm.em.fork();
 
     expect(fork).not.toBe(orm.em);
+    // @ts-ignore
     expect(fork.metadata).toBe(orm.em.metadata);
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
 
@@ -1222,11 +1223,13 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persist(bar);
+    // @ts-ignore
     expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persist(bar);
+    // @ts-ignore
     expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();

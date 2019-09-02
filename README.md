@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://b4nan.github.io/mikro-orm/"><img src="https://raw.githubusercontent.com/b4nan/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
+  <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
 Simple TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB,
@@ -10,47 +10,47 @@ MySQL, PostgreSQL and SQLite databases.
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
 [![Downloads](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
-[![Dependency Status](https://david-dm.org/B4nan/mikro-orm.svg)](https://david-dm.org/B4nan/mikro-orm)
-[![Build Status](https://travis-ci.com/B4nan/mikro-orm.svg?branch=master)](https://travis-ci.com/B4nan/mikro-orm)
-[![Coverage Status](https://img.shields.io/coveralls/B4nan/mikro-orm.svg)](https://coveralls.io/r/B4nan/mikro-orm?branch=master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/B4nan/mikro-orm/maintainability)
+[![Dependency Status](https://david-dm.org/mikro-orm/mikro-orm.svg)](https://david-dm.org/mikro-orm/mikro-orm)
+[![Build Status](https://travis-ci.com/mikro-orm/mikro-orm.svg?branch=master)](https://travis-ci.com/mikro-orm/mikro-orm)
+[![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)
 
 ## 📖 Documentation
 
 MikroORM's documentation, included in this repo in the root directory, is built with 
-[Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://b4nan.github.io/mikro-orm/.
+[Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
 ## ✨ Core features
 
-- [Clean and simple entity definition](https://b4nan.github.io/mikro-orm/defining-entities/)
-- [Identity Map](https://b4nan.github.io/mikro-orm/identity-map/)
-- [Entity references](https://b4nan.github.io/mikro-orm/entity-references/)
-- [Using entity constructors](https://b4nan.github.io/mikro-orm/using-entity-constructors/)
-- [Collections](https://b4nan.github.io/mikro-orm/collections/)
-- [Unit of Work](https://b4nan.github.io/mikro-orm/unit-of-work/)
-- [Transactions](https://b4nan.github.io/mikro-orm/transactions/)
-- [Cascading persist and remove](https://b4nan.github.io/mikro-orm/cascading/)
-- [Using `QueryBuilder`](https://b4nan.github.io/mikro-orm/query-builder/)
-- [Preloading deeply nested structures via populate](https://b4nan.github.io/mikro-orm/nested-populate/)
-- [Property validation](https://b4nan.github.io/mikro-orm/property-validation/)
-- [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
-- [Vanilla JS support](https://b4nan.github.io/mikro-orm/usage-with-js/)
+- [Clean and simple entity definition](https://mikro-orm.io/defining-entities/)
+- [Identity Map](https://mikro-orm.io/identity-map/)
+- [Entity references](https://mikro-orm.io/entity-references/)
+- [Using entity constructors](https://mikro-orm.io/using-entity-constructors/)
+- [Collections](https://mikro-orm.io/collections/)
+- [Unit of Work](https://mikro-orm.io/unit-of-work/)
+- [Transactions](https://mikro-orm.io/transactions/)
+- [Cascading persist and remove](https://mikro-orm.io/cascading/)
+- [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
+- [Preloading deeply nested structures via populate](https://mikro-orm.io/nested-populate/)
+- [Property validation](https://mikro-orm.io/property-validation/)
+- [Lifecycle hooks](https://mikro-orm.io/lifecycle-hooks/)
+- [Vanilla JS support](https://mikro-orm.io/usage-with-js/)
 
 ## 📦 Example integrations
 
-You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/B4nan/mikro-orm-examples): 
+You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/mikro-orm/mikro-orm-examples): 
 
 ### TypeScript examples
 
-- [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-ts)
-- [Nest + MySQL](https://github.com/B4nan/mikro-orm-examples/tree/master/nest)
+- [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
+- [Nest + MySQL](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
 - [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
 
 ### JavaScript examples 
-- [Express + MongoDB](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js)
+- [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
 
 ## 🚀 Quick start
 
@@ -86,16 +86,16 @@ const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
-  autoFlush: false, // read more here: https://b4nan.github.io/mikro-orm/unit-of-work/
+  autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
 There are more ways to configure your entities, take a look at 
-[installation page](https://b4nan.github.io/mikro-orm/installation/).
+[installation page](https://mikro-orm.io/installation/).
 
 Then you will need to fork entity manager for each request so their 
-[identity maps](https://b4nan.github.io/mikro-orm/identity-map/) will not collide. 
+[identity maps](https://mikro-orm.io/identity-map/) will not collide. 
 To do so, use the `RequestContext` helper:
 
 ```typescript
@@ -111,7 +111,7 @@ app.use((req, res, next) => {
 > it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
 > register the context after them. 
 
-More info about `RequestContext` is described [here](https://b4nan.github.io/mikro-orm/identity-map/#request-context).
+More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
 
 Now you can start defining your entities (in one of the `entitiesDirs` folders):
 
@@ -144,7 +144,7 @@ export interface Book extends IEntity { }
 ```
 
 More information can be found in
-[defining entities section](https://b4nan.github.io/mikro-orm/defining-entities/) in docs.
+[defining entities section](https://mikro-orm.io/defining-entities/) in docs.
 
 When you have your entities defined, you can start using ORM either via `EntityManager`
 or via `EntityRepository`s.
@@ -207,8 +207,8 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
-Take a look at docs about [working with `EntityManager`](https://b4nan.github.io/mikro-orm/entity-manager/)
-or [using `EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/).
+Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/entity-manager/)
+or [using `EntityRepository` instead](https://mikro-orm.io/repositories/).
 
 ## 🤝 Contributing
 
@@ -223,7 +223,7 @@ for details on the process for submitting pull requests to us.
 - Twitter: [@B4nan](https://twitter.com/B4nan)
 - Github: [@b4nan](https://github.com/b4nan)
 
-See also the list of contributors who [participated](https://github.com/b4nan/mikro-orm/contributors) in this project.
+See also the list of contributors who [participated](https://github.com/mikro-orm/mikro-orm/contributors) in this project.
 
 ## Show your support
 

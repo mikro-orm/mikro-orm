@@ -58,8 +58,8 @@ Now you can access your custom repository via `EntityManager.getRepository()` me
 `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
 
 For more examples, take a look at
-[`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
-or [`tests/EntityManager.mysql.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+[`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
+or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
 
 ## EntityRepository\<T\> API
 

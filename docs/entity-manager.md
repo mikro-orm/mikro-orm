@@ -126,13 +126,13 @@ As the last one is the least verbose, it should be preferred.
 ## Entity repositories
 
 Although you can use `EntityManager` directly, much more convenient way is to use 
-[`EntityRepository` instead](https://b4nan.github.io/mikro-orm/repositories/). You can register
+[`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register
 your repositories in dependency injection container like [InversifyJS](http://inversify.io/)
 so you do not need to get them from `EntityManager` each time.
 
 For more examples, take a look at
-[`tests/EntityManager.mongo.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
-or [`tests/EntityManager.mysql.test.ts`](https://github.com/B4nan/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
+[`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
+or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
 
 ## EntityManager API
 

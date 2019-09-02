@@ -100,7 +100,7 @@ const orm = await MikroORM.init({
 ```
 
 For more examples of plain JavaScript entity definitions take a look
-[at the tests](https://github.com/B4nan/mikro-orm/blob/master/tests/entities-js) or at
-[Express JavaScript example](https://github.com/B4nan/mikro-orm-examples/tree/master/express-js). 
+[at the tests](https://github.com/mikro-orm/mikro-orm/blob/master/tests/entities-js) or at
+[Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js). 
 
 [&larr; Back to table of contents](index.md#table-of-contents)
