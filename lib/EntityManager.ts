@@ -1,7 +1,7 @@
 import { Configuration, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, ReferenceType } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { FilterQuery, IDatabaseDriver } from './drivers';
+import { AbstractSqlDriver, FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
@@ -24,8 +24,8 @@ export class EntityManager {
     return this.driver as D;
   }
 
-  getConnection<C extends Connection = Connection>(): C {
-    return this.driver.getConnection() as C;
+  getConnection<C extends Connection = Connection>(type?: 'read' | 'write'): C {
+    return this.driver.getConnection(type) as C;
   }
 
   getRepository<T extends IEntityType<T>>(entityName: EntityName<T>): EntityRepository<T> {
@@ -44,9 +44,9 @@ export class EntityManager {
     return this.validator;
   }
 
-  createQueryBuilder(entityName: EntityName<IEntity>, alias?: string): QueryBuilder {
+  createQueryBuilder(entityName: EntityName<IEntity>, alias?: string, type?: 'read' | 'write'): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.driver, this.transactionContext, alias);
+    return new QueryBuilder(entityName, this.metadata, this.driver as AbstractSqlDriver, this.transactionContext, alias, type);
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;

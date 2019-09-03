@@ -55,6 +55,7 @@ export async function initORMMySql() {
     logger: i => i,
     multipleStatements: true,
     type: 'mysql',
+    replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
   });
 
   const connection = orm.em.getConnection<MySqlConnection>();
