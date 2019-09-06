@@ -55,6 +55,10 @@ export abstract class AbstractSqlConnection extends Connection {
     await this.client.raw(buf.toString());
   }
 
+  protected logQuery(query: string, took?: number): void {
+    super.logQuery(query, took, 'sql');
+  }
+
   protected createKnexClient(type: string): Knex {
     return Knex(this.getKnexOptions(type))
       .on('query', data => {

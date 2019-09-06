@@ -1,28 +1,22 @@
+import { Configuration } from '../../lib/utils';
+
 const showHelp = jest.fn();
 const close = jest.fn();
 const configureSchemaCommand = jest.fn();
 const schemaGenerator = { dropSchema: jest.fn(() => []), getDropSchemaSQL: jest.fn(() => '') };
-const getORM = async () => ({ getSchemaGenerator: () => schemaGenerator, close });
+const config = new Configuration({} as any, false);
+const getORM = async () => ({ getSchemaGenerator: () => schemaGenerator, config, close });
 jest.mock('yargs', () => ({ showHelp }));
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, configureSchemaCommand } }));
+jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn(), configureSchemaCommand } }));
 
 (global as any).console.log = jest.fn();
 
-import { DropSchemaCommand } from '../../lib/cli/DropSchemaCommand';
+import { SchemaCommandFactory } from '../../lib/cli/SchemaCommandFactory';
 
 describe('DropSchemaCommand', () => {
 
-  test('builder', async () => {
-    const cmd = new DropSchemaCommand();
-
-    const args = { option: 123 };
-    expect(configureSchemaCommand.mock.calls.length).toBe(0);
-    cmd.builder(args as any);
-    expect(configureSchemaCommand.mock.calls.length).toBe(1);
-  });
-
   test('handler', async () => {
-    const cmd = new DropSchemaCommand();
+    const cmd = SchemaCommandFactory.create('drop');
 
     expect(showHelp.mock.calls.length).toBe(0);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();

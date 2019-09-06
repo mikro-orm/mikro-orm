@@ -12,8 +12,7 @@ export class ClearCacheCommand implements CommandModule {
     const cache = config.getCacheAdapter();
     await cache.clear();
 
-    // tslint:disable-next-line:no-console
-    console.log(chalk.green('Metadata cache was successfully cleared') + '\n');
+    CLIHelper.dump(chalk.green('Metadata cache was successfully cleared'));
   }
 
 }

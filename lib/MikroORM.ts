@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 import { EntityManager } from './EntityManager';
 import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage } from './metadata';
@@ -47,7 +49,7 @@ export class MikroORM {
     await connection.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName');
-    this.logger.info(`MikroORM: successfully connected to database ${dbName}${clientUrl ? ' on ' + clientUrl : ''}`);
+    this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
 
     return this.driver;
   }

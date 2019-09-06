@@ -31,6 +31,8 @@ export async function initORMMongo() {
     dbName: `mikro-orm-test${hash}`,
     baseDir: BASE_DIR,
     debug: true,
+    highlight: false,
+    logger: i => i,
     type: 'mongo',
   });
 }
@@ -49,6 +51,8 @@ export async function initORMMySql() {
     port,
     baseDir: BASE_DIR,
     debug: true,
+    highlight: false,
+    logger: i => i,
     multipleStatements: true,
     type: 'mysql',
   });
@@ -67,6 +71,8 @@ export async function initORMPostgreSql() {
     baseDir: BASE_DIR,
     type: 'postgresql',
     debug: true,
+    highlight: false,
+    logger: i => i,
   });
 
   const connection = orm.em.getConnection<PostgreSqlConnection>();
@@ -82,6 +88,8 @@ export async function initORMSqlite() {
     baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: true,
+    highlight: false,
+    logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
   });
 
@@ -103,7 +111,7 @@ export async function wipeDatabase(em: EntityManager) {
 }
 
 export async function wipeDatabaseMySql(em: EntityManager) {
-  await em.getConnection().execute('SET FOREIGN_KEY_CHECKS=0;');
+  await em.getConnection().execute('set foreign_key_checks = 0');
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
   await em.createQueryBuilder(BookTag2).truncate().execute();
@@ -111,12 +119,12 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
-  await em.getConnection().execute('SET FOREIGN_KEY_CHECKS=1;');
+  await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
 }
 
 export async function wipeDatabasePostgreSql(em: EntityManager) {
-  await em.getConnection().execute(`SET session_replication_role = 'replica';`);
+  await em.getConnection().execute(`set session_replication_role = 'replica'`);
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
   await em.createQueryBuilder(BookTag2).truncate().execute();
@@ -124,7 +132,7 @@ export async function wipeDatabasePostgreSql(em: EntityManager) {
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
-  await em.getConnection().execute(`SET session_replication_role = 'origin';`);
+  await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();
 }
 

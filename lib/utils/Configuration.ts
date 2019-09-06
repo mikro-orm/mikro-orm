@@ -1,11 +1,13 @@
 import { PoolConfig } from 'knex';
+import { fromJson, Theme } from 'cli-highlight';
+
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { MetadataProvider, TypeScriptMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
 import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';
 import { Hydrator, ObjectHydrator } from '../hydration';
-import { Logger, Utils } from '../utils';
+import { Logger, LoggerNamespace, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
@@ -21,7 +23,8 @@ export class Configuration {
     tsConfigPath: process.cwd() + '/tsconfig.json',
     autoFlush: false,
     strict: false,
-    logger: () => undefined,
+    // tslint:disable-next-line:no-console
+    logger: console.log.bind(console),
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
@@ -33,6 +36,14 @@ export class Configuration {
       options: { cacheDir: process.cwd() + '/temp' },
     },
     metadataProvider: TypeScriptMetadataProvider,
+    highlight: true,
+    highlightTheme: {
+      keyword: ['white', 'bold'],
+      built_in: ['cyan', 'dim'],
+      string: ['yellow'],
+      literal: 'gray',
+      meta: ['yellow', 'dim'],
+    },
   };
 
   static readonly PLATFORMS = {
@@ -47,6 +58,7 @@ export class Configuration {
   private readonly driver: IDatabaseDriver;
   private readonly platform: Platform;
   private readonly cache: Record<string, any> = {};
+  private readonly highlightTheme: Theme;
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
@@ -58,6 +70,7 @@ export class Configuration {
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
+    this.highlightTheme = fromJson(this.options.highlightTheme!);
     this.init();
   }
 
@@ -108,6 +121,10 @@ export class Configuration {
     }
 
     return this.options.entityRepository;
+  }
+
+  getHighlightTheme(): Theme {
+    return this.highlightTheme;
   }
 
   private init(): void {
@@ -175,7 +192,9 @@ export interface MikroORMOptions {
   pool: PoolConfig;
   strict: boolean;
   logger: (message: string) => void;
-  debug: boolean;
+  debug: boolean | LoggerNamespace[];
+  highlight: boolean;
+  highlightTheme?: Record<string, string | string[]>;
   tsNode: boolean;
   baseDir: string;
   cache: {
