@@ -1,20 +1,26 @@
+import chalk from 'chalk';
+
 export class Logger {
 
   constructor(private readonly logger: (message: string) => void,
-              private debugMode = false) { }
+              private debugMode: boolean | LoggerNamespace[] = false) { }
 
-  info(message: string): void {
-    this.logger(message);
-  }
-
-  debug(message: string): void {
-    if (this.debugMode) {
-      this.logger(message);
+  log(namespace: LoggerNamespace, message: string): void {
+    if (!this.debugMode) {
+      return;
     }
+
+    if (Array.isArray(this.debugMode) && !this.debugMode.includes(namespace)) {
+      return;
+    }
+
+    this.logger(chalk.grey(`[${namespace}] `) + message);
   }
 
-  setDebugMode(debugMode: boolean): void {
+  setDebugMode(debugMode: boolean | LoggerNamespace[]): void {
     this.debugMode = debugMode;
   }
 
 }
+
+export type LoggerNamespace = 'query' | 'discovery' | 'info';

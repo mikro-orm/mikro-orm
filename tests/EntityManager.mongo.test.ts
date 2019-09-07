@@ -9,6 +9,7 @@ import { MongoConnection } from '../lib/connections/MongoConnection';
 import { Logger } from '../lib/utils';
 import { FooBar } from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
+import chalk from 'chalk';
 
 describe('EntityManagerMongo', () => {
 
@@ -233,7 +234,7 @@ describe('EntityManagerMongo', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
     await orm.em.remove(Author, author.id);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.deleteMany\({"_id":"\w+"}\)/);
   });
@@ -1035,7 +1036,7 @@ describe('EntityManagerMongo', () => {
   test('EM supports native insert/update/delete/aggregate', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectId);
@@ -1148,7 +1149,7 @@ describe('EntityManagerMongo', () => {
   test('self referencing (1 step)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const author = new Author('name', 'email');
     author.favouriteAuthor = author;
@@ -1334,7 +1335,7 @@ describe('EntityManagerMongo', () => {
   test('automatically fix array of PKs instead of collection when flushing (m:n)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
@@ -1375,6 +1376,22 @@ describe('EntityManagerMongo', () => {
     const bookData = { title: 'Bible', author: god.id };
     god.books.add(bookData as any);
     expect(god.books[0]).toBeInstanceOf(Book);
+  });
+
+  test('query highlighting', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    orm.em.config.set('highlight', true);
+
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    expect(mock.mock.calls.length).toBe(1);
+
+    if (chalk.enabled) {
+      expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\(\[33m"author"\[39m\)\.insertOne\({\[33m"createdAt"\[39m:\[33m".*"\[39m,\[33m"updatedAt"\[39m:\[33m".*"\[39m,\[33m"termsAccepted"\[39m:\[90mfalse\[39m,\[33m"name"\[39m:\[33m"Jon Snow"\[39m,\[33m"email"\[39m:\[33m"snow@wall.st"\[39m,\[33m"foo"\[39m:\[33m"bar"\[39m,\[33m"_id"\[39m:\[33m".*"\[39m}\)/);
+    }
   });
 
   afterAll(async () => orm.close(true));

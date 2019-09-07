@@ -1,13 +1,12 @@
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
+import highlight from 'cli-highlight';
 
 import { MikroORM } from '../MikroORM';
 import { Configuration, Utils } from '../utils';
 import { ClearCacheCommand } from './ClearCacheCommand';
 import { GenerateEntitiesCommand } from './GenerateEntitiesCommand';
-import { CreateSchemaCommand } from './CreateSchemaCommand';
-import { UpdateSchemaCommand } from './UpdateSchemaCommand';
-import { DropSchemaCommand } from './DropSchemaCommand';
+import { SchemaCommandFactory } from './SchemaCommandFactory';
 
 export class CLIHelper {
 
@@ -28,6 +27,7 @@ export class CLIHelper {
   static async getORM(): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration();
     const settings = await CLIHelper.getSettings();
+    options.getLogger().setDebugMode(false);
 
     if (settings.useTsNode) {
       options.set('tsNode', true);
@@ -52,9 +52,9 @@ export class CLIHelper {
       .alias('h', 'help')
       .command(new ClearCacheCommand())
       .command(new GenerateEntitiesCommand())
-      .command(new CreateSchemaCommand())
-      .command(new DropSchemaCommand())
-      .command(new UpdateSchemaCommand())
+      .command(SchemaCommandFactory.create('create'))
+      .command(SchemaCommandFactory.create('drop'))
+      .command(SchemaCommandFactory.create('update'))
       .recommendCommands()
       .strict();
   }
@@ -68,24 +68,13 @@ export class CLIHelper {
     return {};
   }
 
-  static configureSchemaCommand(args: Argv) {
-    args.option('r', {
-      alias: 'run',
-      type: 'boolean',
-      desc: 'Runs queries',
-    });
-    args.option('d', {
-      alias: 'dump',
-      type: 'boolean',
-      desc: 'Dumps all queries to console',
-    });
-    args.option('no-fk', {
-      type: 'boolean',
-      desc: 'Disable foreign key checks if possible',
-      default: true,
-    });
+  static dump(text: string, config?: Configuration, language?: string): void {
+    if (config && language && config.get('highlight')) {
+      text = highlight(text, { language, ignoreIllegals: true, theme: config.getHighlightTheme() });
+    }
 
-    return args;
+    // tslint:disable-next-line:no-console
+    console.log(text);
   }
 
   private static async getConfigPaths(): Promise<string[]> {

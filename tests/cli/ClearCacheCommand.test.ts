@@ -1,7 +1,7 @@
 const close = jest.fn();
 const cacheAdapter = { clear: jest.fn() };
 const getConfiguration = () => ({ getCacheAdapter: () => cacheAdapter, close });
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getConfiguration } }));
+jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getConfiguration, dump: jest.fn() } }));
 
 (global as any).console.log = jest.fn();
 

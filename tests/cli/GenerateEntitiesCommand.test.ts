@@ -1,9 +1,12 @@
+import { Configuration } from '../../lib/utils';
+
 const showHelp = jest.fn();
 const close = jest.fn();
 const entityGenerator = { generate: jest.fn(() => []) };
-const getORM = async () => ({ getEntityGenerator: () => entityGenerator, close });
+const config = new Configuration({} as any, false);
+const getORM = async () => ({ getEntityGenerator: () => entityGenerator, config, close });
 jest.mock('yargs', () => ({ showHelp }));
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM } }));
+jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn() } }));
 
 import { GenerateEntitiesCommand } from '../../lib/cli/GenerateEntitiesCommand';
 

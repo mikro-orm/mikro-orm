@@ -168,7 +168,7 @@ describe('EntityManagerPostgre', () => {
   test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -469,7 +469,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -487,7 +487,7 @@ describe('EntityManagerPostgre', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
@@ -941,7 +941,7 @@ describe('EntityManagerPostgre', () => {
   test('self referencing (1 step)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const author = new Author2('name', 'email');
     author.favouriteAuthor = author;
