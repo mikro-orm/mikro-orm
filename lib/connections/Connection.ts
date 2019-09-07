@@ -1,5 +1,8 @@
 import { URL } from 'url';
 import { Transaction as KnexTransaction } from 'knex';
+import chalk from 'chalk';
+import highlight from 'cli-highlight';
+
 import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 
@@ -68,8 +71,13 @@ export abstract class Connection {
     return res;
   }
 
-  protected logQuery(query: string, took?: number): void {
-    this.logger.debug(`[query-logger] ${query}` + (Utils.isDefined(took) ? ` [took ${took} ms]` : ''));
+  protected logQuery(query: string, took?: number, language?: string): void {
+    if (this.config.get('highlight') && language) {
+      query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
+    }
+
+    const msg = `${query}` + (Utils.isDefined(took) ? chalk.grey(` [took ${took} ms]`) : '');
+    this.config.getLogger().log('query', msg);
   }
 
 }

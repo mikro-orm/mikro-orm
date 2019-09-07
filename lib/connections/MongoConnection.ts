@@ -149,6 +149,10 @@ export class MongoConnection extends Connection {
     return res;
   }
 
+  protected logQuery(query: string, took?: number): void {
+    super.logQuery(query, took, 'javascript');
+  }
+
   private convertObjectIds(payload: any): any {
     if (payload instanceof ObjectId) {
       return payload;

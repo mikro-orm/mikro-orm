@@ -4,9 +4,13 @@ jest.mock(('../../tests/cli-config').replace(/\\/g, '/'), () => ({ dbName: 'foo_
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock('../../tests/package.json', () => pkg, { virtual: true });
 (global as any).process.cwd = () => '../../tests';
+const log = jest.fn();
+(global as any).console.log = log;
 
+import chalk from 'chalk';
 import { CLIHelper } from '../../lib/cli/CLIHelper';
 import { MikroORM } from '../../lib';
+import { SchemaCommandFactory } from '../../lib/cli/SchemaCommandFactory';
 
 describe('CLIHelper', () => {
 
@@ -77,7 +81,7 @@ describe('CLIHelper', () => {
 
   test('builder', async () => {
     const args = { option: jest.fn() };
-    CLIHelper.configureSchemaCommand(args as any);
+    SchemaCommandFactory.configureSchemaCommand(args as any);
     expect(args.option.mock.calls.length).toBe(3);
     expect(args.option.mock.calls[0][0]).toBe('r');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
@@ -85,6 +89,17 @@ describe('CLIHelper', () => {
     expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
     expect(args.option.mock.calls[2][0]).toBe('no-fk');
     expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'boolean' });
+  });
+
+  test('dump', async () => {
+    CLIHelper.dump('test');
+    CLIHelper.dump('select 1 + 1', new Configuration({} as any, false), 'sql');
+    expect(log.mock.calls.length).toBe(2);
+    expect(log.mock.calls[0][0]).toBe('test');
+
+    if (chalk.enabled) {
+      expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m + [32m1[39m');
+    }
   });
 
 });
