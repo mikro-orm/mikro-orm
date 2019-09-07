@@ -39,7 +39,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
     const dump = await generator.generate({ save: args.save, baseDir: args.path });
 
     if (args.dump) {
-      process.stdout.write(dump.join('\n\n'));
+      CLIHelper.dump(dump.join('\n\n'), orm.config, 'typescript');
     }
 
     await orm.close(true);

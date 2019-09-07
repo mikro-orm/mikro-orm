@@ -1,28 +1,27 @@
+import { Configuration } from '../../lib/utils';
+
 const showHelp = jest.fn();
 const close = jest.fn();
-const configureSchemaCommand = jest.fn();
 const schemaGenerator = { createSchema: jest.fn(() => []), getCreateSchemaSQL: jest.fn(() => '') };
-const getORM = async () => ({ getSchemaGenerator: () => schemaGenerator, close });
+const config = new Configuration({} as any, false);
+const getORM = async () => ({ getSchemaGenerator: () => schemaGenerator, config, close });
 jest.mock('yargs', () => ({ showHelp }));
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, configureSchemaCommand } }));
+jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn() } }));
 
 (global as any).console.log = jest.fn();
 
-import { CreateSchemaCommand } from '../../lib/cli/CreateSchemaCommand';
+import { SchemaCommandFactory } from '../../lib/cli/SchemaCommandFactory';
 
 describe('CreateSchemaCommand', () => {
 
   test('builder', async () => {
-    const cmd = new CreateSchemaCommand();
-
-    const args = { option: 123 };
-    expect(configureSchemaCommand.mock.calls.length).toBe(0);
+    const cmd = SchemaCommandFactory.create('create');
+    const args = { option: jest.fn() };
     cmd.builder(args as any);
-    expect(configureSchemaCommand.mock.calls.length).toBe(1);
   });
 
   test('handler', async () => {
-    const cmd = new CreateSchemaCommand();
+    const cmd = SchemaCommandFactory.create('create');
 
     expect(showHelp.mock.calls.length).toBe(0);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();

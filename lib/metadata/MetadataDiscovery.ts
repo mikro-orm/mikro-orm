@@ -1,5 +1,6 @@
-import globby from 'globby';
 import { extname } from 'path';
+import globby from 'globby';
+import chalk from 'chalk';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
 import { Configuration, Logger, Utils, ValidationError } from '../utils';
@@ -24,7 +25,7 @@ export class MetadataDiscovery {
 
   async discover(): Promise<MetadataStorage> {
     const startTime = Date.now();
-    this.logger.debug(`ORM entity discovery started`);
+    this.logger.log('discovery', `ORM entity discovery started`);
     this.discovered.length = 0;
     const tsNode = this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node'));
 
@@ -49,7 +50,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
 
     const diff = Date.now() - startTime;
-    this.logger.debug(`- entity discovery finished after ${diff} ms`);
+    this.logger.log('discovery', `- entity discovery finished after ${chalk.green(`${diff} ms`)}`);
 
     const discovered = new MetadataStorage();
 
@@ -62,7 +63,7 @@ export class MetadataDiscovery {
 
   private async discoverDirectory(basePath: string): Promise<void> {
     const files = await globby('*', { cwd: Utils.normalizePath(this.config.get('baseDir'), basePath) });
-    this.logger.debug(`- processing ${files.length} files from directory ${basePath}`);
+    this.logger.log('discovery', `- processing ${files.length} files from directory ${basePath}`);
 
     for (const file of files) {
       if (
@@ -72,7 +73,7 @@ export class MetadataDiscovery {
         file.startsWith('.') ||
         file.match(/index\.[jt]s$/)
       ) {
-        this.logger.debug(`- ignoring file ${file}`);
+        this.logger.log('discovery', `- ignoring file ${file}`);
         continue;
       }
 
@@ -98,7 +99,7 @@ export class MetadataDiscovery {
 
   private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
-    this.logger.debug(`- processing entity ${entity.name}`);
+    this.logger.log('discovery', `- processing entity ${chalk.cyan(entity.name)}`);
 
     const meta = this.metadata.get(entity.name, true);
     meta.prototype = entity.prototype;
@@ -107,7 +108,7 @@ export class MetadataDiscovery {
     const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
 
     if (cache) {
-      this.logger.debug(`- using cached metadata for entity ${entity.name}`);
+      this.logger.log('discovery', `- using cached metadata for entity ${chalk.cyan(entity.name)}`);
       this.metadataProvider.loadFromCache(meta, cache);
       this.discovered.push(meta);
 

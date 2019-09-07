@@ -5,6 +5,7 @@ import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
+import chalk from 'chalk';
 
 describe('EntityManagerMySql', () => {
 
@@ -222,7 +223,7 @@ describe('EntityManagerMySql', () => {
   test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -531,7 +532,7 @@ describe('EntityManagerMySql', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -549,7 +550,7 @@ describe('EntityManagerMySql', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
@@ -693,7 +694,7 @@ describe('EntityManagerMySql', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
@@ -1087,7 +1088,7 @@ describe('EntityManagerMySql', () => {
   test('self referencing (1 step)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.getConnection(), { logger });
+    Object.assign(orm.em.config, { logger });
 
     const author = new Author2('name', 'email');
     author.favouriteAuthor = author;
@@ -1207,6 +1208,25 @@ describe('EntityManagerMySql', () => {
     expect(god).toBeInstanceOf(Author2);
     expect(god.age).toBeNull();
     expect(god.born).toBeNull();
+  });
+
+  test('query highlighting', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    orm.em.config.set('highlight', true);
+
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+
+    if (chalk.enabled) {
+      expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m, [33m`email`[39m, [33m`name`[39m, [33m`terms_accepted`[39m, [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?, ?, ?, ?, ?)');
+    }
+
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   afterAll(async () => orm.close(true));
