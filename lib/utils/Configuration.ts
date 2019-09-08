@@ -41,7 +41,7 @@ export class Configuration {
       keyword: ['white', 'bold'],
       built_in: ['cyan', 'dim'],
       string: ['yellow'],
-      literal: 'gray',
+      literal: 'cyan',
       meta: ['yellow', 'dim'],
     },
   };

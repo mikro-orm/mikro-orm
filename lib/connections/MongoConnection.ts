@@ -1,4 +1,6 @@
 import { Collection, Db, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
+import { inspect } from 'util';
+
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
@@ -65,14 +67,14 @@ export class MongoConnection extends Connection {
     }
 
     const resultSet = this.getCollection(collection).find(where, options);
-    let query = `db.getCollection("${collection}").find(${JSON.stringify(where)}, ${JSON.stringify(options)})`;
+    let query = `db.getCollection('${collection}').find(${inspect(where, { depth: 5, compact: true, breakLength: 300 })}, ${inspect(options, { depth: 5, compact: true, breakLength: 300 })})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
       orderBy = Object.keys(orderBy).reduce((p, c) => {
         const direction = orderBy![c];
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
       }, {});
-      query += `.sort(${JSON.stringify(orderBy)})`;
+      query += `.sort(${inspect(orderBy, { depth: 5, compact: true, breakLength: 300 })})`;
       resultSet.sort(orderBy);
     }
 
@@ -98,7 +100,7 @@ export class MongoConnection extends Connection {
     data = this.convertObjectIds(data);
     const now = Date.now();
     const res = await this.getCollection(collection).insertOne(data);
-    const query = `db.getCollection("${collection}").insertOne(${JSON.stringify(data)});`;
+    const query = `db.getCollection('${collection}').insertOne(${inspect(data, { depth: 5, compact: true, breakLength: 300 })});`;
     this.logQuery(query, Date.now() - now);
 
     return this.transformResult(res);
@@ -109,7 +111,7 @@ export class MongoConnection extends Connection {
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
     const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
-    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, ${JSON.stringify(payload)});`;
+    const query = `db.getCollection('${collection}').updateMany(${inspect(where, { depth: 5, compact: true, breakLength: 300 })}, ${inspect(payload, { depth: 5, compact: true, breakLength: 300 })});`;
     const now = Date.now();
     const res = await this.getCollection(collection).updateMany(where, payload);
     this.logQuery(query, Date.now() - now);
@@ -120,7 +122,7 @@ export class MongoConnection extends Connection {
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
-    const query = `db.getCollection("${collection}").deleteMany(${JSON.stringify(where)})`;
+    const query = `db.getCollection('${collection}').deleteMany(${inspect(where, { depth: 5, compact: true, breakLength: 300 })})`;
     const now = Date.now();
     const res = await this.getCollection(collection).deleteMany(where);
     this.logQuery(query, Date.now() - now);
@@ -130,7 +132,7 @@ export class MongoConnection extends Connection {
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
     collection = this.getCollectionName(collection);
-    const query = `db.getCollection("${collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
+    const query = `db.getCollection('${collection}').aggregate(${inspect(pipeline, { depth: 5, compact: true, breakLength: 300 })}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate(pipeline).toArray();
     this.logQuery(query, Date.now() - now);
@@ -141,7 +143,7 @@ export class MongoConnection extends Connection {
   async countDocuments<T>(collection: string, where: FilterQuery<T>): Promise<number> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
-    const query = `db.getCollection("${collection}").countDocuments(${JSON.stringify(where)})`;
+    const query = `db.getCollection('${collection}').countDocuments(${inspect(where, { depth: 5, compact: true, breakLength: 300 })})`;
     const now = Date.now();
     const res = await this.getCollection(collection).countDocuments(where);
     this.logQuery(query, Date.now() - now);
@@ -190,3 +192,11 @@ export class MongoConnection extends Connection {
   }
 
 }
+
+ObjectId.prototype[inspect.custom] = function () {
+  return `ObjectId('${this.toHexString()}')`;
+};
+
+Date.prototype[inspect.custom] = function () {
+  return `ISODate('${this.toISOString()}')`;
+};

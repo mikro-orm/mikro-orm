@@ -236,7 +236,7 @@ describe('EntityManagerMongo', () => {
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
     await orm.em.remove(Author, author.id);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.deleteMany\({"_id":"\w+"}\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }\)/);
   });
 
   test('should throw when trying to merge entity without id', async () => {
@@ -1067,15 +1067,15 @@ describe('EntityManagerMongo', () => {
     expect(res9).toBe(1);
 
     expect(mock.mock.calls.length).toBe(9);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"name":"native name 1","_id":".*"}\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"name":"native name 1"}, {"\$set":{"name":"new native name"}}\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("author"\)\.aggregate\(\[{"\$match":{"name":"new native name"}}]\)\.toArray\(\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\("author"\)\.deleteMany\({"name":"new native name"}\)/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","name":"native name 2","_id":".*"}\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"name":"native name 2"}, {"\$set":{"name":"new native name","updatedAt":".*"}}\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\("test"\)\.insertOne\({"name":"native name 1","test":"abc","_id":".*"}\);/);
-    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\("test"\)\.updateMany\({"name":"native name 1"}, {"\$unset":{"test":1}}\);/);
-    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\("test"\)\.deleteMany\({"name":"native name 1"}\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ name: 'native name 1', _id: ObjectId\('\w+'\) }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 1' }, { '\$set': { name: 'new native name' } }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.aggregate\(\[ { '\$match': { name: 'new native name' } } ]\)\.toArray\(\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ name: 'new native name' }\)/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), name: 'native name 2', _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 2' }, { '\$set': { name: 'new native name', updatedAt: ISODate\('.*'\) } }\);/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('test'\)\.insertOne\({ name: 'native name 1', test: 'abc', _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('test'\)\.updateMany\({ name: 'native name 1' }, { '\$unset': { test: 1 } }\);/);
+    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\('test'\)\.deleteMany\({ name: 'native name 1' }\)/);
   });
 
   test('1:m collection is initialized when entity loaded from EM', async () => {
@@ -1166,12 +1166,12 @@ describe('EntityManagerMongo', () => {
 
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","termsAccepted":.*,"name":".*","email":".*","foo":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b1","author":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b2","author":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"b3","author":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\("author"\)\.updateMany\({"_id":".*"}, {"\$set":{"favouriteAuthor":".*","updatedAt":".*"}}\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\("author"\)\.find\(.*\)\.toArray\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), termsAccepted: .*, name: '.*', email: '.*', foo: '.*', _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b1', author: ObjectId\('.*'\), _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b2', author: ObjectId\('.*'\), _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b3', author: ObjectId\('.*'\), _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
   });
 
   test('self referencing via another entity M:1 (1 step)', async () => {
@@ -1355,9 +1355,9 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.isDirty()).toBe(true);
 
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\("author"\)\.insertOne\({"createdAt":".*","updatedAt":".*","termsAccepted":false,"name":"Jon Snow","email":"snow@wall\.st","foo":"bar","_id":".*"}\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\("books-table"\)\.insertOne\({"title":"B123","author":".*","_id":".*"}\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\("books-table"\)\.updateMany\({"_id":".*"}, {"\$set":{"tags":\["0000007b5c9c61c332380f78","0000007b5c9c61c332380f79"]}}\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), termsAccepted: false, name: 'Jon Snow', email: 'snow@wall\.st', foo: 'bar', _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'B123', author: ObjectId\('.*'\), _id: ObjectId\('.*'\) }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }\);/);
   });
 
   test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
@@ -1390,7 +1390,7 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls.length).toBe(1);
 
     if (chalk.enabled) {
-      expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\(\[33m"author"\[39m\)\.insertOne\({\[33m"createdAt"\[39m:\[33m".*"\[39m,\[33m"updatedAt"\[39m:\[33m".*"\[39m,\[33m"termsAccepted"\[39m:\[90mfalse\[39m,\[33m"name"\[39m:\[33m"Jon Snow"\[39m,\[33m"email"\[39m:\[33m"snow@wall.st"\[39m,\[33m"foo"\[39m:\[33m"bar"\[39m,\[33m"_id"\[39m:\[33m".*"\[39m}\)/);
+      expect(mock.mock.calls[0][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mtermsAccepted\[39m: \[36mfalse\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mfoo\[39m: \[33m'bar'\[39m, \[36m_id\[39m: ObjectId\(\[33m'\w+'\[39m\) }\)/);
     }
   });
 
