@@ -58,8 +58,9 @@ export class EntityGenerator {
   createProperty(writer: CodeBlockWriter, column: Column): void {
     const prop = this.getPropertyName(column);
     const type = this.getPropertyType(column);
+    const columnType = this.getPropertyType(column, '__false') === '__false' ? column.type : undefined;
     const defaultValue = this.getPropertyDefaultValue(column, type);
-    const decorator = this.getPropertyDecorator(prop, column, type, defaultValue);
+    const decorator = this.getPropertyDecorator(prop, column, type, defaultValue, columnType);
     const definition = this.getPropertyDefinition(prop, type, defaultValue);
 
     writer.blankLineIfLastNot();
@@ -77,17 +78,17 @@ export class EntityGenerator {
     return `${prop}: ${type} = ${defaultValue};`;
   }
 
-  private getPropertyDecorator(prop: string, column: Column, type: string, defaultValue: any): string {
+  private getPropertyDecorator(prop: string, column: Column, type: string, defaultValue: any, columnType?: string): string {
     const options = {} as any;
     const decorator = this.getDecoratorType(column);
 
     if (column.fk) {
       this.getForeignKeyDecoratorOptions(options, column, prop);
     } else {
-      this.getScalarPropertyDecoratorOptions(type, column, options, prop);
+      this.getScalarPropertyDecoratorOptions(type, column, options, prop, columnType);
     }
 
-    this.getCommonDecoratorOptions(column, options, defaultValue);
+    this.getCommonDecoratorOptions(column, options, defaultValue, columnType);
 
     if (Object.keys(options).length === 0) {
       return decorator + '()';
@@ -96,7 +97,11 @@ export class EntityGenerator {
     return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })`;
   }
 
-  private getCommonDecoratorOptions(column: any, options: Record<string, any>, defaultValue: any) {
+  private getCommonDecoratorOptions(column: any, options: Record<string, any>, defaultValue: any, columnType?: string) {
+    if (columnType) {
+      options.columnType = `'${columnType}'`;
+    }
+
     if (column.nullable) {
       options.nullable = true;
     }
@@ -106,13 +111,13 @@ export class EntityGenerator {
     }
   }
 
-  private getScalarPropertyDecoratorOptions(type: string, column: any, options: Record<string, any>, prop: string) {
+  private getScalarPropertyDecoratorOptions(type: string, column: any, options: Record<string, any>, prop: string, columnType?: string): void {
     const defaultColumnType = this.helper.getTypeDefinition({
       type,
       length: column.maxLength,
     } as EntityProperty).replace(/\(\d+\)/, '');
 
-    if (column.type !== defaultColumnType) {
+    if (column.type !== defaultColumnType && column.type !== columnType) {
       options.type = `'${column.type}'`;
     }
 
@@ -178,12 +183,12 @@ export class EntityGenerator {
     return field.replace(/_(\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
   }
 
-  private getPropertyType(column: Column): string {
+  private getPropertyType(column: Column, defaultType: string = 'string'): string {
     if (column.fk) {
       return this.namingStrategy.getClassName(column.fk.referencedTableName, '_');
     }
 
-    return this.helper.getTypeFromDefinition(column.type);
+    return this.helper.getTypeFromDefinition(column.type, defaultType);
   }
 
   private getPropertyDefaultValue(column: any, propType: string): any {

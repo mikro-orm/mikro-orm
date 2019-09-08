@@ -47,12 +47,14 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  getTypeFromDefinition(type: string, types?: Record<string, string[]>): string {
+  getTypeFromDefinition(type: string, defaultType: string, types?: Record<string, string[]>): string {
     type = type.replace(/\(.+\)/, '');
 
-    return Object.entries(types!)
+    const found = Object.entries(types!)
       .filter(([, tt]) => tt.find(ttt => ttt.replace(/\(.+\)/, '') === type))
       .map(([t]) => t)[0];
+
+    return found || defaultType;
   }
 
   async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Record<string, Index[]>, tableName: string, schemaName?: string): Promise<string[]> {

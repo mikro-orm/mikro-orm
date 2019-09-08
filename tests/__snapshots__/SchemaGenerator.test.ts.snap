@@ -292,6 +292,8 @@ set session_replication_role = 'replica';
 
 alter table \\"book2\\" drop column \\"foo\\";
 
+alter table \\"test2\\" drop column \\"path\\";
+
 set session_replication_role = 'origin';
 "
 `;
@@ -492,6 +494,8 @@ alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\
 
 exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-create-table 1`] = `
 "alter table \\"book2\\" drop column \\"foo\\";
+
+alter table \\"test2\\" drop column \\"path\\";
 
 create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null);
 

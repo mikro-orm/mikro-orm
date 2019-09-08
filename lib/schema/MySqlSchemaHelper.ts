@@ -47,8 +47,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return super.getTypeDefinition(prop, MySqlSchemaHelper.TYPES, MySqlSchemaHelper.DEFAULT_TYPE_LENGTHS);
   }
 
-  getTypeFromDefinition(type: string): string {
-    return super.getTypeFromDefinition(type, MySqlSchemaHelper.TYPES);
+  getTypeFromDefinition(type: string, defaultType: string): string {
+    return super.getTypeFromDefinition(type, defaultType, MySqlSchemaHelper.TYPES);
   }
 
   getListTablesSQL(): string {
