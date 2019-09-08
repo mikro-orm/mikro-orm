@@ -1,11 +1,12 @@
 import { v4 } from 'uuid';
+import chalk from 'chalk';
+
 import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
-import chalk from 'chalk';
 
 describe('EntityManagerMySql', () => {
 
