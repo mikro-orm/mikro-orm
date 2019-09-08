@@ -21,7 +21,7 @@ create table "book_tag2" ("id" serial primary key, "name" varchar(50) not null);
 
 create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" varchar(10) not null);
 
-create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "version" int4 not null default 1);
+create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");
 
 create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "baz_id" int4 null, "foo_bar_id" int4 null, "version" timestamp(3) not null default current_timestamp(3));

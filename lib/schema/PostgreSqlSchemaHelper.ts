@@ -43,8 +43,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return super.getTypeDefinition(prop, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_TYPE_LENGTHS, true);
   }
 
-  getTypeFromDefinition(type: string): string {
-    return super.getTypeFromDefinition(type, PostgreSqlSchemaHelper.TYPES);
+  getTypeFromDefinition(type: string, defaultType: string): string {
+    return super.getTypeFromDefinition(type, defaultType, PostgreSqlSchemaHelper.TYPES);
   }
 
   isSame(prop: EntityProperty, column: Column): IsSame {
