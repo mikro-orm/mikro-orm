@@ -32,8 +32,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return (SqliteSchemaHelper.TYPES[t] || SqliteSchemaHelper.TYPES.string)[0];
   }
 
-  getTypeFromDefinition(type: string): string {
-    return super.getTypeFromDefinition(type, SqliteSchemaHelper.TYPES);
+  getTypeFromDefinition(type: string, defaultType: string): string {
+    return super.getTypeFromDefinition(type, defaultType, SqliteSchemaHelper.TYPES);
   }
 
   supportsSchemaConstraints(): boolean {
