@@ -24,13 +24,17 @@ export class CLIHelper {
     throw new Error(`cli-config not found in ['${paths.join(`', '`)}']`);
   }
 
-  static async getORM(): Promise<MikroORM> {
+  static async getORM(warnWhenNoEntities?: boolean): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration();
     const settings = await CLIHelper.getSettings();
     options.getLogger().setDebugMode(false);
 
     if (settings.useTsNode) {
       options.set('tsNode', true);
+    }
+
+    if (Utils.isDefined(warnWhenNoEntities)) {
+      options.set('warnWhenNoEntities', warnWhenNoEntities);
     }
 
     return MikroORM.init(options);

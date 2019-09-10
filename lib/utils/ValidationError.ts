@@ -103,6 +103,18 @@ export class ValidationError extends Error {
     return new ValidationError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
   }
 
+  static noEntityDiscovered(): ValidationError {
+    return new ValidationError('No entities were discovered');
+  }
+
+  static duplicateEntityDiscovered(paths: string[]): ValidationError {
+    return new ValidationError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
+  }
+
+  static entityNotFound(name: string, path: string): ValidationError {
+    return new ValidationError(`Entity '${name}' not found in ${path}`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.name}.${prop.name} ${message}`);
   }

@@ -20,6 +20,7 @@ export class Configuration {
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
+    warnWhenNoEntities: true,
     tsConfigPath: process.cwd() + '/tsconfig.json',
     autoFlush: false,
     strict: false,
@@ -146,7 +147,7 @@ export class Configuration {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
     }
   }
@@ -176,6 +177,7 @@ export interface MikroORMOptions {
   entities: (EntityClass<IEntity> | EntityClassGroup<IEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
+  warnWhenNoEntities: boolean;
   tsConfigPath: string;
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;

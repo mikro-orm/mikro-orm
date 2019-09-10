@@ -34,7 +34,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
       return;
     }
 
-    const orm = await CLIHelper.getORM();
+    const orm = await CLIHelper.getORM(false);
     const generator = orm.getEntityGenerator();
     const dump = await generator.generate({ save: args.save, baseDir: args.path });
 
