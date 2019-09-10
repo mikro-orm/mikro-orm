@@ -1,5 +1,5 @@
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { ValidationError } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from '../entity';
 import { MetadataStorage } from './MetadataStorage';
 
@@ -23,6 +23,23 @@ export class MetadataValidator {
         this.validateCollection(meta, prop, metadata);
       }
     }
+  }
+
+  validateDiscovered(discovered: EntityMetadata[], warnWhenNoEntities: boolean): void {
+    if (discovered.length === 0 && warnWhenNoEntities) {
+      throw ValidationError.noEntityDiscovered();
+    }
+
+    const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
+
+    if (duplicates.length > 0) {
+      throw ValidationError.duplicateEntityDiscovered(duplicates);
+    }
+
+    // validate base entities
+    discovered
+      .filter(meta => meta.extends && !discovered.find(m => m.prototype.constructor.name === meta.extends))
+      .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {

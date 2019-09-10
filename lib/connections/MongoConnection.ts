@@ -67,14 +67,14 @@ export class MongoConnection extends Connection {
     }
 
     const resultSet = this.getCollection(collection).find(where, options);
-    let query = `db.getCollection('${collection}').find(${inspect(where, { depth: 5, compact: true, breakLength: 300 })}, ${inspect(options, { depth: 5, compact: true, breakLength: 300 })})`;
+    let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
       orderBy = Object.keys(orderBy).reduce((p, c) => {
         const direction = orderBy![c];
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
       }, {});
-      query += `.sort(${inspect(orderBy, { depth: 5, compact: true, breakLength: 300 })})`;
+      query += `.sort(${this.logObject(orderBy)})`;
       resultSet.sort(orderBy);
     }
 
@@ -100,7 +100,7 @@ export class MongoConnection extends Connection {
     data = this.convertObjectIds(data);
     const now = Date.now();
     const res = await this.getCollection(collection).insertOne(data);
-    const query = `db.getCollection('${collection}').insertOne(${inspect(data, { depth: 5, compact: true, breakLength: 300 })});`;
+    const query = `db.getCollection('${collection}').insertOne(${this.logObject(data)});`;
     this.logQuery(query, Date.now() - now);
 
     return this.transformResult(res);
@@ -111,7 +111,7 @@ export class MongoConnection extends Connection {
     where = this.convertObjectIds(where);
     data = this.convertObjectIds(data);
     const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
-    const query = `db.getCollection('${collection}').updateMany(${inspect(where, { depth: 5, compact: true, breakLength: 300 })}, ${inspect(payload, { depth: 5, compact: true, breakLength: 300 })});`;
+    const query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
     const now = Date.now();
     const res = await this.getCollection(collection).updateMany(where, payload);
     this.logQuery(query, Date.now() - now);
@@ -122,7 +122,7 @@ export class MongoConnection extends Connection {
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
-    const query = `db.getCollection('${collection}').deleteMany(${inspect(where, { depth: 5, compact: true, breakLength: 300 })})`;
+    const query = `db.getCollection('${collection}').deleteMany(${this.logObject(where)})`;
     const now = Date.now();
     const res = await this.getCollection(collection).deleteMany(where);
     this.logQuery(query, Date.now() - now);
@@ -132,7 +132,7 @@ export class MongoConnection extends Connection {
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
     collection = this.getCollectionName(collection);
-    const query = `db.getCollection('${collection}').aggregate(${inspect(pipeline, { depth: 5, compact: true, breakLength: 300 })}).toArray();`;
+    const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate(pipeline).toArray();
     this.logQuery(query, Date.now() - now);
@@ -143,7 +143,7 @@ export class MongoConnection extends Connection {
   async countDocuments<T>(collection: string, where: FilterQuery<T>): Promise<number> {
     collection = this.getCollectionName(collection);
     where = this.convertObjectIds(where);
-    const query = `db.getCollection('${collection}').countDocuments(${inspect(where, { depth: 5, compact: true, breakLength: 300 })})`;
+    const query = `db.getCollection('${collection}').countDocuments(${this.logObject(where)})`;
     const now = Date.now();
     const res = await this.getCollection(collection).countDocuments(where);
     this.logQuery(query, Date.now() - now);
@@ -189,6 +189,10 @@ export class MongoConnection extends Connection {
     const meta = this.metadata.get(name);
 
     return meta ? meta.collection : name;
+  }
+
+  private logObject(o: object): string {
+    return inspect(o, { depth: 5, compact: true, breakLength: 300 });
   }
 
 }

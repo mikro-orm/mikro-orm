@@ -93,6 +93,7 @@ export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate
 
 export interface EntityMetadata<T extends IEntityType<T> = any> {
   name: string;
+  className: string;
   constructorParams: (keyof T & string)[];
   toJsonParams: string[];
   extends: string;

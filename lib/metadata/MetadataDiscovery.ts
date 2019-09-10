@@ -37,10 +37,7 @@ export class MetadataDiscovery {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
     }
 
-    // validate base entities
-    this.discovered
-      .filter(meta => meta.extends && !this.discovered.find(m => m.prototype.constructor.name === meta.extends))
-      .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
+    this.validator.validateDiscovered(this.discovered, this.config.get('warnWhenNoEntities'));
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
@@ -79,7 +76,7 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(file);
       const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
-      const target = require(path)[name]; // include the file to trigger loading of metadata
+      const target = this.getEntityPrototype(path, name);
       await this.discoverEntity(target, path);
     }
   }
@@ -103,6 +100,7 @@ export class MetadataDiscovery {
 
     const meta = this.metadata.get(entity.name, true);
     meta.prototype = entity.prototype;
+    meta.className = entity.name;
     meta.path = path || meta.path;
     meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
     const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
@@ -340,6 +338,16 @@ export class MetadataDiscovery {
     }
 
     prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
+  }
+
+  private getEntityPrototype(path: string, name: string) {
+    const target = require(path)[name]; // include the file to trigger loading of metadata
+
+    if (!target) {
+      throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
+    }
+
+    return target;
   }
 
 }

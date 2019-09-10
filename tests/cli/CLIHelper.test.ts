@@ -61,7 +61,7 @@ describe('CLIHelper', () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockReturnValue(Promise.resolve(true));
     delete pkg['mikro-orm'].useTsNode;
-    const orm = await CLIHelper.getORM();
+    const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('tsNode')).toBe(false);
     await orm.close(true);
@@ -72,7 +72,8 @@ describe('CLIHelper', () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockReturnValue(Promise.resolve(true));
     pkg['mikro-orm'].useTsNode = true;
-    const orm = await CLIHelper.getORM();
+    await expect(CLIHelper.getORM()).rejects.toThrowError('No entities were discovered');
+    const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.config.get('tsNode')).toBe(true);
     await orm.close(true);
