@@ -263,4 +263,10 @@ export class Utils {
     prop[option] = option in prop ? prop[option] : defaultValue;
   }
 
+  static findDuplicates<T>(items: T[]): T[] {
+    return items.reduce((acc, v, i, arr) => {
+      return arr.indexOf(v) !== i && acc.indexOf(v) === -1 ? acc.concat(v) : acc;
+    }, [] as T[]);
+  }
+
 }

@@ -24,6 +24,18 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
   });
 
+  test('should throw when no entity discovered', async () => {
+    await expect(MikroORM.init({ dbName: 'test', entitiesDirs: ['not-existing/path'] })).rejects.toThrowError('No entities were discovered');
+  });
+
+  test('should throw when multiple entities with same file name discovered', async () => {
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+  });
+
+  test('should throw when multiple entities with same class name discovered', async () => {
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(`Entity 'BadName' not found in ./entities-3/bad-name.model.ts`);
+  });
+
   test('should init itself with entity manager', async () => {
     const orm = await MikroORM.init({
       entitiesDirs: ['entities'],
