@@ -170,7 +170,8 @@ export class MetadataDiscovery {
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.pivotTable && prop.owner) {
-      prop.pivotTable = this.namingStrategy.joinTableName(meta.name, prop.type, prop.name);
+      const meta2 = this.metadata.get(prop.type);
+      prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
     }
 
     if (!prop.referenceColumnName) {
@@ -178,11 +179,12 @@ export class MetadataDiscovery {
     }
 
     if (!prop.inverseJoinColumn) {
-      prop.inverseJoinColumn = this.initManyToOneFieldName(prop, prop.type);
+      const meta2 = this.metadata.get(prop.type);
+      prop.inverseJoinColumn = this.initManyToOneFieldName(prop, meta2.collection);
     }
 
     if (!prop.joinColumn) {
-      prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.name, prop.referenceColumnName);
+      prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.collection, prop.referenceColumnName);
     }
   }
 
