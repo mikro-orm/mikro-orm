@@ -1228,6 +1228,52 @@ describe('EntityManagerMySql', () => {
     }
 
     expect(mock.mock.calls[2][0]).toMatch('commit');
+    orm.em.config.set('highlight', false);
+  });
+
+  test('read replicas', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    let author = new Author2('Jon Snow', 'snow@wall.st');
+    author.born = new Date();
+    author.books.add(new Book2('B', author));
+    await orm.em.persistAndFlush(author);
+    expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[1][0]).toMatch(/insert into `author2`.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[2][0]).toMatch(/insert into `book2`.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[3][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
+
+    orm.em.clear();
+    author = (await orm.em.findOne(Author2, author))!;
+    await orm.em.findOne(Author2, author, { refresh: true });
+    await orm.em.findOne(Author2, author, { refresh: true });
+    expect(mock.mock.calls[4][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[5][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[6][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+
+    author.name = 'Jon Blow';
+    await orm.em.flush();
+    expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[8][0]).toMatch(/update `author2` set `name` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[9][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
+
+    const qb = orm.em.createQueryBuilder(Author2, 'a', 'write');
+    await qb.select('*').where({ name: /.*Blow/ }).execute();
+    expect(mock.mock.calls[10][0]).toMatch(/select `a`.* from `author2` as `a` where `a`.`name` like \?.*via write connection '127\.0\.0\.1'/);
+
+    await orm.em.transactional(async em => {
+      const book = await em.findOne(Book2, { title: 'B' });
+      author.name = 'Jon Flow';
+      author.favouriteBook = book!;
+      await em.flush();
+    });
+
+    expect(mock.mock.calls[11][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[12][0]).toMatch(/select `e0`.* from `book2` as `e0` where `e0`.`title` = \?.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[13][0]).toMatch(/update `author2` set `name` = \?, `favourite_book_uuid_pk` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
   });
 
   afterAll(async () => orm.close(true));

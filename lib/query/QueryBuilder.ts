@@ -6,8 +6,7 @@ import { EntityProperty, IEntity } from '../decorators';
 import { ReferenceType } from '../entity';
 import { QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
-import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
-import { IDatabaseDriver } from '../drivers';
+import { AbstractSqlDriver } from '../drivers';
 import { MetadataStorage } from '../metadata';
 
 /**
@@ -33,16 +32,16 @@ export class QueryBuilder {
   private _limit: number;
   private _offset: number;
   private lockMode?: LockMode;
-  private readonly connection = this.driver.getConnection() as AbstractSqlConnection;
   private readonly platform = this.driver.getPlatform();
-  private readonly knex = this.connection.getKnex();
+  private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
   private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.knex, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: MetadataStorage,
-              private readonly driver: IDatabaseDriver,
+              private readonly driver: AbstractSqlDriver,
               private readonly context?: Transaction,
-              readonly alias = `e0`) { }
+              readonly alias = `e0`,
+              private readonly connectionType?: 'read' | 'write') { }
 
   select(fields: string | string[], distinct = false): this {
     this._fields = Utils.asArray(fields);
@@ -236,7 +235,8 @@ export class QueryBuilder {
   }
 
   async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
-    const res = await this.connection.execute(this.getKnexQuery(), [], method);
+    const type = this.connectionType || (method === 'run' ? 'write' : 'read');
+    const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
     const meta = this.metadata.get(this.entityName);
 
     if (!mapResults) {
@@ -251,7 +251,7 @@ export class QueryBuilder {
   }
 
   clone(): QueryBuilder {
-    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.context, this.alias);
+    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.context, this.alias, this.connectionType);
     Object.assign(qb, this);
 
     // clone array/object properties
@@ -410,6 +410,7 @@ export class QueryBuilder {
     if (this.context) {
       qb.transacting(this.context);
     }
+
     return qb;
   }
 

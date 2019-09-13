@@ -93,7 +93,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected createQueryBuilder(entityName: string, ctx?: Transaction): QueryBuilder {
-    return new QueryBuilder(entityName, this.metadata, this, ctx);
+    return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, ctx ? 'write' : 'read');
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {

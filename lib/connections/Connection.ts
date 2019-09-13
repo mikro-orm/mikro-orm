@@ -3,16 +3,22 @@ import { Transaction as KnexTransaction } from 'knex';
 import chalk from 'chalk';
 import highlight from 'cli-highlight';
 
-import { Configuration, Utils } from '../utils';
+import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 
 export abstract class Connection {
 
-  protected readonly logger = this.config.getLogger();
   protected metadata: MetadataStorage;
   protected abstract client: any;
 
-  constructor(protected readonly config: Configuration) { }
+  constructor(protected readonly config: Configuration,
+              protected readonly options?: ConnectionOptions,
+              protected readonly type: 'read' | 'write' = 'write') {
+    if (!this.options) {
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
+      this.options = props.reduce((o, i) => { (o[i] as any) = this.config.get(i); return o; }, {} as ConnectionOptions);
+    }
+  }
 
   /**
    * Establishes connection to database
@@ -42,12 +48,12 @@ export abstract class Connection {
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
-    const url = new URL(this.config.getClientUrl());
-    ret.host = this.config.get('host', url.hostname);
-    ret.port = this.config.get('port', +url.port);
-    ret.user = this.config.get('user', url.username);
-    ret.password = this.config.get('password', url.password);
-    ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
+    const url = new URL(this.options!.clientUrl || this.config.getClientUrl());
+    this.options!.host = ret.host = this.config.get('host', url.hostname);
+    this.options!.port = ret.port = this.config.get('port', +url.port);
+    this.options!.user = ret.user = this.config.get('user', url.username);
+    this.options!.password = ret.password = this.config.get('password', url.password);
+    this.options!.dbName = ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
 
     return ret;
   }
@@ -76,7 +82,12 @@ export abstract class Connection {
       query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
     }
 
-    const msg = `${query}` + (Utils.isDefined(took) ? chalk.grey(` [took ${took} ms]`) : '');
+    let msg = query + (Utils.isDefined(took) ? chalk.grey(` [took ${chalk.grey(took)} ms]`) : '');
+
+    if (this.config.get('replicas', []).length > 0) {
+      msg += chalk.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
+    }
+
     this.config.getLogger().log('query', msg);
   }
 
