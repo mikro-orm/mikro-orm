@@ -45,8 +45,7 @@ export class MikroORM {
   }
 
   async connect(): Promise<IDatabaseDriver> {
-    const connection = this.driver.getConnection();
-    await connection.connect();
+    const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName');
     this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
@@ -59,7 +58,7 @@ export class MikroORM {
   }
 
   async close(force = false): Promise<void> {
-    return this.driver.getConnection().close(force);
+    return this.driver.close(force);
   }
 
   getMetadata(): MetadataStorage {

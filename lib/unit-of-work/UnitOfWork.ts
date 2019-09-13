@@ -102,7 +102,7 @@ export class UnitOfWork {
     const promise = async (tx: Transaction) => await Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet, tx));
 
     if (runInTransaction) {
-      await this.em.getConnection().transactional(trx => promise(trx));
+      await this.em.getConnection('write').transactional(trx => promise(trx));
     } else {
       await promise(this.em.getTransactionContext());
     }

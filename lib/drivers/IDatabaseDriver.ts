@@ -7,7 +7,11 @@ import { MetadataStorage } from '../metadata';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
-  getConnection(): C;
+  connect(): Promise<C>;
+
+  close(force?: boolean): Promise<void>;
+
+  getConnection(type?: 'read' | 'write'): C;
 
   /**
    * Finds selection of entities
