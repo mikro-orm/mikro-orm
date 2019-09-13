@@ -1,6 +1,7 @@
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryOrder } from '../lib';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 describe('QueryBuilder', () => {
 
@@ -13,6 +14,22 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL }).orderBy({ name: QueryOrder.DESC, type: QueryOrder.ASC }).limit(2, 1);
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ? order by `e0`.`name` desc, `e0`.`type` asc limit ? offset ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 2, 1]);
+  });
+
+  test('select query picks read replica', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL });
+    const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
+    await qb.execute();
+    expect(spy).toBeCalledWith('read');
+  });
+
+  test('insert query picks write replica', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.insert({ name: 'test 123', type: PublisherType.GLOBAL });
+    const spy = jest.spyOn(MySqlDriver.prototype, 'getConnection');
+    await qb.execute('run');
+    expect(spy).toBeCalledWith('write');
   });
 
   test('select where is null', async () => {

@@ -31,6 +31,7 @@ export class Configuration {
     hydrator: ObjectHydrator,
     tsNode: false,
     debug: false,
+    verbose: false,
     cache: {
       enabled: true,
       adapter: FileCacheAdapter,
@@ -75,8 +76,8 @@ export class Configuration {
     this.init();
   }
 
-  get<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, defaultValue?: U): MikroORMOptions[T] {
-    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as MikroORMOptions[T];
+  get<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, defaultValue?: U): U {
+    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
   }
 
   set<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, value: U): void {
@@ -172,8 +173,19 @@ export class Configuration {
 
 }
 
-export interface MikroORMOptions {
+export interface ConnectionOptions {
+  name?: string;
   dbName: string;
+  clientUrl?: string;
+  host?: string;
+  port?: number;
+  user?: string;
+  password?: string;
+  multipleStatements?: boolean; // for mysql driver
+  pool: PoolConfig;
+}
+
+export interface MikroORMOptions extends ConnectionOptions {
   entities: (EntityClass<IEntity> | EntityClassGroup<IEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
@@ -185,13 +197,7 @@ export interface MikroORMOptions {
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
-  clientUrl?: string;
-  host?: string;
-  port?: number;
-  user?: string;
-  password?: string;
-  multipleStatements?: boolean; // for mysql driver
-  pool: PoolConfig;
+  replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   logger: (message: string) => void;
   debug: boolean | LoggerNamespace[];

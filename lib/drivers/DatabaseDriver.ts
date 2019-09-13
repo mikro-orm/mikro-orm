@@ -2,7 +2,7 @@ import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { Configuration, Utils } from '../utils';
+import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
 import { LockMode } from '../unit-of-work';
@@ -10,6 +10,7 @@ import { LockMode } from '../unit-of-work';
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
   protected readonly connection: C;
+  protected readonly replicas: C[] = [];
   protected readonly platform: Platform;
   protected readonly logger = this.config.getLogger();
   protected metadata: MetadataStorage;
@@ -74,8 +75,26 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret as T;
   }
 
-  getConnection(): C {
-    return this.connection as C;
+  async connect(): Promise<C> {
+    await this.connection.connect();
+    await Promise.all(this.replicas.map(replica => replica.connect()));
+
+    return this.connection;
+  }
+
+  getConnection(type: 'read' | 'write' = 'write'): C {
+    if (type === 'write' || this.replicas.length === 0) {
+      return this.connection as C;
+    }
+
+    const rand = Utils.randomInt(0, this.replicas.length - 1);
+
+    return this.replicas[rand] as C;
+  }
+
+  async close(force?: boolean): Promise<void> {
+    await Promise.all(this.replicas.map(replica => replica.close(force)));
+    await this.connection.close(force);
   }
 
   getPlatform(): Platform {
@@ -90,6 +109,19 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected getPrimaryKeyField(entityName: string): string {
     const meta = this.metadata.get(entityName);
     return meta ? meta.primaryKey : this.config.getNamingStrategy().referenceColumnName();
+  }
+
+  protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
+    const replicas = this.config.get('replicas', [])!;
+    const ret: C[] = [];
+    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
+
+    replicas.forEach((conf: Partial<ConnectionOptions>) => {
+      props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));
+      ret.push(cb(conf as ConnectionOptions));
+    });
+
+    return ret;
   }
 
 }
