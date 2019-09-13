@@ -137,7 +137,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
   private createManyToManyCondition(cond: Record<string, any>) {
     if (this.property.owner || this.owner.__em.getDriver().getPlatform().usesPivotTable()) {
-      const pk = this.items[0].__primaryKeyField; // we know there is at least one item as it was checked in init method
+      const pk = this.items[0].__primaryKeyField; // we know there is at least one item as it was checked in load method
       cond[pk] = { $in: this.items.map(item => item.__primaryKey) };
     } else {
       cond[this.property.mappedBy] = this.owner.__primaryKey;

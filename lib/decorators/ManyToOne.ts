@@ -23,4 +23,5 @@ export interface ManyToOneOptions extends PropertyOptions {
   entity?: () => string | Function;
   inversedBy?: string;
   cascade?: Cascade[];
+  wrappedReference?: boolean;
 }

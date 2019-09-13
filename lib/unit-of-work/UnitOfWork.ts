@@ -1,5 +1,5 @@
 import { EntityData, EntityMetadata, EntityProperty, HookType, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { Cascade, Collection, EntityIdentifier, ReferenceType } from '../entity';
+import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
@@ -181,7 +181,7 @@ export class UnitOfWork {
     }
 
     for (const prop of Object.values(meta.properties)) {
-      const reference = entity[prop.name];
+      const reference = this.unwrapReference(entity, prop);
       this.processReference(entity, prop, reference, visited);
     }
 
@@ -313,11 +313,13 @@ export class UnitOfWork {
       return;
     }
 
-    if ((prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) && entity[prop.name]) {
-      return this.cascade(entity[prop.name], type, visited);
+    const reference = this.unwrapReference(entity, prop);
+
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference) {
+      return this.cascade(reference as T, type, visited);
     }
 
-    const collection = entity[prop.name] as Collection<IEntity>;
+    const collection = reference as Collection<IEntity>;
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(requireFullyInitialized)) {
@@ -366,7 +368,7 @@ export class UnitOfWork {
   }
 
   private fixMissingReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty<T>): void {
-    const reference = entity[prop.name] as IEntity | Collection<IEntity> | IPrimaryKey | (IEntity | IPrimaryKey)[];
+    const reference = this.unwrapReference(entity, prop);
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference)) {
       entity[prop.name] = this.em.getReference(prop.type, reference as IPrimaryKey);
@@ -379,6 +381,16 @@ export class UnitOfWork {
       (entity[prop.name] as Collection<IEntity>).set(reference as IEntity[]);
       (entity[prop.name] as Collection<IEntity>).setDirty();
     }
+  }
+
+  private unwrapReference<T extends IEntityType<T>, U extends IEntity | Reference<T> | Collection<IEntity> | IPrimaryKey | (IEntity | IPrimaryKey)[]>(entity: T, prop: EntityProperty<T>): U {
+    const reference = entity[prop.name] as U;
+
+    if (reference instanceof Reference) {
+      return reference.unwrap();
+    }
+
+    return reference;
   }
 
 }

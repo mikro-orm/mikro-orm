@@ -1,4 +1,4 @@
-import { FilterQuery, IEntity, Utils } from '..';
+import { FilterQuery, IEntity, Reference, Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { EntityMetadata, IEntityType } from '../decorators';
 
@@ -7,6 +7,10 @@ export class SmartQueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
   static processParams(params: any, root?: boolean): any {
+    if (params instanceof Reference) {
+      params = params.unwrap();
+    }
+
     if (Utils.isEntity(params)) {
       return SmartQueryHelper.processEntity(params, root);
     }

@@ -33,6 +33,7 @@ export interface IEntity<K = number | string> {
   toJSON(...args: any[]): Record<string, any>;
   assign(data: any, options?: AssignOptions | boolean): void;
   __uuid: string;
+  __meta: EntityMetadata;
   __em: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
@@ -64,6 +65,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   primary: boolean;
   length?: any;
   reference: ReferenceType;
+  wrappedReference?: boolean;
   fieldName: string;
   default?: any;
   unique?: boolean;
