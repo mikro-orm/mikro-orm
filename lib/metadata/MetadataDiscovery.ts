@@ -349,6 +349,8 @@ export class MetadataDiscovery {
       throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
 
+    this.metadata.set(name, MetadataStorage.getMetadata(name));
+
     return target;
   }
 

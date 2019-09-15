@@ -10,7 +10,7 @@ export class EntityHelper {
   static async init(entity: IEntity, populated = true, lockMode?: LockMode): Promise<IEntity> {
     await entity.__em.findOne(entity.constructor.name, entity.__primaryKey, { refresh: true, lockMode });
     entity.populated(populated);
-    Object.defineProperty(entity, '__lazyInitialized', { value: true });
+    Object.defineProperty(entity, '__lazyInitialized', { value: true, writable: true });
 
     return entity;
   }
@@ -75,7 +75,7 @@ export class EntityHelper {
     };
 
     meta.prototype.populated = function (populated = true) {
-      Object.defineProperty(this, '__populated', { value: populated });
+      Object.defineProperty(this, '__populated', { value: populated, writable: true });
     };
 
     meta.prototype.toObject = function (ignoreFields: string[] = []) {

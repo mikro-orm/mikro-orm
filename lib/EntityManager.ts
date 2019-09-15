@@ -183,7 +183,7 @@ export class EntityManager {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as EntityData<T>);
 
     if (entity) {
-      Object.defineProperty(entity, '__em', { value: this });
+      Object.defineProperty(entity, '__em', { value: this, writable: true });
     }
 
     if (entity && entity.isInitialized() && !refresh) {
