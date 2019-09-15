@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -18,7 +18,7 @@ export class Book extends BaseEntity3 {
   author: Author;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
-  publisher: Publisher;
+  publisher: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
   tags = new Collection<BookTag>(this);

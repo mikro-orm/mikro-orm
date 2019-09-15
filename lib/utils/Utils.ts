@@ -4,7 +4,7 @@ import { isAbsolute, normalize } from 'path';
 
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { ArrayCollection, Collection, ReferenceType } from '../entity';
+import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
 
 export class Utils {
 
@@ -84,11 +84,11 @@ export class Utils {
       const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
 
-      if (entity[name] as any instanceof ArrayCollection || (Utils.isEntity(entity[name]) && !entity[name][pk()])) {
+      if (entity[name] as object instanceof ArrayCollection || (Utils.isEntity(entity[name]) && !entity[name][pk()])) {
         return delete ret[name];
       }
 
-      if (Utils.isEntity(entity[name])) {
+      if (Utils.isEntity(entity[name]) || entity[name] as object instanceof Reference) {
         return ret[prop.name] = ret[prop.name][pk()];
       }
     });
@@ -223,6 +223,14 @@ export class Utils {
   static getObjectType(value: any): string {
     const objectType = Object.prototype.toString.call(value);
     return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
+  }
+
+  static wrapReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty<T>): Reference<T> | T {
+    if (prop.wrappedReference) {
+      return Reference.create(entity);
+    }
+
+    return entity;
   }
 
   static async runSerial<T = any, U = any>(items: Iterable<U>, cb: (item: U) => Promise<T>): Promise<T[]> {

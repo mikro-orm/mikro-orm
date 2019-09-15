@@ -59,12 +59,12 @@ export class ObjectHydrator extends Hydrator {
     }
 
     if (Utils.isPrimaryKey(value)) {
-      entity[prop.name as keyof T] = this.factory.createReference(prop.type, value);
+      entity[prop.name] = Utils.wrapReference(this.factory.createReference(prop.type, value), prop);
       return;
     }
 
     if (Utils.isObject<T[keyof T]>(value)) {
-      entity[prop.name as keyof T] = this.factory.create(prop.type, value);
+      entity[prop.name] = Utils.wrapReference(this.factory.create(prop.type, value), prop);
     }
   }
 

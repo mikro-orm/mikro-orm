@@ -2,6 +2,7 @@ import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
 import { EntityData, EntityMetadata, IEntity, IEntityType } from '../decorators';
+import { Reference } from './Reference';
 
 export class EntityTransformer {
 
@@ -46,7 +47,7 @@ export class EntityTransformer {
       return EntityTransformer.processCollection(prop, entity);
     }
 
-    if (Utils.isEntity(entity[prop])) {
+    if (Utils.isEntity(entity[prop]) || entity[prop] as object instanceof Reference) {
       return EntityTransformer.processEntity(prop, entity, ignoreFields);
     }
 
@@ -54,13 +55,11 @@ export class EntityTransformer {
   }
 
   private static processEntity<T extends IEntityType<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {
-    const child = entity[prop] as IEntity;
+    const child = entity[prop] as IEntity | Reference<T>;
     const platform = child.__em.getDriver().getPlatform();
 
     if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
-      const meta = entity.__em.getMetadata().get(child.constructor.name);
-      const args = [...meta.toJsonParams.map(() => undefined), ignoreFields];
-
+      const args = [...child.__meta.toJsonParams.map(() => undefined), ignoreFields];
       return child.toJSON(...args) as T[keyof T];
     }
 

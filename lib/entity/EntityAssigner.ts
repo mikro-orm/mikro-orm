@@ -4,6 +4,7 @@ import { EntityManager } from '../EntityManager';
 import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
+import { Reference } from './Reference';
 
 export class EntityAssigner {
 
@@ -42,18 +43,18 @@ export class EntityAssigner {
   }
 
   private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
-    if (Utils.isEntity(value)) {
+    if (Utils.isEntity(value) || value instanceof Reference) {
       entity[prop.name as keyof T] = value as T[keyof T];
       return;
     }
 
     if (Utils.isPrimaryKey(value)) {
-      entity[prop.name as keyof T] = em.getReference(prop.type, value);
+      entity[prop.name] = Utils.wrapReference(em.getReference(prop.type, value), prop);
       return;
     }
 
     if (Utils.isObject(value)) {
-      entity[prop.name as keyof T] = em.create(prop.type, value) as T[keyof T];
+      entity[prop.name] = Utils.wrapReference(em.create(prop.type, value) as T[keyof T], prop);
       return;
     }
 

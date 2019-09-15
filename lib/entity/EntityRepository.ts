@@ -1,7 +1,7 @@
 import { EntityManager, FindOneOptions, FindOptions } from '../EntityManager';
 import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryBuilder, QueryOrderMap } from '../query';
-import { FilterQuery } from '..';
+import { FilterQuery, IdentifiedReference, Reference } from '..';
 
 export class EntityRepository<T extends IEntityType<T>> {
 
@@ -81,8 +81,13 @@ export class EntityRepository<T extends IEntityType<T>> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference(id: IPrimaryKey): T {
-    return this.em.getReference<T>(this.entityName, id);
+  getReference<PK extends keyof T>(id: IPrimaryKey, wrapped: true): IdentifiedReference<T, PK>; // tslint:disable-next-line:lines-between-class-members
+  getReference(id: IPrimaryKey): T; // tslint:disable-next-line:lines-between-class-members
+  getReference(id: IPrimaryKey, wrapped: false): T; // tslint:disable-next-line:lines-between-class-members
+  getReference(id: IPrimaryKey, wrapped: true): Reference<T>; // tslint:disable-next-line:lines-between-class-members
+  getReference(id: IPrimaryKey, wrapped: boolean): T | Reference<T>; // tslint:disable-next-line:lines-between-class-members
+  getReference(id: IPrimaryKey, wrapped = false): T | Reference<T> {
+    return this.em.getReference<T>(this.entityName, id, wrapped);
   }
 
   canPopulate(property: string): boolean {

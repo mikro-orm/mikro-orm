@@ -36,7 +36,7 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(`Entity 'BadName' not found in ./entities-3/bad-name.model.ts`);
   });
 
-  test('should init itself with entity manager', async () => {
+  test('should load itself with entity manager', async () => {
     const orm = await MikroORM.init({
       entitiesDirs: ['entities'],
       dbName: 'mikro-orm-test',

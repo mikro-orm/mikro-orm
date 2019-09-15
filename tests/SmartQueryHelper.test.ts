@@ -1,4 +1,4 @@
-import { MikroORM } from '../lib';
+import { MikroORM, Reference } from '../lib';
 import { initORMMySql } from './bootstrap';
 import { SmartQueryHelper } from '../lib/query';
 import { Author2, Book2, Test2 } from './entities-sql';
@@ -73,8 +73,11 @@ describe('SmartQueryHelper', () => {
     expect(SmartQueryHelper.processParams({ test })).toEqual({ test: test.id });
     expect(SmartQueryHelper.processParams(test)).toEqual({ id: test.id });
     const author = new Author2('name', 'mail');
-    const book = new Book2('test', author);
+    let book = new Book2('test', author);
     expect(SmartQueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
+    book = Reference.create(book);
+    expect(SmartQueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
+    expect(SmartQueryHelper.processParams({ book })).toEqual({ book: book.uuid });
     const field = undefined;
     expect(SmartQueryHelper.processParams({ field })).toEqual({ field: null });
   });
