@@ -51,6 +51,7 @@ export class Configuration {
   static readonly PLATFORMS = {
     mongo: 'MongoDriver',
     mysql: 'MySqlDriver',
+    mariadb: 'MariaDbDriver',
     postgresql: 'PostgreSqlDriver',
     sqlite: 'SqliteDriver',
   };
