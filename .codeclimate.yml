@@ -21,4 +21,4 @@ engines:
       languages:
         typescript:
           # make it higher so it does not report bullshit like similarity of abstract method and its implementation
-          mass_threshold: 55
+          mass_threshold: 70

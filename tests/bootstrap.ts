@@ -37,7 +37,7 @@ export async function initORMMongo() {
   });
 }
 
-export async function initORMMySql() {
+export async function initORMMySql(type: 'mysql' | 'mariadb' = 'mysql') {
   let port = 3307;
 
   if (process.env.ORM_PORT) {
@@ -54,7 +54,7 @@ export async function initORMMySql() {
     highlight: false,
     logger: i => i,
     multipleStatements: true,
-    type: 'mysql',
+    type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
   });
 
