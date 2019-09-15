@@ -1,5 +1,13 @@
 import { Configuration, RequestContext, Utils, ValidationError } from './utils';
-import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, ReferenceType } from './entity';
+import {
+  EntityAssigner,
+  EntityFactory,
+  EntityLoader,
+  EntityRepository,
+  EntityValidator, IdentifiedReference,
+  Reference,
+  ReferenceType,
+} from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { AbstractSqlDriver, FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
@@ -175,7 +183,7 @@ export class EntityManager {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as EntityData<T>);
 
     if (entity) {
-      entity.__em = this;
+      Object.defineProperty(entity, '__em', { value: this });
     }
 
     if (entity && entity.isInitialized() && !refresh) {
@@ -202,9 +210,18 @@ export class EntityManager {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
+  getReference<T extends IEntityType<T>, PK extends keyof T>(entityName: EntityName<T>, id: IPrimaryKey, wrapped: true): IdentifiedReference<T, PK>; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey, wrapped: false): T; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey, wrapped: true): Reference<T>; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey, wrapped: boolean): T | Reference<T>; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey, wrapped = false): T | Reference<T> {
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
     this.getUnitOfWork().merge(entity, [], false);
+
+    if (wrapped) {
+      return Reference.create(entity);
+    }
 
     return entity;
   }

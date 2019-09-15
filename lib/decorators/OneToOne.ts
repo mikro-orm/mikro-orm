@@ -28,6 +28,7 @@ export interface OneToOneOptions extends PropertyOptions {
   mappedBy?: string;
   cascade?: Cascade[];
   orphanRemoval?: boolean;
+  wrappedReference?: boolean;
   joinColumn?: string;
   inverseJoinColumn?: string;
   referenceColumnName?: string;

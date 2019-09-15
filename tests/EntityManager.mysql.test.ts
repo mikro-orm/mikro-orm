@@ -773,7 +773,7 @@ describe('EntityManagerMySql', () => {
     expect(() => tags[0].books.removeAll()).toThrowError(/Collection Book2\[] of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection Book2\[] of entity BookTag2\[\d+] not initialized/);
 
-    // test M:N lazy init
+    // test M:N lazy load
     orm.em.clear();
     tags = await tagRepository.findAll();
     await tags[0].books.init();
@@ -790,7 +790,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0]).toBe(old);
     expect(tags[0].books).toBe(old.books);
 
-    // test M:N lazy init
+    // test M:N lazy load
     orm.em.clear();
     let book = (await orm.em.findOne(Book2, book1.uuid))!;
     expect(book.tags.isInitialized()).toBe(false);

@@ -4,6 +4,7 @@ import { ReferenceType } from './enums';
 import { Utils } from '../utils';
 import { Collection } from './Collection';
 import { QueryOrder } from '../query';
+import { Reference } from './Reference';
 
 export class EntityLoader {
 
@@ -32,7 +33,7 @@ export class EntityLoader {
   private async populateMany<T extends IEntityType<T>>(entityName: string, entities: T[], field: keyof T): Promise<IEntity[]> {
     // set populate flag
     entities.forEach(entity => {
-      if (Utils.isEntity(entity[field]) || entity[field] as object instanceof Collection) {
+      if (Utils.isEntity(entity[field]) || entity[field] as object instanceof Collection || entity[field] as object instanceof Reference) {
         (entity[field] as IEntity).populated();
       }
     });
@@ -100,10 +101,12 @@ export class EntityLoader {
       await this.populateMany<T>(entityName, entities, f as keyof T);
       const children: IEntity[] = [];
       entities.forEach(entity => {
-        if (Utils.isEntity(entity[f as keyof T])) {
-          children.push(entity[f as keyof T]);
-        } else if (entity[f as keyof T] as object instanceof Collection) {
-          children.push(...entity[f as keyof T].getItems());
+        if (Utils.isEntity(entity[f])) {
+          children.push(entity[f]);
+        } else if (entity[f] instanceof Reference) {
+          children.push(entity[f].unwrap());
+        } else if (entity[f] as object instanceof Collection) {
+          children.push(...entity[f].getItems());
         }
       });
       const filtered = Utils.unique(children);
@@ -138,7 +141,9 @@ export class EntityLoader {
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
       children.push(...filtered);
     } else { // MANY_TO_ONE or ONE_TO_ONE
-      children.push(...entities.filter(e => Utils.isEntity(e[prop.name]) && !(e[prop.name] as IEntity).isInitialized()).map(e => e[prop.name]));
+      children.push(...entities.filter(e => (Utils.isEntity(e[prop.name]) || e[prop.name] as object instanceof Reference) && !(e[prop.name] as IEntity).isInitialized()).map(e => {
+        return e[prop.name] as object instanceof Reference ? e[prop.name].unwrap() : e[prop.name];
+      }));
     }
 
     return children;

@@ -1,4 +1,12 @@
-import { Collection, Db, MongoClient, MongoClientOptions, ObjectId } from 'mongodb';
+import {
+  Collection,
+  Db, DeleteWriteOpResultObject,
+  InsertOneWriteOpResult,
+  MongoClient,
+  MongoClientOptions,
+  ObjectId,
+  UpdateWriteOpResult,
+} from 'mongodb';
 import { inspect } from 'util';
 
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
@@ -96,38 +104,15 @@ export class MongoConnection extends Connection {
   }
 
   async insertOne<T>(collection: string, data: Partial<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    data = this.convertObjectIds(data);
-    const now = Date.now();
-    const res = await this.getCollection(collection).insertOne(data);
-    const query = `db.getCollection('${collection}').insertOne(${this.logObject(data)});`;
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('insertOne', collection, data);
   }
 
   async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    data = this.convertObjectIds(data);
-    const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
-    const query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).updateMany(where, payload);
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('updateMany', collection, data, where);
   }
 
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const query = `db.getCollection('${collection}').deleteMany(${this.logObject(where)})`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).deleteMany(where);
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('deleteMany', collection, undefined, where);
   }
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
@@ -141,31 +126,58 @@ export class MongoConnection extends Connection {
   }
 
   async countDocuments<T>(collection: string, where: FilterQuery<T>): Promise<number> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const query = `db.getCollection('${collection}').countDocuments(${this.logObject(where)})`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).countDocuments(where);
-    this.logQuery(query, Date.now() - now);
-
-    return res;
+    return this.runQuery<T, number>('countDocuments', collection, undefined, where);
   }
 
   protected logQuery(query: string, took?: number): void {
     super.logQuery(query, took, 'javascript');
   }
 
-  private convertObjectIds(payload: any): any {
+  private async runQuery<T, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>): Promise<U> {
+    collection = this.getCollectionName(collection);
+    data = this.convertObjectIds(data!);
+    where = this.convertObjectIds(where!);
+    const now = Date.now();
+    let res: InsertOneWriteOpResult | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
+    let query: string;
+
+    switch (method) {
+      case 'insertOne':
+        query = `db.getCollection('${collection}').insertOne(${this.logObject(data)});`;
+        res = await this.getCollection(collection).insertOne(data);
+        break;
+      case 'updateMany':
+        const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
+        query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
+        res = await this.getCollection(collection).updateMany(where, payload);
+        break;
+      case 'deleteMany':
+      case 'countDocuments':
+        query = `db.getCollection('${collection}').${method}(${this.logObject(where)});`;
+        res = await this.getCollection(collection)[method as 'deleteMany'](where); // cast to deleteMany to fix some typing weirdness
+        break;
+    }
+
+    this.logQuery(query!, Date.now() - now);
+
+    if (method === 'countDocuments') {
+      return res! as U;
+    }
+
+    return this.transformResult(res!) as U;
+  }
+
+  private convertObjectIds<T extends ObjectId | Record<string, any> | any[]>(payload: T): T {
     if (payload instanceof ObjectId) {
       return payload;
     }
 
     if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectId(payload);
+      return new ObjectId(payload) as T;
     }
 
     if (Array.isArray(payload)) {
-      return payload.map((item: any) => this.convertObjectIds(item));
+      return payload.map((item: any) => this.convertObjectIds(item)) as T;
     }
 
     if (Utils.isObject(payload)) {

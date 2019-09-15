@@ -9,3 +9,4 @@ export * from './EntityFactory';
 export * from './EntityLoader';
 export * from './ArrayCollection';
 export * from './Collection';
+export * from './Reference';

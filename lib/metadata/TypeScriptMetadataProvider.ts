@@ -19,13 +19,14 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
   }
 
   private async initProperties(meta: EntityMetadata, name: string): Promise<void> {
-    // init types and column names
+    // load types and column names
     for (const prop of Object.values(meta.properties)) {
       if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
         const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
         prop.type = await this.readTypeFromSource(file, name, prop);
+        this.processReferenceWrapper(prop);
       }
     }
   }
@@ -50,6 +51,15 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     }
 
     return source;
+  }
+
+  private processReferenceWrapper(prop: EntityProperty): void {
+    const m = prop.type.match(/^IdentifiedReference<(\w+),?.*>$/);
+
+    if (m) {
+      prop.type = m[1];
+      prop.wrappedReference = true;
+    }
   }
 
   private async initSourceFiles(): Promise<void> {

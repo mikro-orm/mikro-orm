@@ -30,7 +30,7 @@ describe('EntityRepository', () => {
 
   test('should forward calls to EntityManager', async () => {
     repo.getReference('bar');
-    expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar']);
+    expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', false]);
     const e = Object.create(Publisher.prototype);
     await repo.persist(e, false);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);

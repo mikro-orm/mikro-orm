@@ -76,7 +76,7 @@ export class ChangeSetPersister {
 
     if (value instanceof EntityIdentifier) {
       changeSet.payload[prop.name as keyof T] = value.getValue();
-    } else if (Array.isArray(value) && value.some(item => item instanceof EntityIdentifier)) {
+    } else if (Array.isArray(value) && value.some(item => item as object instanceof EntityIdentifier)) {
       changeSet.payload[prop.name as keyof T] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item) as T[keyof T];
     }
 

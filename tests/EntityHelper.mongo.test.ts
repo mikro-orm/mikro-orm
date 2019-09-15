@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { EntityAssigner, EntityHelper, MikroORM } from '../lib';
+import { EntityAssigner, EntityHelper, MikroORM, Reference } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 
 describe('EntityAssignerMongo', () => {
@@ -54,7 +54,7 @@ describe('EntityAssignerMongo', () => {
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     god.favouriteAuthor = god;
-    bible.publisher = new Publisher('Publisher 1');
+    bible.publisher = Reference.create(new Publisher('Publisher 1'));
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
@@ -64,11 +64,11 @@ describe('EntityAssignerMongo', () => {
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books[0]).toMatchObject({
       author: { name: bible.author.name },
-      publisher: { name: bible.publisher.name },
+      publisher: { name: (await bible.publisher.load()).name },
     });
   });
 
-  test('#init() should populate the entity', async () => {
+  test('#load() should populate the entity', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
@@ -79,7 +79,7 @@ describe('EntityAssignerMongo', () => {
     expect(jon.isInitialized()).toBe(true);
   });
 
-  test('#init() should refresh the entity if its already loaded', async () => {
+  test('#load() should refresh the entity if its already loaded', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
