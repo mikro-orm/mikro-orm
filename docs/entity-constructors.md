@@ -1,7 +1,7 @@
 ---
 ---
 
-# Using entity constructors
+# Using Entity Constructors
 
 Internally, `MikroORM` never calls entity constructor, so you are free to use it as you wish.
 The constructor will be called only when you instantiate the class yourself via `new` operator,

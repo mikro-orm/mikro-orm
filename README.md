@@ -23,42 +23,55 @@ MikroORM's documentation, included in this repo in the root directory, is built 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
-## ✨ Core features
+## ✨ Core Features
 
-- [Clean and simple entity definition](https://mikro-orm.io/defining-entities/)
+- [Clean and Simple Entity Definition](https://mikro-orm.io/defining-entities/)
 - [Identity Map](https://mikro-orm.io/identity-map/)
-- [Entity references](https://mikro-orm.io/entity-references/)
-- [Using entity constructors](https://mikro-orm.io/using-entity-constructors/)
+- [Entity References](https://mikro-orm.io/entity-references/)
+- [Using Entity Constructors](https://mikro-orm.io/using-entity-constructors/)
 - [Collections](https://mikro-orm.io/collections/)
 - [Unit of Work](https://mikro-orm.io/unit-of-work/)
 - [Transactions](https://mikro-orm.io/transactions/)
 - [Cascading persist and remove](https://mikro-orm.io/cascading/)
 - [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
-- [Preloading deeply nested structures via populate](https://mikro-orm.io/nested-populate/)
-- [Property validation](https://mikro-orm.io/property-validation/)
-- [Lifecycle hooks](https://mikro-orm.io/lifecycle-hooks/)
-- [Vanilla JS support](https://mikro-orm.io/usage-with-js/)
+- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
+- [Better Type-safety with `Reference<T>` Wrapper](https://mikro-orm.io/reference-wrapper/)
+- [Property Validation](https://mikro-orm.io/property-validation/)
+- [Lifecycle Hooks](https://mikro-orm.io/lifecycle-hooks/)
+- [Vanilla JS Support](https://mikro-orm.io/usage-with-js/)
+- [Schema Generator](https://mikro-orm.io/schema-generator/)
+- [Entity Generator](https://mikro-orm.io/entity-generator/)
 
-## 📦 Example integrations
+## 📦 Example Integrations
 
 You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/mikro-orm/mikro-orm-examples): 
 
-### TypeScript examples
+### TypeScript Examples
 
 - [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
 - [Nest + MySQL](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
 - [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
 
-### JavaScript examples 
+### JavaScript Examples 
 - [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
 
-## 🚀 Quick start
+## Articles
+
+- Introducing MikroORM, TypeScript data-mapper ORM with Identity Map
+  - on [medium.com](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02)
+  - on [dev.to](https://dev.to/b4nan/introducing-mikroorm-typescript-data-mapper-orm-with-identity-map-pc8)
+- Handling transactions and concurrency in MikroORM
+  - on [medium.com](https://medium.com/dailyjs/handling-transactions-and-concurrency-in-mikro-orm-ba80d0a65805)
+  - on [dev.to](https://dev.to/b4nan/handling-transactions-and-concurrency-in-mikroorm-2cfj)
+
+## 🚀 Quick Start
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
 ```
 $ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql
+$ yarn add mikro-orm mysql2  # for mysql/mariadb
+$ yarn add mikro-orm mariadb # for mysql/mariadb
 $ yarn add mikro-orm pg      # for postgresql
 $ yarn add mikro-orm sqlite  # for sqlite
 ```
@@ -67,7 +80,8 @@ or
 
 ```
 $ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql
+$ npm i -s mikro-orm mysql2  # for mysql/mariadb
+$ npm i -s mikro-orm mariadb # for mysql/mariadb
 $ npm i -s mikro-orm pg      # for postgresql
 $ npm i -s mikro-orm sqlite  # for sqlite
 ```
@@ -86,7 +100,6 @@ const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
-  autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -225,7 +238,7 @@ for details on the process for submitting pull requests to us.
 
 See also the list of contributors who [participated](https://github.com/mikro-orm/mikro-orm/contributors) in this project.
 
-## Show your support
+## Show Your Support
 
 Please ⭐️ this repository if this project helped you!
 

@@ -22,6 +22,14 @@ perform according database queries. As an entity loaded from database becomes ma
 automatically, you do not have to call persist on those, and flush is enough to update 
 them.
 
+```typescript
+const book = await orm.em.findOne(Book, 1);
+book.title = 'How to persist things...';
+
+// no need to persist `book` as its already managed by the EM
+await orm.em.flush();
+```
+
 ## Persisting and cascading
 
 To save entity state to database, you need to persist it. Persist takes care or deciding 
@@ -54,24 +62,15 @@ await orm.em.flush(); // flush everything to database at once
 
 ### Auto flushing
 
-By default, `EntityManager.persist()` will **flush your changes automatically**. You can use
-its second parameter to disable auto-flushing, and use `EntityManager.flush()` manually. 
-
-You can also disable this feature globally via `autoFlush` option when initializing the ORM:
+Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
+`em.flush()` yourself to persist changes into database. You can still change this via ORM's
+options to ease the transition but generally it is not recommended. 
 
 ```typescript
-const orm = await MikroORM.init({
-  autoFlush: false,
-  // ...
-});
-await orm.em.persist(new Entity()); // no auto-flushing now
+orm.em.persist(new Entity()); // no auto-flushing by default
 await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
-
-> Default value of `autoFlush` is currently set to `true`, which will change in upcoming major 
-> release. Users are encouraged to either set `autoFlush` to `false` or use `em.persistLater()` 
-> (equal to `em.persist(entity, false)`) and `em.persistAndFlush()` methods instead. 
 
 ## Fetching entities with EntityManager
 
@@ -198,7 +197,7 @@ Gets count of entities matching the `where` condition.
 
 ---
 
-#### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
+#### `persist(entity: IEntity | IEntity[], flush?: boolean): void | Promise<void>`
 
 Tells the EntityManager to make an instance managed and persistent. The entity will be 
 entered into the database at or before transaction commit or as a result of the flush 

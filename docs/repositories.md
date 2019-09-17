@@ -25,7 +25,7 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
-## Custom repository
+## Custom Repository
 
 To use custom repository, just extend `EntityRepository<T>` class:
 

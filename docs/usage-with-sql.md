@@ -1,7 +1,7 @@
 ---
 ---
 
-# Usage with MySQL, PostgreSQL or SQLite
+# Usage with MySQL, MariaDB, PostgreSQL or SQLite
 
 To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and set 
 the type option to `mysql` when initializing ORM.

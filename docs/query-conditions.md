@@ -1,7 +1,7 @@
 ---
 ---
 
-# Smart query conditions
+# Smart Query Conditions
 
 When you want to make complex queries, you can easily end up with a lot of boilerplate code
 full of curly brackets:

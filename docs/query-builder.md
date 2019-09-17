@@ -22,6 +22,34 @@ const res1 = await qb.execute();
 
 `QueryBuilder` also supports [smart query conditions](query-conditions.md).
 
+## Using Knex.js
+
+Under the hood, `QueryBuilder` uses [`Knex.js`](https://knexjs.org) to compose and run queries.
+You can access configured `knex` instance via `qb.getKnexQuery()` method:
+
+```typescript
+const qb = orm.em.createQueryBuilder(Author);
+qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
+const knex = qb.getKnexQuery(); // instance of Knex' QueryBuilder
+
+// do what ever you need with `knex`
+
+const res = await orm.em.getConnection<MySqlConnection>().execute(knex);
+const entities = res.map(a => orm.em.map(Author, a));
+console.log(entities); // Author[]
+```
+
+You can also get clear and configured knex instance from the connection:
+
+```typescript
+const conn = orm.em.getConnection<MySqlConnection>();
+const knex = conn.getKnex();
+
+// do what ever you need with `knex`
+
+const res = await knex;
+```
+
 ## Running native SQL query
 
 You can run native SQL via underlying connection

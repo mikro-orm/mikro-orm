@@ -1,7 +1,7 @@
 ---
 ---
 
-# Property validation
+# Property Validation
 
 `MirkoORM` will validate your properties before actual persisting happens. It will try to fix wrong 
 data types for you automatically. If automatic conversion fails, it will throw an error. You can 

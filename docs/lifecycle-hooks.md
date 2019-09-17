@@ -1,7 +1,7 @@
 ---
 ---
 
-# Lifecycle hooks
+# Lifecycle Hooks
 
 You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
 entity methods with them, you can also mark multiple methods with same hook.
