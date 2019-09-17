@@ -114,6 +114,47 @@ More information about how collections work can be found on [collections page](c
 
 If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
 
+## Virtual Properties
+
+You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
+
+Following example defines User entity with `firstName` and `lastName` database fields, that 
+are both hidden from the serialized response, replaced with virtual properties `fullName` 
+(defined as a classic method) and `fullName2` (defined as a JavaScript getter).
+
+> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value
+> would be stored in the database. 
+
+```typescript
+@Entity()
+export class User {
+
+  @Property({ hidden: true })
+  firstName: string;
+
+  @Property({ hidden: true })
+  lastName: string;
+
+  @Property({ name: 'fullName' })
+  getFullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  @Property({ persist: false })
+  get fullName2() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+}
+
+const repo = orm.em.getRepository(User);
+const author = repo.create({ firstName: 'Jon', lastName: 'Snow' });
+
+console.log(author.getFullName()); // 'Jon Snow'
+console.log(author.fullName2); // 'Jon Snow'
+console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
+```
+
 ## Entity file names
 
 You are free to choose one of those formats for entity filename (for a `BookTag` entity):
@@ -126,6 +167,8 @@ You are free to choose one of those formats for entity filename (for a `BookTag`
 
 Entity name is inferred from the first part of file name before first dot occurs, so you can 
 add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
+
+> You can change this behaviour by defining custom `NamingStrategy.getClassName()` method.
 
 ## Using BaseEntity
 

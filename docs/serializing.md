@@ -39,7 +39,7 @@ export class Book {
 > Do not forget to pass rest params when calling `toObject(...args)`, otherwise the results
 > might not be stable.
 
-## Hidden properties
+## Hidden Properties
 
 If you want to omit some properties from serialized result, you can mark them with `hidden`
 flag on `@Property()` decorator:
@@ -58,7 +58,7 @@ console.log(book.toObject().hiddenField); // undefined
 console.log(book.toJSON().hiddenField); // undefined
 ```
 
-## Shadow properties
+## Shadow Properties
 
 The opposite situation where you want to define a property that lives only in memory (is 
 not persisted into database) can be solved by defining your property as `persist: false`. 

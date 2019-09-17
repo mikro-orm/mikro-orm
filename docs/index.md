@@ -12,7 +12,9 @@ layout: homepage
 
 MikroORM is TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.
 
-Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more can be supported via custom drivers right now. It has first class TypeScript support, while staying back compatible with Vanilla JavaScript.
+Currently it supports MongoDB, MySQL, MariaDB, PostgreSQL and SQLite databases, but more can be 
+supported via custom drivers right now. It has first class TypeScript support, while staying back 
+compatible with Vanilla JavaScript.
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
@@ -20,37 +22,50 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
 
 - Overview
   - [Installation & Usage](installation.md)
-  - [Defining entities](defining-entities.md)
-  - [Persisting, cascading and fetching entities with `EntityManager`](entity-manager.md)
+  - [Defining Entities](defining-entities.md)
+  - [Persisting, Cascading and Fetching Entities with `EntityManager`](entity-manager.md)
   - [Using `EntityRepository` instead of `EntityManager`](repositories.md)
 - Fundamentals
   - [Identity Map and Request Context](identity-map.md)
-  - [Entity references](entity-references.md)
-  - [Using entity constructors](entity-constructors.md)
+  - [Entity References](entity-references.md)
+  - [Using Entity Constructors](entity-constructors.md)
   - [Collections](collections.md)
   - [Unit of Work](unit-of-work.md)
   - [Transactions](transactions.md)
   - [Cascading persist and remove](cascading.md)
-- Advanced features
-  - [Smart nested populate](nested-populate.md)
-  - [Smart query conditions](query-conditions.md)
+- Advanced Features
+  - [Smart Nested Populate](nested-populate.md)
+  - [Smart Query Conditions](query-conditions.md)
   - [Using `QueryBuilder`](query-builder.md)
   - [Serializing](serializing.md)
-  - [Updating entity values with `IEntity.assign()`](entity-helper.md)
-  - [Property validation](property-validation.md)
-  - [Lifecycle hooks](lifecycle-hooks.md)
-  - [Naming strategy](naming-strategy.md)
-  - [Metadata cache](metadata-cache.md)
+  - [Updating Entity Values with `IEntity.assign()`](entity-helper.md)
+  - [Better Type-safety with `Reference<T>` Wrapper](reference-wrapper.md)
+  - [Property Validation](property-validation.md)
+  - [Lifecycle Hooks](lifecycle-hooks.md)
+  - [Naming Strategy](naming-strategy.md)
+  - [Metadata Cache](metadata-cache.md)
   - [Debugging](debugging.md)
-  - [Schema generator](schema-generator.md)
-- Usage with different drivers
-  - [Usage with Postgres, MySQL and SQLite](usage-with-sql.md)
+  - [Schema Generator](schema-generator.md)
+  - [Entity Generator](entity-generator.md)
+  - [Read Replica Connections](read-connections.md)
+- Usage with Different Drivers
+  - [Usage with SQL Drivers](usage-with-sql.md)
   - [Usage with MongoDB](usage-with-mongo.md)
 - Recipes
   - [Usage with NestJS](usage-with-nestjs.md)
   - [Usage with Vanilla JS](usage-with-js.md)
-  - [Creating custom driver](custom-driver.md)
-- Example integrations
+  - [Creating Custom Driver](custom-driver.md)
+  - [Using Multiple Schemas](multiple-schemas.md)
+- Example Integrations
   - [Express + MongoDB + TypeScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
   - [Nest + MySQL + TypeScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
   - [Express + MongoDB + JavaScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
+
+## Articles
+
+- Introducing MikroORM, TypeScript data-mapper ORM with Identity Map
+  - on [medium.com](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02)
+  - on [dev.to](https://dev.to/b4nan/introducing-mikroorm-typescript-data-mapper-orm-with-identity-map-pc8)
+- Handling transactions and concurrency in MikroORM
+  - on [medium.com](https://medium.com/dailyjs/handling-transactions-and-concurrency-in-mikro-orm-ba80d0a65805)
+  - on [dev.to](https://dev.to/b4nan/handling-transactions-and-concurrency-in-mikroorm-2cfj)

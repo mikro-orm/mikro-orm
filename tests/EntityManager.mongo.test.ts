@@ -1390,7 +1390,6 @@ describe('EntityManagerMongo', () => {
     expect(god.books[0]).toBeInstanceOf(Book);
   });
 
-<<<<<<< HEAD
   test('allow undefined value in nullable properties', async () => {
     let god = new Author('God', 'hello@heaven.god');
     god.age = 21;
