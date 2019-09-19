@@ -19,6 +19,19 @@ const orm = await MikroORM.init({
 });
 ```
 
+## sqlite
+
+sqlite needs the database name to end with `.db`
+
+```typescript
+const orm = await MikroORM.init({
+  baseDir: __dirname,
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  dbName: 'my-db-name.db',
+  type: 'sqlite',
+});
+```
+
 ## Custom driver
 
 If you want to use database that is not currently supported, you can implement your own driver.
