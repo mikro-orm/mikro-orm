@@ -6,7 +6,7 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
     return this.underscore(entityName);
   }
 
-  joinColumnName(propertyName: string, className?: string): string {
+  joinColumnName(propertyName: string): string {
     return this.underscore(propertyName) + '_' + this.referenceColumnName();
   }
 
