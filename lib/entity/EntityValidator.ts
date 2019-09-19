@@ -27,7 +27,7 @@ export class EntityValidator {
   }
 
   validateProperty<T extends IEntityType<T>>(prop: EntityProperty, givenValue: any, entity: T) {
-    if (givenValue === null) {
+    if (givenValue === null || givenValue === undefined) {
       return givenValue;
     }
 

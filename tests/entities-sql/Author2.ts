@@ -25,16 +25,16 @@ export class Author2 extends BaseEntity2 {
   email: string;
 
   @Property({ nullable: true })
-  age: number;
+  age?: number;
 
   @Property({ default: 0 })
   termsAccepted = false;
 
   @Property({ nullable: true })
-  identities: string[];
+  identities?: string[];
 
   @Property({ nullable: true })
-  born: Date;
+  born?: Date;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { createdAt: QueryOrder.ASC } })
   books: Collection<Book2>;

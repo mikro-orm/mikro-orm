@@ -1370,6 +1370,23 @@ describe('EntityManagerMongo', () => {
     expect(god.books[0]).toBeInstanceOf(Book);
   });
 
+  test('allow undefined value in nullable properties', async () => {
+    let god = new Author('God', 'hello@heaven.god');
+    god.age = 21;
+    god.born = new Date('0001-01-01');
+    await orm.em.persistAndFlush(god);
+
+    god.age = undefined;
+    god.born = undefined;
+    await orm.em.flush();
+
+    orm.em.clear();
+    god = (await orm.em.findOne(Author, god.id))!;
+    expect(god).toBeInstanceOf(Author);
+    expect(god.age).toBeNull();
+    expect(god.born).toBeNull();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

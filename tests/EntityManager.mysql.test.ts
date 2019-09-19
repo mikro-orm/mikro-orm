@@ -6,9 +6,6 @@ import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
-/**
- * @class EntityManagerMySqlTest
- */
 describe('EntityManagerMySql', () => {
 
   jest.setTimeout(10000);
@@ -548,14 +545,14 @@ describe('EntityManagerMySql', () => {
 
     const qb1 = orm.em.createQueryBuilder(Book2);
     const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
-    expect(res1['createdAt']).toBeDefined();
-    expect(res1['created_at']).not.toBeDefined();
+    expect(res1.createdAt).toBeDefined();
+    expect(res1.created_at).not.toBeDefined();
     expect(res1.meta).toEqual({ category: 'foo', items: 1 });
 
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).execute('get', false);
-    expect(res2['createdAt']).not.toBeDefined();
-    expect(res2['created_at']).toBeDefined();
+    expect(res2.createdAt).not.toBeDefined();
+    expect(res2.created_at).toBeDefined();
     expect(res2.meta).toEqual({ category: 'foo', items: 1 });
 
     const res3 = (await orm.em.findOne(Book2, { 'JSON_CONTAINS(meta, ?)': [{ items: 1 }, true] }))!;
@@ -1168,6 +1165,23 @@ describe('EntityManagerMySql', () => {
     expect(a.name).toBe('Jon Snow');
     expect(a.email).toBeUndefined();
     expect(a.born).toBeUndefined();
+  });
+
+  test('allow undefined value in nullable properties', async () => {
+    let god = new Author2('God', 'hello@heaven.god');
+    god.age = 21;
+    god.born = new Date('0001-01-01');
+    await orm.em.persistAndFlush(god);
+
+    god.age = undefined;
+    god.born = undefined;
+    await orm.em.flush();
+
+    orm.em.clear();
+    god = (await orm.em.findOne(Author2, god.id))!;
+    expect(god).toBeInstanceOf(Author2);
+    expect(god.age).toBeNull();
+    expect(god.born).toBeNull();
   });
 
   afterAll(async () => orm.close(true));

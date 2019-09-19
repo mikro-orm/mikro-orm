@@ -20,16 +20,16 @@ export class Author extends BaseEntity {
   email: string;
 
   @Property()
-  age: number;
+  age?: number;
 
   @Property()
   termsAccepted = false;
 
   @Property({ fieldName: 'identitiesArray' })
-  identities: string[];
+  identities?: string[];
 
   @Property()
-  born: Date;
+  born?: Date;
 
   @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
   books = new Collection<Book>(this);
