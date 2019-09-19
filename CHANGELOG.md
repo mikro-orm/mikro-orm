@@ -1,3 +1,12 @@
+<a name="2.7.8"></a>
+## [2.7.8](https://github.com/B4nan/mikro-orm/compare/v2.7.7...v2.7.8) (2019-09-19)
+
+### Bug Fixes
+
+* **validation**:  allow undefined in nullable entity properties ([b5eafc3](https://github.com/B4nan/mikro-orm/commit/b5eafc3)), closes [#132](https://github.com/B4nan/mikro-orm/issues/132)
+
+
+
 <a name="2.7.7"></a>
 ## [2.7.7](https://github.com/B4nan/mikro-orm/compare/v2.7.6...v2.7.7) (2019-09-01)
 
