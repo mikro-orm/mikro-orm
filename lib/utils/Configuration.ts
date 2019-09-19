@@ -149,8 +149,11 @@ export class Configuration {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.warnWhenNoEntities) {
-      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
+    if (this.options.warnWhenNoEntities && 
+        this.options.entities.length === 0 && 
+        this.options.entitiesDirs.length === 0 && 
+        this.options.entitiesDirsTs.length === 0) {
+      throw new Error('All of the `entities`, `entitiesDirs` and `entitiesDirsTs` options are empty. Maybe you forget to define this in the configuration?');
     }
   }
 
