@@ -44,7 +44,7 @@ Currently it supports MongoDB, MySQL, PostgreSQL and SQLite databases, but more 
   - [Debugging](debugging.md)
   - [Schema generator](schema-generator.md)
 - Usage with different drivers
-  - [Usage with MySQL and SQLite](usage-with-sql.md)
+  - [Usage with Postgres, MySQL and SQLite](usage-with-sql.md)
   - [Usage with MongoDB](usage-with-mongo.md)
 - Recipes
   - [Usage with NestJS](usage-with-nestjs.md)
