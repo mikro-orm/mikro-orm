@@ -27,7 +27,7 @@ compatible with Vanilla JavaScript.
   - [Using `EntityRepository` instead of `EntityManager`](repositories.md)
 - Fundamentals
   - [Identity Map and Request Context](identity-map.md)
-  - [Entity References](entity-references.md)
+  - [Entity References and `Reference<T>` Wrapper](entity-references.md)
   - [Using Entity Constructors](entity-constructors.md)
   - [Collections](collections.md)
   - [Unit of Work](unit-of-work.md)
@@ -39,7 +39,6 @@ compatible with Vanilla JavaScript.
   - [Using `QueryBuilder`](query-builder.md)
   - [Serializing](serializing.md)
   - [Updating Entity Values with `IEntity.assign()`](entity-helper.md)
-  - [Better Type-safety with `Reference<T>` Wrapper](reference-wrapper.md)
   - [Property Validation](property-validation.md)
   - [Lifecycle Hooks](lifecycle-hooks.md)
   - [Naming Strategy](naming-strategy.md)

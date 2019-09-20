@@ -35,7 +35,6 @@ There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit m
 - [Cascading persist and remove](https://mikro-orm.io/cascading/)
 - [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
 - [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
-- [Better Type-safety with `Reference<T>` Wrapper](https://mikro-orm.io/reference-wrapper/)
 - [Property Validation](https://mikro-orm.io/property-validation/)
 - [Lifecycle Hooks](https://mikro-orm.io/lifecycle-hooks/)
 - [Vanilla JS Support](https://mikro-orm.io/usage-with-js/)
