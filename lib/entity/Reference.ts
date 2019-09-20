@@ -1,5 +1,6 @@
 import { EntityMetadata, IEntityType, IPrimaryKey } from '../decorators';
 import { EntityManager } from '../EntityManager';
+import { Utils } from '../utils';
 
 export type IdentifiedReference<T extends IEntityType<T>, PK extends keyof T = 'id'> = { [K in PK]: T[K] } & Reference<T>;
 
@@ -21,7 +22,11 @@ export class Reference<T extends IEntityType<T>> {
     }
   }
 
-  static create<T extends IEntityType<T>, PK extends keyof T>(entity: T): IdentifiedReference<T, PK> {
+  static create<T extends IEntityType<T>, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+    if (entity instanceof Reference) {
+      return entity;
+    }
+
     return new Reference(entity) as IdentifiedReference<T, PK>;
   }
 

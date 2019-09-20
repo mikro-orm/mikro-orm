@@ -1422,6 +1422,10 @@ describe('EntityManagerMongo', () => {
     expect(ref.unwrap()).toBeInstanceOf(Author);
     expect(ref.unwrap().isInitialized()).toBe(false);
 
+    const ref2 = Reference.create(author);
+    const ref3 = Reference.create(ref2);
+    expect(ref2).toBe(ref3);
+
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);
     expect(ent.isInitialized()).toBe(true);
