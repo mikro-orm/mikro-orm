@@ -1,4 +1,5 @@
-import { EntityMetadata, EntityProperty, IEntity } from '../decorators';
+import { inspect } from 'util';
+import { EntityMetadata, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
 import { Utils } from './Utils';
 
 export class ValidationError extends Error {
@@ -113,6 +114,10 @@ export class ValidationError extends Error {
 
   static entityNotFound(name: string, path: string): ValidationError {
     return new ValidationError(`Entity '${name}' not found in ${path}`);
+  }
+
+  static findOneFailed(name: string, where: Record<string, any> | IPrimaryKey): ValidationError {
+    return new ValidationError(`${name} not found (${inspect(where)})`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {

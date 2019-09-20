@@ -5,9 +5,9 @@ import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { MetadataProvider, TypeScriptMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
-import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';
+import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity, IPrimaryKey } from '../decorators';
 import { Hydrator, ObjectHydrator } from '../hydration';
-import { Logger, LoggerNamespace, Utils } from '../utils';
+import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
@@ -26,6 +26,7 @@ export class Configuration {
     strict: false,
     // tslint:disable-next-line:no-console
     logger: console.log.bind(console),
+    findOneOrFailHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
@@ -201,6 +202,7 @@ export interface MikroORMOptions extends ConnectionOptions {
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   logger: (message: string) => void;
+  findOneOrFailHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlight: boolean;
   highlightTheme?: Record<string, string | string[]>;

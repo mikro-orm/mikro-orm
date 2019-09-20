@@ -8,6 +8,7 @@ const methods = {
   persistLater: jest.fn(),
   createQueryBuilder: jest.fn(),
   findOne: jest.fn(),
+  findOneOrFail: jest.fn(),
   find: jest.fn(),
   remove: jest.fn(),
   removeAndFlush: jest.fn(),
@@ -42,6 +43,8 @@ describe('EntityRepository', () => {
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
+    await repo.findOneOrFail('bar');
+    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.remove('bar');
@@ -84,6 +87,17 @@ describe('EntityRepository', () => {
     methods.findOne.mock.calls = [];
     await repo.findOne({ foo: 'bar' }, options);
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, options, undefined]);
+  });
+
+  test('findOneOrFail() supports calling with config object', async () => {
+    const options = {
+      populate: ['test'],
+      orderBy: { test: QueryOrder.DESC },
+      handler: () => new Error('Test'),
+    };
+    methods.findOneOrFail.mock.calls = [];
+    await repo.findOneOrFail({ foo: 'bar' }, options);
+    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, options, undefined]);
   });
 
 });

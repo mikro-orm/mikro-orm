@@ -109,6 +109,36 @@ console.log(author.name); // Jon Snow
 console.log(author.email); // undefined
 ```
 
+### Handling not found entities
+
+When you call `em.findOne()` and no entity is found based on your criteria, `null` will be 
+returned. If you rather have an `Error` instance thrown, you can use `em.findOneOrFail()`:
+
+```typescript
+const author = await orm.em.findOne(Author, { name: 'does-not-exist' });
+console.log(author === null); // true
+
+try {
+  const author = await orm.em.findOneOrFail(Author, { name: 'does-not-exist' });
+  // author will be always found here
+} catch (e) {
+  console.error('Not found', e);
+}
+```
+
+You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
+`failHandler` option in `findOneOrFail` call.
+
+```typescript
+try {
+  const author = await orm.em.findOneOrFail(Author, { name: 'does-not-exist' }, {
+    failHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => new Error(`Failed: ${entityName} in ${util.inspect(where)}`)
+  });
+} catch (e) {
+  console.error(e); // your custom error
+}
+```
+
 ## Type of fetched entities
 
 Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types.
@@ -167,6 +197,14 @@ and `offset`.
 
 Finds an entity by given `where` condition. You can use primary key as `where` value, then
 if the entity is already managed, no database call will be made. 
+
+---
+
+#### `findOneOrFail<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string, populate?: string[]): Promise<T>`
+
+Just like `findOne`, but throws when entity not found, so it always resolves to given entity. 
+You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
+`failHandler` option in `findOneOrFail` call.
 
 ---
 

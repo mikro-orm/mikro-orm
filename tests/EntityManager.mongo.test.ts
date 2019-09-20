@@ -1443,6 +1443,19 @@ describe('EntityManagerMongo', () => {
     }
   });
 
+  test('findOneOrFail', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOneOrFail(Author, author.id);
+    expect(a1).not.toBeNull();
+    await expect(orm.em.findOneOrFail(Author, 123)).rejects.toThrowError('Author not found (123)');
+    await expect(orm.em.findOneOrFail(Author, { name: '123' })).rejects.toThrowError('Author not found ({ name: \'123\' })');
+    await expect(orm.em.findOneOrFail(Author, 123, { failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
+    await expect(orm.em.findOneOrFail(Author, 123, { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

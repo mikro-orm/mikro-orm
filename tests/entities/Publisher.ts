@@ -33,7 +33,7 @@ export class Publisher {
 
 }
 
-export interface Publisher extends IEntity { }
+export interface Publisher extends IEntity<string> { }
 
 export enum PublisherType {
   LOCAL = 'local',
