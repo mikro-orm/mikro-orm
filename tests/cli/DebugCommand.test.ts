@@ -44,8 +44,8 @@ describe('DebugCommand', () => {
       [`   - ${process.cwd()}/path/orm-config.ts (found)`],
       [' - configuration found'],
       [' - will use `entitiesDirs` paths:'],
-      ['   - /usr/local/var/www/b4nan/mikro-orm/entities-1 (found)'],
-      ['   - /usr/local/var/www/b4nan/mikro-orm/entities-2 (found)'],
+      [`   - ${process.cwd()}/entities-1 (found)`],
+      [`   - ${process.cwd()}/entities-2 (found)`],
     ]);
 
     getConfiguration.mockResolvedValue(new Configuration({ entities: [FooBar, FooBaz] } as any, false));
