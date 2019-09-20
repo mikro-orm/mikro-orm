@@ -111,6 +111,21 @@ export class EntityManager {
     return entity;
   }
 
+  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOrFailOptions): Promise<T>;
+  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T>;
+  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOrFailOptions, orderBy?: QueryOrderMap): Promise<T> {
+    const entity = await this.findOne(entityName, where, populate as string[], orderBy);
+
+    if (!entity) {
+      const options = Utils.isObject<FindOneOrFailOptions>(populate) ? populate : {};
+      options.failHandler = options.failHandler || this.config.get('findOneOrFailHandler');
+      entityName = Utils.className(entityName);
+      throw options.failHandler!(entityName, where);
+    }
+
+    return entity;
+  }
+
   async transactional(cb: (em: EntityManager) => Promise<any>, ctx = this.transactionContext): Promise<any> {
     const em = this.fork(false);
     await em.getConnection().transactional(async trx => {
@@ -391,4 +406,8 @@ export interface FindOneOptions {
   lockVersion?: number | Date;
   refresh?: boolean;
   fields?: string[];
+}
+
+export interface FindOneOrFailOptions extends FindOneOptions {
+  failHandler?: (entityName: string, where: Record<string, any> | IPrimaryKey) => Error;
 }

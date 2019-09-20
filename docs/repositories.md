@@ -106,6 +106,14 @@ if the entity is already managed, no database call will be made.
 
 ---
 
+#### `findOneOrFail(where: FilterQuery<T> | string, populate?: string[]): Promise<T>`
+
+Just like `findOne`, but throws when entity not found, so it always resolves to given entity. 
+You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
+`failHandler` option in `findOneOrFail` call.
+
+---
+
 #### `merge(data: EntityData<T>): T`
 
 Adds given entity to current Identity Map. After merging, entity becomes managed. 

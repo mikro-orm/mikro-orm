@@ -1,4 +1,4 @@
-import { EntityManager, FindOneOptions, FindOptions } from '../EntityManager';
+import { EntityManager, FindOneOptions, FindOneOrFailOptions, FindOptions } from '../EntityManager';
 import { EntityData, EntityName, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryBuilder, QueryOrderMap } from '../query';
 import { FilterQuery, IdentifiedReference, Reference } from '..';
@@ -28,6 +28,12 @@ export class EntityRepository<T extends IEntityType<T>> {
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate?: FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null>; // tslint:disable-next-line:lines-between-class-members
   async findOne(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOneOptions = [], orderBy?: QueryOrderMap): Promise<T | null> {
     return this.em.findOne<T>(this.entityName, where, populate as string[], orderBy);
+  }
+
+  async findOneOrFail(where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T>; // tslint:disable-next-line:lines-between-class-members
+  async findOneOrFail(where: FilterQuery<T> | IPrimaryKey, populate?: FindOneOrFailOptions, orderBy?: QueryOrderMap): Promise<T>; // tslint:disable-next-line:lines-between-class-members
+  async findOneOrFail(where: FilterQuery<T> | IPrimaryKey, populate: string[] | FindOneOrFailOptions = [], orderBy?: QueryOrderMap): Promise<T> {
+    return this.em.findOneOrFail<T>(this.entityName, where, populate as string[], orderBy);
   }
 
   async find(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
