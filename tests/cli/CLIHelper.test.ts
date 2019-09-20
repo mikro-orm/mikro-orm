@@ -103,4 +103,11 @@ describe('CLIHelper', () => {
     }
   });
 
+  test('getConfigPaths', async () => {
+    (global as any).process.env.MIKRO_ORM_CLI = './override/orm-config.ts';
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './cli-config']);
+    delete (global as any).process.env.MIKRO_ORM_CLI;
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./cli-config']);
+  });
+
 });

@@ -81,8 +81,12 @@ export class CLIHelper {
     console.log(text);
   }
 
-  private static async getConfigPaths(): Promise<string[]> {
+  static async getConfigPaths(): Promise<string[]> {
     const paths: string[] = [];
+
+    if (process.env.MIKRO_ORM_CLI) {
+      paths.push(process.env.MIKRO_ORM_CLI);
+    }
 
     if (await pathExists(process.cwd() + '/package.json')) {
       const config = require(process.cwd() + '/package.json');
@@ -90,7 +94,7 @@ export class CLIHelper {
       paths.push(...(settings.configPaths || []));
     }
 
-    return [...paths, process.env.MIKRO_ORM_CLI || './cli-config'];
+    return [...paths, './cli-config'];
   }
 
 }

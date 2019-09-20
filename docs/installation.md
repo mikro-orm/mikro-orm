@@ -122,6 +122,10 @@ import { CONFIG } from './config';
 export = CONFIG.orm;
 ```
 
+> You can also use different names for this file, simply rename it in the `configPaths` array
+> your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path
+> to override `configPaths` value.
+
 Now you should be able to start using the CLI. All available commands are listed in the CLI help:
 
 ```shell script
