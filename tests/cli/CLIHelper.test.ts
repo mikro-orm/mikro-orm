@@ -17,7 +17,7 @@ describe('CLIHelper', () => {
   test('configures yargs instance', async () => {
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update']);
+    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update', 'debug']);
   });
 
   test('configures yargs instance [ts-node]', async () => {
@@ -28,7 +28,7 @@ describe('CLIHelper', () => {
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tsNodeMock).toHaveBeenCalled();
-    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update']);
+    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update', 'debug']);
     pathExistsMock.mockRestore();
   });
 
@@ -103,11 +103,29 @@ describe('CLIHelper', () => {
     }
   });
 
+  test('getSettings', async () => {
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'] = undefined;
+    pathExistsMock.mockResolvedValue(true);
+    await expect(CLIHelper.getSettings()).resolves.toEqual({});
+    pathExistsMock.mockRestore();
+  });
+
   test('getConfigPaths', async () => {
     (global as any).process.env.MIKRO_ORM_CLI = './override/orm-config.ts';
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './cli-config']);
     delete (global as any).process.env.MIKRO_ORM_CLI;
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./cli-config']);
+
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockReturnValue(Promise.resolve(true));
+    pkg['mikro-orm'] = { configPaths: ['orm-config'] };
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['orm-config', './cli-config']);
+
+    pathExistsMock.mockResolvedValue(false);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./cli-config']);
+    pathExistsMock.mockRestore();
   });
 
 });

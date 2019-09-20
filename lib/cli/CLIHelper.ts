@@ -7,6 +7,7 @@ import { Configuration, Utils } from '../utils';
 import { ClearCacheCommand } from './ClearCacheCommand';
 import { GenerateEntitiesCommand } from './GenerateEntitiesCommand';
 import { SchemaCommandFactory } from './SchemaCommandFactory';
+import { DebugCommand } from './DebugCommand';
 
 export class CLIHelper {
 
@@ -59,14 +60,15 @@ export class CLIHelper {
       .command(SchemaCommandFactory.create('create'))
       .command(SchemaCommandFactory.create('drop'))
       .command(SchemaCommandFactory.create('update'))
+      .command(new DebugCommand())
       .recommendCommands()
       .strict();
   }
 
-  private static async getSettings(): Promise<Settings> {
+  static async getSettings(): Promise<Settings> {
     if (await pathExists(process.cwd() + '/package.json')) {
       const config = require(process.cwd() + '/package.json');
-      return config['mikro-orm'];
+      return config['mikro-orm'] || {};
     }
 
     return {};
@@ -83,16 +85,13 @@ export class CLIHelper {
 
   static async getConfigPaths(): Promise<string[]> {
     const paths: string[] = [];
+    const settings = await CLIHelper.getSettings();
 
     if (process.env.MIKRO_ORM_CLI) {
       paths.push(process.env.MIKRO_ORM_CLI);
     }
 
-    if (await pathExists(process.cwd() + '/package.json')) {
-      const config = require(process.cwd() + '/package.json');
-      const settings = config['mikro-orm'] as Settings;
-      paths.push(...(settings.configPaths || []));
-    }
+    paths.push(...(settings.configPaths || []));
 
     return [...paths, './cli-config'];
   }

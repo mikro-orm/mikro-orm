@@ -13,6 +13,9 @@ checks:
   return-statements:
     config:
       threshold: 5
+  method-complexity:
+    config:
+      threshold: 6
 
 engines:
   duplication:
