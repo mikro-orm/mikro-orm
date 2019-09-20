@@ -86,7 +86,7 @@ argument.
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
-console.log(book.author.id); ok, returns the PK
+console.log(book.author.id); // ok, returns the PK
 ```
 
 You can also have non-standard primary key like `uuid`:
@@ -104,7 +104,7 @@ export class Book {
 }
 
 const book = await orm.em.findOne(Book, 1);
-console.log(book.author.uuid); ok, returns the PK
+console.log(book.author.uuid); // ok, returns the PK
 ```
 
 For MongoDB, defined the PK generic type argument as `'id' | '_id'` to access both `string` 
@@ -123,8 +123,8 @@ export class Book {
 }
 
 const book = await orm.em.findOne(Book, 1);
-console.log(book.author.id); ok, returns string PK
-console.log(book.author._id); ok, returns ObjectId PK
+console.log(book.author.id); // ok, returns string PK
+console.log(book.author._id); // ok, returns ObjectId PK
 ```
 
 > As opposed to `IEntity.init()` which always refreshes the entity, `Reference.load()` 
