@@ -153,6 +153,12 @@ export class Configuration {
     if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
     }
+
+    const notDirectory = this.options.entitiesDirs.find(dir => dir.match(/\.[jt]s$/));
+
+    if (notDirectory) {
+      throw new Error(`Please provide path to directory in \`entitiesDirs\`, found: '${notDirectory}'`);
+    }
   }
 
   private initDriver(): IDatabaseDriver {
