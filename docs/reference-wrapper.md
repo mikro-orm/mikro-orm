@@ -3,7 +3,7 @@
 
 # Better Type-safety with `Reference<T>` Wrapper
 
-When you define `@ManyToOne` and `@ManyToMany` properties on your entity, TypeScript compiler
+When you define `@ManyToOne` and `@OneToMany` properties on your entity, TypeScript compiler
 will think that desired entities are always loaded:
 
 ```typescript
