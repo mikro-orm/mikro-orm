@@ -89,7 +89,7 @@ export class Utils {
       }
 
       if (Utils.isEntity(entity[name]) || entity[name] as object instanceof Reference) {
-        return ret[prop.name] = ret[prop.name][pk()];
+        return ret[prop.name] = entity[prop.name][pk()];
       }
     });
 
