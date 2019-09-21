@@ -1,9 +1,9 @@
-import { NoopNamingStrategy } from '../lib/naming-strategy';
+import { EntityCaseNamingStrategy } from '../lib/naming-strategy';
 
-describe('NoopNamingStrategy', () => {
+describe('EntityCaseNamingStrategy', () => {
 
   test('should return entity/property name (almost) untouched', async () => {
-    const ns = new NoopNamingStrategy();
+    const ns = new EntityCaseNamingStrategy();
     expect(ns.classToTableName('BookTag')).toBe('BookTag');
     expect(ns.joinColumnName('bookTag')).toBe('bookTag');
     expect(ns.joinKeyColumnName('BookTag')).toBe('bookTag');

@@ -3,7 +3,7 @@ import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 /**
  * This strategy keeps original entity/property names for table/column.
  */
-export class NoopNamingStrategy extends AbstractNamingStrategy {
+export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
 
   classToTableName(entityName: string): string {
     return entityName;
