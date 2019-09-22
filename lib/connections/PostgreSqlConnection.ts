@@ -7,7 +7,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   getDefaultClientUrl(): string {
-    return 'postgre://postgres@127.0.0.1:5432';
+    return 'postgresql://postgres@127.0.0.1:5432';
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
