@@ -1,6 +1,7 @@
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
 import highlight from 'cli-highlight';
+import chalk from 'chalk';
 
 import { MikroORM } from '../MikroORM';
 import { Configuration, Utils } from '../utils';
@@ -50,7 +51,7 @@ export class CLIHelper {
 
     return yargs
       .scriptName('mikro-orm')
-      .version(require('../../package.json').version)
+      .version(CLIHelper.getORMVersion())
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .alias('v', 'version')
@@ -65,13 +66,34 @@ export class CLIHelper {
       .strict();
   }
 
-  static async getSettings(): Promise<Settings> {
+  static getORMVersion(): string {
+    return require('../../package.json').version;
+  }
+
+  static getNodeVersion(): string {
+    return process.versions.node;
+  }
+
+  static async getDriverDependencies(): Promise<string[]> {
+    try {
+      const config = await CLIHelper.getConfiguration();
+      return config.getDriver().getDependencies();
+    } catch {
+      return [];
+    }
+  }
+
+  static async getPackageConfig(): Promise<Record<string, any>> {
     if (await pathExists(process.cwd() + '/package.json')) {
-      const config = require(process.cwd() + '/package.json');
-      return config['mikro-orm'] || {};
+      return require(process.cwd() + '/package.json');
     }
 
     return {};
+  }
+
+  static async getSettings(): Promise<Settings> {
+    const config = await CLIHelper.getPackageConfig();
+    return config['mikro-orm'] || {};
   }
 
   static dump(text: string, config?: Configuration, language?: string): void {
@@ -94,6 +116,36 @@ export class CLIHelper {
     paths.push(...(settings.configPaths || []));
 
     return [...paths, './cli-config'];
+  }
+
+  static async dumpDependencies() {
+    CLIHelper.dump(' - dependencies:');
+    CLIHelper.dump(`   - mikro-orm ${chalk.green(CLIHelper.getORMVersion())}`);
+    CLIHelper.dump(`   - node ${chalk.green(CLIHelper.getNodeVersion())}`);
+
+    if (await pathExists(process.cwd() + '/package.json')) {
+      const drivers = await CLIHelper.getDriverDependencies();
+
+      for (const driver of drivers) {
+        CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
+      }
+
+      CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
+      CLIHelper.dump(' - package.json ' + chalk.green('found'));
+    } else {
+      CLIHelper.dump(' - package.json ' + chalk.red('not found'));
+    }
+  }
+
+  static async getModuleVersion(name: string): Promise<string> {
+    const path = process.cwd() + '/node_modules/' + name + '/package.json';
+
+    if (await pathExists(path)) {
+      const pkg = require(path);
+      return chalk.green(pkg.version);
+    }
+
+    return chalk.red('not-found');
   }
 
 }

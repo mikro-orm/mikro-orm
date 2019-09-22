@@ -347,6 +347,7 @@ describe('EntityManagerMongo', () => {
   test('should return mongo driver', async () => {
     const driver = orm.em.getDriver<MongoDriver>();
     expect(driver instanceof MongoDriver).toBe(true);
+    expect(driver.getDependencies()).toEqual(['mongo']);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().requiresNullableForAlteringColumn()).toBe(false); // test default Platform value (not used by mongo)

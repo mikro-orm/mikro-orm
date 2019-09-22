@@ -6,10 +6,22 @@ import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
 import { FilterQuery } from './IDatabaseDriver';
 import { QueryBuilder, QueryOrderMap } from '../query';
-import { Utils } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { LockMode } from '../unit-of-work';
+import { Platform } from '../platforms';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
+
+  protected readonly connection: C;
+  protected readonly replicas: C[] = [];
+  protected readonly platform: Platform;
+
+  protected constructor(config: Configuration, platform: Platform, connection: Constructor<C>, connector: string[]) {
+    super(config, connector);
+    this.connection = new connection(this.config);
+    this.replicas = this.createReplicas(conf => new connection(this.config, conf, 'read'));
+    this.platform = platform;
+  }
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
     const qb = this.createQueryBuilder(entityName, ctx);
@@ -139,3 +151,5 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
 }
+
+export type Constructor<T> = new (...args: any[]) => T;

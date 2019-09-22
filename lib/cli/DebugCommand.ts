@@ -11,13 +11,7 @@ export class DebugCommand implements CommandModule {
 
   async handler(args: Arguments) {
     CLIHelper.dump(`Current ${chalk.cyan('MikroORM')} CLI configuration`);
-
-    if (await pathExists(process.cwd() + '/package.json')) {
-      CLIHelper.dump(' - package.json ' + chalk.green('found'));
-    } else {
-      CLIHelper.dump(' - package.json ' + chalk.red('not found'));
-    }
-
+    await CLIHelper.dumpDependencies();
     const settings = await CLIHelper.getSettings();
 
     if (settings.useTsNode) {

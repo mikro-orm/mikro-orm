@@ -3,7 +3,7 @@ import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
 import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
 import { QueryOrderMap } from '../query';
-import { Utils } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { QueryResult } from '../connections';
 import { LockMode } from '../unit-of-work';
@@ -12,6 +12,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   protected readonly connection = new MongoConnection(this.config);
   protected readonly platform = new MongoPlatform();
+
+  protected constructor(config: Configuration) {
+    super(config, ['mongo']);
+  }
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: QueryOrderMap, limit: number, offset: number): Promise<T[]> {
     where = this.renameFields(entityName, where);

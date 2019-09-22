@@ -2,7 +2,8 @@ const dump = jest.fn();
 const getSettings = jest.fn();
 const getConfigPaths = jest.fn();
 const getConfiguration = jest.fn();
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { dump, getSettings, getConfigPaths, getConfiguration } }));
+const dumpDependencies = jest.fn();
+jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { dump, getSettings, getConfigPaths, getConfiguration, dumpDependencies } }));
 
 (global as any).process.env.FORCE_COLOR = 0;
 (global as any).console.log = jest.fn();
@@ -23,9 +24,9 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({} as any, false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - package.json found'],
       [' - searched config paths:'],
       [`   - ${process.cwd()}/path/orm-config.ts (found)`],
       [' - configuration found'],
@@ -36,9 +37,9 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(2);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - package.json found'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${process.cwd()}/path/orm-config.ts (found)`],
@@ -51,9 +52,9 @@ describe('DebugCommand', () => {
     getConfiguration.mockResolvedValue(new Configuration({ entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(3);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - package.json found'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${process.cwd()}/path/orm-config.ts (found)`],
@@ -64,9 +65,9 @@ describe('DebugCommand', () => {
     getConfiguration.mockRejectedValueOnce(new Error('test error message'));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(4);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - package.json found'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${process.cwd()}/path/orm-config.ts (found)`],
@@ -76,9 +77,9 @@ describe('DebugCommand', () => {
     pathExistsMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(5);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
-      [' - package.json not found'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
       [`   - ${process.cwd()}/path/orm-config.ts (not found)`],

@@ -15,7 +15,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly logger = this.config.getLogger();
   protected metadata: MetadataStorage;
 
-  constructor(protected readonly config: Configuration) { }
+  protected constructor(protected readonly config: Configuration,
+                        protected readonly dependencies: string[]) { }
 
   abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
@@ -104,6 +105,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
     this.connection.setMetadata(metadata);
+  }
+
+  getDependencies(): string[] {
+    return this.dependencies;
   }
 
   protected getPrimaryKeyField(entityName: string): string {
