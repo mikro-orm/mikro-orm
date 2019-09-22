@@ -109,7 +109,7 @@ export class QueryBuilder {
   where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName));
+    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName, false, false));
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -221,7 +221,7 @@ export class QueryBuilder {
     }
 
     this.helper.getLockSQL(qb, this.lockMode);
-    this.helper.finalize(this.type, qb, this.metadata.get(this.entityName));
+    this.helper.finalize(this.type, qb, this.metadata.get(this.entityName, false, false));
 
     return qb;
   }
@@ -237,7 +237,7 @@ export class QueryBuilder {
   async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
-    const meta = this.metadata.get(this.entityName);
+    const meta = this.metadata.get(this.entityName, false, false);
 
     if (!mapResults) {
       return res;
@@ -288,7 +288,7 @@ export class QueryBuilder {
 
   private processWhere(cond: any): any {
     cond = Object.assign({}, cond); // copy first
-    const meta = this.metadata.get(this.entityName);
+    const meta = this.metadata.get(this.entityName, false, false);
 
     Object.keys(cond).forEach(field => {
       this.helper.replaceEmptyInConditions(cond, field);

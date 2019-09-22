@@ -1,5 +1,5 @@
 import { EntityMetadata, IEntityType } from '../decorators';
-import { Utils } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';
 
@@ -34,7 +34,11 @@ export class MetadataStorage {
     return this.metadata;
   }
 
-  get<T extends IEntityType<T> = any>(entity: string, init = false): EntityMetadata<T> {
+  get<T extends IEntityType<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
+    if (entity && !this.metadata[entity] && validate && !init) {
+      throw ValidationError.missingMetadata(entity);
+    }
+
     if (!this.metadata[entity] && init) {
       this.metadata[entity] = { properties: {} } as EntityMetadata;
     }

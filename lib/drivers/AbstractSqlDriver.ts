@@ -96,7 +96,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await qb.update(data).where(where).execute('run', false);
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName))!, collections, ctx);
+    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName, false, false))!, collections, ctx);
 
     return res;
   }
@@ -115,7 +115,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
-    if (!this.metadata.get(entityName)) {
+    if (!this.metadata.get(entityName, false, false)) {
       return {};
     }
 
@@ -135,7 +135,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>, ctx?: Transaction) {
-    if (!this.metadata.get(entityName)) {
+    if (!this.metadata.get(entityName, false, false)) {
       return;
     }
 

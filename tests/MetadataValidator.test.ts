@@ -103,4 +103,9 @@ describe('MetadataValidator', () => {
     })).rejects.toThrowError(`Entity 'Author2' extends unknown base entity 'BaseEntity2', please make sure to provide it in 'entities' array when initializing the ORM`);
   });
 
+  test('MetadataStorage.get throws when no metadata found', async () => {
+    const storage = new MetadataStorage({});
+    expect(() => storage.get('Test')).toThrowError('Metadata for entity Test not found');
+  });
+
 });

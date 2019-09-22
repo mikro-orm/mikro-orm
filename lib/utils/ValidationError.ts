@@ -120,6 +120,10 @@ export class ValidationError extends Error {
     return new ValidationError(`${name} not found (${inspect(where)})`);
   }
 
+  static missingMetadata(entity: string): ValidationError {
+    return new ValidationError(`Metadata for entity ${entity} not found`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.name}.${prop.name} ${message}`);
   }
