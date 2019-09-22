@@ -173,6 +173,10 @@ describe('Utils', () => {
     expect(Utils.normalizePath('/test')).toBe('/test');
   });
 
+  test('globby wrapper', async () => {
+    await expect(Utils.globby('LIC*')).resolves.toEqual(['LICENSE']);
+  });
+
   test('lookup path from decorator', () => {
     // with tslib, compiled
     const stack1 = [

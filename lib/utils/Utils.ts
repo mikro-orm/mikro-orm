@@ -1,5 +1,6 @@
 import fastEqual from 'fast-deep-equal';
 import clone from 'clone';
+import globby, { GlobbyOptions } from 'globby';
 import { isAbsolute, normalize } from 'path';
 
 import { MetadataStorage } from '../metadata';
@@ -279,6 +280,13 @@ export class Utils {
 
   static randomInt(min: number, max: number): number {
     return Math.round(Math.random() * (max - min)) + min;
+  }
+
+  /**
+   * wrapped to allow mocking via jest.spyOn()
+   */
+  static async globby(path: string, options: GlobbyOptions = {}): Promise<string[]> {
+    return globby(path, options);
   }
 
 }

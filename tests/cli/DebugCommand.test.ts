@@ -9,7 +9,7 @@ jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { dump, getSettings, ge
 (global as any).console.log = jest.fn();
 
 import { DebugCommand } from '../../lib/cli/DebugCommand';
-import { Configuration } from '../../lib/utils';
+import { Configuration, Utils } from '../../lib/utils';
 import { FooBar } from '../entities/FooBar';
 import { FooBaz } from '../entities/FooBaz';
 
@@ -18,8 +18,8 @@ describe('DebugCommand', () => {
   test('handler', async () => {
     const cmd = new DebugCommand();
 
-    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockResolvedValue(true);
+    const globbyMock = jest.spyOn(Utils, 'globby');
+    globbyMock.mockResolvedValue(['found']);
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration({} as any, false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
@@ -33,7 +33,7 @@ describe('DebugCommand', () => {
     ]);
 
     getSettings.mockResolvedValue({ useTsNode: true });
-    pathExistsMock.mockResolvedValue((path: string) => path.endsWith('entities-1'));
+    globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts') ? ['found'] : []);
     getConfiguration.mockResolvedValue(new Configuration({ entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
@@ -46,7 +46,7 @@ describe('DebugCommand', () => {
       [' - configuration found'],
       [' - will use `entitiesDirs` paths:'],
       [`   - ${process.cwd()}/entities-1 (found)`],
-      [`   - ${process.cwd()}/entities-2 (found)`],
+      [`   - ${process.cwd()}/entities-2 (not found)`],
     ]);
 
     getConfiguration.mockResolvedValue(new Configuration({ entities: [FooBar, FooBaz] } as any, false));
@@ -74,7 +74,7 @@ describe('DebugCommand', () => {
       ['- configuration not found (test error message)'],
     ]);
 
-    pathExistsMock.mockResolvedValue(false);
+    globbyMock.mockResolvedValue([]);
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(5);
@@ -86,7 +86,7 @@ describe('DebugCommand', () => {
       [' - configuration found'],
       [' - will use `entities` array (contains 2 items)'],
     ]);
-    pathExistsMock.mockRestore();
+    globbyMock.mockRestore();
   });
 
 });
