@@ -41,9 +41,9 @@ export class DebugCommand implements CommandModule {
   private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', onlyDirectories = false): Promise<void> {
     for (let path of paths) {
       path = Utils.normalizePath(path);
-      const found = await Utils.globby(path, { onlyDirectories });
+      const found = await Utils.pathExists(path, { onlyDirectories });
 
-      if (found.length > 0) {
+      if (found) {
         CLIHelper.dump(`   - ${path} (${chalk.green('found')})`);
       } else {
         CLIHelper.dump(`   - ${path} (${chalk[failedColor]('not found')})`);

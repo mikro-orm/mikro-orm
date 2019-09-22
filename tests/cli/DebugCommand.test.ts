@@ -18,8 +18,8 @@ describe('DebugCommand', () => {
   test('handler', async () => {
     const cmd = new DebugCommand();
 
-    const globbyMock = jest.spyOn(Utils, 'globby');
-    globbyMock.mockResolvedValue(['found']);
+    const globbyMock = jest.spyOn(Utils, 'pathExists');
+    globbyMock.mockResolvedValue(true);
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration({} as any, false));
     getConfigPaths.mockReturnValue(['./path/orm-config.ts']);
@@ -33,7 +33,7 @@ describe('DebugCommand', () => {
     ]);
 
     getSettings.mockResolvedValue({ useTsNode: true });
-    globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts') ? ['found'] : []);
+    globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
     getConfiguration.mockResolvedValue(new Configuration({ entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
@@ -74,7 +74,7 @@ describe('DebugCommand', () => {
       ['- configuration not found (test error message)'],
     ]);
 
-    globbyMock.mockResolvedValue([]);
+    globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(5);
