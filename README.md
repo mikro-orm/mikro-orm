@@ -72,7 +72,7 @@ $ yarn add mikro-orm mongodb # for mongo
 $ yarn add mikro-orm mysql2  # for mysql/mariadb
 $ yarn add mikro-orm mariadb # for mysql/mariadb
 $ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite  # for sqlite
+$ yarn add mikro-orm sqlite3 # for sqlite
 ```
 
 or
@@ -82,7 +82,7 @@ $ npm i -s mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm mysql2  # for mysql/mariadb
 $ npm i -s mikro-orm mariadb # for mysql/mariadb
 $ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite  # for sqlite
+$ npm i -s mikro-orm sqlite3 # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
