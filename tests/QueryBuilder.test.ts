@@ -317,6 +317,13 @@ describe('QueryBuilder', () => {
 
   test('select by 1:1 inversed', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2);
+    qb.select('*').where({ id: 123 }).populate(['bar']);
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ?');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('select by 1:1 inversed (search by association)', async () => {
+    const qb = orm.em.createQueryBuilder(FooBaz2);
     qb.select('*').where({ bar: 123 });
     expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
     expect(qb.getParams()).toEqual([123]);

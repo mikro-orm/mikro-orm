@@ -35,7 +35,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
-    const pk = this.metadata.get(entityName).primaryKey;
+    const meta = this.metadata.get(entityName);
+    const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
       where = { [pk]: where };
@@ -44,6 +45,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (fields && !fields.includes(pk)) {
       fields.unshift(pk);
     }
+
+    const toPopulate = Object.values(meta.properties)
+      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
+      .map(prop => prop.name);
+    populate.push(...toPopulate);
 
     return this.createQueryBuilder(entityName, ctx)
       .select(fields || '*')
