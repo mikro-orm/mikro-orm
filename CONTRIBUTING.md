@@ -15,12 +15,12 @@ or [Stack overflow](https://stackoverflow.com/tags/mikro-orm/).
 
 ## Found a bug?
 
-If you find a bug in the source code, you can help by [submitting an issue](https://github.com/B4nan/mikro-orm/issues/new)
-or even better, by [submitting a Pull Request](https://github.com/B4nan/mikro-orm/pulls) with a fix.
+If you find a bug in the source code, you can help by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new)
+or even better, by [submitting a Pull Request](https://github.com/mikro-orm/mikro-orm/pulls) with a fix.
 
 ## Missing a feature?
 
-You can *request* a new feature by [submitting an issue](https://github.com/B4nan/mikro-orm/issues/new) to this GitHub 
+You can *request* a new feature by [submitting an issue](https://github.com/mikro-orm/mikro-orm/issues/new) to this GitHub 
 Repository. If you would like to *implement* a new feature, please submit an issue with a proposal for your work first, 
 so we can discuss what is the best way to implement, as well as to be sure nobody else works on that already.
 
@@ -38,7 +38,7 @@ is wrong. This will help to understand and fix the issue faster.
 
 Before you submit your pull request consider the following guidelines:
 
-- Search [GitHub](https://github.com/b4nan/mikro-orm/pulls) for an open or closed PR
+- Search [GitHub](https://github.com/mikro-orm/mikro-orm/pulls) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
 
 - Fork the project, install NPM dependencies and start docker to have all databases ready:
@@ -95,11 +95,11 @@ The commit message format is borrowed from Angular projects and you can find
 
 ## CI
 
-We automatically run all pull requests through [Travis CI](https://travis-ci.com/B4nan/mikro-orm).
+We automatically run all pull requests through [Travis CI](https://travis-ci.com/mikro-orm/mikro-orm).
 
 - The test suite is ran against MongoDB, MySQL, PostgreSQL and SQLite on all supported Node.JS versions (`yarn test`).
 - The code is validated against our Coding Standard (`yarn lint`).
-- The code is checked by a static analysis tool ([codeclimate.com](https://codeclimate.com/github/B4nan/mikro-orm)).
+- The code is checked by a static analysis tool ([codeclimate.com](https://codeclimate.com/github/mikro-orm/mikro-orm)).
 
 If you break the tests, we cannot merge your code, so please make sure that your code is working before opening a pull request.
 
