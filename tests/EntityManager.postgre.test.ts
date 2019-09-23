@@ -91,7 +91,7 @@ describe('EntityManagerPostgre', () => {
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
     const conn2 = new PostgreSqlConnection(new Configuration({ type: 'postgresql', port: 5433 } as any, false));
-    await expect(conn2.getClientUrl()).toBe('postgre://postgres@127.0.0.1:5433');
+    await expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
