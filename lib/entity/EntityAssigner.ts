@@ -8,9 +8,9 @@ import { Reference } from './Reference';
 
 export class EntityAssigner {
 
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): void;
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): void;
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): void {
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
+  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
     const meta = entity.__em.getMetadata().get(entity.constructor.name);
     const props = meta.properties;
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
@@ -40,6 +40,8 @@ export class EntityAssigner {
         entity[prop as keyof T] = value;
       }
     });
+
+    return entity;
   }
 
   private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
