@@ -906,6 +906,14 @@ describe('EntityManagerPostgre', () => {
     expect(b.createdAt).toBeDefined();
     expect(b.createdAt).toBeInstanceOf(Date);
 
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    orm.em.config.set('debug', true);
+    await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
+    orm.em.config.set('debug', ['query']);
+
     await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by PostgreSqlDriver driver');
   });
 

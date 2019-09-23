@@ -1,6 +1,8 @@
 import fastEqual from 'fast-deep-equal';
 import clone from 'clone';
+import globby, { GlobbyOptions } from 'globby';
 import { isAbsolute, normalize } from 'path';
+import { pathExists } from 'fs-extra';
 
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
@@ -279,6 +281,15 @@ export class Utils {
 
   static randomInt(min: number, max: number): number {
     return Math.round(Math.random() * (max - min)) + min;
+  }
+
+  static async pathExists(path: string, options: GlobbyOptions = {}): Promise<boolean> {
+    if (globby.hasMagic(path)) {
+      const found = await globby(path, options);
+      return found.length > 0;
+    }
+
+    return pathExists(path);
   }
 
 }

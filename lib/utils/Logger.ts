@@ -3,7 +3,7 @@ import chalk from 'chalk';
 export class Logger {
 
   constructor(private readonly logger: (message: string) => void,
-              private debugMode: boolean | LoggerNamespace[] = false) { }
+              public debugMode: boolean | LoggerNamespace[] = false) { }
 
   log(namespace: LoggerNamespace, message: string): void {
     if (!this.debugMode) {
@@ -23,4 +23,4 @@ export class Logger {
 
 }
 
-export type LoggerNamespace = 'query' | 'discovery' | 'info';
+export type LoggerNamespace = 'query' | 'query-params' | 'discovery' | 'info';

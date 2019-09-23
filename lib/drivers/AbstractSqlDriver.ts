@@ -35,7 +35,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
-    const pk = this.metadata.get(entityName).primaryKey;
+    const meta = this.metadata.get(entityName);
+    const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
       where = { [pk]: where };
@@ -44,6 +45,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (fields && !fields.includes(pk)) {
       fields.unshift(pk);
     }
+
+    const toPopulate = Object.values(meta.properties)
+      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
+      .map(prop => prop.name);
+    populate.push(...toPopulate);
 
     return this.createQueryBuilder(entityName, ctx)
       .select(fields || '*')
@@ -90,7 +96,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await qb.update(data).where(where).execute('run', false);
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName))!, collections, ctx);
+    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName, false, false))!, collections, ctx);
 
     return res;
   }
@@ -109,7 +115,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
-    if (!this.metadata.get(entityName)) {
+    if (!this.metadata.get(entityName, false, false)) {
       return {};
     }
 
@@ -129,7 +135,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>, ctx?: Transaction) {
-    if (!this.metadata.get(entityName)) {
+    if (!this.metadata.get(entityName, false, false)) {
       return;
     }
 

@@ -6,7 +6,7 @@ import { Configuration } from '../utils';
 export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
 
   constructor(config: Configuration) {
-    super(config, new SqlitePlatform(), SqliteConnection, ['knex', 'sqlite']);
+    super(config, new SqlitePlatform(), SqliteConnection, ['knex', 'sqlite3']);
   }
 
 }

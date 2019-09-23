@@ -15,7 +15,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'mysql', // or 'sqlite' or 'postgresql'
+  type: 'mysql', // or 'sqlite' or 'postgresql' or 'mariadb'
 });
 ```
 

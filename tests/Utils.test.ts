@@ -173,6 +173,13 @@ describe('Utils', () => {
     expect(Utils.normalizePath('/test')).toBe('/test');
   });
 
+  test('pathExists wrapper', async () => {
+    await expect(Utils.pathExists('LIC*')).resolves.toEqual(true);
+    await expect(Utils.pathExists('tests')).resolves.toEqual(true);
+    await expect(Utils.pathExists('tests/**/*.ts')).resolves.toEqual(true);
+    await expect(Utils.pathExists('**/tests', { onlyDirectories: true })).resolves.toEqual(true);
+  });
+
   test('lookup path from decorator', () => {
     // with tslib, compiled
     const stack1 = [

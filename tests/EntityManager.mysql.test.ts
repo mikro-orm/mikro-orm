@@ -697,17 +697,24 @@ describe('EntityManagerMySql', () => {
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
 
-    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
+    const b0 = (await orm.em.findOne(FooBaz2, { id: baz.id }))!;
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(b0.bar).toBeDefined();
+    expect(b0.bar).toBeInstanceOf(FooBar2);
+    expect(b0.bar.isInitialized()).toBe(false);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar.id).toBe(bar.id);
     expect(b1.toJSON()).toMatchObject({ bar: bar.toJSON() });
     orm.em.clear();
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, ['bar']))!;
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
+    expect(mock.mock.calls[4][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar.id).toBe(bar.id);
     expect(b2.toJSON()).toMatchObject({ bar: bar.toJSON() });
@@ -1271,7 +1278,7 @@ describe('EntityManagerMySql', () => {
     });
 
     expect(mock.mock.calls[11][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[12][0]).toMatch(/select `e0`.* from `book2` as `e0` where `e0`.`title` = \?.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[12][0]).toMatch(/select `e0`.*, `e1`\.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`title` = \?.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[13][0]).toMatch(/update `author2` set `name` = \?, `favourite_book_uuid_pk` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
   });

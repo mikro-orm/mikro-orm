@@ -31,7 +31,7 @@ export interface IEntity<K = number | string> {
   init(populated?: boolean, lockMode?: LockMode): Promise<this>;
   toObject(ignoreFields?: string[]): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
-  assign(data: any, options?: AssignOptions | boolean): void;
+  assign(data: any, options?: AssignOptions | boolean): this;
   __uuid: string;
   __meta: EntityMetadata;
   __em: EntityManager;
@@ -107,5 +107,5 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   properties: { [K in keyof T & string]: EntityProperty<T> };
   customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
-  prototype: EntityClass<T> & IEntity;
+  prototype: T;
 }

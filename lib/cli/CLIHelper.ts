@@ -19,7 +19,8 @@ export class CLIHelper {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        return new Configuration(require(path));
+        const config = require(path);
+        return new Configuration(config.default || config);
       }
     }
 

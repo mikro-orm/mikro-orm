@@ -26,8 +26,8 @@ export class EntityHelper {
     EntityHelper.definePrimaryKeyProperties(meta);
 
     if (!meta.prototype.assign) { // assign can be overridden
-      meta.prototype.assign = function (data: EntityData<T>, options?: AssignOptions): void {
-        EntityAssigner.assign(this, data, options);
+      meta.prototype.assign = function (data: EntityData<T>, options?: AssignOptions): T {
+        return EntityAssigner.assign(this, data, options);
       };
     }
 

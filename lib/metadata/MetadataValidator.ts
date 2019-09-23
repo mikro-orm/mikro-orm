@@ -49,7 +49,7 @@ export class MetadataValidator {
     }
 
     // references do have type of known entity
-    if (!metadata.get(prop.type)) {
+    if (!metadata.get(prop.type, false, false)) {
       throw ValidationError.fromWrongTypeDefinition(meta, prop);
     }
   }
