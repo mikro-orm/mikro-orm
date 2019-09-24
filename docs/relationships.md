@@ -1,7 +1,7 @@
 ---
 ---
 
-# Modelling Entity Relationships
+# Modeling Entity Relationships
 
 There are 4 types of entity relationships in MikroORM: 
 
@@ -14,6 +14,9 @@ Relations can be unidirectional and bidirectional. Unidirectional are defined on
 side (the owning side). Bidirectional are defined on both sides, while one is owning side 
 (where references are store), marked by `inversedBy` attribute pointing to the inverse side.
 On the inversed side we define it with `mappedBy` attribute pointing back to the owner:
+
+> When modeling bidirectional relationship, you can also omit the `inversedBy` attribute, 
+> defining `mappedBy` on the inverse side is enough as it will be auto-wired. 
 
 ## ManyToOne
 
@@ -88,13 +91,17 @@ that the foreign key column is also unique.
 @Entity()
 export class User {
 
+  // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
+  @OneToOne()
+  bestFriend1: User;
+
   // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
   @OneToOne({ inversedBy: 'bestFriend1', orphanRemoval: true })
-  bestFriend1: User;
+  bestFriend2: User;
 
   // when defining it like this, you need to specifically mark the owning side with `owner: true`
   @OneToOne(() => User, user => user.bestFriend2, { owner: true, orphanRemoval: true })
-  bestFriend2: User;
+  bestFriend3: User;
 
 }
 ```
@@ -129,7 +136,8 @@ Here are examples of how you can define ManyToMany relationship:
 @Entity()
 export class Book {
 
-  @ManyToMany(() => BookTag, 'books', { owner: true })
+  // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
+  @ManyToMany(() => BookTag)
   tags1 = new Collection<BookTag>(this);
 
   @ManyToMany(() => BookTag, 'books', { owner: true })
@@ -137,6 +145,9 @@ export class Book {
 
   @ManyToMany(() => BookTag, 'books', { owner: true })
   tags3 = new Collection<BookTag>(this);
+
+  @ManyToMany(() => BookTag, 'books', { owner: true })
+  tags4 = new Collection<BookTag>(this);
 
   // to define uni-directional many to many, simply provide only 
   @ManyToMany(() => Author)
@@ -149,10 +160,11 @@ export class Book {
 
 ```typescript
 @Entity()
-export class Book {
+export class BookTag {
 
-  @ManyToMany(() => BookTag, 'books', { owner: true })
-  tags = new Collection<BookTag>(this);
+  // inverse side has to point to the owning side via `mappedBy` attribute/parameter
+  @ManyToMany(() => Book, book => book.tags)
+  books = new Collection<Book>(this);
 
 }
 ```

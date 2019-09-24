@@ -10,7 +10,7 @@ export class FooBaz2 {
   @Property()
   name: string;
 
-  @OneToOne({ mappedBy: 'baz' })
+  @OneToOne(() => FooBar2, 'baz')
   bar: FooBar2;
 
   @Property({ version: true })

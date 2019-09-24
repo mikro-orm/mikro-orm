@@ -11,7 +11,7 @@ export class FooBar2 extends BaseEntity22 {
   @Property()
   name: string;
 
-  @OneToOne({ inversedBy: 'bar', orphanRemoval: true })
+  @OneToOne({ orphanRemoval: true })
   baz: FooBaz2;
 
   @OneToOne({ owner: true })

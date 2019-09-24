@@ -42,8 +42,10 @@ export class MetadataDiscovery {
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
+    filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
 
     const diff = Date.now() - startTime;
@@ -203,14 +205,6 @@ export class MetadataDiscovery {
   }
 
   private processEntity(meta: EntityMetadata): EntityMetadata[] {
-    this.defineBaseEntityProperties(meta);
-
-    // init factory fields first to simplify validation
-    Object.values(meta.properties).forEach(prop => {
-      this.initFactoryField(prop, 'mappedBy');
-      this.initFactoryField(prop, 'inversedBy');
-    });
-
     this.validator.validateEntityDefinition(this.metadata, meta.name);
 
     Object.values(meta.properties).forEach(prop => {
@@ -234,13 +228,15 @@ export class MetadataDiscovery {
     return ret;
   }
 
-  private initFactoryField(prop: EntityProperty, type: 'mappedBy' | 'inversedBy'): void {
-    const value = prop[type] as string | Function;
+  private initFactoryField(prop: EntityProperty): void {
+    ['mappedBy', 'inversedBy'].forEach(type => {
+      const value = prop[type] as string | Function;
 
-    if (value instanceof Function) {
-      const meta2 = this.metadata.get(prop.type);
-      prop[type] = value(meta2.properties as any).name;
-    }
+      if (value instanceof Function) {
+        const meta2 = this.metadata.get(prop.type);
+        prop[type] = value(meta2.properties as any).name;
+      }
+    });
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata | undefined {
@@ -287,6 +283,19 @@ export class MetadataDiscovery {
     this.initUnsigned(ret);
 
     return ret;
+  }
+
+  private autoWireBidirectionalProperties(meta: EntityMetadata): void {
+    Object.values(meta.properties)
+      .filter(prop => prop.reference !== ReferenceType.SCALAR && !prop.owner && prop.mappedBy)
+      .forEach(prop => {
+        const meta2 = this.metadata.get(prop.type);
+        const prop2 = meta2.properties[prop.mappedBy];
+
+        if (!prop2.inversedBy) {
+          prop2.inversedBy = prop.name;
+        }
+      });
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): void {
