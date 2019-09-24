@@ -57,9 +57,9 @@ export class EntityManager {
     return new QueryBuilder(entityName, this.metadata, this.driver as AbstractSqlDriver, this.transactionContext, alias, type);
   }
 
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
