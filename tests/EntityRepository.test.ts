@@ -10,6 +10,7 @@ const methods = {
   findOne: jest.fn(),
   findOneOrFail: jest.fn(),
   find: jest.fn(),
+  findAndCount: jest.fn(),
   remove: jest.fn(),
   removeAndFlush: jest.fn(),
   removeLater: jest.fn(),
@@ -41,6 +42,8 @@ describe('EntityRepository', () => {
     expect(methods.persistLater.mock.calls[0]).toEqual([e]);
     await repo.find({ foo: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
+    await repo.findAndCount({ foo: 'bar' });
+    expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { foo: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.findOneOrFail('bar');

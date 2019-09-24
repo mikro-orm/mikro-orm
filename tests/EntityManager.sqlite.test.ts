@@ -577,7 +577,7 @@ describe('EntityManagerSqlite', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag3);
+    tags = await orm.em.find(BookTag3, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);

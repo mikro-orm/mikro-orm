@@ -771,7 +771,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag2);
+    tags = await orm.em.find(BookTag2, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book2\[] of entity BookTag2\[\d+] not initialized/);
@@ -1216,6 +1216,29 @@ describe('EntityManagerMySql', () => {
     expect(god).toBeInstanceOf(Author2);
     expect(god.age).toBeNull();
     expect(god.born).toBeNull();
+  });
+
+  test('find and count', async () => {
+    for (let i = 1; i <= 30; i++) {
+      orm.em.persist(new Author2('God ' + i, `hello-${i}@heaven.god`));
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    const [authors1, count1] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 10 });
+    expect(authors1).toHaveLength(10);
+    expect(count1).toBe(30);
+    expect(authors1[0]).toBeInstanceOf(Author2);
+    expect(authors1[0].name).toBe('God 11');
+    expect(authors1[9].name).toBe('God 20');
+    orm.em.clear();
+
+    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25 });
+    expect(authors2).toHaveLength(5);
+    expect(count2).toBe(30);
+    expect(authors2[0].name).toBe('God 26');
+    expect(authors2[4].name).toBe('God 30');
   });
 
   test('query highlighting', async () => {

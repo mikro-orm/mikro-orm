@@ -622,7 +622,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag2);
+    tags = await orm.em.find(BookTag2, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book2\[] of entity BookTag2\[\d+] not initialized/);

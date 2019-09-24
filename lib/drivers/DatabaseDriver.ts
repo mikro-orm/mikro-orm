@@ -28,7 +28,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
+  abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);

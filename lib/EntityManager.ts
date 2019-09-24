@@ -82,6 +82,15 @@ export class EntityManager {
     return ret;
   }
 
+  async findAndCount<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<[T[], number]>;
+  async findAndCount<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]>;
+  async findAndCount<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]> {
+    const entities = await this.find(entityName, where, populate as string[], orderBy, limit, offset);
+    const count = await this.count(entityName, where);
+
+    return [entities, count];
+  }
+
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOptions): Promise<T | null>;
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T | null>;
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {

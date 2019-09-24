@@ -472,7 +472,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag);
+    tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);

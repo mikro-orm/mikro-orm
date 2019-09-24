@@ -42,6 +42,12 @@ export class EntityRepository<T extends IEntityType<T>> {
     return this.em.find<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
   }
 
+  async findAndCount(where: FilterQuery<T> | IPrimaryKey, options?: FindOptions): Promise<[T[], number]>; // tslint:disable-next-line:lines-between-class-members
+  async findAndCount(where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]>; // tslint:disable-next-line:lines-between-class-members
+  async findAndCount(where: FilterQuery<T> | IPrimaryKey, populate: string[] | boolean | FindOptions = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<[T[], number]> {
+    return this.em.findAndCount<T>(this.entityName, where as FilterQuery<T>, populate as string[], orderBy, limit, offset);
+  }
+
   async findAll(options?: FindOptions): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
   async findAll(populate?: string[] | boolean | true, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>; // tslint:disable-next-line:lines-between-class-members
   async findAll(populate: string[] | boolean | true | FindOptions = [], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {

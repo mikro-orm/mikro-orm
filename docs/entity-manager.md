@@ -193,6 +193,12 @@ and `offset`.
 
 ---
 
+#### `findAndCount<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<[T[], number]>`
+
+Combination of `find` and `count` methods. 
+
+---
+
 #### `findOne<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
 
 Finds an entity by given `where` condition. You can use primary key as `where` value, then

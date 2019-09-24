@@ -63,7 +63,7 @@ or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/
 
 ## EntityRepository\<T\> API
 
-#### `find(where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
+#### `find(where: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
 
 Returns array of entities found for given condition. You can specify `FindOptions` to request
 population of referenced entities or control the pagination:
@@ -79,7 +79,14 @@ export interface FindOptions {
 
 ---
 
-#### `find(where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+#### `find(where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+
+Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
+and `offset`.
+
+---
+
+#### `findAndCount(where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
 Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
 and `offset`.
