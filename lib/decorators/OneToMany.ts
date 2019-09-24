@@ -4,7 +4,6 @@ import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 import { QueryOrder } from '../query';
-import { OneToOneOptions } from './OneToOne';
 
 export function OneToMany<T extends IEntityType<T>>(
   entity: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
@@ -46,6 +45,10 @@ export function createOneToDecorator<T extends IEntityType<T>>(
       Utils.defaultValue(prop, 'nullable', !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL));
       prop.owner = prop.owner || !!prop.inversedBy || !prop.mappedBy;
       prop.unique = prop.owner;
+
+      if (prop.owner && options.mappedBy) {
+        Utils.renameKey(prop, 'mappedBy', 'inversedBy');
+      }
     }
 
     meta.properties[propertyName] = prop;

@@ -15,7 +15,7 @@ checks:
       threshold: 5
   method-complexity:
     config:
-      threshold: 6
+      threshold: 7
 
 engines:
   duplication:

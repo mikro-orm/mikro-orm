@@ -54,7 +54,7 @@ export class ValidationError extends Error {
     const type = key === 'inversedBy' ? 'owning' : 'inverse';
     const other = key === 'inversedBy' ? 'mappedBy' : 'inversedBy';
 
-    return new ValidationError(`Both ${meta.name}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use ${other} on one of them`);
+    return new ValidationError(`Both ${meta.name}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
   static fromMissingOwnership(meta: EntityMetadata, prop: EntityProperty): ValidationError {

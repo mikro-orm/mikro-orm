@@ -19,8 +19,13 @@ export class MetadataValidator {
     for (const prop of references) {
       this.validateReference(meta, prop, metadata);
 
-      if (![ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
-        this.validateCollection(meta, prop, metadata);
+      if (prop.reference === ReferenceType.ONE_TO_ONE) {
+        this.validateBidirectional(meta, prop, metadata);
+      } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
+        const owner = metadata.get(prop.type).properties[prop.mappedBy];
+        this.validateOneToManyInverseSide(meta, prop, owner);
+      } else if (![ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+        this.validateBidirectional(meta, prop, metadata);
       }
     }
   }
@@ -54,23 +59,18 @@ export class MetadataValidator {
     }
   }
 
-  private validateCollection(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      const owner = metadata.get(prop.type).properties[prop.mappedBy];
-      return this.validateOneToManyInverseSide(meta, prop, owner);
-    }
-
-    // m:n collection either is owner or has `mappedBy`
+  private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
+    // 1:1 reference either is owner or has `mappedBy`
     if (!prop.owner && !prop.mappedBy && !prop.inversedBy) {
       throw ValidationError.fromMissingOwnership(meta, prop);
     }
 
     if (prop.inversedBy) {
       const inverse = metadata.get(prop.type).properties[prop.inversedBy];
-      this.validateManyToManyOwningSide(meta, prop, inverse);
+      this.validateOwningSide(meta, prop, inverse);
     } else if (prop.mappedBy) {
       const inverse = metadata.get(prop.type).properties[prop.mappedBy];
-      this.validateManyToManyInverseSide(meta, prop, inverse);
+      this.validateInverseSide(meta, prop, inverse);
     }
   }
 
@@ -86,35 +86,35 @@ export class MetadataValidator {
     }
   }
 
-  private validateManyToManyOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty): void {
-    // m:n collection has correct `inversedBy` on owning side
+  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty): void {
+    // has correct `inversedBy` on owning side
     if (!inverse) {
       throw ValidationError.fromWrongReference(meta, prop, 'inversedBy');
     }
 
-    // m:n collection has correct `inversedBy` reference type
+    // has correct `inversedBy` reference type
     if (inverse.type !== meta.name) {
       throw ValidationError.fromWrongReference(meta, prop, 'inversedBy', inverse);
     }
 
-    // m:n collection inversed side is not defined as owner
+    // inversed side is not defined as owner
     if (inverse.inversedBy) {
       throw ValidationError.fromWrongOwnership(meta, prop, 'inversedBy');
     }
   }
 
-  private validateManyToManyInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty): void {
-    // m:n collection has correct `mappedBy` on inverse side
+  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty): void {
+    // has correct `mappedBy` on inverse side
     if (prop.mappedBy && !owner) {
       throw ValidationError.fromWrongReference(meta, prop, 'mappedBy');
     }
 
-    // m:n collection has correct `mappedBy` reference type
+    // has correct `mappedBy` reference type
     if (owner.type !== meta.name) {
       throw ValidationError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 
-    // m:n collection owning side is not defined as inverse
+    // owning side is not defined as inverse
     if (owner.mappedBy) {
       throw ValidationError.fromWrongOwnership(meta, prop, 'mappedBy');
     }
