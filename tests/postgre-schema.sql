@@ -11,10 +11,10 @@ drop table if exists "foo_baz2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
 drop table if exists "publisher2_to_test2" cascade;
 
-create table "author2" ("id" serial primary key, "created_at" timestamp(3) not null default current_timestamp(3), "updated_at" timestamp(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "identities" json null, "born" timestamp(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "identities" json null, "born" timestamptz(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "author2_email_unique" unique ("email");
 
-create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamp(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" double precision null, "meta" json null, "author_id" int4 null, "publisher_id" int4 null, "foo" varchar(255) null);
+create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" double precision null, "meta" json null, "author_id" int4 null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
 create table "book_tag2" ("id" serial primary key, "name" varchar(50) not null);
@@ -24,11 +24,11 @@ create table "publisher2" ("id" serial primary key, "name" varchar(255) not null
 create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");
 
-create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "baz_id" int4 null, "foo_bar_id" int4 null, "version" timestamp(3) not null default current_timestamp(3));
+create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "baz_id" int4 null, "foo_bar_id" int4 null, "version" timestamptz(3) not null default current_timestamp(3));
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 
-create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamp(3) not null default current_timestamp(3));
+create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
 create table "book2_to_book_tag2" ("id" serial primary key, "book2_uuid_pk" varchar(36) not null, "book_tag2_id" int4 not null);
 

@@ -10,8 +10,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     float: ['float'],
     double: ['double', 'double precision', 'float8'],
     string: ['varchar(?)', 'character varying', 'text', 'character', 'char'],
-    Date: ['timestamp(?)', 'datetime(?)', 'timestamp without time zone', 'timestamptz', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
-    date: ['timestamp(?)', 'datetime(?)', 'timestamp without time zone', 'timestamptz', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
+    Date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
+    date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
     boolean: ['bool', 'boolean'],
     text: ['text'],
     object: ['json'],
@@ -27,7 +27,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     'now()': ['now()', 'current_timestamp'],
     'current_timestamp(?)': ['current_timestamp(?)'],
     "('now'::text)::timestamp(?) with time zone": ['current_timestamp(?)'],
+    "('now'::text)::timestamp(?) without time zone": ['current_timestamp(?)'],
     'null::character varying': ['null'],
+    'null::timestamp with time zone': ['null'],
     'null::timestamp without time zone': ['null'],
   };
 
