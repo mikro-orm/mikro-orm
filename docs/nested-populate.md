@@ -1,7 +1,7 @@
 ---
 ---
 
-# Smart nested populate
+# Smart Nested Populate
 
 `MikroORM` is capable of loading large nested structures while maintaining good 
 performance, querying each database table only once. Imagine you have this nested 
@@ -53,6 +53,24 @@ db.getCollection("book").find({"tags":{"$in":[...]}}).toArray();
 db.getCollection("publisher").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
+```
+
+## Using EntityLoader manually
+
+Under the good, EntityManager uses EntityLoader to populate other entities. You can use it
+manually if you already have list of entities (e.g. queried via QueryBuilder):
+
+```typescript
+import { EntityLoader } from 'mikro-orm';
+
+const loader = new EntityLoader(orm.em);
+const res = await orm.em.createQueryBuilder(Author).select('*').execute();
+const authors = res.map(data => orm.em.merge(Author, data));
+await loader.populate(Author, authors, ['books.tags']);
+
+// now your Author entities will have `books` collections populated, 
+// as well as they will have their `tags` collections populated.
+console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
 
 [&larr; Back to table of contents](index.md#table-of-contents)
