@@ -58,13 +58,13 @@ export class EntityManager {
   }
 
   async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
-  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where?: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends IEntityType<T>>(entityName: EntityName<T>, where = {} as FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
-    const results = await this.driver.find(entityName, where, options.populate || [], options.orderBy || {}, options.limit, options.offset, this.transactionContext);
+    const results = await this.driver.find(entityName, where, this.preparePopulate(options.populate), options.orderBy || {}, options.limit, options.offset, this.transactionContext);
 
     if (results.length === 0) {
       return [];
@@ -83,8 +83,8 @@ export class EntityManager {
   }
 
   async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOptions): Promise<T | null>;
-  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T | null>;
-  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T | null>;
+  async findOne<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
     const meta = this.metadata.get(entityName);
@@ -99,7 +99,7 @@ export class EntityManager {
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, options.populate, options.orderBy, options.fields, options.lockMode, this.transactionContext);
+    const data = await this.driver.findOne(entityName, where, this.preparePopulate(options.populate), options.orderBy, options.fields, options.lockMode, this.transactionContext);
 
     if (!data) {
       return null;
@@ -112,8 +112,8 @@ export class EntityManager {
   }
 
   async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, options?: FindOneOrFailOptions): Promise<T>;
-  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap): Promise<T>;
-  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | FindOneOrFailOptions, orderBy?: QueryOrderMap): Promise<T> {
+  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T>;
+  async findOneOrFail<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[] | boolean | FindOneOrFailOptions, orderBy?: QueryOrderMap): Promise<T> {
     const entity = await this.findOne(entityName, where, populate as string[], orderBy);
 
     if (!entity) {
@@ -390,17 +390,21 @@ export class EntityManager {
     return entity;
   }
 
+  private preparePopulate(populate?: string[] | boolean) {
+    return Array.isArray(populate) ? populate : [];
+  }
+
 }
 
 export interface FindOptions {
-  populate?: string[];
+  populate?: string[] | boolean;
   orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
 }
 
 export interface FindOneOptions {
-  populate?: string[];
+  populate?: string[] | boolean;
   orderBy?: QueryOrderMap;
   lockMode?: LockMode;
   lockVersion?: number | Date;

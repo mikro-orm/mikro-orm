@@ -923,6 +923,46 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books[0].publisher).toBeUndefined();
   });
 
+  test('populating all relationships', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    const publisher1 = new Publisher('B1 publisher');
+    publisher1.tests.add(Test.create('t11'), Test.create('t12'));
+    book1.publisher = Reference.create(publisher1);
+    const publisher2 = new Publisher('B2 publisher');
+    publisher2.tests.add(Test.create('t21'), Test.create('t22'));
+    book2.publisher = Reference.create(publisher2);
+    const publisher3 = new Publisher('B3 publisher');
+    publisher3.tests.add(Test.create('t31'), Test.create('t32'));
+    book3.publisher = Reference.create(publisher3);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    const repo = orm.em.getRepository(BookTag);
+
+    orm.em.clear();
+    const tags = await repo.findAll(true);
+    expect(tags.length).toBe(5);
+    expect(tags[0]).toBeInstanceOf(BookTag);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    expect(tags[0].books.count()).toBe(2);
+    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
+    expect(tags[0].books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
+    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
+    expect(tags[0].books[0].author).toBeInstanceOf(Author);
+    expect(tags[0].books[0].author.isInitialized()).toBe(true);
+    expect(tags[0].books[0].author.books.isInitialized(true)).toBe(true);
+  });
+
   test('populating one to many relation', async () => {
     let author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);

@@ -13,9 +13,13 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], populate: string[], validate = true): Promise<void> {
-    if (entities.length === 0) {
+  async populate<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], populate: string[] | boolean, validate = true): Promise<void> {
+    if (entities.length === 0 || populate === false) {
       return;
+    }
+
+    if (populate === true) {
+      populate = this.lookupAllRelationships(entityName);
     }
 
     for (const field of populate) {
@@ -151,6 +155,28 @@ export class EntityLoader {
 
   private filterCollections<T extends IEntityType<T>>(entities: T[], field: keyof T): T[] {
     return entities.filter(e => e[field] as object instanceof Collection && !(e[field] as Collection<IEntity>).isInitialized(true));
+  }
+
+  private lookupAllRelationships(entityName: string, prefix = '', visited: string[] = []): string[] {
+    if (visited.includes(entityName)) {
+      return [];
+    }
+
+    visited.push(entityName);
+    const ret: string[] = [];
+    const meta = this.metadata.get(entityName);
+
+    Object.values(meta.properties).forEach(prop => {
+      if (prop.reference === ReferenceType.SCALAR) {
+        return;
+      }
+
+      const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+      ret.push(prefixed);
+      ret.push(...this.lookupAllRelationships(prop.type, prefixed, visited));
+    });
+
+    return ret;
   }
 
 }
