@@ -11,10 +11,10 @@ export class FooBar {
   @Property()
   name: string;
 
-  @OneToOne({ inversedBy: 'bar', orphanRemoval: true })
+  @OneToOne(() => FooBaz, baz => baz.bar, { owner: true, orphanRemoval: true })
   baz: FooBaz | null;
 
-  @OneToOne({ owner: true })
+  @OneToOne()
   fooBar: FooBar;
 
   static create(name: string) {

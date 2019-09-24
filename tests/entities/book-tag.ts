@@ -11,7 +11,7 @@ export class BookTag {
   @Property()
   name: string;
 
-  @ManyToMany({ entity: () => Book.name, mappedBy: 'tags' })
+  @ManyToMany(() => Book, 'tags')
   books: Collection<Book> = new Collection<Book>(this);
 
   constructor(name: string) {

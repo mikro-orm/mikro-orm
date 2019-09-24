@@ -71,24 +71,35 @@ export class Author {
   @PrimaryKey()
   _id: ObjectId;
 
+  @OneToMany(() => Book, book => book.author)
+  books1 = new Collection<Book>(this);
+
+  // or via options object
   @OneToMany({ entity: () => Book, mappedBy: 'author' })
-  books = new Collection<Book>(this);
+  books2 = new Collection<Book>(this);
 
 }
 ```
 
 ## ManyToMany Collections
 
-As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
-All references are stored as an array of `ObjectId`s on owning entity. 
+For ManyToMany, SQL drivers use pivot table that holds reference to both entities. 
+
+As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` 
+relations. All references are stored as an array of `ObjectId`s on owning entity. 
 
 ### Unidirectional
 
-Unidirectional `ManyToMany` relations are defined only on one side, and marked explicitly as `owner`:
+Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity`
+attribute, then it will be considered the owning side:
 
 ```typescript
+@ManyToMany(() => Book)
+books1 = new Collection<Book>(this);
+
+// or mark it as owner explicitly via options object
 @ManyToMany({ entity: () => Book, owner: true })
-books = new Collection<Book>(this);
+books2 = new Collection<Book>(this);
 ```
 
 ### Bidirectional
@@ -97,13 +108,21 @@ Bidirectional `ManyToMany` relations are defined on both sides, while one is own
 marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
+@ManyToMany(() => BookTag, tag => tag.books, { owner: true })
+tags = new Collection<BookTag>(this);
+
+// or via options object
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
 tags = new Collection<BookTag>(this);
 ```
 
-And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
+And on the inversed side we define it with `mappedBy` attribute pointing back to the owner:
 
 ```typescript
+@ManyToMany(() => Book, book => book.tags)
+books = new Collection<Book>(this);
+
+// or via options object
 @ManyToMany({ entity: () => Book, mappedBy: 'tags' })
 books = new Collection<Book>(this);
 ```

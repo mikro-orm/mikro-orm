@@ -11,7 +11,7 @@ export class FooBaz {
   @Property()
   name: string;
 
-  @OneToOne({ mappedBy: 'baz' })
+  @OneToOne(() => FooBar, bar => bar.baz)
   bar: FooBar;
 
   static create(name: string) {

@@ -36,7 +36,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true, length: 0 })
   born?: Date;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { createdAt: QueryOrder.ASC } })
+  @OneToMany('Book2', 'author', { orderBy: { createdAt: QueryOrder.ASC } })
   books: Collection<Book2>;
 
   @ManyToOne()

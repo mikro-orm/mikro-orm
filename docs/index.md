@@ -29,6 +29,7 @@ compatible with Vanilla JavaScript.
   - [Identity Map and Request Context](identity-map.md)
   - [Entity References and `Reference<T>` Wrapper](entity-references.md)
   - [Using Entity Constructors](entity-constructors.md)
+  - [Modelling Relationships](relationships.md)
   - [Collections](collections.md)
   - [Unit of Work](unit-of-work.md)
   - [Transactions](transactions.md)

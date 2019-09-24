@@ -204,7 +204,15 @@ export class MetadataDiscovery {
 
   private processEntity(meta: EntityMetadata): EntityMetadata[] {
     this.defineBaseEntityProperties(meta);
+
+    // init factory fields first to simplify validation
+    Object.values(meta.properties).forEach(prop => {
+      this.initFactoryField(prop, 'mappedBy');
+      this.initFactoryField(prop, 'inversedBy');
+    });
+
     this.validator.validateEntityDefinition(this.metadata, meta.name);
+
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
       this.initVersionProperty(meta, prop);
@@ -224,6 +232,15 @@ export class MetadataDiscovery {
     }
 
     return ret;
+  }
+
+  private initFactoryField(prop: EntityProperty, type: 'mappedBy' | 'inversedBy'): void {
+    const value = prop[type] as string | Function;
+
+    if (value instanceof Function) {
+      const meta2 = this.metadata.get(prop.type);
+      prop[type] = value(meta2.properties as any).name;
+    }
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata | undefined {

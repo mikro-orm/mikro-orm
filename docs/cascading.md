@@ -115,7 +115,7 @@ await orm.em.removeEntity(book1); // this will remove book1 and its publisher
 console.log(book2.publisher, book3.publisher);
 ```
 
-## Orphan removal
+## <a name="orphan-removal"></a> Orphan removal
 
 In addition to `Cascade.REMOVE`, there is also additional and more aggressive remove 
 cascading mode which can be specified using the `orphanRemoval` flag of the `@OneToOne`

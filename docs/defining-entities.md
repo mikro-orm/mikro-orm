@@ -29,10 +29,10 @@ export class Book {
   @ManyToOne() // when you provide correct type hint, ORM will read it for you
   author: Author;
 
-  @ManyToOne({ entity: () => Publisher }) // or you can specify the entity as class reference or string name
+  @ManyToOne(() => Publisher) // or you can specify the entity as class reference or string name
   publisher: Publisher;
 
-  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
+  @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -91,14 +91,14 @@ export class Author {
   @Property()
   born: Date;
 
-  @OneToMany({ entity: () => Book, mappedBy: 'author' })
+  @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 
   @ManyToOne()
   favouriteBook: Book;
 
+  @Property({ version: true })
   version: number;
-  versionAsString: string;
 
   constructor(name: string, email: string) {
     this.name = name;
@@ -110,7 +110,7 @@ export class Author {
 export interface Author extends IEntity { }
 ```
 
-More information about how collections work can be found on [collections page](collections.md).
+More information about modelling relationships can be found on [modelling relationships page](relationships.md).
 
 If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
 

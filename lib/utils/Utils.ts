@@ -117,10 +117,10 @@ export class Utils {
     return Array.isArray(data!) ? data : [data!];
   }
 
-  static renameKey(payload: any, from: string, to: string): void {
+  static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && from in payload && !(to in payload)) {
-      payload[to] = payload[from];
-      delete payload[from];
+      payload[to] = payload[from as keyof T];
+      delete payload[from as keyof T];
     }
   }
 

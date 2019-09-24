@@ -21,7 +21,9 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
   private async initProperties(meta: EntityMetadata, name: string): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
-      if (prop.entity) {
+      if (Utils.isString(prop.entity)) {
+        prop.type = prop.entity;
+      } else if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
         const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');

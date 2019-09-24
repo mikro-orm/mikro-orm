@@ -29,6 +29,7 @@ There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit m
 - [Identity Map](https://mikro-orm.io/identity-map/)
 - [Entity References](https://mikro-orm.io/entity-references/)
 - [Using Entity Constructors](https://mikro-orm.io/using-entity-constructors/)
+- [Modelling Relationships](https://mikro-orm.io/relationships/)
 - [Collections](https://mikro-orm.io/collections/)
 - [Unit of Work](https://mikro-orm.io/unit-of-work/)
 - [Transactions](https://mikro-orm.io/transactions/)
