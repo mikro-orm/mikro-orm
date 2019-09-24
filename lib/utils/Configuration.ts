@@ -35,6 +35,7 @@ export class Configuration {
     verbose: false,
     cache: {
       enabled: true,
+      pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
     },
@@ -66,6 +67,7 @@ export class Configuration {
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
+    this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
       this.validateOptions();
@@ -116,7 +118,7 @@ export class Configuration {
   }
 
   getCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.cache.adapter!, this.options.cache.options);
+    return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
   getRepositoryClass(customRepository: EntityOptions['customRepository']): MikroORMOptions['entityRepository'] {
@@ -216,6 +218,7 @@ export interface MikroORMOptions extends ConnectionOptions {
   baseDir: string;
   cache: {
     enabled?: boolean;
+    pretty?: boolean;
     adapter?: { new (...params: any[]): CacheAdapter };
     options?: Record<string, any>;
   };

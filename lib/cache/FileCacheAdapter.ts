@@ -1,10 +1,14 @@
 import globby from 'globby';
-import { ensureDir, pathExists, readJSON, stat, unlink, writeJSON } from 'fs-extra';
+import { ensureDir, pathExists, readFile, readJSON, unlink, writeJSON } from 'fs-extra';
+
 import { CacheAdapter } from './CacheAdapter';
+import { Utils } from '../utils';
 
 export class FileCacheAdapter implements CacheAdapter {
 
-  constructor(private readonly options: { cacheDir: string }) { }
+  constructor(private readonly options: { cacheDir: string },
+              private readonly baseDir: string,
+              private readonly pretty = false) { }
 
   async get(name: string): Promise<any> {
     const path = await this.path(name);
@@ -14,9 +18,9 @@ export class FileCacheAdapter implements CacheAdapter {
     }
 
     const payload = await readJSON(path);
-    const modified = await this.getModifiedTime(payload.origin);
+    const hash = await this.getHash(payload.origin);
 
-    if (!await pathExists(payload.origin) || payload.modified !== modified) {
+    if (!hash || payload.hash !== hash) {
       return null;
     }
 
@@ -24,9 +28,10 @@ export class FileCacheAdapter implements CacheAdapter {
   }
 
   async set(name: string, data: any, origin: string): Promise<void> {
-    const modified = await this.getModifiedTime(origin);
     const path = await this.path(name);
-    await writeJSON(path, { modified, data, origin });
+    const opts = this.pretty ? { spaces: 2 } : {};
+    const hash = await this.getHash(origin);
+    await writeJSON(path, { data, origin, hash }, opts);
   }
 
   async clear(): Promise<void> {
@@ -43,9 +48,16 @@ export class FileCacheAdapter implements CacheAdapter {
     return `${this.options.cacheDir}/${name}.json`;
   }
 
-  private async getModifiedTime(origin: string): Promise<number> {
-    const stats = await stat(origin);
-    return stats.mtimeMs;
+  private async getHash(origin: string): Promise<string | null> {
+    origin = Utils.absolutePath(origin, this.baseDir);
+
+    if (!await pathExists(origin)) {
+      return null;
+    }
+
+    const contents = await readFile(origin);
+
+    return Utils.hash(contents.toString());
   }
 
 }

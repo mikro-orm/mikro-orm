@@ -16,6 +16,7 @@ export class CLIHelper {
     const paths = await CLIHelper.getConfigPaths();
 
     for (let path of paths) {
+      path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {

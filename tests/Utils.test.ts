@@ -166,11 +166,27 @@ describe('Utils', () => {
     expect(Utils.extractPK({ uuid: 'uuid-123' }, meta)).toBe('uuid-123');
   });
 
-  test('normalizePath always returns absolute path', () => {
-    expect(Utils.normalizePath()).toBe(process.cwd());
-    expect(Utils.normalizePath('./test')).toBe(process.cwd() + '/test');
-    expect(Utils.normalizePath('test')).toBe(process.cwd() + '/test');
+  test('normalizePath', () => {
+    expect(Utils.normalizePath()).toBe('.');
+    expect(Utils.normalizePath('./test')).toBe('./test');
+    expect(Utils.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
+    expect(Utils.normalizePath('test/')).toBe('./test');
     expect(Utils.normalizePath('/test')).toBe('/test');
+  });
+
+  test('relativePath', () => {
+    expect(Utils.relativePath('./test', process.cwd())).toBe('./test');
+    expect(Utils.relativePath('test', process.cwd())).toBe('./test');
+    expect(Utils.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
+    expect(Utils.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
+  });
+
+  test('absolutePath', () => {
+    expect(Utils.absolutePath('./test')).toBe(process.cwd() + '/test');
+    expect(Utils.absolutePath('test')).toBe(process.cwd() + '/test');
+    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(process.cwd() + '/tests');
+    expect(Utils.absolutePath('./tests/cli')).toBe(process.cwd() + '/tests/cli');
+    expect(Utils.absolutePath('')).toBe(process.cwd());
   });
 
   test('pathExists wrapper', async () => {

@@ -1,8 +1,9 @@
 import fastEqual from 'fast-deep-equal';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
-import { isAbsolute, normalize } from 'path';
+import { isAbsolute, normalize, relative } from 'path';
 import { pathExists } from 'fs-extra';
+import { createHash } from 'crypto';
 
 import { MetadataStorage } from '../metadata';
 import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
@@ -254,13 +255,42 @@ export class Utils {
   }
 
   static normalizePath(...parts: string[]): string {
-    let path = parts.join('/');
+    let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
+    path = normalize(path).replace(/\\/g, '/');
 
-    if (!isAbsolute(path)) {
-      path = process.cwd() + (path ? '/' + path : '');
+    return path.match(/^[/.]|[a-zA-Z]:/) ? path : './' + path;
+  }
+
+  static relativePath(path: string, relativeTo: string): string {
+    if (!path) {
+      return path;
     }
 
-    return normalize(path).replace(/\\/g, '/');
+    path = Utils.normalizePath(path);
+
+    if (path.startsWith('.')) {
+      return path;
+    }
+
+    path = relative(relativeTo, path);
+
+    return Utils.normalizePath(path);
+  }
+
+  static absolutePath(path: string, baseDir = process.cwd()): string {
+    if (!path) {
+      return Utils.normalizePath(baseDir);
+    }
+
+    if (!isAbsolute(path)) {
+      path = baseDir + '/' + path;
+    }
+
+    return Utils.normalizePath(path);
+  }
+
+  static hash(data: string): string {
+    return createHash('md5').update(data).digest('hex');
   }
 
   static runIfNotEmpty(clause: () => any, data: any): void {

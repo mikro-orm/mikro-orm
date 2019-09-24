@@ -34,6 +34,7 @@ export async function initORMMongo() {
     highlight: false,
     logger: i => i,
     type: 'mongo',
+    cache: { pretty: true },
   });
 }
 
@@ -55,6 +56,7 @@ export async function initORMMySql(type: 'mysql' | 'mariadb' = 'mysql') {
     logger: i => i,
     multipleStatements: true,
     type,
+    cache: { pretty: true },
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
   });
 
@@ -74,6 +76,7 @@ export async function initORMPostgreSql() {
     debug: ['query'],
     highlight: false,
     logger: i => i,
+    cache: { pretty: true },
   });
 
   const connection = orm.em.getConnection<PostgreSqlConnection>();
@@ -92,6 +95,7 @@ export async function initORMSqlite() {
     highlight: false,
     logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
+    cache: { pretty: true },
   });
 
   const connection = orm.em.getConnection<SqliteConnection>();

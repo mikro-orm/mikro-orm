@@ -54,7 +54,8 @@ export class EntityFactory {
   }
 
   private createEntity<T extends IEntityType<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
-    const Entity = require(meta.path)[meta.name];
+    const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
+    const Entity = require(path)[meta.name];
 
     if (!data[meta.primaryKey]) {
       const params = this.extractConstructorParams<T>(meta, data);

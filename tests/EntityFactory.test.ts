@@ -22,7 +22,7 @@ describe('EntityFactory', () => {
     const metadata = orm.getMetadata().getAll();
     expect(metadata).toBeInstanceOf(Object);
     expect(metadata[Author.name]).toBeInstanceOf(Object);
-    expect(metadata[Author.name].path).toBe(Utils.normalizePath(__dirname, 'entities/Author.ts'));
+    expect(metadata[Author.name].path).toBe('./entities/Author.ts');
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);

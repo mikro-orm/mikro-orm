@@ -40,6 +40,7 @@ export class DebugCommand implements CommandModule {
 
   private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', onlyDirectories = false): Promise<void> {
     for (let path of paths) {
+      path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
       const found = await Utils.pathExists(path, { onlyDirectories });
 

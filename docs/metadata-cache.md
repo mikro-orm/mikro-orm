@@ -34,6 +34,17 @@ await MikroORM.init({
 });
 ```
 
+## Pretty Printing
+
+By default, cached metadata will be one line JSON string. You can force pretty printing it:
+
+```typescript
+await MikroORM.init({
+  cache: { pretty: true },
+  // ...
+});
+```
+
 ## Using Different temp Folder
 
 You can set the temp folder via:
