@@ -50,7 +50,7 @@ const knex = conn.getKnex();
 const res = await knex;
 ```
 
-## Running native SQL query
+## Running Native SQL Query
 
 You can run native SQL via underlying connection
 
@@ -60,7 +60,7 @@ const res = await connection.execute('SELECT 1 as count');
 console.log(res); // res is array of objects: `[ { count: 1 } ]`
 ```
 
-## Executing the query
+## Executing the Query
 
 You can use `execute(method = 'all', mapResults = true)`'s parameters to control form of result:
 
@@ -89,7 +89,7 @@ const entities = res6.map(data => orm.em.merge(Book, data));
 console.log(entities); // array of Book entities
 ```
 
-## Mapping raw results to entities
+## Mapping Raw Results to Entities
 
 Another way to create entity from raw results (that are not necessarily mapped to entity properties)
 is to use `map()` method of `EntityManager`, that is basically a shortcut for mapping results
@@ -108,7 +108,7 @@ const repo = orm.em.getRepository(User);
 const users = results.map(user => repo.map(user));
 ```
 
-## Implicit joining
+## Implicit Joining
 
 `QueryBuilder` supports automatic joining based on entity metadata:
 
@@ -123,7 +123,7 @@ console.log(qb.getQuery());
 // WHERE `e1`.`book_uuid_pk` = ?
 ```
 
-## Explicit joining
+## Explicit Joining
 
 Another way is to manually specify join property via `join()`/`leftJoin()` methods:
 
@@ -142,7 +142,7 @@ console.log(qb.getQuery());
 // LIMIT ? OFFSET ?
 ```
 
-## Complex where conditions
+## Complex Where Conditions
 
 There are multiple ways to construct complex query conditions. You can either write parts of SQL
 manually, use `andWhere()`/`orWhere()`, or provide condition object:
@@ -211,23 +211,23 @@ console.log(qb.getQuery()); // for MySQL
 
 ```typescript
 QueryBuilder.select(fields: string | string[], distinct?: boolean): QueryBuilder;
-QueryBuilder.insert(data: any): QueryBuilder;
-QueryBuilder.update(data: any): QueryBuilder;
-QueryBuilder.delete(cond: any): QueryBuilder;
+QueryBuilder.insert(data: Record<string, any>): QueryBuilder;
+QueryBuilder.update(data: Record<string, any>): QueryBuilder;
+QueryBuilder.delete(cond: Record<string, any>): QueryBuilder;
 QueryBuilder.count(fields: string | string[], distinct?: boolean): QueryBuilder;
 QueryBuilder.join(field: string, alias?: string): QueryBuilder;
 QueryBuilder.leftJoin(field: string, alias?: string): QueryBuilder;
-QueryBuilder.where(cond: any, operator: '$and' | '$or'): QueryBuilder;
-QueryBuilder.andWhere(cond: any): QueryBuilder;
-QueryBuilder.orWhere(cond: any): QueryBuilder;
+QueryBuilder.where(cond: Record<string, any>, operator?: '$and' | '$or'): QueryBuilder;
+QueryBuilder.andWhere(cond: Record<string, any>): QueryBuilder;
+QueryBuilder.orWhere(cond: Record<string, any>): QueryBuilder;
 QueryBuilder.groupBy(fields: string | string[]): QueryBuilder;
-QueryBuilder.having(cond: any): QueryBuilder;
+QueryBuilder.having(cond: Record<string, any>): QueryBuilder;
 QueryBuilder.populate(populate: string[]): QueryBuilder;
 QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
 QueryBuilder.offset(offset: number): QueryBuilder;
 QueryBuilder.setLockMode(mode: LockMode): QueryBuilder;
 QueryBuilder.getQuery(): string;
-QueryBuilder.getParams(): any;
+QueryBuilder.getParams(): any[];
 QueryBuilder.clone(): QueryBuilder;
 ```
 

@@ -3,7 +3,7 @@
 
 # Working with EntityManager
 
-## Persist and flush
+## Persist and Flush
 
 There are 2 methods we should first describe to understand how persisting works in MikroORM: 
 `em.persist()` and `em.flush()`.
@@ -30,7 +30,7 @@ book.title = 'How to persist things...';
 await orm.em.flush();
 ```
 
-## Persisting and cascading
+## Persisting and Cascading
 
 To save entity state to database, you need to persist it. Persist takes care or deciding 
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
@@ -60,7 +60,7 @@ orm.em.persistLater(book3);
 await orm.em.flush(); // flush everything to database at once
 ```
 
-### Auto flushing
+### Auto-flushing
 
 Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
 `em.flush()` yourself to persist changes into database. You can still change this via ORM's
@@ -72,7 +72,7 @@ await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
 
-## Fetching entities with EntityManager
+## Fetching Entities with EntityManager
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 
@@ -98,7 +98,42 @@ for (const author of authors) {
 }
 ```
 
-### Fetching partial entities
+### Conditions Object ()
+
+Querying entities via conditions object (`where` in `em.find(Entity, where: FilterQuery<T>)`) 
+supports many different ways:
+
+```typescript
+// search by entity properties
+const users = await orm.em.find(User, { firstName: 'John' });
+
+// for searching by reference you can use primary key directly
+const id = 1;
+const users = await orm.em.find(User, { organization: id });
+
+// or pass unpopulated reference (including `Reference` wrapper)
+const ref = await orm.em.getReference(Organization, id);
+const users = await orm.em.find(User, { organization: ref });
+
+// fully populated entities as also supported
+const ent = await orm.em.findOne(Organization, id);
+const users = await orm.em.find(User, { organization: ent });
+
+// complex queries with operators
+const users = await orm.em.find(User, { $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
+
+// you can also search for array of primary keys directly
+const users = await orm.em.find(User, [1, 2, 3, 4, 5]);
+
+// and in findOne all of this works, plus you can search by single primary key
+const user1 = await orm.em.findOne(User, 1);
+```
+
+As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
+`$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`. More about that can be found in 
+[Query Conditions](query-conditions.md) section. 
+
+### Fetching Partial Entities
 
 When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
 
@@ -109,7 +144,18 @@ console.log(author.name); // Jon Snow
 console.log(author.email); // undefined
 ```
 
-### Handling not found entities
+### Fetching Paginated Results
+
+If you are going to paginate your results, you can use `em.findAndCount()` that will return
+total count of entities before applying limit and offset.
+
+```typescript
+const [authors, count] = await orm.em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
+console.log(authors.length); // based on limit parameter, e.g. 10
+console.log(count); // total count, e.g. 1327
+```
+
+### Handling Not Found Entities
 
 When you call `em.findOne()` and no entity is found based on your criteria, `null` will be 
 returned. If you rather have an `Error` instance thrown, you can use `em.findOneOrFail()`:
@@ -139,7 +185,7 @@ try {
 }
 ```
 
-## Type of fetched entities
+## Type of Fetched Entities
 
 Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types.
 All of following examples are equal and will let typescript correctly infer the entity type:
@@ -152,7 +198,7 @@ const author3 = await orm.em.findOne(Author, '...id...');
 
 As the last one is the least verbose, it should be preferred. 
 
-## Entity repositories
+## Entity Repositories
 
 Although you can use `EntityManager` directly, much more convenient way is to use 
 [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register
@@ -235,7 +281,7 @@ loading it, if the entity is not yet loaded.
 
 ---
 
-#### `count(entityName: string | EntityClass<T>, where: any): Promise<number>`
+#### `count(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number>`
 
 Gets count of entities matching the `where` condition. 
 

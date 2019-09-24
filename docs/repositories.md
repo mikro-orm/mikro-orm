@@ -88,8 +88,7 @@ and `offset`.
 
 #### `findAndCount(where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
-Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
-and `offset`.
+Combination of `find` and `count` methods. 
 
 ---
 
