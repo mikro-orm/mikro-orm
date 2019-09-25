@@ -250,7 +250,7 @@ export class EntityManager {
     return entity;
   }
 
-  async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
+  async count<T extends IEntityType<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);

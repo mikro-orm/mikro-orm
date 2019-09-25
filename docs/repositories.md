@@ -134,7 +134,7 @@ loading it, if the entity is not yet loaded.
 
 ---
 
-#### `count(where: any): Promise<number>`
+#### `count(where?: FilterQuery<T>): Promise<number>`
 
 Gets count of entities matching the `where` condition. 
 
@@ -167,7 +167,7 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(where: IEntity | any, flush?: boolean): Promise<number>`
+#### `remove(where: IEntity | FilterQuery<T>, flush?: boolean): Promise<number>`
 
 When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
 otherwise it fires delete query with given `where` condition. 

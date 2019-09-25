@@ -307,6 +307,8 @@ describe('EntityManagerMySql', () => {
     // count test
     const count = await authorRepository.count();
     expect(count).toBe(authors.length);
+    const count2 = await orm.em.count(Author2);
+    expect(count2).toBe(authors.length);
 
     // identity map test
     authors.shift(); // shift the god away, as that entity is detached from IM

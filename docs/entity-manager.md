@@ -245,14 +245,14 @@ Combination of `find` and `count` methods.
 
 ---
 
-#### `findOne<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
+#### `findOne<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T | null>`
 
 Finds an entity by given `where` condition. You can use primary key as `where` value, then
 if the entity is already managed, no database call will be made. 
 
 ---
 
-#### `findOneOrFail<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string, populate?: string[]): Promise<T>`
+#### `findOneOrFail<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | IPrimaryKey, populate?: string[]): Promise<T>`
 
 Just like `findOne`, but throws when entity not found, so it always resolves to given entity. 
 You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
@@ -281,7 +281,7 @@ loading it, if the entity is not yet loaded.
 
 ---
 
-#### `count(entityName: string | EntityClass<T>, where: FilterQuery<T>): Promise<number>`
+#### `count(entityName: string | EntityClass<T>, where?: FilterQuery<T>): Promise<number>`
 
 Gets count of entities matching the `where` condition. 
 
@@ -314,7 +314,7 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(entityName: string | EntityClass<T>, where: IEntity | any, flush?: boolean): Promise<number>`
+#### `remove(entityName: string | EntityClass<T>, where: IEntity | FilterQuery<T> | IPrimaryKey, flush?: boolean): Promise<number>`
 
 When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
 otherwise it fires delete query with given `where` condition. 

@@ -818,7 +818,7 @@ describe('EntityManagerMongo', () => {
     let books = await repo.findAll();
     expect(books.length).toBe(3);
     expect(books[0].publisher.unwrap().id).toBeDefined();
-    expect(await orm.em.count(Publisher, {})).toBe(1);
+    expect(await orm.em.count(Publisher)).toBe(1);
 
     // we need to remove those books from IM or ORM will try to persist them automatically (and they still have link to the publisher)
     orm.em.getUnitOfWork().unsetIdentity(books[1]);
