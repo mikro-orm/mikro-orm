@@ -1191,6 +1191,24 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
   });
 
+  test('find by joined property', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    const res = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
+    expect(res).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e1`.`name` = ?');
+  });
+
   test('partial selects', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = new Date();

@@ -11,7 +11,7 @@ const qb = orm.em.createQueryBuilder(Author);
 qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
 
 console.log(qb.getQuery());
-// UPDATE `publisher2` SET `name` = ?, `type` = ? WHERE `id` = ? AND `type` = ?
+// update `publisher2` set `name` = ?, `type` = ? where `id` = ? and `type` = ?
 
 console.log(qb.getParams());
 // ['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]
@@ -117,11 +117,32 @@ const qb = orm.em.createQueryBuilder(BookTag, 't');
 qb.select('*').where({ books: 123 });
 
 console.log(qb.getQuery());
-// SELECT `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk`
-// FROM `book_tag` AS `t`
-// LEFT JOIN `book_to_book_tag` AS `e1` ON `t`.`id` = `e1`.`book_tag_id`
-// WHERE `e1`.`book_uuid_pk` = ?
+// select `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk`
+// from `book_tag` as `t`
+// left join `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
+// where `e1`.`book_uuid_pk` = ?
 ```
+
+This also works for multiple levels of nesting:
+
+```typescript
+const qb = orm.em.createQueryBuilder(Author);
+qb.select('*')
+  .where({ books: { tags: { name: 'Cool' } } })
+  .orderBy({ books: { tags: { createdBy: QueryOrder.DESC } } });
+
+console.log(qb.getQuery());
+// select `e0`.* 
+// from `author` as `e0` 
+// left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` 
+// left join `book2_to_book_tag2` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk` 
+// left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id` 
+// where `e2`.`name` = ? 
+// order by `e1`.`tags` asc
+```
+
+This is currently available only for filtering (`where`) and sorting (`orderBy`), only 
+the root entity will be selected. To populate its relationships, you can use [EntityLoader](nested-populate.md).
 
 ## Explicit Joining
 
@@ -135,11 +156,11 @@ qb.select(['b.uuid', 'b.*', 't.*'], true)
   .limit(2, 1);
 
 console.log(qb.getQuery());
-// SELECT DISTINCT `b`.`uuid_pk`, `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` FROM `book_tag` AS `t`
-// JOIN `book_to_book_tag` AS `e1` ON `t`.`id` = `e1`.`book_tag_id`
-// JOIN `book` AS `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
-// WHERE `b`.`title` = ?
-// LIMIT ? OFFSET ?
+// select distinct `b`.`uuid_pk`, `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` from `book_tag` as `t`
+// JOIN `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
+// JOIN `book` as `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
+// where `b`.`title` = ?
+// limit ? offset ?
 ```
 
 ## Complex Where Conditions
@@ -153,17 +174,17 @@ manually, use `andWhere()`/`orWhere()`, or provide condition object:
 const qb = orm.em.createQueryBuilder(BookTag, 't');
 qb.select(['b.*', 't.*'])
   .leftJoin('t.books', 'b')
-  .where('b.title = ? OR b.title = ?', ['test 123', 'lol 321'])
+  .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
   .andWhere('1 = 1')
   .orWhere('1 = 2')
   .limit(2, 1);
 
 console.log(qb.getQuery());
-// SELECT `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` FROM `book_tag` AS `t`
-// LEFT JOIN `book_to_book_tag` AS `e1` ON `t`.`id` = `e1`.`book_tag_id`
-// LEFT JOIN `book` AS `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
-// WHERE (((b.title = ? OR b.title = ?) AND (1 = 1)) OR (1 = 2))
-// LIMIT ? OFFSET ?
+// select `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` from `book_tag` as `t`
+// left join `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
+// left join `book` as `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
+// where (((b.title = ? or b.title = ?) and (1 = 1)) or (1 = 2))
+// limit ? offset ?
 ```
 
 ### andWhere() and orWhere()
@@ -172,27 +193,27 @@ console.log(qb.getQuery());
 const qb = orm.em.createQueryBuilder(BookTag, 't');
 qb.select(['b.*', 't.*'])
   .leftJoin('t.books', 'b')
-  .where('b.title = ? OR b.title = ?', ['test 123', 'lol 321'])
+  .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
   .andWhere('1 = 1')
   .orWhere('1 = 2')
   .limit(2, 1);
 
 console.log(qb.getQuery());
-// SELECT `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` FROM `book_tag` AS `t`
-// LEFT JOIN `book_to_book_tag` AS `e1` ON `t`.`id` = `e1`.`book_tag_id`
-// LEFT JOIN `book` AS `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
-// WHERE (((b.title = ? OR b.title = ?) AND (1 = 1)) OR (1 = 2))
-// LIMIT ? OFFSET ?
+// select `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` from `book_tag` as `t`
+// left join `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
+// left join `book` as `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
+// where (((b.title = ? or b.title = ?) and (1 = 1)) or (1 = 2))
+// limit ? offset ?
 ```
 
-### Condition object
+### Conditions Object
 
 ```typescript
 const qb = orm.em.createQueryBuilder(Test);
 qb.select('*').where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
 console.log(qb.getQuery());
-// SELECT `e0`.* FROM `test` AS `e0` WHERE (`e0`.`id` NOT IN (?, ?) AND `e0`.`id` > ?)
+// select `e0`.* from `test` as `e0` where (`e0`.`id` not in (?, ?) and `e0`.`id` > ?)
 ```
 
 ## Locking support
@@ -202,7 +223,7 @@ const qb = orm.em.createQueryBuilder(Test);
 qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ);
 
 console.log(qb.getQuery()); // for MySQL
-// SELECT `e0`.* FROM `test` AS `e0` WHERE `e0`.`name` = ? LOCK IN SHARE MODE
+// select `e0`.* from `test` as `e0` where `e0`.`name` = ? LOCK IN SHARE MODE
 ```
 
 ## QueryBuilder API
@@ -222,7 +243,6 @@ QueryBuilder.andWhere(cond: Record<string, any>): QueryBuilder;
 QueryBuilder.orWhere(cond: Record<string, any>): QueryBuilder;
 QueryBuilder.groupBy(fields: string | string[]): QueryBuilder;
 QueryBuilder.having(cond: Record<string, any>): QueryBuilder;
-QueryBuilder.populate(populate: string[]): QueryBuilder;
 QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
 QueryBuilder.offset(offset: number): QueryBuilder;
 QueryBuilder.setLockMode(mode: LockMode): QueryBuilder;

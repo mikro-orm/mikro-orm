@@ -1,7 +1,7 @@
 import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { QueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
+import { FlatQueryOrderMap, QueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
@@ -112,15 +112,17 @@ export class QueryBuilderHelper {
 
   joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any>): Record<string, JoinOptions> {
     const join = {
+      prop,
       type,
       cond,
       ownerAlias,
       alias: pivotAlias,
+      inverseAlias: alias,
       joinColumn: prop.joinColumn,
       inverseJoinColumn: prop.inverseJoinColumn,
       primaryKey: prop.referenceColumnName,
     } as JoinOptions;
-    const name = `${pivotAlias}.${prop.name}`;
+    const name = `${ownerAlias}.${prop.name}`;
     const ret: Record<string, JoinOptions> = {};
 
     if (prop.owner) {
@@ -133,11 +135,11 @@ export class QueryBuilderHelper {
 
     if (prop.owner) {
       const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type];
-      ret[prop2.name] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+      ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
     } else {
       const prop2 = this.metadata.get(prop.type).properties[prop.mappedBy];
       const prop3 = this.metadata.get(prop2.pivotTable).properties[prop.type];
-      ret[prop3.name] = this.joinManyToOneReference(prop3, pivotAlias, alias, type);
+      ret[`${pivotAlias}.${prop3.name}`] = this.joinManyToOneReference(prop3, pivotAlias, alias, type);
     }
 
     return ret;
@@ -347,7 +349,7 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: QueryOrderMap, populate: Record<string, string>): { column: string; order: string }[] {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Record<string, string>): { column: string; order: string }[] {
     return Object.keys(orderBy).map(k => {
       let alias = this.alias;
       let field = k;
@@ -434,6 +436,10 @@ export class QueryBuilderHelper {
     }
 
     qb.update(versionProperty.fieldName, this.knex.raw(sql));
+  }
+
+  isOperator(key: string): boolean {
+    return !!QueryBuilderHelper.GROUP_OPERATORS[key] || !!QueryBuilderHelper.OPERATORS[key];
   }
 
   private isCustomExpression(field: string): boolean {

@@ -4,7 +4,7 @@ import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
 import { EntityProperty, IEntity } from '../decorators';
 import { ReferenceType } from '../entity';
-import { QueryFlag, QueryOrderMap, QueryType } from './enums';
+import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
 import { AbstractSqlDriver } from '../drivers';
 import { MetadataStorage } from '../metadata';
@@ -80,24 +80,8 @@ export class QueryBuilder {
   }
 
   join(field: string, alias: string, cond: Record<string, any> = {}, type: 'leftJoin' | 'innerJoin' = 'innerJoin'): this {
-    const [fromAlias, fromField] = this.helper.splitField(field);
-    const entityName = this._aliasMap[fromAlias];
-    const prop = this.metadata.get(entityName).properties[fromField];
-    this._aliasMap[alias] = prop.type;
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName));
-
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      const pivotAlias = `e${this.aliasCounter++}`;
-      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
-      this._fields.push(`${pivotAlias}.${prop.name}`);
-      Object.assign(this._joins, joins);
-    } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
-      this._joins[prop.name] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
-    } else { // MANY_TO_ONE
-      this._joins[prop.name] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
-    }
+    const extraFields = this.joinReference(field, alias, cond, type);
+    this._fields.push(...extraFields);
 
     return this;
   }
@@ -109,7 +93,7 @@ export class QueryBuilder {
   where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName, false, false));
+    cond = SmartQueryHelper.processWhere(cond as Record<string, any>, this.entityName, this.metadata.get(this.entityName, false, false));
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -152,6 +136,10 @@ export class QueryBuilder {
         return;
       }
 
+      if (this.autoJoinReference(this.entityName, orderBy, field, this.alias)) { // auto join
+        return;
+      }
+
       const prop = meta.properties[field];
       Utils.renameKey(orderBy, field, prop.fieldName);
     });
@@ -175,6 +163,9 @@ export class QueryBuilder {
     return this;
   }
 
+  /**
+   * @internal
+   */
   populate(populate: string[]): this {
     this._populate = populate;
     return this;
@@ -212,7 +203,7 @@ export class QueryBuilder {
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy)), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
-    Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy, this._populateMap)), this._orderBy);
+    Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset), this._offset);
 
@@ -262,6 +253,32 @@ export class QueryBuilder {
     return qb;
   }
 
+  private joinReference(field: string, alias: string, cond: Record<string, any>, type: 'leftJoin' | 'innerJoin'): string[] {
+    const [fromAlias, fromField] = this.helper.splitField(field);
+    const entityName = this._aliasMap[fromAlias];
+    const prop = this.metadata.get(entityName).properties[fromField];
+    this._aliasMap[alias] = prop.type;
+    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName));
+    const aliasedName = `${fromAlias}.${prop.name}`;
+    const ret: string[] = [];
+
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      const pivotAlias = `e${this.aliasCounter++}`;
+      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
+      Object.assign(this._joins, joins);
+      this._aliasMap[pivotAlias] = prop.pivotTable;
+      ret.push(`${fromAlias}.${prop.name}`);
+    } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
+      this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
+    } else { // MANY_TO_ONE
+      this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
+    }
+
+    return ret;
+  }
+
   private prepareFields(fields: string[]): (string | Raw)[] {
     const ret: string[] = [];
 
@@ -297,6 +314,10 @@ export class QueryBuilder {
         return;
       }
 
+      if (this.autoJoinReference(this.entityName, cond, field, this.alias)) { // auto join
+        return;
+      }
+
       const prop = meta.properties[field];
 
       if (prop.reference === ReferenceType.MANY_TO_MANY) {
@@ -311,6 +332,51 @@ export class QueryBuilder {
     });
 
     return cond;
+  }
+
+  /**
+   * Search for nested where condition or order by clause like { books: { publisher: { name: '...' } } }
+   * and auto-join relations and convert to { 'publisher_alias.name': '...' }
+   */
+  private autoJoinReference(entityName: string, cond: any, field: string, alias: string, subcond?: any): boolean {
+    subcond = subcond || cond;
+    const meta = this.metadata.get(entityName);
+    const prop = meta.properties[field];
+
+    if (!prop || !Utils.isObject(subcond[field]) || Utils.isPrimaryKey(subcond[field])) {
+      return false;
+    }
+
+    const meta2 = this.metadata.get(prop.type, false, false);
+    const value = Object.keys(subcond[field]).filter(k => !this.helper.isOperator(k));
+
+    if (value.some(k => !meta2.properties[k])) {
+      throw new Error(`Trying to query by not existing property ${entityName}.${field}`);
+    }
+
+    if (prop.reference === ReferenceType.SCALAR || Object.keys(value).length === 0) {
+      return false;
+    }
+
+    const aliasedName = `${alias}.${prop.name}`;
+    const nestedAlias = this._joins[aliasedName] ? this._joins[aliasedName].inverseAlias || this._joins[aliasedName].alias : `e${this.aliasCounter++}`;
+
+    if (!this._joins[aliasedName]) {
+      // auto join without selecting m:n fields
+      this.joinReference(aliasedName, nestedAlias, {}, 'leftJoin');
+    }
+
+    Object.keys(subcond[field]).forEach(k => {
+      const isDeep = this.autoJoinReference(prop.type, cond, k, nestedAlias, subcond[field]);
+
+      if (!isDeep) {
+        cond[`${nestedAlias}.${k}`] = subcond[field][k];
+      }
+    });
+
+    delete subcond[field];
+
+    return true;
   }
 
   private processOneToOne(prop: EntityProperty, cond: any): void {
@@ -446,6 +512,7 @@ export interface JoinOptions {
   type: 'leftJoin' | 'innerJoin';
   alias: string;
   ownerAlias: string;
+  inverseAlias?: string;
   joinColumn?: string;
   inverseJoinColumn?: string;
   primaryKey?: string;

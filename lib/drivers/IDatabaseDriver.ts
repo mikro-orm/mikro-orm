@@ -52,4 +52,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export type FilterQuery<T> = Partial<T> | Record<string, any>;
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? DeepPartial<U>[]
+    : T[P] extends ReadonlyArray<infer U>
+      ? ReadonlyArray<DeepPartial<U>>
+      : DeepPartial<T[P]>
+};
+
+export type FilterQuery<T> = DeepPartial<T> | Record<string, any>;
