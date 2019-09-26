@@ -7,7 +7,7 @@ To generate entities from existing database schema, you can use `EntityGenerator
 
 You can use it via CLI: 
 
-```shell script
+```bash
 npx mikro-orm generate-entities --dump  # Dumps all generated entities
 npx mikro-orm generate-entities --save --path=./my-entities  # Saves entities into given directory
 ```
