@@ -5,7 +5,7 @@
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
-```
+```sh
 $ yarn add mikro-orm mongodb # for mongo
 $ yarn add mikro-orm mysql2  # for mysql/mariadb
 $ yarn add mikro-orm mariadb # for mysql/mariadb
@@ -15,7 +15,7 @@ $ yarn add mikro-orm sqlite3 # for sqlite
 
 or
 
-```
+```sh
 $ npm i -s mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm mysql2  # for mysql/mariadb
 $ npm i -s mikro-orm mariadb # for mysql/mariadb
@@ -86,7 +86,7 @@ MikroORM ships with a number of command line tools that are very helpful during 
 like Schema Generator and Entity Generator. You can call this command from the NPM binary 
 directory or use `npx`:
 
-```shell script
+```sh
 $ node node_modules/.bin/mikro-orm
 $ npx mikro-orm
 
@@ -116,7 +116,7 @@ exports your ORM configuration. TypeScript is also supported, just enable `useTs
 
 **`./src/cli-config.ts`**
 
-```
+```typescript
 // usually you will reexport existing configuration from somewhere else
 import { CONFIG } from './config';
 export = CONFIG.orm;
@@ -128,7 +128,7 @@ export = CONFIG.orm;
 
 Now you should be able to start using the CLI. All available commands are listed in the CLI help:
 
-```shell script
+```sh
 Usage: mikro-orm <command> [options]
 
 Commands:
