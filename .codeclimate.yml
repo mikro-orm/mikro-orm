@@ -3,7 +3,7 @@ version: "2"
 checks:
   file-lines:
     config:
-      threshold: 400
+      threshold: 500
   method-lines:
     config:
       threshold: 30

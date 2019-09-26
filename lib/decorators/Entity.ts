@@ -74,6 +74,7 @@ export interface EntityProperty<T extends IEntityType<T> = any> {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
+  eager?: boolean;
   setter?: boolean;
   getter?: boolean;
   getterName?: keyof T;

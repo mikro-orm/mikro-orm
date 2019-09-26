@@ -1,7 +1,7 @@
-import { EntityProperty, IEntity } from './Entity';
+import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType } from '../entity';
+import { Cascade, ReferenceType } from '../entity';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: IEntity, propertyName: string) {
@@ -39,3 +39,9 @@ export type PropertyOptions = {
   hidden?: boolean;
   version?: boolean;
 };
+
+export interface ReferenceOptions<T extends IEntityType<T>> extends PropertyOptions {
+  entity?: string | (() => EntityName<T>);
+  cascade?: Cascade[];
+  eager?: boolean;
+}

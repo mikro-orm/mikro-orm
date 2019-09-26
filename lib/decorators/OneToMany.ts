@@ -1,4 +1,4 @@
-import { PropertyOptions } from './Property';
+import { ReferenceOptions } from './Property';
 import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
@@ -55,9 +55,8 @@ export function createOneToDecorator<T extends IEntityType<T>>(
   };
 }
 
-export type OneToManyOptions<T extends IEntityType<T>> = PropertyOptions & {
+export type OneToManyOptions<T extends IEntityType<T>> = ReferenceOptions<T> & {
   entity: string | (() => EntityName<T>);
-  cascade?: Cascade[];
   orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder };
   joinColumn?: string;

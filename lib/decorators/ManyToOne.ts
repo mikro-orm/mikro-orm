@@ -1,4 +1,4 @@
-import { PropertyOptions } from './Property';
+import { ReferenceOptions } from './Property';
 import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
@@ -24,9 +24,8 @@ export function ManyToOne<T extends IEntityType<T>>(
   };
 }
 
-export interface ManyToOneOptions<T extends IEntityType<T>> extends PropertyOptions {
+export interface ManyToOneOptions<T extends IEntityType<T>> extends ReferenceOptions<T> {
   entity?: string | (() => EntityName<T>);
   inversedBy?: (string & keyof T) | ((e: T) => any);
-  cascade?: Cascade[];
   wrappedReference?: boolean;
 }

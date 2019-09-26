@@ -51,6 +51,7 @@ describe('EntityManagerMongo', () => {
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(true);
+    expect(publisher7k.tests.isInitialized(true)).toBe(true); // tests are eager loaded
     orm.em.clear();
 
     const authorRepository = orm.em.getRepository(Author);
@@ -164,6 +165,20 @@ describe('EntityManagerMongo', () => {
     expect(repo).toBeInstanceOf(AuthorRepository);
     expect(repo.magic).toBeInstanceOf(Function);
     expect(repo.magic('test')).toBe('111 test 222');
+  });
+
+  test('eager loading', async () => {
+    const bar = FooBar.create('fb');
+    bar.baz = FooBaz.create('fz');
+    bar.baz.book = new Book('FooBar vs FooBaz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(FooBar);
+    const a = await repo.findOne(bar.id, ['baz.bar']);
+    expect(a!.baz!.isInitialized()).toBe(true);
+    expect(a!.baz!.book.isInitialized()).toBe(true);
+    expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
   });
 
   test('findOne should work with options parameter', async () => {

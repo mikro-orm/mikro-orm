@@ -20,6 +20,8 @@ export class EntityLoader {
 
     if (populate === true) {
       populate = this.lookupAllRelationships(entityName);
+    } else {
+      populate = this.lookupEagerLoadedRelationships(entityName, populate);
     }
 
     for (const field of populate) {
@@ -166,17 +168,44 @@ export class EntityLoader {
     const ret: string[] = [];
     const meta = this.metadata.get(entityName);
 
-    Object.values(meta.properties).forEach(prop => {
-      if (prop.reference === ReferenceType.SCALAR) {
-        return;
-      }
+    Object.values(meta.properties)
+      .filter(prop => prop.reference !== ReferenceType.SCALAR)
+      .forEach(prop => {
+        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+        const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
 
-      const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-      ret.push(prefixed);
-      ret.push(...this.lookupAllRelationships(prop.type, prefixed, visited));
-    });
+        if (nested.length > 0) {
+          ret.push(...nested);
+        } else {
+          ret.push(prefixed);
+        }
+      });
 
     return ret;
+  }
+
+  private lookupEagerLoadedRelationships(entityName: string, populate: string[], prefix = '', visited: string[] = []): string[] {
+    if (visited.includes(entityName)) {
+      return [];
+    }
+
+    visited.push(entityName);
+    const meta = this.metadata.get(entityName);
+
+    Object.values(meta.properties)
+      .filter(prop => prop.eager)
+      .forEach(prop => {
+        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+        const nested = this.lookupEagerLoadedRelationships(prop.type, [], prefixed, visited);
+
+        if (nested.length > 0) {
+          populate.push(...nested);
+        } else {
+          populate.push(prefixed);
+        }
+      });
+
+    return populate;
   }
 
 }

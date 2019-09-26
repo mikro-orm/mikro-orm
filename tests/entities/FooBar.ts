@@ -11,7 +11,7 @@ export class FooBar {
   @Property()
   name: string;
 
-  @OneToOne({ orphanRemoval: true })
+  @OneToOne({ eager: true, orphanRemoval: true })
   baz: FooBaz | null;
 
   @OneToOne()

@@ -15,7 +15,7 @@ export class Publisher {
   @OneToMany({ entity: () => Book.name, mappedBy: 'publisher' })
   books = new Collection<Book>(this);
 
-  @ManyToMany({ entity: () => Test.name, owner: true })
+  @ManyToMany({ entity: () => Test.name, owner: true, eager: true })
   tests = new Collection<Test>(this);
 
   @Property()
