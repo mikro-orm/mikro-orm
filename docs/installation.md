@@ -94,9 +94,10 @@ $ npx mikro-orm
 $ mikro-orm
 ```
 
-For CLI to be able to access your database, you will need to create `cli-config.js` file that 
+For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that 
 exports your ORM configuration. TypeScript is also supported, just enable `useTsNode` flag in your
-`package.json` file. There you can also set up array of possible paths to `cli-config` file:
+`package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
+as well as use different file name:
 
 **`./package.json`**
 
@@ -107,14 +108,14 @@ exports your ORM configuration. TypeScript is also supported, just enable `useTs
   "mikro-orm": {
     "useTsNode": true,
     "configPaths": [
-      "./src/cli-config.ts",
-      "./dist/cli-config.js"
+      "./src/mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
     ]
   }
 }
 ```
 
-**`./src/cli-config.ts`**
+**`./src/mikro-orm.config.ts`**
 
 ```typescript
 // usually you will reexport existing configuration from somewhere else

@@ -25,7 +25,7 @@ export class CLIHelper {
       }
     }
 
-    throw new Error(`cli-config not found in ['${paths.join(`', '`)}']`);
+    throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
   }
 
   static async getORM(warnWhenNoEntities?: boolean): Promise<MikroORM> {
@@ -117,7 +117,13 @@ export class CLIHelper {
 
     paths.push(...(settings.configPaths || []));
 
-    return [...paths, './cli-config'];
+    if (settings.useTsNode) {
+      paths.push('./mikro-orm.config.ts');
+    }
+
+    paths.push('./mikro-orm.config.js');
+
+    return paths;
   }
 
   static async dumpDependencies() {
