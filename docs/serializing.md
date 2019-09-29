@@ -72,7 +72,7 @@ MongoDB's aggregations.
 @Entity()
 export class Book {
 
-  @Property({ persist: true })
+  @Property({ persist: false })
   count: number;
 
 }
