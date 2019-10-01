@@ -83,7 +83,7 @@ export class EntityFactory {
    */
   private extractConstructorParams<T extends IEntityType<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
     return meta.constructorParams.map(k => {
-      if (meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
+      if (meta.properties[k] && meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
         return entity || this.createReference(meta.properties[k].type, data[k]);
       }

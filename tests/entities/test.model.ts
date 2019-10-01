@@ -12,6 +12,15 @@ export class Test {
   @Property({ hidden: true })
   hiddenField = Date.now();
 
+  constructor(props: Partial<Test> = {}) {
+    this._id = props._id;
+    this.name = props.name;
+
+    if (props.hiddenField) {
+      this.hiddenField = props.hiddenField;
+    }
+  }
+
   static create(name: string) {
     const t = new Test();
     t.name = name;

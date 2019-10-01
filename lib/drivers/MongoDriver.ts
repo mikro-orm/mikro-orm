@@ -17,7 +17,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     super(config, ['mongo']);
   }
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number): Promise<T[]> {
     where = this.renameFields(entityName, where);
     const res = await this.getConnection('read').find<T>(entityName, where, orderBy, limit, offset, fields);
 
