@@ -23,9 +23,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     this.platform = platform;
   }
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
+  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
+    const meta = this.metadata.get(entityName);
+
+    if (fields && !fields.includes(meta.primaryKey)) {
+      fields.unshift(meta.primaryKey);
+    }
+
     const qb = this.createQueryBuilder(entityName, ctx);
-    qb.select('*').populate(populate).where(where).orderBy(orderBy);
+    qb.select(fields || '*').populate(populate).where(where).orderBy(orderBy);
 
     if (limit !== undefined) {
       qb.limit(limit, offset);

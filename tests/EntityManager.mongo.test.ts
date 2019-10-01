@@ -1487,6 +1487,30 @@ describe('EntityManagerMongo', () => {
     expect(ent.isInitialized()).toBe(true);
   });
 
+  test('find and count', async () => {
+    for (let i = 1; i <= 30; i++) {
+      orm.em.persist(new Author('God ' + i, `hello-${i}@heaven.god`));
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    const [authors1, count1] = await orm.em.findAndCount(Author, {}, { limit: 10, offset: 10 });
+    expect(authors1).toHaveLength(10);
+    expect(count1).toBe(30);
+    expect(authors1[0]).toBeInstanceOf(Author);
+    expect(authors1[0].name).toBe('God 11');
+    expect(authors1[9].name).toBe('God 20');
+    orm.em.clear();
+
+    const [authors2, count2] = await orm.em.findAndCount(Author, {}, { limit: 10, offset: 25, fields: ['name'] });
+    expect(authors2).toHaveLength(5);
+    expect(authors2[0].email).toBeUndefined();
+    expect(count2).toBe(30);
+    expect(authors2[0].name).toBe('God 26');
+    expect(authors2[4].name).toBe('God 30');
+  });
+
   test('query highlighting', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);

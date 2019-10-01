@@ -18,7 +18,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
+  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
   abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
 
@@ -43,12 +43,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const fk2 = prop.inverseJoinColumn;
     const pivotTable = prop.owner ? prop.pivotTable : this.metadata.get(prop.type).properties[prop.mappedBy].pivotTable;
     const orderBy = { [`${pivotTable}.${this.metadata.get(pivotTable).primaryKey}`]: QueryOrder.ASC };
-    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy, undefined, undefined, ctx) : [];
+    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
 
     const map: Record<string, T[]> = {};
     owners.forEach(owner => map['' + owner] = []);
     items.forEach((item: any) => {
-      map['' + item[fk1]].push(item);
+      map[item[fk1]].push(item);
       delete item[fk1];
       delete item[fk2];
     });

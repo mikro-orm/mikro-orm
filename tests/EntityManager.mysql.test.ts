@@ -1254,8 +1254,9 @@ describe('EntityManagerMySql', () => {
     expect(authors1[9].name).toBe('God 20');
     orm.em.clear();
 
-    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25 });
+    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'] });
     expect(authors2).toHaveLength(5);
+    expect(authors2[0].email).toBeUndefined();
     expect(count2).toBe(30);
     expect(authors2[0].name).toBe('God 26');
     expect(authors2[4].name).toBe('God 30');

@@ -64,7 +64,7 @@ export class EntityManager {
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
-    const results = await this.driver.find(entityName, where, this.preparePopulate(options.populate), options.orderBy || {}, options.limit, options.offset, this.transactionContext);
+    const results = await this.driver.find(entityName, where, this.preparePopulate(options.populate), options.orderBy || {}, options.fields, options.limit, options.offset, this.transactionContext);
 
     if (results.length === 0) {
       return [];
@@ -410,6 +410,7 @@ export interface FindOptions {
   orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
+  fields?: string[];
 }
 
 export interface FindOneOptions {
