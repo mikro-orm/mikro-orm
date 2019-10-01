@@ -98,8 +98,10 @@ export class Utils {
 
     // remove unknown properties
     Object.keys(entity).forEach(prop => {
-      if (!meta.properties[prop as keyof T & string] || meta.properties[prop as keyof T & string].persist === false) {
-        delete ret[prop as keyof T];
+      const property = meta.properties[prop as keyof T & string];
+
+      if (!property || property.persist === false || (property.primary && !ret[prop])) {
+        delete ret[prop];
       }
     });
 

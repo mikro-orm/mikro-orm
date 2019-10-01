@@ -1000,6 +1000,12 @@ describe('EntityManagerPostgre', () => {
     expect(a5.id).toBe(author.id);
   });
 
+  test('allow assigning PK to undefined/null', async () => {
+    const test = new Test2({ name: 'name' });
+    await orm.em.persistAndFlush(test);
+    expect(test.id).toBeDefined();
+  });
+
   afterAll(async () => orm.close(true));
 
 });
