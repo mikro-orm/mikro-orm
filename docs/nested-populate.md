@@ -59,7 +59,7 @@ db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 
 ## Using EntityLoader manually
 
-Under the good, EntityManager uses EntityLoader to populate other entities. You can use it
+Under the hood, EntityManager uses EntityLoader to populate other entities. You can use it
 manually if you already have list of entities (e.g. queried via QueryBuilder):
 
 ```typescript
