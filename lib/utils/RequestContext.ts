@@ -15,7 +15,7 @@ export class RequestContext {
   constructor(readonly em: EntityManager) { }
 
   static create(em: EntityManager, next: (...args: any[]) => void) {
-    const context = new RequestContext(em.fork());
+    const context = new RequestContext(em.fork(true, true));
     const d = domain.create();
     d.__mikro_orm_context = context;
     d.run(next);

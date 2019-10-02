@@ -1,13 +1,5 @@
 import { Configuration, RequestContext, Utils, ValidationError } from './utils';
-import {
-  EntityAssigner,
-  EntityFactory,
-  EntityLoader,
-  EntityRepository,
-  EntityValidator, IdentifiedReference,
-  Reference,
-  ReferenceType,
-} from './entity';
+import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { AbstractSqlDriver, FilterQuery, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, IEntity, IEntityType, IPrimaryKey } from './decorators';
@@ -26,7 +18,8 @@ export class EntityManager {
 
   constructor(readonly config: Configuration,
               private readonly driver: IDatabaseDriver,
-              private readonly metadata: MetadataStorage) { }
+              private readonly metadata: MetadataStorage,
+              private readonly useContext = true) { }
 
   getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
     return this.driver as D;
@@ -343,8 +336,14 @@ export class EntityManager {
     return ret;
   }
 
-  fork(clear = true): EntityManager {
-    const em = new EntityManager(this.config, this.driver, this.metadata);
+  /**
+   * Returns new EntityManager instance with its own identity map
+   *
+   * @param clear do we want clear identity map? defaults to true
+   * @param useContext use request context? should be used only for top level request scope EM, defaults to false
+   */
+  fork(clear = true, useContext = false): EntityManager {
+    const em = new EntityManager(this.config, this.driver, this.metadata, useContext);
 
     if (!clear) {
       Object.values(this.getUnitOfWork().getIdentityMap()).forEach(entity => em.merge(entity));
@@ -354,12 +353,12 @@ export class EntityManager {
   }
 
   getUnitOfWork(): UnitOfWork {
-    const em = RequestContext.getEntityManager() || this;
+    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
     return em.unitOfWork;
   }
 
   getEntityFactory(): EntityFactory {
-    const em = RequestContext.getEntityManager() || this;
+    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
     return em.entityFactory;
   }
 
