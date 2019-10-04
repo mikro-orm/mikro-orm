@@ -13,22 +13,24 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], populate: string[] | boolean, validate = true): Promise<void> {
+  async populate<T extends IEntityType<T>>(entityName: string, entities: IEntityType<T>[], populate: string[] | boolean, validate = true, lookup = true): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
 
     if (populate === true) {
       populate = this.lookupAllRelationships(entityName);
-    } else {
+    } else if (lookup) {
       populate = this.lookupEagerLoadedRelationships(entityName, populate);
     }
 
-    for (const field of populate) {
-      if (validate && !this.em.canPopulate(entityName, field)) {
-        throw new Error(`Entity '${entityName}' does not have property '${field}'`);
-      }
+    const invalid = populate.find(field => !this.em.canPopulate(entityName, field));
 
+    if (validate && invalid) {
+      throw new Error(`Entity '${entityName}' does not have property '${invalid}'`);
+    }
+
+    for (const field of populate) {
       await this.populateField(entityName, entities, field);
     }
   }
@@ -117,7 +119,7 @@ export class EntityLoader {
       });
       const filtered = Utils.unique(children);
       const prop = this.metadata.get(entityName).properties[f];
-      await this.populate(prop.type, filtered, [parts.join('.')], false);
+      await this.populate(prop.type, filtered, [parts.join('.')], false, false);
     } else {
       await this.populateMany<T>(entityName, entities, field as keyof T);
     }

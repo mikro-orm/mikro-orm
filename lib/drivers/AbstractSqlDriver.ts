@@ -1,5 +1,5 @@
 import { Transaction } from 'knex';
-import { EntityData, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, IEntityType, IPrimaryKey } from '../decorators';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
@@ -25,6 +25,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
     const meta = this.metadata.get(entityName);
+    populate = this.populateMissingReferences(meta, populate);
 
     if (fields && !fields.includes(meta.primaryKey)) {
       fields.unshift(meta.primaryKey);
@@ -42,6 +43,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
     const meta = this.metadata.get(entityName);
+    populate = this.populateMissingReferences(meta, populate);
     const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
@@ -51,11 +53,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (fields && !fields.includes(pk)) {
       fields.unshift(pk);
     }
-
-    const toPopulate = Object.values(meta.properties)
-      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
-      .map(prop => prop.name);
-    populate.push(...toPopulate);
 
     return this.createQueryBuilder(entityName, ctx)
       .select(fields || '*')
@@ -114,6 +111,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     return this.createQueryBuilder(entityName, ctx).delete(where).execute('run', false);
+  }
+
+  /**
+   * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
+   */
+  protected populateMissingReferences(meta: EntityMetadata, populate: string[]): string[] {
+    const toPopulate = Object.values(meta.properties)
+      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
+      .map(prop => prop.name);
+
+    return [...populate, ...toPopulate];
   }
 
   protected createQueryBuilder(entityName: string, ctx?: Transaction): QueryBuilder {

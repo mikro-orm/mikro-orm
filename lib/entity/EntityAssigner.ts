@@ -1,7 +1,7 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType } from '../decorators';
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';
@@ -44,24 +44,41 @@ export class EntityAssigner {
     return entity;
   }
 
+  /**
+   * auto-wire 1:1 inverse side with owner as it no-sql drivers it can't be joined
+   * @internal
+   */
+  static autoWireOneToOne<T extends IEntityType<T>>(prop: EntityProperty, entity: T): void {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner && prop.inversedBy) {
+      const meta2 = entity[prop.name].__meta as EntityMetadata;
+      const prop2 = meta2.properties[prop.inversedBy];
+
+      if (!entity[prop.name][prop2.name]) {
+        entity[prop.name][prop2.name] = Utils.wrapReference(entity, prop2);
+      }
+    }
+  }
+
   private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
+    let valid = false;
+
     if (Utils.isEntity(value) || value instanceof Reference) {
       entity[prop.name as keyof T] = value as T[keyof T];
-      return;
-    }
-
-    if (Utils.isPrimaryKey(value)) {
+      valid = true;
+    } else if (Utils.isPrimaryKey(value)) {
       entity[prop.name] = Utils.wrapReference(em.getReference(prop.type, value), prop);
-      return;
-    }
-
-    if (Utils.isObject(value)) {
+      valid = true;
+    } else if (Utils.isObject(value)) {
       entity[prop.name] = Utils.wrapReference(em.create(prop.type, value) as T[keyof T], prop);
-      return;
+      valid = true;
     }
 
-    const name = entity.constructor.name;
-    throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
+    if (!valid) {
+      const name = entity.constructor.name;
+      throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
+    }
+
+    EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
   private static assignCollection<T extends IEntityType<T>>(entity: T, collection: Collection<IEntity>, value: any[], prop: EntityProperty, em: EntityManager): void {

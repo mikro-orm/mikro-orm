@@ -162,6 +162,18 @@ describe('EntityManagerMySql', () => {
     expect(a4).toBeNull();
   });
 
+  test(`populating inverse side of 1:1 also back-links inverse side's owner`, async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(FooBar2);
+    const a = await repo.findOne(bar.id, ['baz']);
+    expect(a!.baz!.isInitialized()).toBe(true);
+    expect(a!.baz!.bar.isInitialized()).toBe(true);
+  });
+
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
@@ -940,7 +952,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { createdAt: QueryOrder.ASC });
+    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
     expect(books[0].isInitialized()).toBe(true);
@@ -1196,8 +1208,14 @@ describe('EntityManagerMySql', () => {
     const book1 = new Book2('My Life on The Wall, part 1', author);
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
+    const t1 = Test2.create('t1');
+    t1.book = book1;
+    const t2 = Test2.create('t2');
+    t2.book = book2;
+    const t3 = Test2.create('t3');
+    t3.book = book3;
     author.books.add(book1, book2, book3);
-    await orm.em.persistAndFlush(author);
+    await orm.em.persistAndFlush([author, t1, t2, t3]);
     orm.em.clear();
 
     const mock = jest.fn();
@@ -1205,8 +1223,14 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.em.config, { logger });
     const res = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
     expect(res).toHaveLength(3);
+    expect(res[0].test).toBeInstanceOf(Test2);
+    expect(res[0].test.isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e1`.`name` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`id` as `test_id` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e1`.`name` = ?');
   });
 
   test('partial selects', async () => {

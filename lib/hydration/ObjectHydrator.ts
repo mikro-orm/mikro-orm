@@ -1,6 +1,6 @@
 import { EntityData, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
 import { Hydrator } from './Hydrator';
-import { Collection, ReferenceType } from '../entity';
+import { Collection, EntityAssigner, ReferenceType } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
@@ -60,11 +60,12 @@ export class ObjectHydrator extends Hydrator {
 
     if (Utils.isPrimaryKey(value)) {
       entity[prop.name] = Utils.wrapReference(this.factory.createReference(prop.type, value), prop);
-      return;
+    } else if (Utils.isObject<T[keyof T]>(value)) {
+      entity[prop.name] = Utils.wrapReference(this.factory.create(prop.type, value), prop);
     }
 
-    if (Utils.isObject<T[keyof T]>(value)) {
-      entity[prop.name] = Utils.wrapReference(this.factory.create(prop.type, value), prop);
+    if (entity[prop.name]) {
+      EntityAssigner.autoWireOneToOne(prop, entity);
     }
   }
 

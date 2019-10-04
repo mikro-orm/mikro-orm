@@ -1390,6 +1390,18 @@ describe('EntityManagerMongo', () => {
     expect(a.born).toBeUndefined();
   });
 
+  test(`populating inverse side of 1:1 also back-links inverse side's owner (both eager)`, async () => {
+    const bar = FooBar.create('fb');
+    bar.baz = FooBaz.create('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(FooBar);
+    const a = await repo.findOne(bar.id); // baz and bar are both marked as eager
+    expect(a!.baz!.isInitialized()).toBe(true);
+    expect(a!.baz!.bar.isInitialized()).toBe(true);
+  });
+
   test('automatically fix PK instead of entity when flushing (m:1)', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     Object.assign(author, { favouriteBook: '0000007b5c9c61c332380f78' });
