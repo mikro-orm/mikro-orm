@@ -171,9 +171,15 @@ export class MetadataDiscovery {
   }
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
+    const meta2 = this.metadata.get(prop.type);
+
     if (!prop.pivotTable && prop.owner) {
-      const meta2 = this.metadata.get(prop.type);
       prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
+    }
+
+    if (prop.owner && prop.inversedBy) {
+      const prop2 = meta2.properties[prop.inversedBy];
+      prop2.pivotTable = prop.pivotTable;
     }
 
     if (!prop.referenceColumnName) {

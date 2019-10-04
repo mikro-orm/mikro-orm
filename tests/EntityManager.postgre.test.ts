@@ -43,7 +43,7 @@ describe('EntityManagerPostgre', () => {
   test('should return postgre driver', async () => {
     const driver = orm.em.getDriver<PostgreSqlDriver>();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);
-    await expect(driver.findOne(Book2.name, { foo: 'bar' })).resolves.toBeNull();
+    await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
     await expect(driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).resolves.not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);

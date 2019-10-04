@@ -89,7 +89,7 @@ export class EntityLoader {
     let fk = meta.primaryKey;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
-      fk = meta.properties[prop.mappedBy].fieldName;
+      fk = meta.properties[prop.mappedBy].name;
     }
 
     if (children.length === 0) {

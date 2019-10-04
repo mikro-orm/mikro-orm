@@ -120,10 +120,16 @@ export class Utils {
     return Array.isArray(data!) ? data : [data!];
   }
 
+  /**
+   * renames object key, keeps order of properties
+   */
   static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && from in payload && !(to in payload)) {
-      payload[to] = payload[from as keyof T];
-      delete payload[from as keyof T];
+      Object.keys(payload).forEach(key => {
+        const value = payload[key];
+        delete payload[key];
+        payload[from === key ? to : key] = value;
+      }, payload);
     }
   }
 

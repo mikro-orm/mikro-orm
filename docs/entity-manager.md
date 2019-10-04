@@ -98,7 +98,7 @@ for (const author of authors) {
 }
 ```
 
-### Conditions Object ()
+### Conditions Object
 
 Querying entities via conditions object (`where` in `em.find(Entity, where: FilterQuery<T>)`) 
 supports many different ways:
@@ -132,6 +132,24 @@ const user1 = await orm.em.findOne(User, 1);
 As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
 `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`. More about that can be found in 
 [Query Conditions](query-conditions.md) section. 
+
+### Searching by referenced entity fields
+
+You can also search by referenced entity properties. Simply pass nested where condition like 
+this and all requested relationships will be automatically joined. Currently it will only join 
+them so you can search and sort by those. To populate entities, do not forget to pass the populate 
+parameter as well. 
+
+```typescript
+// find author of a book that has tag specified by name
+const author = await orm.em.findOne(Author, { books: { tags: { name: 'Tag name' } } });
+console.log(author.books.isInitialized()); // false, as it only works for query and sort
+
+const author = await orm.em.findOne(Author, { books: { tags: { name: 'Tag name' } } }, ['books.tags']);
+console.log(author.books.isInitialized()); // true, because it was populated
+console.log(author.books[0].tags.isInitialized()); // true, because it was populated
+console.log(author.books[0].tags[0].isInitialized()); // true, because it was populated
+```
 
 ### Fetching Partial Entities
 
