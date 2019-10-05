@@ -170,8 +170,8 @@ describe('EntityManagerMySql', () => {
 
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(bar.id, ['baz']);
-    expect(a!.baz!.isInitialized()).toBe(true);
-    expect(a!.baz!.bar.isInitialized()).toBe(true);
+    expect(a!.baz.isInitialized()).toBe(true);
+    expect(a!.baz.bar.isInitialized()).toBe(true);
   });
 
   test('transactions', async () => {

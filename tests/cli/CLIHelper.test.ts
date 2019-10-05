@@ -92,7 +92,7 @@ describe('CLIHelper', () => {
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('d');
     expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
-    expect(args.option.mock.calls[2][0]).toBe('no-fk');
+    expect(args.option.mock.calls[2][0]).toBe('fk-checks');
     expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'boolean' });
   });
 

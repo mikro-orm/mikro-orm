@@ -2,7 +2,7 @@ import yargs, { Arguments, Argv, CommandModule } from 'yargs';
 import chalk from 'chalk';
 import { CLIHelper } from './CLIHelper';
 
-export type Options = { dump: boolean; run: boolean; noFk: boolean };
+export type Options = { dump: boolean; run: boolean; fkChecks: boolean };
 
 export class SchemaCommandFactory {
 
@@ -40,16 +40,15 @@ export class SchemaCommandFactory {
       type: 'boolean',
       desc: 'Dumps all queries to console',
     });
-    args.option('no-fk', {
+    args.option('fk-checks', {
       type: 'boolean',
-      desc: 'Disable foreign key checks if possible',
-      default: true,
+      desc: 'Do not skip foreign key checks',
     });
 
     return args;
   }
 
-  static async handleSchemaCommand(args: Arguments<{ dump: boolean; run: boolean; noFk: boolean }>, method: 'create' | 'update' | 'drop', successMessage: string) {
+  static async handleSchemaCommand(args: Arguments<{ dump: boolean; run: boolean; fkChecks: boolean }>, method: 'create' | 'update' | 'drop', successMessage: string) {
     if (!args.run && !args.dump) {
       yargs.showHelp();
       return;
@@ -60,11 +59,11 @@ export class SchemaCommandFactory {
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
-      const dump = await generator[m](args.noFk);
+      const dump = await generator[m](!args.fkChecks);
       CLIHelper.dump(dump, orm.config, 'sql');
     } else {
       const m = method + 'Schema';
-      await generator[m](args.noFk);
+      await generator[m](!args.fkChecks);
       CLIHelper.dump(chalk.green(successMessage));
     }
 
