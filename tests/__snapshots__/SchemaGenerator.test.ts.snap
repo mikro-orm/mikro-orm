@@ -185,6 +185,9 @@ alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" uniqu
 
 create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
 
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
+
 create table \\"book2_to_book_tag2\\" (\\"id\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
 
 create table \\"publisher2_to_test2\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -221,6 +224,7 @@ drop table if exists \\"publisher2\\" cascade;
 drop table if exists \\"test2\\" cascade;
 drop table if exists \\"foo_bar2\\" cascade;
 drop table if exists \\"foo_baz2\\" cascade;
+drop table if exists \\"label2\\" cascade;
 drop table if exists \\"book2_to_book_tag2\\" cascade;
 drop table if exists \\"publisher2_to_test2\\" cascade;
 
@@ -239,6 +243,7 @@ drop table if exists \\"publisher2\\" cascade;
 drop table if exists \\"test2\\" cascade;
 drop table if exists \\"foo_bar2\\" cascade;
 drop table if exists \\"foo_baz2\\" cascade;
+drop table if exists \\"label2\\" cascade;
 drop table if exists \\"book2_to_book_tag2\\" cascade;
 drop table if exists \\"publisher2_to_test2\\" cascade;
 
@@ -260,6 +265,9 @@ alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\
 alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
 
 create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
 
 create table \\"book2_to_book_tag2\\" (\\"id\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
 

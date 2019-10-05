@@ -371,6 +371,19 @@ export class FooBaz2 {
   "import { Entity, PrimaryKey, Property } from 'mikro-orm';
 
 @Entity()
+export class Label2 {
+
+    @PrimaryKey({ type: 'uuid' })
+    uuid: string;
+
+    @Property({ length: 255 })
+    name: string;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
 export class Publisher2 {
 
     @PrimaryKey()
