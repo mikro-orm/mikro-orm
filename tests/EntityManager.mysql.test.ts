@@ -45,7 +45,7 @@ describe('EntityManagerMySql', () => {
   test('should return mysql driver', async () => {
     const driver = orm.em.getDriver<MySqlDriver>();
     expect(driver instanceof MySqlDriver).toBe(true);
-    await expect(driver.findOne(Book2.name, { foo: 'bar' })).resolves.toBeNull();
+    await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);

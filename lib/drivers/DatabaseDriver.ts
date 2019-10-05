@@ -41,9 +41,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     const fk1 = prop.joinColumn;
     const fk2 = prop.inverseJoinColumn;
-    const pivotTable = prop.owner ? prop.pivotTable : this.metadata.get(prop.type).properties[prop.mappedBy].pivotTable;
-    const orderBy = { [`${pivotTable}.${this.metadata.get(pivotTable).primaryKey}`]: QueryOrder.ASC };
-    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
+    const pivotProp2 = this.getPivotInverseProperty(prop);
+    const orderBy = { [`${(prop.pivotTable)}.${this.metadata.get(prop.pivotTable).primaryKey}`]: QueryOrder.ASC };
+    const items = owners.length ? await this.find(prop.type, { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } }, [prop.pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
 
     const map: Record<string, T[]> = {};
     owners.forEach(owner => map['' + owner] = []);
@@ -114,6 +114,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected getPrimaryKeyField(entityName: string): string {
     const meta = this.metadata.get(entityName, false, false);
     return meta ? meta.primaryKey : this.config.getNamingStrategy().referenceColumnName();
+  }
+
+  protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
+    const pivotMeta = this.metadata.get(prop.pivotTable);
+    const pivotProp1 = pivotMeta.properties[prop.type];
+    const inverse = pivotProp1.mappedBy || pivotProp1.inversedBy;
+
+    return pivotMeta.properties[inverse];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {

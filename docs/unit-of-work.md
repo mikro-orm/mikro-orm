@@ -42,14 +42,14 @@ first gets the primary key from the row and checks if it already has an object i
 
 ## Persisting Managed Entities
 
-The identity map has a second use-case. When you call `EntityManager#flush()`, MikroORM will 
+The identity map has a second use-case. When you call `em.flush()`, MikroORM will 
 ask the identity map for all objects that are currently managed. This means you don't have to 
-call `EntityManager#persistLater()` over and over again to pass known objects to the 
+call `em.persistLater()` over and over again to pass known objects to the 
 `EntityManager`. This is a NO-OP for known entities, but leads to much code written that is 
 confusing to other developers.
 
 The following code WILL update your database with the changes made to the `Author` object, 
-even if you did not call `EntityManager#persistLater()`:
+even if you did not call `em.persistLater()`:
 
 ```typescript
 const authorRepository = orm.em.getRepository(Author);
@@ -68,17 +68,17 @@ For this MikroORM keeps a second map inside the `UnitOfWork`. Whenever you fetch
 from the database MikroORM will keep a copy of all the properties and associations inside 
 the `UnitOfWork`. 
 
-Now whenever you call `EntityManager#flush()` MikroORM will iterate over all entities you 
-previously marked for persisting via `EntityManager#persistLater()`. For each object it will
+Now whenever you call `em.flush()` MikroORM will iterate over all entities you 
+previously marked for persisting via `em.persistLater()`. For each object it will
 compare the original property and association values with the values that are currently set 
 on the object. If changes are detected then the object is queued for a UPDATE operation. 
 Only the fields that actually changed are updated.
 
 ## Transactions
 
-When you call `EntityManager#flush()`, all computed changes are queried inside a database
+When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
-of transactions simply by calling `EntityManager#persistLater()` and once all your changes 
+of transactions simply by calling `em.persistLater()` and once all your changes 
 are ready, simply calling `flush()` will run them inside a transaction. 
 
 You can find more information about transactions in [Transactions and concurrency](transactions.md) 
@@ -90,7 +90,7 @@ page.
 > `em.flush()` yourself to persist changes into database. You can still change this via ORM's
 > options to ease the transition but generally it is not recommended. 
 
-Originally there was only `EntityManager#persist(entity, flush = true)` method, that was
+Originally there was only `em.persist(entity, flush = true)` method, that was
 automatically flushing changes to database, if not given second `false` parameter. This 
 behaviour can be now changed via `autoFlush` option when initializing the ORM:
 

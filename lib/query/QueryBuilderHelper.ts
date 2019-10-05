@@ -1,7 +1,9 @@
 import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
+import { inspect } from 'util';
+
 import { Utils, ValidationError } from '../utils';
 import { EntityMetadata, EntityProperty } from '../decorators';
-import { FlatQueryOrderMap, QueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
+import { FlatQueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
 import { ReferenceType } from '../entity';
@@ -24,6 +26,7 @@ export class QueryBuilderHelper {
     $lt: '<',
     $lte: '<=',
     $ne: '!=',
+    $not: 'not',
   };
 
   constructor(private readonly entityName: string,
@@ -37,7 +40,7 @@ export class QueryBuilderHelper {
   mapper(field: string, type?: QueryType, value?: any, alias?: string): string; // tslint:disable-next-line:lines-between-class-members
   mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Raw {
     let ret = field;
-    const customExpression = this.isCustomExpression(field);
+    const customExpression = QueryBuilderHelper.isCustomExpression(field);
 
     // do not wrap custom expressions
     if (!customExpression) {
@@ -80,42 +83,31 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
     const meta = this.metadata.get(prop.type);
     const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
 
     return {
+      prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      joinColumn: prop.owner ? prop2.referenceColumnName : prop2.fieldName,
-      inverseJoinColumn: prop.owner ? prop2.referenceColumnName : prop.referenceColumnName,
+      joinColumn: prop.owner ? meta.primaryKey : prop2.fieldName,
+      inverseJoinColumn: prop.owner ? meta.primaryKey : prop.referenceColumnName,
       primaryKey: prop.owner ? prop.joinColumn : prop2.referenceColumnName,
-      ownerAlias,
-      alias,
-      prop,
-      type,
-      cond,
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
     return {
+      prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
       joinColumn: prop.referenceColumnName,
       primaryKey: prop.fieldName,
-      ownerAlias,
-      alias,
-      prop,
-      type,
-      cond,
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any>): Record<string, JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any>): Record<string, JoinOptions> {
     const join = {
-      prop,
-      type,
-      cond,
-      ownerAlias,
+      prop, type, cond, ownerAlias,
       alias: pivotAlias,
       inverseAlias: alias,
       joinColumn: prop.joinColumn,
@@ -133,6 +125,10 @@ export class QueryBuilderHelper {
       ret[name] = Object.assign(join, { table: prop2.pivotTable });
     }
 
+    if (type === 'pivotJoin') {
+      return ret;
+    }
+
     if (prop.owner) {
       const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type];
       ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
@@ -145,19 +141,15 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
     const prop2 = this.metadata.get(field).properties[prop.mappedBy || prop.inversedBy];
 
     return {
+      prop, type, cond, ownerAlias, alias,
       table: this.metadata.get(field).collection,
       joinColumn: prop.joinColumn,
       inverseJoinColumn: prop2.joinColumn,
       primaryKey: prop.referenceColumnName,
-      ownerAlias,
-      alias,
-      prop,
-      type,
-      cond,
     };
   }
 
@@ -167,14 +159,11 @@ export class QueryBuilderHelper {
       const left = `${join.ownerAlias}.${join.primaryKey!}`;
       const right = `${join.alias}.${join.joinColumn!}`;
 
-      if (join.cond) {
-        return qb[join.type](table, inner => {
-          inner.on(left, right);
-          this.appendJoinClause(inner, join.cond);
-        });
-      }
-
-      qb[join.type](table, left, right);
+      const method = join.type === 'pivotJoin' ? 'leftJoin' : join.type;
+      return qb[method](table, inner => {
+        inner.on(left, right);
+        this.appendJoinClause(inner, join.cond);
+      });
     });
   }
 
@@ -250,7 +239,7 @@ export class QueryBuilderHelper {
       return this.processObjectSubCondition(cond, key, qb, method, m, type);
     }
 
-    if (this.isCustomExpression(key)) {
+    if (QueryBuilderHelper.isCustomExpression(key)) {
       return this.processCustomExpression(qb, m, key, cond, type);
     }
 
@@ -282,15 +271,14 @@ export class QueryBuilderHelper {
     }
 
     // operators
-    for (const [op, replacement] of Object.entries(QueryBuilderHelper.OPERATORS)) {
-      if (!(op in cond[key])) {
-        continue;
-      }
+    const op = Object.keys(QueryBuilderHelper.OPERATORS).find(op => op in cond[key]);
 
-      qb[m](this.mapper(key, type), replacement, cond[key][op]);
-
-      break;
+    if (!op) {
+      throw new Error(`Invalid query condition: ${inspect(cond)}`);
     }
+
+    const replacement = QueryBuilderHelper.OPERATORS[op];
+    qb[m](this.mapper(key, type), replacement, cond[key][op]);
   }
 
   private appendJoinClause(clause: JoinClause, cond: Record<string, any>, operator?: '$and' | '$or'): void {
@@ -322,7 +310,7 @@ export class QueryBuilderHelper {
       return this.processObjectSubClause(cond, key, clause, m);
     }
 
-    if (this.isCustomExpression(key)) {
+    if (QueryBuilderHelper.isCustomExpression(key)) {
       return this.processCustomExpression(clause, m, key, cond);
     }
 
@@ -351,13 +339,8 @@ export class QueryBuilderHelper {
 
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Record<string, string>): { column: string; order: string }[] {
     return Object.keys(orderBy).map(k => {
-      let alias = this.alias;
-      let field = k;
-
-      if (k.includes('.')) {
-        [alias, field] = k.split('.');
-      }
-
+      // tslint:disable-next-line:prefer-const
+      let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
       const direction = orderBy[k];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
@@ -381,28 +364,6 @@ export class QueryBuilderHelper {
     const fromField = b || a;
 
     return [fromAlias, fromField];
-  }
-
-  replaceEmptyInConditions(cond: any, field: string): void {
-    if (QueryBuilderHelper.GROUP_OPERATORS[field as '$and' | '$or']) {
-      cond[field].forEach((subCond: any) => Object.keys(subCond).forEach(key => this.replaceEmptyInConditions(subCond, key)));
-      cond[field] = cond[field].filter((subCond: any) => !Utils.isObject(subCond) || Object.keys(subCond).length > 0);
-      return;
-    }
-
-    if (!Utils.isObject(cond[field]) || cond[field] instanceof RegExp) {
-      return;
-    }
-
-    // IN () is always false
-    if (cond[field] && cond[field].$in && cond[field].$in.length === 0) {
-      cond[field].$in = [null];
-    }
-
-    // NOT IN () is always true
-    if (cond[field] && cond[field].$nin && cond[field].$nin.length === 0) {
-      delete cond[field];
-    }
   }
 
   getLockSQL(qb: KnexQueryBuilder, lockMode?: LockMode): void {
@@ -438,11 +399,15 @@ export class QueryBuilderHelper {
     qb.update(versionProperty.fieldName, this.knex.raw(sql));
   }
 
-  isOperator(key: string): boolean {
+  static isOperator(key: string, includeGroupOperators = true): boolean {
+    if (!includeGroupOperators) {
+      return !!QueryBuilderHelper.OPERATORS[key];
+    }
+
     return !!QueryBuilderHelper.GROUP_OPERATORS[key] || !!QueryBuilderHelper.OPERATORS[key];
   }
 
-  private isCustomExpression(field: string): boolean {
+  static isCustomExpression(field: string): boolean {
     return !!field.match(/[ ?<>=()]|^\d/);
   }
 

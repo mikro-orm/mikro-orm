@@ -158,14 +158,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     for (const k of owners) {
       const prop = props[k];
-      const fk1 = prop.joinColumn;
-      const fk2 = prop.inverseJoinColumn;
+      const pivotProp2 = this.getPivotInverseProperty(prop);
       const qb1 = this.createQueryBuilder(prop.pivotTable, ctx);
-      await qb1.delete({ [fk1]: pk }).execute('run', false);
+      await qb1.delete({ [pivotProp2.name]: pk }).execute('run', false);
 
       for (const item of collections[k]) {
         const qb2 = this.createQueryBuilder(prop.pivotTable, ctx);
-        await qb2.insert({ [fk1]: pk, [fk2]: item }).execute('run', false);
+        await qb2.insert({ [pivotProp2.name]: pk, [prop.type]: item }).execute('run', false);
       }
     }
   }
