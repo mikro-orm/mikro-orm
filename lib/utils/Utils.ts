@@ -86,8 +86,11 @@ export class Utils {
     Object.values(meta.properties).forEach(prop => {
       const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
+      const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+      const noPk = Utils.isEntity(entity[name]) && !entity[name][pk()];
+      const collection = entity[name] as object instanceof ArrayCollection;
 
-      if (entity[name] as object instanceof ArrayCollection || (Utils.isEntity(entity[name]) && !entity[name][pk()])) {
+      if (collection || noPk || inverse) {
         return delete ret[name];
       }
 

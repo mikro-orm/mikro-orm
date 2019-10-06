@@ -174,6 +174,15 @@ describe('EntityManagerMySql', () => {
     expect(a!.baz.bar.isInitialized()).toBe(true);
   });
 
+  test('inverse side of 1:1 is ignored in change set', async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz 1');
+    await orm.em.persistAndFlush(bar);
+
+    bar.baz = new FooBaz2('fz 2');
+    await orm.em.flush();
+  });
+
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
