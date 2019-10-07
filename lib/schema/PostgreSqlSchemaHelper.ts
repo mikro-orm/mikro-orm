@@ -9,13 +9,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     number: ['int4', 'integer', 'int8', 'int', 'float', 'float8', 'double', 'double precision', 'bigint', 'smallint', 'decimal', 'numeric', 'real'],
     float: ['float'],
     double: ['double', 'double precision', 'float8'],
-    string: ['varchar(?)', 'character varying', 'text', 'character', 'char'],
+    string: ['varchar(?)', 'character varying', 'text', 'character', 'char', 'uuid'],
     Date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
     date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
     boolean: ['bool', 'boolean'],
     text: ['text'],
     object: ['json'],
     json: ['json'],
+    uuid: ['uuid'],
   };
 
   static readonly DEFAULT_TYPE_LENGTHS = {

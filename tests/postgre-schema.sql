@@ -10,6 +10,7 @@ drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
 drop table if exists "publisher2_to_test2" cascade;
+drop table if exists "label2" cascade;
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "identities" json null, "born" timestamptz(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "author2_email_unique" unique ("email");
@@ -50,5 +51,8 @@ alter table "book2_to_book_tag2" add constraint "book2_to_book_tag2_book_tag2_id
 
 alter table "publisher2_to_test2" add constraint "publisher2_to_test2_publisher2_id_foreign" foreign key ("publisher2_id") references "publisher2" ("id") on update cascade on delete cascade;
 alter table "publisher2_to_test2" add constraint "publisher2_to_test2_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
+
+create table "label2" ("uuid" uuid not null, "name" varchar(255) not null);
+alter table "label2" add constraint "label2_pkey" primary key ("uuid");
 
 set session_replication_role = 'origin';
