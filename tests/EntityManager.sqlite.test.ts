@@ -1,9 +1,8 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
+import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { Logger, ValidationError } from '../lib/utils';
-import { EntityMetadata } from '../lib/decorators';
 
 const { Author3 } = require('./entities-js').Author3;
 const { Book3 } = require('./entities-js').Book3;
@@ -38,7 +37,7 @@ describe('EntityManagerSqlite', () => {
 
   test('should return sqlite driver', async () => {
     const driver = orm.em.getDriver<SqliteDriver>();
-    expect(driver instanceof SqliteDriver).toBe(true);
+    expect(driver).toBeInstanceOf(SqliteDriver);
     expect(await driver.findOne(Book3.name, { title: '123' })).toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
@@ -67,7 +66,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
-    const repo = orm.em.getRepository(Author3);
+    const repo = orm.em.getRepository<any>(Author3);
     const author = new Author3('name', 'email');
     await repo.persistAndFlush(author);
     const a = await repo.findOne(author);
@@ -288,7 +287,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible, true);
     orm.em.clear();
 
-    const ref = orm.em.getReference(Author3, god.id);
+    const ref = orm.em.getReference<any>(Author3, god.id);
     expect(ref.isInitialized()).toBe(false);
     const newGod = await orm.em.findOne(Author3, god.id);
     expect(ref).toBe(newGod);
@@ -348,7 +347,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const proxy = orm.em.getReference(Test3, test.id);
+    const proxy = orm.em.getReference<any>(Test3, test.id);
     await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
     expect(proxy.isInitialized()).toBe(true);
   });
@@ -823,18 +822,18 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist([b1, b2, b3], true);
     orm.em.clear();
 
-    const a1 = (await orm.em.findOne(Author3, { 'id:ne': 10 }))!;
+    const a1 = (await orm.em.findOne<any>(Author3, { 'id:ne': 10 }))!;
     expect(a1).not.toBeNull();
     expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne(Author3, { 'id>=': 1 }))!;
+    const a2 = (await orm.em.findOne<any>(Author3, { 'id>=': 1 }))!;
     expect(a2).not.toBeNull();
     expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne(Author3, { 'id:nin': [2, 3, 4] }))!;
+    const a3 = (await orm.em.findOne<any>(Author3, { 'id:nin': [2, 3, 4] }))!;
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
-    const a4 = (await orm.em.findOne(Author3, { 'id:in': [] }))!;
+    const a4 = (await orm.em.findOne<any>(Author3, { 'id:in': [] }))!;
     expect(a4).toBeNull();
-    const a5 = (await orm.em.findOne(Author3, { 'id:nin': [] }))!;
+    const a5 = (await orm.em.findOne<any>(Author3, { 'id:nin': [] }))!;
     expect(a5).not.toBeNull();
     expect(a5.id).toBe(author.id);
   });

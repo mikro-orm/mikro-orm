@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Platform } from './Platform';
 import { MongoNamingStrategy, NamingStrategy } from '../naming-strategy';
-import { IPrimaryKey } from '../decorators';
+import { IPrimaryKey, Primary } from '../types';
 import { SchemaHelper } from '../schema';
 
 export class MongoPlatform extends Platform {
@@ -20,7 +20,7 @@ export class MongoPlatform extends Platform {
     return MongoNamingStrategy;
   }
 
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectId): T {
+  normalizePrimaryKey<T = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
     if (data instanceof ObjectId) {
       return data.toHexString() as unknown as T;
     }

@@ -1,15 +1,15 @@
 import { ReferenceOptions } from './Property';
-import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
+import { EntityName, EntityProperty, AnyEntity } from '../types';
 
-export function ManyToMany<T extends IEntityType<T>>(
+export function ManyToMany<T extends AnyEntity<T>>(
   entity: ManyToManyOptions<T> | string | (() => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options: Partial<ManyToManyOptions<T>> = {},
 ) {
-  return function (target: IEntity, propertyName: string) {
+  return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
 
     if (options.owner) {
@@ -32,7 +32,7 @@ export function ManyToMany<T extends IEntityType<T>>(
   };
 }
 
-export interface ManyToManyOptions<T extends IEntityType<T>> extends ReferenceOptions<T> {
+export interface ManyToManyOptions<T extends AnyEntity<T>> extends ReferenceOptions<T> {
   entity: string | (() => EntityName<T>);
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);

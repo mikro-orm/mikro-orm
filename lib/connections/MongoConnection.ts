@@ -1,19 +1,10 @@
-import {
-  Collection,
-  Db, DeleteWriteOpResultObject,
-  InsertOneWriteOpResult,
-  MongoClient,
-  MongoClientOptions,
-  ObjectId,
-  UpdateWriteOpResult,
-} from 'mongodb';
+import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions, ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery } from 'mongodb';
 import { inspect } from 'util';
 
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
-import { FilterQuery, IEntity } from '..';
-import { EntityName } from '../decorators';
+import { FilterQuery, AnyEntity, EntityName, Dictionary } from '../types';
 
 export class MongoConnection extends Connection {
 
@@ -33,7 +24,7 @@ export class MongoConnection extends Connection {
     return this.client.isConnected();
   }
 
-  getCollection(name: EntityName<IEntity>): Collection {
+  getCollection(name: EntityName<AnyEntity>): Collection {
     return this.db.collection(this.getCollectionName(name));
   }
 
@@ -65,16 +56,16 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const options = {} as Record<string, any>;
+    where = this.convertObjectIds<MongoFilterQuery<T>>(where);
+    const options: Dictionary = {};
 
     if (fields) {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection(collection).find(where, options);
+    const resultSet = this.getCollection(collection).find<T>(where, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
@@ -136,7 +127,7 @@ export class MongoConnection extends Connection {
   private async runQuery<T, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>): Promise<U> {
     collection = this.getCollectionName(collection);
     data = this.convertObjectIds(data!);
-    where = this.convertObjectIds(where!);
+    where = this.convertObjectIds<MongoFilterQuery<T>>(where!);
     const now = Date.now();
     let res: InsertOneWriteOpResult | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
     let query: string;
@@ -149,12 +140,12 @@ export class MongoConnection extends Connection {
       case 'updateMany':
         const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
         query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
-        res = await this.getCollection(collection).updateMany(where, payload);
+        res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload);
         break;
       case 'deleteMany':
       case 'countDocuments':
         query = `db.getCollection('${collection}').${method}(${this.logObject(where)});`;
-        res = await this.getCollection(collection)[method as 'deleteMany'](where); // cast to deleteMany to fix some typing weirdness
+        res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQuery<T>); // cast to deleteMany to fix some typing weirdness
         break;
     }
 
@@ -167,7 +158,7 @@ export class MongoConnection extends Connection {
     return this.transformResult(res!) as U;
   }
 
-  private convertObjectIds<T extends ObjectId | Record<string, any> | any[]>(payload: T): T {
+  private convertObjectIds<T extends ObjectId | Dictionary | any[]>(payload: T): T {
     if (payload instanceof ObjectId) {
       return payload;
     }
@@ -196,14 +187,14 @@ export class MongoConnection extends Connection {
     };
   }
 
-  private getCollectionName(name: EntityName<IEntity>): string {
+  private getCollectionName(name: EntityName<AnyEntity>): string {
     name = Utils.className(name);
     const meta = this.metadata.get(name, false, false);
 
     return meta ? meta.collection : name;
   }
 
-  private logObject(o: object): string {
+  private logObject(o: any): string {
     return inspect(o, { depth: 5, compact: true, breakLength: 300 });
   }
 

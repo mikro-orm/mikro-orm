@@ -1,5 +1,15 @@
 import { ObjectId } from 'mongodb';
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import {
+  Cascade,
+  Collection,
+  Entity,
+  IdentifiedReference,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  wrap,
+} from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -39,7 +49,7 @@ export class Book extends BaseEntity3 {
   }
 
   toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): { [p: string]: any } {
-    const o = this.toObject(...args);
+    const o = wrap(this).toObject(...args);
 
     if (strict) {
       strip.forEach(k => delete o[k]);

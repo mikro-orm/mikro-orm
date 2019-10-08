@@ -2,7 +2,7 @@ import { extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
-import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, IEntityType } from '../decorators';
+import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity } from '../types';
 import { Configuration, Logger, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
@@ -83,7 +83,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private prepare<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>): EntityClass<T> {
+  private prepare<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T>): EntityClass<T> {
     // save path to entity from schema
     if ('entity' in entity && 'schema' in entity) {
       const schema = entity.schema;
@@ -96,7 +96,7 @@ export class MetadataDiscovery {
     return entity;
   }
 
-  private async discoverEntity<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
+  private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
     this.logger.log('discovery', `- processing entity ${chalk.cyan(entity.name)}`);
 
@@ -125,7 +125,7 @@ export class MetadataDiscovery {
     this.discovered.push(meta);
   }
 
-  private async saveToCache<T extends IEntityType<T>>(meta: EntityMetadata, entity: EntityClass<T>): Promise<void> {
+  private async saveToCache<T extends AnyEntity<T>>(meta: EntityMetadata, entity: EntityClass<T>): Promise<void> {
     const copy = Object.assign({}, meta);
     delete copy.prototype;
 

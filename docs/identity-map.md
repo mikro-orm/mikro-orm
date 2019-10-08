@@ -15,7 +15,7 @@ const authors = await authorRepository.findAll(['books']);
 console.log(jon === authors[0]); // true
 ```
 
-If you want to clear this identity map cache, you can do so via `EntityManager.clear()` method:
+If you want to clear this identity map cache, you can do so via `em.clear()` method:
 
 ```typescript
 orm.em.clear();

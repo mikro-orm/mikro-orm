@@ -1,12 +1,16 @@
 import { ObjectId } from 'mongodb';
-import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, MongoEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBaz } from './FooBaz';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class FooBar {
+export class FooBar implements MongoEntity<FooBar> {
 
   @PrimaryKey()
   _id: ObjectId;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   name: string;
@@ -25,5 +29,3 @@ export class FooBar {
   }
 
 }
-
-export interface FooBar extends IEntity<string> { }

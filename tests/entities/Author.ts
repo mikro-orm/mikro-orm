@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property,
+  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -106,7 +106,7 @@ export class Author extends BaseEntity {
   }
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
-    const o = this.toObject(...args);
+    const o = wrap(this).toObject(...args);
     o.fooBar = 123;
 
     if (strict) {

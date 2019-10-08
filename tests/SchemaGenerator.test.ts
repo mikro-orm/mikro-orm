@@ -28,7 +28,7 @@ describe('SchemaGenerator', () => {
     const orm = await initORMMySql();
     orm.em.getConnection().execute('drop table if exists new_table');
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em.getDriver(), meta);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = {
       properties: {
@@ -163,7 +163,7 @@ describe('SchemaGenerator', () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em.getDriver(), meta);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = {
       properties: {

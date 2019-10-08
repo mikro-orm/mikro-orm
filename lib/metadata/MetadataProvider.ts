@@ -1,4 +1,4 @@
-import { EntityMetadata } from '../decorators';
+import { EntityMetadata } from '../types';
 import { Configuration, Utils } from '../utils';
 
 export abstract class MetadataProvider {

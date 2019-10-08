@@ -6,16 +6,16 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../types';
 import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
 
 export class Utils {
 
-  static isDefined(data: any): data is object {
+  static isDefined<T = object>(data: any): data is T {
     return typeof data !== 'undefined';
   }
 
-  static isObject<T = Record<string, any>>(o: any): o is T {
+  static isObject<T = Dictionary>(o: any): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o);
   }
 
@@ -59,8 +59,8 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
-  static diff(a: Record<string, any>, b: Record<string, any>): Record<keyof (typeof a & typeof b), any> {
-    const ret: Record<string, any> = {};
+  static diff(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
+    const ret: Dictionary = {};
 
     Object.keys(b).forEach(k => {
       if (Utils.equals(a[k], b[k])) {
@@ -73,28 +73,29 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities<T extends IEntityType<T>>(a: T, b: T, metadata: MetadataStorage): EntityData<T> {
+  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage): EntityData<T> {
     return Utils.diff(Utils.prepareEntity(a, metadata), Utils.prepareEntity(b, metadata)) as EntityData<T>;
   }
 
-  static prepareEntity<T extends IEntityType<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
+  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
     const meta = metadata.get<T>(entity.constructor.name);
     const ret = Utils.copy(entity);
+    // @ts-ignore
     delete ret.__initialized;
 
     // remove collections and references
-    Object.values(meta.properties).forEach(prop => {
+    Object.values<EntityProperty>(meta.properties).forEach(prop => {
       const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
       const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
       const noPk = Utils.isEntity(entity[name]) && !entity[name][pk()];
-      const collection = entity[name] as object instanceof ArrayCollection;
+      const collection = entity[name] as unknown instanceof ArrayCollection;
 
       if (collection || noPk || inverse) {
         return delete ret[name];
       }
 
-      if (Utils.isEntity(entity[name]) || entity[name] as object instanceof Reference) {
+      if (Utils.isEntity(entity[name]) || entity[name] as unknown instanceof Reference) {
         return ret[prop.name] = entity[prop.name][pk()];
       }
     });
@@ -165,13 +166,13 @@ export class Utils {
     return result.filter(i => i); // filter out empty strings
   }
 
-  static isPrimaryKey(key: any): key is IPrimaryKey {
+  static isPrimaryKey<T>(key: any): key is Primary<T> {
     return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key);
   }
 
-  static extractPK(data: any, meta?: EntityMetadata): IPrimaryKey | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata): Primary<T> | null {
     if (Utils.isPrimaryKey(data)) {
-      return data;
+      return data as Primary<T>;
     }
 
     if (Utils.isObject(data) && meta) {
@@ -181,8 +182,12 @@ export class Utils {
     return null;
   }
 
-  static isEntity<T = IEntity>(data: any): data is T {
+  static isEntity<T = AnyEntity>(data: any): data is T {
     return Utils.isObject(data) && !!data.__entity;
+  }
+
+  static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
+    return data instanceof Reference;
   }
 
   static isObjectID(key: any) {
@@ -239,7 +244,7 @@ export class Utils {
     return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
   }
 
-  static wrapReference<T extends IEntityType<T>>(entity: T, prop: EntityProperty<T>): Reference<T> | T {
+  static wrapReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): Reference<T> | T {
     if (prop.wrappedReference) {
       return Reference.create(entity);
     }
@@ -257,7 +262,7 @@ export class Utils {
     return ret;
   }
 
-  static isCollection(item: any, prop?: EntityProperty, type?: ReferenceType): item is Collection<IEntity> {
+  static isCollection(item: any, prop?: EntityProperty, type?: ReferenceType): item is Collection<AnyEntity> {
     if (!(item instanceof Collection)) {
       return false;
     }
@@ -310,7 +315,7 @@ export class Utils {
     }
   }
 
-  static defaultValue(prop: Record<string, any>, option: string, defaultValue: any): void {
+  static defaultValue(prop: Dictionary, option: string, defaultValue: any): void {
     prop[option] = option in prop ? prop[option] : defaultValue;
   }
 

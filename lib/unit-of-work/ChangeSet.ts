@@ -1,10 +1,10 @@
-import { EntityData, IEntityType } from '../decorators';
+import { EntityData, AnyEntity, WrappedEntity, Primary } from '../types';
 
-export interface ChangeSet<T extends IEntityType<T>> {
+export interface ChangeSet<T extends AnyEntity<T>> {
   name: string;
   collection: string;
   type: ChangeSetType;
-  entity: T;
+  entity: T & WrappedEntity<T, Primary<T> & keyof T>;
   payload: EntityData<T>;
 }
 

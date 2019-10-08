@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { EntityProperty } from '../decorators';
+import { Dictionary, EntityProperty } from '../types';
 import { MetadataStorage } from '../metadata';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { Utils } from '../utils';
@@ -105,7 +105,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
       const nestedAlias = qb.getAliasForEntity(this.entityName, this) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
 
-      if (this.prop!.reference === ReferenceType.MANY_TO_MANY) { // TODO might not be enough, maybe check payload for operator/scalar?
+      if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
         qb.join(field, nestedAlias, undefined, 'pivotJoin');
       } else {
         qb.leftJoin(field, nestedAlias);
@@ -150,7 +150,7 @@ export class ArrayCriteriaNode extends CriteriaNode {
 
 export class ObjectCriteriaNode extends CriteriaNode {
 
-  static create(metadata: MetadataStorage, entityName: string, payload: Record<string, any>, parent?: CriteriaNode, key?: string): ObjectCriteriaNode {
+  static create(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: CriteriaNode, key?: string): ObjectCriteriaNode {
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
     const meta = metadata.get(entityName, false, false);
     node.payload = Object.keys(payload).reduce((o, item) => {

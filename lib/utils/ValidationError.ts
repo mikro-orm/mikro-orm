@@ -1,10 +1,10 @@
 import { inspect } from 'util';
-import { EntityMetadata, EntityProperty, IEntity, IPrimaryKey } from '../decorators';
+import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../types';
 import { Utils } from './Utils';
 
-export class ValidationError extends Error {
+export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
-  constructor(message: string, private readonly entity?: IEntity) {
+  constructor(message: string, private readonly entity?: T) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
 
@@ -12,18 +12,18 @@ export class ValidationError extends Error {
     this.message = message;
   }
 
-  getEntity(): IEntity | undefined {
+  getEntity(): AnyEntity | undefined {
     return this.entity;
   }
 
-  static fromWrongPropertyType(entity: IEntity, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
+  static fromWrongPropertyType(entity: AnyEntity, property: string, expectedType: string, givenType: string, givenValue: string): ValidationError {
     const entityName = entity.constructor.name;
     const msg = `Trying to set ${entityName}.${property} of type '${expectedType}' to '${givenValue}' of type '${givenType}'`;
 
     return new ValidationError(msg);
   }
 
-  static fromCollectionNotInitialized(entity: IEntity, prop: EntityProperty): ValidationError {
+  static fromCollectionNotInitialized(entity: AnyEntity, prop: EntityProperty): ValidationError {
     const entityName = entity.constructor.name;
     const msg = `${entityName}.${prop.name} is not initialized, define it as '${prop.name} = new Collection<${prop.type}>(this);'`;
 
@@ -73,7 +73,7 @@ export class ValidationError extends Error {
     return new ValidationError('An open transaction is required for this operation');
   }
 
-  static entityNotManaged(entity: IEntity): ValidationError {
+  static entityNotManaged(entity: AnyEntity): ValidationError {
     return new ValidationError(`Entity ${entity.constructor.name} is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()`);
   }
 
@@ -90,14 +90,14 @@ export class ValidationError extends Error {
     return new ValidationError(`Version property ${meta.name}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
   }
 
-  static lockFailed(entityOrName: IEntity | string): ValidationError {
+  static lockFailed(entityOrName: AnyEntity | string): ValidationError {
     const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
     const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
 
     return new ValidationError(`The optimistic lock on entity ${name} failed`, entity);
   }
 
-  static lockFailedVersionMismatch(entity: IEntity, expectedLockVersion: number | Date, actualLockVersion: number | Date): ValidationError {
+  static lockFailedVersionMismatch(entity: AnyEntity, expectedLockVersion: number | Date, actualLockVersion: number | Date): ValidationError {
     expectedLockVersion = expectedLockVersion instanceof Date ? expectedLockVersion.getTime() : expectedLockVersion;
     actualLockVersion = actualLockVersion instanceof Date ? actualLockVersion.getTime() : actualLockVersion;
 
@@ -116,7 +116,7 @@ export class ValidationError extends Error {
     return new ValidationError(`Entity '${name}' not found in ${path}`);
   }
 
-  static findOneFailed(name: string, where: Record<string, any> | IPrimaryKey): ValidationError {
+  static findOneFailed(name: string, where: Dictionary | IPrimaryKey): ValidationError {
     return new ValidationError(`${name} not found (${inspect(where)})`);
   }
 

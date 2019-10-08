@@ -3,7 +3,7 @@ import { readFile } from 'fs-extra';
 
 import { Connection, QueryResult } from './Connection';
 import { Utils } from '../utils';
-import { EntityData, IEntity } from '../decorators';
+import { EntityData, AnyEntity } from '../types';
 
 export abstract class AbstractSqlConnection extends Connection {
 
@@ -40,7 +40,7 @@ export abstract class AbstractSqlConnection extends Connection {
     });
   }
 
-  async execute<T extends QueryResult | EntityData<IEntity> | EntityData<IEntity>[] = EntityData<IEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
       return await this.executeKnex(queryOrKnex, method);
     }

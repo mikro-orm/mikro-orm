@@ -5,6 +5,7 @@ import highlight from 'cli-highlight';
 
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
+import { Dictionary } from '../types';
 
 export abstract class Connection {
 
@@ -96,7 +97,7 @@ export abstract class Connection {
 export interface QueryResult {
   affectedRows: number;
   insertId: number;
-  row?: Record<string, any>;
+  row?: Dictionary;
 }
 
 export interface ConnectionConfig {

@@ -39,7 +39,7 @@ compatible with Vanilla JavaScript.
   - [Smart Query Conditions](query-conditions.md)
   - [Using `QueryBuilder`](query-builder.md)
   - [Serializing](serializing.md)
-  - [Updating Entity Values with `IEntity.assign()`](entity-helper.md)
+  - [Updating Entity Values with `Entity.assign()`](entity-helper.md)
   - [Property Validation](property-validation.md)
   - [Lifecycle Hooks](lifecycle-hooks.md)
   - [Naming Strategy](naming-strategy.md)

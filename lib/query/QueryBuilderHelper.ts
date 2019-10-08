@@ -2,7 +2,7 @@ import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { inspect } from 'util';
 
 import { Utils, ValidationError } from '../utils';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { Dictionary, EntityMetadata, EntityProperty } from '../types';
 import { FlatQueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';
@@ -83,7 +83,7 @@ export class QueryBuilderHelper {
     return data;
   }
 
-  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const meta = this.metadata.get(prop.type);
     const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
 
@@ -96,7 +96,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
@@ -105,7 +105,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any>): Record<string, JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Record<string, JoinOptions> {
     const join = {
       prop, type, cond, ownerAlias,
       alias: pivotAlias,
@@ -141,7 +141,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Record<string, any> = {}): JoinOptions {
+  joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const prop2 = this.metadata.get(field).properties[prop.mappedBy || prop.inversedBy];
 
     return {
@@ -281,7 +281,7 @@ export class QueryBuilderHelper {
     qb[m](this.mapper(key, type), replacement, cond[key][op]);
   }
 
-  private appendJoinClause(clause: JoinClause, cond: Record<string, any>, operator?: '$and' | '$or'): void {
+  private appendJoinClause(clause: JoinClause, cond: Dictionary, operator?: '$and' | '$or'): void {
     Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
         const method = operator === '$or' ? 'orOn' : 'andOn';

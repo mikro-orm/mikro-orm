@@ -1,13 +1,17 @@
 import { ObjectId } from 'mongodb';
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, IEntity, BeforeCreate } from '../../lib';
+import { Collection, Entity, ManyToMany, MongoEntity, OneToMany, PrimaryKey, Property, BeforeCreate } from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Publisher {
+export class Publisher implements MongoEntity<Publisher> {
 
   @PrimaryKey()
   _id: ObjectId;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   name: string;
@@ -32,8 +36,6 @@ export class Publisher {
   }
 
 }
-
-export interface Publisher extends IEntity<string> { }
 
 export enum PublisherType {
   LOCAL = 'local',

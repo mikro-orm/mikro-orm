@@ -1,5 +1,5 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { IPrimaryKey } from '../decorators';
+import { IPrimaryKey, Primary } from '../types';
 import { SchemaHelper } from '../schema';
 
 export abstract class Platform {
@@ -37,7 +37,7 @@ export abstract class Platform {
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
    */
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
+  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey): T {
     return data as T;
   }
 

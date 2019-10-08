@@ -1,5 +1,5 @@
 import { Configuration, Utils } from '../utils';
-import { EntityData, EntityMetadata, EntityName, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityName, AnyEntity, Primary } from '../types';
 import { MetadataStorage } from '../metadata';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
@@ -16,7 +16,7 @@ export class EntityFactory {
               private readonly config: Configuration,
               private readonly metadata: MetadataStorage) { }
 
-  create<T extends IEntityType<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true): T {
+  create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true): T {
     entityName = Utils.className(entityName);
     data = Object.assign({}, data);
     const meta = this.metadata.get(entityName);
@@ -27,7 +27,7 @@ export class EntityFactory {
     if (data[pk] || data[meta.primaryKey]) {
       const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
       delete data[pk];
-      data[meta.primaryKey as keyof T] = id as T[keyof T];
+      data[meta.primaryKey as keyof T] = id as Primary<T> & T[keyof T];
     }
 
     const entity = this.createEntity(data, meta);
@@ -42,7 +42,7 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends IEntityType<T>>(entityName: EntityName<T>, id: IPrimaryKey): T {
+  createReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
@@ -53,7 +53,7 @@ export class EntityFactory {
     return this.create<T>(entityName, { [meta.primaryKey]: id } as EntityData<T>, false);
   }
 
-  private createEntity<T extends IEntityType<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
+  private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
     const Entity = require(path)[meta.name];
 
@@ -66,7 +66,7 @@ export class EntityFactory {
       return entity;
     }
 
-    if (this.unitOfWork.getById(meta.name, data[meta.primaryKey])) {
+    if (this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey])) {
       return this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey]);
     }
 
@@ -81,7 +81,7 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends IEntityType<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
+  private extractConstructorParams<T extends AnyEntity<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
@@ -92,9 +92,9 @@ export class EntityFactory {
     });
   }
 
-  private runHooks<T extends IEntityType<T>>(entity: T, meta: EntityMetadata<T>): void {
+  private runHooks<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): void {
     if (meta.hooks && meta.hooks.onInit && meta.hooks.onInit.length > 0) {
-      meta.hooks.onInit.forEach(hook => entity[hook]());
+      meta.hooks.onInit.forEach(hook => (entity[hook] as unknown as () => void)());
     }
   }
 

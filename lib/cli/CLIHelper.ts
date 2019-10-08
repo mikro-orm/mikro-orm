@@ -9,6 +9,7 @@ import { ClearCacheCommand } from './ClearCacheCommand';
 import { GenerateEntitiesCommand } from './GenerateEntitiesCommand';
 import { SchemaCommandFactory } from './SchemaCommandFactory';
 import { DebugCommand } from './DebugCommand';
+import { Dictionary } from '../types';
 
 export class CLIHelper {
 
@@ -85,7 +86,7 @@ export class CLIHelper {
     }
   }
 
-  static async getPackageConfig(): Promise<Record<string, any>> {
+  static async getPackageConfig(): Promise<Dictionary> {
     if (await pathExists(process.cwd() + '/package.json')) {
       return require(process.cwd() + '/package.json');
     }

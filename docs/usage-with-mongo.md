@@ -62,9 +62,9 @@ boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/na
 methods:
 
 ```typescript
-EntityManager.nativeInsert<T extends IEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
-EntityManager.nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
-EntityManager.nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
+em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
+em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
 Those methods execute native driver methods like Mongo's `insertOne/updateMany/deleteMany` collection methods respectively. 
@@ -82,7 +82,7 @@ EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 There is also shortcut for calling `aggregate` method:
 
 ```typescript
-EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
+em.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```
 

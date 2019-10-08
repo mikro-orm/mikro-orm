@@ -1,8 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { Collection, MikroORM, Utils } from '../lib';
+import { Collection, EntityMetadata, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
-import { EntityMetadata } from '../lib/decorators';
 
 class Test {}
 

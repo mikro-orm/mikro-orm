@@ -1,12 +1,12 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, IEntity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, UuidEntity } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Test2 } from './Test2';
 
 @Entity()
-export class Book2 {
+export class Book2 implements UuidEntity<Book2> {
 
   @PrimaryKey({ fieldName: 'uuid_pk', length: 36 })
   uuid = v4();
@@ -47,8 +47,6 @@ export class Book2 {
   }
 
 }
-
-export interface Book2 extends IEntity<string> { }
 
 export interface Book2Meta {
   category: string;

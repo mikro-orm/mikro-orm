@@ -2,7 +2,7 @@ import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
 import { pathExists } from 'fs-extra';
 
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../types';
 import { Utils } from '../utils';
 
 export class TypeScriptMetadataProvider extends MetadataProvider {

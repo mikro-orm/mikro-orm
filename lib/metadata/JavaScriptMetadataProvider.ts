@@ -1,5 +1,5 @@
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../types';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 
@@ -30,7 +30,7 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
       if (Utils.isObject(prop)) {
         Object.entries(prop).forEach(([attribute, value]) => {
           if (!(attribute in meta.properties[name])) {
-            meta.properties[name][attribute as keyof EntityProperty] = value;
+            meta.properties[name][attribute] = value;
           }
         });
       }

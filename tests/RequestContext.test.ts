@@ -1,4 +1,4 @@
-import { RequestContext, MikroORM } from '../lib';
+import { RequestContext, MikroORM, wrap } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { Author, Book } from './entities';
 
@@ -34,7 +34,7 @@ describe('RequestContext', () => {
         const em = RequestContext.getEntityManager()!;
         const jon = await em.findOne(Author, author.id, ['favouriteBook']);
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
-        expect(jon!.favouriteBook.isInitialized()).toBe(true);
+        expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
         expect(jon!.favouriteBook.title).toBe('Bible');
         resolve();
       });

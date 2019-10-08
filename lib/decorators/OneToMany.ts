@@ -1,11 +1,11 @@
 import { ReferenceOptions } from './Property';
-import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 import { QueryOrder } from '../query';
+import { EntityName, EntityProperty, AnyEntity } from '../types';
 
-export function OneToMany<T extends IEntityType<T>>(
+export function OneToMany<T extends AnyEntity<T>>(
   entity: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options: Partial<OneToManyOptions<T>> = {},
@@ -13,13 +13,13 @@ export function OneToMany<T extends IEntityType<T>>(
   return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
 }
 
-export function createOneToDecorator<T extends IEntityType<T>>(
+export function createOneToDecorator<T extends AnyEntity<T>>(
   entity?: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options?: Partial<OneToManyOptions<T>>,
   reference?: ReferenceType,
 ) {
-  return function (target: IEntity, propertyName: string) {
+  return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<OneToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
@@ -55,7 +55,7 @@ export function createOneToDecorator<T extends IEntityType<T>>(
   };
 }
 
-export type OneToManyOptions<T extends IEntityType<T>> = ReferenceOptions<T> & {
+export type OneToManyOptions<T extends AnyEntity<T>> = ReferenceOptions<T> & {
   entity: string | (() => EntityName<T>);
   orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder };

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Book, Author, Publisher, Test } from './entities';
-import { MikroORM, Collection, Utils } from '../lib';
+import { MikroORM, Collection } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
