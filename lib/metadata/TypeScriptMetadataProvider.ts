@@ -1,4 +1,4 @@
-import { Project, SourceFile } from 'ts-morph';
+import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
 import { pathExists } from 'fs-extra';
 
 import { MetadataProvider } from './MetadataProvider';
@@ -26,19 +26,31 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       } else if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
-        const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
-        prop.type = await this.readTypeFromSource(file, name, prop);
-        this.processReferenceWrapper(prop);
+        await this.initPropertyType(meta, name, prop);
       }
     }
   }
 
-  private async readTypeFromSource(file: string, name: string, prop: EntityProperty): Promise<string> {
+  private async initPropertyType(meta: EntityMetadata, name: string, prop: EntityProperty): Promise<void> {
+    const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
+    const { type, optional } = await this.readTypeFromSource(file, name, prop);
+    prop.type = type;
+
+    if (!prop.nullable && optional) {
+      prop.nullable = true;
+    }
+
+    this.processReferenceWrapper(prop);
+  }
+
+  private async readTypeFromSource(file: string, name: string, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
     const source = await this.getSourceFile(file);
     const properties = source.getClass(name)!.getInstanceProperties();
-    const property = properties.find(v => v.getName() === prop.name);
+    const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
+    const type = property.getType().getText(property);
+    const optional = property.hasQuestionToken ? property.hasQuestionToken() : undefined;
 
-    return property!.getType().getText(property);
+    return { type, optional };
   }
 
   private async getSourceFile(file: string): Promise<SourceFile> {

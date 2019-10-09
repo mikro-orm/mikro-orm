@@ -7,11 +7,11 @@ export class Test2 {
   @PrimaryKey()
   id: number;
 
-  @Property({ nullable: true })
-  name: string;
+  @Property()
+  name?: string;
 
-  @OneToOne({ cascade: [], inversedBy: 'test', nullable: true })
-  book: Book2;
+  @OneToOne({ cascade: [], inversedBy: 'test' })
+  book?: Book2;
 
   @Property({ version: true })
   version: number;

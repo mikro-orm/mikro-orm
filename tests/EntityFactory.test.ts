@@ -28,6 +28,8 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
     expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
     expect(metadata[Author.name].properties.foo.type).toBe('string');
+    expect(metadata[Author.name].properties.age.type).toBe('number');
+    expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
     expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);

@@ -30,7 +30,7 @@ export class Book {
   author: Author;
 
   @ManyToOne(() => Publisher) // or you can specify the entity as class reference or string name
-  publisher: Publisher;
+  publisher?: Publisher;
 
   @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
   tags = new Collection<BookTag>(this);
@@ -80,16 +80,16 @@ export class Author {
   email: string;
 
   @Property()
-  age: number;
+  age?: number;
 
   @Property()
   termsAccepted = false;
 
   @Property()
-  identities: string[];
+  identities?: string[];
 
   @Property()
-  born: Date;
+  born?: Date;
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
@@ -113,6 +113,13 @@ export interface Author extends IEntity { }
 More information about modelling relationships can be found on [modelling relationships page](relationships.md).
 
 If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
+
+### Optional Properties
+
+When you define the property as optional (marked with `?`), this will be automatically considered
+as nullable property (mainly for SQL schema generator). 
+
+> This auto-detection works only when you omit the `type` attribute.
 
 ## Virtual Properties
 
