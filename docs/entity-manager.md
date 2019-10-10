@@ -64,7 +64,8 @@ await orm.em.flush(); // flush everything to database at once
 
 Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
 `em.flush()` yourself to persist changes into database. You can still change this via ORM's
-options to ease the transition but generally it is not recommended. 
+options to ease the transition but generally it is not recommended as it can cause unwanted
+small transactions being created around each `persist`. 
 
 ```typescript
 orm.em.persist(new Entity()); // no auto-flushing by default
