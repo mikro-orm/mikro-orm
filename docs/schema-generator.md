@@ -7,7 +7,7 @@ To generate schema from your entity metadata, you can use `SchemaGenerator` help
 
 You can use it via CLI: 
 
-```shell script
+```sh
 npx mikro-orm schema:create --dump   # Dumps create schema SQL
 npx mikro-orm schema:update --dump   # Dumps update schema SQL
 npx mikro-orm schema:drop --dump     # Dumps drop schema SQL
@@ -56,7 +56,7 @@ import { MikroORM } from 'mikro-orm';
 
 Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 
-```bash
+```sh
 $ ts-node create-schema
 ```
 
