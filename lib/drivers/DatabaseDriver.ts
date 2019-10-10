@@ -1,5 +1,5 @@
-import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { IDatabaseDriver } from './IDatabaseDriver';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary } from '../types';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
@@ -18,23 +18,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
+  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
-  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
+  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
 
-  abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
+  abstract async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[], ctx?: Transaction): Promise<Record<string, T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], ctx?: Transaction): Promise<Record<string, T[]>> {
     if (!this.platform.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -56,12 +56,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return map;
   }
 
-  mapResult<T extends IEntityType<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
     if (!result || !meta) {
       return null;
     }
 
-    const ret = Object.assign({}, result);
+    const ret = Object.assign({}, result) as any;
 
     Object.values(meta.properties).forEach(prop => {
       if (prop.fieldName && prop.fieldName in ret) {
@@ -69,7 +69,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       if (prop.type === 'boolean') {
-        ret[prop.name as keyof T] = !!ret[prop.name as keyof T] as T[keyof T];
+        ret[prop.name] = !!ret[prop.name];
       }
     });
 

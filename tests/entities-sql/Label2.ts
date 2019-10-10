@@ -1,4 +1,4 @@
-import { Entity, IEntity, PrimaryKey, Property } from '../../lib';
+import { Entity, AnyEntity, PrimaryKey, Property } from '../../lib';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -16,4 +16,4 @@ export class Label2 {
 
 }
 
-export interface Label2 extends IEntity<string> { }
+export interface Label2 extends AnyEntity<string> { }

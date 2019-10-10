@@ -1,4 +1,4 @@
-import { EntityMetadata, IEntityType } from '../decorators';
+import { EntityMetadata, AnyEntity } from '../types';
 import { Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';
@@ -13,8 +13,8 @@ export class MetadataStorage {
   }
 
   static getMetadata(): Record<string, EntityMetadata>; // tslint:disable-next-line:lines-between-class-members
-  static getMetadata<T extends IEntityType<T> = any>(entity: string): EntityMetadata<T>; // tslint:disable-next-line:lines-between-class-members
-  static getMetadata<T extends IEntityType<T> = any>(entity?: string): Record<string, EntityMetadata> | EntityMetadata<T> {
+  static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>; // tslint:disable-next-line:lines-between-class-members
+  static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Record<string, EntityMetadata> | EntityMetadata<T> {
     if (entity && !MetadataStorage.metadata[entity]) {
       MetadataStorage.metadata[entity] = { properties: {}, hooks: {} } as EntityMetadata;
     }
@@ -34,7 +34,7 @@ export class MetadataStorage {
     return this.metadata;
   }
 
-  get<T extends IEntityType<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
+  get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
     if (entity && !this.metadata[entity] && validate && !init) {
       throw ValidationError.missingMetadata(entity);
     }

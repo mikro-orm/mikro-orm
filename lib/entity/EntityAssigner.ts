@@ -1,17 +1,19 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../types';
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';
+import { wrap } from './EntityHelper';
 
 export class EntityAssigner {
 
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
-  static assign<T extends IEntityType<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
-    const meta = entity.__em.getMetadata().get(entity.constructor.name);
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
+    const em = wrap(entity).__em;
+    const meta = em.getMetadata().get(entity.constructor.name);
     const props = meta.properties;
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
 
@@ -23,15 +25,15 @@ export class EntityAssigner {
       const value = data[prop as keyof EntityData<T>];
 
       if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value) {
-        return EntityAssigner.assignReference<T>(entity, value, props[prop], entity.__em);
+        return EntityAssigner.assignReference<T>(entity, value, props[prop], em);
       }
 
       if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value)) {
-        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T], value, props[prop], entity.__em);
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<T>, value, props[prop], em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (!props[prop].getter || props[prop].setter)) {
-        return entity[prop as keyof T] = entity.__em.getValidator().validateProperty(props[prop], value, entity);
+        return entity[prop as keyof T] = em.getValidator().validateProperty(props[prop], value, entity);
       }
 
       if (options.mergeObjects && Utils.isObject(value)) {
@@ -48,7 +50,7 @@ export class EntityAssigner {
    * auto-wire 1:1 inverse side with owner as it no-sql drivers it can't be joined
    * @internal
    */
-  static autoWireOneToOne<T extends IEntityType<T>>(prop: EntityProperty, entity: T): void {
+  static autoWireOneToOne<T extends AnyEntity<T>>(prop: EntityProperty, entity: T): void {
     if (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner && prop.inversedBy) {
       const meta2 = entity[prop.name].__meta as EntityMetadata;
       const prop2 = meta2.properties[prop.inversedBy];
@@ -59,17 +61,17 @@ export class EntityAssigner {
     }
   }
 
-  private static assignReference<T extends IEntityType<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
+  private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
     let valid = false;
 
     if (Utils.isEntity(value) || value instanceof Reference) {
       entity[prop.name as keyof T] = value as T[keyof T];
       valid = true;
     } else if (Utils.isPrimaryKey(value)) {
-      entity[prop.name] = Utils.wrapReference(em.getReference(prop.type, value), prop);
+      entity[prop.name as keyof T] = Utils.wrapReference(em.getReference(prop.type, value), prop) as T[keyof T];
       valid = true;
-    } else if (Utils.isObject(value)) {
-      entity[prop.name] = Utils.wrapReference(em.create(prop.type, value) as T[keyof T], prop);
+    } else if (Utils.isObject<T[keyof T]>(value)) {
+      entity[prop.name as keyof T] = Utils.wrapReference(em.create(prop.type, value) as T[keyof T], prop) as T[keyof T];
       valid = true;
     }
 
@@ -81,7 +83,7 @@ export class EntityAssigner {
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends IEntityType<T>>(entity: T, collection: Collection<IEntity>, value: any[], prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection<T extends AnyEntity<T>>(entity: T, collection: Collection<AnyEntity>, value: any[], prop: EntityProperty, em: EntityManager): void {
     const invalid: any[] = [];
     const items = value.map((item: any) => this.createCollectionItem(item, em, prop, invalid));
 
@@ -94,7 +96,7 @@ export class EntityAssigner {
     collection.setDirty();
   }
 
-  private static createCollectionItem(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): IEntity {
+  private static createCollectionItem(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): AnyEntity {
     if (Utils.isEntity(item)) {
       return item;
     }

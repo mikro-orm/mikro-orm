@@ -1,10 +1,9 @@
 import { Transaction } from 'knex';
-import { EntityData, EntityMetadata, IEntityType, IPrimaryKey } from '../decorators';
+import { Constructor, Dictionary, EntityData, EntityMetadata, FilterQuery, AnyEntity, Primary } from '../types';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
-import { FilterQuery } from './IDatabaseDriver';
 import { QueryBuilder, QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { LockMode } from '../unit-of-work';
@@ -23,7 +22,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     this.platform = platform;
   }
 
-  async find<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
     const meta = this.metadata.get(entityName);
     populate = this.populateMissingReferences(meta, populate);
 
@@ -32,7 +31,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     const qb = this.createQueryBuilder(entityName, ctx);
-    qb.select(fields || '*').populate(populate).where(where).orderBy(orderBy);
+    qb.select(fields || '*').populate(populate).where(where as Dictionary).orderBy(orderBy);
 
     if (limit !== undefined) {
       qb.limit(limit, offset);
@@ -41,13 +40,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return qb.execute('all');
   }
 
-  async findOne<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
     const meta = this.metadata.get(entityName);
     populate = this.populateMissingReferences(meta, populate);
     const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
-      where = { [pk]: where };
+      where = { [pk]: where } as FilterQuery<T>;
     }
 
     if (fields && !fields.includes(pk)) {
@@ -57,7 +56,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.createQueryBuilder(entityName, ctx)
       .select(fields || '*')
       .populate(populate)
-      .where(where)
+      .where(where as Dictionary)
       .orderBy(orderBy)
       .limit(1)
       .setLockMode(lockMode)
@@ -72,7 +71,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return +res.count;
   }
 
-  async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
     const collections = this.extractManyToMany(entityName, data);
     const pk = this.getPrimaryKeyField(entityName);
     const qb = this.createQueryBuilder(entityName, ctx);
@@ -84,11 +83,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdate<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
     const pk = this.getPrimaryKeyField(entityName);
 
     if (Utils.isPrimaryKey(where)) {
-      where = { [pk]: where };
+      where = { [pk]: where } as FilterQuery<T>;
     }
 
     const collections = this.extractManyToMany(entityName, data);
@@ -96,7 +95,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (Object.keys(data).length) {
       const qb = this.createQueryBuilder(entityName, ctx);
-      res = await qb.update(data).where(where).execute('run', false);
+      res = await qb.update(data).where(where as Dictionary).execute('run', false);
     }
 
     await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName, false, false))!, collections, ctx);
@@ -104,7 +103,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeDelete<T extends IEntityType<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction): Promise<QueryResult> {
+  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       const pk = this.getPrimaryKeyField(entityName);
       where = { [pk]: where };
@@ -128,7 +127,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, ctx ? 'write' : 'read');
   }
 
-  protected extractManyToMany<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
+  protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
     if (!this.metadata.get(entityName, false, false)) {
       return {};
     }
@@ -148,7 +147,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return ret;
   }
 
-  protected async processManyToMany<T extends IEntityType<T>>(entityName: string, pk: IPrimaryKey, collections: EntityData<T>, ctx?: Transaction) {
+  protected async processManyToMany<T extends AnyEntity<T>>(entityName: string, pk: Primary<T>, collections: EntityData<T>, ctx?: Transaction) {
     if (!this.metadata.get(entityName, false, false)) {
       return;
     }
@@ -170,5 +169,3 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
 }
-
-export type Constructor<T> = new (...args: any[]) => T;

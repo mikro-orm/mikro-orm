@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Reference } from '../lib';
-import { EntityProperty } from '../lib/decorators';
+import chalk from 'chalk';
+
+import { Collection, Configuration, EntityManager, EntityProperty, MikroORM, QueryOrder, Reference, wrap } from '../lib';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -9,7 +10,6 @@ import { MongoConnection } from '../lib/connections/MongoConnection';
 import { Logger } from '../lib/utils';
 import { FooBar } from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
-import chalk from 'chalk';
 
 describe('EntityManagerMongo', () => {
 
@@ -57,7 +57,7 @@ describe('EntityManagerMongo', () => {
     const authorRepository = orm.em.getRepository(Author);
     const booksRepository = orm.em.getRepository(Book);
     const books = await booksRepository.findAll(['author']);
-    expect(books[0].author.isInitialized()).toBe(true);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible._id })).not.toBe(null);
     orm.em.clear();
 
@@ -109,12 +109,12 @@ describe('EntityManagerMongo', () => {
       for (const book of author.books) {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
         expect(book.author).toBeInstanceOf(Author);
-        expect(book.author.isInitialized()).toBe(true);
+        expect(wrap(book.author).isInitialized()).toBe(true);
         expect(book.publisher.isInitialized()).toBe(false);
         expect(typeof book.publisher.id).toBe('string');
         expect(book.publisher._id).toBeInstanceOf(ObjectId);
         expect(book.publisher.unwrap()).toBeInstanceOf(Publisher);
-        expect(book.publisher.unwrap().isInitialized()).toBe(false);
+        expect(wrap(book.publisher.unwrap()).isInitialized()).toBe(false);
       }
     }
 
@@ -137,7 +137,7 @@ describe('EntityManagerMongo', () => {
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author);
-    expect(lastBook[0].author.isInitialized()).toBe(true);
+    expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
 
     const lastBook2 = await booksRepository.find({ author: jon.id }, {
       populate: ['author'],
@@ -176,8 +176,8 @@ describe('EntityManagerMongo', () => {
 
     const repo = orm.em.getRepository(FooBar);
     const a = await repo.findOne(bar.id, ['baz.bar']);
-    expect(a!.baz!.isInitialized()).toBe(true);
-    expect(a!.baz!.book.isInitialized()).toBe(true);
+    expect(wrap(a!.baz!).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!.book).isInitialized()).toBe(true);
     expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
   });
 
@@ -210,9 +210,10 @@ describe('EntityManagerMongo', () => {
   test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     const author = new Author('name', 'email');
+    author.favouriteAuthor = author;
     await repo.persistAndFlush(author);
     const a = await repo.findOne(author);
-    const authors = await repo.find({ id: author });
+    const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
     expect(authors[0]).toBe(author);
   });
@@ -237,11 +238,11 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     await repo.persistAndFlush(author);
-    expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeDefined();
+    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
     repo.persist(author);
     orm.em.removeEntity(author);
-    expect(orm.em.getUnitOfWork().getById(Author.name, author.id)).toBeUndefined();
+    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({});
   });
 
@@ -293,10 +294,10 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const ref = orm.em.getReference(Author, god.id);
-    expect(ref.isInitialized()).toBe(false);
+    expect(wrap(ref).isInitialized()).toBe(false);
     const newGod = await orm.em.findOne(Author, god.id);
     expect(ref).toBe(newGod);
-    expect(ref.isInitialized()).toBe(true);
+    expect(wrap(ref).isInitialized()).toBe(true);
   });
 
   test('findOne supports regexps', async () => {
@@ -323,7 +324,7 @@ describe('EntityManagerMongo', () => {
 
     const newGod = (await orm.em.findOne(Author, god.id))!;
     const books = await orm.em.find(Book, {});
-    await newGod.init(false);
+    await wrap(newGod).init(false);
 
     for (const book of books) {
       expect(book.toJSON()).toMatchObject({
@@ -348,9 +349,9 @@ describe('EntityManagerMongo', () => {
 
     const newGod = orm.em.getReference(Author, god.id);
     const publisher = (await orm.em.findOne(Publisher, pub.id, ['books']))!;
-    await newGod.init();
+    await wrap(newGod).init();
 
-    const json = publisher.toJSON().books;
+    const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
       expect(json.find((b: Book) => b.id === book.id)).toMatchObject({
@@ -361,7 +362,7 @@ describe('EntityManagerMongo', () => {
 
   test('should return mongo driver', async () => {
     const driver = orm.em.getDriver<MongoDriver>();
-    expect(driver instanceof MongoDriver).toBe(true);
+    expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongo']);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
@@ -440,11 +441,11 @@ describe('EntityManagerMongo', () => {
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
     expect(jon.favouriteBook).toBeInstanceOf(Book);
-    expect(jon.favouriteBook.isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
 
-    await jon.favouriteBook.init();
+    await wrap(jon.favouriteBook).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book);
-    expect(jon.favouriteBook.isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
     expect(jon.favouriteBook.title).toBe('Bible');
   });
 
@@ -471,7 +472,7 @@ describe('EntityManagerMongo', () => {
     expect(tag3._id).toBeDefined();
     expect(tag4._id).toBeDefined();
     expect(tag5._id).toBeDefined();
-    expect(book1.tags.toArray()).toEqual([tag1.toJSON(), tag3.toJSON()]);
+    expect(book1.tags.toArray()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
@@ -502,7 +503,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book);
     expect(tags[0].books.getItems()[0]._id).toBeDefined();
-    expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books.getItems()[0]).isInitialized()).toBe(true);
 
     // test M:N lazy load
     orm.em.clear();
@@ -511,9 +512,9 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.count()).toBe(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
     expect(book.tags.getItems()[0]._id).toBeDefined();
-    expect(book.tags.getItems()[0].isInitialized()).toBe(false);
+    expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
     await book.tags.init();
-    expect(book.tags.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(true);
 
     // test collection CRUD
     // remove
@@ -575,7 +576,7 @@ describe('EntityManagerMongo', () => {
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
-    expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('populating many to many relation on inverse side', async () => {
@@ -604,7 +605,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('serializing empty initialized many to many collection', async () => {
@@ -640,7 +641,7 @@ describe('EntityManagerMongo', () => {
 
     // cache author with favouriteBook and its tags
     const jon = await orm.em.findOne(Author, author.id, ['favouriteBook.tags']);
-    const cache = jon!.toObject();
+    const cache = wrap(jon).toObject();
 
     // merge cached author with his references
     orm.em.clear();
@@ -881,14 +882,14 @@ describe('EntityManagerMongo', () => {
     expect(tags[0]).toBeInstanceOf(BookTag);
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
     expect(tags[0].books[0].author).toBeInstanceOf(Author);
-    expect(tags[0].books[0].author.isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
-    expect(tags[0].books[0].publisher.unwrap().isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher.unwrap()).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher.unwrap().tests[0].name).toBe('t11');
@@ -898,14 +899,14 @@ describe('EntityManagerMongo', () => {
     const books = await orm.em.find(Book, {}, ['publisher.tests', 'author']);
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book);
-    expect(books[0].isInitialized()).toBe(true);
+    expect(wrap(books[0]).isInitialized()).toBe(true);
     expect(books[0].author).toBeInstanceOf(Author);
-    expect(books[0].author.isInitialized()).toBe(true);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(books[0].author.name).toBe('Jon Snow');
     expect(books[0].publisher).toBeInstanceOf(Reference);
     expect(books[0].publisher.isInitialized()).toBe(true);
     expect(books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
-    expect(books[0].publisher.unwrap().isInitialized()).toBe(true);
+    expect(wrap(books[0].publisher.unwrap()).isInitialized()).toBe(true);
     expect(books[0].publisher.unwrap().tests.isInitialized(true)).toBe(true);
     expect(books[0].publisher.unwrap().tests.count()).toBe(2);
     expect(books[0].publisher.unwrap().tests[0].name).toBe('t11');
@@ -934,7 +935,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0]).toBeInstanceOf(BookTag);
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher).toBeUndefined();
   });
 
@@ -969,12 +970,12 @@ describe('EntityManagerMongo', () => {
     expect(tags[0]).toBeInstanceOf(BookTag);
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
     expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
     expect(tags[0].books[0].author).toBeInstanceOf(Author);
-    expect(tags[0].books[0].author.isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.books.isInitialized(true)).toBe(true);
   });
 
@@ -1177,13 +1178,13 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush([b1, b2, b3]);
     orm.em.clear();
 
-    const a1 = (await orm.em.findOne(Author, { 'id:ne': '5ec6d9bf90dae100fbed92ba' }))!;
+    const a1 = (await orm.em.findOne(Author, { 'id:ne': '5ec6d9bf90dae100fbed92ba' } as any))!;
     expect(a1).not.toBeNull();
     expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne(Author, { 'id>=': author.id }))!;
+    const a2 = (await orm.em.findOne(Author, { 'id>=': author.id } as any))!;
     expect(a2).not.toBeNull();
     expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne(Author, { 'id:nin': ['5ec6d9bf90dae100fbed92ba'] }))!;
+    const a3 = (await orm.em.findOne(Author, { 'id:nin': ['5ec6d9bf90dae100fbed92ba'] } as any))!;
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
     const now = new Date();
@@ -1193,7 +1194,7 @@ describe('EntityManagerMongo', () => {
       { 'date >=': now },
       { 'date <=': now },
       { 'date !=': now },
-    ] }))!;
+    ] } as any))!;
     expect(a4).not.toBeNull();
     expect(a4.id).toBe(author.id);
   });
@@ -1398,8 +1399,8 @@ describe('EntityManagerMongo', () => {
 
     const repo = orm.em.getRepository(FooBar);
     const a = await repo.findOne(bar.id); // baz and bar are both marked as eager
-    expect(a!.baz!.isInitialized()).toBe(true);
-    expect(a!.baz!.bar.isInitialized()).toBe(true);
+    expect(wrap(a!.baz!).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
   });
 
   test('automatically fix PK instead of entity when flushing (m:1)', async () => {
@@ -1488,7 +1489,7 @@ describe('EntityManagerMongo', () => {
     expect(typeof ref.id).toBe('string');
     expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.unwrap()).toBeInstanceOf(Author);
-    expect(ref.unwrap().isInitialized()).toBe(false);
+    expect(wrap(ref.unwrap()).isInitialized()).toBe(false);
 
     const ref2 = Reference.create(author);
     const ref3 = Reference.create(ref2);
@@ -1496,7 +1497,7 @@ describe('EntityManagerMongo', () => {
 
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);
-    expect(ent.isInitialized()).toBe(true);
+    expect(wrap(ent).isInitialized()).toBe(true);
   });
 
   test('find and count', async () => {
@@ -1546,10 +1547,10 @@ describe('EntityManagerMongo', () => {
 
     const a1 = await orm.em.findOneOrFail(Author, author.id);
     expect(a1).not.toBeNull();
-    await expect(orm.em.findOneOrFail(Author, 123)).rejects.toThrowError('Author not found (123)');
-    await expect(orm.em.findOneOrFail(Author, { name: '123' })).rejects.toThrowError('Author not found ({ name: \'123\' })');
-    await expect(orm.em.findOneOrFail(Author, 123, { failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Author, 123, { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79')).rejects.toThrowError(`Author not found ('0000007b5c9c61c332380f79')`);
+    await expect(orm.em.findOneOrFail(Author, { name: 'test' })).rejects.toThrowError('Author not found ({ name: \'test\' })');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
+    await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
   });
 
   afterAll(async () => orm.close(true));

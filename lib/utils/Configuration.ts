@@ -5,11 +5,11 @@ import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { MetadataProvider, TypeScriptMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
-import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity, IPrimaryKey } from '../decorators';
+import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrimaryKey } from '../types';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
-import { IDatabaseDriver } from '..';
+import { EntityOptions, IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
 
 export class Configuration {
@@ -26,7 +26,7 @@ export class Configuration {
     strict: false,
     // tslint:disable-next-line:no-console
     logger: console.log.bind(console),
-    findOneOrFailHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
+    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
@@ -62,7 +62,7 @@ export class Configuration {
   private readonly logger: Logger;
   private readonly driver: IDatabaseDriver;
   private readonly platform: Platform;
-  private readonly cache: Record<string, any> = {};
+  private readonly cache: Dictionary = {};
   private readonly highlightTheme: Theme;
 
   constructor(options: Options, validate = true) {
@@ -121,7 +121,7 @@ export class Configuration {
     return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
-  getRepositoryClass(customRepository: EntityOptions['customRepository']): MikroORMOptions['entityRepository'] {
+  getRepositoryClass(customRepository: EntityOptions<AnyEntity>['customRepository']): MikroORMOptions['entityRepository'] {
     if (customRepository) {
       return customRepository();
     }
@@ -196,7 +196,7 @@ export interface ConnectionOptions {
 }
 
 export interface MikroORMOptions extends ConnectionOptions {
-  entities: (EntityClass<IEntity> | EntityClassGroup<IEntity>)[];
+  entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
   warnWhenNoEntities: boolean;
@@ -206,11 +206,11 @@ export interface MikroORMOptions extends ConnectionOptions {
   driver?: { new (config: Configuration): IDatabaseDriver };
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
-  entityRepository: { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
+  entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   logger: (message: string) => void;
-  findOneOrFailHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => Error;
+  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlight: boolean;
   highlightTheme?: Record<string, string | string[]>;
@@ -220,7 +220,7 @@ export interface MikroORMOptions extends ConnectionOptions {
     enabled?: boolean;
     pretty?: boolean;
     adapter?: { new (...params: any[]): CacheAdapter };
-    options?: Record<string, any>;
+    options?: Dictionary;
   };
   metadataProvider: { new (config: Configuration): MetadataProvider };
 }

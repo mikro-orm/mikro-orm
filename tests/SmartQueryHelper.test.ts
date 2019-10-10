@@ -67,6 +67,10 @@ describe('SmartQueryHelper', () => {
     });
   });
 
+  test('processWhere returns empty object for undefined condition', async () => {
+    expect(SmartQueryHelper.processWhere(undefined as any, 'id')).toEqual({});
+  });
+
   test('test entity conversion to PK', async () => {
     const test = Test2.create('t123');
     test.id = 123;
@@ -87,11 +91,11 @@ describe('SmartQueryHelper', () => {
     const book1 = new Book2('b1', author);
     const book2 = new Book2('b2', author);
     const book3 = new Book2('b3', author);
-    expect(SmartQueryHelper.processWhere([1, 2, 3], 'uuid')).toEqual({ uuid: { $in: [1, 2, 3] } });
-    expect(SmartQueryHelper.processWhere([book1, book2, book3], 'uuid')).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
-    expect(SmartQueryHelper.processWhere({ arr: [1, 2, 3] }, 'id')).toEqual({ arr: { $in: [1, 2, 3] } });
-    expect(SmartQueryHelper.processWhere({ $or: [{ arr: [1, 2, 3] }, { arr: [7, 8, 9] }] }, 'id')).toEqual({
-      $or: [{ arr: { $in: [1, 2, 3] } }, { arr: { $in: [7, 8, 9] } }],
+    expect(SmartQueryHelper.processWhere<Author2>([1, 2, 3], 'uuid')).toEqual({ uuid: { $in: [1, 2, 3] } });
+    expect(SmartQueryHelper.processWhere<Book2>([book1, book2, book3], 'uuid')).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
+    expect(SmartQueryHelper.processWhere<Author2>({ favouriteBook: ['1', '2', '3'] }, 'id')).toEqual({ favouriteBook: { $in: ['1', '2', '3'] } });
+    expect(SmartQueryHelper.processWhere<Book2>({ $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] }, 'id')).toEqual({
+      $or: [{ author: { $in: [1, 2, 3] } }, { author: { $in: [7, 8, 9] } }],
     });
   });
 

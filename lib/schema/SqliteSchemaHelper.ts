@@ -1,5 +1,5 @@
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { EntityProperty } from '../decorators';
+import { Dictionary, EntityProperty } from '../types';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column } from './DatabaseTable';
 
@@ -57,7 +57,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }));
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Record<string, any>, tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Dictionary, tableName: string, schemaName?: string): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
@@ -92,7 +92,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return `pragma foreign_key_list(\`${tableName}\`)`;
   }
 
-  mapForeignKeys(fks: any[]): Record<string, any> {
+  mapForeignKeys(fks: any[]): Dictionary {
     return fks.reduce((ret, fk: any) => {
       ret[fk.from] = {
         columnName: fk.from,

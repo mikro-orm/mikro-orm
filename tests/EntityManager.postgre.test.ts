@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Utils, wrap } from '../lib';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
@@ -98,9 +98,10 @@ describe('EntityManagerPostgre', () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
     author.termsAccepted = true;
+    author.favouriteAuthor = author;
     await repo.persistAndFlush(author);
     const a = await repo.findOne(author);
-    const authors = await repo.find({ id: author });
+    const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
     expect(authors[0]).toBe(author);
     await expect(repo.findOne({ termsAccepted: false })).resolves.toBeNull();
@@ -232,7 +233,7 @@ describe('EntityManagerPostgre', () => {
     const authorRepository = orm.em.getRepository(Author2);
     const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll(['author']);
-    expect(books[0].author.isInitialized()).toBe(true);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
     await expect(authorRepository.findOne({ favouriteBook: bible.uuid })).resolves.not.toBe(null);
     orm.em.clear();
 
@@ -254,7 +255,7 @@ describe('EntityManagerPostgre', () => {
     expect(jon).toBe(await authorRepository.findOne(jon.id));
 
     // serialization test
-    const o = jon.toJSON();
+    const o = wrap(jon).toJSON();
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,
@@ -269,7 +270,7 @@ describe('EntityManagerPostgre', () => {
       email: 'snow@wall.st',
       name: 'Jon Snow',
     });
-    expect(jon.toJSON()).toEqual(o);
+    expect(wrap(jon).toJSON()).toEqual(o);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
     expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
     expect(jon.books.getIdentifiers()[0]).toBe(book1.uuid);
@@ -283,9 +284,9 @@ describe('EntityManagerPostgre', () => {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
 
         expect(book.author).toBeInstanceOf(Author2);
-        expect(book.author.isInitialized()).toBe(true);
+        expect(wrap(book.author).isInitialized()).toBe(true);
         expect(book.publisher).toBeInstanceOf(Publisher2);
-        expect(book.publisher.isInitialized()).toBe(false);
+        expect(wrap(book.publisher).isInitialized()).toBe(false);
       }
     }
 
@@ -308,7 +309,7 @@ describe('EntityManagerPostgre', () => {
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
-    expect(lastBook[0].author.isInitialized()).toBe(true);
+    expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
   });
 
@@ -334,10 +335,10 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const ref = orm.em.getReference(Author2, god.id);
-    expect(ref.isInitialized()).toBe(false);
+    expect(wrap(ref).isInitialized()).toBe(false);
     const newGod = await orm.em.findOne(Author2, god.id);
     expect(ref).toBe(newGod);
-    expect(ref.isInitialized()).toBe(true);
+    expect(wrap(ref).isInitialized()).toBe(true);
   });
 
   test('findOne supports regexps', async () => {
@@ -395,7 +396,7 @@ describe('EntityManagerPostgre', () => {
 
     const proxy = orm.em.getReference(Test2, test.id);
     await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
-    expect(proxy.isInitialized()).toBe(true);
+    expect(wrap(proxy).isInitialized()).toBe(true);
   });
 
   test('findOne supports optimistic locking [versioned proxy]', async () => {
@@ -509,10 +510,10 @@ describe('EntityManagerPostgre', () => {
 
     const newGod = (await orm.em.findOne(Author2, god.id))!;
     const books = await orm.em.find(Book2, {});
-    await newGod.init(false);
+    await wrap(newGod).init(false);
 
     for (const book of books) {
-      expect(book.toJSON()).toMatchObject({
+      expect(wrap(book).toJSON()).toMatchObject({
         author: book.author.id,
       });
     }
@@ -533,9 +534,9 @@ describe('EntityManagerPostgre', () => {
 
     const newGod = orm.em.getReference(Author2, god.id);
     const publisher = (await orm.em.findOne(Publisher2, pub.id, ['books']))!;
-    await newGod.init();
+    await wrap(newGod).init();
 
-    const json = publisher.toJSON().books;
+    const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
       expect(json.find((b: Book2) => b.uuid === book.uuid)).toMatchObject({
@@ -576,11 +577,11 @@ describe('EntityManagerPostgre', () => {
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(jon.favouriteBook.isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
 
-    await jon.favouriteBook.init();
+    await wrap(jon.favouriteBook).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(jon.favouriteBook.isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
     expect(jon.favouriteBook.title).toBe('Bible');
   });
 
@@ -638,7 +639,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.count()).toBe(2);
     expect(tags[0].books.getItems()[0]).toBeInstanceOf(Book2);
     expect(tags[0].books.getItems()[0].uuid).toBeDefined();
-    expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books.getItems()[0]).isInitialized()).toBe(true);
     expect(tags[0].books.isInitialized()).toBe(true);
     const old = tags[0];
     expect(tags[1].books.isInitialized()).toBe(false);
@@ -657,7 +658,7 @@ describe('EntityManagerPostgre', () => {
     expect(book.tags.count()).toBe(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag2);
     expect(book.tags.getItems()[0].id).toBeDefined();
-    expect(book.tags.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(true);
 
     // test collection CRUD
     // remove
@@ -712,7 +713,7 @@ describe('EntityManagerPostgre', () => {
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
-    expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('populating many to many relation on inverse side', async () => {
@@ -740,7 +741,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('nested populating', async () => {
@@ -771,12 +772,12 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0]).toBeInstanceOf(BookTag2);
     expect(tags[0].books.isInitialized()).toBe(true);
     expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books[0].isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
     expect(tags[0].books[0].author).toBeInstanceOf(Author2);
-    expect(tags[0].books[0].author.isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
-    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher.tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher.tests.count()).toBe(2);
     expect(tags[0].books[0].publisher.tests[0].name).toBe('t11');
@@ -786,12 +787,12 @@ describe('EntityManagerPostgre', () => {
     const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
-    expect(books[0].isInitialized()).toBe(true);
+    expect(wrap(books[0]).isInitialized()).toBe(true);
     expect(books[0].author).toBeInstanceOf(Author2);
-    expect(books[0].author.isInitialized()).toBe(true);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(books[0].author.name).toBe('Jon Snow');
     expect(books[0].publisher).toBeInstanceOf(Publisher2);
-    expect(books[0].publisher.isInitialized()).toBe(true);
+    expect(wrap(books[0].publisher).isInitialized()).toBe(true);
     expect(books[0].publisher.tests.isInitialized(true)).toBe(true);
     expect(books[0].publisher.tests.count()).toBe(2);
     expect(books[0].publisher.tests[0].name).toBe('t11');
@@ -943,7 +944,7 @@ describe('EntityManagerPostgre', () => {
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
     expect(a1).toBe(a1.favouriteAuthor);
     expect(a1.id).not.toBeNull();
-    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+    expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
   });
 
   test('self referencing (1 step)', async () => {
@@ -962,7 +963,7 @@ describe('EntityManagerPostgre', () => {
     const a1 = (await orm.em.findOne(Author2, { id: author.id }))!;
     expect(a1).toBe(a1.favouriteAuthor);
     expect(a1.id).not.toBeNull();
-    expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
+    expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
     expect(mock.mock.calls.length).toBe(8);
@@ -984,18 +985,18 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush([b1, b2, b3]);
     orm.em.clear();
 
-    const a1 = (await orm.em.findOne(Author2, { 'id:ne': 10 }))!;
+    const a1 = (await orm.em.findOne(Author2, { 'id:ne': 10 } as any))!;
     expect(a1).not.toBeNull();
     expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne(Author2, { 'id>=': 1 }))!;
+    const a2 = (await orm.em.findOne(Author2, { 'id>=': 1 } as any))!;
     expect(a2).not.toBeNull();
     expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne(Author2, { 'id:nin': [2, 3, 4] }))!;
+    const a3 = (await orm.em.findOne(Author2, { 'id:nin': [2, 3, 4] } as any))!;
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
-    const a4 = (await orm.em.findOne(Author2, { 'id:in': [] }))!;
+    const a4 = (await orm.em.findOne(Author2, { 'id:in': [] } as any))!;
     expect(a4).toBeNull();
-    const a5 = (await orm.em.findOne(Author2, { 'id:nin': [] }))!;
+    const a5 = (await orm.em.findOne(Author2, { 'id:nin': [] } as any))!;
     expect(a5).not.toBeNull();
     expect(a5.id).toBe(author.id);
   });

@@ -1,8 +1,8 @@
-import { BeforeCreate, Collection, IEntity, PrimaryKey, Property } from '../../lib';
+import { BeforeCreate, Collection, IdEntity, PrimaryKey, Property } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata';
 import { ReferenceType } from '../../lib/entity';
 
-export abstract class BaseEntity2 {
+export abstract class BaseEntity2 implements IdEntity<BaseEntity2> {
 
   @PrimaryKey()
   id: number;
@@ -27,5 +27,3 @@ export abstract class BaseEntity2 {
   }
 
 }
-
-export interface BaseEntity2 extends IEntity<number> { }

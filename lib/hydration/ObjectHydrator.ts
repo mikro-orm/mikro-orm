@@ -1,11 +1,11 @@
-import { EntityData, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityProperty, AnyEntity, Primary } from '../types';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, ReferenceType } from '../entity';
+import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 
-  protected hydrateProperty<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
+  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateManyToOne(value, entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
@@ -17,11 +17,11 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private hydrateOneToMany<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
-    entity[prop.name as keyof T] = new Collection<IEntity>(entity, undefined, !!value) as T[keyof T];
+  private hydrateOneToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
+    entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, !!value) as unknown as T[keyof T];
   }
 
-  private hydrateScalar<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateScalar<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
       return;
     }
@@ -29,7 +29,7 @@ export class ObjectHydrator extends Hydrator {
     entity[prop.name as keyof T] = value;
   }
 
-  private hydrateManyToMany<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateManyToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (prop.owner) {
       return this.hydrateManyToManyOwner(entity, prop, value);
     }
@@ -37,31 +37,31 @@ export class ObjectHydrator extends Hydrator {
     this.hydrateManyToManyInverse(entity, prop);
   }
 
-  private hydrateManyToManyOwner<T extends IEntityType<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateManyToManyOwner<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
     if (Array.isArray(value)) {
-      const items = value.map((value: IPrimaryKey | EntityData<T>) => this.createCollectionItem(prop, value));
-      entity[prop.name as keyof T] = new Collection<IEntity>(entity, items) as T[keyof T];
+      const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
+      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items) as unknown as T[keyof T];
     } else if (!entity[prop.name as keyof T]) {
       const items = this.driver.getPlatform().usesPivotTable() ? undefined : [];
-      entity[prop.name as keyof T] = new Collection<IEntity>(entity, items, false) as T[keyof T];
+      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, false) as unknown as T[keyof T];
     }
   }
 
-  private hydrateManyToManyInverse<T extends IEntityType<T>>(entity: T, prop: EntityProperty): void {
+  private hydrateManyToManyInverse<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
     if (!entity[prop.name as keyof T]) {
-      entity[prop.name as keyof T] = new Collection<IEntity>(entity, undefined, false) as T[keyof T];
+      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, false) as unknown as T[keyof T];
     }
   }
 
-  private hydrateManyToOne<T extends IEntityType<T>>(value: any, entity: T, prop: EntityProperty): void {
+  private hydrateManyToOne<T extends AnyEntity<T>>(value: any, entity: T, prop: EntityProperty): void {
     if (typeof value === 'undefined') {
       return;
     }
 
-    if (Utils.isPrimaryKey(value)) {
-      entity[prop.name] = Utils.wrapReference(this.factory.createReference(prop.type, value), prop);
-    } else if (Utils.isObject<T[keyof T]>(value)) {
-      entity[prop.name] = Utils.wrapReference(this.factory.create(prop.type, value), prop);
+    if (Utils.isPrimaryKey<T[keyof T]>(value)) {
+      entity[prop.name as keyof T] = Utils.wrapReference<T[keyof T]>(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
+    } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
+      entity[prop.name as keyof T] = Utils.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
     }
 
     if (entity[prop.name]) {
@@ -69,13 +69,13 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private createCollectionItem<T extends IEntityType<T>>(prop: EntityProperty, value: IPrimaryKey | EntityData<T>): T {
+  private createCollectionItem<T extends AnyEntity<T>>(prop: EntityProperty, value: Primary<T> | EntityData<T>): T {
     if (Utils.isPrimaryKey(value)) {
       return this.factory.createReference(prop.type, value);
     }
 
     const child = this.factory.create(prop.type, value as EntityData<T>);
-    child.__em.merge(child);
+    wrap(child).__em.merge(child);
 
     return child;
   }

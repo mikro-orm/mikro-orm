@@ -1,9 +1,9 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, IdEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
-export class FooBar2 extends BaseEntity22 {
+export class FooBar2 extends BaseEntity22 implements IdEntity<FooBar2> {
 
   @PrimaryKey()
   id: number;
@@ -14,7 +14,7 @@ export class FooBar2 extends BaseEntity22 {
   @OneToOne({ orphanRemoval: true })
   baz: FooBaz2;
 
-  @OneToOne({ owner: true })
+  @OneToOne()
   fooBar: FooBar2;
 
   @Property({ version: true, length: 3 })

@@ -36,7 +36,7 @@ export class Book {
 
 }
 
-export interface Book extends IEntity { }
+export interface Book extends AnyEntity { }
 ```
 
 [&larr; Back to table of contents](index.md#table-of-contents)

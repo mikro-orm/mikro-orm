@@ -1,4 +1,5 @@
 export * from './PrimaryKey';
+export * from './SerializedPrimaryKey';
 export * from './Entity';
 export * from './OneToOne';
 export * from './ManyToOne';
@@ -7,3 +8,4 @@ export { OneToMany, OneToManyOptions } from './OneToMany';
 export * from './Property';
 export * from './Repository';
 export * from './hooks';
+export * from '../types';

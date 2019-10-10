@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
-import { EntityProperty, IEntity } from '../decorators';
+import { Dictionary, EntityProperty, AnyEntity } from '../types';
 import { ReferenceType } from '../entity';
 import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
@@ -25,11 +25,11 @@ export class QueryBuilder {
   private finalized = false;
   private _joins: Record<string, JoinOptions> = {};
   private _aliasMap: Record<string, string> = {};
-  private _cond: Record<string, any> = {};
-  private _data: Record<string, any>;
+  private _cond: Dictionary = {};
+  private _data: Dictionary;
   private _orderBy: QueryOrderMap = {};
   private _groupBy: string[] = [];
-  private _having: Record<string, any> = {};
+  private _having: Dictionary = {};
   private _limit: number;
   private _offset: number;
   private lockMode?: LockMode;
@@ -80,21 +80,21 @@ export class QueryBuilder {
     return this.init(QueryType.COUNT);
   }
 
-  join(field: string, alias: string, cond: Record<string, any> = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin'): this {
+  join(field: string, alias: string, cond: Dictionary = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin'): this {
     const extraFields = this.joinReference(field, alias, cond, type);
     this._fields.push(...extraFields);
 
     return this;
   }
 
-  leftJoin(field: string, alias: string, cond: Record<string, any> = {}): this {
+  leftJoin(field: string, alias: string, cond: Dictionary = {}): this {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  where(cond: Record<string, any>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
+  where(cond: Dictionary, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
-  where(cond: Record<string, any> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    cond = SmartQueryHelper.processWhere(cond as Record<string, any>, this.entityName, this.metadata.get(this.entityName, false, false));
+  where(cond: Dictionary | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
+    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false));
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -116,15 +116,15 @@ export class QueryBuilder {
     return this;
   }
 
-  andWhere(cond: Record<string, any>): this; // tslint:disable-next-line:lines-between-class-members
+  andWhere(cond: Dictionary): this; // tslint:disable-next-line:lines-between-class-members
   andWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
-  andWhere(cond: Record<string, any> | string, params?: any[]): this {
+  andWhere(cond: Dictionary | string, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: Record<string, any>): this; // tslint:disable-next-line:lines-between-class-members
+  orWhere(cond: Dictionary): this; // tslint:disable-next-line:lines-between-class-members
   orWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
-  orWhere(cond: Record<string, any> | string, params?: any[]): this {
+  orWhere(cond: Dictionary | string, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
 
@@ -138,7 +138,7 @@ export class QueryBuilder {
     return this;
   }
 
-  having(cond: Record<string, any> | string, params?: any[]): this {
+  having(cond: Dictionary | string, params?: any[]): this {
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
     }
@@ -240,7 +240,7 @@ export class QueryBuilder {
       return res.map(r => this.driver.mapResult(r, meta));
     }
 
-    return this.driver.mapResult<IEntity>(res, meta);
+    return this.driver.mapResult<AnyEntity>(res, meta);
   }
 
   clone(): QueryBuilder {
@@ -255,7 +255,7 @@ export class QueryBuilder {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Record<string, any>, type: 'leftJoin' | 'innerJoin' | 'pivotJoin'): string[] {
+  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin'): string[] {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
@@ -410,5 +410,5 @@ export interface JoinOptions {
   inverseJoinColumn?: string;
   primaryKey?: string;
   prop: EntityProperty;
-  cond: Record<string, any>;
+  cond: Dictionary;
 }

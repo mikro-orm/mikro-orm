@@ -1,4 +1,4 @@
-import { IPrimaryKey } from '../decorators';
+import { IPrimaryKey } from '../types';
 
 export class EntityIdentifier {
 
@@ -8,7 +8,7 @@ export class EntityIdentifier {
     this.value = value;
   }
 
-  getValue<T = IPrimaryKey>(): T {
+  getValue<T extends IPrimaryKey = IPrimaryKey>(): T {
     return this.value as T;
   }
 

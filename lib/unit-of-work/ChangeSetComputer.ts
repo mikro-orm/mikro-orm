@@ -1,22 +1,22 @@
 import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityProperty, IEntity, IEntityType } from '../decorators';
+import { EntityData, EntityProperty, AnyEntity, Primary } from '../types';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '../entity';
+import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
 
 export class ChangeSetComputer {
 
   constructor(private readonly validator: EntityValidator,
-              private readonly originalEntityData: Record<string, EntityData<IEntity>>,
+              private readonly originalEntityData: Record<string, EntityData<AnyEntity>>,
               private readonly identifierMap: Record<string, EntityIdentifier>,
               private readonly metadata: MetadataStorage) { }
 
-  computeChangeSet<T extends IEntityType<T>>(entity: T): ChangeSet<T> | null {
+  computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
     const changeSet = { entity } as ChangeSet<T>;
     const meta = this.metadata.get(entity.constructor.name);
 
     changeSet.name = meta.name;
-    changeSet.type = this.originalEntityData[entity.__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    changeSet.type = this.originalEntityData[wrap(entity).__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
@@ -33,19 +33,19 @@ export class ChangeSetComputer {
     return changeSet;
   }
 
-  private computePayload<T extends IEntityType<T>>(entity: T): EntityData<T> {
-    if (this.originalEntityData[entity.__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[entity.__uuid] as T, entity, this.metadata);
+  private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
+    if (this.originalEntityData[wrap(entity).__uuid]) {
+      return Utils.diffEntities<T>(this.originalEntityData[wrap(entity).__uuid] as T, entity, this.metadata);
     }
 
     return Utils.prepareEntity(entity, this.metadata);
   }
 
-  private processReference<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+  private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      this.processManyToMany(changeSet, prop, changeSet.entity[prop.name as keyof T]);
+      this.processManyToMany(changeSet, prop, changeSet.entity[prop.name as keyof T] as unknown as Collection<T>);
     } else if (isToOneOwner && changeSet.entity[prop.name as keyof T]) {
       this.processManyToOne(prop, changeSet);
     }
@@ -55,30 +55,30 @@ export class ChangeSetComputer {
     }
   }
 
-  private processManyToOne<T extends IEntityType<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processManyToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const pk = this.metadata.get(prop.type).primaryKey as keyof T;
-    const entity = changeSet.entity[prop.name as keyof T] as T;
+    const entity = changeSet.entity[prop.name as keyof T] as unknown as T;
 
     if (!entity[pk]) {
-      changeSet.payload[prop.name] = this.identifierMap[entity.__uuid];
+      changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
     }
   }
 
-  private processManyToMany<T extends IEntityType<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<IEntity>): void {
+  private processManyToMany<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<AnyEntity>): void {
     if (collection.isDirty()) {
-      const pk = this.metadata.get(prop.type).primaryKey as keyof IEntity;
+      const pk = this.metadata.get(prop.type).primaryKey as keyof T;
       changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.__uuid]);
       collection.setDirty(false);
     }
   }
 
-  private processOneToOne<T extends IEntityType<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal)
     const data = this.originalEntityData[changeSet.entity.__uuid] as EntityData<T>;
 
     if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload) {
       const em = changeSet.entity.__em;
-      const orphan = em.getReference(prop.type, data[prop.name]);
+      const orphan = em.getReference(prop.type, data[prop.name] as Primary<T>);
       em.getUnitOfWork().scheduleOrphanRemoval(orphan);
     }
   }

@@ -1,9 +1,9 @@
 import { CodeBlockWriter, Project, QuoteKind, SourceFile } from 'ts-morph';
 import { ensureDir, writeFile } from 'fs-extra';
 
-import { AbstractSqlDriver, Configuration, DatabaseSchema, Utils } from '..';
+import { AbstractSqlDriver, Configuration, DatabaseSchema, Dictionary, Utils } from '..';
 import { Platform } from '../platforms';
-import { EntityProperty } from '../decorators';
+import { EntityProperty } from '../types';
 import { Column, DatabaseTable } from './DatabaseTable';
 
 export class EntityGenerator {
@@ -99,7 +99,7 @@ export class EntityGenerator {
     return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })`;
   }
 
-  private getCommonDecoratorOptions(column: Column, options: Record<string, any>, defaultValue: any, columnType?: string) {
+  private getCommonDecoratorOptions(column: Column, options: Dictionary, defaultValue: any, columnType?: string) {
     if (columnType) {
       options.columnType = `'${columnType}'`;
     }
@@ -113,7 +113,7 @@ export class EntityGenerator {
     }
   }
 
-  private getScalarPropertyDecoratorOptions(type: string, column: Column, options: Record<string, any>, prop: string, columnType?: string): void {
+  private getScalarPropertyDecoratorOptions(type: string, column: Column, options: Dictionary, prop: string, columnType?: string): void {
     const defaultColumnType = this.helper.getTypeDefinition({
       type,
       length: column.maxLength,
@@ -132,7 +132,7 @@ export class EntityGenerator {
     }
   }
 
-  private getForeignKeyDecoratorOptions(options: Record<string, any>, column: Column, prop: string) {
+  private getForeignKeyDecoratorOptions(options: Dictionary, column: Column, prop: string) {
     options.entity = `() => ${this.namingStrategy.getClassName(column.fk.referencedTableName, '_')}`;
 
     if (column.name !== this.namingStrategy.joinKeyColumnName(prop, column.fk.referencedColumnName)) {

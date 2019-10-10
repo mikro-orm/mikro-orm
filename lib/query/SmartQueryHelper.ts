@@ -1,6 +1,6 @@
-import { FilterQuery, IEntity, Reference, Utils } from '..';
+import { FilterQuery, AnyEntity, Reference, Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { EntityMetadata, IEntityType } from '../decorators';
+import { EntityMetadata } from '../types';
 
 export class SmartQueryHelper {
 
@@ -32,23 +32,23 @@ export class SmartQueryHelper {
     return params;
   }
 
-  static processWhere<T extends IEntityType<T>>(where: FilterQuery<T>, entityName: string, meta?: EntityMetadata<T>): FilterQuery<T> {
-    where = this.processParams(where);
+  static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, meta?: EntityMetadata<T>): FilterQuery<T> {
+    where = SmartQueryHelper.processParams(where) || {};
     const rootPrimaryKey = meta ? meta.primaryKey : entityName;
 
     if (Array.isArray(where)) {
-      return { [rootPrimaryKey]: { $in: where.map(sub => this.processWhere(sub, entityName, meta)) } };
+      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => SmartQueryHelper.processWhere(sub, entityName, meta)) } } as FilterQuery<T>;
     }
 
     if (!Utils.isObject(where) || Utils.isPrimaryKey(where)) {
-      return where;
+      return where as FilterQuery<T>;
     }
 
     return Object.keys(where).reduce((o, key) => {
-      const value = where[key as keyof typeof where];
+      const value = where[key];
 
       if (key in QueryBuilderHelper.GROUP_OPERATORS) {
-        o[key] = value.map((sub: any) => this.processWhere(sub, entityName, meta));
+        o[key] = value.map((sub: any) => SmartQueryHelper.processWhere(sub, entityName, meta));
         return o;
       }
 
@@ -68,10 +68,10 @@ export class SmartQueryHelper {
       }
 
       return o;
-    }, {} as Record<string, any>);
+    }, {} as FilterQuery<T>);
   }
 
-  private static processEntity(entity: IEntity, root?: boolean): any {
+  private static processEntity(entity: AnyEntity, root?: boolean): any {
     if (root) {
       return entity.__primaryKey;
     }

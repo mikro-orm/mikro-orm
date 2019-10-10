@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { EntityAssigner, EntityHelper, MikroORM, Reference } from '../lib';
+import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, wrap } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 
 describe('EntityAssignerMongo', () => {
@@ -14,13 +14,13 @@ describe('EntityAssignerMongo', () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
-    expect(author.toObject()).toBeInstanceOf(Object);
+    expect(wrap(author).toObject()).toBeInstanceOf(Object);
   });
 
   test('#toObject() should ignore properties marked with hidden flag', async () => {
     const test = Test.create('Bible');
     expect(test.hiddenField).toBeDefined();
-    expect(test.toJSON().hiddenField).not.toBeDefined();
+    expect(wrap(test).toJSON().hiddenField).not.toBeDefined();
   });
 
   test('#toJSON() should return DTO', async () => {
@@ -59,7 +59,7 @@ describe('EntityAssignerMongo', () => {
     orm.em.clear();
 
     const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author', 'books.publisher']))!;
-    const json = author.toObject();
+    const json = wrap(author).toObject();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
     expect(json.books[0]).toMatchObject({
@@ -74,9 +74,9 @@ describe('EntityAssignerMongo', () => {
     orm.em.clear();
 
     const jon = orm.em.getReference(Author, author.id!);
-    expect(jon.isInitialized()).toBe(false);
+    expect(wrap(jon).isInitialized()).toBe(false);
     await EntityHelper.init(jon);
-    expect(jon.isInitialized()).toBe(true);
+    expect(wrap(jon).isInitialized()).toBe(true);
   });
 
   test('#load() should refresh the entity if its already loaded', async () => {
@@ -129,11 +129,11 @@ describe('EntityAssignerMongo', () => {
     expect(book.tags.getIdentifiers('id')).toMatchObject([tag1.id, tag3.id]);
     EntityAssigner.assign(book, { tags: [tag2] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
-    EntityAssigner.assign(book, { tags: [tag2.toObject()] });
+    EntityAssigner.assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => EntityAssigner.assign(book, { tags: [false] })).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [false]`);
-    expect(() => EntityAssigner.assign(book, { publisher: [{ foo: 'bar' }] })).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
+    expect(() => EntityAssigner.assign(book, { tags: [false] } as EntityData<Book>)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [false]`);
+    expect(() => EntityAssigner.assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('should have string id getter and setter', async () => {

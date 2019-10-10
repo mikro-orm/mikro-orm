@@ -1,10 +1,11 @@
-import { EntityName, EntityProperty, IEntity, IEntityType } from './Entity';
+
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
+import { EntityName, EntityProperty, AnyEntity } from '../types';
 
 export function Property(options: PropertyOptions = {}): Function {
-  return function (target: IEntity, propertyName: string) {
+  return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
     options.name = options.name || propertyName;
@@ -40,7 +41,7 @@ export type PropertyOptions = {
   version?: boolean;
 };
 
-export interface ReferenceOptions<T extends IEntityType<T>> extends PropertyOptions {
+export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {
   entity?: string | (() => EntityName<T>);
   cascade?: Cascade[];
   eager?: boolean;

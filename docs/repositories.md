@@ -54,7 +54,7 @@ export class Author {
 Note that we need to pass that repository reference inside a callback so we will not run
 into circular dependency issues when using entity references inside that repository.
 
-Now you can access your custom repository via `EntityManager.getRepository()` method.
+Now you can access your custom repository via `em.getRepository()` method.
 
 > You can also register custom base repository (for all entities where you do not specify 
 `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
@@ -142,7 +142,7 @@ Gets count of entities matching the `where` condition.
 
 ---
 
-#### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
+#### `persist(entity: AnyEntity | AnyEntity[], flush?: boolean): Promise<void>`
 
 Tells the EntityManager to make an instance managed and persistent. The entity will be 
 entered into the database at or before transaction commit or as a result of the flush 
@@ -151,13 +151,13 @@ configuration option.
 
 ---
 
-#### `persistAndFlush(entity: IEntity | IEntity[]): Promise<void>`
+#### `persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void>`
 
 Shortcut for `persist` & `flush`.
 
 ---
 
-#### `persistLater(entity: IEntity | IEntity[]): void`
+#### `persistLater(entity: AnyEntity | AnyEntity[]): void`
 
 Shortcut for just `persist`, without flushing. 
 
@@ -169,7 +169,7 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(where: IEntity | FilterQuery<T>, flush?: boolean): Promise<number>`
+#### `remove(where: AnyEntity | FilterQuery<T>, flush?: boolean): Promise<number>`
 
 When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
 otherwise it fires delete query with given `where` condition. 
@@ -178,7 +178,7 @@ This method fires `beforeDelete` and `afterDelete` hooks only if you provide ent
 
 ---
 
-#### `removeAndFlush(entity: IEntity): Promise<void>`
+#### `removeAndFlush(entity: AnyEntity): Promise<void>`
 
 Shortcut for `removeEntity` & `flush`.
 
@@ -186,7 +186,7 @@ This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
-#### `removeLater(entity: IEntity): void`
+#### `removeLater(entity: AnyEntity): void`
 
 Shortcut for `removeEntity` without flushing. 
 

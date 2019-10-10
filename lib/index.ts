@@ -1,3 +1,7 @@
+export {
+  Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData,
+  AnyEntity, WrappedEntity, IdEntity, UuidEntity, MongoEntity, EntityProperty, EntityMetadata,
+} from './types';
 export * from './MikroORM';
 export * from './entity';
 export * from './EntityManager';
@@ -16,8 +20,8 @@ export * from './metadata/JavaScriptMetadataProvider';
 export * from './metadata/TypeScriptMetadataProvider';
 export * from './cache';
 export {
-  Entity, IEntity, EntityOptions, OneToMany, OneToManyOptions, OneToOne, OneToOneOptions, ManyToOne, ManyToOneOptions,
-  ManyToMany, ManyToManyOptions, Property, PropertyOptions, IPrimaryKey, PrimaryKey, PrimaryKeyOptions, Repository,
+  Entity, EntityOptions, OneToMany, OneToManyOptions, OneToOne, OneToOneOptions, ManyToOne, ManyToOneOptions,
+  ManyToMany, ManyToManyOptions, Property, PropertyOptions, PrimaryKey, PrimaryKeyOptions, Repository,
 } from './decorators';
 export * from './decorators/hooks';
 export * from './query/enums';

@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { Collection, EntityManager, MikroORM, QueryOrder } from '../lib';
+import { Collection, EntityManager, MikroORM, QueryOrder, wrap } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
@@ -23,7 +23,7 @@ describe('EntityManagerMariaDb', () => {
 
   test('should return mysql driver', async () => {
     const driver = orm.em.getDriver<MariaDbDriver>();
-    expect(driver instanceof MariaDbDriver).toBe(true);
+    expect(driver).toBeInstanceOf(MariaDbDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).insertId).not.toBeNull();
@@ -99,7 +99,7 @@ describe('EntityManagerMariaDb', () => {
     const authorRepository = orm.em.getRepository(Author2);
     const booksRepository = orm.em.getRepository(Book2);
     const books = await booksRepository.findAll(['author']);
-    expect(books[0].author.isInitialized()).toBe(true);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible.uuid })).not.toBe(null);
     orm.em.clear();
 
@@ -121,7 +121,7 @@ describe('EntityManagerMariaDb', () => {
     expect(jon).toBe(await authorRepository.findOne(jon.id));
 
     // serialization test
-    const o = jon.toJSON();
+    const o = wrap(jon).toJSON();
     expect(o).toMatchObject({
       id: jon.id,
       createdAt: jon.createdAt,
@@ -136,7 +136,7 @@ describe('EntityManagerMariaDb', () => {
       email: 'snow@wall.st',
       name: 'Jon Snow',
     });
-    expect(jon.toJSON()).toEqual(o);
+    expect(wrap(jon).toJSON()).toEqual(o);
     expect(jon.books.getIdentifiers()).toBeInstanceOf(Array);
     expect(typeof jon.books.getIdentifiers()[0]).toBe('string');
 
@@ -149,9 +149,9 @@ describe('EntityManagerMariaDb', () => {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
 
         expect(book.author).toBeInstanceOf(Author2);
-        expect(book.author.isInitialized()).toBe(true);
+        expect(wrap(book.author).isInitialized()).toBe(true);
         expect(book.publisher).toBeInstanceOf(Publisher2);
-        expect(book.publisher.isInitialized()).toBe(false);
+        expect(wrap(book.publisher).isInitialized()).toBe(false);
       }
     }
 
@@ -174,7 +174,7 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
-    expect(lastBook[0].author.isInitialized()).toBe(true);
+    expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
   });
 

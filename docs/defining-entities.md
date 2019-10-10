@@ -42,13 +42,13 @@ export class Book {
 
 }
 
-export interface Book extends IEntity<string> { }
+export interface Book extends AnyEntity<string> { }
 ```
 
-You will need to extend Book's interface with `IEntity`. The interface represents internal 
+You will need to extend Book's interface with `AnyEntity`. The interface represents internal 
 methods added to your entity's prototype via `@Entity` decorator.
 
-> `IEntity` is generic interface, its type parameter depends on data type of normalized primary
+> `AnyEntity` is generic interface, its type parameter depends on data type of normalized primary
 > key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
 > This type default to union type `number | string`. Keep in mind that you have to worry about 
 > this only when you define your primary key as `_id` instead of `id`.
@@ -107,7 +107,7 @@ export class Author {
 
 }
 
-export interface Author extends IEntity { }
+export interface Author extends AnyEntity { }
 ```
 
 More information about modelling relationships can be found on [modelling relationships page](relationships.md).

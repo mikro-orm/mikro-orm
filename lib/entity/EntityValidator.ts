@@ -1,14 +1,13 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityData, EntityMetadata, EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../types';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
-import { FilterQuery } from '../drivers';
 
 export class EntityValidator {
 
   constructor(private strict: boolean) { }
 
-  validate<T>(entity: IEntityType<T>, payload: any, meta: EntityMetadata): void {
+  validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
     Object.values(meta.properties).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
@@ -26,7 +25,7 @@ export class EntityValidator {
     });
   }
 
-  validateProperty<T extends IEntityType<T>>(prop: EntityProperty, givenValue: any, entity: T) {
+  validateProperty<T extends AnyEntity<T>>(prop: EntityProperty, givenValue: any, entity: T) {
     if (givenValue === null || givenValue === undefined) {
       return givenValue;
     }
@@ -63,19 +62,19 @@ export class EntityValidator {
     }
   }
 
-  validatePrimaryKey<T extends IEntityType<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
+  validatePrimaryKey<T extends AnyEntity<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
     if (!entity || (!entity[meta.primaryKey] && !entity[meta.serializedPrimaryKey])) {
       throw ValidationError.fromMergeWithoutPK(meta);
     }
   }
 
-  validateEmptyWhere<T extends IEntityType<T>>(where: FilterQuery<T> | IPrimaryKey): void {
-    if (!where || (typeof where === 'object' && Object.keys(where).length === 0)) {
+  validateEmptyWhere<T extends AnyEntity<T>>(where: FilterQuery<T>): void {
+    if (Utils.isEmpty(where)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
   }
 
-  private validateCollection<T extends IEntityType<T>>(entity: T, prop: EntityProperty): void {
+  private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
     if (!entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }

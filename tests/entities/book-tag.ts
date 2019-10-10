@@ -1,12 +1,16 @@
 import { ObjectId } from 'mongodb';
-import { Collection, Entity, ManyToMany, PrimaryKey, Property, IEntity } from '../../lib';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property, MongoEntity } from '../../lib';
 import { Book } from './Book';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class BookTag {
+export class BookTag implements MongoEntity<BookTag> {
 
   @PrimaryKey()
   _id: ObjectId;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   name: string;
@@ -19,5 +23,3 @@ export class BookTag {
   }
 
 }
-
-export interface BookTag extends IEntity { }

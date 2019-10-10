@@ -1,5 +1,5 @@
 import { TableBuilder } from 'knex';
-import { EntityProperty } from '../decorators';
+import { Dictionary, EntityProperty } from '../types';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column, Index } from './DatabaseTable';
 import { ReferenceType } from '../entity';
@@ -68,7 +68,7 @@ export abstract class SchemaHelper {
     return ret;
   }
 
-  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Record<string, any>> {
+  async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
     return this.mapForeignKeys(fks);
   }
@@ -93,7 +93,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  mapForeignKeys(fks: any[]): Record<string, any> {
+  mapForeignKeys(fks: any[]): Dictionary {
     return fks.reduce((ret, fk: any) => {
       ret[fk.column_name] = {
         columnName: fk.column_name,

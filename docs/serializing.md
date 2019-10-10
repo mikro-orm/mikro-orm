@@ -6,8 +6,8 @@
 By default, all entities are monkey patched with `toObject()` and `toJSON` methods:
 
 ```typescript
-export interface IEntity<K = number | string> {
-  toObject(parent?: IEntity, isCollection?: boolean): Record<string, any>;
+export interface AnyEntity<K = number | string> {
+  toObject(parent?: AnyEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
   // ...
 }
@@ -62,8 +62,8 @@ console.log(book.toJSON().hiddenField); // undefined
 
 The opposite situation where you want to define a property that lives only in memory (is 
 not persisted into database) can be solved by defining your property as `persist: false`. 
-Such property can be assigned via one of `IEntity.assign()`, `EntityManager.create()` and 
-`EntityManager.merge()`. It will be also part of serialized result. 
+Such property can be assigned via one of `Entity.assign()`, `em.create()` and 
+`em.merge()`. It will be also part of serialized result. 
 
 This can be handle when dealing with additional values selected via `QueryBuilder` or 
 MongoDB's aggregations.

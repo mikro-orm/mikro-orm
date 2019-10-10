@@ -147,7 +147,7 @@ console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
 
-> As opposed to `IEntity.init()` which always refreshes the entity, `Reference.load()` 
+> As opposed to `Entity.init()` which always refreshes the entity, `Reference.load()` 
 > method will query the database only if the entity is not already loaded in Identity Map. 
 
 [&larr; Back to table of contents](index.md#table-of-contents)

@@ -1,10 +1,14 @@
-import { Entity, IEntity, PrimaryKey, Property } from '../../lib';
+import { Entity, MongoEntity, PrimaryKey, Property } from '../../lib';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Test {
+export class Test implements MongoEntity<Test> {
 
   @PrimaryKey({ type: 'ObjectId' })
   _id: any;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property({ type: 'string' })
   name: any;
@@ -29,5 +33,3 @@ export class Test {
   }
 
 }
-
-export interface Test extends IEntity<string> { }

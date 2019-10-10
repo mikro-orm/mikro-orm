@@ -1,10 +1,14 @@
-import { BeforeCreate, IEntity, PrimaryKey, Property } from '../../lib';
 import { ObjectId } from 'bson';
+import { BeforeCreate, MongoEntity, PrimaryKey, Property } from '../../lib';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
-export abstract class BaseEntity {
+export abstract class BaseEntity implements MongoEntity<BaseEntity> {
 
   @PrimaryKey()
   _id: ObjectId;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   createdAt = new Date();
@@ -24,5 +28,3 @@ export abstract class BaseEntity {
   }
 
 }
-
-export interface BaseEntity extends IEntity<string> { }

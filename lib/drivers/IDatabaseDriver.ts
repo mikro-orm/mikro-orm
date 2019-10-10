@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary } from '../types';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
@@ -16,29 +16,29 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
+  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
+  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
 
-  nativeInsert<T extends IEntity>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, ctx?: Transaction): Promise<QueryResult>;
+  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  count<T extends IEntity>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
+  count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends IEntityType<T>>(result: EntityData<T>, meta: EntityMetadata): T | null;
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[], ctx?: Transaction): Promise<Record<string, T[]>>;
+  loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], ctx?: Transaction): Promise<Record<string, T[]>>;
 
   getPlatform(): Platform;
 
@@ -51,13 +51,3 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getDependencies(): string[];
 
 }
-
-export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
-    ? DeepPartial<U>[]
-    : T[P] extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartial<U>>
-      : DeepPartial<T[P]>
-};
-
-export type FilterQuery<T> = DeepPartial<T> | Record<string, any>;
