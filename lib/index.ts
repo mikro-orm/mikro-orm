@@ -17,7 +17,7 @@ export * from './metadata/TypeScriptMetadataProvider';
 export * from './cache';
 export {
   Entity, IEntity, EntityOptions, OneToMany, OneToManyOptions, OneToOne, OneToOneOptions, ManyToOne, ManyToOneOptions,
-  ManyToMany, ManyToManyOptions, Property, PropertyOptions, IPrimaryKey, PrimaryKey, PrimaryKeyOptions,
+  ManyToMany, ManyToManyOptions, Property, PropertyOptions, IPrimaryKey, PrimaryKey, PrimaryKeyOptions, Repository,
 } from './decorators';
 export * from './decorators/hooks';
 export * from './query/enums';

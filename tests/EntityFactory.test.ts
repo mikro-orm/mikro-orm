@@ -4,6 +4,8 @@ import { MikroORM, Collection, Utils } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
+import { AuthorRepository } from './repositories/AuthorRepository';
+import { BookRepository } from './repositories/BookRepository';
 
 describe('EntityFactory', () => {
 
@@ -30,8 +32,10 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name].properties.age.type).toBe('number');
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
+    expect(metadata[Author.name].customRepository()).toBe(AuthorRepository);
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
     expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].customRepository()).toBe(BookRepository);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
 

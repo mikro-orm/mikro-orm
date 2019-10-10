@@ -5,6 +5,7 @@ import { AssignOptions, Cascade, Collection, EntityRepository, ReferenceType } f
 import { Utils } from '../utils';
 import { QueryOrder } from '../query';
 import { LockMode } from '../unit-of-work';
+import { Constructor } from '../drivers';
 
 export function Entity(options: EntityOptions = {}): Function {
   return function <T extends { new(...args: any[]): IEntity }>(target: T) {
@@ -21,7 +22,7 @@ export function Entity(options: EntityOptions = {}): Function {
 
 export type EntityOptions = {
   collection?: string;
-  customRepository?: () => { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
+  customRepository?: () => Constructor<EntityRepository<IEntity>>;
 };
 
 export interface IEntity<K = number | string> {
@@ -46,7 +47,7 @@ export interface IEntity<K = number | string> {
 
 export type IEntityType<T> = { [k in keyof T]: IEntity | Collection<IEntity> | any; } & IEntity;
 
-export type EntityClass<T extends IEntityType<T>> = Function & { prototype: T };
+export type EntityClass<T extends IEntityType<T>> = Constructor<T> & Function & { prototype: T };
 
 export type EntityClassGroup<T extends IEntityType<T>> = {
   entity: EntityClass<T>;
@@ -106,7 +107,7 @@ export interface EntityMetadata<T extends IEntityType<T> = any> {
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
-  customRepository: () => { new (em: EntityManager, entityName: EntityName<T>): EntityRepository<T> };
+  customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;
 }

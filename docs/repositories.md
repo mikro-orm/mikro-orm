@@ -30,6 +30,7 @@ console.log(books); // Book[]
 To use custom repository, just extend `EntityRepository<T>` class:
 
 ```typescript
+@Repository(Author)
 export class CustomAuthorRepository extends EntityRepository<Author> {
 
   // your custom methods...
@@ -40,11 +41,12 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
 }
 ```
 
-And register your repository as `@Entity` decorator:
+You can also omit the `@Repository` decorator and register your repository in `@Entity` 
+decorator instead:
 
 ```typescript
 @Entity({ customRepository: () => CustomAuthorRepository })
-export class Publisher {
+export class Author {
   // ...
 }
 ```

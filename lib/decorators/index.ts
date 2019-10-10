@@ -5,4 +5,5 @@ export * from './ManyToOne';
 export * from './ManyToMany';
 export { OneToMany, OneToManyOptions } from './OneToMany';
 export * from './Property';
+export * from './Repository';
 export * from './hooks';
