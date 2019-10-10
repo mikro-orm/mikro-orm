@@ -227,6 +227,23 @@ describe('Utils', () => {
     expect(Utils.lookupPathFromDecorator({} as any, stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
   });
 
+  test('lookup path from decorator on windows', () => {
+    // with tslib, via ts-node
+    const stack1 = [
+      '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
+      '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\decorators\\PrimaryKey.js:12:23',
+      '    at Object.__decorate (C:\\www\\my-project\\node_modules\\tslib\\tslib.js:93:114)',
+      '    at Object.<anonymous> (C:\\www\\my-project\\src\\entities\\Customer.ts:7:5)',
+      '    at Module._compile (internal/modules/cjs/loader.js:936:30)',
+      '    at Module.m._compile (C:\\www\\my-project\\node_modules\\ts-node\\src\\index.ts:493:23)',
+      '    at Module._extensions..js (internal/modules/cjs/loader.js:947:10)',
+      '    at Object.require.extensions.<computed> [as .ts] (C:\\www\\my-project\\node_modules\\ts-node\\src\\index.ts:496:12)',
+      '    at Module.load (internal/modules/cjs/loader.js:790:32)',
+      '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
+    ];
+    expect(Utils.lookupPathFromDecorator({} as any, stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -230,7 +230,7 @@ export class Utils {
       return meta.path;
     }
 
-    if (stack[line].includes('node_modules/tslib/tslib')) {
+    if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
 
