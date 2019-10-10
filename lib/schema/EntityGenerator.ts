@@ -61,7 +61,7 @@ export class EntityGenerator {
     const columnType = this.getPropertyType(column, '__false') === '__false' ? column.type : undefined;
     const defaultValue = this.getPropertyDefaultValue(column, type);
     const decorator = this.getPropertyDecorator(prop, column, type, defaultValue, columnType);
-    const definition = this.getPropertyDefinition(prop, type, defaultValue);
+    const definition = this.getPropertyDefinition(column, prop, type, defaultValue);
 
     writer.blankLineIfLastNot();
     writer.writeLine(decorator);
@@ -69,13 +69,15 @@ export class EntityGenerator {
     writer.blankLine();
   }
 
-  private getPropertyDefinition(prop: string, type: string, defaultValue: any): string {
+  private getPropertyDefinition(column: Column, prop: string, type: string, defaultValue: any): string {
+    const ret = `${prop}${column.nullable ? '?' : ''}: ${type}`;
+
     // string defaults are usually things like SQL functions
     if (!defaultValue || typeof defaultValue === 'string') {
-      return `${prop}: ${type};`;
+      return ret + ';';
     }
 
-    return `${prop}: ${type} = ${defaultValue};`;
+    return `${ret} = ${defaultValue};`;
   }
 
   private getPropertyDecorator(prop: string, column: Column, type: string, defaultValue: any, columnType?: string): string {
