@@ -1,3 +1,13 @@
+<a name="2.7.9"></a>
+## [2.7.9](https://github.com/B4nan/mikro-orm/compare/v2.7.8...v2.7.9) (2019-10-10)
+
+### Bug Fixes
+
+* **deps**: update dependency ts-morph to v4 ([#162](https://github.com/B4nan/mikro-orm/issues/162) ([b6dd073](https://github.com/B4nan/mikro-orm/commit/b6dd073))
+* **metadata**: fix lookup of path to entity file on windows with tslib ([a3c2900](https://github.com/B4nan/mikro-orm/commit/a3c2900)), closes [#194](https://github.com/B4nan/mikro-orm/issues/194)
+
+
+
 <a name="2.7.8"></a>
 ## [2.7.8](https://github.com/B4nan/mikro-orm/compare/v2.7.7...v2.7.8) (2019-09-19)
 
