@@ -34,7 +34,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], ctx?: Transaction): Promise<Record<string, T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Record<string, T[]>> {
     if (!this.platform.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -42,8 +42,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const fk1 = prop.joinColumn;
     const fk2 = prop.inverseJoinColumn;
     const pivotProp2 = this.getPivotInverseProperty(prop);
-    const orderBy = { [`${(prop.pivotTable)}.${this.metadata.get(prop.pivotTable).primaryKey}`]: QueryOrder.ASC };
-    const items = owners.length ? await this.find(prop.type, { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } }, [prop.pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
+    where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
+    orderBy = orderBy || prop.orderBy || { [`${(prop.pivotTable)}.${this.metadata.get(prop.pivotTable).primaryKey}`]: QueryOrder.ASC };
+    const items = owners.length ? await this.find(prop.type, where, [prop.pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
 
     const map: Record<string, T[]> = {};
     owners.forEach(owner => map['' + owner] = []);

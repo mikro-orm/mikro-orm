@@ -62,7 +62,7 @@ export class QueryBuilderHelper {
     return this.alias + '.' + ret;
   }
 
-  processData(data: any): any {
+  processData(data: Dictionary): any {
     data = Object.assign({}, data); // copy first
     const meta = this.metadata.get(this.entityName, false, false);
 

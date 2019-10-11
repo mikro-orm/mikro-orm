@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, UuidEntity } from '../../lib';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, UuidEntity } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -38,7 +38,7 @@ export class Book2 implements UuidEntity<Book2> {
   @OneToOne({ cascade: [], mappedBy: 'book' })
   test: Test2;
 
-  @ManyToMany({ entity: () => BookTag2, inversedBy: 'books', cascade: [] })
+  @ManyToMany({ entity: () => BookTag2, inversedBy: 'books', cascade: [], orderBy: { name: QueryOrder.ASC } })
   tags = new Collection<BookTag2>(this);
 
   constructor(title: string, author: Author2) {

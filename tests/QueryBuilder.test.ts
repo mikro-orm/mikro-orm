@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
-import { LockMode, MikroORM, QueryOrder } from '../lib';
+import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { CriteriaNode } from '../lib/query/CriteriaNode';
 
@@ -483,14 +483,14 @@ describe('QueryBuilder', () => {
     qb.select(['b.*', 't.*', 'count(t.id) as tags'])
       .leftJoin('t.books', 'b')
       .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
-      .groupBy('b.uuid')
+      .groupBy(['b.uuid', 't.id'])
       .having('tags > ?', [0])
       .limit(2, 1);
     const sql = 'select `b`.*, `t`.*, count(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
       'left join `book2_to_book_tag2` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (b.title = ? or b.title = ?) ' +
-      'group by `b`.`uuid_pk` ' +
+      'group by `b`.`uuid_pk`, `t`.`id` ' +
       'having (tags > ?) ' +
       'limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
@@ -502,14 +502,14 @@ describe('QueryBuilder', () => {
     qb.select(['b.*', 't.*', 'count(t.id) as tags'])
       .leftJoin('t.books', 'b')
       .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
-      .groupBy('b.uuid')
+      .groupBy(['b.uuid', 't.id'])
       .having({ $or: [{ 'b.uuid': '...', 'count(t.id)': { $gt: 0 } }, { 'b.title': 'my title' }] })
       .limit(2, 1);
     const sql = 'select `b`.*, `t`.*, count(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
       'left join `book2_to_book_tag2` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (b.title = ? or b.title = ?) ' +
-      'group by `b`.`uuid_pk` ' +
+      'group by `b`.`uuid_pk`, `t`.`id` ' +
       'having ((`b`.`uuid_pk` = ? and count(t.id) > ?) or `b`.`title` = ?) ' +
       'limit ? offset ?';
     expect(qb.getQuery()).toEqual(sql);
@@ -595,7 +595,7 @@ describe('QueryBuilder', () => {
 
   test('select count distinct query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.count('id', true).where({ name: 'test 123', type: PublisherType.GLOBAL });
+    qb.count('id', true).where({ name: 'test 123', type: PublisherType.GLOBAL }).setFlag(QueryFlag.DISTINCT);
     expect(qb.getQuery()).toEqual('select count(distinct `e0`.`id`) as `count` from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });

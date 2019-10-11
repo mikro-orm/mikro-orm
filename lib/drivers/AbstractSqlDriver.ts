@@ -1,10 +1,10 @@
 import { Transaction } from 'knex';
-import { Constructor, Dictionary, EntityData, EntityMetadata, FilterQuery, AnyEntity, Primary } from '../types';
+import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, FilterQuery, Primary } from '../types';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
-import { QueryBuilder, QueryOrderMap } from '../query';
+import { QueryBuilder, QueryFlag, QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { LockMode } from '../unit-of-work';
 import { Platform } from '../platforms';
@@ -35,6 +35,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (limit !== undefined) {
       qb.limit(limit, offset);
+    }
+
+    if (!Utils.isEmpty(where) && !meta.pivotTable) {
+      qb.groupBy(meta.primaryKey).setFlag(QueryFlag.AUTO_GROUP_BY);
     }
 
     return qb.execute('all');

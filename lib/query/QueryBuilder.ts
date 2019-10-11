@@ -180,12 +180,20 @@ export class QueryBuilder {
     return this;
   }
 
+  setFlag(flag: QueryFlag): this {
+    if (!this.flags.includes(flag)) {
+      this.flags.push(flag);
+    }
+
+    return this;
+  }
+
   getKnexQuery(): KnexQueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
 
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond);
-    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy)), this._groupBy);
+    Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit), this._limit);
@@ -281,11 +289,11 @@ export class QueryBuilder {
     return ret;
   }
 
-  private prepareFields(fields: string[]): (string | Raw)[] {
+  private prepareFields<T extends string | Raw = string | Raw>(fields: string[], type: 'where' | 'groupBy' = 'where'): T[] {
     const ret: string[] = [];
 
     fields.forEach(f => {
-      if (this._joins[f]) {
+      if (this._joins[f] && type === 'where') {
         return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
@@ -293,7 +301,7 @@ export class QueryBuilder {
     });
 
     Object.keys(this._populateMap).forEach(f => {
-      if (!fields.includes(f)) {
+      if (!fields.includes(f) && type === 'where') {
         ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
@@ -302,7 +310,7 @@ export class QueryBuilder {
       }
     });
 
-    return ret;
+    return ret as T[];
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
@@ -395,7 +403,27 @@ export class QueryBuilder {
     });
 
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
+
+    // automatically add missing fields to group by clause to fix `only_full_group_by` issues
+    if (this.flags.includes(QueryFlag.AUTO_GROUP_BY) && !Utils.isEmpty(this._joins) && !Utils.isEmpty(this._groupBy)) {
+      this.autoGroupJoinedFields();
+    }
+
     this.finalized = true;
+  }
+
+  private autoGroupJoinedFields(): void {
+    this.prepareFields(this._fields)
+      .map(field => this.helper.splitField('' + field))
+      .filter(([alias]) => alias !== this.alias)
+      .map(([alias, prop]) => `${alias}.${prop.replace(/\s+as.*$/, '')}`)
+      .forEach(field => this._groupBy.push(field));
+
+    Object.keys(this._orderBy)
+      .map(field => this.helper.splitField(field))
+      .filter(([alias]) => alias !== this.alias)
+      .map(([alias, prop]) => `${this._populateMap[alias] || alias}.${prop}`)
+      .forEach(a => this._groupBy.push(a));
   }
 
 }

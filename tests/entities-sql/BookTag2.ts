@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, Property, QueryOrder } from '../../lib';
+import { Collection, Entity, ManyToMany, Property } from '../../lib';
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
 

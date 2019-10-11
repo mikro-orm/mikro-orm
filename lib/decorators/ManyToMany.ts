@@ -3,6 +3,7 @@ import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../types';
+import { QueryOrder } from '../query';
 
 export function ManyToMany<T extends AnyEntity<T>>(
   entity: ManyToManyOptions<T> | string | (() => EntityName<T>),
@@ -37,6 +38,7 @@ export interface ManyToManyOptions<T extends AnyEntity<T>> extends ReferenceOpti
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
   mappedBy?: (string & keyof T) | ((e: T) => any);
+  orderBy?: { [field: string]: QueryOrder };
   pivotTable?: string;
   joinColumn?: string;
   inverseJoinColumn?: string;

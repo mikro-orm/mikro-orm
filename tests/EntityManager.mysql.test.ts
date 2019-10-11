@@ -734,7 +734,7 @@ describe('EntityManagerMySql', () => {
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) group by `e0`.`id` order by `e0`.`id` asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -742,7 +742,7 @@ describe('EntityManagerMySql', () => {
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, ['bar']))!;
     expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[4][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) group by `e0`.`id` order by `e0`.`id` asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -759,6 +759,40 @@ describe('EntityManagerMySql', () => {
     const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
     expect(b1.uuid).not.toBeNull();
     expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
+  });
+
+  test('populate passes nested where and orderBy', async () => {
+    const author = new Author2('name', 'email');
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    const b4 = new Book2('b4', author);
+    const b5 = new Book2('b5', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    b1.tags.add(tag1, tag3);
+    b2.tags.add(tag1, tag2, tag5);
+    b3.tags.add(tag5);
+    b4.tags.add(tag2, tag4, tag5);
+    b5.tags.add(tag5);
+
+    author.books.add(b1, b2, b3, b4, b5);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.find(Author2, author, ['books'], { books: { title: QueryOrder.DESC } });
+    expect(a1[0].books.getItems().map(b => b.title)).toEqual(['b5', 'b4', 'b3', 'b2', 'b1']);
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author2, author, ['books'], { books: { title: QueryOrder.DESC } });
+    expect(a2.books.getItems().map(b => b.title)).toEqual(['b5', 'b4', 'b3', 'b2', 'b1']);
+    orm.em.clear();
+
+    const a3 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } as any } }, ['books.tags'], { books: { tags: { name: QueryOrder.DESC }, title: QueryOrder.ASC } });
+    expect(a3.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
   });
 
   test('many to many relation', async () => {
@@ -1042,6 +1076,35 @@ describe('EntityManagerMySql', () => {
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
   });
 
+  test('many to many collection allows custom orderBy', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    const tag6 = new BookTag2('zupa');
+    const tag7 = new BookTag2('awkward');
+    book1.tags.add(tag1, tag3, tag6, tag7);
+    book2.tags.add(tag1, tag2, tag5, tag6);
+    book3.tags.add(tag2, tag4, tag5, tag7);
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const books = await orm.em.find(Book2, { tags: { name: { $ne: 'funny' } } as any }, ['tags'], { title: QueryOrder.DESC });
+    await expect(books.length).toBe(3);
+    await expect(books[0].title).toBe('My Life on The Wall, part 3');
+    await expect(books[0].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
+    await expect(books[1].title).toBe('My Life on The Wall, part 2');
+    await expect(books[1].tags.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
+    await expect(books[2].title).toBe('My Life on The Wall, part 1');
+    await expect(books[2].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
+  });
+
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
@@ -1236,21 +1299,17 @@ describe('EntityManagerMySql', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
-    const res = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
-    // FIXME we should probably have some tests on how this works on EM level, not just in QB
-    // const res1 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
-    // const book = new Book2('asd', {} as Author2);
-    // const res2 = await orm.em.find(Book2, { author: { favouriteBook: book } });
-    // const res3 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
-    expect(res).toHaveLength(3);
-    expect(res[0].test).toBeInstanceOf(Test2);
-    expect(wrap(res[0].test).isInitialized()).toBe(false);
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
+    expect(res1).toHaveLength(3);
+    expect(res1[0].test).toBeInstanceOf(Test2);
+    expect(wrap(res1[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`name` = ?');
+      'where `e1`.`name` = ? ' +
+      'group by `e0`.`uuid_pk`, `e2`.`id`');
   });
 
   test('partial selects', async () => {

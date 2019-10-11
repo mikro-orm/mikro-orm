@@ -1,9 +1,9 @@
-import { EntityProperty, AnyEntity, Primary } from '../types';
+import { EntityProperty, AnyEntity, Primary, FilterQuery } from '../types';
 import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
-import { Utils } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { Collection } from './Collection';
-import { QueryOrder } from '../query';
+import { QueryOrder, QueryOrderMap } from '../query';
 import { Reference } from './Reference';
 import { wrap } from './EntityHelper';
 
@@ -14,7 +14,7 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: AnyEntity<T>[], populate: string[] | boolean, validate = true, lookup = true): Promise<void> {
+  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, validate = true, lookup = true): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
@@ -28,33 +28,33 @@ export class EntityLoader {
     const invalid = populate.find(field => !this.em.canPopulate(entityName, field));
 
     if (validate && invalid) {
-      throw new Error(`Entity '${entityName}' does not have property '${invalid}'`);
+      throw ValidationError.invalidPropertyName(entityName, invalid);
     }
 
     for (const field of populate) {
-      await this.populateField(entityName, entities, field);
+      await this.populateField<T>(entityName, entities, field, where, orderBy);
     }
   }
 
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], field: keyof T): Promise<AnyEntity[]> {
+  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], field: keyof T, where: FilterQuery<T>, orderBy: QueryOrderMap): Promise<AnyEntity[]> {
     // set populate flag
     entities.forEach(entity => {
       if (Utils.isEntity(entity[field]) || entity[field] as unknown instanceof Collection || entity[field] as unknown instanceof Reference) {
-        (entity[field] as AnyEntity).populated();
+        wrap(entity[field]).populated();
       }
     });
 
-    const prop = this.metadata.get(entityName).properties[field as string];
+    const prop = this.metadata.get<T>(entityName).properties[field as string];
     const filtered = this.filterCollections<T>(entities, field);
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<T>(filtered, prop, field);
+      return this.findChildrenFromPivotTable<T>(filtered, prop, field, where[prop.name], orderBy[prop.name] as QueryOrderMap);
     }
 
-    const data = await this.findChildren<T>(entities, prop);
+    const data = await this.findChildren<T>(entities, prop, where[prop.name], orderBy[prop.name] as QueryOrderMap);
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;
@@ -84,7 +84,7 @@ export class EntityLoader {
     }
   }
 
-  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty): Promise<AnyEntity[]> {
+  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, where: FilterQuery<T> = {}, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop);
     const meta = this.metadata.get(prop.type);
     let fk = meta.primaryKey;
@@ -98,36 +98,40 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => e.__primaryKey));
-    const orderBy = prop.orderBy || { [fk]: QueryOrder.ASC };
+    where = { [fk]: { $in: ids }, ...where };
+    orderBy = orderBy || prop.orderBy || { [fk]: QueryOrder.ASC };
 
-    return this.em.find<AnyEntity>(prop.type, { [fk]: { $in: ids } }, [], orderBy);
+    return this.em.find<T>(prop.type, where, [], orderBy);
   }
 
-  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], field: string): Promise<void> {
-    // nested populate
-    if (field.includes('.')) {
-      const [f, ...parts] = field.split('.');
-      await this.populateMany<T>(entityName, entities, f as keyof T);
-      const children: AnyEntity[] = [];
-      entities.forEach(entity => {
-        if (Utils.isEntity(entity[f])) {
-          children.push(entity[f]);
-        } else if (entity[f] instanceof Reference) {
-          children.push(entity[f].unwrap());
-        } else if (entity[f] as object instanceof Collection) {
-          children.push(...entity[f].getItems());
-        }
-      });
-      const filtered = Utils.unique(children);
-      const prop = this.metadata.get(entityName).properties[f];
-      await this.populate(prop.type, filtered, [parts.join('.')], false, false);
-    } else {
-      await this.populateMany<T>(entityName, entities, field as keyof T);
+  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], field: string, where: FilterQuery<T>, orderBy: QueryOrderMap): Promise<void> {
+    if (!field.includes('.')) {
+      return void await this.populateMany<T>(entityName, entities, field as keyof T, where, orderBy);
     }
+
+    // nested populate
+    const [f, ...parts] = field.split('.');
+    await this.populateMany<T>(entityName, entities, f as keyof T, where, orderBy);
+    const children: T[] = [];
+
+    for (const entity of entities) {
+      if (Utils.isEntity(entity[f])) {
+        children.push(entity[f]);
+      } else if (entity[f] instanceof Reference) {
+        children.push(entity[f].unwrap());
+      } else if (entity[f] as object instanceof Collection) {
+        children.push(...entity[f].getItems());
+      }
+    }
+
+    const filtered = Utils.unique(children);
+    const prop = this.metadata.get(entityName).properties[f];
+    await this.populate<T>(prop.type, filtered, [parts.join('.')], where[prop.name], orderBy[prop.name] as QueryOrderMap, false, false);
   }
 
-  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T): Promise<AnyEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e).__primaryKey) as Primary<T>[], this.em.getTransactionContext());
+  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
+    orderBy = orderBy || prop.orderBy;
+    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e).__primaryKey) as Primary<T>[], where, orderBy, this.em.getTransactionContext());
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {

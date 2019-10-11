@@ -124,6 +124,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Metadata for entity ${entity} not found`);
   }
 
+  static invalidPropertyName(entityName: string, invalid: string): ValidationError {
+    return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.name}.${prop.name} ${message}`);
   }

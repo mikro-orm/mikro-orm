@@ -256,6 +256,7 @@ export class MetadataDiscovery {
       return this.metadata.set(prop.pivotTable, {
         name: prop.pivotTable,
         collection: prop.pivotTable,
+        pivotTable: true,
         primaryKey: pk,
         properties: {
           [pk]: primaryProp,
