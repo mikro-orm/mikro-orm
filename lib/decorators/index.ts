@@ -8,4 +8,3 @@ export { OneToMany, OneToManyOptions } from './OneToMany';
 export * from './Property';
 export * from './Repository';
 export * from './hooks';
-export * from '../types';
