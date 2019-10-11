@@ -376,7 +376,7 @@ export class QueryBuilder {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
 
-      if (this._joins[aliasedField]) {
+      if (this._joins[aliasedField] && this.helper.isOneToOneInverse(field)) {
         return this._populateMap[aliasedField] = this._joins[aliasedField].alias;
       }
 

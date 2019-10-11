@@ -8,7 +8,7 @@ import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
-describe('EntityManagerMySql1', () => {
+describe('EntityManagerMySql', () => {
 
   jest.setTimeout(10000);
   let orm: MikroORM;

@@ -748,6 +748,23 @@ describe('QueryBuilder', () => {
       'order by `e1`.`name` desc');
   });
 
+  test('select with populate and join of 1:m', async () => {
+    const qb = orm.em.createQueryBuilder(Author2);
+    qb.select('*').populate(['books']).leftJoin('books', 'b');
+    expect(qb.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `b` on `e0`.`id` = `b`.`author_id`');
+  });
+
+  test('select with populate and join of m:n', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.select('*').populate(['tags']).leftJoin('tags', 't');
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_to_book_tag2` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id`');
+  });
+
   test('select with deep where and deep order by', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({ author: { name: 'Jon Snow' } }).orderBy({ author: { name: QueryOrder.DESC } });
