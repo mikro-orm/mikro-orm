@@ -21,7 +21,7 @@ export class QueryBuilder {
   _populateMap: Record<string, string> = {};
 
   private aliasCounter = 1;
-  private flags: QueryFlag[] = [];
+  private flags: Set<QueryFlag> = new Set();
   private finalized = false;
   private _joins: Record<string, JoinOptions> = {};
   private _aliasMap: Record<string, string> = {};
@@ -48,7 +48,7 @@ export class QueryBuilder {
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
-      this.flags.push(QueryFlag.DISTINCT);
+      this.flags.add(QueryFlag.DISTINCT);
     }
 
     return this.init(QueryType.SELECT);
@@ -74,7 +74,7 @@ export class QueryBuilder {
     this._fields = [field || this.metadata.get(this.entityName).primaryKey];
 
     if (distinct) {
-      this.flags.push(QueryFlag.DISTINCT);
+      this.flags.add(QueryFlag.DISTINCT);
     }
 
     return this.init(QueryType.COUNT);
@@ -181,10 +181,7 @@ export class QueryBuilder {
   }
 
   setFlag(flag: QueryFlag): this {
-    if (!this.flags.includes(flag)) {
-      this.flags.push(flag);
-    }
-
+    this.flags.add(flag);
     return this;
   }
 
@@ -335,14 +332,14 @@ export class QueryBuilder {
       case QueryType.SELECT:
         qb.select(this.prepareFields(this._fields));
 
-        if (this.flags.includes(QueryFlag.DISTINCT)) {
+        if (this.flags.has(QueryFlag.DISTINCT)) {
           qb.distinct();
         }
 
         this.helper.processJoins(qb, this._joins);
         break;
       case QueryType.COUNT:
-        const m = this.flags.includes(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
+        const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
         qb[m](this.helper.mapper(this._fields[0], this.type, undefined, 'count'));
         this.helper.processJoins(qb, this._joins);
         break;
@@ -405,7 +402,7 @@ export class QueryBuilder {
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
 
     // automatically add missing fields to group by clause to fix `only_full_group_by` issues
-    if (this.flags.includes(QueryFlag.AUTO_GROUP_BY) && !Utils.isEmpty(this._joins) && !Utils.isEmpty(this._groupBy)) {
+    if (this.flags.has(QueryFlag.AUTO_GROUP_BY) && !Utils.isEmpty(this._joins) && !Utils.isEmpty(this._groupBy)) {
       this.autoGroupJoinedFields();
     }
 
