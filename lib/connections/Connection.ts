@@ -41,7 +41,7 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional(cb: (trx: Transaction) => Promise<any>, ctx?: Transaction): Promise<any> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

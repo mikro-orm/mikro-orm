@@ -129,9 +129,9 @@ export class EntityManager {
     return entity;
   }
 
-  async transactional(cb: (em: EntityManager) => Promise<any>, ctx = this.transactionContext): Promise<any> {
+  async transactional<T>(cb: (em: EntityManager) => Promise<T>, ctx = this.transactionContext): Promise<T> {
     const em = this.fork(false);
-    await em.getConnection().transactional(async trx => {
+    return em.getConnection().transactional(async trx => {
       em.transactionContext = trx;
       const ret = await cb(em);
       await em.flush();
