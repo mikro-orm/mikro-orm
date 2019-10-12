@@ -12,7 +12,7 @@ import { EntityManager } from '../EntityManager';
 import { EntityOptions, IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
 
-export class Configuration {
+export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   static readonly DEFAULTS = {
     type: 'mongo',
@@ -58,9 +58,9 @@ export class Configuration {
     sqlite: 'SqliteDriver',
   };
 
-  private readonly options: MikroORMOptions;
+  private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
-  private readonly driver: IDatabaseDriver;
+  private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache: Dictionary = {};
   private readonly highlightTheme: Theme;
@@ -80,11 +80,11 @@ export class Configuration {
     this.init();
   }
 
-  get<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, defaultValue?: U): U {
+  get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
     return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
   }
 
-  set<T extends keyof MikroORMOptions, U extends MikroORMOptions[T]>(key: T, value: U): void {
+  set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
     this.options[key] = value;
   }
 
@@ -100,7 +100,7 @@ export class Configuration {
     return this.options.clientUrl!;
   }
 
-  getDriver(): IDatabaseDriver {
+  getDriver(): D {
     return this.driver;
   }
 
@@ -121,7 +121,7 @@ export class Configuration {
     return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
-  getRepositoryClass(customRepository: EntityOptions<AnyEntity>['customRepository']): MikroORMOptions['entityRepository'] {
+  getRepositoryClass(customRepository: EntityOptions<AnyEntity>['customRepository']): MikroORMOptions<D>['entityRepository'] {
     if (customRepository) {
       return customRepository();
     }
@@ -163,7 +163,7 @@ export class Configuration {
     }
   }
 
-  private initDriver(): IDatabaseDriver {
+  private initDriver(): D {
     if (!this.options.driver) {
       const driver = Configuration.PLATFORMS[this.options.type];
       this.options.driver = require('../drivers/' + driver)[driver];
@@ -195,7 +195,7 @@ export interface ConnectionOptions {
   pool: PoolConfig;
 }
 
-export interface MikroORMOptions extends ConnectionOptions {
+export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
@@ -203,7 +203,7 @@ export interface MikroORMOptions extends ConnectionOptions {
   tsConfigPath: string;
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
-  driver?: { new (config: Configuration): IDatabaseDriver };
+  driver?: { new (config: Configuration): D };
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
@@ -225,4 +225,4 @@ export interface MikroORMOptions extends ConnectionOptions {
   metadataProvider: { new (config: Configuration): MetadataProvider };
 }
 
-export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions<D>;

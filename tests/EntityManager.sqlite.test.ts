@@ -12,7 +12,7 @@ const { Test3 } = require('./entities-js').Test3;
 
 describe('EntityManagerSqlite', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite());
   beforeEach(async () => wipeDatabaseSqlite(orm.em));
@@ -36,7 +36,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('should return sqlite driver', async () => {
-    const driver = orm.em.getDriver<SqliteDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(SqliteDriver);
     expect(await driver.findOne(Book3.name, { title: '123' })).toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
@@ -58,7 +58,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<SqliteDriver>();
+    const driver = orm.em.getDriver();
     const err1 = "insert into `not_existing` (`foo`) values ('bar') - SQLITE_ERROR: no such table: not_existing";
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = 'delete from `not_existing` - SQLITE_ERROR: no such table: not_existing';

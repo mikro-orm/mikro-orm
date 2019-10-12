@@ -2,10 +2,11 @@ import { MikroORM, wrap } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2 } from './entities-sql';
 import { MetadataDiscovery } from '../lib/metadata';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 describe('EntityHelperMySql', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
     orm = await initORMMySql();
