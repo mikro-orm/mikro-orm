@@ -88,13 +88,15 @@ describe('EntityManagerSqlite', () => {
     const res1 = await orm.em.findOne(Author3, { name: 'God1' });
     expect(res1).toBeNull();
 
-    await orm.em.transactional(async em => {
+    const ret = await orm.em.transactional(async em => {
       const god2 = new Author3('God2', 'hello@heaven2.god');
       await em.persist(god2);
+      return true;
     });
 
     const res2 = await orm.em.findOne(Author3, { name: 'God2' });
     expect(res2).not.toBeNull();
+    expect(ret).toBe(true);
 
     const err = new Error('Test');
 
