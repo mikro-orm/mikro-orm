@@ -5,20 +5,20 @@ import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 
-  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
+  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateManyToOne(value, entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this.hydrateOneToMany(entity, prop, value);
+      this.hydrateOneToMany(entity, prop, value, newEntity);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      this.hydrateManyToMany(entity, prop, value);
+      this.hydrateManyToMany(entity, prop, value, newEntity);
     } else { // ReferenceType.SCALAR
       this.hydrateScalar(entity, prop, value);
     }
   }
 
-  private hydrateOneToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
-    entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, !!value) as unknown as T[keyof T];
+  private hydrateOneToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+    entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, !!value || newEntity) as unknown as T[keyof T];
   }
 
   private hydrateScalar<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
@@ -29,27 +29,27 @@ export class ObjectHydrator extends Hydrator {
     entity[prop.name as keyof T] = value;
   }
 
-  private hydrateManyToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateManyToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (prop.owner) {
-      return this.hydrateManyToManyOwner(entity, prop, value);
+      return this.hydrateManyToManyOwner(entity, prop, value, newEntity);
     }
 
-    this.hydrateManyToManyInverse(entity, prop);
+    this.hydrateManyToManyInverse(entity, prop, newEntity);
   }
 
-  private hydrateManyToManyOwner<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateManyToManyOwner<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (Array.isArray(value)) {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
       entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items) as unknown as T[keyof T];
     } else if (!entity[prop.name as keyof T]) {
       const items = this.driver.getPlatform().usesPivotTable() ? undefined : [];
-      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, false) as unknown as T[keyof T];
+      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, newEntity) as unknown as T[keyof T];
     }
   }
 
-  private hydrateManyToManyInverse<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
+  private hydrateManyToManyInverse<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, newEntity: boolean): void {
     if (!entity[prop.name as keyof T]) {
-      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, false) as unknown as T[keyof T];
+      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, newEntity) as unknown as T[keyof T];
     }
   }
 

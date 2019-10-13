@@ -214,7 +214,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return entity;
     }
 
-    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, true);
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>);
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);
@@ -228,7 +228,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Creates new instance of given entity and populates it with given data
    */
   create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): T {
-    return this.getEntityFactory().create(entityName, data, false);
+    return this.getEntityFactory().create(entityName, data, true, true);
   }
 
   /**

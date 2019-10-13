@@ -16,7 +16,7 @@ export class EntityFactory {
               private readonly config: Configuration,
               private readonly metadata: MetadataStorage) { }
 
-  create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true): T {
+  create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
     entityName = Utils.className(entityName);
     data = Object.assign({}, data);
     const meta = this.metadata.get(entityName);
@@ -31,7 +31,7 @@ export class EntityFactory {
     }
 
     const entity = this.createEntity(data, meta);
-    this.hydrator.hydrate(entity, meta, data);
+    this.hydrator.hydrate(entity, meta, data, newEntity);
 
     if (initialized) {
       delete entity.__initialized;
