@@ -218,7 +218,7 @@ export class QueryBuilder {
     if (node.prop) {
       const join = Object.values(this._joins).find(j => j.prop === node.prop);
 
-      if (!join) {
+      if (!join || node.isSelfReference()) {
         return undefined;
       }
     }

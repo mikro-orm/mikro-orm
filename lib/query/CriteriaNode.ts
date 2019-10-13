@@ -85,6 +85,10 @@ export class CriteriaNode {
     return `${alias}.${pk.fieldName}`;
   }
 
+  isSelfReference(entityName?: string): boolean {
+    return false;
+  }
+
   [inspect.custom]() {
     return `${this.constructor.name} ${inspect({ entityName: this.entityName, key: this.key, payload: this.payload })}`;
   }
@@ -202,6 +206,18 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => QueryBuilderHelper.isOperator(k, false));
 
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
+  }
+
+  isSelfReference(entityName?: string): boolean {
+    if (entityName === this.entityName) {
+      return true;
+    }
+
+    if (this.parent) {
+      return this.parent.isSelfReference(entityName || this.entityName);
+    }
+
+    return false;
   }
 
   private autoJoin(qb: QueryBuilder, alias: string): string {
