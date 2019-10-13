@@ -13,7 +13,7 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
@@ -361,7 +361,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should return mongo driver', async () => {
-    const driver = orm.em.getDriver<MongoDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongo']);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();

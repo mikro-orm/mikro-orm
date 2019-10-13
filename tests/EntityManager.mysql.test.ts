@@ -11,7 +11,7 @@ import { MySqlConnection } from '../lib/connections/MySqlConnection';
 describe('EntityManagerMySql', () => {
 
   jest.setTimeout(10000);
-  let orm: MikroORM;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
@@ -43,7 +43,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('should return mysql driver', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
@@ -69,7 +69,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
+    const driver = orm.em.getDriver();
     const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;

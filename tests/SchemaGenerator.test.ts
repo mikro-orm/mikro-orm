@@ -1,4 +1,4 @@
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { initORMMongo, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
 import { ReferenceType } from '../lib/entity';
 import { Utils } from '../lib/utils';
@@ -251,6 +251,13 @@ describe('SchemaGenerator', () => {
     meta.reset('NewTable');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-table');
     await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await initORMMongo();
+    expect(() => orm.getSchemaGenerator()).toThrowError('Not supported by given driver');
 
     await orm.close(true);
   });

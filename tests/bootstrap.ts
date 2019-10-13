@@ -1,14 +1,15 @@
-import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
+import { EntityManager, IDatabaseDriver, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { MySqlConnection } from '../lib/connections/MySqlConnection';
-import { SqliteConnection } from '../lib/connections/SqliteConnection';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
-import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 import { FooBaz } from './entities/FooBaz';
 import { FooBar } from './entities/FooBar';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
+import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -25,7 +26,7 @@ export async function initORMMongo() {
   // simulate ts-node to raise coverage
   process.argv[0] = process.argv[0].replace(/node$/, 'ts-node');
 
-  return MikroORM.init({
+  return MikroORM.init<MongoDriver>({
     entitiesDirs: ['dist/entities'], // will be ignored as we simulate ts-node
     entitiesDirsTs: ['entities'],
     dbName: `mikro-orm-test${hash}`,
@@ -38,14 +39,14 @@ export async function initORMMongo() {
   });
 }
 
-export async function initORMMySql(type: 'mysql' | 'mariadb' = 'mysql') {
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
   let port = 3307;
 
   if (process.env.ORM_PORT) {
     port = +process.env.ORM_PORT;
   }
 
-  const orm = await MikroORM.init({
+  const orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
@@ -60,14 +61,14 @@ export async function initORMMySql(type: 'mysql' | 'mariadb' = 'mysql') {
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
   });
 
-  const connection = orm.em.getConnection<MySqlConnection>();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
   return orm;
 }
 
 export async function initORMPostgreSql() {
-  const orm = await MikroORM.init({
+  const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Label2],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
@@ -79,14 +80,14 @@ export async function initORMPostgreSql() {
     cache: { pretty: true },
   });
 
-  const connection = orm.em.getConnection<PostgreSqlConnection>();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
 
   return orm;
 }
 
 export async function initORMSqlite() {
-  const orm = await MikroORM.init({
+  const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
     dbName: './mikro_orm_test.db',
     baseDir: BASE_DIR,
@@ -98,7 +99,7 @@ export async function initORMSqlite() {
     cache: { pretty: true },
   });
 
-  const connection = orm.em.getConnection<SqliteConnection>();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/sqlite-schema.sql');
 
   return orm;

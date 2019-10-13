@@ -7,16 +7,16 @@ import { Configuration, Logger, Options } from './utils';
 import { SchemaGenerator } from './schema';
 import { EntityGenerator } from './schema/EntityGenerator';
 
-export class MikroORM {
+export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  em: EntityManager;
-  readonly config: Configuration;
+  em: EntityManager<D>;
+  readonly config: Configuration<D>;
   private metadata: MetadataStorage;
-  private readonly driver: IDatabaseDriver;
+  private readonly driver: D;
   private readonly logger: Logger;
 
-  static async init(options: Options | Configuration): Promise<MikroORM> {
-    const orm = new MikroORM(options);
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
+    const orm = new MikroORM<D>(options);
     const driver = await orm.connect();
 
     try {
@@ -33,7 +33,7 @@ export class MikroORM {
     }
   }
 
-  constructor(options: Options | Configuration) {
+  constructor(options: Options<D> | Configuration<D>) {
     if (options instanceof Configuration) {
       this.config = options;
     } else {
@@ -44,7 +44,7 @@ export class MikroORM {
     this.logger = this.config.getLogger();
   }
 
-  async connect(): Promise<IDatabaseDriver> {
+  async connect(): Promise<D> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName');
@@ -66,11 +66,23 @@ export class MikroORM {
   }
 
   getSchemaGenerator(): SchemaGenerator {
-    return new SchemaGenerator(this.driver as AbstractSqlDriver, this.metadata);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new SchemaGenerator(driver, this.metadata);
   }
 
   getEntityGenerator(): EntityGenerator {
-    return new EntityGenerator(this.driver as AbstractSqlDriver, this.config);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new EntityGenerator(driver, this.config);
   }
 
 }

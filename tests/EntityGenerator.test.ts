@@ -1,5 +1,5 @@
 import { pathExists, remove } from 'fs-extra';
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { initORMMongo, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { EntityGenerator } from '../lib/schema/EntityGenerator';
 
 describe('EntityGenerator', () => {
@@ -36,6 +36,13 @@ describe('EntityGenerator', () => {
     generator.createProperty(writer as any, { name: 'test', type: 'varchar(50)', defaultValue: 'null::character varying', nullable: true } as any);
     expect(writer.writeLine.mock.calls.length).toBe(2);
     expect(writer.writeLine.mock.calls[0][0]).toBe(`@Property({ type: 'varchar(50)', nullable: true })`);
+
+    await orm.close(true);
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await initORMMongo();
+    expect(() => orm.getEntityGenerator()).toThrowError('Not supported by given driver');
 
     await orm.close(true);
   });

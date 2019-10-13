@@ -24,8 +24,8 @@ By default select queries will use random read connection if not inside transact
 specify connection type manually in `em.getConnection(type: 'read' | 'write')`.
 
 ```typescript
-const connection = orm.em.getConnection<MySqlConnection>(); // write connection
-const readConnection = orm.em.getConnection<MySqlConnection>('read'); // random read connection
+const connection = orm.em.getConnection(); // write connection
+const readConnection = orm.em.getConnection('read'); // random read connection
 
 const qb1 = orm.em.createQueryBuilder(Author);
 const res1 = await qb1.select('*').execute(); // random read connection

@@ -5,28 +5,29 @@ import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
 import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQuery, Primary, Dictionary } from './types';
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
-import { Connection, Transaction } from './connections';
+import { Transaction } from './connections';
+import { MySqlDriver } from './drivers/MySqlDriver';
 
-export class EntityManager {
+export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Record<string, EntityRepository<AnyEntity>> = {};
-  private readonly entityLoader = new EntityLoader(this);
+  private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config, this.metadata);
   private transactionContext: Transaction;
 
   constructor(readonly config: Configuration,
-              private readonly driver: IDatabaseDriver,
+              private readonly driver: D,
               private readonly metadata: MetadataStorage,
               private readonly useContext = true) { }
 
-  getDriver<D extends IDatabaseDriver = IDatabaseDriver>(): D {
-    return this.driver as D;
+  getDriver(): D {
+    return this.driver;
   }
 
-  getConnection<C extends Connection = Connection>(type?: 'read' | 'write'): C {
-    return this.driver.getConnection(type) as C;
+  getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
+    return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
   }
 
   getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): U;
@@ -48,7 +49,13 @@ export class EntityManager {
 
   createQueryBuilder(entityName: EntityName<AnyEntity>, alias?: string, type?: 'read' | 'write'): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.driver as AbstractSqlDriver, this.transactionContext, alias, type);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new QueryBuilder(entityName, this.metadata, driver, this.transactionContext, alias, type);
   }
 
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
