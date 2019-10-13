@@ -6,7 +6,6 @@ import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQ
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
-import { MySqlDriver } from './drivers/MySqlDriver';
 
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
