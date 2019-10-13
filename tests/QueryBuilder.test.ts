@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql } from './bootstrap';
+import { initORMMongo, initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { CriteriaNode } from '../lib/query/CriteriaNode';
@@ -1013,6 +1013,13 @@ describe('QueryBuilder', () => {
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForEntity(Author2.name, node)).toBeUndefined();
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await initORMMongo();
+    expect(() => orm.em.createQueryBuilder(Author2, 'a')).toThrowError('Not supported by given driver');
+
+    await orm.close(true);
   });
 
   afterAll(async () => orm.close(true));

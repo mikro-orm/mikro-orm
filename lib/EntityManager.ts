@@ -6,6 +6,7 @@ import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQ
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
+import { MySqlDriver } from './drivers/MySqlDriver';
 
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -48,7 +49,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   createQueryBuilder(entityName: EntityName<AnyEntity>, alias?: string, type?: 'read' | 'write'): QueryBuilder {
     entityName = Utils.className(entityName);
-    return new QueryBuilder(entityName, this.metadata, this.driver as any as AbstractSqlDriver, this.transactionContext, alias, type);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new QueryBuilder(entityName, this.metadata, driver, this.transactionContext, alias, type);
   }
 
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<T[]>;

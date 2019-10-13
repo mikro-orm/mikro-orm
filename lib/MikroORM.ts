@@ -66,11 +66,23 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   getSchemaGenerator(): SchemaGenerator {
-    return new SchemaGenerator(this.driver as any as AbstractSqlDriver, this.metadata);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new SchemaGenerator(driver, this.metadata);
   }
 
   getEntityGenerator(): EntityGenerator {
-    return new EntityGenerator(this.driver as any as AbstractSqlDriver, this.config);
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new EntityGenerator(driver, this.config);
   }
 
 }
