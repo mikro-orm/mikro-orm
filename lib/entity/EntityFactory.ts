@@ -55,6 +55,7 @@ export class EntityFactory {
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     let Entity;
+
     if (process.env.WEBPACK) {
       Entity = this.config.get('entities').find((f) => (f as Function).name === meta.name);
     } else {
