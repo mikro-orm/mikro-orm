@@ -27,14 +27,23 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started`);
     this.discovered.length = 0;
-    const tsNode = this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts'];
+    const webpack = process.env.WEBPACK;
 
-    if (this.config.get('entities').length > 0) {
+    if (webpack) {
+      if (this.config.get('entities').length === 0) {
+        throw new Error("Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.");
+      }
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (tsNode) {
-      await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
-      await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
+      const tsNode = !webpack || this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts'];
+
+      if (this.config.get('entities').length > 0) {
+        await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
+      } else if (tsNode) {
+        await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
+      } else {
+        await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
+      }
     }
 
     this.validator.validateDiscovered(this.discovered, this.config.get('warnWhenNoEntities'));

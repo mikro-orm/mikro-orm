@@ -26,6 +26,9 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       } else if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
+        if (process.env.WEBPACK) {
+          throw new Error(`Webpack bundles require the type property to be set in Column decorators. (${meta.className}.${name})`);
+        }
         await this.initPropertyType(meta, name, prop);
       }
     }
