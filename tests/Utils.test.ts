@@ -181,11 +181,11 @@ describe('Utils', () => {
   });
 
   test('absolutePath', () => {
-    expect(Utils.absolutePath('./test')).toBe(process.cwd() + '/test');
-    expect(Utils.absolutePath('test')).toBe(process.cwd() + '/test');
-    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(process.cwd() + '/tests');
-    expect(Utils.absolutePath('./tests/cli')).toBe(process.cwd() + '/tests/cli');
-    expect(Utils.absolutePath('')).toBe(process.cwd());
+    expect(Utils.absolutePath('./test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
+    expect(Utils.absolutePath('test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
+    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(Utils.normalizePath(process.cwd() + '/tests'));
+    expect(Utils.absolutePath('./tests/cli')).toBe(Utils.normalizePath(process.cwd() + '/tests/cli'));
+    expect(Utils.absolutePath('')).toBe(Utils.normalizePath(process.cwd()));
   });
 
   test('pathExists wrapper', async () => {

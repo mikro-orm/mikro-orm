@@ -28,7 +28,7 @@ describe('DebugCommand', () => {
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - searched config paths:'],
-      [`   - ${process.cwd()}/path/orm-config.ts (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
     ]);
 
@@ -42,11 +42,11 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
-      [`   - ${process.cwd()}/path/orm-config.ts (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
       [' - will use `entitiesDirs` paths:'],
-      [`   - ${process.cwd()}/entities-1 (found)`],
-      [`   - ${process.cwd()}/entities-2 (not found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/entities-1') } (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/entities-2') } (not found)`],
     ]);
 
     getConfiguration.mockResolvedValue(new Configuration({ entities: [FooBar, FooBaz] } as any, false));
@@ -57,7 +57,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
-      [`   - ${process.cwd()}/path/orm-config.ts (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
       [' - will use `entities` array (contains 2 items)'],
     ]);
@@ -70,7 +70,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
-      [`   - ${process.cwd()}/path/orm-config.ts (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       ['- configuration not found (test error message)'],
     ]);
 
@@ -82,7 +82,7 @@ describe('DebugCommand', () => {
       ['Current MikroORM CLI configuration'],
       [' - ts-node enabled'],
       [' - searched config paths:'],
-      [`   - ${process.cwd()}/path/orm-config.ts (not found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
       [' - will use `entities` array (contains 2 items)'],
     ]);
