@@ -618,6 +618,25 @@ describe('EntityManagerMySql', () => {
     expect(res3.meta).toEqual({ category: 'foo', items: 1 });
   });
 
+  test('query builder getResult() and getSingleResult() return entities', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    bible.meta = { category: 'foo', items: 1 };
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    const res1 = await qb1.select('*').getSingleResult();
+    expect(res1).toBeInstanceOf(Book2);
+    expect(res1!.createdAt).toBeDefined();
+    expect((res1 as any).created_at).not.toBeDefined();
+    expect(res1!.meta).toEqual({ category: 'foo', items: 1 });
+    expect(wrap(res1).isInitialized()).toBe(true);
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
+    expect(res2).toBeNull();
+  });
+
   test('stable results of serialization', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);

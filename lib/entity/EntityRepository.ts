@@ -20,7 +20,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
     this.em.persistLater(entity);
   }
 
-  createQueryBuilder(alias?: string): QueryBuilder {
+  createQueryBuilder(alias?: string): QueryBuilder<T> {
     return this.em.createQueryBuilder(this.entityName, alias);
   }
 

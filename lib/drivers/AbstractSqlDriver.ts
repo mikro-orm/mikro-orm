@@ -127,7 +127,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return [...populate, ...toPopulate];
   }
 
-  protected createQueryBuilder(entityName: string, ctx?: Transaction): QueryBuilder {
+  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction): QueryBuilder<T> {
     return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, ctx ? 'write' : 'read');
   }
 

@@ -7,7 +7,7 @@ import { CriteriaNode } from '../lib/query/CriteriaNode';
 
 describe('QueryBuilder', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
 
