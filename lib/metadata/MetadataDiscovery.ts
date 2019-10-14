@@ -34,7 +34,7 @@ export class MetadataDiscovery {
 
     if (this.config.get('entities').length > 0) {
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts']) {
+    } else if (this.config.get('tsNode') || Utils.detectTsNode()) {
       await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
