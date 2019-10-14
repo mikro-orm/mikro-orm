@@ -57,7 +57,7 @@ export class EntityFactory {
     let Entity;
 
     if (process.env.WEBPACK) {
-      Entity = this.config.get('entities').find((f) => (f as Function).name === meta.name);
+      Entity = this.config.get('entities').find(f => (f as Function).name === meta.name);
     } else {
       const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
       Entity = require(path)[meta.name];
