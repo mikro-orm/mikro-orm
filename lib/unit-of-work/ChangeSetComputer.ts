@@ -64,10 +64,10 @@ export class ChangeSetComputer {
     }
   }
 
-  private processManyToMany<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<AnyEntity>): void {
+  private processManyToMany<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<T>): void {
     if (collection.isDirty()) {
       const pk = this.metadata.get(prop.type).primaryKey as keyof T;
-      changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[item.__uuid]);
+      changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[wrap(item).__uuid]);
       collection.setDirty(false);
     }
   }
