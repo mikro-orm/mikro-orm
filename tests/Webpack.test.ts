@@ -4,7 +4,7 @@ import { MikroORM } from '../lib';
 import { wipeDatabase, BASE_DIR } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
 
-describe('EntityFactory', () => {
+describe('Webpack', () => {
   let port = 3307;
   if (process.env.ORM_PORT) {
     port = +process.env.ORM_PORT;
