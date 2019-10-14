@@ -41,7 +41,6 @@ export class MetadataValidator {
       throw ValidationError.duplicateEntityDiscovered(duplicates);
     }
 
-    // validate base entities
     discovered
       .filter(meta => meta.extends && !discovered.find(m => m.prototype.constructor.name === meta.extends))
       .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
