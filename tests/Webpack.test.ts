@@ -58,4 +58,22 @@ describe('EntityFactory', () => {
         done();
     });
   });
+
+  test('should throw error if entities is not defined', async (done) => {
+    MikroORM.init({
+      dbName: `mikro_orm_test`,
+      port,
+      baseDir: BASE_DIR,
+      debug: ['query'],
+      highlight: false,
+      logger: i => i,
+      multipleStatements: true,
+      type: 'mysql',
+      cache: { enabled: false },
+      entitiesDirs: ['not/existing'],
+    }).catch((e: Error) => {
+        expect(e.message).toBe("Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.");
+        done();
+    });
+  });
 });
