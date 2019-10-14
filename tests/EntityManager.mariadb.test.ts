@@ -8,9 +8,9 @@ import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 describe('EntityManagerMariaDb', () => {
 
   jest.setTimeout(10000);
-  let orm: MikroORM;
+  let orm: MikroORM<MariaDbDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mariadb'));
+  beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb'));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('isConnected()', async () => {
@@ -22,7 +22,7 @@ describe('EntityManagerMariaDb', () => {
   });
 
   test('should return mysql driver', async () => {
-    const driver = orm.em.getDriver<MariaDbDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
@@ -51,7 +51,7 @@ describe('EntityManagerMariaDb', () => {
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<MariaDbDriver>();
+    const driver = orm.em.getDriver();
     const err1 = /insert into `not_existing` \(`foo`\) values \('bar'\) - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = /delete from `not_existing` - \(conn=\d+, no: \d+, SQLState: \w+\) Table 'mikro_orm_test\.not_existing' doesn't exist/;

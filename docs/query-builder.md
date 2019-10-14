@@ -34,7 +34,7 @@ const knex = qb.getKnexQuery(); // instance of Knex' QueryBuilder
 
 // do what ever you need with `knex`
 
-const res = await orm.em.getConnection<MySqlConnection>().execute(knex);
+const res = await orm.em.getConnection().execute(knex);
 const entities = res.map(a => orm.em.map(Author, a));
 console.log(entities); // Author[]
 ```
@@ -42,7 +42,7 @@ console.log(entities); // Author[]
 You can also get clear and configured knex instance from the connection:
 
 ```typescript
-const conn = orm.em.getConnection<MySqlConnection>();
+const conn = orm.em.getConnection();
 const knex = conn.getKnex();
 
 // do what ever you need with `knex`

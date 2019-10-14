@@ -85,7 +85,7 @@ console.log(qb.getParams());
 const res1 = await qb.execute();
 
 // or run query without using QueryBuilder
-const driver = orm.em.getDriver<MySqlDriver>();
+const driver = orm.em.getDriver();
 const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
 ```
 
@@ -179,7 +179,7 @@ instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory 
 ```typescript
 const qb = em.createQueryBuilder('Author');
 qb.select('*').where({ id: { $in: [...] } });
-const res = await em.getDriver<MySqlDriver>().execute(qb);
+const res = await em.getDriver().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
 ```
 

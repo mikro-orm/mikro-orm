@@ -11,7 +11,7 @@ import { MySqlConnection } from '../lib/connections/MySqlConnection';
 describe('EntityManagerMySql', () => {
 
   jest.setTimeout(10000);
-  let orm: MikroORM;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
@@ -43,7 +43,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('should return mysql driver', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
@@ -69,7 +69,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<MySqlDriver>();
+    const driver = orm.em.getDriver();
     const err1 = `insert into \`not_existing\` (\`foo\`) values ('bar') - Table 'mikro_orm_test.not_existing' doesn't exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `delete from \`not_existing\` - Table 'mikro_orm_test.not_existing' doesn't exist`;
@@ -1295,6 +1295,7 @@ describe('EntityManagerMySql', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
+    author.favouriteBook = book3;
     await orm.em.persistAndFlush([author, t1, t2, t3]);
     orm.em.clear();
 
@@ -1309,9 +1310,54 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
       'where `e1`.`name` = ? ' +
       'group by `e0`.`uuid_pk`, `e2`.`id`');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
+    expect(res2).toHaveLength(3);
+    expect(res2[0].test).toBeInstanceOf(Test2);
+    expect(wrap(res2[0].test).isInitialized()).toBe(false);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e4`.`id` as `test_id` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
+      'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
+      'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
+      'where `e3`.`name` = ? ' +
+      'group by `e0`.`uuid_pk`, `e4`.`id`');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } });
+    expect(res3).toHaveLength(3);
+    expect(res3[0].test).toBeInstanceOf(Test2);
+    expect(wrap(res3[0].test).isInitialized()).toBe(false);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`id` as `test_id` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e1`.`favourite_book_uuid_pk` = ? ' +
+      'group by `e0`.`uuid_pk`, `e2`.`id`');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
+    expect(res4).toHaveLength(3);
+    expect(res4[0].test).toBeInstanceOf(Test2);
+    expect(wrap(res4[0].test).isInitialized()).toBe(false);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e3`.`id` as `test_id` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
+      'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
+      'where (`e1`.`name` = ?) ' +
+      'group by `e0`.`uuid_pk`, `e3`.`id`');
   });
 
   test('partial selects', async () => {

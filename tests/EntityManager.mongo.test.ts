@@ -13,7 +13,7 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
@@ -361,7 +361,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should return mongo driver', async () => {
-    const driver = orm.em.getDriver<MongoDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongo']);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
@@ -1005,6 +1005,16 @@ describe('EntityManagerMongo', () => {
       code: 'snow@wall.st - Jon Snow',
       code2: 'snow@wall.st - Jon Snow',
     });
+  });
+
+  test('em.create properly cascades collections', async () => {
+    const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall 1.st' });
+    author.books.add(new Book('Test 1'));
+    author.books.add(orm.em.create(Book, { title: 'Test 2' }));
+    await orm.em.persistAndFlush(author);
+    expect(author._id).toBeDefined();
+    expect(author.books[0]._id).toBeDefined();
+    expect(author.books[1]._id).toBeDefined();
   });
 
   test('hooks', async () => {

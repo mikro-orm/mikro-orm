@@ -9,7 +9,7 @@ import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 describe('EntityManagerPostgre', () => {
 
   jest.setTimeout(10000);
-  let orm: MikroORM;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => wipeDatabasePostgreSql(orm.em));
@@ -41,7 +41,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('should return postgre driver', async () => {
-    const driver = orm.em.getDriver<PostgreSqlDriver>();
+    const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
@@ -75,7 +75,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('driver appends errored query', async () => {
-    const driver = orm.em.getDriver<PostgreSqlDriver>();
+    const driver = orm.em.getDriver();
     const err1 = `insert into "not_existing" ("foo") values ($1) - relation "not_existing" does not exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `delete from "not_existing" - relation "not_existing" does not exist`;

@@ -2,10 +2,11 @@ import { ObjectId } from 'mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, wrap } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 describe('EntityAssignerMongo', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));

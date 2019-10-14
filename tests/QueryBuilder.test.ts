@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql } from './bootstrap';
+import { initORMMongo, initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { CriteriaNode } from '../lib/query/CriteriaNode';
@@ -704,6 +704,16 @@ describe('QueryBuilder', () => {
       'left join `foo_baz2` as `e2` on `e1`.`baz_id` = `e2`.`id` ' +
       'where `e2`.`name` = ?');
     expect(qb9.getParams()).toEqual(['Foo Baz']);
+
+    // m:1 -> m:1 -> m:1 self-reference
+    const qb10 = orm.em.createQueryBuilder(Book2);
+    qb10.select('*').where({ author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
+    expect(qb10.getQuery()).toEqual('select `e0`.* from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
+      'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
+      'where `e3`.`name` = ?');
+    expect(qb10.getParams()).toEqual(['Jon Snow']);
   });
 
   test('select with deep where condition with self-reference', async () => {
@@ -1013,6 +1023,13 @@ describe('QueryBuilder', () => {
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForEntity(Author2.name, node)).toBeUndefined();
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await initORMMongo();
+    expect(() => orm.em.createQueryBuilder(Author2, 'a')).toThrowError('Not supported by given driver');
+
+    await orm.close(true);
   });
 
   afterAll(async () => orm.close(true));
