@@ -17,7 +17,6 @@ discuss specifics.
 - Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination
-- Eager loading of associations (allow having some relationship always fetched)
 - Composite primary keys
 - Map collections
 - Single table inheritance #33

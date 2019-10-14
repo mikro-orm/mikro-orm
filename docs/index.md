@@ -34,6 +34,7 @@ compatible with Vanilla JavaScript.
   - [Unit of Work](unit-of-work.md)
   - [Transactions](transactions.md)
   - [Cascading persist and remove](cascading.md)
+  - [Deployment](deployment.md)
 - Advanced Features
   - [Smart Nested Populate](nested-populate.md)
   - [Smart Query Conditions](query-conditions.md)
