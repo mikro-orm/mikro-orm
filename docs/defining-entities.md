@@ -12,10 +12,10 @@ to [use entity constructors](entity-constructors.md), just do not forget to spec
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  id: number;
 
   @Property()
   createdAt = new Date();
@@ -41,31 +41,33 @@ export class Book {
   }
 
 }
-
-export interface Book extends AnyEntity<string> { }
 ```
 
-You will need to extend Book's interface with `AnyEntity`. The interface represents internal 
-methods added to your entity's prototype via `@Entity` decorator.
+You will need to mark the entity by implementing one of `*Entity` interfaces:
 
-> `AnyEntity` is generic interface, its type parameter depends on data type of normalized primary
-> key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
-> This type default to union type `number | string`. Keep in mind that you have to worry about 
-> this only when you define your primary key as `_id` instead of `id`.
+- `IdEntity<T>` for numeric/string PK on `id` property (`id: number`)
+- `UuidEntity<T>` for string PK on `uuid` property (`uuid: string`)
+- `MongoEntity<T>` for mongo, where `id: string` and `_id: ObjectId` are required
+- `AnyEntity<T, PK>` for other possible properties (fill the PK property name to `PK` 
+parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
 
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
 
-Here is another example of `Author` entity, that was referenced from the `Book` one:
+Here is another example of `Author` entity, that was referenced from the `Book` one, this 
+time defined for mongo:
 
 **`./entities/Author.ts`**
 
 ```typescript
 @Entity()
-export class Author {
+export class Author implements MongoEntity<Author> {
 
   @PrimaryKey()
   _id: ObjectId;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   createdAt = new Date();
@@ -106,8 +108,6 @@ export class Author {
   }
 
 }
-
-export interface Author extends AnyEntity { }
 ```
 
 More information about modelling relationships can be found on [modelling relationships page](relationships.md).
@@ -188,10 +188,12 @@ primary key and created/updated time.
 **`./entities/BaseEntity.ts`**
 
 ```typescript
-export abstract class BaseEntity {
+import { v4 } from 'uuid';
+
+export abstract class BaseEntity implements UuidEntity<BaseEntity> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  uuid = v4();
 
   @Property()
   createdAt = new Date();
@@ -202,16 +204,85 @@ export abstract class BaseEntity {
 }
 ```
 
-## Note about SQL drivers and @PrimaryKey
+## Examples of entity definition with various primary keys
 
-All entities described above were defined with `_id: ObjectId` primary key - those were Mongo
-entities. 
-
-For SQL drivers, you will want to define your primary key as `id: number` instead:
+### Using id as primary key (SQL drivers)
 
 ```typescript
-@PrimaryKey()
-id: number;
+@Entity()
+export class Book implements IdEntity<Book> {
+
+  @PrimaryKey()
+  id: number; // string is also supported
+
+  @Property()
+  title: string;
+
+  @ManyToOne()
+  author: Author;
+
+}
+```
+
+### Using UUID as primary key (SQL drivers)
+
+```typescript
+import { v4 } from 'uuid';
+
+@Entity()
+export class Book implements UuidEntity<Book> {
+
+  @PrimaryKey()
+  uuid = v4();
+
+  @Property()
+  title: string;
+
+  @ManyToOne()
+  author: Author;
+
+}
+```
+
+### Example of Mongo entity
+
+```typescript
+@Entity()
+export class Book implements MongoEntity<Book> {
+
+  @PrimaryKey()
+  _id: ObjectId;
+
+  @SerializedPrimaryKey() 
+  id: string; // string variant of PK, will be handled automatically
+
+  @Property()
+  title: string;
+
+  @ManyToOne()
+  author: Author;
+
+}
+```
+
+### Using WrappedEntity interface
+
+```typescript
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id: number;
+
+  @Property()
+  title: string;
+
+  @ManyToOne()
+  author: Author;
+
+}
+
+export interface Book extends WrappedEntity<Book, 'id'> { };
 ```
 
 With your entities set up, you can start [using entity manager](entity-manager.md) and 
