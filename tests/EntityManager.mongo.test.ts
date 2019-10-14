@@ -1508,6 +1508,13 @@ describe('EntityManagerMongo', () => {
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);
     expect(wrap(ent).isInitialized()).toBe(true);
+    orm.em.clear();
+
+    const ref4 = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, true);
+    expect(ref4.isInitialized()).toBe(false);
+    await expect(ref4.get('name')).resolves.toBe('God');
+    expect(ref4.isInitialized()).toBe(true);
+    await expect(ref4.get('email')).resolves.toBe('hello@heaven.god');
   });
 
   test('find and count', async () => {
