@@ -1,7 +1,7 @@
 import { BookWp, AuthorWp } from './entities-webpack';
 import { BookWpI, AuthorWpI } from './entities-webpack-invalid';
 import { MikroORM } from '../lib';
-import { wipeDatabase, BASE_DIR } from './bootstrap';
+import { wipeDatabase, BASE_DIR, wipeDatabaseMySqlWp } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
 
 describe('Webpack', () => {
@@ -18,7 +18,7 @@ describe('Webpack', () => {
     delete process.env.WEBPACK;
   });
 
-  test('should load entities', async (done) => {
+  test('should load entities', async done => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
       port,
@@ -47,7 +47,7 @@ describe('Webpack', () => {
     done();
   });
 
-  test('should load and populate entities', async (done) => {
+  test('should load and populate entities', async done => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
       port,
@@ -67,9 +67,20 @@ describe('Webpack', () => {
       orm.config,
       orm.config.getLogger(),
     ).discover();
-    const authors = await orm.em.getRepository(AuthorWp).findAll({ populate: true });
+
+    const authorRepository = await orm.em.getRepository(AuthorWp);
+    await wipeDatabaseMySqlWp(orm.em);
+
+    const insertAuthor = new AuthorWp();
+    insertAuthor.email = 'test@mail.com';
+    insertAuthor.name = 'Fred';
+    insertAuthor.books.add(new BookWp('Booktitle'));
+    await authorRepository.persistAndFlush(insertAuthor);
+
+    const authors = await authorRepository.findAll({ populate: true });
     expect(authors.length).toBe(1);
-    expect(authors[0].books.isInitialized).toBeTruthy();
+    expect(authors[0]).toBeInstanceOf(AuthorWp);
+    expect(authors[0].books[0]).toBeInstanceOf(BookWp);
     await orm.close(true);
     done();
   });
