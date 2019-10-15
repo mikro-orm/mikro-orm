@@ -76,7 +76,7 @@ As Webpack creates a file bundle, it isn't desired that it scans directories for
 ```typescript
 import { Author, Book, BookTag, Publisher, Test } from '../entities';
 
-MikroORM.init<MongoDriver>({
+await MikroORM.init({
   ...
   entities: [Author, Book, BookTag, Publisher, Test],
   cache: { enabled: false },
@@ -88,23 +88,21 @@ MikroORM.init<MongoDriver>({
 
 This will make use of a Webpack feature called [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports). This way you can import dependencies as long as part of the path is known.
 
-In below example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the building process from Webpack so therefore there is an alternative solution provided that will as long as the environment variable WEBPACK is not set (e.g. during development with `ts-node`).
+In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the building process from Webpack so therefore there is an alternative solution provided that will as long as the environment variable WEBPACK is not set (e.g. during development with `ts-node`).
 
 Here, all files with the extension `.ts` will be imported from the directory `../entities`. 
 
-[`flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap) is a method from ECMAScript 2019 and requires [Node.js](https://nodejs.org/) 11 or higher.
+> [`flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap) is a method from ECMAScript 2019 and requires [Node.js](https://nodejs.org/) 11 or higher.
 
 ```typescript
-(async() => {
-  MikroORM.init<MongoDriver>({
-    ...
+await MikroORM.init({
+    // ...
     entities: await getEntities(),
     cache: { enabled: false },
-    ...
-  });
-})()
+    // ...
+});
 
-private static async getEntities(): Promise<any[]> {
+async function getEntities(): Promise<any[]> {
   if (process.env.WEBPACK) {
     const modules = require.context('../entities', true, /\.ts$/);
 
@@ -112,15 +110,12 @@ private static async getEntities(): Promise<any[]> {
       .keys()
       .map(r => modules(r))
       .flatMap(mod => Object.keys(mod).map(className => mod[className]));
-  } else {
-    const modules = await Promise.all(
-        fs
-          .readdirSync('../entities'))
-          .map(file => import(`../entities/${file}`))
-      )
-
-    return modules.flatMap(mod => Object.keys(mod).map(className => mod[className]));
   }
+
+  const promises = fs.readdirSync('../entities').map(file => import(`../entities/${file}`));
+  const modules = await Promise.all(promises);
+
+  return modules.flatMap(mod => Object.keys(mod).map(className => mod[className]));
 }
 ```
 
@@ -144,9 +139,7 @@ module.exports = {
     ],
   },
   plugins: [
-    new webpack.EnvironmentPlugin({
-        WEBPACK: true
-    }),
+    new webpack.EnvironmentPlugin({ WEBPACK: true }),
     new webpack.IgnorePlugin({
       checkResource: rsrc => {
         if (optionalModules.includes(rsrc.split('/')[0])) {
@@ -159,10 +152,10 @@ module.exports = {
         }
 
         return false;
-      }
+      },
     }),
   ],
-}   
+};
 ```
 
 ### Running Webpack
