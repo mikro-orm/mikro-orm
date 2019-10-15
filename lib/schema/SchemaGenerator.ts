@@ -268,8 +268,12 @@ export class SchemaGenerator {
       return;
     }
 
-    const col = this.createTableColumn(table, prop, true);
-    this.createForeignKeyReference(col, prop);
+    this.createTableColumn(table, prop, true);
+
+    // knex does not allow adding new columns with FK in sqlite
+    // @see https://github.com/knex/knex/issues/3351
+    // const col = this.createTableColumn(table, prop, true);
+    // this.createForeignKeyReference(col, prop);
   }
 
   private createForeignKeyReference(col: ColumnBuilder, prop: EntityProperty): void {
