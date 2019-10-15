@@ -167,4 +167,4 @@ module.exports = {
 
 ### Running Webpack
 
-To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore those regarding Mikro-ORM as these pieces of code won't be executed if run with Weback.
+To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore the errors regarding Mikro-ORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
