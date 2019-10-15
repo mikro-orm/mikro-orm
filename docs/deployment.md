@@ -126,7 +126,7 @@ private static async getEntities(): Promise<any[]> {
 
 ### Webpack configuration
 
-Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but for building [Node.js](https://nodejs.org/) bundles it requires additional configuration. Configuration for Webpack is stored in the root of the project as `webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
+Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but for building Mikro-ORM and [Node.js](https://nodejs.org/) bundles it requires additional configuration. Configuration for Webpack is stored in the root of the project as `webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
 
 For bundling Mikro-ORM the following configuration is required:
 
