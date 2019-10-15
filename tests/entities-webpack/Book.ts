@@ -4,14 +4,15 @@ import {
   PrimaryKey,
   Property,
   IdEntity,
+  AnyEntity,
 } from '../../lib';
 import { AuthorWp } from '.';
 
-@Entity()
-export class BookWp implements IdEntity<BookWp> {
+@Entity({collection: 'book2'})
+export class BookWp implements AnyEntity<BookWp, 'uuid_pk'> {
 
-  @PrimaryKey({ type: 'number' })
-  id: number;
+  @PrimaryKey({ type: 'string' })
+  uuid_pk: string;
 
   @Property({ type: 'string' })
   title: string;

@@ -1,7 +1,7 @@
 import { Collection, Entity, OneToMany, Property, IdEntity, PrimaryKey } from '../../lib';
 import { BookWp } from './Book';
 
-@Entity()
+@Entity({collection: 'author2'})
 export class AuthorWp implements IdEntity<AuthorWp> {
 
   @PrimaryKey({ type: 'number' })
