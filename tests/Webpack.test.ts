@@ -84,7 +84,7 @@ describe('Webpack', () => {
     await orm.close(true);
   });
 
-  test('should throw error for invalid entities', async () => {
+  test('should throw error for invalid entities', async done => {
     MikroORM.init({
       dbName: `mikro_orm_test`,
       port,
@@ -100,10 +100,11 @@ describe('Webpack', () => {
       expect(e.message).toBe(
         "Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (AuthorWpI.AuthorWpI)",
       );
+      done();
     });
   });
 
-  test('should throw error if entities is not defined', async () => {
+  test('should throw error if entities is not defined', async done => {
     MikroORM.init({
       dbName: `mikro_orm_test`,
       port,
@@ -119,6 +120,7 @@ describe('Webpack', () => {
       expect(e.message).toBe(
         "Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.",
       );
+      done();
     });
   });
 });
