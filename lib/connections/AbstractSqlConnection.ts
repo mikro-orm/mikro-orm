@@ -7,7 +7,7 @@ import { EntityData, AnyEntity } from '../types';
 
 export abstract class AbstractSqlConnection extends Connection {
 
-  protected client: Knex;
+  protected client!: Knex;
 
   getKnex(): Knex {
     return this.client;

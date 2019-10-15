@@ -7,19 +7,19 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 export class FooBar implements MongoEntity<FooBar> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @Property()
-  name: string;
+  name!: string;
 
   @OneToOne({ eager: true, orphanRemoval: true })
-  baz: FooBaz | null;
+  baz!: FooBaz | null;
 
   @OneToOne()
-  fooBar: FooBar;
+  fooBar!: FooBar;
 
   static create(name: string) {
     const bar = new FooBar();

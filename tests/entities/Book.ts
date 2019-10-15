@@ -19,7 +19,7 @@ import { BaseEntity3 } from './BaseEntity3';
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Property()
   title: string;
@@ -28,19 +28,19 @@ export class Book extends BaseEntity3 {
   author: Author;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
-  publisher: IdentifiedReference<Publisher, '_id' | 'id'>;
+  publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
   @Property()
-  metaObject: object;
+  metaObject?: object;
 
   @Property()
-  metaArray: any[];
+  metaArray?: any[];
 
   @Property()
-  metaArrayOfStrings: string[];
+  metaArrayOfStrings?: string[];
 
   constructor(title: string, author?: Author) {
     super();

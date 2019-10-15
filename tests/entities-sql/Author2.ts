@@ -37,22 +37,22 @@ export class Author2 extends BaseEntity2 {
   born?: Date;
 
   @OneToMany('Book2', 'author', { orderBy: { title: QueryOrder.ASC } })
-  books: Collection<Book2>;
+  books!: Collection<Book2>;
 
   @ManyToOne()
-  favouriteBook: Book2;
+  favouriteBook!: Book2;
 
   @ManyToOne()
-  favouriteAuthor: Author2;
+  favouriteAuthor!: Author2;
 
   @Property({ persist: false })
-  version: number;
+  version!: number;
 
   @Property({ persist: false })
-  versionAsString: string;
+  versionAsString!: string;
 
   @Property({ persist: false })
-  code: string;
+  code!: string;
 
   constructor(name: string, email: string) {
     super();

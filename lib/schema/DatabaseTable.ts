@@ -1,8 +1,8 @@
 export class DatabaseTable {
 
-  private columns: Record<string, Column>;
-  private indexes: Record<string, Index[]>;
-  private foreignKeys: Record<string, ForeignKey>;
+  private columns!: Record<string, Column>;
+  private indexes!: Record<string, Index[]>;
+  private foreignKeys!: Record<string, ForeignKey>;
 
   constructor(readonly name: string,
               readonly schema?: string) { }

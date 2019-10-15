@@ -144,6 +144,15 @@ describe('Utils', () => {
     expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
   });
 
+  test('defaultValue', () => {
+    const prop1 = {} as any;
+    Utils.defaultValue(prop1, 'test', 'default');
+    expect(prop1.test).toBe('default');
+    const prop2 = { test: 'foo' } as any;
+    Utils.defaultValue(prop2, 'test', 'default');
+    expect(prop2.test).toBe('foo');
+  });
+
   test('extractPK with PK id/_id', () => {
     const meta = orm.getMetadata().get(Author.name);
     expect(Utils.extractPK('abcd')).toBe('abcd');

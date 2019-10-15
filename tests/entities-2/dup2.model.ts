@@ -7,12 +7,12 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 export class Dup2 implements MongoEntity<Dup2> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @OneToOne({ owner: true })
-  dup1: Dup1;
+  dup1?: Dup1;
 
 }

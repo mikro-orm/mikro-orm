@@ -8,8 +8,8 @@ import { FilterQuery, AnyEntity, EntityName, Dictionary } from '../types';
 
 export class MongoConnection extends Connection {
 
-  protected client: MongoClient;
-  protected db: Db;
+  protected client!: MongoClient;
+  protected db!: Db;
 
   async connect(): Promise<void> {
     this.client = await MongoClient.connect(this.config.getClientUrl(), this.getConnectionOptions());

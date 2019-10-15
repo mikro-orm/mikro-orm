@@ -8,7 +8,7 @@ export class Test implements MongoEntity<Test> {
   _id: any;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @Property({ type: 'string' })
   name: any;

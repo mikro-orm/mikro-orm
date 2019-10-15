@@ -11,12 +11,12 @@ import { AuthorWpI } from '.';
 export class BookWpI implements IdEntity<BookWpI> {
 
   @PrimaryKey({ type: 'number' })
-  id: number;
+  id!: number;
 
   @Property({ type: 'string' })
-  title: string;
+  title!: string;
 
   @ManyToOne({ entity: () => AuthorWpI, inversedBy: a => a.books })
-  author: AuthorWpI;
+  author!: AuthorWpI;
 
 }

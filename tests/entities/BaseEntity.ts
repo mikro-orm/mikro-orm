@@ -5,10 +5,10 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 export abstract class BaseEntity implements MongoEntity<BaseEntity> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @Property()
   createdAt = new Date();
@@ -17,7 +17,7 @@ export abstract class BaseEntity implements MongoEntity<BaseEntity> {
   updatedAt = new Date();
 
   @Property()
-  foo: string;
+  foo?: string;
 
   @Property({ persist: false })
   hookTest = false;

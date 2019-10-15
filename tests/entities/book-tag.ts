@@ -7,10 +7,10 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 export class BookTag implements MongoEntity<BookTag> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @Property()
   name: string;

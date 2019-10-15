@@ -5,7 +5,7 @@ import { ReferenceType } from '../../lib/entity';
 export abstract class BaseEntity2 implements IdEntity<BaseEntity2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ persist: false })
   hookTest = false;

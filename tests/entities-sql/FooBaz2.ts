@@ -5,16 +5,16 @@ import { FooBar2 } from './FooBar2';
 export class FooBaz2 implements IdEntity<FooBaz2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
   name: string;
 
   @OneToOne(() => FooBar2, 'baz')
-  bar: FooBar2;
+  bar?: FooBar2;
 
   @Property({ version: true })
-  version: Date;
+  version!: Date;
 
   constructor(name: string) {
     this.name = name;

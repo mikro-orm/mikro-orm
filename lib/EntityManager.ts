@@ -14,7 +14,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config, this.metadata);
-  private transactionContext: Transaction;
+  private transactionContext?: Transaction;
 
   constructor(readonly config: Configuration,
               private readonly driver: D,

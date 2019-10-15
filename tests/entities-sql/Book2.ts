@@ -14,29 +14,29 @@ export class Book2 implements UuidEntity<Book2> {
   @Property({ default: 'current_timestamp(3)', length: 3 })
   createdAt = new Date();
 
-  @Property({ nullable: true })
-  title: string;
+  @Property()
+  title?: string;
 
   @Property({ type: 'text', nullable: true })
-  perex: string;
+  perex?: string;
 
   @Property({ type: 'float', nullable: true })
-  price: number;
+  price?: number;
 
   @Property({ type: 'double', nullable: true })
-  double: number;
+  double?: number;
 
   @Property({ nullable: true })
-  meta: Book2Meta;
+  meta?: Book2Meta;
 
   @ManyToOne({ cascade: [] })
   author: Author2;
 
-  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
-  publisher: Publisher2;
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  publisher?: Publisher2;
 
   @OneToOne({ cascade: [], mappedBy: 'book' })
-  test: Test2;
+  test?: Test2;
 
   @ManyToMany({ entity: () => BookTag2, inversedBy: 'books', cascade: [], orderBy: { name: QueryOrder.ASC } })
   tags = new Collection<BookTag2>(this);

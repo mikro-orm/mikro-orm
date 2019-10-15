@@ -9,9 +9,9 @@ import { EntityGenerator } from './schema/EntityGenerator';
 
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  em: EntityManager<D>;
+  em!: EntityManager<D>;
   readonly config: Configuration<D>;
-  private metadata: MetadataStorage;
+  private metadata!: MetadataStorage;
   private readonly driver: D;
   private readonly logger: Logger;
 

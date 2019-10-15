@@ -9,11 +9,11 @@ import { LockMode } from '../unit-of-work';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  protected readonly connection: C;
+  protected readonly connection!: C;
   protected readonly replicas: C[] = [];
-  protected readonly platform: Platform;
+  protected readonly platform!: Platform;
   protected readonly logger = this.config.getLogger();
-  protected metadata: MetadataStorage;
+  protected metadata!: MetadataStorage;
 
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }

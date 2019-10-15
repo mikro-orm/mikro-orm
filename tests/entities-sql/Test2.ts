@@ -5,7 +5,7 @@ import { Book2 } from './Book2';
 export class Test2 implements IdEntity<Test2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
   name?: string;
@@ -14,7 +14,7 @@ export class Test2 implements IdEntity<Test2> {
   book?: Book2;
 
   @Property({ version: true })
-  version: number;
+  version!: number;
 
   constructor(props: Partial<Test2> = {}) {
     this.id = props.id!;

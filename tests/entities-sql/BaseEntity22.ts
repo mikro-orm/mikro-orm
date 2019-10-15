@@ -2,7 +2,7 @@ import { Collection, IdEntity, AnyEntity } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata';
 import { ReferenceType } from '../../lib/entity';
 
-export abstract class BaseEntity22 implements AnyEntity<BaseEntity22, 'id'> {
+export abstract class BaseEntity22 implements IdEntity<BaseEntity22> {
 
   abstract id: number;
 

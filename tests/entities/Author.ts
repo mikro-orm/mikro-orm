@@ -38,16 +38,16 @@ export class Author extends BaseEntity {
   friends: Collection<Author> = new Collection<Author>(this);
 
   @ManyToOne()
-  favouriteBook: Book;
+  favouriteBook!: Book;
 
   @ManyToOne()
-  favouriteAuthor: Author;
+  favouriteAuthor!: Author;
 
   @Property({ persist: false })
-  version: number;
+  version!: number;
 
   @Property({ persist: false })
-  versionAsString: string;
+  versionAsString!: string;
 
   constructor(name: string, email: string) {
     super();

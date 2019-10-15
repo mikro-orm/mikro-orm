@@ -6,19 +6,19 @@ import { FooBaz2 } from './FooBaz2';
 export class FooBar2 extends BaseEntity22 implements IdEntity<FooBar2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  name: string;
+  name!: string;
 
   @OneToOne({ orphanRemoval: true })
-  baz: FooBaz2;
+  baz!: FooBaz2;
 
   @OneToOne()
-  fooBar: FooBar2;
+  fooBar!: FooBar2;
 
   @Property({ version: true, length: 3 })
-  version: Date;
+  version!: Date;
 
   static create(name: string) {
     const bar = new FooBar2();

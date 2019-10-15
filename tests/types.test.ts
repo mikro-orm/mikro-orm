@@ -32,7 +32,7 @@ describe('check typings', () => {
 
   test('EntityOrPrimary', async () => {
     assert<IsExact<EntityOrPrimary<Book2>, PartialEntity<Book2> | DeepPartialEntity<Book2> | string>>(true);
-    assert<Has<EntityOrPrimary<Book2>, { title: string }>>(true);
+    assert<Has<EntityOrPrimary<Book2>, { title?: string }>>(true);
     assert<Has<EntityOrPrimary<Book2>, { name: string }>>(false);
     assert<Has<EntityOrPrimary<Book2>, { born: Date }>>(false);
     assert<IsExact<EntityOrPrimary<Author2>, PartialEntity<Author2> | DeepPartialEntity<Author2> | number>>(true);
@@ -203,7 +203,7 @@ describe('check typings', () => {
     assert<Has<FilterQuery<Author2>, number>>(true);
     assert<Has<FilterQuery<Author2>, { favouriteBook: Query<Book2> }>>(true);
     assert<Has<FilterQuery<Book2>, { author: { favouriteBook: Query<Book2> } }>>(true);
-    assert<Has<FilterQuery<Book2>, { author: { favouriteBook: { title: string } } }>>(true);
+    assert<Has<FilterQuery<Book2>, { author: { favouriteBook: { title?: string } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: FilterValue<BookTag2> } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: BookTag2[] } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: number[] } } }>>(true);

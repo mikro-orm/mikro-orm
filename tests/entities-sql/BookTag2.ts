@@ -9,7 +9,7 @@ export class BookTag2 extends BaseEntity2 {
   name: string;
 
   @ManyToMany({ entity: () => Book2, mappedBy: 'tags' })
-  books: Collection<Book2>;
+  books!: Collection<Book2>;
 
   constructor(name: string) {
     super();

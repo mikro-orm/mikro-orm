@@ -780,10 +780,10 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
     expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
-    expect(tags[0].books[0].publisher.tests.isInitialized(true)).toBe(true);
-    expect(tags[0].books[0].publisher.tests.count()).toBe(2);
-    expect(tags[0].books[0].publisher.tests[0].name).toBe('t11');
-    expect(tags[0].books[0].publisher.tests[1].name).toBe('t12');
+    expect(tags[0].books[0].publisher!.tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher!.tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher!.tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher!.tests[1].name).toBe('t12');
 
     orm.em.clear();
     const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
@@ -795,10 +795,10 @@ describe('EntityManagerPostgre', () => {
     expect(books[0].author.name).toBe('Jon Snow');
     expect(books[0].publisher).toBeInstanceOf(Publisher2);
     expect(wrap(books[0].publisher).isInitialized()).toBe(true);
-    expect(books[0].publisher.tests.isInitialized(true)).toBe(true);
-    expect(books[0].publisher.tests.count()).toBe(2);
-    expect(books[0].publisher.tests[0].name).toBe('t11');
-    expect(books[0].publisher.tests[1].name).toBe('t12');
+    expect(books[0].publisher!.tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher!.tests.count()).toBe(2);
+    expect(books[0].publisher!.tests[0].name).toBe('t11');
+    expect(books[0].publisher!.tests[1].name).toBe('t12');
   });
 
   test('hooks', async () => {

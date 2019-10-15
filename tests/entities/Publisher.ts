@@ -8,10 +8,10 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 export class Publisher implements MongoEntity<Publisher> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @SerializedPrimaryKey()
-  id: string;
+  id!: string;
 
   @Property()
   name: string;

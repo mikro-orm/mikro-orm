@@ -10,10 +10,10 @@ export class Publisher2 extends BaseEntity2 {
   name: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
-  books: Collection<Book2>;
+  books!: Collection<Book2>;
 
   @ManyToMany({ entity: () => Test2, owner: true })
-  tests: Collection<Test2>;
+  tests!: Collection<Test2>;
 
   @Property({ type: 'string', length: 10 })
   type: PublisherType = PublisherType.LOCAL;

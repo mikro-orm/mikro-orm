@@ -8,7 +8,7 @@ export class ArrayCollection<T extends AnyEntity<T>> {
   [k: number]: T;
 
   protected readonly items: T[] = [];
-  private _property: EntityProperty;
+  private _property?: EntityProperty;
 
   constructor(readonly owner: AnyEntity, items?: T[]) {
     if (items) {

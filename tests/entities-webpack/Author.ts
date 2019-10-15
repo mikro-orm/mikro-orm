@@ -5,13 +5,13 @@ import { BookWp } from './Book';
 export class AuthorWp implements IdEntity<AuthorWp> {
 
   @PrimaryKey({ type: 'number' })
-  id: number;
+  id!: number;
 
   @Property({ type: 'string' })
-  name: string;
+  name!: string;
 
   @Property({ type: 'string' })
-  email: string;
+  email!: string;
 
   @Property({ type: 'number' })
   age?: number;

@@ -19,7 +19,7 @@ export class BookWp implements AnyEntity<BookWp, 'uuid_pk'> {
   title: string;
 
   @ManyToOne(() => AuthorWp)
-  author: AuthorWp;
+  author?: AuthorWp;
 
   constructor(title: string) {
     this.title = title;

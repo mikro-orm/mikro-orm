@@ -8,7 +8,7 @@ import { Utils } from '../utils';
 export class TypeScriptMetadataProvider extends MetadataProvider {
 
   private readonly project = new Project();
-  private sources: SourceFile[];
+  private sources!: SourceFile[];
 
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     if (!meta.path) {

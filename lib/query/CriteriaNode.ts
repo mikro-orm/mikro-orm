@@ -116,7 +116,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
       }
 
       if (this.prop!.reference === ReferenceType.ONE_TO_ONE) {
-        qb._fields.push(field);
+        qb._fields!.push(field);
       }
     }
 
@@ -230,7 +230,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, {}, 'pivotJoin');
     } else {
-      const prev = qb._fields.slice();
+      const prev = qb._fields!.slice();
       qb.leftJoin(field, nestedAlias);
       qb._fields = prev;
     }

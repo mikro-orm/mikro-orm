@@ -9,7 +9,7 @@ import { Dictionary } from '../types';
 
 export abstract class Connection {
 
-  protected metadata: MetadataStorage;
+  protected metadata!: MetadataStorage;
   protected abstract client: any;
 
   constructor(protected readonly config: Configuration,

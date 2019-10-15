@@ -16,8 +16,8 @@ import { EntityManager } from '../EntityManager';
  */
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
-  type: QueryType;
-  _fields: string[];
+  type!: QueryType;
+  _fields?: string[];
   _populate: string[] = [];
   _populateMap: Record<string, string> = {};
 
@@ -27,12 +27,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _joins: Record<string, JoinOptions> = {};
   private _aliasMap: Record<string, string> = {};
   private _cond: Dictionary = {};
-  private _data: Dictionary;
+  private _data!: Dictionary;
   private _orderBy: QueryOrderMap = {};
   private _groupBy: string[] = [];
   private _having: Dictionary = {};
-  private _limit: number;
-  private _offset: number;
+  private _limit?: number;
+  private _offset?: number;
   private lockMode?: LockMode;
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
@@ -84,7 +84,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   join(field: string, alias: string, cond: Dictionary = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin'): this {
     const extraFields = this.joinReference(field, alias, cond, type);
-    this._fields.push(...extraFields);
+    this._fields!.push(...extraFields);
 
     return this;
   }
@@ -195,8 +195,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
-    Utils.runIfNotEmpty(() => qb.limit(this._limit), this._limit);
-    Utils.runIfNotEmpty(() => qb.offset(this._offset), this._offset);
+    Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
+    Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -342,7 +342,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     switch (this.type) {
       case QueryType.SELECT:
-        qb.select(this.prepareFields(this._fields));
+        qb.select(this.prepareFields(this._fields!));
 
         if (this.flags.has(QueryFlag.DISTINCT)) {
           qb.distinct();
@@ -352,7 +352,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         break;
       case QueryType.COUNT:
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m](this.helper.mapper(this._fields[0], this.type, undefined, 'count'));
+        qb[m](this.helper.mapper(this._fields![0], this.type, undefined, 'count'));
         this.helper.processJoins(qb, this._joins);
         break;
       case QueryType.INSERT:
@@ -422,7 +422,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private autoGroupJoinedFields(): void {
-    this.prepareFields(this._fields)
+    this.prepareFields(this._fields!)
       .map(field => this.helper.splitField('' + field))
       .filter(([alias]) => alias !== this.alias)
       .map(([alias, prop]) => `${alias}.${prop.replace(/\s+as.*$/, '')}`)
