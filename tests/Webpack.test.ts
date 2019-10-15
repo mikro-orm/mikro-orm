@@ -47,7 +47,7 @@ describe('Webpack', () => {
     await orm.close(true);
   });
 
-  test('should load and populate entities', async () => {
+  test('should create entity', async () => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
       port,
@@ -61,27 +61,9 @@ describe('Webpack', () => {
       entities: [AuthorWp, BookWp],
     });
 
-    await new MetadataDiscovery(
-      orm.getMetadata(),
-      orm.em.getDriver().getPlatform(),
-      orm.config,
-      orm.config.getLogger(),
-    ).discover();
-
-    const authorRepository = await orm.em.getRepository(AuthorWp);
-    await wipeDatabaseMySqlWp(orm.em);
-
-    const insertAuthor = new AuthorWp();
-    insertAuthor.email = 'test@mail.com';
-    insertAuthor.name = 'Fred';
-    insertAuthor.books.add(new BookWp('Booktitle'));
-    await authorRepository.persistAndFlush(insertAuthor);
-
-    const authors = await authorRepository.findAll({ populate: true });
-    expect(authors.length).toBe(1);
-    expect(authors[0]).toBeInstanceOf(AuthorWp);
-    expect(authors[0].books[0]).toBeInstanceOf(BookWp);
-    await orm.close(true);
+    const author = orm.em.create(AuthorWp, {name: 'Name'});
+    expect(author).toBeInstanceOf(AuthorWp);
+    expect(author.name).toBe('Name');
   });
 
   test('should throw error for invalid entities', async done => {
