@@ -8,3 +8,4 @@
 /.coveralls.yml
 !.gitkeep
 /mikro_orm_test.db
+/.vscode

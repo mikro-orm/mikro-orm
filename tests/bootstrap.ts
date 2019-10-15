@@ -10,6 +10,7 @@ import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
+import { AuthorWp, BookWp } from './entities-webpack';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -125,6 +126,14 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
+  await em.getConnection().execute('set foreign_key_checks = 1');
+  em.clear();
+}
+
+export async function wipeDatabaseMySqlWp(em: EntityManager) {
+  await em.getConnection().execute('set foreign_key_checks = 0');
+  await em.createQueryBuilder(AuthorWp).truncate().execute();
+  await em.createQueryBuilder(BookWp).truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
 }
