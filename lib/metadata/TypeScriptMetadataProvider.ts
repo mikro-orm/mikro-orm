@@ -26,15 +26,16 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       } else if (prop.entity) {
         prop.type = Utils.className(prop.entity());
       } else if (!prop.type) {
-        if (process.env.WEBPACK) {
-          throw new Error(`Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (${meta.className}.${name})`);
-        }
         await this.initPropertyType(meta, name, prop);
       }
     }
   }
 
   private async initPropertyType(meta: EntityMetadata, name: string, prop: EntityProperty): Promise<void> {
+    if (process.env.WEBPACK) {
+      throw new Error(`Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (${meta.className}.${name})`);
+    }
+
     const file = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
     const { type, optional } = await this.readTypeFromSource(file, name, prop);
     prop.type = type;

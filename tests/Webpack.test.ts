@@ -1,7 +1,7 @@
 import { BookWp, AuthorWp } from './entities-webpack';
 import { BookWpI, AuthorWpI } from './entities-webpack-invalid';
-import { MikroORM } from '../lib';
-import { wipeDatabase, BASE_DIR, wipeDatabaseMySqlWp } from './bootstrap';
+import { MikroORM, Options } from '../lib';
+import { BASE_DIR } from './bootstrap';
 import { MetadataDiscovery } from '../lib/metadata';
 
 describe('Webpack', () => {
@@ -32,17 +32,18 @@ describe('Webpack', () => {
       entities: [AuthorWp, BookWp],
     });
 
-    const metadataStorage: any = await new MetadataDiscovery(
+    const metadataStorage = await new MetadataDiscovery(
       orm.getMetadata(),
       orm.em.getDriver().getPlatform(),
       orm.config,
       orm.config.getLogger(),
     ).discover();
 
+    // @ts-ignore
     const imports = Object.keys(metadataStorage.metadata);
 
-    expect(imports.includes('BookWp')).toBeTruthy();
-    expect(imports.includes('AuthorWp')).toBeTruthy();
+    expect(imports.includes('BookWp')).toBe(true);
+    expect(imports.includes('AuthorWp')).toBe(true);
 
     await orm.close(true);
   });
@@ -66,43 +67,31 @@ describe('Webpack', () => {
     expect(author.name).toBe('Name');
   });
 
-  test('should throw error for invalid entities', async done => {
-    MikroORM.init({
+  test('should throw error for invalid entities', async () => {
+    const options = {
       dbName: `mikro_orm_test`,
       port,
       baseDir: BASE_DIR,
-      debug: ['query'],
-      highlight: false,
       logger: i => i,
       multipleStatements: true,
       type: 'mysql',
       cache: { enabled: false },
       entities: [AuthorWpI, BookWpI],
-    }).catch((e: Error) => {
-      expect(e.message).toBe(
-        "Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (AuthorWpI.AuthorWpI)",
-      );
-      done();
-    });
+    } as Options;
+    await expect(MikroORM.init(options)).rejects.toThrowError("Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (AuthorWpI.AuthorWpI)");
   });
 
-  test('should throw error if entities is not defined', async done => {
-    MikroORM.init({
+  test('should throw error if entities is not defined', async () => {
+    const options = {
       dbName: `mikro_orm_test`,
       port,
       baseDir: BASE_DIR,
       debug: ['query'],
-      highlight: false,
-      logger: i => i,
       multipleStatements: true,
       type: 'mysql',
       cache: { enabled: false },
       entitiesDirs: ['not/existing'],
-    }).catch((e: Error) => {
-      expect(e.message).toBe(
-        "Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.",
-      );
-      done();
-    });
+    } as Options;
+    await expect(MikroORM.init(options)).rejects.toThrowError("Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.");
   });
 });

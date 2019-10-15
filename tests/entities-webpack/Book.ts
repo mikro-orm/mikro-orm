@@ -18,7 +18,7 @@ export class BookWp implements AnyEntity<BookWp, 'uuid_pk'> {
   @Property({ type: 'string' })
   title: string;
 
-  @ManyToOne({ entity: () => AuthorWp, inversedBy: a => a.books })
+  @ManyToOne(() => AuthorWp)
   author: AuthorWp;
 
   constructor(title: string) {

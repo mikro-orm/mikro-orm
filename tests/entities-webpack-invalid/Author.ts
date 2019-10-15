@@ -16,7 +16,7 @@ export class AuthorWpI implements IdEntity<AuthorWpI> {
   @Property({ type: 'number' })
   age?: number;
 
-  @OneToMany({entity: () => BookWpI, mappedBy: book => book.author})
+  @OneToMany({ entity: () => BookWpI, mappedBy: book => book.author })
   books = new Collection<BookWpI>(this);
 
 }

@@ -7,7 +7,7 @@ import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 
 describe('EntityManagerMariaDb', () => {
 
-  jest.setTimeout(10000);
+  jest.setTimeout(10e3);
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb'));
