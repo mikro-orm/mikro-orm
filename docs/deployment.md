@@ -58,7 +58,7 @@ is to just deploy your TS source files next to the compiled output, just like du
 
 ## Deploy a bundle of entities and dependencies with [Webpack](https://webpack.js.org/)
 
-If you want to deploy the least amount of files possible, you should use Webpack to bundle every entity and dependency: you get a single file that contains every required module/file and has no external dependencies.
+Webpack can be used to bundle every entity and dependency: you get a single file that contains every required module/file and has no external dependencies.
 
 ### Prepare your project for Webpack
 
@@ -126,9 +126,9 @@ private static async getEntities(): Promise<any[]> {
 
 ### Webpack configuration
 
-Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but for building Mikro-ORM and [Node.js](https://nodejs.org/) bundles it requires additional configuration. Configuration for Webpack is stored in the root of the project as `webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
+Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but for building MikroORM and [Node.js](https://nodejs.org/) bundles it requires additional configuration. Configuration for Webpack is stored in the root of the project as `webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
 
-For bundling Mikro-ORM the following configuration is required:
+For bundling MikroORM the following configuration is required:
 
 ```javascript
 const optionalModules = [
@@ -167,4 +167,4 @@ module.exports = {
 
 ### Running Webpack
 
-To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore the errors regarding Mikro-ORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
+To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore the errors regarding MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
