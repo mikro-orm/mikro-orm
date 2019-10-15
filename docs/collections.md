@@ -162,4 +162,15 @@ console.log(book.tags.contains(tag)); // true
 
 Same applies for `Collection.remove()`.
 
+## Filtering and ordering of collection items
+
+When initializing collection items via `collection.init()`, you can filter the collection
+as well as order its items:
+
+```typescript
+await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
+```
+
+> You should never modify partially loaded collection.
+
 [&larr; Back to table of contents](index.md#table-of-contents)

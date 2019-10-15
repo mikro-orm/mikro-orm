@@ -51,7 +51,11 @@ console.log(book.author.name); // undefined as `Author` is not loaded yet
 You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, 
 defining `load(): Promise<T>` method that will first lazy load the association if not already
 available. You can also use `unwrap(): T` method to access the underlying entity without loading
-it. 
+it.
+
+You can also use `get<K extends keyof T>(prop: K): Promise<T[K]>` helper, that will call `load()` 
+for you, making sure the entity is initialized first, then returning the value of given property 
+directly. 
 
 ```typescript
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from 'mikro-orm';
@@ -76,7 +80,9 @@ console.log(book.author instanceof Reference); // true
 console.log(book.author.isInitialized()); // false
 console.log(book.author.name); // type error, there is no `name` property
 console.log(book.author.unwrap().name); // undefined as author is not loaded
-console.log((await book.author.load()).name); // ok, loading the author first
+console.log((await book.author.get('name'))); // ok, loading the author first
+console.log((await book.author.load()).name); // ok, author already loaded
+console.log(book.author.unwrap().name); // ok, author already loaded
 ```
 
 ## Assigning to Reference Properties

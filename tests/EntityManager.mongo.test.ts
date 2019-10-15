@@ -1088,6 +1088,31 @@ describe('EntityManagerMongo', () => {
     await expect(ent.tests.getIdentifiers('id')).toEqual([t2.id, t1.id, t3.id]);
   });
 
+  test('collection allows custom where and orderBy', async () => {
+    const book = new Book('My Life on The Wall, part 1');
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book.tags.add(tag1, tag2, tag3, tag4, tag5);
+    await orm.em.persistAndFlush(book);
+
+    orm.em.clear();
+    const ent1 = await orm.em.findOneOrFail(Book, book.id);
+    expect(ent1.tags.count()).toBe(5);
+    expect(ent1.tags.getIdentifiers('id')).toEqual([tag1.id, tag2.id, tag3.id, tag4.id, tag5.id]);
+    await ent1.tags.init([], {}, { name: QueryOrder.DESC });
+    expect(ent1.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name, tag2.name]);
+
+    orm.em.clear();
+    const ent2 = await orm.em.findOneOrFail(Book, book.id);
+    expect(ent2.tags.count()).toBe(5);
+    expect(ent2.tags.getIdentifiers('id')).toEqual([tag1.id, tag2.id, tag3.id, tag4.id, tag5.id]);
+    await ent2.tags.init([], { name: { $ne: 'funny' } }, { name: QueryOrder.DESC });
+    expect(ent2.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name]);
+  });
+
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
@@ -1508,6 +1533,13 @@ describe('EntityManagerMongo', () => {
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);
     expect(wrap(ent).isInitialized()).toBe(true);
+    orm.em.clear();
+
+    const ref4 = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, true);
+    expect(ref4.isInitialized()).toBe(false);
+    await expect(ref4.get('name')).resolves.toBe('God');
+    expect(ref4.isInitialized()).toBe(true);
+    await expect(ref4.get('email')).resolves.toBe('hello@heaven.god');
   });
 
   test('find and count', async () => {

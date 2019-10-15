@@ -62,7 +62,9 @@ export type CollectionItem<T> = T extends Collection<infer K> ? EntityOrPrimary<
 export type FilterValue<T> = T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>>;
 export type Query<T> = true extends IsEntity<T>
   ? { [K in keyof T]?: Query<T[K]> | FilterValue<T[K]> | null } | FilterValue<T>
-  : T extends Collection<infer K> ? FilterValue<K> : FilterValue<T>;
+  : T extends Collection<infer K>
+    ? { [KK in keyof K]?: Query<K[KK]> | FilterValue<K[KK]> | null } | FilterValue<K>
+    : FilterValue<T>;
 export type FilterQuery<T> = GroupOperatorMap<Query<T>> | Query<T> | { [PrimaryKeyType]?: any };
 
 export interface IWrappedEntity<T, PK extends keyof T> {

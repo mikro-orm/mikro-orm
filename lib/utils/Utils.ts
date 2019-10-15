@@ -214,6 +214,10 @@ export class Utils {
     return classOrName.name;
   }
 
+  static detectTsNode(): boolean {
+    return process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts'];
+  }
+
   /**
    * uses some dark magic to get source path to caller where decorator is used
    */

@@ -34,10 +34,15 @@ export class Reference<T extends AnyEntity<T>> {
 
   async load(): Promise<T> {
     if (this.isInitialized()) {
-      return wrap(this.entity);
+      return this.entity;
     }
 
-    return wrap(this.entity).init!();
+    return wrap(this.entity).init();
+  }
+
+  async get<K extends keyof T>(prop: K): Promise<T[K]> {
+    await this.load();
+    return this.entity[prop];
   }
 
   unwrap(): T {
@@ -45,7 +50,7 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   isInitialized(): boolean {
-    return wrap(this.entity).isInitialized!();
+    return wrap(this.entity).isInitialized();
   }
 
   populated(populated?: boolean): void {

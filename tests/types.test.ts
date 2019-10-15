@@ -221,6 +221,9 @@ describe('check typings', () => {
     ok01 = { books: { author: { born: new Date() } }, favouriteBook: null };
     ok01 = { books: { author: { born: new Date() } } };
     ok01 = { books: { author: { born: new Date() } }, favouriteBook: {} as Book2 };
+    ok01 = { books: { tags: { name: 'asd' } } };
+    ok01 = { books: { tags: 1 } };
+    ok01 = { books: { tags: { books: { title: 'asd' } } } };
   });
 
   // there is no way to test this currently, uncomment to check they all fail
@@ -237,6 +240,9 @@ describe('check typings', () => {
   //   fail01 = { favouriteBook: 1 };
   //   fail01 = { favouriteBook: [1, '2'] };
   //   fail01 = { favouriteBook: [1, 2] };
+  //   fail01 = { books: { tags: { name: 1 } } };
+  //   fail01 = { books: { tags: '1' } };
+  //   fail01 = { books: { tags: { books: { title: 123 } } } };
   //
   //   let fail02: FilterQuery<Book2>;
   //   fail02 = { author: { born: 123 } };

@@ -5,7 +5,7 @@ import { Author2, Book2, Test2 } from './entities-sql';
 
 describe('SmartQueryHelper', () => {
 
-  jest.setTimeout(10000);
+  jest.setTimeout(10e3);
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMySql());

@@ -29,7 +29,7 @@ export class EntityAssigner {
       }
 
       if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value)) {
-        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<T>, value, props[prop], em);
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (!props[prop].getter || props[prop].setter)) {
@@ -83,9 +83,9 @@ export class EntityAssigner {
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends AnyEntity<T>>(entity: T, collection: Collection<AnyEntity>, value: any[], prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager): void {
     const invalid: any[] = [];
-    const items = value.map((item: any) => this.createCollectionItem(item, em, prop, invalid));
+    const items = value.map((item: any) => this.createCollectionItem<U>(item, em, prop, invalid));
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;
@@ -96,8 +96,8 @@ export class EntityAssigner {
     collection.setDirty();
   }
 
-  private static createCollectionItem(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): AnyEntity {
-    if (Utils.isEntity(item)) {
+  private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): T {
+    if (Utils.isEntity<T>(item)) {
       return item;
     }
 
@@ -105,8 +105,8 @@ export class EntityAssigner {
       return em.getReference(prop.type, item);
     }
 
-    if (Utils.isObject(item)) {
-      return em.create(prop.type, item);
+    if (Utils.isObject<T>(item)) {
+      return em.create<T>(prop.type, item);
     }
 
     invalid.push(item);

@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "3.0.0-alpha.25",
+  "version": "3.0.0-alpha.26",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -135,6 +135,7 @@
     "@types/node": "^12.7.5",
     "@types/pg": "^7.11.1",
     "@types/uuid": "^3.4.5",
+    "@types/webpack-env": "^1.14.0",
     "conditional-type-checks": "^1.0.1",
     "coveralls": "^3.0.6",
     "husky": "^3.0.5",

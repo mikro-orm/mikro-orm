@@ -126,16 +126,20 @@ app.use((req, res, next) => {
 
 More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
 
-Now you can start defining your entities (in one of the `entitiesDirs` folders):
+Now you can start defining your entities (in one of the `entitiesDirs` folders). This is how
+simple entity can look like in mongo driver:
 
-**`./entities/Book.ts`**
+**`./entities/MongoBook.ts`**
 
 ```typescript
 @Entity()
-export class Book {
+export class MongoBook implements MongoEntity<MongoBook> {
 
   @PrimaryKey()
   _id: ObjectID;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   title: string;
@@ -152,8 +156,36 @@ export class Book {
   }
 
 }
+```
 
-export interface Book extends IEntity { }
+For SQL drivers, use `IdEntity` interface for `id: number` PK:
+
+**`./entities/SqlBook.ts`**
+
+```typescript
+@Entity()
+export class SqlBook implements IdEntity<SqlBook> {
+
+  @PrimaryKey()
+  id: number;
+
+}
+```
+
+If you want to use UUID primary keys, use `UuidEntity` interface:
+
+**`./entities/UuidBook.ts`**
+
+```typescript
+import { v4 } from 'uuid';
+
+@Entity()
+export class UuidBook implements UuidEntity<UuidBook> {
+
+  @PrimaryKey()
+  uuid = v4();
+
+}
 ```
 
 More information can be found in

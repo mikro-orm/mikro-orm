@@ -46,7 +46,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.validator;
   }
 
-  createQueryBuilder(entityName: EntityName<AnyEntity>, alias?: string, type?: 'read' | 'write'): QueryBuilder {
+  createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
     entityName = Utils.className(entityName);
     const driver = this.driver as object;
 
@@ -54,7 +54,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('Not supported by given driver');
     }
 
-    return new QueryBuilder(entityName, this.metadata, driver, this.transactionContext, alias, type);
+    return new QueryBuilder<T>(entityName, this.metadata, driver, this.transactionContext, alias, type, this);
   }
 
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<T[]>;

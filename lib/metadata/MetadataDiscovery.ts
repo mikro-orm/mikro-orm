@@ -27,11 +27,14 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started`);
     this.discovered.length = 0;
-    const tsNode = this.config.get('tsNode') || process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts'];
+
+    if (process.env.WEBPACK && this.config.get('entities').length === 0) {
+      throw new Error("Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.");
+    }
 
     if (this.config.get('entities').length > 0) {
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (tsNode) {
+    } else if (this.config.get('tsNode') || Utils.detectTsNode()) {
       await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));

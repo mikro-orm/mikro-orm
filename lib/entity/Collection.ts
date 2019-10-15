@@ -86,11 +86,14 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     this.dirty = dirty && this.property.owner; // set dirty flag only to owning side
   }
 
-  async init(populate: string[] = []): Promise<this> {
+  async init(options?: InitOptions<T>): Promise<this>; // tslint:disable-next-line:lines-between-class-members
+  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>; // tslint:disable-next-line:lines-between-class-members
+  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
+    const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
     const em = wrap(this.owner).__em;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey]);
+      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
       this.set(map[wrap(this.owner).__primaryKey].map(item => em.merge<T>(this.property.type, item)), true);
 
       return this;
@@ -105,12 +108,17 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
       return this;
     }
 
-    const { cond, orderBy } = this.createCondition();
+    where = this.createCondition<T>(options.where);
     const order = [...this.items]; // copy order of references
+    const customOrder = !!options.orderBy;
+    orderBy = this.createOrderBy(options.orderBy);
 
     this.items.length = 0;
-    const items = await em.find<T>(this.property.type, cond, populate, orderBy);
-    this.reorderItems(items, order);
+    const items = await em.find<T>(this.property.type, where, options.populate, orderBy);
+
+    if (!customOrder) {
+      this.reorderItems(items, order);
+    }
 
     this.items.push(...items);
     Object.assign(this, items);
@@ -121,18 +129,22 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     return this;
   }
 
-  private createCondition<T extends AnyEntity<T>>(): { cond: FilterQuery<T>; orderBy?: QueryOrderMap } {
-    const cond: FilterQuery<T> = {};
-    let orderBy;
-
+  private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy as string] = wrap(this.owner).__primaryKey;
-      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
     } else { // MANY_TO_MANY
-      this.createManyToManyCondition(cond);
+      this.createManyToManyCondition(cond as Dictionary);
     }
 
-    return { cond, orderBy };
+    return cond;
+  }
+
+  private createOrderBy(orderBy: QueryOrderMap = {}): QueryOrderMap {
+    if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
+      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
+    }
+
+    return orderBy;
   }
 
   private createManyToManyCondition(cond: Dictionary) {
@@ -186,4 +198,10 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     return entity;
   }
 
+}
+
+export interface InitOptions<T> {
+  populate?: string[];
+  orderBy?: QueryOrderMap;
+  where?: FilterQuery<T>;
 }

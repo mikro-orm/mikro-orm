@@ -1,4 +1,4 @@
-import { EntityManager, IDatabaseDriver, JavaScriptMetadataProvider, MikroORM } from '../lib';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';

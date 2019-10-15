@@ -9,11 +9,12 @@ import { LockMode } from '../unit-of-work';
 import { AbstractSqlDriver } from '../drivers';
 import { MetadataStorage } from '../metadata';
 import { CriteriaNode } from './CriteriaNode';
+import { EntityManager } from '../EntityManager';
 
 /**
  * SQL query builder
  */
-export class QueryBuilder {
+export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   type: QueryType;
   _fields: string[];
@@ -42,7 +43,8 @@ export class QueryBuilder {
               private readonly driver: AbstractSqlDriver,
               private readonly context?: Transaction,
               readonly alias = `e0`,
-              private readonly connectionType?: 'read' | 'write') { }
+              private readonly connectionType?: 'read' | 'write',
+              private readonly em?: EntityManager) { }
 
   select(fields: string | string[], distinct = false): this {
     this._fields = Utils.asArray(fields);
@@ -232,24 +234,34 @@ export class QueryBuilder {
     return `e${this.aliasCounter++}`;
   }
 
-  async execute(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<any> {
+  async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
     const meta = this.metadata.get(this.entityName, false, false);
 
     if (!mapResults) {
-      return res;
+      return res as unknown as U;
     }
 
     if (method === 'all' && Array.isArray(res)) {
-      return res.map(r => this.driver.mapResult(r, meta));
+      return res.map(r => this.driver.mapResult(r, meta)) as unknown as U;
     }
 
-    return this.driver.mapResult<AnyEntity>(res, meta);
+    return this.driver.mapResult(res, meta) as unknown as U;
   }
 
-  clone(): QueryBuilder {
-    const qb = new QueryBuilder(this.entityName, this.metadata, this.driver, this.context, this.alias, this.connectionType);
+  async getResult(): Promise<T[]> {
+    const res = await this.execute<T[]>('all', true);
+    return res.map(r => this.em!.map<T>(this.entityName, r));
+  }
+
+  async getSingleResult(): Promise<T | null> {
+    const res = await this.getResult();
+    return res[0] || null;
+  }
+
+  clone(): QueryBuilder<T> {
+    const qb = new QueryBuilder<T>(this.entityName, this.metadata, this.driver, this.context, this.alias, this.connectionType, this.em);
     Object.assign(qb, this);
 
     // clone array/object properties

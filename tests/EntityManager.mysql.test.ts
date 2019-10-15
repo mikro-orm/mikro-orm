@@ -10,7 +10,7 @@ import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
 describe('EntityManagerMySql', () => {
 
-  jest.setTimeout(10000);
+  jest.setTimeout(10e3);
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
@@ -618,6 +618,25 @@ describe('EntityManagerMySql', () => {
     expect(res3.meta).toEqual({ category: 'foo', items: 1 });
   });
 
+  test('query builder getResult() and getSingleResult() return entities', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    bible.meta = { category: 'foo', items: 1 };
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    const res1 = await qb1.select('*').getSingleResult();
+    expect(res1).toBeInstanceOf(Book2);
+    expect(res1!.createdAt).toBeDefined();
+    expect((res1 as any).created_at).not.toBeDefined();
+    expect(res1!.meta).toEqual({ category: 'foo', items: 1 });
+    expect(wrap(res1).isInitialized()).toBe(true);
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
+    expect(res2).toBeNull();
+  });
+
   test('stable results of serialization', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
@@ -1076,6 +1095,32 @@ describe('EntityManagerMySql', () => {
 
     await ent.tests.init();
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+  });
+
+  test('collection allows custom where and orderBy', async () => {
+    const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book.tags.add(tag1, tag2, tag3, tag4, tag5);
+    await orm.em.persistAndFlush(book);
+
+    orm.em.clear();
+    const ent1 = await orm.em.findOneOrFail(Book2, book.uuid);
+    await ent1.tags.init();
+    expect(ent1.tags.getItems().map(t => t.name)).toEqual([tag2.name, tag5.name, tag3.name, tag1.name, tag4.name]);
+
+    orm.em.clear();
+    const ent2 = await orm.em.findOneOrFail(Book2, book.uuid);
+    await ent2.tags.init([], {}, { name: QueryOrder.DESC });
+    expect(ent2.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name, tag2.name]);
+
+    orm.em.clear();
+    const ent3 = await orm.em.findOneOrFail(Book2, book.uuid);
+    await ent3.tags.init({ where: { name: { $ne: 'funny' } }, orderBy: { name: QueryOrder.DESC } });
+    expect(ent3.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name]);
   });
 
   test('many to many collection allows custom orderBy', async () => {

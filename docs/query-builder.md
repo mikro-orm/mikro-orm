@@ -56,7 +56,7 @@ You can run native SQL via underlying connection
 
 ```typescript
 const connection = orm.em.getConnection();
-const res = await connection.execute('SELECT 1 as count');
+const res = await connection.execute('select 1 as count');
 console.log(res); // res is array of objects: `[ { count: 1 } ]`
 ```
 
@@ -81,12 +81,14 @@ const res5 = await orm.em.createQueryBuilder(Book).select('*').execute('get', fa
 console.log(res5); // `created_at` will be defined, while `createdAt` will be missing
 ```
 
-To create entities from query builder result, you can use `merge()` method of `EntityManager`:
+To get entity instances from the QueryBuilder result, you can use `getResult()` and `getSingleResult()`
+methods:
 
 ```typescript
-const res6 = await orm.em.createQueryBuilder(Book).select('*').execute();
-const entities = res6.map(data => orm.em.merge(Book, data));
-console.log(entities); // array of Book entities
+const book = await orm.em.createQueryBuilder(Book).select('*').where({ id: 1 }).getSingleResult();
+console.log(book instanceof Book); // true
+const books = await orm.em.createQueryBuilder(Book).select('*').getResult();
+console.log(books[0] instanceof Book); // true
 ```
 
 ## Mapping Raw Results to Entities
@@ -96,8 +98,8 @@ is to use `map()` method of `EntityManager`, that is basically a shortcut for ma
 via `IDatabaseDriver.mapResult()` (which converts field names to property names - e.g. `created_at`
 to `createdAt`) and `merge()` which converts the data to entity instance and makes it managed. 
 
-This method comes handy when you want to use 3rd party query builder like [Knex.js](https://knexjs.org/), 
-where the result is not mapped to entity properties automatically:
+This method comes handy when you want to use 3rd party query builders, where the result is not 
+mapped to entity properties automatically:
 
 ```typescript
 const results = await knex.select('*').from('users').where(knex.raw('id = ?', [id]));
@@ -157,8 +159,8 @@ qb.select(['b.uuid', 'b.*', 't.*'], true)
 
 console.log(qb.getQuery());
 // select distinct `b`.`uuid_pk`, `b`.*, `t`.*, `e1`.`book_tag_id`, `e1`.`book_uuid_pk` from `book_tag` as `t`
-// JOIN `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
-// JOIN `book` as `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
+// join `book_to_book_tag` as `e1` ON `t`.`id` = `e1`.`book_tag_id`
+// join `book` as `b` ON `e1`.`book_uuid_pk` = `b`.`uuid_pk`
 // where `b`.`title` = ?
 // limit ? offset ?
 ```
@@ -223,7 +225,7 @@ const qb = orm.em.createQueryBuilder(Test);
 qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ);
 
 console.log(qb.getQuery()); // for MySQL
-// select `e0`.* from `test` as `e0` where `e0`.`name` = ? LOCK IN SHARE MODE
+// select `e0`.* from `test` as `e0` where `e0`.`name` = ? lock in share mode
 ```
 
 ## QueryBuilder API
@@ -231,23 +233,26 @@ console.log(qb.getQuery()); // for MySQL
 `QueryBuilder` provides fluent interface with these methods:
 
 ```typescript
-QueryBuilder.select(fields: string | string[], distinct?: boolean): QueryBuilder;
-QueryBuilder.insert(data: Record<string, any>): QueryBuilder;
-QueryBuilder.update(data: Record<string, any>): QueryBuilder;
-QueryBuilder.delete(cond: Record<string, any>): QueryBuilder;
-QueryBuilder.count(fields: string | string[], distinct?: boolean): QueryBuilder;
-QueryBuilder.join(field: string, alias?: string): QueryBuilder;
-QueryBuilder.leftJoin(field: string, alias?: string): QueryBuilder;
-QueryBuilder.where(cond: Record<string, any>, operator?: '$and' | '$or'): QueryBuilder;
-QueryBuilder.andWhere(cond: Record<string, any>): QueryBuilder;
-QueryBuilder.orWhere(cond: Record<string, any>): QueryBuilder;
-QueryBuilder.groupBy(fields: string | string[]): QueryBuilder;
-QueryBuilder.having(cond: Record<string, any>): QueryBuilder;
-QueryBuilder.limit(limit: number, offset?: number): QueryBuilder;
-QueryBuilder.offset(offset: number): QueryBuilder;
-QueryBuilder.setLockMode(mode: LockMode): QueryBuilder;
-QueryBuilder.getQuery(): string;
-QueryBuilder.getParams(): any[];
-QueryBuilder.clone(): QueryBuilder;
+qb.select(fields: string | string[], distinct?: boolean): QueryBuilder;
+qb.insert(data: Record<string, any>): QueryBuilder;
+qb.update(data: Record<string, any>): QueryBuilder;
+qb.delete(cond: Record<string, any>): QueryBuilder;
+qb.count(fields: string | string[], distinct?: boolean): QueryBuilder;
+qb.join(field: string, alias?: string): QueryBuilder;
+qb.leftJoin(field: string, alias?: string): QueryBuilder;
+qb.where(cond: Record<string, any>, operator?: '$and' | '$or'): QueryBuilder;
+qb.andWhere(cond: Record<string, any>): QueryBuilder;
+qb.orWhere(cond: Record<string, any>): QueryBuilder;
+qb.groupBy(fields: string | string[]): QueryBuilder;
+qb.having(cond: Record<string, any>): QueryBuilder;
+qb.limit(limit: number, offset?: number): QueryBuilder;
+qb.offset(offset: number): QueryBuilder;
+qb.execute<T>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): T;
+qb.getResult<T>(): T[];
+qb.getSingleResult<T>(): T;
+qb.setLockMode(mode: LockMode): QueryBuilder;
+qb.getQuery(): string;
+qb.getParams(): any[];
+qb.clone(): QueryBuilder;
 ```
 

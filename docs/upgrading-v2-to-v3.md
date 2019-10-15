@@ -36,9 +36,24 @@ will enhance property type when needed with those methods (`await wrap(book.auth
 To keep all methods available on the entity, you can still use interface merging with 
 `WrappedEntity<T, PK>` that both extends `AnyEntity<T, PK>` and defines all those methods.
 
+You will need to mark the entity by implementing one of `*Entity` interfaces:
 
-!!TODO add examples of entity definition in given section and add links here
+- `IdEntity<T>` for numeric/string PK on `id` property (`id: number`)
+- `UuidEntity<T>` for string PK on `uuid` property (`uuid: string`)
+- `MongoEntity<T>` for mongo, where `id: string` and `_id: ObjectId` are required
+- `AnyEntity<T, PK>` for other possible properties (fill the PK property name to `PK` 
+parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
 
+To keep all public methods that were part of `IEntity` interface in v2, you can use 
+`WrappedEntity<T, PK>` via interface merging:
+
+```typescript
+@Entity()
+export class Book { ... }
+export interface Book extends WrappedEntity<Book, 'id'> { }
+```
+
+For more examples, take a look at [defining entities section](defining-entities.md).
 
 ## Integrated Knex.js as query builder and runner
 

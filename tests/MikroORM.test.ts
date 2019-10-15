@@ -5,6 +5,8 @@ import { FooBaz2 } from './entities-sql';
 
 describe('MikroORM', () => {
 
+  jest.setTimeout(10e3);
+
   test('should throw when not enough config provided', async () => {
     expect(() => new MikroORM({ entitiesDirs: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` option');
     expect(() => new MikroORM({ entities: [], entitiesDirs: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` or `entitiesDirs` option');
