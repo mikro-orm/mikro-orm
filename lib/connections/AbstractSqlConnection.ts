@@ -70,11 +70,11 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected getKnexOptions(type: string): Config {
-    return {
+    return Utils.merge({
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),
-    };
+    }, this.config.get('driverOptions'));
   }
 
   protected async executeKnex(qb: QueryBuilder | Raw, method: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]> {

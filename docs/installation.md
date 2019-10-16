@@ -65,6 +65,9 @@ const orm = await MikroORM.init({
 });
 ```
 
+> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
+> The object will be deeply merged, overriding all internally used options.
+
 ## Entity Discovery in TypeScript
 
 Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities 

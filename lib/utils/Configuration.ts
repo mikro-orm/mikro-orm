@@ -33,6 +33,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     tsNode: false,
     debug: false,
     verbose: false,
+    driverOptions: {},
     cache: {
       enabled: true,
       pretty: false,
@@ -204,6 +205,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): D };
+  driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };

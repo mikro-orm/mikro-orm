@@ -41,7 +41,7 @@ export class MongoConnection extends Connection {
       ret.auth = { user, password };
     }
 
-    return ret;
+    return Utils.merge(ret, this.config.get('driverOptions'));
   }
 
   getClientUrl(): string {
