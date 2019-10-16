@@ -157,19 +157,23 @@ export class EntityGenerator {
     if (!(cascade.length === 2 && cascade.includes('Cascade.PERSIST') && cascade.includes('Cascade.MERGE'))) {
       options.cascade = `[${cascade.sort().join(', ')}]`;
     }
+
+    if (column.primary) {
+      options.primary = true;
+    }
   }
 
   private getDecoratorType(column: Column): string {
-    if (column.primary) {
-      return '@PrimaryKey';
-    }
-
     if (column.fk && column.unique) {
       return '@OneToOne';
     }
 
     if (column.fk) {
       return '@ManyToOne';
+    }
+
+    if (column.primary) {
+      return '@PrimaryKey';
     }
 
     return '@Property';

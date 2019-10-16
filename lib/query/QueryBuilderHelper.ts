@@ -350,10 +350,10 @@ export class QueryBuilderHelper {
   }
 
   finalize(type: QueryType, qb: KnexQueryBuilder, meta?: EntityMetadata): void {
-    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement();
+    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
 
-    if (useReturningStatement && meta) {
-      const returningProps = Object.values(meta.properties).filter(prop => prop.primary || prop.default);
+    if (useReturningStatement) {
+      const returningProps = Object.values(meta!.properties).filter(prop => prop.primary || prop.default);
       qb.returning(returningProps.map(prop => prop.fieldName));
     }
   }

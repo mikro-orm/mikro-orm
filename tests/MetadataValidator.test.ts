@@ -35,8 +35,6 @@ describe('MetadataValidator', () => {
 
     // many to many inversedBy
     meta.Book = { name: 'Book', properties: {} };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.books needs to have one of 'owner', 'mappedBy' or 'inversedBy' attributes`);
-
     meta.Author.properties.books = { name: 'books', reference: ReferenceType.MANY_TO_MANY, type: 'Book', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.books has unknown 'inversedBy' reference: Book.bar`);
 
@@ -67,8 +65,6 @@ describe('MetadataValidator', () => {
 
     // one to one inversedBy
     meta.Bar = { name: 'Bar', properties: {} };
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo')).toThrowError(`Foo.bar needs to have one of 'owner', 'mappedBy' or 'inversedBy' attributes`);
-
     meta.Foo.properties.bar = { name: 'bar', reference: ReferenceType.ONE_TO_ONE, type: 'Bar', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo')).toThrowError(`Foo.bar has unknown 'inversedBy' reference: Bar.bar`);
 

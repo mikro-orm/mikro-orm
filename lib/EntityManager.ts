@@ -79,7 +79,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     await this.entityLoader.populate(entityName, ret, options.populate || [], where, options.orderBy || {});
 
-    return ret;
+    return Utils.unique(ret);
   }
 
   async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<[T[], number]>;

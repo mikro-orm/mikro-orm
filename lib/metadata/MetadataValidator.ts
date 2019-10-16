@@ -60,11 +60,6 @@ export class MetadataValidator {
   }
 
   private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
-    // 1:1 reference either is owner or has `mappedBy`
-    if (!prop.owner && !prop.mappedBy && !prop.inversedBy) {
-      throw ValidationError.fromMissingOwnership(meta, prop);
-    }
-
     if (prop.inversedBy) {
       const inverse = metadata.get(prop.type).properties[prop.inversedBy];
       this.validateOwningSide(meta, prop, inverse);

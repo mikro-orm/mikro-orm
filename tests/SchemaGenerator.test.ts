@@ -1,7 +1,9 @@
-import { initORMMongo, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
 import { ReferenceType } from '../lib/entity';
-import { Utils } from '../lib/utils';
+import { Configuration, Utils } from '../lib/utils';
+import { MikroORM } from '../lib';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 describe('SchemaGenerator', () => {
 
@@ -256,10 +258,8 @@ describe('SchemaGenerator', () => {
   });
 
   test('not supported [mongodb]', async () => {
-    const orm = await initORMMongo();
-    expect(() => orm.getSchemaGenerator()).toThrowError('Not supported by given driver');
-
-    await orm.close(true);
+    const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
+    expect(() => mongoOrm.getSchemaGenerator()).toThrowError('Not supported by given driver');
   });
 
 });

@@ -15,4 +15,5 @@ export interface OneToOneOptions<T extends AnyEntity<T>> extends Partial<Omit<On
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
+  primary?: boolean;
 }

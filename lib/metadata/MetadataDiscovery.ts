@@ -175,14 +175,21 @@ export class MetadataDiscovery {
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
+    Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
+
+    if (!prop.owner && !prop.inversedBy && !prop.mappedBy) {
+      prop.owner = true;
+    }
 
     if (!prop.pivotTable && prop.owner) {
       prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
     }
 
-    if (prop.owner && prop.inversedBy) {
-      const prop2 = meta2.properties[prop.inversedBy];
-      prop2.pivotTable = prop.pivotTable;
+    if (prop.mappedBy) {
+      const prop2 = meta2.properties[prop.mappedBy];
+      prop.pivotTable = prop2.pivotTable;
+      prop.fixedOrder = prop2.fixedOrder;
+      prop.fixedOrderColumn = prop2.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     }
 
     if (!prop.referenceColumnName) {
@@ -214,6 +221,10 @@ export class MetadataDiscovery {
   }
 
   private processEntity(meta: EntityMetadata): EntityMetadata[] {
+    const pks = Object.values(meta.properties).filter(prop => prop.primary);
+    meta.primaryKeys = pks.map(prop => prop.name);
+    meta.compositePK = pks.length > 1;
+
     this.validator.validateEntityDefinition(this.metadata, meta.name);
 
     Object.values(meta.properties).forEach(prop => {
@@ -256,17 +267,31 @@ export class MetadataDiscovery {
       this.initColumnType(primaryProp);
       this.initUnsigned(primaryProp);
 
-      return this.metadata.set(prop.pivotTable, {
+      const data = {
         name: prop.pivotTable,
         collection: prop.pivotTable,
         pivotTable: true,
-        primaryKey: pk,
-        properties: {
-          [pk]: primaryProp,
-          [meta.name]: this.definePivotProperty(prop, meta.name, prop.type),
-          [prop.type]: this.definePivotProperty(prop, prop.type, meta.name),
-        },
-      } as EntityMetadata);
+        properties: {} as Record<string, EntityProperty>,
+      } as EntityMetadata;
+
+      if (prop.fixedOrder) {
+        const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
+        const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
+        this.initFieldName(primaryProp);
+        this.initColumnType(primaryProp);
+        this.initUnsigned(primaryProp);
+        data.properties[pk] = primaryProp;
+        prop.fixedOrderColumn = pk;
+        data.primaryKey = pk;
+      } else {
+        data.primaryKeys = [meta.name, prop.type];
+        data.compositePK = true;
+      }
+
+      data.properties[meta.name] = this.definePivotProperty(prop, meta.name, prop.type);
+      data.properties[prop.type] = this.definePivotProperty(prop, prop.type, meta.name);
+
+      return this.metadata.set(prop.pivotTable, data);
     }
   }
 

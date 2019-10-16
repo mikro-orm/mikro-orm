@@ -234,6 +234,7 @@ console.log(qb.getQuery()); // for MySQL
 
 ```typescript
 qb.select(fields: string | string[], distinct?: boolean): QueryBuilder;
+qb.addSelect(fields: string | string[]): QueryBuilder;
 qb.insert(data: Record<string, any>): QueryBuilder;
 qb.update(data: Record<string, any>): QueryBuilder;
 qb.delete(cond: Record<string, any>): QueryBuilder;

@@ -71,11 +71,17 @@ In postgres driver, it used to be required to pass parameters as indexed dollar 
 ($1, $2, ...), while now knex requires the placeholder to be simple question mark (`?`), 
 like in other dialects, so this is now unified with other drivers.
 
-## SchemaGenerator.generate() is now async
+## ManyToMany now uses composite primary key
 
-If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more 
-in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at 
-[installation section](installation.md).
+Previously it was required to have autoincrement primary key for m:n pivot tables. Now this 
+has changed. By default, only foreign columns are required and composite key over both of them
+is used as primary key.
+
+To preserve stable order of collections, you can force previous behaviour by defining the 
+m:n property as `fixedOrder: true`, which will start ordering by `id` column. You can also 
+override the order column name via `fixedOrderColumn: 'order'`. 
+
+You can also specify default ordering via `orderBy: { ... }` attribute.
 
 ## Strict FilterQuery and smart query conditions
 
@@ -90,6 +96,16 @@ option. `true`/`false` will enable/disable all namespaces.
 
 Available logger namespaces: `'query' | 'query-params' | 'discovery' | 'info'`.
 
+## Removed deprecated fk option from 1:m and m:1 decorators 
+
+Use `mappedBy`/`inversedBy` instead.
+
+## SchemaGenerator.generate() is now async
+
+If you used `SchemaGenerator`, now there is CLI tool you can use instead. Learn more 
+in [SchemaGenerator docs](schema-generator.md). To setup CLI, take a look at 
+[installation section](installation.md).
+
 ## New method on NamingStrategy interface
 
 `getClassName()` is used to find entity class name based on its file name. Now users can 
@@ -97,7 +113,3 @@ override the default implementation to accommodate their specific needs.
 
 If you used custom naming strategy, you will either need to implement this method yourself, 
 or extend `AbstractNamingStrategy`.
-
-## Removed deprecated fk option from 1:m and m:1 decorators 
-
-Use `mappedBy`/`inversedBy` instead.

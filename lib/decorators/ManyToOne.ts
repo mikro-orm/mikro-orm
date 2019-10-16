@@ -28,4 +28,5 @@ export interface ManyToOneOptions<T extends AnyEntity<T>> extends ReferenceOptio
   entity?: string | (() => EntityName<T>);
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
+  primary?: boolean;
 }

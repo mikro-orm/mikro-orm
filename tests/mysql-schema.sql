@@ -9,6 +9,7 @@ drop table if exists `test2`;
 drop table if exists `foo_bar2`;
 drop table if exists `foo_baz2`;
 drop table if exists `book2_to_book_tag2`;
+drop table if exists `book_to_tag_unordered`;
 drop table if exists `publisher2_to_test2`;
 
 create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null, `terms_accepted` tinyint(1) not null default 0, `identities` json null, `born` datetime null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8 engine = InnoDB;
@@ -39,11 +40,16 @@ alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 
 create table `foo_baz2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
 
-create table `book2_to_book_tag2` (`id` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table `book2_to_book_tag2` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book2_uuid_pk_index`(`book2_uuid_pk`);
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book_tag2_id_index`(`book_tag2_id`);
 
-create table `publisher2_to_test2` (`id` int unsigned not null auto_increment primary key, `publisher2_id` int(11) unsigned not null, `test2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table `book_to_tag_unordered` (`book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table `book_to_tag_unordered` add index `book_to_tag_unordered_book2_uuid_pk_index`(`book2_uuid_pk`);
+alter table `book_to_tag_unordered` add index `book_to_tag_unordered_book_tag2_id_index`(`book_tag2_id`);
+alter table `book_to_tag_unordered` add primary key `book_to_tag_unordered_pkey`(`book2_uuid_pk`, `book_tag2_id`);
+
+create table `publisher2_to_test2` (`id` int unsigned not null auto_increment  primary key, `publisher2_id` int(11) unsigned not null, `test2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `publisher2_to_test2` add index `publisher2_to_test2_publisher2_id_index`(`publisher2_id`);
 alter table `publisher2_to_test2` add index `publisher2_to_test2_test2_id_index`(`test2_id`);
 
@@ -61,6 +67,9 @@ alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key 
 
 alter table `book2_to_book_tag2` add constraint `book2_to_book_tag2_book2_uuid_pk_foreign` foreign key (`book2_uuid_pk`) references `book2` (`uuid_pk`) on update cascade on delete cascade;
 alter table `book2_to_book_tag2` add constraint `book2_to_book_tag2_book_tag2_id_foreign` foreign key (`book_tag2_id`) references `book_tag2` (`id`) on update cascade on delete cascade;
+
+alter table `book_to_tag_unordered` add constraint `book_to_tag_unordered_book2_uuid_pk_foreign` foreign key (`book2_uuid_pk`) references `book2` (`uuid_pk`) on update cascade on delete cascade;
+alter table `book_to_tag_unordered` add constraint `book_to_tag_unordered_book_tag2_id_foreign` foreign key (`book_tag2_id`) references `book_tag2` (`id`) on update cascade on delete cascade;
 
 alter table `publisher2_to_test2` add constraint `publisher2_to_test2_publisher2_id_foreign` foreign key (`publisher2_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 alter table `publisher2_to_test2` add constraint `publisher2_to_test2_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;

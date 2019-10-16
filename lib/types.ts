@@ -122,6 +122,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inversedBy: string;
   mappedBy: string;
   orderBy?: { [field: string]: QueryOrder };
+  fixedOrder?: boolean;
+  fixedOrderColumn?: string;
   pivotTable: string;
   joinColumn: string;
   inverseJoinColumn: string;
@@ -141,6 +143,8 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   collection: string;
   path: string;
   primaryKey: keyof T & string;
+  primaryKeys: (keyof T & string)[];
+  compositePK: boolean;
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };

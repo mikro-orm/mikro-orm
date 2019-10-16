@@ -116,7 +116,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
       }
 
       if (this.prop!.reference === ReferenceType.ONE_TO_ONE) {
-        qb._fields!.push(field);
+        qb.addSelect(field);
       }
     }
 

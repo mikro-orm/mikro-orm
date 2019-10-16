@@ -12,6 +12,11 @@ export function ManyToMany<T extends AnyEntity<T>>(
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
+    options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
+
+    if (!options.owner && !options.inversedBy && !options.mappedBy) {
+      options.owner = true;
+    }
 
     if (options.owner) {
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
@@ -22,10 +27,6 @@ export function ManyToMany<T extends AnyEntity<T>>(
 
     if (!options.entity) {
       throw new Error(`'@ManyToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
-    }
-
-    if (!options.owner && !options.inversedBy && !options.mappedBy) {
-      options.owner = true;
     }
 
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY, owner: !!options.inversedBy, cascade: [Cascade.PERSIST, Cascade.MERGE] } as EntityProperty<T>;
@@ -39,6 +40,8 @@ export interface ManyToManyOptions<T extends AnyEntity<T>> extends ReferenceOpti
   inversedBy?: (string & keyof T) | ((e: T) => any);
   mappedBy?: (string & keyof T) | ((e: T) => any);
   orderBy?: { [field: string]: QueryOrder };
+  fixedOrder?: boolean;
+  fixedOrderColumn?: string;
   pivotTable?: string;
   joinColumn?: string;
   inverseJoinColumn?: string;

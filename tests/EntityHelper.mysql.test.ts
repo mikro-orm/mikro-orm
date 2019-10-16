@@ -40,9 +40,7 @@ describe('EntityHelperMySql', () => {
     const tag1 = new BookTag2('tag 1');
     const tag2 = new BookTag2('tag 2');
     const tag3 = new BookTag2('tag 3');
-    book.tags.add(tag1);
-    book.tags.add(tag2);
-    book.tags.add(tag3);
+    book.tags.add(tag1, tag2, tag3);
     await orm.em.persistAndFlush(book);
     wrap(book).assign({ tags: [other.id] });
     expect(book.tags.getIdentifiers()).toMatchObject([other.id]);

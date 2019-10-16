@@ -812,7 +812,7 @@ describe('EntityManagerMySql', () => {
     expect(a2.books.getItems().map(b => b.title)).toEqual(['b5', 'b4', 'b3', 'b2', 'b1']);
     orm.em.clear();
 
-    const a3 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } as any } }, ['books.tags'], { books: { tags: { name: QueryOrder.DESC }, title: QueryOrder.ASC } });
+    const a3 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, ['books.tags'], { books: { tags: { name: QueryOrder.DESC }, title: QueryOrder.ASC } });
     expect(a3.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
   });
 
@@ -1110,7 +1110,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
     const ent1 = await orm.em.findOneOrFail(Book2, book.uuid);
     await ent1.tags.init();
-    expect(ent1.tags.getItems().map(t => t.name)).toEqual([tag2.name, tag5.name, tag3.name, tag1.name, tag4.name]);
+    expect(ent1.tags.getItems().map(t => t.name)).toEqual([tag1.name, tag2.name, tag3.name, tag4.name, tag5.name]);
 
     orm.em.clear();
     const ent2 = await orm.em.findOneOrFail(Book2, book.uuid);
@@ -1142,7 +1142,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const books = await orm.em.find(Book2, { tags: { name: { $ne: 'funny' } } as any }, ['tags'], { title: QueryOrder.DESC });
+    const books = await orm.em.find(Book2, { tags: { name: { $ne: 'funny' } } }, ['tags'], { title: QueryOrder.DESC, tags: { name: QueryOrder.ASC } });
     await expect(books.length).toBe(3);
     await expect(books[0].title).toBe('My Life on The Wall, part 3');
     await expect(books[0].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
@@ -1150,6 +1150,58 @@ describe('EntityManagerMySql', () => {
     await expect(books[1].tags.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
     await expect(books[2].title).toBe('My Life on The Wall, part 1');
     await expect(books[2].tags.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
+  });
+
+  test('many to many with composite pk', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    const tag6 = new BookTag2('zupa');
+    const tag7 = new BookTag2('awkward');
+    book1.tagsUnordered.add(tag1, tag3, tag6, tag7);
+    book2.tagsUnordered.add(tag1, tag2, tag5, tag6);
+    book3.tagsUnordered.add(tag2, tag4, tag5, tag7);
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush(author);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    orm.em.clear();
+    const books = await orm.em.find(Book2, { tagsUnordered: { name: { $ne: 'funny' } } }, ['tagsUnordered'], { title: QueryOrder.DESC });
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e3`.`id` as `test_id` from `book2` as `e0` ' +
+      'left join `book_to_tag_unordered` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
+      'where `e1`.`name` != ? ' +
+      'group by `e0`.`uuid_pk`, `e3`.`id` ' +
+      'order by `e0`.`title` desc');
+    await expect(books.length).toBe(3);
+    await expect(books[0].title).toBe('My Life on The Wall, part 3');
+    await expect(books[0].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
+    await expect(books[1].title).toBe('My Life on The Wall, part 2');
+    await expect(books[1].tagsUnordered.getItems().map(t => t.name)).toEqual(['sexy', 'silly', 'zupa']);
+    await expect(books[2].title).toBe('My Life on The Wall, part 1');
+    await expect(books[2].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sick', 'silly', 'zupa']);
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const tags = await orm.em.find(BookTag2, { booksUnordered: { title: { $ne: 'My Life on The Wall, part 3' } } }, ['booksUnordered'], { name: QueryOrder.ASC });
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
+      'left join `book_to_tag_unordered` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
+      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) ' +
+      'group by `e0`.`uuid_pk`, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e2`.`id`');
+    await expect(tags.length).toBe(6);
+    await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
+    await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
   });
 
   test('property onUpdate hook (updatedAt field)', async () => {

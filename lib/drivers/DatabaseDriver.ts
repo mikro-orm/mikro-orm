@@ -1,5 +1,5 @@
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary, Dictionary } from '../types';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
@@ -34,7 +34,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Record<string, T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     if (!this.platform.usesPivotTable()) {
       throw new Error(`${this.constructor.name} does not use pivot tables`);
     }
@@ -43,10 +43,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const fk2 = prop.inverseJoinColumn;
     const pivotProp2 = this.getPivotInverseProperty(prop);
     where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
-    orderBy = orderBy || prop.orderBy || { [`${(prop.pivotTable)}.${this.metadata.get(prop.pivotTable).primaryKey}`]: QueryOrder.ASC };
+    orderBy = this.getPivotOrderBy(prop, orderBy);
     const items = owners.length ? await this.find(prop.type, where, [prop.pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
 
-    const map: Record<string, T[]> = {};
+    const map: Dictionary<T[]> = {};
     owners.forEach(owner => map['' + owner] = []);
     items.forEach((item: any) => {
       map[item[fk1]].push(item);
@@ -110,6 +110,22 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   getDependencies(): string[] {
     return this.dependencies;
+  }
+
+  protected getPivotOrderBy(prop: EntityProperty, orderBy?: QueryOrderMap): QueryOrderMap {
+    if (orderBy) {
+      return orderBy;
+    }
+
+    if (prop.orderBy) {
+      return prop.orderBy;
+    }
+
+    if (prop.fixedOrder) {
+      return { [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC };
+    }
+
+    return {};
   }
 
   protected getPrimaryKeyField(entityName: string): string {
