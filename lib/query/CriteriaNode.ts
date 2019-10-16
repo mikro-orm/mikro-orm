@@ -186,10 +186,10 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const operator = QueryBuilderHelper.isOperator(field);
       const customExpression = QueryBuilderHelper.isCustomExpression(field);
 
-      if (childNode.shouldRename(payload)) {
-        o[childNode.renameFieldToPK(qb)] = payload;
-      } else if (childNode.shouldInline(payload)) {
+      if (childNode.shouldInline(payload)) {
         Object.assign(o, payload);
+      } else if (childNode.shouldRename(payload)) {
+        o[childNode.renameFieldToPK(qb)] = payload;
       } else if (operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         o[field] = payload;
       } else {

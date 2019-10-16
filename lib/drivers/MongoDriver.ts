@@ -13,7 +13,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   protected readonly connection = new MongoConnection(this.config);
   protected readonly platform = new MongoPlatform();
 
-  protected constructor(config: Configuration) {
+  constructor(config: Configuration) {
     super(config, ['mongo']);
   }
 

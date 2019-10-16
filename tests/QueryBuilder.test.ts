@@ -1,8 +1,9 @@
 import { inspect } from 'util';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMongo, initORMMySql } from './bootstrap';
+import { initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { CriteriaNode } from '../lib/query/CriteriaNode';
 
 describe('QueryBuilder', () => {
@@ -714,6 +715,14 @@ describe('QueryBuilder', () => {
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'where `e3`.`name` = ?');
     expect(qb10.getParams()).toEqual(['Jon Snow']);
+
+    // 1:1 from inverse
+    const qb11 = orm.em.createQueryBuilder(FooBaz2);
+    qb11.select('*').where({ bar: { name: 'Foo Bar' } });
+    expect(qb11.getQuery()).toEqual('select `e0`.* from `foo_baz2` as `e0` ' +
+      'left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` ' +
+      'where `e1`.`name` = ?');
+    expect(qb11.getParams()).toEqual(['Foo Bar']);
   });
 
   test('select with deep where condition with self-reference', async () => {
@@ -1026,10 +1035,9 @@ describe('QueryBuilder', () => {
   });
 
   test('not supported [mongodb]', async () => {
-    const orm = await initORMMongo();
-    expect(() => orm.em.createQueryBuilder(Author2, 'a')).toThrowError('Not supported by given driver');
-
-    await orm.close(true);
+    const em = orm.em.fork();
+    Object.assign(em, { driver: new MongoDriver(orm.em.config) });
+    expect(() => em.createQueryBuilder(Author2, 'a')).toThrowError('Not supported by given driver');
   });
 
   afterAll(async () => orm.close(true));
