@@ -1,10 +1,10 @@
 import { Collection, Entity, OneToMany, Property, IdEntity, PrimaryKey } from '../../lib';
-import { BookWp } from './Book';
+import { BookWpI } from '.';
 
-@Entity({ collection: 'author2' })
-export class AuthorWp implements IdEntity<AuthorWp> {
+@Entity()
+export class AuthorWpI implements IdEntity<AuthorWpI> {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey()
   id!: number;
 
   @Property({ type: 'string' })
@@ -16,7 +16,7 @@ export class AuthorWp implements IdEntity<AuthorWp> {
   @Property({ type: 'number' })
   age?: number;
 
-  @OneToMany(() => BookWp, book => book.author)
-  books = new Collection<BookWp>(this);
+  @OneToMany({ entity: () => BookWpI, mappedBy: book => book.author })
+  books = new Collection<BookWpI>(this);
 
 }

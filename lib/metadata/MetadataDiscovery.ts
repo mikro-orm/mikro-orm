@@ -29,7 +29,7 @@ export class MetadataDiscovery {
     this.discovered.length = 0;
 
     if (process.env.WEBPACK && this.config.get('entities').length === 0) {
-      throw new Error("Webpack bundles only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.");
+      throw new Error(`Webpack bundling only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.`);
     }
 
     if (this.config.get('entities').length > 0) {
