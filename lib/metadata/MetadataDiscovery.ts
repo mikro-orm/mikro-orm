@@ -187,9 +187,10 @@ export class MetadataDiscovery {
 
     if (prop.mappedBy) {
       const prop2 = meta2.properties[prop.mappedBy];
+      this.initManyToManyFields(meta2, prop2);
       prop.pivotTable = prop2.pivotTable;
       prop.fixedOrder = prop2.fixedOrder;
-      prop.fixedOrderColumn = prop2.fixedOrderColumn || this.namingStrategy.referenceColumnName();
+      prop.fixedOrderColumn = prop2.fixedOrderColumn;
     }
 
     if (!prop.referenceColumnName) {

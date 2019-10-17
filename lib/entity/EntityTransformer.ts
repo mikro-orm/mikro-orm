@@ -7,7 +7,7 @@ import { wrap } from './EntityHelper';
 
 export class EntityTransformer {
 
-  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
+  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited = new WeakMap()): EntityData<T> {
     const wrapped = wrap(entity);
     const platform = wrapped.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(wrapped.__meta.primaryKey);
@@ -15,16 +15,18 @@ export class EntityTransformer {
     const pkProp = meta.properties[meta.primaryKey];
     const ret = (wrapped.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(wrapped.__primaryKey as IPrimaryKey) } : {}) as EntityData<T>;
 
-    if (!wrapped.isInitialized() && wrapped.__primaryKey) {
+    if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.has(entity)) {
       return ret;
     }
+
+    visited.set(entity, true);
 
     // normal properties
     Object.keys(entity)
       .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
-      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields)])
+      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields, visited)])
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[prop! as keyof T] = value as T[keyof T]);
+      .forEach(([prop, value]) => ret[prop as keyof T] = value as T[keyof T]);
 
     // decorated getters
     Object.values<EntityProperty<T>>(meta.properties)
@@ -44,24 +46,24 @@ export class EntityTransformer {
     return hidden && prop !== meta.primaryKey && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: WeakMap<T, boolean>): T[keyof T] | undefined {
     if (entity[prop] as unknown instanceof ArrayCollection) {
       return EntityTransformer.processCollection(prop, entity);
     }
 
     if (Utils.isEntity(entity[prop]) || entity[prop] as unknown instanceof Reference) {
-      return EntityTransformer.processEntity(prop, entity, ignoreFields);
+      return EntityTransformer.processEntity(prop, entity, ignoreFields, visited);
     }
 
     return entity[prop];
   }
 
-  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[]): T[keyof T] | undefined {
+  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: WeakMap<T, boolean>): T[keyof T] | undefined {
     const child = wrap(entity[prop] as unknown as T | Reference<T>);
     const platform = child.__em.getDriver().getPlatform();
 
     if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
-      const args = [...child.__meta.toJsonParams.map(() => undefined), ignoreFields];
+      const args = [...child.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];
       return child.toJSON(...args) as T[keyof T];
     }
 

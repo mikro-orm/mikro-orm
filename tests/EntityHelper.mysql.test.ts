@@ -1,6 +1,6 @@
 import { MikroORM, wrap } from '../lib';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2 } from './entities-sql';
 import { MetadataDiscovery } from '../lib/metadata';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
@@ -65,6 +65,30 @@ describe('EntityHelperMySql', () => {
     jon.identities = ['1', '2'];
     wrap(jon).assign({ identities: ['3', '4'] }, { mergeObjects: true });
     expect(jon.identities).toEqual(['3', '4']);
+  });
+
+  test(`toObject handles recursion in 1:1`, async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const repo = orm.em.getRepository(FooBar2);
+    const a = await repo.findOneOrFail(bar.id, ['baz.bar']);
+    expect(wrap(a.baz).isInitialized()).toBe(true);
+    expect(wrap(a.baz.bar).isInitialized()).toBe(true);
+    expect(wrap(a).toJSON()).toEqual({
+      baz: {
+        bar: { id: 1 }, // circular reference is simplified
+        id: 1,
+        name: 'fz',
+        version: a.baz.version,
+      },
+      fooBar: null,
+      id: 1,
+      name: 'fb',
+      version: a.version,
+    });
   });
 
   afterAll(async () => orm.close(true));
