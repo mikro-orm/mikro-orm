@@ -90,7 +90,7 @@ import { BookTag2 } from './BookTag2';
 export class Book2ToBookTag2 {
 
     @PrimaryKey()
-    id: number;
+    order: number;
 
     @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
     book2: Book2;
@@ -110,6 +110,21 @@ export class BookTag2 {
 
     @Property({ length: 50 })
     name: string;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+@Entity()
+export class BookToTagUnordered {
+
+    @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
+    book2: Book2;
+
+    @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
+    bookTag2: BookTag2;
 
 }
 ",
@@ -306,7 +321,7 @@ import { BookTag2 } from './BookTag2';
 export class Book2ToBookTag2 {
 
     @PrimaryKey()
-    id: number;
+    order: number;
 
     @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
     book2: Book2;
@@ -326,6 +341,21 @@ export class BookTag2 {
 
     @Property({ length: 50 })
     name: string;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Book2 } from './Book2';
+import { BookTag2 } from './BookTag2';
+
+@Entity()
+export class BookToTagUnordered {
+
+    @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
+    book2: Book2;
+
+    @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
+    bookTag2: BookTag2;
 
 }
 ",

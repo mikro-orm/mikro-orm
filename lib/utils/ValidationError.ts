@@ -57,10 +57,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Both ${meta.name}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
-  static fromMissingOwnership(meta: EntityMetadata, prop: EntityProperty): ValidationError {
-    return ValidationError.fromMessage(meta, prop, `needs to have one of 'owner', 'mappedBy' or 'inversedBy' attributes`);
-  }
-
   static fromMergeWithoutPK(meta: EntityMetadata): void {
     throw new ValidationError(`You cannot merge entity '${meta.name}' without identifier!`);
   }

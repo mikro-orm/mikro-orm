@@ -38,8 +38,11 @@ export class Book2 implements UuidEntity<Book2> {
   @OneToOne({ cascade: [], mappedBy: 'book' })
   test?: Test2;
 
-  @ManyToMany({ entity: () => BookTag2, inversedBy: 'books', cascade: [], orderBy: { name: QueryOrder.ASC } })
+  @ManyToMany({ entity: () => BookTag2, cascade: [], fixedOrderColumn: 'order' })
   tags = new Collection<BookTag2>(this);
+
+  @ManyToMany(() => BookTag2, undefined, { pivotTable: 'book_to_tag_unordered', orderBy: { name: QueryOrder.ASC } })
+  tagsUnordered = new Collection<BookTag2>(this);
 
   constructor(title: string, author: Author2) {
     this.title = title;

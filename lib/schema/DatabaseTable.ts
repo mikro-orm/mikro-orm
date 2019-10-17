@@ -21,7 +21,7 @@ export class DatabaseTable {
     this.columns = cols.reduce((o, v) => {
       const index = indexes[v.name] || [];
       v.primary = pks.includes(v.name);
-      v.unique = index.some(i => i.unique);
+      v.unique = index.some(i => i.unique && !i.primary);
       v.fk = fks[v.name];
       v.indexes = index.filter(i => !i.primary);
       o[v.name] = v;

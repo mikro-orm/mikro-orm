@@ -1,6 +1,8 @@
 import { pathExists, remove } from 'fs-extra';
-import { initORMMongo, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { EntityGenerator } from '../lib/schema/EntityGenerator';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { Configuration, MikroORM } from '../lib';
 
 describe('EntityGenerator', () => {
 
@@ -41,10 +43,8 @@ describe('EntityGenerator', () => {
   });
 
   test('not supported [mongodb]', async () => {
-    const orm = await initORMMongo();
-    expect(() => orm.getEntityGenerator()).toThrowError('Not supported by given driver');
-
-    await orm.close(true);
+    const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
+    expect(() => mongoOrm.getEntityGenerator()).toThrowError('Not supported by given driver');
   });
 
 });

@@ -41,6 +41,7 @@ const schema = {
     tags: {
       reference: 'm:n',
       owner: true,
+      fixedOrder: true,
       inversedBy: 'books',
       type: 'BookTag3',
     },

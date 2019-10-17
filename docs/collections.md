@@ -127,6 +127,20 @@ books = new Collection<Book>(this);
 books = new Collection<Book>(this);
 ```
 
+### Forcing fixed order of collection items
+
+> Since v3 many to many collections does not require having auto increment primary key, that 
+> was used to ensure fixed order of collection items.
+
+To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will 
+start ordering by `id` column. Schema generator will convert the pivot table to have auto increment
+primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`. 
+
+You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when
+you fully populate the collection including its items, as it orders by the referenced entity 
+properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, 
+`fixedOrder` is used to maintain the insert order of items instead of ordering by some property. 
+
 ## Propagation of Collection's add() and remove() operations
 
 When you use one of `Collection.add()` method, the item is added to given collection, 

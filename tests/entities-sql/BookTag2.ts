@@ -8,8 +8,11 @@ export class BookTag2 extends BaseEntity2 {
   @Property({ length: 50 })
   name: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'tags' })
+  @ManyToMany(() => Book2, book => book.tags)
   books!: Collection<Book2>;
+
+  @ManyToMany(() => Book2, book => book.tagsUnordered)
+  booksUnordered!: Collection<Book2>;
 
   constructor(name: string) {
     super();

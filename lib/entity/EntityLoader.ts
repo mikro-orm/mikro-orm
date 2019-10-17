@@ -130,7 +130,6 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    orderBy = orderBy || prop.orderBy;
     const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e).__primaryKey) as Primary<T>[], where, orderBy, this.em.getTransactionContext());
     const children: AnyEntity[] = [];
 

@@ -69,7 +69,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
 export async function initORMPostgreSql() {
   const orm = await MikroORM.init<PostgreSqlDriver>({
-    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Label2],
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Label2, BaseEntity2, BaseEntity22],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
@@ -124,6 +124,7 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
@@ -137,6 +138,7 @@ export async function wipeDatabasePostgreSql(em: EntityManager) {
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
   await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();

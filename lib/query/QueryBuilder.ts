@@ -56,6 +56,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.SELECT);
   }
 
+  addSelect(fields: string | string[]): this {
+    return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
+  }
+
   insert(data: any): this {
     return this.init(QueryType.INSERT, data);
   }

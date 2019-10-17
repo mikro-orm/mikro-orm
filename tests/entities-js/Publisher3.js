@@ -32,7 +32,7 @@ const schema = {
     },
     tests: {
       reference: 'm:n',
-      owner: true,
+      fixedOrder: true,
       type: 'Test3',
     },
     type: {
