@@ -147,7 +147,7 @@ export class MongoBook implements MongoEntity<MongoBook> {
   @ManyToOne()
   author: Author;
 
-  @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
+  @ManyToMany()
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {

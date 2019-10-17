@@ -16,8 +16,6 @@ class Test6 implements AnyEntity<Test6> {}
 describe('decorators', () => {
 
   test('ManyToMany', () => {
-    expect(() => ManyToMany({} as any)(new Test(), 'test')).toThrowError(`@ManyToMany({ entity: string | Function })' is required in 'Test.test`);
-
     const storage = MetadataStorage.getMetadata();
     ManyToMany({ entity: () => Test })(new Test2(), 'test0');
     expect(storage.Test2.properties.test0).toMatchObject({
@@ -61,7 +59,6 @@ describe('decorators', () => {
   });
 
   test('OneToMany', () => {
-    expect(() => OneToMany({} as any)(new Test(), 'test')).toThrowError(`@OneToMany({ entity: string | Function })' is required in 'Test.test`);
     expect(() => OneToMany({ entity: () => Test, fk: 'test' } as any)(new Test(), 'test')).toThrowError(`@OneToMany({ fk })' is deprecated, use 'mappedBy' instead in 'Test.test`);
 
     const storage = MetadataStorage.getMetadata();

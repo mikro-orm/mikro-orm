@@ -32,7 +32,7 @@ export class Book implements IdEntity<Book> {
   @ManyToOne(() => Publisher) // or you can specify the entity as class reference or string name
   publisher?: Publisher;
 
-  @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
+  @ManyToMany() // owning side can be simple as this!
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -95,6 +95,9 @@ export class Author implements MongoEntity<Author> {
 
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
+
+  @ManyToMany()
+  friends = new Collection<Author>(this);
 
   @ManyToOne()
   favouriteBook: Book;

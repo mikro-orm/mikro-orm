@@ -25,10 +25,6 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
     Utils.lookupPathFromDecorator(meta);
 
     if (reference === ReferenceType.ONE_TO_MANY) {
-      if (!options.entity) {
-        throw new Error(`'@OneToMany({ entity: string | Function })' is required in '${target.constructor.name}.${propertyName}'`);
-      }
-
       if ((options as any).fk) {
         throw new Error(`@OneToMany({ fk })' is deprecated, use 'mappedBy' instead in '${target.constructor.name}.${propertyName}'`);
       }
@@ -56,7 +52,7 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
 }
 
 export type OneToManyOptions<T extends AnyEntity<T>> = ReferenceOptions<T> & {
-  entity: string | (() => EntityName<T>);
+  entity?: string | (() => EntityName<T>);
   orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder };
   joinColumn?: string;

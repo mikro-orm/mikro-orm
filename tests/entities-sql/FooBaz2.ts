@@ -10,7 +10,7 @@ export class FooBaz2 implements IdEntity<FooBaz2> {
   @Property()
   name: string;
 
-  @OneToOne(() => FooBar2, 'baz')
+  @OneToOne({ mappedBy: 'baz' })
   bar?: FooBar2;
 
   @Property({ version: true })
