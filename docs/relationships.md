@@ -62,7 +62,7 @@ export class Author implements IdEntity<Author> {
   @OneToMany('Book', 'author')
   books2 = new Collection<Book>(this);
 
-  @OneToMany({ entity: () => Book, mappedBy: book => book.author })
+  @OneToMany({ mappedBy: book => book.author }) // referenced entity type can be sniffer too
   books3 = new Collection<Book>(this);
 
   @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
@@ -137,7 +137,7 @@ Here are examples of how you can define ManyToMany relationship:
 export class Book implements IdEntity<Book> {
 
   // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
-  @ManyToMany(() => BookTag)
+  @ManyToMany()
   tags1 = new Collection<BookTag>(this);
 
   @ManyToMany(() => BookTag, 'books', { owner: true })

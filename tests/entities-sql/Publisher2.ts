@@ -9,10 +9,10 @@ export class Publisher2 extends BaseEntity2 {
   @Property()
   name: string;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'publisher' })
+  @OneToMany({ mappedBy: 'publisher' })
   books!: Collection<Book2>;
 
-  @ManyToMany({ entity: () => Test2, fixedOrder: true })
+  @ManyToMany({ fixedOrder: true })
   tests!: Collection<Test2>;
 
   @Property({ type: 'string', length: 10 })

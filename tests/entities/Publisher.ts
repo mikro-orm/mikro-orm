@@ -16,10 +16,10 @@ export class Publisher implements MongoEntity<Publisher> {
   @Property()
   name: string;
 
-  @OneToMany({ entity: () => Book.name, mappedBy: 'publisher' })
+  @OneToMany({ mappedBy: 'publisher' })
   books = new Collection<Book>(this);
 
-  @ManyToMany({ entity: () => Test.name, owner: true, eager: true })
+  @ManyToMany({ eager: true })
   tests = new Collection<Test>(this);
 
   @Property()

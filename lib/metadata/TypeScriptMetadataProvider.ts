@@ -44,7 +44,8 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
       prop.nullable = true;
     }
 
-    this.processReferenceWrapper(prop);
+    this.processWrapper(prop, 'IdentifiedReference');
+    this.processWrapper(prop, 'Collection');
   }
 
   private async readTypeFromSource(file: string, name: string, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
@@ -71,11 +72,16 @@ export class TypeScriptMetadataProvider extends MetadataProvider {
     return source;
   }
 
-  private processReferenceWrapper(prop: EntityProperty): void {
-    const m = prop.type.match(/^IdentifiedReference<(\w+),?.*>$/);
+  private processWrapper(prop: EntityProperty, wrapper: string): void {
+    const m = prop.type.match(new RegExp(`^${wrapper}<(\\w+),?.*>$`));
 
-    if (m) {
-      prop.type = m[1];
+    if (!m) {
+      return;
+    }
+
+    prop.type = m[1];
+
+    if (wrapper === 'IdentifiedReference') {
       prop.wrappedReference = true;
     }
   }
