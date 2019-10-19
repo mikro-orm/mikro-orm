@@ -1,6 +1,7 @@
 import { DatabaseTable } from './DatabaseTable';
 import { SchemaHelper } from './SchemaHelper';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { Configuration } from '../utils';
 
 export class DatabaseSchema {
 
@@ -21,11 +22,15 @@ export class DatabaseSchema {
     return this.tables.find(t => t.name === name);
   }
 
-  static async create(connection: AbstractSqlConnection, helper: SchemaHelper) {
+  static async create(connection: AbstractSqlConnection, helper: SchemaHelper, config: Configuration) {
     const schema = new DatabaseSchema();
     const tables = await connection.execute<Table[]>(helper.getListTablesSQL());
 
     for (const t of tables) {
+      if (t.table_name === config.get('migrations').tableName!) {
+        continue;
+      }
+
       const table = schema.addTable(t.table_name, t.schema_name);
       const cols = await helper.getColumns(connection, t.table_name, t.schema_name);
       const indexes = await helper.getIndexes(connection, t.table_name, t.schema_name);

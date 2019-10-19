@@ -6,6 +6,7 @@ import { MetadataDiscovery, MetadataStorage } from './metadata';
 import { Configuration, Logger, Options } from './utils';
 import { SchemaGenerator } from './schema';
 import { EntityGenerator } from './schema/EntityGenerator';
+import { Migrator } from './migrations/Migrator';
 
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -72,7 +73,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('Not supported by given driver');
     }
 
-    return new SchemaGenerator(driver, this.metadata);
+    return new SchemaGenerator(driver, this.metadata, this.config);
   }
 
   getEntityGenerator(): EntityGenerator {
@@ -83,6 +84,16 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return new EntityGenerator(driver, this.config);
+  }
+
+  getMigrator(): Migrator {
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new Migrator(driver, this.getSchemaGenerator(), this.config);
   }
 
 }

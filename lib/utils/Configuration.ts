@@ -34,6 +34,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     debug: false,
     verbose: false,
     driverOptions: {},
+    migrations: {
+      tableName: 'mikro_orm_migrations',
+      path: process.cwd() + '/migrations',
+      pattern: /^[\w-]+\d+\.ts$/,
+      transactional: true,
+      disableForeignKeys: true,
+      allOrNothing: false, // TODO
+    },
     cache: {
       enabled: true,
       pretty: false,
@@ -196,6 +204,15 @@ export interface ConnectionOptions {
   pool: PoolConfig;
 }
 
+export type MigrationsOptions = {
+  tableName?: string;
+  path?: string;
+  pattern?: RegExp;
+  transactional?: boolean;
+  disableForeignKeys?: boolean;
+  allOrNothing?: boolean;
+};
+
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
   entitiesDirs: string[];
@@ -218,6 +235,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   highlightTheme?: Record<string, string | string[]>;
   tsNode: boolean;
   baseDir: string;
+  migrations: MigrationsOptions;
   cache: {
     enabled?: boolean;
     pretty?: boolean;

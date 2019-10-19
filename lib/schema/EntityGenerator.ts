@@ -22,7 +22,7 @@ export class EntityGenerator {
 
   async generate(options: { baseDir?: string; save?: boolean } = {}): Promise<string[]> {
     const baseDir = options.baseDir || Utils.normalizePath(this.config.get('baseDir'), 'generated-entities');
-    const schema = await DatabaseSchema.create(this.connection, this.helper);
+    const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
 
     for (const table of schema.getTables()) {
       await this.createEntity(table);

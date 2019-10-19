@@ -59,6 +59,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     type,
     cache: { pretty: true },
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
+    migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
 
   const connection = orm.em.getConnection();
