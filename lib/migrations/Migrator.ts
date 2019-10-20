@@ -1,7 +1,7 @@
-import umzug, { Migration as UmzugMigration, Umzug } from 'umzug';
+import umzug, { DownToOptions, Migration as UmzugMigration, Umzug, UpDownMigrationsOptions, UpToOptions } from 'umzug';
 
 import { AbstractSqlDriver, Constructor } from '../drivers';
-import { Configuration } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { SchemaGenerator } from '../schema';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
@@ -30,23 +30,37 @@ export class Migrator {
     });
   }
 
-  async createMigration(): Promise<string> {
-    const diff = await this.getSchemaDiff();
-    return this.generator.generate(diff);
+  async createMigration(path?: string, blank = false): Promise<[string, string, string[]]> {
+    const diff = blank ? ['select 1'] : await this.getSchemaDiff();
+    const migration = await this.generator.generate(diff, path);
+
+    return [...migration, diff] as [string, string, string[]];
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
+    await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
-  async up(migration?: string): Promise<UmzugMigration[]> {
+  async getPendingMigrations(): Promise<UmzugMigration[]> {
     await this.storage.ensureTable();
-    return this.umzug.up(migration);
+    return this.umzug.pending();
   }
 
-  async down(migration?: string): Promise<UmzugMigration[]> {
+  async up(migration?: string): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async up(migrations?: string[]): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async up(options?: UpToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async up(options?: string | string[] | UpToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]> {
     await this.storage.ensureTable();
-    return this.umzug.down(migration);
+    return this.umzug.up(this.prefix(options) as string[]);
+  }
+
+  async down(migration?: string): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async down(migrations?: string[]): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async down(options?: DownToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
+  async down(options?: string | string[] | DownToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]> {
+    await this.storage.ensureTable();
+    return this.umzug.down(this.prefix(options as string[]));
   }
 
   private async getSchemaDiff(): Promise<string[]> {
@@ -73,6 +87,26 @@ export class Migrator {
       up: () => this.runner.run(instance, 'up'),
       down: () => this.runner.run(instance, 'down'),
     };
+  }
+
+  private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[] }>(options?: T): T {
+    if (Utils.isObject<{ migrations: string[] }>(options) && options.migrations) {
+      options.migrations = options.migrations.map(m => this.prefix(m));
+    }
+
+    if (Utils.isObject<{ to: string }>(options) && options.to) {
+      options.to = this.prefix(options.to);
+    }
+
+    if (Utils.isObject<{ from: string }>(options) && options.from) {
+      options.from = this.prefix(options.from);
+    }
+
+    if (Utils.isString(options) || Array.isArray(options)) {
+      return Utils.asArray(options).map(m => m.startsWith('Migration') ? m : 'Migration' + m) as T;
+    }
+
+    return options as T;
   }
 
 }

@@ -1,8 +1,8 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import { CodeBlockWriter, Project, QuoteKind } from 'ts-morph';
+import { CodeBlockWriter, IndentationText, Project, QuoteKind } from 'ts-morph';
 
 import { AbstractSqlDriver } from '../drivers';
-import { MigrationsOptions } from '../utils';
+import { MigrationsOptions, Utils } from '../utils';
 
 export class MigrationGenerator {
 
@@ -10,13 +10,15 @@ export class MigrationGenerator {
 
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly options: MigrationsOptions) {
-    this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single });
+    this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single, indentationText: IndentationText.TwoSpaces });
   }
 
-  async generate(diff: string[]): Promise<string> {
-    await ensureDir(this.options.path!);
+  async generate(diff: string[], path?: string): Promise<[string, string]> {
+    path = Utils.normalizePath(path || this.options.path!);
+    await ensureDir(path);
     const time = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
-    const migration = this.project.createSourceFile(this.options.path + '/Migration' + time + '.ts', writer => {
+    const name = `Migration${time}.ts`;
+    const migration = this.project.createSourceFile(path + '/' + name, writer => {
       writer.writeLine(`import { Migration } from 'mikro-orm';`);
       writer.blankLine();
       writer.write(`export class Migration${time} extends Migration`);
@@ -32,7 +34,7 @@ export class MigrationGenerator {
     const ret = migration.getFullText();
     await writeFile(migration.getFilePath(), ret);
 
-    return ret;
+    return [ret, name];
   }
 
   createStatement(writer: CodeBlockWriter, sql: string): void {

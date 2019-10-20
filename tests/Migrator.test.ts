@@ -1,6 +1,6 @@
 import umzug from 'umzug';
 
-import { unlink } from 'fs-extra';
+import { unlink, writeFile } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
 import { Configuration, Logger } from '../lib/utils';
 import { Migration, Migrator, MikroORM } from '../lib';
@@ -72,6 +72,8 @@ describe('Migrator', () => {
     await storage.ensureTable(); // table exists, no-op
     await storage.unlogMigration('test');
     await expect(storage.executed()).resolves.toEqual([]);
+
+    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
   });
 
   test('runner', async () => {
@@ -113,12 +115,23 @@ describe('Migrator', () => {
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1');
   });
 
-  test('resolver', async () => {
-    // TODO mock umzug to load the MigrationTest1 and trigger the resolver
+  test('up/down params', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    jest.mock('../../temp/migrations/MigrationTest1.ts', () => ({ MigrationTest1 }), { virtual: true });
     const migrator = orm.getMigrator();
-    await migrator.up();
+    const path = process.cwd() + '/temp/migrations';
+
+    const migration = await migrator.createMigration(path, true);
+    await writeFile(path + '/' + migration[1], migration[0].replace(`'mikro-orm'`, `'../../lib/migrations'`));
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => {});
+    await migrator.up(migration[1]);
+    await migrator.down(migration[1].replace('Migration', ''));
+    await migrator.up({ migrations: [migration[1]] });
+    await migrator.down({ from: 0, to: 0 } as any);
+    await migrator.up({ to: migration[1] });
+    await migrator.up({ from: migration[1] } as any);
+    await migrator.down();
+    await unlink(path + '/' + migration[1]);
   });
 
   test('not supported [mongodb]', async () => {

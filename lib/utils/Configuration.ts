@@ -40,7 +40,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       pattern: /^[\w-]+\d+\.ts$/,
       transactional: true,
       disableForeignKeys: true,
-      allOrNothing: false, // TODO
     },
     cache: {
       enabled: true,
@@ -210,7 +209,6 @@ export type MigrationsOptions = {
   pattern?: RegExp;
   transactional?: boolean;
   disableForeignKeys?: boolean;
-  allOrNothing?: boolean;
 };
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {

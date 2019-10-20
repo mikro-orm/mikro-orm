@@ -21,7 +21,19 @@ describe('CLIHelper', () => {
   test('configures yargs instance', async () => {
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update', 'debug']);
+    expect(cli.getCommandInstance().getCommands()).toEqual([
+      'cache:clear',
+      'generate-entities',
+      'schema:create',
+      'schema:drop',
+      'schema:update',
+      'migration:create',
+      'migration:up',
+      'migration:down',
+      'migration:list',
+      'migration:pending',
+      'debug',
+    ]);
   });
 
   test('configures yargs instance [ts-node]', async () => {
@@ -32,7 +44,19 @@ describe('CLIHelper', () => {
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tsNodeMock).toHaveBeenCalled();
-    expect(cli.getCommandInstance().getCommands()).toEqual(['cache:clear', 'generate-entities', 'schema:create', 'schema:drop', 'schema:update', 'debug']);
+    expect(cli.getCommandInstance().getCommands()).toEqual([
+      'cache:clear',
+      'generate-entities',
+      'schema:create',
+      'schema:drop',
+      'schema:update',
+      'migration:create',
+      'migration:up',
+      'migration:down',
+      'migration:list',
+      'migration:pending',
+      'debug',
+    ]);
     pathExistsMock.mockRestore();
   });
 
@@ -123,7 +147,7 @@ describe('CLIHelper', () => {
     await expect(CLIHelper.getDriverDependencies()).resolves.toEqual([]);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockImplementation(async path => path === '../../tests/mikro-orm.config.js');
-    await expect(CLIHelper.getDriverDependencies()).resolves.toEqual(['mongo']);
+    await expect(CLIHelper.getDriverDependencies()).resolves.toEqual(['mongodb']);
     pathExistsMock.mockRestore();
   });
 
@@ -179,6 +203,24 @@ describe('CLIHelper', () => {
     pathExistsMock.mockResolvedValue(false);
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./mikro-orm.config.js']);
     pathExistsMock.mockRestore();
+  });
+
+  test('dumpTable', async () => {
+    const dumpSpy = jest.spyOn(CLIHelper, 'dump');
+    dumpSpy.mockImplementation(() => {});
+    CLIHelper.dumpTable({
+      columns: ['Name', 'Executed at'],
+      rows: [['val 1', 'val 2'], ['val 3', 'val 4'], ['val 5', 'val 6']],
+      empty: 'Empty...',
+    });
+    expect(dumpSpy.mock.calls[0][0]).toMatchSnapshot('has rows');
+    CLIHelper.dumpTable({
+      columns: ['Name', 'Executed at'],
+      rows: [],
+      empty: 'Empty...',
+    });
+    expect(dumpSpy.mock.calls[1][0]).toMatchSnapshot('empty');
+    dumpSpy.mockRestore();
   });
 
 });

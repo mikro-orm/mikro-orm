@@ -7,7 +7,7 @@ import { wrap } from './EntityHelper';
 
 export class EntityTransformer {
 
-  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited = new WeakMap()): EntityData<T> {
+  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
     const wrapped = wrap(entity);
     const platform = wrapped.__em.getDriver().getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(wrapped.__meta.primaryKey);
@@ -15,11 +15,11 @@ export class EntityTransformer {
     const pkProp = meta.properties[meta.primaryKey];
     const ret = (wrapped.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(wrapped.__primaryKey as IPrimaryKey) } : {}) as EntityData<T>;
 
-    if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.has(entity)) {
+    if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.includes(wrap(entity).__uuid)) {
       return ret;
     }
 
-    visited.set(entity, true);
+    visited.push(wrap(entity).__uuid);
 
     // normal properties
     Object.keys(entity)
@@ -46,7 +46,7 @@ export class EntityTransformer {
     return hidden && prop !== meta.primaryKey && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: WeakMap<T, boolean>): T[keyof T] | undefined {
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     if (entity[prop] as unknown instanceof ArrayCollection) {
       return EntityTransformer.processCollection(prop, entity);
     }
@@ -58,7 +58,7 @@ export class EntityTransformer {
     return entity[prop];
   }
 
-  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: WeakMap<T, boolean>): T[keyof T] | undefined {
+  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     const child = wrap(entity[prop] as unknown as T | Reference<T>);
     const platform = child.__em.getDriver().getPlatform();
 
