@@ -1,3 +1,4 @@
+(global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
 
 import { unlink, writeFile } from 'fs-extra';
@@ -40,7 +41,7 @@ describe('Migrator', () => {
     const migrator = orm.getMigrator();
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
+    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
   test('run schema migration', async () => {
@@ -115,23 +116,74 @@ describe('Migrator', () => {
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1');
   });
 
-  test('up/down params', async () => {
+  test('up/down params [all or nothing enabled]', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = orm.getMigrator();
+    // @ts-ignore
+    migrator.options.disableForeignKeys = false;
     const path = process.cwd() + '/temp/migrations';
 
     const migration = await migrator.createMigration(path, true);
-    await writeFile(path + '/' + migration[1], migration[0].replace(`'mikro-orm'`, `'../../lib/migrations'`));
+    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'../../lib/migrations'`));
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => {});
-    await migrator.up(migration[1]);
-    await migrator.down(migration[1].replace('Migration', ''));
-    await migrator.up({ migrations: [migration[1]] });
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    await migrator.up(migration.fileName);
+    await migrator.down(migration.fileName.replace('Migration', ''));
+    await migrator.up({ migrations: [migration.fileName] });
     await migrator.down({ from: 0, to: 0 } as any);
-    await migrator.up({ to: migration[1] });
-    await migrator.up({ from: migration[1] } as any);
+    await migrator.up({ to: migration.fileName });
+    await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
-    await unlink(path + '/' + migration[1]);
+
+    await unlink(path + '/' + migration.fileName);
+    const calls = mock.mock.calls.map(call => {
+      return call[0]
+        .replace(/ \[took \d+ ms]/, '')
+        .replace(/\[query] /, '')
+        .replace(/ trx\d+/, 'trx\\d+');
+    });
+    expect(calls).toMatchSnapshot('all-or-nothing');
+  });
+
+  test('up/down params [all or nothing disabled]', async () => {
+    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = orm.getMigrator();
+    // @ts-ignore
+    migrator.options.disableForeignKeys = false;
+    // @ts-ignore
+    migrator.options.allOrNothing = false;
+    const path = process.cwd() + '/temp/migrations';
+
+    const migration = await migrator.createMigration(path, true);
+    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'../../lib/migrations'`));
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => {});
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    await migrator.up(migration.fileName);
+    await migrator.down(migration.fileName.replace('Migration', ''));
+    await migrator.up({ migrations: [migration.fileName] });
+    await migrator.down({ from: 0, to: 0 } as any);
+    await migrator.up({ to: migration.fileName });
+    await migrator.up({ from: migration.fileName } as any);
+    await migrator.down();
+
+    await unlink(path + '/' + migration.fileName);
+    const calls = mock.mock.calls.map(call => {
+      return call[0]
+        .replace(/ \[took \d+ ms]/, '')
+        .replace(/\[query] /, '')
+        .replace(/ trx\d+/, 'trx_xx');
+    });
+    expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
 
   test('not supported [mongodb]', async () => {

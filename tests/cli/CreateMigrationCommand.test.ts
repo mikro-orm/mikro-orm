@@ -2,7 +2,7 @@ import { Configuration } from '../../lib/utils';
 
 const showHelp = jest.fn();
 const close = jest.fn();
-const migrator = { createMigration: jest.fn(() => ['1', '2', ['3']]) };
+const migrator = { createMigration: jest.fn(() => ({ fileName: '1', code: '2', diff: ['3'] })) };
 const config = new Configuration({} as any, false);
 const getORM = async () => ({ getMigrator: () => migrator, config, close });
 jest.mock('yargs', () => ({ showHelp }));

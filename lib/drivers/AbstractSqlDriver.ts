@@ -30,7 +30,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       fields.unshift(meta.primaryKey);
     }
 
-    const qb = this.createQueryBuilder(entityName, ctx);
+    const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
     qb.select(fields || '*').populate(populate).where(where as Dictionary).orderBy(orderBy);
 
     if (limit !== undefined) {
@@ -57,7 +57,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       fields.unshift(pk);
     }
 
-    return this.createQueryBuilder(entityName, ctx)
+    return this.createQueryBuilder(entityName, ctx, !!ctx)
       .select(fields || '*')
       .populate(populate)
       .where(where as Dictionary)
@@ -68,7 +68,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async count(entityName: string, where: any, ctx?: Transaction): Promise<number> {
-    const qb = this.createQueryBuilder(entityName, ctx);
+    const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
     const pk = this.metadata.get(entityName).primaryKey;
     const res = await qb.count(pk, true).where(where).execute('get', false);
 
@@ -78,7 +78,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
     const collections = this.extractManyToMany(entityName, data);
     const pk = this.getPrimaryKeyField(entityName);
-    const qb = this.createQueryBuilder(entityName, ctx);
+    const qb = this.createQueryBuilder(entityName, ctx, true);
     const res = await qb.insert(data).execute('run', false);
     res.row = res.row || {};
     res.insertId = res.insertId || res.row[pk] || data[pk];
@@ -98,7 +98,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let res: QueryResult = { affectedRows: 0, insertId: 0, row: {} };
 
     if (Object.keys(data).length) {
-      const qb = this.createQueryBuilder(entityName, ctx);
+      const qb = this.createQueryBuilder(entityName, ctx, true);
       res = await qb.update(data).where(where as Dictionary).execute('run', false);
     }
 
@@ -113,7 +113,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pk]: where };
     }
 
-    return this.createQueryBuilder(entityName, ctx).delete(where).execute('run', false);
+    return this.createQueryBuilder(entityName, ctx, true).delete(where).execute('run', false);
   }
 
   /**
@@ -127,8 +127,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return [...populate, ...toPopulate];
   }
 
-  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction): QueryBuilder<T> {
-    return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, ctx ? 'write' : 'read');
+  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction, write?: boolean): QueryBuilder<T> {
+    return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
   }
 
   protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
@@ -162,11 +162,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     for (const k of owners) {
       const prop = props[k];
       const pivotProp2 = this.getPivotInverseProperty(prop);
-      const qb1 = this.createQueryBuilder(prop.pivotTable, ctx);
+      const qb1 = this.createQueryBuilder(prop.pivotTable, ctx, true);
       await qb1.delete({ [pivotProp2.name]: pk }).execute('run', false);
 
       for (const item of collections[k]) {
-        const qb2 = this.createQueryBuilder(prop.pivotTable, ctx);
+        const qb2 = this.createQueryBuilder(prop.pivotTable, ctx, true);
         await qb2.insert({ [pivotProp2.name]: pk, [prop.type]: item }).execute('run', false);
       }
     }

@@ -3,8 +3,11 @@
 
 # Migrations
 
-To generate entities from existing database schema, you can use `Migrator` helper. It uses 
-[umzug](https://github.com/sequelize/umzug) under the hood.
+MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
+It allows you to generate migrations with current schema difference.
+
+By default, ech migration will be all executed inside a transaction, and all of them will 
+be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
 
 ## Migration class
 
@@ -20,7 +23,7 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support migrating back, you can implement `down` method, which by default throws an error. 
+To support undoing those changed, you can implement `down` method, which by default throws an error. 
 
 Transactions are by default wrapped in a transactions. You can override this behaviour on 
 per transaction basis by implementing `isTransactional(): boolean` method.
@@ -33,10 +36,11 @@ per transaction basis by implementing `isTransactional(): boolean` method.
 await MikroORM.init({
   // default values:
   migrations: {
-    tableName: 'mikro_orm_migrations',
-    path: './migrations',
-    transactional: true,
-    disableForeignKeys: true,
+    tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
+    path: './migrations', // path to the folder with migrations
+    transactional: true, // wrap each migration in a transaction
+    disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
+    allOrNothing: true, // wrap all migrations in master transaction
   },
 })
 ```

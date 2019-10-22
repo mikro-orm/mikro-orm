@@ -1,4 +1,4 @@
-import umzug, { DownToOptions, Migration as UmzugMigration, Umzug, UpDownMigrationsOptions, UpToOptions } from 'umzug';
+import umzug, { Migration as UmzugMigration, Umzug } from 'umzug';
 
 import { AbstractSqlDriver, Constructor } from '../drivers';
 import { Configuration, Utils } from '../utils';
@@ -12,9 +12,9 @@ export class Migrator {
 
   private readonly umzug: Umzug;
   private readonly options = this.config.get('migrations');
-  private readonly runner = new MigrationRunner(this.driver, this.config.get('migrations'));
-  private readonly generator = new MigrationGenerator(this.driver, this.config.get('migrations'));
-  private readonly storage = new MigrationStorage(this.driver, this.config.get('migrations'));
+  private readonly runner = new MigrationRunner(this.driver, this.options);
+  private readonly generator = new MigrationGenerator(this.driver, this.options);
+  private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly driver: AbstractSqlDriver,
               private readonly schemaGenerator: SchemaGenerator,
@@ -30,11 +30,15 @@ export class Migrator {
     });
   }
 
-  async createMigration(path?: string, blank = false): Promise<[string, string, string[]]> {
+  async createMigration(path?: string, blank = false): Promise<MigrationResult> {
     const diff = blank ? ['select 1'] : await this.getSchemaDiff();
     const migration = await this.generator.generate(diff, path);
 
-    return [...migration, diff] as [string, string, string[]];
+    return {
+      fileName: migration[1],
+      code: migration[0],
+      diff,
+    };
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
@@ -47,20 +51,12 @@ export class Migrator {
     return this.umzug.pending();
   }
 
-  async up(migration?: string): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async up(migrations?: string[]): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async up(options?: UpToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async up(options?: string | string[] | UpToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]> {
-    await this.storage.ensureTable();
-    return this.umzug.up(this.prefix(options) as string[]);
+  async up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
+    return this.runMigrations('up', options);
   }
 
-  async down(migration?: string): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async down(migrations?: string[]): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async down(options?: DownToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]>; // tslint:disable-next-line:lines-between-class-members
-  async down(options?: string | string[] | DownToOptions | UpDownMigrationsOptions): Promise<UmzugMigration[]> {
-    await this.storage.ensureTable();
-    return this.umzug.down(this.prefix(options as string[]));
+  async down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
+    return this.runMigrations('down', options);
   }
 
   private async getSchemaDiff(): Promise<string[]> {
@@ -109,4 +105,23 @@ export class Migrator {
     return options as T;
   }
 
+  private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
+    await this.storage.ensureTable();
+
+    if (!this.options.transactional || !this.options.allOrNothing) {
+      return this.umzug[method](this.prefix(options as string[]));
+    }
+
+    return this.driver.getConnection().transactional(async trx => {
+      this.runner.setMasterMigration(trx);
+      const ret = await this.umzug[method](this.prefix(options as string[]));
+      this.runner.unsetMasterMigration();
+
+      return ret;
+    });
+  }
+
 }
+
+export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
+export type MigrationResult = { fileName: string; code: string; diff: string[] };

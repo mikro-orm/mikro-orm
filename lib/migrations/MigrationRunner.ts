@@ -1,11 +1,13 @@
 import { AbstractSqlDriver } from '../drivers';
 import { MigrationsOptions, Utils } from '../utils';
 import { Migration } from './Migration';
+import { Transaction } from '../connections';
 
 export class MigrationRunner {
 
   private readonly connection = this.driver.getConnection();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
+  private masterTransaction?: Transaction;
 
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly options: MigrationsOptions) { }
@@ -29,7 +31,15 @@ export class MigrationRunner {
 
     await this.connection.transactional(async tx => {
       await Utils.runSerial(queries, sql => this.connection.execute(tx.raw(sql)));
-    });
+    }, this.masterTransaction);
+  }
+
+  setMasterMigration(trx: Transaction) {
+    this.masterTransaction = trx;
+  }
+
+  unsetMasterMigration() {
+    delete this.masterTransaction;
   }
 
 }
