@@ -36,8 +36,10 @@
   "homepage": "https://mikro-orm.io",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "test": "jest --runInBand",
-    "coverage": "rimraf temp tests/generated-entities && jest --runInBand --coverage",
+    "pretest": "node tests/pre-test",
+    "test": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
+    "posttest": "node tests/post-test",
+    "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "tslint -p ."
   },
