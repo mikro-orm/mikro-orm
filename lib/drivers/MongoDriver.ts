@@ -14,7 +14,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   protected readonly platform = new MongoPlatform();
 
   constructor(config: Configuration) {
-    super(config, ['mongo']);
+    super(config, ['mongodb']);
   }
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number): Promise<T[]> {

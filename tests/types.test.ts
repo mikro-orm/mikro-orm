@@ -224,6 +224,8 @@ describe('check typings', () => {
     ok01 = { books: { tags: { name: 'asd' } } };
     ok01 = { books: { tags: 1 } };
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
+    ok01 = { name: 'asd' };
+    ok01 = { $or: [{ name: 'asd' }, { age: 18 }] };
   });
 
   // there is no way to test this currently, uncomment to check they all fail

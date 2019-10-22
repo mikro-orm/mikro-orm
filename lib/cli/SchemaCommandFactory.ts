@@ -2,8 +2,6 @@ import yargs, { Arguments, Argv, CommandModule } from 'yargs';
 import chalk from 'chalk';
 import { CLIHelper } from './CLIHelper';
 
-export type Options = { dump: boolean; run: boolean; fkChecks: boolean };
-
 export class SchemaCommandFactory {
 
   static readonly DESCRIPTIONS = {
@@ -71,3 +69,5 @@ export class SchemaCommandFactory {
   }
 
 }
+
+export type Options = { dump: boolean; run: boolean; fkChecks: boolean };

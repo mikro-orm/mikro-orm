@@ -1,4 +1,4 @@
-import { CodeBlockWriter, Project, QuoteKind, SourceFile } from 'ts-morph';
+import { CodeBlockWriter, IndentationText, Project, QuoteKind, SourceFile } from 'ts-morph';
 import { ensureDir, writeFile } from 'fs-extra';
 
 import { AbstractSqlDriver, Configuration, DatabaseSchema, Dictionary, Utils } from '..';
@@ -17,12 +17,12 @@ export class EntityGenerator {
 
   constructor(private readonly driver: AbstractSqlDriver,
               private readonly config: Configuration) {
-    this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single });
+    this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single, indentationText: IndentationText.TwoSpaces });
   }
 
   async generate(options: { baseDir?: string; save?: boolean } = {}): Promise<string[]> {
-    const baseDir = options.baseDir || Utils.normalizePath(this.config.get('baseDir'), 'generated-entities');
-    const schema = await DatabaseSchema.create(this.connection, this.helper);
+    const baseDir = Utils.normalizePath(options.baseDir || this.config.get('baseDir') + '/generated-entities');
+    const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
 
     for (const table of schema.getTables()) {
       await this.createEntity(table);

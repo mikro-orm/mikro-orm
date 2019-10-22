@@ -1,5 +1,5 @@
 import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
-import { AbstractSqlDriver, Cascade, DatabaseSchema, IsSame, ReferenceType, Utils } from '..';
+import { AbstractSqlDriver, Cascade, Configuration, DatabaseSchema, IsSame, ReferenceType, Utils } from '..';
 import { EntityMetadata, EntityProperty } from '../types';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
@@ -13,7 +13,8 @@ export class SchemaGenerator {
   private readonly knex = this.connection.getKnex();
 
   constructor(private readonly driver: AbstractSqlDriver,
-              private readonly metadata: MetadataStorage) { }
+              private readonly metadata: MetadataStorage,
+              private readonly config: Configuration) { }
 
   async generate(): Promise<string> {
     let ret = await this.getDropSchemaSQL(false);
@@ -62,7 +63,7 @@ export class SchemaGenerator {
   }
 
   async getUpdateSchemaSQL(wrap = true): Promise<string> {
-    const schema = await DatabaseSchema.create(this.connection, this.helper);
+    const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
     let ret = '';
 
     for (const meta of Object.values(this.metadata.getAll())) {

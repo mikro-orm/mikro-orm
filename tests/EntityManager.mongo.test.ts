@@ -13,6 +13,7 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
 
+  jest.setTimeout(10e3);
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
@@ -363,7 +364,7 @@ describe('EntityManagerMongo', () => {
   test('should return mongo driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
-    expect(driver.getDependencies()).toEqual(['mongo']);
+    expect(driver.getDependencies()).toEqual(['mongodb']);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().requiresNullableForAlteringColumn()).toBe(false); // test default Platform value (not used by mongo)

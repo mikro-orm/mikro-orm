@@ -1,5 +1,6 @@
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
+import CliTable3, { HorizontalTable } from 'cli-table3';
 import highlight from 'cli-highlight';
 import chalk from 'chalk';
 
@@ -8,6 +9,7 @@ import { Configuration, Utils } from '../utils';
 import { ClearCacheCommand } from './ClearCacheCommand';
 import { GenerateEntitiesCommand } from './GenerateEntitiesCommand';
 import { SchemaCommandFactory } from './SchemaCommandFactory';
+import { MigrationCommandFactory } from './MigrationCommandFactory';
 import { DebugCommand } from './DebugCommand';
 import { Dictionary } from '../types';
 
@@ -64,6 +66,11 @@ export class CLIHelper {
       .command(SchemaCommandFactory.create('create'))
       .command(SchemaCommandFactory.create('drop'))
       .command(SchemaCommandFactory.create('update'))
+      .command(MigrationCommandFactory.create('create'))
+      .command(MigrationCommandFactory.create('up'))
+      .command(MigrationCommandFactory.create('down'))
+      .command(MigrationCommandFactory.create('list'))
+      .command(MigrationCommandFactory.create('pending'))
       .command(new DebugCommand())
       .recommendCommands()
       .strict();
@@ -155,6 +162,16 @@ export class CLIHelper {
     }
 
     return chalk.red('not-found');
+  }
+
+  static dumpTable(options: { columns: string[]; rows: string[][]; empty: string }): void {
+    if (options.rows.length === 0) {
+      return CLIHelper.dump(options.empty);
+    }
+
+    const table = new CliTable3({ head: options.columns, style: { compact: true } }) as HorizontalTable;
+    table.push(...options.rows);
+    CLIHelper.dump(table.toString());
   }
 
 }

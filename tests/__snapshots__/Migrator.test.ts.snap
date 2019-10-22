@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Migrator generate schema migration: migration-dump 1`] = `
+Array [
+  "import { Migration } from 'mikro-orm';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table \`book2\` drop \`foo\`;');
+
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
+    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
+    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+  }
+
+}
+",
+  "Migration20191013214813.ts",
+  Array [
+    "alter table \`book2\` drop \`foo\`;",
+    "",
+    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+    "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
+    "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
+    "alter table \`test2\` drop \`foo___bar\`;",
+    "alter table \`test2\` drop \`foo___baz\`;",
+    undefined,
+    undefined,
+  ],
+]
+`;

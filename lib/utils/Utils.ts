@@ -15,8 +15,8 @@ export class Utils {
     return typeof data !== 'undefined';
   }
 
-  static isObject<T = Dictionary>(o: any): o is T {
-    return !!o && typeof o === 'object' && !Array.isArray(o);
+  static isObject<T = Dictionary>(o: any, not: Function[] = []): o is T {
+    return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
   }
 
   static isString(s: any): s is string {
@@ -44,7 +44,7 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
-        if (Utils.isObject(value)) {
+        if (Utils.isObject(value, [Date, RegExp])) {
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }

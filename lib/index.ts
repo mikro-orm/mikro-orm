@@ -22,3 +22,4 @@ export * from './cache';
 export * from './decorators';
 export * from './query/enums';
 export * from './schema';
+export * from './migrations';

@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CLIHelper dumpTable: empty 1`] = `"Empty..."`;
+
+exports[`CLIHelper dumpTable: has rows 1`] = `
+"┌───────┬─────────────┐
+│ Name  │ Executed at │
+├───────┼─────────────┤
+│ val 1 │ val 2       │
+│ val 3 │ val 4       │
+│ val 5 │ val 6       │
+└───────┴─────────────┘"
+`;

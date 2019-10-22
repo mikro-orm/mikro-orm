@@ -1,6 +1,7 @@
-import { FilterQuery, AnyEntity, Reference, Utils } from '..';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { EntityMetadata } from '../types';
+import { AnyEntity, EntityMetadata, FilterQuery } from '../types';
+import { Reference } from '../entity';
+import { Utils } from '../utils';
 
 export class SmartQueryHelper {
 
