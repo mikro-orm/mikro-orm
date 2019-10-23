@@ -2,18 +2,74 @@
   <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
-Simple TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB,
-MySQL, PostgreSQL and SQLite databases. 
+TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/unit-of-work/) 
+and [Identity Map](https://mikro-orm.io/identity-map/) patterns. Supports MongoDB, MySQL, 
+MariaDB, PostgreSQL and SQLite databases. 
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
-[![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LTBmZDNlODBhYjcxNGZlMTkyYzJmODAwMDhjODc0ZTM2MzQ2Y2VkOGM0ODYzYTJjMDRiZDdjMmIxYjI2OTY0Y2U)
+[![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA)
 [![Downloads](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Dependency Status](https://david-dm.org/mikro-orm/mikro-orm.svg)](https://david-dm.org/mikro-orm/mikro-orm)
 [![Build Status](https://travis-ci.com/mikro-orm/mikro-orm.svg?branch=master)](https://travis-ci.com/mikro-orm/mikro-orm)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)
+
+## 🤔 Unit of What?
+
+You might be asking: _What the hell is Unit of Work and why should I care about it?_
+
+> Unit of Work maintains a list of objects (_entities_) affected by a business transaction 
+> and coordinates the writing out of changes. [(Martin Fowler)](https://www.martinfowler.com/eaaCatalog/unitOfWork.html)
+
+> Identity Map ensures that each object (_entity_) gets loaded only once by keeping every 
+> loaded object in a map. Looks up objects using the map when referring to them. 
+> [(Martin Fowler)](https://www.martinfowler.com/eaaCatalog/identityMap.html)
+
+So what benefits does it bring to us?
+
+### Implicit Transactions
+
+First and most important implication of having Unit of Work is that it allows handling
+transactions automatically. 
+
+When you call `em.flush()`, all computed changes are queried inside a database
+transaction (if supported by given driver). This means that you can control the boundaries 
+of transactions simply by calling `em.persistLater()` and once all your changes 
+are ready, simply calling `flush()` will run them inside a transaction. 
+
+> You can also control the transaction boundaries manually via `em.transactional(cb)`.
+
+```typescript
+const user = await em.findOne(User, 1);
+user.email = 'foo@bar.com';
+const car = new Car();
+user.cars.add(car);
+
+// thanks to bi-directional cascading we only need to persist user entity
+// flushing will create a transaction, insert new car and update user with new email
+await em.persistAndFlush(user);
+```
+
+### Separation of Domain Logic and Persistence Layer
+
+MikroORM allows you to implement your domain/business logic directly in your entities. To 
+maintain always valid entities, you can use constructors to mark required properties. 
+
+Once your entities are loaded, you can simply work with them and forget about persistence. 
+As you do not have to care about persistence, most of entity interactions can be synchronous. 
+When you have done all changes, you call `em.flush()`. It will trigger computing of change 
+sets. Only entities that were changed will generate database queries, if there are no changes, 
+no transaction will be started. 
+
+This increases maintainability, flexibility and testability.
+
+### Only One Instance of Entity
+
+Thanks to Identity Map, you will always have only one instance of given entity in one context. 
+This allows for some optimizations (skipping loading of already loaded entities), as well as 
+comparison by identity (`ent1 === ent2`). 
 
 ## 📖 Documentation
 
