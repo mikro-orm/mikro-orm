@@ -1376,8 +1376,12 @@ describe('EntityManagerMySql', () => {
     author.books.add(book1, book2, book3);
     await orm.em.persistAndFlush(author);
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
-    // this test was causing TS recursion errors, see https://github.com/mikro-orm/mikro-orm/issues/124
-    // await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    // this test was causing TS recursion errors without the type argument
+    // see https://github.com/mikro-orm/mikro-orm/issues/124 and https://github.com/mikro-orm/mikro-orm/issues/208
+    await expect(orm.em.count<Book2>(Book2, [book1, book2, book3])).resolves.toBe(3);
+    await expect(orm.em.count<any>(Book2, [book1, book2, book3])).resolves.toBe(3);
+    const a = await orm.em.find<any>(Book2, [book1, book2, book3]) as Book2[];
+    await expect(orm.em.getRepository(Book2).count([book1, book2, book3])).resolves.toBe(3);
   });
 
   test('find by joined property', async () => {

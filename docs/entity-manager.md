@@ -99,7 +99,7 @@ for (const author of authors) {
 }
 ```
 
-### Conditions Object
+### Conditions Object (FilterQuery<T>)
 
 Querying entities via conditions object (`where` in `em.find(Entity, where: FilterQuery<T>)`) 
 supports many different ways:
@@ -133,6 +133,29 @@ const user1 = await orm.em.findOne(User, 1);
 As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
 `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`. More about that can be found in 
 [Query Conditions](query-conditions.md) section. 
+
+#### Mitigating `Type instantiation is excessively deep and possibly infinite.ts(2589)` error
+
+Sometimes you might be facing TypeScript errors caused by too complex query for it to 
+properly infer all types. Usually it can be solved by providing the type argument 
+explicitly.
+
+You can also opt in to use repository instead, as there the type inference should not be
+problematic. 
+
+> As a last resort, you can always type cast the query to `any`.
+
+```typescript
+const books = await orm.em.find<Book>(Book, { ... your complex query ... });
+// or
+const books = await orm.em.getRepository(Book).find({ ... your complex query ... });
+// or
+const books = await orm.em.find<any>(Book, { ... your complex query ... }) as Book[];
+```
+
+Another problem you might be facing is `RangeError: Maximum call stack size exceeded` error 
+thrown during TypeScript compilation (usually from file `node_modules/typescript/lib/typescript.js`).
+The solution to this is the same, just provide the type argument explicitly.
 
 ### Searching by referenced entity fields
 
