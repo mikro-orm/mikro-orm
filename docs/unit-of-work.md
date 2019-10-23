@@ -74,12 +74,28 @@ compare the original property and association values with the values that are cu
 on the object. If changes are detected then the object is queued for a UPDATE operation. 
 Only the fields that actually changed are updated.
 
-## Transactions
+## Implicit Transactions
+
+First and most important implication of having Unit of Work is that it allows handling
+transactions automatically. 
 
 When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
 of transactions simply by calling `em.persistLater()` and once all your changes 
 are ready, simply calling `flush()` will run them inside a transaction. 
+
+> You can also control the transaction boundaries manually via `em.transactional(cb)`.
+
+```typescript
+const user = await em.findOne(User, 1);
+user.email = 'foo@bar.com';
+const car = new Car();
+user.cars.add(car);
+
+// thanks to bi-directional cascading we only need to persist user entity
+// flushing will create a transaction, insert new car and update user with new email
+await em.persistAndFlush(user);
+```
 
 You can find more information about transactions in [Transactions and concurrency](transactions.md) 
 page.
