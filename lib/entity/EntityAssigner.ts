@@ -47,17 +47,20 @@ export class EntityAssigner {
   }
 
   /**
-   * auto-wire 1:1 inverse side with owner as it no-sql drivers it can't be joined
+   * auto-wire 1:1 inverse side with owner as in no-sql drivers it can't be joined
+   * also makes sure the link is bidirectional when creating new entities from nested structures
    * @internal
    */
   static autoWireOneToOne<T extends AnyEntity<T>>(prop: EntityProperty, entity: T): void {
-    if (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner && prop.inversedBy) {
-      const meta2 = entity[prop.name].__meta as EntityMetadata;
-      const prop2 = meta2.properties[prop.inversedBy];
+    if (prop.reference !== ReferenceType.ONE_TO_ONE) {
+      return;
+    }
 
-      if (!entity[prop.name][prop2.name]) {
-        entity[prop.name][prop2.name] = Utils.wrapReference(entity, prop2);
-      }
+    const meta2 = entity[prop.name].__meta as EntityMetadata;
+    const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
+
+    if (prop2 && !entity[prop.name][prop2.name]) {
+      entity[prop.name][prop2.name] = Utils.wrapReference(entity, prop2);
     }
   }
 

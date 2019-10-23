@@ -182,6 +182,70 @@ describe('EntityManagerMongo', () => {
     expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
   });
 
+  test(`persisting 1:1 from owning side with cycle`, async () => {
+    const bar = FooBar.create('fb');
+    const baz = FooBaz.create('fz');
+    bar.baz = baz;
+    baz.bar = bar;
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(FooBar, bar.id);
+    const b = await orm.em.findOneOrFail(FooBaz, baz.id);
+    expect(a.baz).toBe(b);
+    expect(a.name).toBe('fb');
+    expect(b.bar).toBe(a);
+    expect(b.name).toBe('fz');
+  });
+
+  test(`persisting 1:1 from inverse side with cycle`, async () => {
+    const bar = FooBar.create('fb');
+    const baz = FooBaz.create('fz');
+    bar.baz = baz;
+    baz.bar = bar;
+    await orm.em.persistAndFlush(baz);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(FooBar, bar.id);
+    const b = await orm.em.findOneOrFail(FooBaz, baz.id);
+    expect(a.baz).toBe(b);
+    expect(a.name).toBe('fb');
+    expect(b.bar).toBe(a);
+    expect(b.name).toBe('fz');
+  });
+
+  test(`persisting 1:1 created via assign from owner (gh #210)`, async () => {
+    const bar = wrap(new FooBar()).assign({
+      name: 'fb',
+      baz: { name: 'fz' },
+    });
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(FooBar, bar.id);
+    const b = await orm.em.findOneOrFail(FooBaz, bar.baz!.id);
+    expect(a.baz).toBe(b);
+    expect(a.name).toBe('fb');
+    expect(b.bar).toBe(a);
+    expect(b.name).toBe('fz');
+  });
+
+  test(`persisting 1:1 created via assign from inverse (gh #210)`, async () => {
+    const baz = wrap(new FooBaz()).assign({
+      name: 'fz',
+      bar: { name: 'fb' },
+    });
+    await orm.em.persistAndFlush(baz);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(FooBar, baz.bar.id);
+    const b = await orm.em.findOneOrFail(FooBaz, baz.id);
+    expect(a.baz).toBe(b);
+    expect(a.name).toBe('fb');
+    expect(b.bar).toBe(a);
+    expect(b.name).toBe('fz');
+  });
+
   test('findOne should work with options parameter', async () => {
     const repo = orm.em.getRepository(Author) as AuthorRepository;
     const author = new Author('name 1', 'email');

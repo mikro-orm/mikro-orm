@@ -48,7 +48,7 @@ export class EntityTransformer {
 
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     if (entity[prop] as unknown instanceof ArrayCollection) {
-      return EntityTransformer.processCollection(prop, entity);
+      return EntityTransformer.processCollection(prop, entity, visited);
     }
 
     if (Utils.isEntity(entity[prop]) || entity[prop] as unknown instanceof Reference) {
@@ -70,11 +70,11 @@ export class EntityTransformer {
     return platform.normalizePrimaryKey(child.__primaryKey as IPrimaryKey) as unknown as T[keyof T];
   }
 
-  private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {
+  private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T, visited: string[]): T[keyof T] | undefined {
     const col = entity[prop] as unknown as Collection<AnyEntity>;
 
     if (col.isInitialized(true) && col.shouldPopulate()) {
-      return col.toArray() as unknown as T[keyof T];
+      return col.toArray(visited) as unknown as T[keyof T];
     }
 
     if (col.isInitialized()) {

@@ -153,7 +153,10 @@ export class UnitOfWork {
       const extraUpdate = this.extraUpdates.shift()!;
       extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
       const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
-      this.changeSets.push(changeSet);
+
+      if (changeSet) {
+        this.changeSets.push(changeSet);
+      }
     }
 
     for (const entity of Object.values(this.orphanRemoveStack)) {
