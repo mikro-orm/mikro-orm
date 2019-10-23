@@ -8,7 +8,7 @@ export function Entity(options: EntityOptions<any> = {}): Function {
     const meta = MetadataStorage.getMetadata(target.name);
     Utils.merge(meta, options);
     meta.name = target.name;
-    meta.constructorParams = Utils.getParamNames(target);
+    meta.constructorParams = Utils.getParamNames(target, 'constructor');
     meta.extends = Object.getPrototypeOf(target).name || undefined;
     Utils.lookupPathFromDecorator(meta);
 

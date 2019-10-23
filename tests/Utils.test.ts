@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Collection, EntityMetadata, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
+import { FooBar } from './entities/FooBar';
 
 class Test {}
 
@@ -131,7 +132,9 @@ describe('Utils', () => {
    * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
    */
   test('getParamNames', () => {
-    expect(Utils.getParamNames(Test)).toEqual([]);
+    expect(Utils.getParamNames(Test, 'constructor')).toEqual([]);
+    expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
+    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip', '...args']);
     expect(Utils.getParamNames('')).toEqual([]);
 
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;

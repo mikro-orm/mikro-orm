@@ -107,7 +107,7 @@ export class MetadataDiscovery {
     meta.prototype = entity.prototype;
     meta.className = entity.name;
     meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
-    meta.toJsonParams = Utils.getParamNames(entity.prototype.toJSON || '').filter(p => p !== '...args');
+    meta.toJsonParams = Utils.getParamNames(entity, 'toJSON').filter(p => p !== '...args');
     const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
 
     if (cache) {

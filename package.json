@@ -89,6 +89,8 @@
     "pinVersions": false
   },
   "dependencies": {
+    "acorn-loose": "^7.0.0",
+    "acorn-walk": "^7.0.0",
     "chalk": "^2.4.2",
     "cli-highlight": "^2.1.1",
     "cli-table3": "^0.5.1",

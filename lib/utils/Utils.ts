@@ -4,6 +4,10 @@ import globby, { GlobbyOptions } from 'globby';
 import { isAbsolute, normalize, relative } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
+// @ts-ignore
+import { parse } from 'acorn-loose';
+// @ts-ignore
+import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
 import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../types';
@@ -137,33 +141,34 @@ export class Utils {
     }
   }
 
-  static getParamNames(func: Function | string): string[] {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-    const ARGUMENT_NAMES = /([^\s,]+)/g;
-    const fnStr = func.toString().replace(STRIP_COMMENTS, ''); // strip comments
-    let paramsStr = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')); // extract params
-    paramsStr = paramsStr.replace(/{[^}]+}/g, '{}'); // simplify object default values like `a = { ... }`
-    paramsStr = paramsStr.replace(/\[[^\]]+]/g, '[]'); // simplify array default values like `a = [ ... ]`
-    const result = paramsStr.match(ARGUMENT_NAMES) as string[];
+  static getParamNames(func: Function | string, methodName?: string): string[] {
+    const ret: string[] = [];
+    const parsed = parse(func.toString());
 
-    if (result === null) {
-      return [];
-    }
-
-    // handle class with no constructor
-    if (result.length > 0 && result[0] === 'class') {
-      return [];
-    }
-
-    // strip default values
-    for (let i = 0; i < result.length; i++) {
-      if (result[i].includes('=')) {
-        result[i] = result[i].split('=')[0];
-        result.splice(i + 1, 1);
+    const checkNode = (node: any, methodName?: string) => {
+      if (methodName && !(node.key && (node.key as any).name === methodName)) {
+        return;
       }
-    }
 
-    return result.filter(i => i); // filter out empty strings
+      const params = node.value ? node.value.params : node.params;
+      ret.push(...params.map((p: any) => {
+        switch (p.type) {
+          case 'AssignmentPattern':
+            return p.left.name;
+          case 'RestElement':
+            return '...' + p.argument.name;
+          default:
+            return p.name;
+        }
+      }));
+    };
+
+    walk(parsed, {
+      MethodDefinition: (node: any) => checkNode(node, methodName),
+      FunctionDeclaration: (node: any) => checkNode(node, methodName),
+    });
+
+    return ret;
   }
 
   static isPrimaryKey<T>(key: any): key is Primary<T> {
