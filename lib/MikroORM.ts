@@ -6,7 +6,7 @@ import { MetadataDiscovery, MetadataStorage } from './metadata';
 import { Configuration, Logger, Options } from './utils';
 import { SchemaGenerator } from './schema';
 import { EntityGenerator } from './schema/EntityGenerator';
-import { Migrator } from './migrations/Migrator';
+import { Migrator } from './migrations';
 
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 

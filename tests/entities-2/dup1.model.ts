@@ -5,13 +5,13 @@ import { SerializedPrimaryKey } from '../../lib/decorators';
 @Entity()
 export class Dup1 implements MongoEntity<Dup1> {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'ObjectId' })
   _id!: ObjectId;
 
-  @SerializedPrimaryKey()
+  @SerializedPrimaryKey({ type: 'string' })
   id!: string;
 
-  @Property()
+  @Property({ type: 'string' })
   name?: string;
 
 }

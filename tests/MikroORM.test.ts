@@ -1,4 +1,4 @@
-import { MikroORM, EntityManager, Configuration, SchemaGenerator } from '../lib';
+import { MikroORM, EntityManager, Configuration } from '../lib';
 import { Author } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
