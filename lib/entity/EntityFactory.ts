@@ -1,5 +1,5 @@
 import { Configuration, Utils } from '../utils';
-import { EntityData, EntityMetadata, EntityName, AnyEntity, Primary, Constructor } from '../types';
+import { AnyEntity, Constructor, EntityData, EntityMetadata, EntityName, Primary } from '../types';
 import { MetadataStorage } from '../metadata';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
@@ -39,6 +39,8 @@ export class EntityFactory {
       entity.__initialized = initialized;
     }
 
+    this.runHooks(entity, meta);
+
     return entity;
   }
 
@@ -66,10 +68,8 @@ export class EntityFactory {
     if (!data[meta.primaryKey]) {
       const params = this.extractConstructorParams<T>(meta, data);
       meta.constructorParams.forEach(prop => delete data[prop]);
-      const entity = new Entity(...params);
-      this.runHooks(entity, meta);
 
-      return entity;
+      return new Entity(...params);
     }
 
     if (this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey])) {
@@ -79,7 +79,6 @@ export class EntityFactory {
     // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
     const entity = Object.create(Entity.prototype);
     entity[meta.primaryKey] = data[meta.primaryKey];
-    this.runHooks(entity, meta);
 
     return entity;
   }
@@ -89,7 +88,7 @@ export class EntityFactory {
    */
   private extractConstructorParams<T extends AnyEntity<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
     return meta.constructorParams.map(k => {
-      if (meta.properties[k] && meta.properties[k].reference === ReferenceType.MANY_TO_ONE && data[k]) {
+      if (meta.properties[k] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(meta.properties[k].reference) && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
         return entity || this.createReference(meta.properties[k].type, data[k]);
       }
