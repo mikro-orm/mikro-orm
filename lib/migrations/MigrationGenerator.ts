@@ -39,7 +39,7 @@ export class MigrationGenerator {
 
   createStatement(writer: CodeBlockWriter, sql: string): void {
     if (sql) {
-      writer.writeLine(`this.addSql('${sql.replace(/'/g, '\\\'')}');`);
+      writer.writeLine(`this.addSql('${sql.replace(/'/g, '\\\'')}');`); // lgtm [js/incomplete-sanitization]
     } else {
       writer.blankLine();
     }
