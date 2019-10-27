@@ -49,6 +49,12 @@ Before you submit your pull request consider the following guidelines:
     ```
 
 - You have to create the databases manually using the following commands.
+    
+    ```shell
+    sh scripts/database_setup.sh
+    ```
+
+- You can skip this part if the script works fine for you.
 
     ```shell
     docker ps
