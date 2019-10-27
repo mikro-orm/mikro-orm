@@ -136,6 +136,11 @@ module.exports = {
   module: {
     rules: [
       { test: /\.ts$/, loader: 'ts-loader' },
+      {
+            test: /\.mjs$/,
+            include: /node_modules/,
+            type: "javascript/auto"
+      }
     ],
   },
   plugins: [
