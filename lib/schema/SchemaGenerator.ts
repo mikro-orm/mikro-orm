@@ -249,7 +249,7 @@ export class SchemaGenerator {
 
   private configureColumn(meta: EntityMetadata, prop: EntityProperty, col: ColumnBuilder, alter: boolean) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
-    const indexed = prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys();
+    const indexed = prop.index || (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
 
     Utils.runIfNotEmpty(() => col.unique(), prop.unique);

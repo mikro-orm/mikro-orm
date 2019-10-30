@@ -129,6 +129,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumn: string;
   referenceColumnName: string;
   referencedTableName: string;
+  index?: boolean;
 }
 
 export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate' | 'afterUpdate' | 'beforeDelete' | 'afterDelete';
