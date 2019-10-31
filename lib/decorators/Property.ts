@@ -39,6 +39,7 @@ export type PropertyOptions = {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
+  index?: boolean;
 };
 
 export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {

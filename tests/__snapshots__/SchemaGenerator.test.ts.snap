@@ -475,6 +475,7 @@ alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
 
 create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8 engine = InnoDB;
+alter table \`new_table\` add index \`new_table_name_index\`(\`name\`);
 
 "
 `;
@@ -538,6 +539,7 @@ exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-create
 alter table \\"test2\\" drop column \\"path\\";
 
 create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null);
+create index \\"new_table_name_index\\" on \\"new_table\\" (\\"name\\");
 
 "
 `;
