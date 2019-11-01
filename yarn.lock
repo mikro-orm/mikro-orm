@@ -1996,7 +1996,7 @@ delegates@^1.0.0:
   resolved "https://registry.yarnpkg.com/delegates/-/delegates-1.0.0.tgz#84c6e159b81904fdca59a0ef44cd870d31250f9a"
   integrity sha1-hMbhWbgZBP3KWaDvRM2HDTElD5o=
 
-denque@^1.4.0:
+denque@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/denque/-/denque-1.4.1.tgz#6744ff7641c148c3f8a69c307e51235c1f4a37cf"
   integrity sha512-OfzPuSZKGcgr96rf1oODnfjqBFmr1DVoc/TrItj3Ohe0Ah1C5WX5Baquw/9U9KovnQ88EqmJbD66rKYUQYN1tQ==
@@ -2955,10 +2955,17 @@ husky@^3.0.0:
     run-node "^1.0.0"
     slash "^3.0.0"
 
-iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@^0.4.4, iconv-lite@~0.4.13:
+iconv-lite@0.4.24, iconv-lite@^0.4.4, iconv-lite@~0.4.13:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
+  dependencies:
+    safer-buffer ">= 2.1.2 < 3"
+
+iconv-lite@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.5.0.tgz#59cdde0a2a297cc2aeb0c6445a195ee89f127550"
+  integrity sha512-NnEhI9hIEKHOzJ4f697DMz9IQEXr/MMJ5w64vN2/4Ai+wRnvV7SBrL0KLoRlwaKVghOc7LQ5YkPLuX146b6Ydw==
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
@@ -4843,16 +4850,17 @@ mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-mysql2@^1.6.5:
-  version "1.6.5"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-1.6.5.tgz#6695304fa2ce793dda5c98e8bbec65cbd2e6cb9d"
-  integrity sha512-zedaOOyb3msuuZcJJnxIX/EGOpmljDG7B+UevRH5lqcv+yhy9eCwkArBz8/AO+/rlY3/oCsOdG8R5oD6k0hNfg==
+mysql2@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-2.0.0.tgz#8e6e940bd368bc6819fd12041187e1b65feef0b8"
+  integrity sha512-XzxD+oLrBzV2VVrFlYFROdIwr1N7G5ONhjVBhWOAQHRH6LMSGr6yJvbCNuy7APjGJbsaG/bMo7D1H5IaS6Ld8g==
   dependencies:
-    denque "^1.4.0"
+    cardinal "^2.1.1"
+    denque "^1.4.1"
     generate-function "^2.3.1"
-    iconv-lite "^0.4.24"
+    iconv-lite "^0.5.0"
     long "^4.0.0"
-    lru-cache "^4.1.3"
+    lru-cache "^5.1.1"
     named-placeholders "^1.1.2"
     seq-queue "^0.0.5"
     sqlstring "^2.3.1"
