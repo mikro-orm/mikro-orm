@@ -145,7 +145,7 @@ describe('check typings', () => {
     assert<Has<Query<Book2>, { author: { born?: Date }; favouriteBook: string }>>(false); // favouriteBook does not exist on Book2
     assert<IsAssignable<Query<Book2>, { author: { books: { publisher: number } } }>>(true);
     assert<IsAssignable<Query<Book2>, { author: { books: { publisher: null } } }>>(true);
-    assert<Has<Query<Author2>, { favouriteBook: Query<Book2> }>>(true);
+    assert<Has<Query<Author2>, { favouriteBook?: Query<Book2> }>>(true);
     assert<IsAssignable<Query<Author2>, { books: FilterValue<Book2> }>>(true);
     assert<IsAssignable<Query<Author2>, { books: string }>>(true);
     assert<IsAssignable<Query<Author2>, { books: string[] }>>(true);
@@ -195,15 +195,15 @@ describe('check typings', () => {
 
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number } }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: Date }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
-    assert<Has<FilterQuery<Author2>, { favouriteBook: Book2 }>>(true);
+    assert<Has<FilterQuery<Author2>, { favouriteBook?: Book2 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: Book2 }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: string }, { name: string }] }>>(true);
     assert<Has<FilterQuery<Author2>, Author2>>(true);
     assert<Has<FilterQuery<Author2>, number>>(true);
-    assert<Has<FilterQuery<Author2>, { favouriteBook: Query<Book2> }>>(true);
-    assert<Has<FilterQuery<Book2>, { author: { favouriteBook: Query<Book2> } }>>(true);
-    assert<Has<FilterQuery<Book2>, { author: { favouriteBook: { title?: string } } }>>(true);
+    assert<Has<FilterQuery<Author2>, { favouriteBook?: Query<Book2> }>>(true);
+    assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: Query<Book2> } }>>(true);
+    assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: { title?: string } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: FilterValue<BookTag2> } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: BookTag2[] } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: number[] } } }>>(true);
