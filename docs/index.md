@@ -48,6 +48,7 @@ compatible with Vanilla JavaScript.
   - [Debugging](debugging.md)
   - [Schema Generator](schema-generator.md)
   - [Entity Generator](entity-generator.md)
+  - [Migrations](migrations.md)
   - [Read Replica Connections](read-connections.md)
 - Usage with Different Drivers
   - [Usage with SQL Drivers](usage-with-sql.md)
