@@ -42,16 +42,20 @@ export class SchemaGenerator {
     return this.wrapSchema(ret, wrap);
   }
 
-  async dropSchema(wrap = true): Promise<void> {
-    const sql = await this.getDropSchemaSQL(wrap);
+  async dropSchema(wrap = true, dropMigrationsTable = false): Promise<void> {
+    const sql = await this.getDropSchemaSQL(wrap, dropMigrationsTable);
     await this.execute(sql);
   }
 
-  async getDropSchemaSQL(wrap = true): Promise<string> {
+  async getDropSchemaSQL(wrap = true, dropMigrationsTable = false): Promise<string> {
     let ret = '';
 
     for (const meta of Object.values(this.metadata.getAll())) {
       ret += this.dump(this.dropTable(meta.collection), '\n');
+    }
+
+    if (dropMigrationsTable) {
+      ret += this.dump(this.dropTable(this.config.get('migrations').tableName!), '\n');
     }
 
     return this.wrapSchema(ret + '\n', wrap);

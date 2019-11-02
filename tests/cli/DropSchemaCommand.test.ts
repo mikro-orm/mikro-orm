@@ -28,10 +28,20 @@ describe('DropSchemaCommand', () => {
     expect(schemaGenerator.dropSchema.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
+    await expect(cmd.handler({ run: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
+    expect(schemaGenerator.dropSchema.mock.calls.length).toBe(2);
+    expect(schemaGenerator.dropSchema.mock.calls[1]).toEqual([true, true]);
+    expect(close.mock.calls.length).toBe(2);
+
     expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(2);
+    expect(close.mock.calls.length).toBe(3);
+
+    await expect(cmd.handler({ dump: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
+    expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(2);
+    expect(schemaGenerator.getDropSchemaSQL.mock.calls[1]).toEqual([true, true]);
+    expect(close.mock.calls.length).toBe(4);
   });
 
 });

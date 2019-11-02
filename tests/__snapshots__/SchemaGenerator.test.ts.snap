@@ -378,7 +378,20 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-drop-schema-dump 1`] = `
+exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-drop-schema-dump-1 1`] = `
+"drop table if exists \`author3\`;
+drop table if exists \`book3\`;
+drop table if exists \`book_tag3\`;
+drop table if exists \`publisher3\`;
+drop table if exists \`test3\`;
+drop table if exists \`book3_to_book_tag3\`;
+drop table if exists \`publisher3_to_test3\`;
+drop table if exists \`mikro_orm_migrations\`;
+
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-drop-schema-dump-2 1`] = `
 "pragma foreign_keys = off;
 
 drop table if exists \`author3\`;

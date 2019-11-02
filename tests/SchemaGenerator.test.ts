@@ -127,8 +127,12 @@ describe('SchemaGenerator', () => {
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
-    const dropDump = await generator.getDropSchemaSQL();
-    expect(dropDump).toMatchSnapshot('sqlite-drop-schema-dump');
+    const dropDump = await generator.getDropSchemaSQL(false, true);
+    expect(dropDump).toMatchSnapshot('sqlite-drop-schema-dump-1');
+    await generator.dropSchema(true, true);
+
+    const dropDump2 = await generator.getDropSchemaSQL();
+    expect(dropDump2).toMatchSnapshot('sqlite-drop-schema-dump-2');
     await generator.dropSchema();
 
     const createDump = await generator.getCreateSchemaSQL();
