@@ -134,7 +134,7 @@ export class MigrationCommandFactory {
     }
 
     if (method === 'up' && (Utils.isEmpty(options) || options.to === 0)) {
-      return msg + 'the latest version';
+      return msg + ' to the latest version';
     }
 
     if (Utils.isString(options.to)) {

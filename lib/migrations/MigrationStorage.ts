@@ -1,9 +1,8 @@
-import { Storage } from 'umzug';
 import { AbstractSqlDriver } from '../drivers';
 import { MigrationsOptions } from '../utils';
 import { Table } from '../schema';
 
-export class MigrationStorage implements Storage {
+export class MigrationStorage {
 
   private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
