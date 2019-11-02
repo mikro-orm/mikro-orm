@@ -21,12 +21,13 @@ describe('EntityManagerMariaDb', () => {
     expect(await orm.isConnected()).toBe(true);
   });
 
-  test('should return mysql driver', async () => {
+  test('should return mariadb driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
-    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).insertId).not.toBeNull();
+    const author = await driver.nativeInsert(Author2.name, { name: 'name', email: 'email' });
+    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
+    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);

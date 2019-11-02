@@ -19,7 +19,7 @@ export function ManyToOne<T extends AnyEntity<T>>(
     Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE] } as EntityProperty;
     const prop = Object.assign(property, options);
-    Utils.defaultValue(prop, 'nullable', !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL));
+    Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     meta.properties[propertyName] = prop;
   };
 }

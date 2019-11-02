@@ -46,8 +46,9 @@ describe('EntityManagerMySql', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
+    const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
-    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).insertId).not.toBeNull();
+    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);
@@ -95,9 +96,6 @@ describe('EntityManagerMySql', () => {
     author.favouriteAuthor = author;
     await repo.persistAndFlush(author);
     const a = await repo.findOne(author);
-
-    // const authors1 = await repo.find({ books: { author: 123 }, favouriteBook: null });
-    // const authors2 = await orm.em.find(Book2, { author: 123 });
 
     const authors = await repo.find({ favouriteAuthor: author });
     expect(a).toBe(author);
@@ -176,7 +174,7 @@ describe('EntityManagerMySql', () => {
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(bar.id, ['baz']);
     expect(wrap(a!.baz).isInitialized()).toBe(true);
-    expect(wrap(a!.baz.bar).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
   });
 
   test('inverse side of 1:1 is ignored in change set', async () => {
@@ -719,7 +717,7 @@ describe('EntityManagerMySql', () => {
     await wrap(jon.favouriteBook).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
-    expect(jon.favouriteBook.title).toBe('Bible');
+    expect(jon.favouriteBook!.title).toBe('Bible');
   });
 
   test('populate OneToOne relation', async () => {
@@ -731,7 +729,7 @@ describe('EntityManagerMySql', () => {
 
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, ['baz']))!;
     expect(b1.baz).toBeInstanceOf(FooBaz2);
-    expect(b1.baz.id).toBe(baz.id);
+    expect(b1.baz!.id).toBe(baz.id);
     expect(wrap(b1).toJSON()).toMatchObject({ baz: wrap(baz).toJSON() });
   });
 
@@ -1396,8 +1394,9 @@ describe('EntityManagerMySql', () => {
     const t3 = Test2.create('t3');
     t3.book = book3;
     author.books.add(book1, book2, book3);
-    author.favouriteBook = book3;
     await orm.em.persistAndFlush([author, t1, t2, t3]);
+    author.favouriteBook = book3;
+    await orm.em.flush();
     orm.em.clear();
 
     const mock = jest.fn();

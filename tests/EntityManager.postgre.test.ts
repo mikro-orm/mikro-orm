@@ -44,8 +44,9 @@ describe('EntityManagerPostgre', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
-    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), tags: [tag.insertId] })).resolves.not.toBeNull();
+    const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
+    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
@@ -584,7 +585,7 @@ describe('EntityManagerPostgre', () => {
     await wrap(jon.favouriteBook).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
-    expect(jon.favouriteBook.title).toBe('Bible');
+    expect(jon.favouriteBook!.title).toBe('Bible');
   });
 
   test('many to many relation', async () => {
@@ -904,7 +905,8 @@ describe('EntityManagerPostgre', () => {
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
 
-    const b = orm.em.create(Book2, { uuid: v4(), title: 'native name 2' }); // do not provide createdAt, default value from DB will be used
+    const author = orm.em.getReference(Author2, res4);
+    const b = orm.em.create(Book2, { uuid: v4(), author, title: 'native name 2' }); // do not provide createdAt, default value from DB will be used
     await orm.em.persistAndFlush(b);
     expect(b.createdAt).toBeDefined();
     expect(b.createdAt).toBeInstanceOf(Date);

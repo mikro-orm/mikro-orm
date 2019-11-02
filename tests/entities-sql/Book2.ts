@@ -26,10 +26,10 @@ export class Book2 implements UuidEntity<Book2> {
   @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ nullable: true })
+  @Property()
   meta?: Book2Meta;
 
-  @ManyToOne({ cascade: [] })
+  @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })

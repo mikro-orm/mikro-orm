@@ -40,10 +40,10 @@ export class Author2 extends BaseEntity2 {
   books!: Collection<Book2>;
 
   @ManyToOne()
-  favouriteBook!: Book2;
+  favouriteBook?: Book2;
 
   @ManyToOne()
-  favouriteAuthor!: Author2;
+  favouriteAuthor?: Author2;
 
   @Property({ persist: false })
   version!: number;

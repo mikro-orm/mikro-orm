@@ -76,13 +76,13 @@ describe('EntityHelperMySql', () => {
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOneOrFail(bar.id, ['baz.bar']);
     expect(wrap(a.baz).isInitialized()).toBe(true);
-    expect(wrap(a.baz.bar).isInitialized()).toBe(true);
+    expect(wrap(a.baz!.bar).isInitialized()).toBe(true);
     expect(wrap(a).toJSON()).toEqual({
       baz: {
         bar: { id: 1 }, // circular reference is simplified
         id: 1,
         name: 'fz',
-        version: a.baz.version,
+        version: a.baz!.version,
       },
       fooBar: null,
       id: 1,

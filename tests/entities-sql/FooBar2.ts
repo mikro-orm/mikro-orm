@@ -12,10 +12,10 @@ export class FooBar2 extends BaseEntity22 implements IdEntity<FooBar2> {
   name!: string;
 
   @OneToOne({ orphanRemoval: true })
-  baz!: FooBaz2;
+  baz?: FooBaz2;
 
   @OneToOne()
-  fooBar!: FooBar2;
+  fooBar?: FooBar2;
 
   @Property({ version: true, length: 3 })
   version!: Date;

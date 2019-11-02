@@ -10,7 +10,7 @@ export class Test2 implements IdEntity<Test2> {
   @Property()
   name?: string;
 
-  @OneToOne({ entity: 'Book2', cascade: [], inversedBy: 'test' })
+  @OneToOne({ cascade: [] })
   book?: Book2;
 
   @Property({ version: true })

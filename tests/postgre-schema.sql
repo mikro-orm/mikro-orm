@@ -16,7 +16,7 @@ drop table if exists "label2" cascade;
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "identities" json null, "born" timestamptz(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "author2_email_unique" unique ("email");
 
-create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" double precision null, "meta" json null, "author_id" int4 null, "publisher_id" int4 null, "foo" varchar(255) null);
+create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" double precision null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
 create table "book_tag2" ("id" serial primary key, "name" varchar(50) not null);
@@ -41,10 +41,10 @@ create table "publisher2_to_test2" ("id" serial primary key, "publisher2_id" int
 alter table "author2" add constraint "author2_favourite_book_uuid_pk_foreign" foreign key ("favourite_book_uuid_pk") references "book2" ("uuid_pk") on update cascade on delete set null;
 alter table "author2" add constraint "author2_favourite_author_id_foreign" foreign key ("favourite_author_id") references "author2" ("id") on update cascade on delete set null;
 
-alter table "book2" add constraint "book2_author_id_foreign" foreign key ("author_id") references "author2" ("id") on delete set null;
+alter table "book2" add constraint "book2_author_id_foreign" foreign key ("author_id") references "author2" ("id");
 alter table "book2" add constraint "book2_publisher_id_foreign" foreign key ("publisher_id") references "publisher2" ("id") on update cascade on delete cascade;
 
-alter table "test2" add constraint "test2_book_uuid_pk_foreign" foreign key ("book_uuid_pk") references "book2" ("uuid_pk") on delete set null;
+alter table "test2" add constraint "test2_book_uuid_pk_foreign" foreign key ("book_uuid_pk") references "book2" ("uuid_pk");
 
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade on delete set null;
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "foo_bar2" ("id") on update cascade on delete set null;

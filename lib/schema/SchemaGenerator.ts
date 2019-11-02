@@ -291,7 +291,10 @@ export class SchemaGenerator {
     const pk2 = meta2.properties[meta2.primaryKey];
     col.references(pk2.fieldName).inTable(meta2.collection);
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
-    col.onDelete(cascade ? 'cascade' : 'set null');
+
+    if (cascade || prop.nullable) {
+      col.onDelete(cascade ? 'cascade' : 'set null');
+    }
 
     if (prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
       col.onUpdate('cascade');

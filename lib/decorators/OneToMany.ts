@@ -38,7 +38,7 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
     Object.assign(prop, options);
 
     if (reference === ReferenceType.ONE_TO_ONE) {
-      Utils.defaultValue(prop, 'nullable', !prop.cascade.includes(Cascade.REMOVE) && !prop.cascade.includes(Cascade.ALL));
+      Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
       prop.owner = prop.owner || !!prop.inversedBy || !prop.mappedBy;
       prop.unique = prop.owner;
 

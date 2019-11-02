@@ -71,8 +71,8 @@ export class Book2 {
   @Property({ nullable: true })
   meta?: object;
 
-  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE], nullable: true })
-  author?: Author2;
+  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE] })
+  author: Author2;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
@@ -302,8 +302,8 @@ export class Book2 {
   @Property({ nullable: true })
   meta?: object;
 
-  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE], nullable: true })
-  author?: Author2;
+  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE] })
+  author: Author2;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
