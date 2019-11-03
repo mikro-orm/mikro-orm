@@ -43,28 +43,28 @@ Before you submit your pull request consider the following guidelines:
 
 - Fork the project, install NPM dependencies and start docker to have all databases ready:
 
-    ```shell
+    ```sh
     yarn
     docker-compose up -d
     ```
 
-- You have to create the databases manually using the following commands.
+- You have to create MySQL and PostgreSQL databases manually using the following commands.
     
-    ```shell
-    sh scripts/database_setup.sh
+    ```sh
+    sh tests/scripts/sdatabase_setup.sh
     ```
 
-- You can skip this part if the script works fine for you.
+- You can skip the following section part if the script works fine for you.
 
-    ```shell
+    ```sh
     docker ps
     ```
 
     **Read the names of the containers, there should be 3 containers running.**
 
-    ## MYSQL
+    #### MYSQL
 
-    ```shell
+    ```sh
     docker-compose exec <name_of_mysql_container> bash
     mysql
     create database mikro_orm_test;
@@ -72,8 +72,8 @@ Before you submit your pull request consider the following guidelines:
     exit
     ```
 
-    ## POSTGRE
-    ```shell
+    #### POSTGRESQL
+    ```sh
     docker-compose exec <name_of_postgre_container> bash
     psql --u postgres
     create database mikro_orm_test;
@@ -83,7 +83,7 @@ Before you submit your pull request consider the following guidelines:
 
 - Run tests before you start working, to be sure they all pass and your setup is working correctly:
 
-     ```shell
+     ```sh
      yarn test
      ```
 
