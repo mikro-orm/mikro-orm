@@ -18,7 +18,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ onUpdate: () => new Date(), length: 3, default: 'current_timestamp(3)' })
   updatedAt = new Date();
 
-  @Property()
+  @Property({ index: true })
   name: string;
 
   @Property({ unique: true })
