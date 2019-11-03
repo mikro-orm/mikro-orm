@@ -51,10 +51,10 @@ Before you submit your pull request consider the following guidelines:
 - You have to create MySQL and PostgreSQL databases manually using the following commands.
     
     ```sh
-    sh tests/scripts/sdatabase_setup.sh
+    sh tests/scripts/database_setup.sh
     ```
 
-- You can skip the following section part if the script works fine for you.
+- You can skip the following section if the script works fine for you.
 
     ```sh
     docker ps
@@ -62,7 +62,7 @@ Before you submit your pull request consider the following guidelines:
 
     **Read the names of the containers, there should be 3 containers running.**
 
-    #### MYSQL
+    #### MySQL
 
     ```sh
     docker-compose exec <name_of_mysql_container> bash
@@ -72,7 +72,7 @@ Before you submit your pull request consider the following guidelines:
     exit
     ```
 
-    #### POSTGRESQL
+    #### PostgreSQL
     ```sh
     docker-compose exec <name_of_postgre_container> bash
     psql --u postgres
