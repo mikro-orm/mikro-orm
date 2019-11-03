@@ -21,10 +21,10 @@ export class ArrayCollection<T extends AnyEntity<T>> {
     return [...this.items];
   }
 
-  toArray(visited: string[] = []): Dictionary[] {
+  toArray(): Dictionary[] {
     return this.getItems().map(item => {
       const meta = wrap(this.owner).__em.getMetadata().get(item.constructor.name);
-      const args = [...meta.toJsonParams.map(() => undefined), [this.property.name], visited];
+      const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return wrap(item).toJSON(...args);
     });

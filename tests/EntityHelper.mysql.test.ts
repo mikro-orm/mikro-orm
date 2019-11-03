@@ -14,7 +14,7 @@ describe('EntityHelperMySql', () => {
   });
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
-  test('#assign() should update entity values [mysql]', async () => {
+  test('assign() should update entity values [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
@@ -32,7 +32,7 @@ describe('EntityHelperMySql', () => {
     expect(book.author).toBe(jon);
   });
 
-  test('#assign() should update entity collection [mysql]', async () => {
+  test('assign() should update entity collection [mysql]', async () => {
     const other = new BookTag2('other');
     await orm.em.persistAndFlush(other);
     const jon = new Author2('Jon Snow', 'snow@wall.st');
@@ -52,7 +52,7 @@ describe('EntityHelperMySql', () => {
     expect(book.tags.getIdentifiers()).toMatchObject([tag2.id]);
   });
 
-  test('#assign() allows deep merging of object properties [mysql]', async () => {
+  test('assign() allows deep merging of object properties [mysql]', async () => {
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
     book.meta = { items: 5, category: 'test' };

@@ -178,6 +178,10 @@ export class UnitOfWork {
   }
 
   private findNewEntities<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = []): void {
+    if (visited.includes(entity)) {
+      return;
+    }
+
     visited.push(entity);
     const meta = this.metadata.get<T>(entity.constructor.name);
     const wrapped = wrap(entity);
