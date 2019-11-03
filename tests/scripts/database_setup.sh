@@ -1,4 +1,5 @@
-echo "Creating MYSQL database."
+#!/usr/bin/env bash
+echo "Creating MySQL database."
 MYSQL_CONTAINER_NAME=$(docker ps --format="{{.Names}}" | grep 'mysql')
 if [[ -z "$MYSQL_CONTAINER_NAME" ]]; then
     echo "MySQL container not running. Please check the name of the container."
