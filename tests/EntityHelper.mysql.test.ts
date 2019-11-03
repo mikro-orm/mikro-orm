@@ -10,7 +10,7 @@ describe('EntityHelperMySql', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql();
-    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config, orm.config.getLogger()).discover();
+    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
   });
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 

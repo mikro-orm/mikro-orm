@@ -14,16 +14,16 @@ export class MetadataDiscovery {
   private readonly namingStrategy = this.config.getNamingStrategy();
   private readonly metadataProvider = this.config.getMetadataProvider();
   private readonly cache = this.config.getCacheAdapter();
+  private readonly logger = this.config.getLogger();
   private readonly schemaHelper = this.platform.getSchemaHelper();
   private readonly validator = new MetadataValidator();
   private readonly discovered: EntityMetadata[] = [];
 
   constructor(private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration,
-              private readonly logger: Logger) { }
+              private readonly config: Configuration) { }
 
-  async discover(): Promise<MetadataStorage> {
+  async discover(preferTsNode = true): Promise<MetadataStorage> {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started`);
     this.discovered.length = 0;
@@ -34,7 +34,7 @@ export class MetadataDiscovery {
 
     if (this.config.get('entities').length > 0) {
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (this.config.get('tsNode') || Utils.detectTsNode()) {
+    } else if (preferTsNode && (this.config.get('tsNode') || Utils.detectTsNode())) {
       await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));

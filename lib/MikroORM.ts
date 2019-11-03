@@ -21,7 +21,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const driver = await orm.connect();
 
     try {
-      const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config, orm.logger);
+      const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config);
       orm.metadata = await discovery.discover();
       orm.em = new EntityManager(orm.config, driver, orm.metadata);
       orm.metadata.decorate(orm.em);

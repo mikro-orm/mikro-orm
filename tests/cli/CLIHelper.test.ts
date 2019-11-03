@@ -23,6 +23,7 @@ describe('CLIHelper', () => {
     expect(cli.$0).toBe('mikro-orm');
     expect(cli.getCommandInstance().getCommands()).toEqual([
       'cache:clear',
+      'cache:generate',
       'generate-entities',
       'schema:create',
       'schema:drop',
@@ -46,6 +47,7 @@ describe('CLIHelper', () => {
     expect(tsNodeMock).toHaveBeenCalled();
     expect(cli.getCommandInstance().getCommands()).toEqual([
       'cache:clear',
+      'cache:generate',
       'generate-entities',
       'schema:create',
       'schema:drop',

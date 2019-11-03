@@ -14,7 +14,7 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo();
-    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config, orm.config.getLogger()).discover();
+    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
     factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config, orm.getMetadata());
     expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });

@@ -12,6 +12,7 @@ import { SchemaCommandFactory } from './SchemaCommandFactory';
 import { MigrationCommandFactory } from './MigrationCommandFactory';
 import { DebugCommand } from './DebugCommand';
 import { Dictionary } from '../types';
+import { GenerateCacheCommand } from './GenerateCacheCommand';
 
 export class CLIHelper {
 
@@ -62,6 +63,7 @@ export class CLIHelper {
       .alias('v', 'version')
       .alias('h', 'help')
       .command(new ClearCacheCommand())
+      .command(new GenerateCacheCommand())
       .command(new GenerateEntitiesCommand())
       .command(SchemaCommandFactory.create('create'))
       .command(SchemaCommandFactory.create('drop'))
