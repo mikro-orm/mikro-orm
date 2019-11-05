@@ -24,7 +24,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ unique: true })
   email: string;
 
-  @Property()
+  @Property({ index: 'age_1' })
   age?: number;
 
   @Property({ default: 0 })

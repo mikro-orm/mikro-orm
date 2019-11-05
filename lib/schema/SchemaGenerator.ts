@@ -257,8 +257,16 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.notNullable(), !nullable);
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), prop.unsigned);
-    Utils.runIfNotEmpty(() => col.index(), indexed);
+    this.indexColumn(col, indexed, prop.index);
     Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
+  }
+
+  private indexColumn(col: ColumnBuilder, indexed: boolean, index: any) {
+    if (typeof index === 'string') {
+      Utils.runIfNotEmpty(() => col.index(index), indexed);
+    } else {
+      Utils.runIfNotEmpty(() => col.index(), indexed);
+    }
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {
