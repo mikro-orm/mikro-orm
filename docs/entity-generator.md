@@ -40,4 +40,9 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 $ ts-node generate-entities
 ```
 
+## Current limitations
+
+- many to many relations are not supported, pivot table will be represented as separate entity
+- in mysql, tinyint columns will be defined as boolean properties
+
 [&larr; Back to table of contents](index.md#table-of-contents)

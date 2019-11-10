@@ -222,10 +222,13 @@ export class SchemaGenerator {
       return table.increments(prop.fieldName);
     }
 
-    const col = table.specificType(prop.fieldName, prop.columnType);
-    this.configureColumn(meta, prop, col, alter);
+    if (prop.enum && prop.items && prop.items.every(item => Utils.isString(item))) {
+      const col = table.enum(prop.fieldName, prop.items!);
+      return this.configureColumn(meta, prop, col, alter);
+    }
 
-    return col;
+    const col = table.specificType(prop.fieldName, prop.columnType);
+    return this.configureColumn(meta, prop, col, alter);
   }
 
   private updateTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, column: Column, diff: IsSame): void {
@@ -263,6 +266,8 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.unsigned(), prop.unsigned);
     Utils.runIfNotEmpty(() => col.index(), indexed);
     Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
+
+    return col;
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {

@@ -16,7 +16,7 @@ alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
 create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
 
-create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` varchar(10) not null) default character set utf8 engine = InnoDB;
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`version\` int(11) not null default 1) default character set utf8 engine = InnoDB;
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
@@ -113,7 +113,7 @@ alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
 create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
 
-create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` varchar(10) not null) default character set utf8 engine = InnoDB;
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`version\` int(11) not null default 1) default character set utf8 engine = InnoDB;
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
@@ -192,7 +192,7 @@ alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
 
-create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" varchar(10) not null);
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
 
 create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" varchar(36) null, \\"version\\" int4 not null default 1);
 alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
@@ -281,7 +281,7 @@ alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
 
-create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" varchar(10) not null);
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
 
 create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" varchar(36) null, \\"version\\" int4 not null default 1);
 alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");

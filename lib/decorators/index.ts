@@ -6,5 +6,6 @@ export * from './ManyToOne';
 export * from './ManyToMany';
 export { OneToMany, OneToManyOptions } from './OneToMany';
 export * from './Property';
+export * from './Enum';
 export * from './Repository';
 export * from './hooks';

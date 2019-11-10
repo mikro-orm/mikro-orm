@@ -47,7 +47,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     const sql = this.getSql(this.client.raw(queryOrKnex, params));
-    const res = await this.executeQuery<any>(sql, () => this.client.raw(queryOrKnex, params));
+    const res = await this.executeQuery<any>(sql, () => this.client.raw(queryOrKnex, params) as unknown as Promise<QueryResult>);
     return this.transformRawResult<T>(res, method);
   }
 
@@ -79,7 +79,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
   protected async executeKnex(qb: QueryBuilder | Raw, method: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]> {
     const sql = this.getSql(qb);
-    const res = await this.executeQuery(sql, () => qb);
+    const res = await this.executeQuery(sql, () => qb as unknown as Promise<QueryResult>);
 
     return this.transformKnexResult(res, method);
   }

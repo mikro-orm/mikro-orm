@@ -13,7 +13,7 @@ discuss specifics.
 - Value transformers (e.g. mapping of `Date` object to formatted string)
 - Schema sync (allow automatic synchronization during development)
 - Migrations via `umzug`
-- Improved support for data types like date, time, enum, timestamp
+- Improved support for data types like date, time, timestamp
 - Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination

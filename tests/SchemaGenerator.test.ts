@@ -214,6 +214,7 @@ describe('SchemaGenerator', () => {
     meta.set('NewTable', newTableMeta);
     const authorMeta = meta.get('Author2');
     authorMeta.properties.termsAccepted.default = false;
+    const now = Date.now();
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-create-table');
     await generator.updateSchema();
 

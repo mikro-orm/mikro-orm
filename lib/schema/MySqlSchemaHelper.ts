@@ -7,16 +7,20 @@ import { Column } from './DatabaseTable';
 export class MySqlSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: ['int(?)', 'int', 'float', 'double'],
+    boolean: ['tinyint(1)', 'tinyint'],
+    number: ['int(?)', 'int', 'float', 'double', 'tinyint', 'smallint', 'bigint'],
     float: ['float'],
     double: ['double'],
-    string: ['varchar(?)', 'varchar', 'text'],
+    tinyint: ['tinyint'],
+    smallint: ['smallint'],
+    bigint: ['bigint'],
+    string: ['varchar(?)', 'varchar', 'text', 'enum'],
     Date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
     date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
-    boolean: ['tinyint(1)', 'tinyint'],
     text: ['text'],
     object: ['json'],
     json: ['json'],
+    enum: ['enum'],
   };
 
   static readonly DEFAULT_TYPE_LENGTHS = {

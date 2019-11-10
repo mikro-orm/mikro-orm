@@ -110,6 +110,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   unsigned: boolean;
   persist?: boolean;
   hidden?: boolean;
+  enum?: boolean;
+  items?: (number | string)[];
   version?: boolean;
   eager?: boolean;
   setter?: boolean;
