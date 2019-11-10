@@ -37,19 +37,20 @@ transactions automatically.
 When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
 of transactions simply by calling `em.persistLater()` and once all your changes 
-are ready, simply calling `flush()` will run them inside a transaction. 
+are ready, calling `flush()` will run them inside a transaction. 
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
 ```typescript
-const user = await em.findOne(User, 1);
+const user = await em.findOneOrFail(User, 1);
 user.email = 'foo@bar.com';
 const car = new Car();
 user.cars.add(car);
 
 // thanks to bi-directional cascading we only need to persist user entity
 // flushing will create a transaction, insert new car and update user with new email
-await em.persistAndFlush(user);
+// as user entity is managed, calling flush() is enough
+await em.flush();
 ```
 
 ### Separation of Domain Logic and Persistence Layer
@@ -57,13 +58,38 @@ await em.persistAndFlush(user);
 MikroORM allows you to implement your domain/business logic directly in your entities. To 
 maintain always valid entities, you can use constructors to mark required properties. 
 
-Once your entities are loaded, you can simply work with them and forget about persistence. 
+Once your entities are loaded, you can just work with them and forget about persistence. 
 As you do not have to care about persistence, most of entity interactions can be synchronous. 
 When you have done all changes, you call `em.flush()`. It will trigger computing of change 
 sets. Only entities that were changed will generate database queries, if there are no changes, 
 no transaction will be started. 
 
 This increases maintainability, flexibility and testability.
+
+```typescript
+const user = await em.findOneOrFail(User, 1, ['cars', 'address']);
+user.title = 'Mr.';
+user.address.street = '10 Downing Street'; // address is 1:1 relation of Address entity
+user.cars.getItems().forEach(car => car.forSale = true); // cars is 1:m collection of Car entities
+const car = new Car('VW');
+user.cars.add(car);
+
+// now we can flush all changes done to managed entities
+await em.flush();
+```
+
+In this example, `em.flush()` call will execute those queries:
+
+```sql
+begin;
+update user set title = 'Mr.' where id = 1;
+update user_address set street = '10 Downing Street' where id = 123;
+update car set for_sale = true where id = 1;
+update car set for_sale = true where id = 2;
+update car set for_sale = true where id = 3;
+inser into car (brand, owner) values ('VW', 1);
+commit;
+```
 
 ### Only One Instance of Entity
 

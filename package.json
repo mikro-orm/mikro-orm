@@ -109,7 +109,7 @@
   "peerDependencies": {
     "mariadb": "^2.1.0",
     "mongodb": "^3.2.0",
-    "mysql2": "^1.6.0",
+    "mysql2": "^2.0.0",
     "pg": "^7.10.0",
     "sqlite3": "^4.0.0"
   },
@@ -150,7 +150,7 @@
     "lint-staged": "^9.2.5",
     "mariadb": "^2.1.1",
     "mongodb": "^3.2.3",
-    "mysql2": "^1.7.0",
+    "mysql2": "^2.0.0",
     "pg": "^7.12.1",
     "rimraf": "^3.0.0",
     "semantic-release": "^15.13.24",
