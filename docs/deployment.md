@@ -37,6 +37,9 @@ export class Book implements IdEntity<Book> {
   @Property({ type: 'string' })
   title: string;
 
+  @Enum({ type: 'BookStatus' })
+  status: BookStatus;
+
   @ManyToOne(() => Author) // or `@ManyToOne({ type: 'Author' })` or `@ManyToOne({ entity: () => Author })`
   author1: Author;
 
@@ -49,7 +52,15 @@ export class Book implements IdEntity<Book> {
   author3: Author;
 
 }
+
+export enum BookStatus {
+  SOLD_OUT = 'sold',
+  ACTIVE = 'active',
+  UPCOMING = 'upcoming',
+ }
 ```
+
+> For numeric enums this is not be required.
 
 ## Deploy your entity source files
 
