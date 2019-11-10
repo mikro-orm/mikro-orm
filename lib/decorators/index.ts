@@ -1,6 +1,7 @@
 export * from './PrimaryKey';
 export * from './SerializedPrimaryKey';
 export * from './Entity';
+export * from './Indexed';
 export * from './OneToOne';
 export * from './ManyToOne';
 export * from './ManyToMany';

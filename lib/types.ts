@@ -129,7 +129,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumn: string;
   referenceColumnName: string;
   referencedTableName: string;
-  index?: boolean;
+  index?: boolean | string;
 }
 
 export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate' | 'afterUpdate' | 'beforeDelete' | 'afterDelete';
@@ -152,4 +152,5 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;
+  index: boolean | string;
 }
