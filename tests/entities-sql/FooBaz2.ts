@@ -16,9 +16,6 @@ export class FooBaz2 implements IdEntity<FooBaz2> {
   @Property({ version: true })
   version!: Date;
 
-  @Index({ type: 'string', name: 'age_1' })
-  age!: string;
-
   constructor(name: string) {
     this.name = name;
   }

@@ -13,6 +13,7 @@ alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favour
 
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
+alter table \`book2\` add index \`title_1\`(\`title\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
@@ -112,6 +113,7 @@ alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favour
 
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned null, \`publisher_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
+alter table \`book2\` add index \`title_1\`(\`title\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
@@ -195,6 +197,7 @@ create index \\"age_1\\" on \\"author2\\" (\\"age\\");
 
 create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+create index \\"title_1\\" on \\"book2\\" (\\"title\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
 
@@ -286,6 +289,7 @@ create index \\"age_1\\" on \\"author2\\" (\\"age\\");
 
 create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+create index \\"title_1\\" on \\"book2\\" (\\"title\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
 

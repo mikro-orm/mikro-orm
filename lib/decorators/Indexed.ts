@@ -9,11 +9,13 @@ export function Index(options: IndexOptions = {}): Function {
         const indexName = Utils.isString(options.name) ? options.name : true;
         options.name = propertyName;
         meta.index = options.name;
-        meta.properties[propertyName] = Object.assign({ index: indexName }, options) as EntityProperty;
+        meta.properties[propertyName] = Object.assign({
+            ...meta.properties[propertyName],
+            index: indexName,
+        }, options) as EntityProperty;
     };
 }
 
 export interface IndexOptions {
-    type?: any;
     name?: string;
 }

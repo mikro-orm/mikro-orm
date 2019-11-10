@@ -9,7 +9,9 @@ export function Property(options: PropertyOptions = {}): Function {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
     options.name = options.name || propertyName;
-    const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
+    const prop = Object.assign({ ...meta.properties[propertyName],
+      reference: ReferenceType.SCALAR,
+    }, options) as EntityProperty;
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
@@ -20,7 +22,6 @@ export function Property(options: PropertyOptions = {}): Function {
       prop.type = 'method';
       prop.getterName = propertyName;
     }
-
     meta.properties[prop.name] = prop;
   };
 }
@@ -39,7 +40,7 @@ export type PropertyOptions = {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
-  index?: any;
+  index?: boolean | string;
 };
 
 export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {
