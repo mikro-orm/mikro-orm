@@ -250,6 +250,7 @@ export class SchemaGenerator {
   private configureColumn(meta: EntityMetadata, prop: EntityProperty, col: ColumnBuilder, alter: boolean) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
     const indexed = prop.index || (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
+    const indexName = Utils.isString(prop.index) ? prop.index : undefined;
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
 
     Utils.runIfNotEmpty(() => col.unique(), prop.unique);
@@ -257,16 +258,8 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.notNullable(), !nullable);
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), prop.unsigned);
-    this.indexColumn(col, indexed, prop.index);
+    Utils.runIfNotEmpty(() => col.index(indexName), indexed);
     Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
-  }
-
-  private indexColumn(col: ColumnBuilder, indexed: boolean, index: any) {
-    if (typeof index === 'string') {
-      Utils.runIfNotEmpty(() => col.index(index), indexed);
-    } else {
-      Utils.runIfNotEmpty(() => col.index(), indexed);
-    }
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {
