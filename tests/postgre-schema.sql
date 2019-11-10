@@ -21,7 +21,7 @@ alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
 create table "book_tag2" ("id" serial primary key, "name" varchar(50) not null);
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" varchar(10) not null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null);
 
 create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");

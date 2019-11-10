@@ -124,6 +124,40 @@ as nullable property (mainly for SQL schema generator).
 
 > This auto-detection works only when you omit the `type` attribute.
 
+### Enums
+
+To define enum property, use `@Enum()` decorator. Enums can be either numeric or string valued. 
+
+For schema generator to work properly in case of string enums, you need to define the enum 
+is same file as where it is used, so its values can be automatically discovered. If you want 
+to define the enum in another file, you should reexport it also in place where you use it. 
+
+> You can also set enum items manually via `items: string[]` attribute.  
+
+```typescript
+@Entity()
+export class User implements IdEntity<User> {
+
+  @Enum()
+  role: UserRole; // string enum
+
+  @Enum()
+  status: UserStatus; // numeric enum
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+
+export const enum UserStatus {
+  DISABLED,
+  ACTIVE,
+}
+``` 
+
 ## Virtual Properties
 
 You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
@@ -137,7 +171,7 @@ are both hidden from the serialized response, replaced with virtual properties `
 
 ```typescript
 @Entity()
-export class User {
+export class User implements IdEntity<User> {
 
   @Property({ hidden: true })
   firstName: string;

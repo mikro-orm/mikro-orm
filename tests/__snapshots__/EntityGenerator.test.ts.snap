@@ -178,8 +178,20 @@ export class Publisher2 {
   @Property({ length: 255 })
   name: string;
 
-  @Property({ length: 10 })
+  @Property({ type: 'enum' })
   type: string;
+
+  @Property({ nullable: true })
+  enum1?: boolean;
+
+  @Property({ nullable: true })
+  enum2?: boolean;
+
+  @Property({ nullable: true })
+  enum3?: boolean;
+
+  @Property({ type: 'enum', nullable: true })
+  enum4?: string;
 
 }
 ",
@@ -422,8 +434,20 @@ export class Publisher2 {
   @Property({ length: 255 })
   name: string;
 
-  @Property({ length: 10 })
+  @Property({ type: 'text' })
   type: string;
+
+  @Property({ type: 'int2', nullable: true })
+  enum1?: number;
+
+  @Property({ type: 'int2', nullable: true })
+  enum2?: number;
+
+  @Property({ type: 'int2', nullable: true })
+  enum3?: number;
+
+  @Property({ type: 'text', nullable: true })
+  enum4?: string;
 
 }
 ",

@@ -127,7 +127,7 @@ export class EntityGenerator {
       options.fieldName = `'${column.name}'`;
     }
 
-    if (column.maxLength) {
+    if (column.maxLength && column.type !== 'enum') {
       options.length = column.maxLength;
     }
   }
@@ -189,7 +189,7 @@ export class EntityGenerator {
     return field.replace(/_(\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
   }
 
-  private getPropertyType(column: Column, defaultType: string = 'string'): string {
+  private getPropertyType(column: Column, defaultType = 'string'): string {
     if (column.fk) {
       return this.namingStrategy.getClassName(column.fk.referencedTableName, '_');
     }

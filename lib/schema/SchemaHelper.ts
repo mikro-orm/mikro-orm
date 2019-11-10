@@ -3,6 +3,7 @@ import { Dictionary, EntityProperty } from '../types';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column, Index } from './DatabaseTable';
 import { ReferenceType } from '../entity';
+import { Utils } from '../utils';
 
 export abstract class SchemaHelper {
 
@@ -19,7 +20,12 @@ export abstract class SchemaHelper {
   }
 
   getTypeDefinition(prop: EntityProperty, types: Record<string, string[]> = {}, lengths: Record<string, number> = {}, allowZero = false): string {
-    const t = prop.type.toLowerCase();
+    let t = prop.type.toLowerCase();
+
+    if (prop.enum) {
+      t = prop.items && prop.items.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
+    }
+
     let type = (types[t] || types.json || types.text || [t])[0];
 
     if (type.includes('(?)')) {

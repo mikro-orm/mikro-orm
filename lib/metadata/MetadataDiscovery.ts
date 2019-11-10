@@ -3,7 +3,7 @@ import globby from 'globby';
 import chalk from 'chalk';
 
 import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity } from '../types';
-import { Configuration, Logger, Utils, ValidationError } from '../utils';
+import { Configuration, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, ReferenceType } from '../entity';
@@ -81,7 +81,8 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(file);
       const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
-      const target = this.getEntityPrototype(path, name);
+      const target = this.getPrototype(path, name);
+      this.metadata.set(name, MetadataStorage.getMetadata(name));
       await this.discoverEntity(target, path);
     }
   }
@@ -231,7 +232,7 @@ export class MetadataDiscovery {
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
       this.initVersionProperty(meta, prop);
-      this.initColumnType(prop);
+      this.initColumnType(prop, meta.path);
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
     const ret: EntityMetadata[] = [];
@@ -376,9 +377,13 @@ export class MetadataDiscovery {
     prop.default = this.getDefaultVersionValue(prop);
   }
 
-  private initColumnType(prop: EntityProperty): void {
+  private initColumnType(prop: EntityProperty, path?: string): void {
     if (prop.columnType || !this.schemaHelper) {
       return;
+    }
+
+    if (prop.enum && prop.type && path) {
+      return this.initEnumValues(prop, path);
     }
 
     if (prop.reference === ReferenceType.SCALAR) {
@@ -388,6 +393,19 @@ export class MetadataDiscovery {
 
     const meta = this.metadata.get(prop.type);
     prop.columnType = this.schemaHelper.getTypeDefinition(meta.properties[meta.primaryKey]);
+  }
+
+  private initEnumValues(prop: EntityProperty, path: string): void {
+    path = Utils.normalizePath(this.config.get('baseDir'), path);
+    const target = this.getPrototype(path, prop.type, false);
+
+    if (target) {
+      const keys = Object.keys(target);
+      const items = Object.values<string>(target).filter(val => !keys.includes(val));
+      Utils.defaultValue(prop, 'items', items);
+    }
+
+    prop.columnType = this.schemaHelper!.getTypeDefinition(prop);
   }
 
   private initUnsigned(prop: EntityProperty): void {
@@ -404,14 +422,12 @@ export class MetadataDiscovery {
     prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
   }
 
-  private getEntityPrototype(path: string, name: string) {
-    const target = require(path)[name]; // include the file to trigger loading of metadata
+  private getPrototype(path: string, name: string, validate = true) {
+    const target = require(path)[name];
 
-    if (!target) {
+    if (!target && validate) {
       throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
-
-    this.metadata.set(name, MetadataStorage.getMetadata(name));
 
     return target;
   }

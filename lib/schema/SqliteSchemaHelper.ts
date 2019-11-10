@@ -6,7 +6,10 @@ import { Column } from './DatabaseTable';
 export class SqliteSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
-    number: ['integer', 'int', 'bigint'],
+    number: ['integer', 'int', 'tinyint', 'smallint', 'bigint'],
+    tinyint: ['integer'],
+    smallint: ['integer'],
+    bigint: ['integer'],
     boolean: ['integer', 'int'],
     string: ['varchar', 'text'],
     Date: ['datetime', 'text'],

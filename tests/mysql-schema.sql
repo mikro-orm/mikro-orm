@@ -24,7 +24,7 @@ alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 
 create table `book_tag2` (`id` int unsigned not null auto_increment primary key, `name` varchar(50) not null) default character set utf8 engine = InnoDB;
 
-create table `publisher2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` varchar(10) not null) default character set utf8 engine = InnoDB;
+create table `publisher2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` enum('local', 'global') not null, `enum1` tinyint(2) null, `enum2` tinyint(2) null, `enum3` tinyint(2) null, `enum4` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
 create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
