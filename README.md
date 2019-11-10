@@ -42,14 +42,15 @@ are ready, simply calling `flush()` will run them inside a transaction.
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
 ```typescript
-const user = await em.findOne(User, 1);
+const user = await em.findOneOrFail(User, 1);
 user.email = 'foo@bar.com';
 const car = new Car();
 user.cars.add(car);
 
 // thanks to bi-directional cascading we only need to persist user entity
 // flushing will create a transaction, insert new car and update user with new email
-await em.persistAndFlush(user);
+// as user entity is managed, we can simply call flush(), no need to explicitly persist it
+await em.flush();
 ```
 
 ### Separation of Domain Logic and Persistence Layer
@@ -64,6 +65,31 @@ sets. Only entities that were changed will generate database queries, if there a
 no transaction will be started. 
 
 This increases maintainability, flexibility and testability.
+
+```typescript
+const user = await em.findOneOrFail(User, 1, ['cars']);
+user.title = 'Mr.';
+user.address.street = '10 Downing Street'; // address is 1:1 relation of Address entity
+user.cars.getItems().forEach(car => car.forSale = true); // cars is 1:m collection of Car entities
+const car = new Car('VW');
+user.cars.add(car);
+
+// now we can simply flush all changes done to managed entities
+await em.flush();
+```
+
+In this example, `em.flush()` call will execute those queries:
+
+```sql
+begin;
+update user set title = 'Mr.' where id = 1;
+update user_address set street = '10 Downing Street' where id = 123;
+update car set for_sale = true where id = 1;
+update car set for_sale = true where id = 2;
+update car set for_sale = true where id = 3;
+inser into car (brand, owner) values ('VW', 1);
+commit;
+```
 
 ### Only One Instance of Entity
 
