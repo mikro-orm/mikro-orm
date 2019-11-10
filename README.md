@@ -37,7 +37,7 @@ transactions automatically.
 When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
 of transactions simply by calling `em.persistLater()` and once all your changes 
-are ready, simply calling `flush()` will run them inside a transaction. 
+are ready, calling `flush()` will run them inside a transaction. 
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
@@ -49,7 +49,7 @@ user.cars.add(car);
 
 // thanks to bi-directional cascading we only need to persist user entity
 // flushing will create a transaction, insert new car and update user with new email
-// as user entity is managed, we can simply call flush(), no need to explicitly persist it
+// as user entity is managed, calling flush() is enough
 await em.flush();
 ```
 
@@ -58,7 +58,7 @@ await em.flush();
 MikroORM allows you to implement your domain/business logic directly in your entities. To 
 maintain always valid entities, you can use constructors to mark required properties. 
 
-Once your entities are loaded, you can simply work with them and forget about persistence. 
+Once your entities are loaded, you can just work with them and forget about persistence. 
 As you do not have to care about persistence, most of entity interactions can be synchronous. 
 When you have done all changes, you call `em.flush()`. It will trigger computing of change 
 sets. Only entities that were changed will generate database queries, if there are no changes, 
@@ -67,14 +67,14 @@ no transaction will be started.
 This increases maintainability, flexibility and testability.
 
 ```typescript
-const user = await em.findOneOrFail(User, 1, ['cars']);
+const user = await em.findOneOrFail(User, 1, ['cars', 'address']);
 user.title = 'Mr.';
 user.address.street = '10 Downing Street'; // address is 1:1 relation of Address entity
 user.cars.getItems().forEach(car => car.forSale = true); // cars is 1:m collection of Car entities
 const car = new Car('VW');
 user.cars.add(car);
 
-// now we can simply flush all changes done to managed entities
+// now we can flush all changes done to managed entities
 await em.flush();
 ```
 
