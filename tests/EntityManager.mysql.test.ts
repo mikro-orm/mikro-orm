@@ -753,7 +753,7 @@ describe('EntityManagerMySql', () => {
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, ['bar']))!;
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) group by `e0`.`id` order by `e0`.`id` asc');
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -761,7 +761,7 @@ describe('EntityManagerMySql', () => {
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, ['bar']))!;
     expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) group by `e0`.`id` order by `e0`.`id` asc');
+    expect(mock.mock.calls[4][0]).toMatch('select `e0`.* from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -1179,7 +1179,6 @@ describe('EntityManagerMySql', () => {
       'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
       'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
       'where `e1`.`name` != ? ' +
-      'group by `e0`.`uuid_pk`, `e3`.`id` ' +
       'order by `e0`.`title` desc');
     await expect(books.length).toBe(3);
     await expect(books[0].title).toBe('My Life on The Wall, part 3');
@@ -1195,8 +1194,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
       'left join `book_to_tag_unordered` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) ' +
-      'group by `e0`.`uuid_pk`, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e2`.`id`');
+      'where `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
     await expect(tags.length).toBe(6);
     await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
@@ -1411,8 +1409,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
-      'where `e1`.`name` = ? ' +
-      'group by `e0`.`uuid_pk`, `e2`.`id`');
+      'where `e1`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1427,8 +1424,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e3`.`name` = ? ' +
-      'group by `e0`.`uuid_pk`, `e4`.`id`');
+      'where `e3`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1441,8 +1437,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`favourite_book_uuid_pk` = ? ' +
-      'group by `e0`.`uuid_pk`, `e2`.`id`');
+      'where `e1`.`favourite_book_uuid_pk` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1456,8 +1451,7 @@ describe('EntityManagerMySql', () => {
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
-      'where (`e1`.`name` = ?) ' +
-      'group by `e0`.`uuid_pk`, `e3`.`id`');
+      'where (`e1`.`name` = ?)');
   });
 
   test('partial selects', async () => {

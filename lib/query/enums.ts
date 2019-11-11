@@ -9,7 +9,6 @@ export enum QueryType {
 
 export enum QueryFlag {
   DISTINCT = 'DISTINCT',
-  AUTO_GROUP_BY = 'AUTO_GROUP_BY', // automatically add missing fields to group by clause to fix `only_full_group_by` issues
 }
 
 export enum QueryOrder {

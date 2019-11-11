@@ -416,27 +416,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     });
 
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
-
-    // automatically add missing fields to group by clause to fix `only_full_group_by` issues
-    if (this.flags.has(QueryFlag.AUTO_GROUP_BY) && !Utils.isEmpty(this._joins) && !Utils.isEmpty(this._groupBy)) {
-      this.autoGroupJoinedFields();
-    }
-
     this.finalized = true;
-  }
-
-  private autoGroupJoinedFields(): void {
-    this.prepareFields(this._fields!)
-      .map(field => this.helper.splitField('' + field))
-      .filter(([alias]) => alias !== this.alias)
-      .map(([alias, prop]) => `${alias}.${prop.replace(/\s+as.*$/, '')}`)
-      .forEach(field => this._groupBy.push(field));
-
-    Object.keys(this._orderBy)
-      .map(field => this.helper.splitField(field))
-      .filter(([alias]) => alias !== this.alias)
-      .map(([alias, prop]) => `${this._populateMap[alias] || alias}.${prop}`)
-      .forEach(a => this._groupBy.push(a));
   }
 
 }
