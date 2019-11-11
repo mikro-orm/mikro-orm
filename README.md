@@ -53,18 +53,46 @@ user.cars.add(car);
 await em.flush();
 ```
 
-### Separation of Domain Logic and Persistence Layer
+### ChangeSet based persistence
 
-MikroORM allows you to implement your domain/business logic directly in your entities. To 
-maintain always valid entities, you can use constructors to mark required properties. 
+MikroORM allows you to implement your domain/business logic directly in the entities. 
+To maintain always valid entities, you can use constructors to mark required properties. 
+Let's define the `User` entity used in previous example:
 
-Once your entities are loaded, you can just work with them and forget about persistence. 
-As you do not have to care about persistence, most of entity interactions can be synchronous. 
-When you have done all changes, you call `em.flush()`. It will trigger computing of change 
-sets. Only entities that were changed will generate database queries, if there are no changes, 
-no transaction will be started. 
+```typescript
+@Entity()
+export class User implements IdEntity<User> {
 
-This increases maintainability, flexibility and testability.
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @OneToOne()
+  address?: Address;
+
+  @ManyToMany()
+  cars = new Collection<Car>(this);
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+```
+
+Now to create new instance of the `User` entity, we are forced to provide the `name`:
+
+```typescript
+const user = new User('John Doe'); // name is required to create new user instance
+user.address = new Address('10 Downing Street'); // address is optional
+```
+
+Once your entities are loaded, make a number of synchronous actions on your entities,
+then call `em.flush()`. This will trigger computing of change sets. Only entities 
+(and properties) that were changed will generate database queries, if there are no changes, 
+no transaction will be started.
 
 ```typescript
 const user = await em.findOneOrFail(User, 1, ['cars', 'address']);
@@ -78,7 +106,7 @@ user.cars.add(car);
 await em.flush();
 ```
 
-In this example, `em.flush()` call will execute those queries:
+`em.flush()` will then execute these queries from the example above:
 
 ```sql
 begin;
@@ -87,7 +115,7 @@ update user_address set street = '10 Downing Street' where id = 123;
 update car set for_sale = true where id = 1;
 update car set for_sale = true where id = 2;
 update car set for_sale = true where id = 3;
-inser into car (brand, owner) values ('VW', 1);
+insert into car (brand, owner) values ('VW', 1);
 commit;
 ```
 
