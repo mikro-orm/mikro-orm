@@ -57,9 +57,36 @@ await em.flush();
 
 MikroORM allows you to implement your domain/business logic directly in the entities. 
 To maintain always valid entities, you can use constructors to mark required properties. 
+Let's define the `User` entity used in previous example:
 
 ```typescript
-Example using constructors that were just mentioned...
+@Entity()
+export class User implements IdEntity<User> {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @OneToOne()
+  address?: Address;
+
+  @ManyToMany()
+  cars = new Collection<Car>(this);
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+```
+
+Now to create new instance of the `User` entity, we are forced to provide the `name`:
+
+```typescript
+const user = new User('John Doe'); // name is required to create new user instance
+user.address = new Address('10 Downing Street'); // address is optional
 ```
 
 Once your entities are loaded, make a number of synchronous actions on your entities,
