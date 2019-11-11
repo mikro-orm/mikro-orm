@@ -585,19 +585,6 @@
     lodash "^4.17.4"
     read-pkg-up "^6.0.0"
 
-"@ts-morph/common@~0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@ts-morph/common/-/common-0.1.0.tgz#72e5fdc90fdb12715cd0468ab633f27d5c112490"
-  integrity sha512-mGXeYoIdqJui87aNrUkDfwtPJTaYyx+lU/fOkemeUMseuNa4Mxb5HDJsa6XsFviFXFbEC8on9Nwy3G88uHQ/iA==
-  dependencies:
-    "@dsherret/to-absolute-glob" "^2.0.2"
-    fs-extra "^8.1.0"
-    glob-parent "^5.1.0"
-    globby "^10.0.1"
-    is-negated-glob "^1.0.0"
-    multimatch "^4.0.0"
-    typescript "~3.7.2"
-
 "@types/babel__core@^7.1.0":
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.2.tgz#608c74f55928033fce18b99b213c16be4b3d114f"
@@ -7533,14 +7520,20 @@ ts-jest@^24.1.0:
     semver "^5.5"
     yargs-parser "10.x"
 
-ts-morph@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-5.0.0.tgz#1f0992580be3bff2aaa948d3d76d508972e57a89"
-  integrity sha512-VP5dFnOzmlsDkSyuGczgVNtyJdYXMxFqMO2Rb0pIeni0o0Cy/nDljETBWhJs4FI4DIWv7Ftq69kgZO8p8w6LCw==
+ts-morph@^4.3.3:
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-4.3.3.tgz#16e61ecabc7ee3ef800ea00c9b95552942e66706"
+  integrity sha512-yauxRJM4Vo+KvpJFgL4Mp9PtFjwZVrt54eP3RkLIXnaaAY5TGVHTLqN2OnLGwf6YjyqkDLAKprZVOUTvVEz6ZQ==
   dependencies:
     "@dsherret/to-absolute-glob" "^2.0.2"
-    "@ts-morph/common" "~0.1.0"
+    chalk "^2.4.2"
     code-block-writer "^10.0.0"
+    fs-extra "^8.1.0"
+    glob-parent "^5.1.0"
+    globby "^10.0.1"
+    is-negated-glob "^1.0.0"
+    multimatch "^4.0.0"
+    typescript "3.0.1 - 3.6.4"
 
 ts-node@^8.4.1:
   version "8.4.1"
@@ -7644,15 +7637,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^3.6.4:
+"typescript@3.0.1 - 3.6.4", typescript@^3.6.4:
   version "3.6.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.6.4.tgz#b18752bb3792bc1a0281335f7f6ebf1bbfc5b91d"
   integrity sha512-unoCll1+l+YK4i4F8f22TaNVPRHcD9PA3yCuZ8g5e0qGqlVlJ/8FSateOLLSagn+Yg5+ZwuPkL8LFUc0Jcvksg==
-
-typescript@~3.7.2:
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.7.2.tgz#27e489b95fa5909445e9fef5ee48d81697ad18fb"
-  integrity sha512-ml7V7JfiN2Xwvcer+XAf2csGO1bPBdRbFCkYBczNZggrBZ9c7G3riSUeJmqEU5uOtXNPMhE3n+R4FA/3YOAWOQ==
 
 uglify-js@^3.1.4:
   version "3.6.0"
