@@ -35,26 +35,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
-    if (!this.platform.usesPivotTable()) {
-      throw new Error(`${this.constructor.name} does not use pivot tables`);
-    }
-
-    const fk1 = prop.joinColumn;
-    const fk2 = prop.inverseJoinColumn;
-    const pivotProp2 = this.getPivotInverseProperty(prop);
-    where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
-    orderBy = this.getPivotOrderBy(prop, orderBy);
-    const items = owners.length ? await this.find(prop.type, where, [prop.pivotTable], orderBy, undefined, undefined, undefined, ctx) : [];
-
-    const map: Dictionary<T[]> = {};
-    owners.forEach(owner => map['' + owner] = []);
-    items.forEach((item: any) => {
-      map[item[fk1]].push(item);
-      delete item[fk1];
-      delete item[fk2];
-    });
-
-    return map;
+    throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
   mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {

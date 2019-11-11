@@ -1,10 +1,10 @@
 import { Transaction } from 'knex';
-import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, FilterQuery, Primary } from '../types';
+import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../types';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
-import { QueryBuilder, QueryOrderMap } from '../query';
+import { QueryBuilder, QueryBuilderHelper, QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { LockMode } from '../unit-of-work';
 import { Platform } from '../platforms';
@@ -110,6 +110,34 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     return this.createQueryBuilder(entityName, ctx, true).delete(where).execute('run', false);
+  }
+
+  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+    const fk1 = prop.joinColumn;
+    const fk2 = prop.inverseJoinColumn;
+    const pivotProp2 = this.getPivotInverseProperty(prop);
+    const meta = this.metadata.get(prop.type);
+
+    if (where && !Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => QueryBuilderHelper.isOperator(k, false))) {
+      where = { [meta.primaryKey]: where };
+    }
+
+    where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
+    orderBy = this.getPivotOrderBy(prop, orderBy);
+    const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
+    const populate = this.populateMissingReferences(meta, [prop.pivotTable]);
+    qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy);
+    const items = owners.length ? await qb.execute('all') : [];
+
+    const map: Dictionary<T[]> = {};
+    owners.forEach(owner => map['' + owner] = []);
+    items.forEach((item: any) => {
+      map[item[fk1]].push(item);
+      delete item[fk1];
+      delete item[fk2];
+    });
+
+    return map;
   }
 
   /**

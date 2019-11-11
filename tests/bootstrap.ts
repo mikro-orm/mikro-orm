@@ -40,17 +40,11 @@ export async function initORMMongo() {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
-  let port = 3307;
-
-  if (process.env.ORM_PORT) {
-    port = +process.env.ORM_PORT;
-  }
-
   const orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     tsConfigPath: BASE_DIR + '/tsconfig.test.json',
     dbName: `mikro_orm_test`,
-    port,
+    port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
     baseDir: BASE_DIR,
     debug: ['query'],
     highlight: false,

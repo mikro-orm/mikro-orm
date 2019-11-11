@@ -285,6 +285,12 @@ export class MetadataDiscovery {
         data.properties[pk] = primaryProp;
         prop.fixedOrderColumn = pk;
         data.primaryKey = pk;
+
+        if (prop.inversedBy) {
+          const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
+          prop2.fixedOrder = true;
+          prop2.fixedOrderColumn = pk;
+        }
       } else {
         data.primaryKeys = [meta.name, prop.type];
         data.compositePK = true;
@@ -298,7 +304,14 @@ export class MetadataDiscovery {
   }
 
   private definePivotProperty(prop: EntityProperty, name: string, inverse: string): EntityProperty {
-    const ret = { name, type: name, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.ALL] } as EntityProperty;
+    const ret = {
+      name,
+      type: name,
+      reference: ReferenceType.MANY_TO_ONE,
+      cascade: [Cascade.ALL],
+      fixedOrder: prop.fixedOrder,
+      fixedOrderColumn: prop.fixedOrderColumn,
+    } as EntityProperty;
 
     if (name === prop.type) {
       const meta = this.metadata.get(name);
