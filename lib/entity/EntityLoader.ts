@@ -50,11 +50,13 @@ export class EntityLoader {
     const prop = this.metadata.get<T>(entityName).properties[field as string];
     const filtered = this.filterCollections<T>(entities, field);
 
+    const innerOrderBy = Utils.isObject(orderBy[prop.name]) ? orderBy[prop.name] : undefined;
+
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<T>(filtered, prop, field, where[prop.name], orderBy[prop.name] as QueryOrderMap);
+      return this.findChildrenFromPivotTable<T>(filtered, prop, field, where[prop.name], innerOrderBy as QueryOrderMap);
     }
 
-    const data = await this.findChildren<T>(entities, prop, where[prop.name], orderBy[prop.name] as QueryOrderMap);
+    const data = await this.findChildren<T>(entities, prop, where[prop.name], innerOrderBy as QueryOrderMap);
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;
