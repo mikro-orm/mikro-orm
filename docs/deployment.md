@@ -32,24 +32,24 @@ manually:
 export class Book implements IdEntity<Book> {
 
   @PrimaryKey({ type: 'number' })
-  id: number;
+  id!: number;
 
   @Property({ type: 'string' })
-  title: string;
+  title!: string;
 
   @Enum({ type: 'BookStatus' })
-  status: BookStatus;
+  status?: BookStatus;
 
   @ManyToOne(() => Author) // or `@ManyToOne({ type: 'Author' })` or `@ManyToOne({ entity: () => Author })`
-  author1: Author;
+  author1!: Author;
 
   // or
   @ManyToOne({ type: 'Author' })
-  author2: Author;
+  author2!: Author;
 
   // or
   @ManyToOne({ entity: () => Author })
-  author3: Author;
+  author3!: Author;
 
 }
 

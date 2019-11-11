@@ -46,7 +46,7 @@ decorator instead:
 
 ```typescript
 @Entity({ customRepository: () => CustomAuthorRepository })
-export class Author {
+export class Author extends IdEntity<Author> {
   // ...
 }
 ```

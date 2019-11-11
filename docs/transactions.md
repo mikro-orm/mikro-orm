@@ -123,7 +123,7 @@ You designate a version field in an entity as follows. In this example we'll use
 export class User {
   // ...
   @Property({ version: true })
-  version: number;
+  version!: number;
   // ...
 }
 ```
@@ -134,7 +134,7 @@ Alternatively a datetime type can be used (which maps to a SQL timestamp or date
 export class User {
   // ...
   @Property({ version: true })
-  version: Date;
+  version!: Date;
   // ...
 }
 ```

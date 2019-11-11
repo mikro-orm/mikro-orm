@@ -28,13 +28,13 @@ will think that desired entities are always loaded:
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne()
-  author: Author;
+  author!: Author;
 
   constructor(author: Author) {
     this.author = author;
@@ -61,13 +61,13 @@ directly.
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from 'mikro-orm';
 
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne()
-  author: IdentifiedReference<Author>;
+  author!: IdentifiedReference<Author>;
 
   constructor(author: Author) {
     this.author = Reference.create(author);
@@ -119,13 +119,13 @@ You can also have non-standard primary key like `uuid`:
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne()
-  author: IdentifiedReference<Author, 'uuid'>;
+  author!: IdentifiedReference<Author, 'uuid'>;
 
 }
 
@@ -138,13 +138,16 @@ and `ObjectId` PK values:
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements MongoEntity<Book> {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
 
   @ManyToOne()
-  author: IdentifiedReference<Author, 'id' | '_id'>;
+  author!: IdentifiedReference<Author, 'id' | '_id'>;
 
 }
 

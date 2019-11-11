@@ -15,16 +15,16 @@ but `publisher` will be optional:
 export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  title: string;
+  title!: string;
 
   @ManyToOne()
-  author: Author;
+  author!: Author;
 
   @ManyToOne()
-  publisher: Publisher;
+  publisher?: Publisher;
 
   @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
   tags = new Collection<BookTag>(this);

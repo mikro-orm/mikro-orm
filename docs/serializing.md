@@ -70,10 +70,10 @@ MongoDB's aggregations.
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @Property({ persist: false })
-  count: number;
+  count?: number;
 
 }
 

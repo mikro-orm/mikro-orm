@@ -58,10 +58,10 @@ console.log(author.books[12345]); // undefined, even if the collection is not in
 export class Book {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @ManyToOne()
-  author: Author;
+  author!: Author;
 
 }
 
@@ -69,7 +69,7 @@ export class Book {
 export class Author {
 
   @PrimaryKey()
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @OneToMany(() => Book, book => book.author)
   books1 = new Collection<Book>(this);

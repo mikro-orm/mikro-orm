@@ -29,16 +29,16 @@ There are multiple ways how to define the relationship, all of following is equi
 export class Book implements IdEntity<Book> {
 
   @ManyToOne() // plain decorator is enough, type will be sniffer via reflection!
-  author1: Author;
+  author1!: Author;
 
   @ManyToOne(() => Author) // you can specify type manually as a callback
-  author2: Author;
+  author2!: Author;
 
   @ManyToOne('Author') // or as a string
-  author3: Author;
+  author3!: Author;
 
   @ManyToOne({ entity: () => Author }) // or use options object
-  author4: Author;
+  author4!: Author;
 
 }
 ```
@@ -93,15 +93,15 @@ export class User implements IdEntity<User> {
 
   // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
   @OneToOne()
-  bestFriend1: User;
+  bestFriend1!: User;
 
   // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
   @OneToOne({ inversedBy: 'bestFriend1', orphanRemoval: true })
-  bestFriend2: User;
+  bestFriend2!: User;
 
   // when defining it like this, you need to specifically mark the owning side with `owner: true`
   @OneToOne(() => User, user => user.bestFriend2, { owner: true, orphanRemoval: true })
-  bestFriend3: User;
+  bestFriend3!: User;
 
 }
 ```
@@ -113,10 +113,10 @@ export class User implements IdEntity<User> {
 export class User implements IdEntity<User> {
 
   @OneToOne({ mappedBy: 'bestFriend1' })
-  bestFriend1: User;
+  bestFriend1!: User;
 
   @OneToOne(() => User, user => user.bestFriend2)
-  bestFriend2: User;
+  bestFriend2!: User;
 
 }
 ```
