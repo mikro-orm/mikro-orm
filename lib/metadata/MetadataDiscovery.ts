@@ -238,13 +238,11 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      Object.values(meta.properties).forEach(prop => {
-        const pivotMeta = this.definePivotTableEntity(meta, prop);
-
-        if (pivotMeta) {
-          ret.push(pivotMeta);
-        }
-      });
+      Object
+        .values(meta.properties)
+        .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
+        .map(prop => this.definePivotTableEntity(meta, prop))
+        .forEach(meta => ret.push(meta));
     }
 
     return ret;
@@ -261,72 +259,88 @@ export class MetadataDiscovery {
     });
   }
 
-  private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata | undefined {
-    if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable) {
-      const pk = this.namingStrategy.referenceColumnName();
-      const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
-      this.initFieldName(primaryProp);
-      this.initColumnType(primaryProp);
-      this.initUnsigned(primaryProp);
+  private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
+    const data = {
+      name: prop.pivotTable,
+      collection: prop.pivotTable,
+      pivotTable: true,
+      properties: {} as Record<string, EntityProperty>,
+    } as EntityMetadata;
 
-      const data = {
-        name: prop.pivotTable,
-        collection: prop.pivotTable,
-        pivotTable: true,
-        properties: {} as Record<string, EntityProperty>,
-      } as EntityMetadata;
-
-      if (prop.fixedOrder) {
-        const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
-        const primaryProp = { name: pk, type: 'number', reference: ReferenceType.SCALAR, primary: true, unsigned: true } as EntityProperty;
-        this.initFieldName(primaryProp);
-        this.initColumnType(primaryProp);
-        this.initUnsigned(primaryProp);
-        data.properties[pk] = primaryProp;
-        prop.fixedOrderColumn = pk;
-        data.primaryKey = pk;
-
-        if (prop.inversedBy) {
-          const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
-          prop2.fixedOrder = true;
-          prop2.fixedOrderColumn = pk;
-        }
-      } else {
-        data.primaryKeys = [meta.name, prop.type];
-        data.compositePK = true;
-      }
-
-      data.properties[meta.name] = this.definePivotProperty(prop, meta.name, prop.type);
-      data.properties[prop.type] = this.definePivotProperty(prop, prop.type, meta.name);
-
-      return this.metadata.set(prop.pivotTable, data);
+    if (prop.fixedOrder) {
+      const primaryProp = this.defineFixedOrderProperty(prop);
+      data.properties[primaryProp.name] = primaryProp;
+      data.primaryKey = primaryProp.name;
+    } else {
+      data.primaryKeys = [meta.name + '_owner', prop.type + '_inverse'];
+      data.compositePK = true;
     }
+
+    // handle self-referenced m:n with same default field names
+    if (meta.name === prop.type && prop.joinColumn === prop.inverseJoinColumn) {
+      prop.joinColumn = this.namingStrategy.joinKeyColumnName(meta.collection + '_1', prop.referenceColumnName);
+      prop.inverseJoinColumn = this.namingStrategy.joinKeyColumnName(meta.collection + '_2', prop.referenceColumnName);
+
+      if (prop.inversedBy) {
+        const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
+        prop2.inverseJoinColumn = prop.joinColumn;
+        prop2.joinColumn = prop.inverseJoinColumn;
+      }
+    }
+
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name, prop.type + '_inverse', true);
+    data.properties[prop.type + '_inverse'] = this.definePivotProperty(prop, prop.type + '_inverse', prop.type, meta.name + '_owner', false);
+
+    return this.metadata.set(prop.pivotTable, data);
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string, inverse: string): EntityProperty {
+  private defineFixedOrderProperty(prop: EntityProperty): EntityProperty {
+    const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
+    const primaryProp = {
+      name: pk,
+      type: 'number',
+      reference: ReferenceType.SCALAR,
+      primary: true,
+      unsigned: true,
+    } as EntityProperty;
+    this.initFieldName(primaryProp);
+    this.initColumnType(primaryProp);
+    this.initUnsigned(primaryProp);
+    prop.fixedOrderColumn = pk;
+
+    if (prop.inversedBy) {
+      const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
+      prop2.fixedOrder = true;
+      prop2.fixedOrderColumn = pk;
+    }
+
+    return primaryProp;
+  }
+
+  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean): EntityProperty {
     const ret = {
       name,
-      type: name,
+      type,
       reference: ReferenceType.MANY_TO_ONE,
       cascade: [Cascade.ALL],
       fixedOrder: prop.fixedOrder,
       fixedOrderColumn: prop.fixedOrderColumn,
     } as EntityProperty;
 
-    if (name === prop.type) {
-      const meta = this.metadata.get(name);
+    if (owner) {
+      ret.owner = true;
+      ret.inversedBy = inverse;
+      ret.referenceColumnName = prop.referenceColumnName;
+      ret.fieldName = ret.joinColumn = prop.joinColumn;
+      ret.inverseJoinColumn = prop.referenceColumnName;
+    } else {
+      const meta = this.metadata.get(type);
       const prop2 = meta.properties[meta.primaryKey];
       ret.owner = false;
       ret.mappedBy = inverse;
       ret.referenceColumnName = prop2.fieldName;
       ret.fieldName = ret.joinColumn = prop.inverseJoinColumn;
       ret.inverseJoinColumn = prop2.fieldName;
-    } else {
-      ret.owner = true;
-      ret.inversedBy = inverse;
-      ret.referenceColumnName = prop.referenceColumnName;
-      ret.fieldName = ret.joinColumn = prop.joinColumn;
-      ret.inverseJoinColumn = prop.referenceColumnName;
     }
 
     this.initColumnType(ret);

@@ -85,8 +85,18 @@ export class CriteriaNode {
     return `${alias}.${pk.fieldName}`;
   }
 
-  isSelfReference(entityName?: string): boolean {
-    return false;
+  getPath(): string {
+    let ret = this.parent && this.prop ? this.prop.name : this.entityName;
+
+    if (this.parent instanceof ArrayCriteriaNode && this.parent.parent && !this.key) {
+      ret = this.parent.parent.key!;
+    }
+
+    if (this.parent) {
+      ret = this.parent.getPath() + '.' + ret;
+    }
+
+    return ret;
   }
 
   [inspect.custom]() {
@@ -110,9 +120,9 @@ export class ScalarCriteriaNode extends CriteriaNode {
       const field = `${alias}.${this.prop!.name}`;
 
       if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-        qb.join(field, nestedAlias, undefined, 'pivotJoin');
+        qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
       } else {
-        qb.leftJoin(field, nestedAlias);
+        qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
       }
 
       if (this.prop!.reference === ReferenceType.ONE_TO_ONE) {
@@ -147,7 +157,17 @@ export class ArrayCriteriaNode extends CriteriaNode {
   }
 
   process(qb: QueryBuilder, alias?: string): any {
-    return this.payload.map((node: CriteriaNode) => node.process(qb, alias));
+    return this.payload.map((node: CriteriaNode) => {
+      return node.process(qb, alias);
+    });
+  }
+
+  getPath(): string {
+    if (this.parent && this.parent.parent) {
+      return this.parent.parent.getPath();
+    }
+
+    return '';
   }
 
 }
@@ -169,20 +189,20 @@ export class ObjectCriteriaNode extends CriteriaNode {
   }
 
   process(qb: QueryBuilder, alias?: string): any {
-    alias = alias || qb.alias;
     const nestedAlias = qb.getAliasForEntity(this.entityName, this);
+    const ownerAlias = alias || qb.alias;
 
     if (nestedAlias) {
       alias = nestedAlias;
     }
 
     if (!nestedAlias && this.parent && this.prop && this.prop.reference !== ReferenceType.SCALAR) {
-      alias = this.autoJoin(qb, alias);
+      alias = this.autoJoin(qb, ownerAlias);
     }
 
     return Object.keys(this.payload).reduce((o, field) => {
       const childNode = this.payload[field] as CriteriaNode;
-      const payload = childNode.process(qb, alias);
+      const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = QueryBuilderHelper.isOperator(field);
       const customExpression = QueryBuilderHelper.isCustomExpression(field);
 
@@ -208,18 +228,6 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
   }
 
-  isSelfReference(entityName?: string): boolean {
-    if (entityName === this.entityName) {
-      return true;
-    }
-
-    if (this.parent) {
-      return this.parent.isSelfReference(entityName || this.entityName);
-    }
-
-    return false;
-  }
-
   private autoJoin(qb: QueryBuilder, alias: string): string {
     const nestedAlias = qb.getNextAlias();
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
@@ -228,10 +236,10 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const field = `${alias}.${this.prop!.name}`;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
-      qb.join(field, nestedAlias, {}, 'pivotJoin');
+      qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
     } else {
       const prev = qb._fields!.slice();
-      qb.leftJoin(field, nestedAlias);
+      qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
       qb._fields = prev;
     }
 

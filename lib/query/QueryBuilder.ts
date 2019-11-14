@@ -86,8 +86,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.COUNT);
   }
 
-  join(field: string, alias: string, cond: Dictionary = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin'): this {
-    const extraFields = this.joinReference(field, alias, cond, type);
+  join(field: string, alias: string, cond: Dictionary = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
+    const extraFields = this.joinReference(field, alias, cond, type, path);
     this._fields!.push(...extraFields);
 
     return this;
@@ -222,9 +222,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   getAliasForEntity(entityName: string, node: CriteriaNode): string | undefined {
     if (node.prop) {
-      const join = Object.values(this._joins).find(j => j.prop === node.prop);
+      const join = Object.values(this._joins).find(j => j.path === node.getPath());
 
-      if (!join || node.isSelfReference()) {
+      if (!join) {
         return undefined;
       }
     }
@@ -287,7 +287,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin'): string[] {
+  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): string[] {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
@@ -309,6 +309,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     } else { // MANY_TO_ONE
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
     }
+
+    this._joins[aliasedName].path = path;
 
     return ret;
   }
@@ -402,12 +404,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       }
 
       if (this.metadata.has(field)) { // pivot table entity
-        const prop = this.metadata.get(field).properties[this.entityName];
-        const prop2 = this.metadata.get(field).properties[prop.mappedBy || prop.inversedBy];
-        const pivotAlias = this.getNextAlias();
-        this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, pivotAlias, 'leftJoin');
-        Utils.renameKey(this._cond, `${field}.${prop2.name}`, `${pivotAlias}.${prop2.fieldName}`);
-        this._populateMap[field] = this._joins[field].alias;
+        this.autoJoinPivotTable(field);
       } else if (this.helper.isOneToOneInverse(field)) {
         const prop = this.metadata.get(this.entityName).properties[field];
         this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
@@ -417,6 +414,18 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
+  }
+
+  private autoJoinPivotTable(field: string): void {
+    const pivotMeta = this.metadata.get(field);
+    const owner = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
+    const inverse = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
+    const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;
+    const pivotAlias = this.getNextAlias();
+    this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, pivotAlias, 'leftJoin');
+    Utils.renameKey(this._cond, `${field}.${owner.name}`, `${pivotAlias}.${owner.fieldName}`);
+    Utils.renameKey(this._cond, `${field}.${inverse.name}`, `${pivotAlias}.${inverse.fieldName}`);
+    this._populateMap[field] = this._joins[field].alias;
   }
 
 }
@@ -430,6 +439,7 @@ export interface JoinOptions {
   joinColumn?: string;
   inverseJoinColumn?: string;
   primaryKey?: string;
+  path?: string;
   prop: EntityProperty;
   cond: Dictionary;
 }

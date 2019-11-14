@@ -113,21 +113,22 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
-    const fk1 = prop.joinColumn;
-    const fk2 = prop.inverseJoinColumn;
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const meta = this.metadata.get(prop.type);
 
-    if (where && !Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => QueryBuilderHelper.isOperator(k, false))) {
-      where = { [meta.primaryKey]: where };
+    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => QueryBuilderHelper.isOperator(k, false))) {
+      where = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
+    } else {
+      where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
     }
 
-    where = { ...where, [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: owners } };
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
     const populate = this.populateMissingReferences(meta, [prop.pivotTable]);
     qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy);
     const items = owners.length ? await qb.execute('all') : [];
+    const fk1 = prop.joinColumn;
+    const fk2 = prop.inverseJoinColumn;
 
     const map: Dictionary<T[]> = {};
     owners.forEach(owner => map['' + owner] = []);

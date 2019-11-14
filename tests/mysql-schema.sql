@@ -8,6 +8,8 @@ drop table if exists `publisher2`;
 drop table if exists `test2`;
 drop table if exists `foo_bar2`;
 drop table if exists `foo_baz2`;
+drop table if exists `author_to_friend`;
+drop table if exists `author2_to_author2`;
 drop table if exists `book2_to_book_tag2`;
 drop table if exists `book_to_tag_unordered`;
 drop table if exists `publisher2_to_test2`;
@@ -40,6 +42,16 @@ alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 
 create table `foo_baz2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
 
+create table `author_to_friend` (`author2_1_id` int(11) unsigned not null, `author2_2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table `author_to_friend` add index `author_to_friend_author2_1_id_index`(`author2_1_id`);
+alter table `author_to_friend` add index `author_to_friend_author2_2_id_index`(`author2_2_id`);
+alter table `author_to_friend` add primary key `author_to_friend_pkey`(`author2_1_id`, `author2_2_id`);
+
+create table `author2_to_author2` (`author2_1_id` int(11) unsigned not null, `author2_2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table `author2_to_author2` add index `author2_to_author2_author2_1_id_index`(`author2_1_id`);
+alter table `author2_to_author2` add index `author2_to_author2_author2_2_id_index`(`author2_2_id`);
+alter table `author2_to_author2` add primary key `author2_to_author2_pkey`(`author2_1_id`, `author2_2_id`);
+
 create table `book2_to_book_tag2` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book2_uuid_pk_index`(`book2_uuid_pk`);
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book_tag2_id_index`(`book_tag2_id`);
@@ -64,6 +76,12 @@ alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo__
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;
+
+alter table `author_to_friend` add constraint `author_to_friend_author2_1_id_foreign` foreign key (`author2_1_id`) references `author2` (`id`) on update cascade on delete cascade;
+alter table `author_to_friend` add constraint `author_to_friend_author2_2_id_foreign` foreign key (`author2_2_id`) references `author2` (`id`) on update cascade on delete cascade;
+
+alter table `author2_to_author2` add constraint `author2_to_author2_author2_1_id_foreign` foreign key (`author2_1_id`) references `author2` (`id`) on update cascade on delete cascade;
+alter table `author2_to_author2` add constraint `author2_to_author2_author2_2_id_foreign` foreign key (`author2_2_id`) references `author2` (`id`) on update cascade on delete cascade;
 
 alter table `book2_to_book_tag2` add constraint `book2_to_book_tag2_book2_uuid_pk_foreign` foreign key (`book2_uuid_pk`) references `book2` (`uuid_pk`) on update cascade on delete cascade;
 alter table `book2_to_book_tag2` add constraint `book2_to_book_tag2_book_tag2_id_foreign` foreign key (`book_tag2_id`) references `book_tag2` (`id`) on update cascade on delete cascade;

@@ -43,6 +43,34 @@ export class Author2 {
 
 }
 ",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Author2ToAuthor2 {
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  author21: Author2;
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  author22: Author2;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class AuthorToFriend {
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  author21: Author2;
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  author22: Author2;
+
+}
+",
   "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Author2 } from './Author2';
 import { Publisher2 } from './Publisher2';
@@ -283,6 +311,34 @@ export class Author2 {
 
   @ManyToOne({ entity: () => Author2, nullable: true })
   favouriteAuthor?: Author2;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Author2ToAuthor2 {
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  author21: Author2;
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  author22: Author2;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class AuthorToFriend {
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  author21: Author2;
+
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  author22: Author2;
 
 }
 ",

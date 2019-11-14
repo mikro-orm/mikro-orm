@@ -7,6 +7,8 @@ import { MongoDriver } from '../lib/drivers/MongoDriver';
 
 describe('SchemaGenerator', () => {
 
+  jest.setTimeout(10e3);
+
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
     orm.em.getConnection().execute('drop table if exists new_table');

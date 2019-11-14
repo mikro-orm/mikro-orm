@@ -129,14 +129,8 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    if (prop.owner) {
-      const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type];
-      ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
-    } else {
-      const prop2 = this.metadata.get(prop.type).properties[prop.mappedBy];
-      const prop3 = this.metadata.get(prop2.pivotTable).properties[prop.type];
-      ret[`${pivotAlias}.${prop3.name}`] = this.joinManyToOneReference(prop3, pivotAlias, alias, type);
-    }
+    const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
+    ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
 
     return ret;
   }

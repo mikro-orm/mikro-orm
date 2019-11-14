@@ -1200,6 +1200,66 @@ describe('EntityManagerMySql', () => {
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
   });
 
+  test('self referencing M:N (unidirectional)', async () => {
+    const a1 = new Author2('A1', 'a1@wall.st');
+    const a2 = new Author2('A2', 'a2@wall.st');
+    const a3 = new Author2('A3', 'a3@wall.st');
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    author.friends.add(a1, a2, a3, author);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const jon = await orm.em.findOneOrFail(Author2, author.id, ['friends'], { friends: { name: QueryOrder.ASC } });
+    expect(jon.friends.isInitialized(true)).toBe(true);
+    expect(jon.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
+
+    const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, ['friends'], { friends: { name: QueryOrder.ASC } });
+    expect(jon2.id).toBe(author.id);
+    expect(jon2.friends.isInitialized(true)).toBe(true);
+    expect(jon2.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
+  });
+
+  test('self referencing M:N (owner)', async () => {
+    const a1 = new Author2('A1', 'a1@wall.st');
+    const a2 = new Author2('A2', 'a2@wall.st');
+    const a3 = new Author2('A3', 'a3@wall.st');
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    author.following.add(a1, a2, a3, author);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const jon = await orm.em.findOneOrFail(Author2, author.id, ['following'], { following: { name: QueryOrder.ASC } });
+    expect(jon.following.isInitialized(true)).toBe(true);
+    expect(jon.following.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
+    orm.em.clear();
+
+    const jon2 = await orm.em.findOneOrFail(Author2, { following: a2.id }, ['following'], { following: { name: QueryOrder.ASC } });
+    expect(jon2.id).toBe(author.id);
+    expect(jon2.following.isInitialized(true)).toBe(true);
+    expect(jon2.following.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
+  });
+
+  test('self referencing M:N (inverse)', async () => {
+    const a1 = new Author2('A1', 'a1@wall.st');
+    const a2 = new Author2('A2', 'a2@wall.st');
+    const a3 = new Author2('A3', 'a3@wall.st');
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    author.following.add(a1, a2, a3, author);
+    a1.following.add(author);
+    a3.following.add(author);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const jon = await orm.em.findOneOrFail(Author2, author.id, ['followers'], { followers: { name: QueryOrder.ASC } });
+    expect(jon.followers.isInitialized(true)).toBe(true);
+    expect(jon.followers.getIdentifiers()).toEqual([a1.id, a3.id, author.id]);
+
+    const jon2 = await orm.em.findOneOrFail(Author2, { followers: a1.id }, ['followers'], { followers: { name: QueryOrder.ASC } });
+    expect(jon2.id).toBe(author.id);
+    expect(jon2.followers.isInitialized(true)).toBe(true);
+    expect(jon.followers.getIdentifiers()).toEqual([a1.id, a3.id, author.id]);
+  });
+
   test('property onUpdate hook (updatedAt field)', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('name', 'email');
@@ -1446,12 +1506,13 @@ describe('EntityManagerMySql', () => {
     expect(res4[0].test).toBeInstanceOf(Test2);
     expect(wrap(res4[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e3`.`id` as `test_id` ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e4`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
-      'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
-      'where (`e1`.`name` = ?)');
+      'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
+      'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
+      'where (`e3`.`name` = ?)');
   });
 
   test('partial selects', async () => {

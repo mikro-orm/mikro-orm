@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit,
+  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany,
 } from '../../lib';
 
 import { Book2 } from './Book2';
@@ -38,6 +38,15 @@ export class Author2 extends BaseEntity2 {
 
   @OneToMany({ mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;
+
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
+  friends = new Collection<Author2>(this);
+
+  @ManyToMany(() => Author2)
+  following = new Collection<Author2>(this);
+
+  @ManyToMany(() => Author2, a => a.following)
+  followers = new Collection<Author2>(this);
 
   @ManyToOne()
   favouriteBook?: Book2;
