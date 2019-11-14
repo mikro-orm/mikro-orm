@@ -34,6 +34,10 @@ export abstract class Platform {
     return false;
   }
 
+  allowsMultiInsert() {
+    return true;
+  }
+
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
    */

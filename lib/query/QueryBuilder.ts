@@ -276,6 +276,17 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
+  getKnex(): KnexQueryBuilder {
+    const tableName = this.helper.getTableName(this.entityName) + ([QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
+    const qb = this.knex(tableName);
+
+    if (this.context) {
+      qb.transacting(this.context);
+    }
+
+    return qb;
+  }
+
   private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin'): string[] {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
@@ -342,7 +353,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private getQueryBase(): KnexQueryBuilder {
-    const qb = this.createBuilder();
+    const qb = this.getKnex();
 
     switch (this.type) {
       case QueryType.SELECT:
@@ -372,17 +383,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       case QueryType.TRUNCATE:
         qb.truncate();
         break;
-    }
-
-    return qb;
-  }
-
-  private createBuilder(): KnexQueryBuilder {
-    const tableName = this.helper.getTableName(this.entityName) + ([QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
-    const qb = this.knex(tableName);
-
-    if (this.context) {
-      qb.transacting(this.context);
     }
 
     return qb;

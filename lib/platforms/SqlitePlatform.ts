@@ -9,6 +9,10 @@ export class SqlitePlatform extends Platform {
     return true;
   }
 
+  allowsMultiInsert() {
+    return false;
+  }
+
   getCurrentTimestampSQL(length: number): string {
     return super.getCurrentTimestampSQL(0);
   }
