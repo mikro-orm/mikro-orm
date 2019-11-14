@@ -61,6 +61,7 @@ compatible with Vanilla JavaScript.
 - Example Integrations
   - [Express + MongoDB + TypeScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
   - [Nest + MySQL + TypeScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
+  - [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
   - [Express + MongoDB + JavaScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
 
 ## Articles

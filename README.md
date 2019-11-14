@@ -132,6 +132,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 - [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
 - [Nest + MySQL](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
+- [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
 - [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
 
 ### JavaScript Examples 
