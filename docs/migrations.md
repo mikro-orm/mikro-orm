@@ -6,7 +6,7 @@
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
 It allows you to generate migrations with current schema difference.
 
-By default, ech migration will be all executed inside a transaction, and all of them will 
+By default, each migration will be all executed inside a transaction, and all of them will 
 be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
 
 ## Migration class

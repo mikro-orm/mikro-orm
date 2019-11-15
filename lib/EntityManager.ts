@@ -238,7 +238,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>; // tslint:disable-next-line:lines-between-class-members
   getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>): T; // tslint:disable-next-line:lines-between-class-members
   getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false): T; // tslint:disable-next-line:lines-between-class-members
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): Reference<T>; // tslint:disable-next-line:lines-between-class-members
   getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: boolean): T | Reference<T>; // tslint:disable-next-line:lines-between-class-members
   getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped = false): T | Reference<T> {
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
