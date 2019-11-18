@@ -2,6 +2,7 @@ import { IsSame, SchemaHelper } from './SchemaHelper';
 import { Dictionary, EntityProperty } from '../types';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column } from './DatabaseTable';
+import { Connection } from '../connections';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -111,6 +112,10 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   supportsColumnAlter(): boolean {
     return false;
+  }
+
+  async databaseExists(connection: Connection, name: string): Promise<boolean> {
+    return true;
   }
 
 }

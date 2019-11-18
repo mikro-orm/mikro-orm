@@ -11,6 +11,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   close(force?: boolean): Promise<void>;
 
+  reconnect(): Promise<C>;
+
   getConnection(type?: 'read' | 'write'): C;
 
   /**

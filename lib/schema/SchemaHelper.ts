@@ -4,6 +4,7 @@ import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column, Index } from './DatabaseTable';
 import { ReferenceType } from '../entity';
 import { Utils } from '../utils';
+import { Connection } from '../connections';
 
 export abstract class SchemaHelper {
 
@@ -139,6 +140,39 @@ export abstract class SchemaHelper {
     }
 
     return norm[0].replace('(?)', `(${length})`);
+  }
+
+  getCreateDatabaseSQL(name: string): string {
+    return `create database ${name}`;
+  }
+
+  getDropDatabaseSQL(name: string): string {
+    return `drop database if exists ${name}`;
+  }
+
+  getDatabaseExistsSQL(name: string): string {
+    return `select 1 from information_schema.schemata where schema_name = '${name}'`;
+  }
+
+  getDatabaseNotExistsError(dbName: string): string {
+    return `Unknown database '${dbName}'`;
+  }
+
+  getManagementDbName(): string {
+    return 'information_schema';
+  }
+
+  async databaseExists(connection: Connection, name: string): Promise<boolean> {
+    try {
+      const res = await connection.execute(this.getDatabaseExistsSQL(name));
+      return res.length > 0;
+    } catch (e) {
+      if (e.message === this.getDatabaseNotExistsError(name)) {
+        return false;
+      }
+
+      throw e;
+    }
   }
 
   private hasSameType(prop: EntityProperty, infoType: string, types: Record<string, string[]>): boolean {

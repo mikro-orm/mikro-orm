@@ -56,6 +56,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
 
+  await orm.getSchemaGenerator().ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
@@ -75,6 +76,7 @@ export async function initORMPostgreSql() {
     cache: { pretty: true },
   });
 
+  await orm.getSchemaGenerator().ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
 

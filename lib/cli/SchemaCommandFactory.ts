@@ -48,6 +48,10 @@ export class SchemaCommandFactory {
         type: 'boolean',
         desc: 'Drop also migrations table',
       });
+      args.option('drop-db', {
+        type: 'boolean',
+        desc: 'Drop the whole database',
+      });
     }
 
     return args;
@@ -64,7 +68,7 @@ export class SchemaCommandFactory {
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
-      const dump = await generator[m](!args.fkChecks, args.dropMigrationsTable);
+      const dump = await generator[m](!args.fkChecks, args.dropMigrationsTable, args.dropDb);
       CLIHelper.dump(dump, orm.config, 'sql');
     } else {
       const m = method + 'Schema';
@@ -77,4 +81,4 @@ export class SchemaCommandFactory {
 
 }
 
-export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean };
+export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean };
