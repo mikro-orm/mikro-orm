@@ -17,6 +17,11 @@ npx mikro-orm schema:drop --dump     # Dumps drop schema SQL
 > database. Be sure to always check the generated SQL first before executing. Do not use
 > `--run` flag in production! 
 
+`schema:create` will automatically create the database if it does not exist. 
+
+`schema:drop` will by default drop all database tables. You can use `--drop-db` flag to drop
+the whole database instead. 
+
 Or you can create simple script where you initialize MikroORM like this:
 
 **`./create-schema.ts`**

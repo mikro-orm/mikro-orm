@@ -24,8 +24,20 @@ export class SchemaGenerator {
   }
 
   async createSchema(wrap = true): Promise<void> {
+    await this.ensureDatabase();
     const sql = await this.getCreateSchemaSQL(wrap);
     await this.execute(sql);
+  }
+
+  async ensureDatabase() {
+    const dbName = this.config.get('dbName')!;
+    const exists = await this.helper.databaseExists(this.connection, dbName);
+
+    if (!exists) {
+      this.config.set('dbName', this.helper.getManagementDbName());
+      await this.driver.reconnect();
+      await this.createDatabase(dbName);
+    }
   }
 
   async getCreateSchemaSQL(wrap = true): Promise<string> {
@@ -42,7 +54,12 @@ export class SchemaGenerator {
     return this.wrapSchema(ret, wrap);
   }
 
-  async dropSchema(wrap = true, dropMigrationsTable = false): Promise<void> {
+  async dropSchema(wrap = true, dropMigrationsTable = false, dropDb = false): Promise<void> {
+    if (dropDb) {
+      const name = this.config.get('dbName')!;
+      return this.dropDatabase(name);
+    }
+
     const sql = await this.getDropSchemaSQL(wrap, dropMigrationsTable);
     await this.execute(sql);
   }
@@ -84,6 +101,29 @@ export class SchemaGenerator {
     return this.wrapSchema(ret, wrap);
   }
 
+  /**
+   * creates new database and connects to it
+   */
+  async createDatabase(name: string): Promise<void> {
+    await this.connection.execute(this.helper.getCreateDatabaseSQL('' + this.knex.ref(name)));
+    this.config.set('dbName', name);
+    await this.driver.reconnect();
+  }
+
+  async dropDatabase(name: string): Promise<void> {
+    this.config.set('dbName', this.helper.getManagementDbName());
+    await this.driver.reconnect();
+    await this.connection.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
+  }
+
+  async execute(sql: string) {
+    const lines = sql.split('\n').filter(i => i.trim());
+
+    for (const line of lines) {
+      await this.connection.execute(line);
+    }
+  }
+
   private getUpdateTableSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
     const table = schema.getTable(meta.collection);
     let ret = '';
@@ -99,14 +139,6 @@ export class SchemaGenerator {
     ret += sql.join('\n');
 
     return ret;
-  }
-
-  async execute(sql: string) {
-    const lines = sql.split('\n').filter(i => i.trim());
-
-    for (const line of lines) {
-      await this.connection.getKnex().schema.raw(line);
-    }
   }
 
   private async wrapSchema(sql: string, wrap = true): Promise<string> {

@@ -72,10 +72,16 @@ export abstract class Connection {
 
   protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {
     const now = Date.now();
-    const res = await cb();
-    this.logQuery(query, Date.now() - now);
 
-    return res;
+    try {
+      const res = await cb();
+      this.logQuery(query, Date.now() - now);
+
+      return res;
+    } catch (e) {
+      this.logQuery(chalk.red(query), Date.now() - now, undefined);
+      throw e;
+    }
   }
 
   protected logQuery(query: string, took?: number, language?: string): void {

@@ -48,39 +48,6 @@ Before you submit your pull request consider the following guidelines:
     docker-compose up -d
     ```
 
-- You have to create MySQL and PostgreSQL databases manually using the following commands.
-    
-    ```sh
-    sh tests/scripts/database_setup.sh
-    ```
-
-- You can skip the following section if the script works fine for you.
-
-    ```sh
-    docker ps
-    ```
-
-    **Read the names of the containers, there should be 3 containers running.**
-
-    #### MySQL
-
-    ```sh
-    docker-compose exec <name_of_mysql_container> bash
-    mysql
-    create database mikro_orm_test;
-    exit
-    exit
-    ```
-
-    #### PostgreSQL
-    ```sh
-    docker-compose exec <name_of_postgre_container> bash
-    psql --u postgres
-    create database mikro_orm_test;
-    exit
-    exit
-    ```
-
 - Run tests before you start working, to be sure they all pass and your setup is working correctly:
 
      ```sh

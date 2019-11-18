@@ -65,6 +65,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connection;
   }
 
+  async reconnect(): Promise<C> {
+    await this.close(true);
+    return this.connect();
+  }
+
   getConnection(type: 'read' | 'write' = 'write'): C {
     if (type === 'write' || this.replicas.length === 0) {
       return this.connection as C;

@@ -121,6 +121,18 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 
+  getDatabaseExistsSQL(name: string): string {
+    return `select 1 from pg_database where datname = '${name}'`;
+  }
+
+  getDatabaseNotExistsError(dbName: string): string {
+    return `database "${dbName}" does not exist`;
+  }
+
+  getManagementDbName(): string {
+    return 'postgres';
+  }
+
   private getIndexesSQL(tableName: string, schemaName: string): string {
     return `select i.indexname as constraint_name, k.column_name, c.contype = 'u' as unique, c.contype = 'p' as primary
          from pg_catalog.pg_indexes i

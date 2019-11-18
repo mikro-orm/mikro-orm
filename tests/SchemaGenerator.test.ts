@@ -1,18 +1,59 @@
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
 import { ReferenceType } from '../lib/entity';
 import { Configuration, Utils } from '../lib/utils';
 import { MikroORM } from '../lib';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { BookTag2, FooBar2, FooBaz2 } from './entities-sql';
+import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 describe('SchemaGenerator', () => {
 
   jest.setTimeout(10e3);
 
+  test('create/drop database [mysql]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      dbName,
+      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      baseDir: BASE_DIR,
+      type: 'mysql',
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    await generator.dropDatabase(dbName);
+    await orm.close(true);
+    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
+  });
+
+  test('create schema also creates the database if not exists [mysql]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      dbName,
+      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      baseDir: BASE_DIR,
+      type: 'mysql',
+      migrations: { path: BASE_DIR + '/../temp/migrations' },
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.createSchema();
+    await generator.dropSchema(false, false, true);
+    await orm.close(true);
+
+    await orm.isConnected();
+  });
+
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
     orm.em.getConnection().execute('drop table if exists new_table');
     const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
 
@@ -146,6 +187,42 @@ describe('SchemaGenerator', () => {
     await generator.updateSchema();
 
     await orm.close(true);
+  });
+
+  test('create/drop database [postgresql]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      dbName,
+      baseDir: BASE_DIR,
+      type: 'postgresql',
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    await generator.dropDatabase(dbName);
+    await orm.close(true);
+    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
+  });
+
+  test('create schema also creates the database if not exists [postgresql]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      dbName,
+      baseDir: BASE_DIR,
+      type: 'postgresql',
+      migrations: { path: BASE_DIR + '/../temp/migrations' },
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.createSchema();
+    await generator.dropSchema(false, false, true);
+    await orm.close(true);
+
+    await orm.isConnected();
   });
 
   test('generate schema from metadata [postgres]', async () => {

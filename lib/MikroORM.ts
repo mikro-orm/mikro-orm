@@ -48,7 +48,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   async connect(): Promise<D> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
-    const dbName = this.config.get('dbName');
+    const dbName = this.config.get('dbName')!;
     this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
 
     return this.driver;
