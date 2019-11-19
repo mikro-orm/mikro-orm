@@ -99,6 +99,7 @@
     "fs-extra": "^8.0.0",
     "globby": "^10.0.0",
     "knex": "^0.20.1",
+    "reflect-metadata": "^0.1.13",
     "ts-morph": "^4.3.3",
     "typescript": "^3.6.4",
     "umzug": "^2.2.0",

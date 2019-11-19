@@ -13,10 +13,10 @@ export class Author2 extends BaseEntity2 {
   static afterDestroyCalled = 0;
 
   @Property({ length: 3, default: 'current_timestamp(3)' })
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date(), length: 3, default: 'current_timestamp(3)' })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
   @Property()
   name: string;
@@ -24,19 +24,19 @@ export class Author2 extends BaseEntity2 {
   @Property({ unique: true })
   email: string;
 
-  @Property()
+  @Property({ nullable: true })
   age?: number;
 
   @Property({ default: 0 })
-  termsAccepted = false;
+  termsAccepted: boolean = false;
 
-  @Property()
+  @Property({ nullable: true })
   identities?: string[];
 
-  @Property({ length: 0 })
+  @Property({ length: 0, nullable: true })
   born?: Date;
 
-  @OneToMany({ mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
@@ -48,10 +48,10 @@ export class Author2 extends BaseEntity2 {
   @ManyToMany(() => Author2, a => a.following)
   followers = new Collection<Author2>(this);
 
-  @ManyToOne()
+  @ManyToOne({ nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne()
+  @ManyToOne({ nullable: true })
   favouriteAuthor?: Author2;
 
   @Property({ persist: false })

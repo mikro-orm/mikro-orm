@@ -70,15 +70,27 @@ const orm = await MikroORM.init({
 
 ## Entity Discovery in TypeScript
 
-Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities 
-to sniff types of all properties. This process can be slow if your project contains lots of 
-files. To speed up the discovery process a bit, you can provide more accurate paths where your
+Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files 
+of entities to sniff types of all properties. This process can be slow if your project contains lots 
+of files. To speed up the discovery process a bit, you can provide more accurate paths where your
 entity source files are: 
 
 ```typescript
 const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   entitiesDirsTs: ['./src/entities'], // path to your TS entities (source), relative to `baseDir`
+  // ...
+});
+```
+
+You can also use different [metadata provider](metadata-providers.md) or even write custom one:
+
+- `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
+- `JavaScriptMetadataProvider` that allows you to manually provide the entity schema (mainly for Vanilla JS)
+
+```typescript
+const orm = await MikroORM.init({
+  metadataProvider: ReflectMetadataProvider,
   // ...
 });
 ```

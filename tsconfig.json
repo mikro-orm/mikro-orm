@@ -8,7 +8,8 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "files": [
     "lib/index.ts",

@@ -1,8 +1,8 @@
 import { Arguments, Argv, CommandModule } from 'yargs';
 import chalk from 'chalk';
 import { CLIHelper } from './CLIHelper';
-import { MigrateOptions } from '../migrations';
-import { Utils } from '../utils';
+import { MigrateOptions, Migrator } from '../migrations';
+import { Configuration, Utils } from '../utils';
 
 export class MigrationCommandFactory {
 
@@ -25,46 +25,54 @@ export class MigrationCommandFactory {
 
   static configureMigrationCommand(args: Argv, method: MigratorMethod) {
     if (method === 'create') {
-      args.option('b', {
-        alias: 'blank',
-        type: 'boolean',
-        desc: 'Create blank migration',
-      });
-      args.option('d', {
-        alias: 'dump',
-        type: 'boolean',
-        desc: 'Dumps all queries to console',
-      });
-      args.option('disable-fk-checks', {
-        type: 'boolean',
-        desc: 'Do not skip foreign key checks',
-      });
-      args.option('p', {
-        alias: 'path',
-        type: 'string',
-        desc: 'Sets path to directory where to save entities',
-      });
+      this.configureCreateCommand(args);
     }
 
     if (['up', 'down'].includes(method)) {
-      args.option('t', {
-        alias: 'to',
-        type: 'string',
-        desc: `Migrate ${method} to specific version`,
-      });
-      args.option('f', {
-        alias: 'from',
-        type: 'string',
-        desc: 'Start migration from specific version',
-      });
-      args.option('o', {
-        alias: 'only',
-        type: 'string',
-        desc: 'Migrate only specified versions',
-      });
+      this.configureUpDownCommand(args, method);
     }
 
     return args;
+  }
+
+  private static configureUpDownCommand(args: Argv, method: MigratorMethod) {
+    args.option('t', {
+      alias: 'to',
+      type: 'string',
+      desc: `Migrate ${method} to specific version`,
+    });
+    args.option('f', {
+      alias: 'from',
+      type: 'string',
+      desc: 'Start migration from specific version',
+    });
+    args.option('o', {
+      alias: 'only',
+      type: 'string',
+      desc: 'Migrate only specified versions',
+    });
+  }
+
+  private static configureCreateCommand(args: Argv) {
+    args.option('b', {
+      alias: 'blank',
+      type: 'boolean',
+      desc: 'Create blank migration',
+    });
+    args.option('d', {
+      alias: 'dump',
+      type: 'boolean',
+      desc: 'Dumps all queries to console',
+    });
+    args.option('disable-fk-checks', {
+      type: 'boolean',
+      desc: 'Do not skip foreign key checks',
+    });
+    args.option('p', {
+      alias: 'path',
+      type: 'string',
+      desc: 'Sets path to directory where to save entities',
+    });
   }
 
   static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
@@ -73,41 +81,57 @@ export class MigrationCommandFactory {
 
     switch (method) {
       case 'create':
-        const ret = await migrator.createMigration(args.path, args.blank);
-
-        if (args.dump) {
-          CLIHelper.dump(chalk.green('Creating migration with following queries:'));
-          CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), orm.config, 'sql');
-        }
-
-        CLIHelper.dump(chalk.green(`${ret.fileName} successfully created`));
+        await this.handleCreateCommand(migrator, args, orm.config);
         break;
       case 'list':
-        const executed = await migrator.getExecutedMigrations();
-
-        CLIHelper.dumpTable({
-          columns: ['Name', 'Executed at'],
-          rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at.toISOString()]),
-          empty: 'No migrations executed yet',
-        });
+        await this.handleListCommand(migrator);
         break;
       case 'pending':
-        const pending = await migrator.getPendingMigrations();
-        CLIHelper.dumpTable({
-          columns: ['Name'],
-          rows: pending.map(row => [row.file.replace(/\.[jt]s$/, '')]),
-          empty: 'No pending migrations',
-        });
+        await this.handlePendingCommand(migrator);
         break;
       case 'up':
       case 'down':
-        const opts = MigrationCommandFactory.getUpDownOptions(args);
-        await migrator[method](opts as string[]);
-        const message = this.getUpDownSuccessMessage(method, opts);
-        CLIHelper.dump(chalk.green(message));
+        await this.handleUpDownCommand(args, migrator, method);
     }
 
     await orm.close(true);
+  }
+
+  private static async handleUpDownCommand(args: Arguments<Options>, migrator: Migrator, method: MigratorMethod) {
+    const opts = MigrationCommandFactory.getUpDownOptions(args);
+    await migrator[method](opts as string[]);
+    const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
+    CLIHelper.dump(chalk.green(message));
+  }
+
+  private static async handlePendingCommand(migrator: Migrator) {
+    const pending = await migrator.getPendingMigrations();
+    CLIHelper.dumpTable({
+      columns: ['Name'],
+      rows: pending.map(row => [row.file.replace(/\.[jt]s$/, '')]),
+      empty: 'No pending migrations',
+    });
+  }
+
+  private static async handleListCommand(migrator: Migrator) {
+    const executed = await migrator.getExecutedMigrations();
+
+    CLIHelper.dumpTable({
+      columns: ['Name', 'Executed at'],
+      rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at.toISOString()]),
+      empty: 'No migrations executed yet',
+    });
+  }
+
+  private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration) {
+    const ret = await migrator.createMigration(args.path, args.blank);
+
+    if (args.dump) {
+      CLIHelper.dump(chalk.green('Creating migration with following queries:'));
+      CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config, 'sql');
+    }
+
+    CLIHelper.dump(chalk.green(`${ret.fileName} successfully created`));
   }
 
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {

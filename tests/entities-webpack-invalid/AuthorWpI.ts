@@ -7,16 +7,16 @@ export class AuthorWpI implements IdEntity<AuthorWpI> {
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string' })
+  @Property()
   name!: string;
 
-  @Property({ type: 'string' })
+  @Property()
   email!: string;
 
-  @Property({ type: 'number' })
+  @Property()
   age?: number;
 
-  @OneToMany({ entity: () => BookWpI, mappedBy: book => book.author })
+  @OneToMany({ mappedBy: 'author' })
   books = new Collection<BookWpI>(this);
 
 }

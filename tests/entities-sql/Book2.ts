@@ -9,12 +9,12 @@ import { Test2 } from './Test2';
 export class Book2 implements UuidEntity<Book2> {
 
   @PrimaryKey({ fieldName: 'uuid_pk', length: 36 })
-  uuid = v4();
+  uuid: string = v4();
 
   @Property({ default: 'current_timestamp(3)', length: 3 })
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
-  @Property()
+  @Property({ nullable: true })
   title?: string;
 
   @Property({ type: 'text', nullable: true })
@@ -26,16 +26,16 @@ export class Book2 implements UuidEntity<Book2> {
   @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property()
+  @Property({ nullable: true })
   meta?: Book2Meta;
 
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   publisher?: Publisher2;
 
-  @OneToOne({ cascade: [], mappedBy: 'book' })
+  @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;
 
   @ManyToMany({ entity: () => BookTag2, cascade: [], fixedOrderColumn: 'order' })

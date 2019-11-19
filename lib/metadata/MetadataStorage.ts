@@ -1,4 +1,4 @@
-import { EntityMetadata, AnyEntity } from '../types';
+import { EntityMetadata, AnyEntity, Dictionary } from '../types';
 import { Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';
@@ -30,7 +30,7 @@ export class MetadataStorage {
     return new MetadataStorage(MetadataStorage.metadata);
   }
 
-  getAll(): Record<string, EntityMetadata> {
+  getAll(): Dictionary<EntityMetadata> {
     return this.metadata;
   }
 

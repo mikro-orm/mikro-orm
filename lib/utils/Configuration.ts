@@ -3,7 +3,7 @@ import { fromJson, Theme } from 'cli-highlight';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-import { MetadataProvider, TypeScriptMetadataProvider } from '../metadata';
+import { MetadataProvider, TsMorphMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
 import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrimaryKey } from '../types';
 import { Hydrator, ObjectHydrator } from '../hydration';
@@ -20,8 +20,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
-    warnWhenNoEntities: true,
-    tsConfigPath: process.cwd() + '/tsconfig.json',
+    discovery: {
+      warnWhenNoEntities: true,
+      requireEntitiesArray: false,
+      tsConfigPath: process.cwd() + '/tsconfig.json',
+    },
     autoFlush: false,
     strict: false,
     // tslint:disable-next-line:no-console
@@ -48,7 +51,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
     },
-    metadataProvider: TypeScriptMetadataProvider,
+    metadataProvider: TsMorphMetadataProvider,
     highlight: true,
     highlightTheme: {
       keyword: ['white', 'bold'],
@@ -161,7 +164,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.warnWhenNoEntities) {
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
     }
 
@@ -217,8 +220,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
   entitiesDirs: string[];
   entitiesDirsTs: string[];
-  warnWhenNoEntities: boolean;
-  tsConfigPath: string;
+  discovery: {
+    warnWhenNoEntities?: boolean;
+    requireEntitiesArray?: boolean;
+    tsConfigPath?: string;
+  };
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): D };

@@ -8,7 +8,7 @@ export abstract class BaseEntity2 implements IdEntity<BaseEntity2> {
   id!: number;
 
   @Property({ persist: false })
-  hookTest = false;
+  hookTest: boolean = false;
 
   protected constructor() {
     const meta = MetadataStorage.getMetadata(this.constructor.name);

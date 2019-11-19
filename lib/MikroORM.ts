@@ -2,11 +2,12 @@ import chalk from 'chalk';
 
 import { EntityManager } from './EntityManager';
 import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
-import { MetadataDiscovery, MetadataStorage } from './metadata';
+import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
 import { Configuration, Logger, Options } from './utils';
 import { SchemaGenerator } from './schema';
 import { EntityGenerator } from './schema/EntityGenerator';
 import { Migrator } from './migrations';
+import { NullCacheAdapter } from './cache';
 
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -39,6 +40,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       this.config = options;
     } else {
       this.config = new Configuration(options);
+    }
+
+    if (process.env.WEBPACK) {
+      this.config.set('metadataProvider', ReflectMetadataProvider);
+      this.config.set('cache', { adapter: NullCacheAdapter });
+      this.config.set('discovery', { requireEntitiesArray: true });
     }
 
     this.driver = this.config.getDriver();

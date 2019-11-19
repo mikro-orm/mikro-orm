@@ -1,4 +1,5 @@
-import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
+import 'reflect-metadata';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
@@ -42,7 +43,7 @@ export async function initORMMongo() {
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
   const orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
-    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+    discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     dbName: `mikro_orm_test`,
     port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
     baseDir: BASE_DIR,
@@ -51,7 +52,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     logger: i => i,
     multipleStatements: true,
     type,
-    cache: { pretty: true },
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: false },
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
@@ -66,7 +68,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 export async function initORMPostgreSql() {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Label2, BaseEntity2, BaseEntity22],
-    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+    discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',

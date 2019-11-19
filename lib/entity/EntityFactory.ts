@@ -58,7 +58,7 @@ export class EntityFactory {
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     let Entity: Constructor<T>;
 
-    if (process.env.WEBPACK) {
+    if (this.config.get('discovery').requireEntitiesArray) {
       Entity = this.config.get('entities').find(f => (f as Function).name === meta.name) as Constructor<T>;
     } else {
       const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));

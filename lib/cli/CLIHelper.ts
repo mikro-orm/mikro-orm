@@ -43,7 +43,7 @@ export class CLIHelper {
     }
 
     if (Utils.isDefined(warnWhenNoEntities)) {
-      options.set('warnWhenNoEntities', warnWhenNoEntities);
+      options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
     }
 
     return MikroORM.init(options);
