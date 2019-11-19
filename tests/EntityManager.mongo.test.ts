@@ -443,6 +443,7 @@ describe('EntityManagerMongo', () => {
     const connection = new MongoConnection(config);
     await expect(connection.getConnectionOptions()).toEqual({
       useNewUrlParser: true,
+      useUnifiedTopology: true,
       auth: { user: 'usr', password: 'pw' },
     });
   });
