@@ -26,7 +26,6 @@ describe('SchemaGenerator', () => {
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
-    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
 
   test('create schema also creates the database if not exists [mysql]', async () => {
@@ -47,6 +46,43 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
 
     await orm.isConnected();
+  });
+
+  test('create/drop database [mariadb]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
+      dbName,
+      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      baseDir: BASE_DIR,
+      type: 'mariadb',
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    await generator.dropDatabase(dbName);
+    await orm.close(true);
+    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
+  });
+
+  test('create schema also creates the database if not exists [mariadb]', async () => {
+    const dbName = `mikro_orm_test_${Date.now()}`;
+    const orm = await MikroORM.init({
+      entities: [FooBar2, FooBaz2, BaseEntity22],
+      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
+      dbName,
+      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      baseDir: BASE_DIR,
+      type: 'mariadb',
+      migrations: { path: BASE_DIR + '/../temp/migrations' },
+    });
+
+    const generator = orm.getSchemaGenerator();
+    await generator.createSchema();
+    await generator.dropSchema(false, false, true);
+    await orm.close(true);
+    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
 
   test('generate schema from metadata [mysql]', async () => {
@@ -203,7 +239,6 @@ describe('SchemaGenerator', () => {
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
-    await expect(generator.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
 
   test('create schema also creates the database if not exists [postgresql]', async () => {

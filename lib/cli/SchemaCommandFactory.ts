@@ -68,11 +68,11 @@ export class SchemaCommandFactory {
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
-      const dump = await generator[m](!args.fkChecks, args.dropMigrationsTable, args.dropDb);
+      const dump = await generator[m](!args.fkChecks, args.dropMigrationsTable);
       CLIHelper.dump(dump, orm.config, 'sql');
     } else {
       const m = method + 'Schema';
-      await generator[m](!args.fkChecks, args.dropMigrationsTable);
+      await generator[m](!args.fkChecks, args.dropMigrationsTable, args.dropDb);
       CLIHelper.dump(chalk.green(successMessage));
     }
 

@@ -75,7 +75,8 @@ export async function initORMPostgreSql() {
     debug: ['query'],
     highlight: false,
     logger: i => i,
-    cache: { pretty: true },
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: false },
   });
 
   await orm.getSchemaGenerator().ensureDatabase();
