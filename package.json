@@ -109,7 +109,7 @@
   },
   "peerDependencies": {
     "mariadb": "^2.1.0",
-    "mongodb": "^3.2.0",
+    "mongodb": "^3.3.4",
     "mysql2": "^2.0.0",
     "pg": "^7.10.0",
     "sqlite3": "^4.0.0"
@@ -137,7 +137,7 @@
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^8.0.0",
     "@types/jest": "^24.0.18",
-    "@types/mongodb": "^3.1.23",
+    "@types/mongodb": "^3.3.11",
     "@types/mysql2": "types/mysql2",
     "@types/node": "^12.7.5",
     "@types/pg": "^7.11.1",
@@ -150,7 +150,7 @@
     "jest": "^24.9.0",
     "lint-staged": "^9.2.5",
     "mariadb": "^2.1.1",
-    "mongodb": "^3.2.3",
+    "mongodb": "^3.3.4",
     "mysql2": "^2.0.0",
     "pg": "^7.12.1",
     "rimraf": "^3.0.0",

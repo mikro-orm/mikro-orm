@@ -118,3 +118,7 @@ or extend `AbstractNamingStrategy`.
 
 The name is now `TsMorphMetadataProvider`, there is also newly added `ReflectMetadataProvider`
 that uses `reflect-metadata` instead.
+
+## Updated mongodb driver
+
+MongoDB driver version 3.3.4 or higher is now required.
