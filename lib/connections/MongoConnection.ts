@@ -1,4 +1,4 @@
-import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions, ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery } from 'mongodb';
+import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions, ObjectId, UpdateWriteOpResult } from 'mongodb';
 import { inspect } from 'util';
 
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
@@ -33,7 +33,7 @@ export class MongoConnection extends Connection {
   }
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
-    const ret: MongoClientOptions = { useNewUrlParser: true };
+    const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
     const user = this.config.get('user');
     const password = this.config.get('password');
 
@@ -58,14 +58,14 @@ export class MongoConnection extends Connection {
 
   async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    where = this.convertObjectIds<MongoFilterQuery<T>>(where);
+    where = this.convertObjectIds(where as Dictionary);
     const options: Dictionary = {};
 
     if (fields) {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection(collection).find<T>(where, options);
+    const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
@@ -127,9 +127,9 @@ export class MongoConnection extends Connection {
   private async runQuery<T, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>): Promise<U> {
     collection = this.getCollectionName(collection);
     data = this.convertObjectIds(data!);
-    where = this.convertObjectIds<MongoFilterQuery<T>>(where!);
+    where = this.convertObjectIds(where as Dictionary);
     const now = Date.now();
-    let res: InsertOneWriteOpResult | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
+    let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
     let query: string;
 
     switch (method) {
@@ -140,12 +140,12 @@ export class MongoConnection extends Connection {
       case 'updateMany':
         const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
         query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
-        res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload);
+        res = await this.getCollection(collection).updateMany(where as Dictionary, payload);
         break;
       case 'deleteMany':
       case 'countDocuments':
         query = `db.getCollection('${collection}').${method}(${this.logObject(where)});`;
-        res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQuery<T>); // cast to deleteMany to fix some typing weirdness
+        res = await this.getCollection(collection)[method as 'deleteMany'](where as Dictionary); // cast to deleteMany to fix some typing weirdness
         break;
     }
 
