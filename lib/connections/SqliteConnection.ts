@@ -1,4 +1,5 @@
-import { readFile } from 'fs-extra';
+import { ensureDir, readFile } from 'fs-extra';
+import { dirname } from 'path';
 import { Config } from 'knex';
 
 const Bluebird = require('bluebird');
@@ -8,6 +9,7 @@ import { AbstractSqlConnection } from './AbstractSqlConnection';
 export class SqliteConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
+    await ensureDir(dirname(this.config.get('dbName')));
     this.client = this.createKnexClient(this.getPatchedDialect());
     await this.client.raw('pragma foreign_keys = on');
   }
