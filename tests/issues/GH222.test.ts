@@ -1,6 +1,19 @@
-import { Collection, Entity, IdEntity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '../../lib';
+import {
+  Collection,
+  Entity,
+  IdEntity,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+  wrap,
+} from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { unlinkSync } from "fs";
 
 @Entity()
 export class A implements IdEntity<A> {
@@ -9,24 +22,7 @@ export class A implements IdEntity<A> {
   id!: number;
 
   @OneToOne(() => B)
-  b!: B;
-
-  @Property({ type: 'string' })
-  prop!: string;
-
-}
-
-@Entity()
-export class B implements IdEntity<B> {
-
-  @PrimaryKey({ type: 'number' })
-  id!: number;
-
-  @OneToOne(() => A, a => a.b, { eager: true })
-  a!: A;
-
-  @ManyToOne(() => C)
-  c!: C;
+  b!: any;
 
   @Property({ type: 'string' })
   prop!: string;
@@ -47,6 +43,23 @@ export class C implements IdEntity<C> {
 
 }
 
+@Entity()
+export class B implements IdEntity<B> {
+
+  @PrimaryKey({ type: 'number' })
+  id!: number;
+
+  @OneToOne(() => A, a => a.b, { eager: true })
+  a!: A;
+
+  @ManyToOne(() => C)
+  c!: C;
+
+  @Property({ type: 'string' })
+  prop!: string;
+
+}
+
 describe('GH issue 222', () => {
 
   let orm: MikroORM<SqliteDriver>;
@@ -57,12 +70,17 @@ describe('GH issue 222', () => {
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
       debug: false,
       type: 'sqlite',
+      metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
-  afterAll(async () => orm.close(true));
+
+  afterAll(async () => {
+    await orm.close(true);
+    unlinkSync(orm.config.get('dbName'));
+  });
 
   test('cascade persist with pre-filled PK and with cycles', async () => {
     const a = new A();

@@ -86,20 +86,24 @@ export class Migrator {
   }
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[] }>(options?: T): T {
-    if (Utils.isObject<{ migrations: string[] }>(options) && options.migrations) {
+    if (Utils.isString(options) || Array.isArray(options)) {
+      return Utils.asArray(options).map(m => m.startsWith('Migration') ? m : 'Migration' + m) as T;
+    }
+
+    if (!Utils.isObject<{ from?: string; to?: string; migrations?: string[] }>(options)) {
+      return options as T;
+    }
+
+    if (options.migrations) {
       options.migrations = options.migrations.map(m => this.prefix(m));
     }
 
-    if (Utils.isObject<{ to: string }>(options) && options.to) {
+    if (options.to) {
       options.to = this.prefix(options.to);
     }
 
-    if (Utils.isObject<{ from: string }>(options) && options.from) {
+    if (options.from) {
       options.from = this.prefix(options.from);
-    }
-
-    if (Utils.isString(options) || Array.isArray(options)) {
-      return Utils.asArray(options).map(m => m.startsWith('Migration') ? m : 'Migration' + m) as T;
     }
 
     return options as T;

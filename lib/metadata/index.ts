@@ -3,4 +3,5 @@ export * from './MetadataStorage';
 export * from './MetadataProvider';
 export * from './MetadataValidator';
 export * from './JavaScriptMetadataProvider';
-export * from './TypeScriptMetadataProvider';
+export * from './ReflectMetadataProvider';
+export * from './TsMorphMetadataProvider';

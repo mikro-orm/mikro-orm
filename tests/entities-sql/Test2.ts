@@ -7,10 +7,10 @@ export class Test2 implements IdEntity<Test2> {
   @PrimaryKey()
   id!: number;
 
-  @Property()
+  @Property({ nullable: true })
   name?: string;
 
-  @OneToOne({ cascade: [] })
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
   book?: Book2;
 
   @Property({ version: true })

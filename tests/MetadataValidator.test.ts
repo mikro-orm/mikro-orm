@@ -117,7 +117,7 @@ describe('MetadataValidator', () => {
       entities: [FooBar2, FooBaz2],
       dbName: `mikro_orm_test`,
       port,
-      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,
     })).rejects.toThrowError(`Entity 'FooBar2' extends unknown base entity 'BaseEntity22', please make sure to provide it in 'entities' array when initializing the ORM`);
@@ -127,7 +127,7 @@ describe('MetadataValidator', () => {
       entities: [Author2, Book2, BookTag2, Publisher2, Test2],
       dbName: `mikro_orm_test`,
       port,
-      tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,
     })).rejects.toThrowError(`Entity 'Author2' extends unknown base entity 'BaseEntity2', please make sure to provide it in 'entities' array when initializing the ORM`);

@@ -43,7 +43,7 @@ describe('Webpack', () => {
       type: 'mysql',
       entities: [AuthorWpI, BookWpI],
     } as Options;
-    const err = `Webpack bundling requires either 'type' or 'entity' attributes to be set in @Property decorators. (AuthorWpI.id)`;
+    const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
   });
 
@@ -53,7 +53,7 @@ describe('Webpack', () => {
       type: 'mysql',
       entitiesDirs: ['not/existing'],
     } as Options;
-    const err = `Webpack bundling only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.`;
+    const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
   });
 

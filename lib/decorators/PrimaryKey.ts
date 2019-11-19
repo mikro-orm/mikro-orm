@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { ReferenceType } from '../entity';
 import { PropertyOptions } from '.';
-import { EntityProperty, AnyEntity } from '../types';
+import { AnyEntity, EntityProperty } from '../types';
 import { Utils } from '../utils';
 
 export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
@@ -14,6 +14,4 @@ export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
   };
 }
 
-export interface PrimaryKeyOptions extends PropertyOptions {
-  type?: any;
-}
+export interface PrimaryKeyOptions extends PropertyOptions { }

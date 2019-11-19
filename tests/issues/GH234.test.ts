@@ -1,15 +1,25 @@
-import { Collection, Entity, IdEntity, ManyToMany, MikroORM, PrimaryKey, Property } from '../../lib';
+import {
+  Collection,
+  Entity,
+  IdEntity,
+  ManyToMany,
+  MikroORM,
+  PrimaryKey,
+  Property,
+  ReflectMetadataProvider,
+} from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { Logger } from '../../lib/utils';
+import { unlinkSync } from "fs";
 
 @Entity()
 export class A implements IdEntity<A> {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string' })
+  @Property()
   name!: string;
 
   @ManyToMany(() => B, b => b.aCollection)
@@ -20,10 +30,10 @@ export class A implements IdEntity<A> {
 @Entity()
 export class B implements IdEntity<B> {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey()
   id!: number;
 
-  @Property({ type: 'string' })
+  @Property()
   name!: string;
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
@@ -42,12 +52,17 @@ describe('GH issue 234', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
+      metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
-  afterAll(async () => orm.close(true));
+
+  afterAll(async () => {
+    await orm.close(true);
+    unlinkSync(orm.config.get('dbName'));
+  });
 
   test('search by m:n', async () => {
     const a1 = new A();

@@ -113,3 +113,8 @@ override the default implementation to accommodate their specific needs.
 
 If you used custom naming strategy, you will either need to implement this method yourself, 
 or extend `AbstractNamingStrategy`.
+
+## `TypescriptMetadataProvider` has been renamed
+
+The name is now `TsMorphMetadataProvider`, there is also newly added `ReflectMetadataProvider`
+that uses `reflect-metadata` instead.

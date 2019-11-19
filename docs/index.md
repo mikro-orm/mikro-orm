@@ -44,6 +44,7 @@ compatible with Vanilla JavaScript.
   - [Property Validation](property-validation.md)
   - [Lifecycle Hooks](lifecycle-hooks.md)
   - [Naming Strategy](naming-strategy.md)
+  - [Metadata Providers](metadata-providers.md)
   - [Metadata Cache](metadata-cache.md)
   - [Debugging](debugging.md)
   - [Schema Generator](schema-generator.md)

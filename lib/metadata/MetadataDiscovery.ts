@@ -26,21 +26,7 @@ export class MetadataDiscovery {
   async discover(preferTsNode = true): Promise<MetadataStorage> {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started`);
-    this.discovered.length = 0;
-
-    if (process.env.WEBPACK && this.config.get('entities').length === 0) {
-      throw new Error(`Webpack bundling only supports pre-defined entities. Please use the 'entities' option. See the documentation for more information.`);
-    }
-
-    if (this.config.get('entities').length > 0) {
-      await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (preferTsNode && (this.config.get('tsNode') || Utils.detectTsNode())) {
-      await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
-    } else {
-      await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
-    }
-
-    this.validator.validateDiscovered(this.discovered, this.config.get('warnWhenNoEntities'));
+    await this.findEntities(preferTsNode);
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
@@ -61,6 +47,26 @@ export class MetadataDiscovery {
       .forEach(meta => discovered.set(meta.name, meta));
 
     return discovered;
+  }
+
+  private async findEntities(preferTsNode: boolean): Promise<EntityMetadata[]> {
+    this.discovered.length = 0;
+
+    if (this.config.get('discovery').requireEntitiesArray && this.config.get('entities').length === 0) {
+      throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
+    }
+
+    if (this.config.get('entities').length > 0) {
+      await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
+    } else if (preferTsNode && (this.config.get('tsNode') || Utils.detectTsNode())) {
+      await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
+    } else {
+      await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
+    }
+
+    this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
+
+    return this.discovered;
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {

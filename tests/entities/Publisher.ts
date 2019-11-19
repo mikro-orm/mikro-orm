@@ -1,5 +1,15 @@
 import { ObjectId } from 'mongodb';
-import { Collection, Entity, ManyToMany, MongoEntity, OneToMany, PrimaryKey, Property, BeforeCreate } from '../../lib';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  MongoEntity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  BeforeCreate,
+  Enum,
+} from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
 import { SerializedPrimaryKey } from '../../lib/decorators';
@@ -22,10 +32,10 @@ export class Publisher implements MongoEntity<Publisher> {
   @ManyToMany({ eager: true })
   tests = new Collection<Test>(this);
 
-  @Property()
-  type: PublisherType = PublisherType.LOCAL;
+  @Enum()
+  type = PublisherType.LOCAL;
 
-  constructor(name: string = 'asd', type: PublisherType = PublisherType.LOCAL) {
+  constructor(name: string = 'asd', type = PublisherType.LOCAL) {
     this.name = name;
     this.type = type;
   }

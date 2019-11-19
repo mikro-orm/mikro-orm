@@ -69,18 +69,24 @@ is to just deploy your TS source files next to the compiled output, just like du
 
 ## Deploy a bundle of entities and dependencies with [Webpack](https://webpack.js.org/)
 
-Webpack can be used to bundle every entity and dependency: you get a single file that contains every required module/file and has no external dependencies.
+Webpack can be used to bundle every entity and dependency: you get a single file that contains 
+every required module/file and has no external dependencies.
 
 ### Prepare your project for Webpack
 
-Webpack requires every required file to be hardcoded in your code. Code like this won't work (it will throw an error because Webpack doesn't know which file to include in the bundle):
+Webpack requires every required file to be hardcoded in your code. Code like this won't work 
+(it will throw an error because Webpack doesn't know which file to include in the bundle):
 
 ```typescript
 let dependencyNameInVariable = 'dependency';
 const dependency = import(dependencyNameInVariable);
 ```
 
-As Webpack creates a file bundle, it isn't desired that it scans directories for entities or metadata. Therefore you need to use the `entities` option in the initialization funcion and entitiesDirs/entitiesDirsTs will be ignored (see dynamically including entities as an alternative solution). Also you need to fill `type` or `entity` attributes everywhere (see above) and disable caching (it will decrease start-time slightly).
+As Webpack creates a file bundle, it isn't desired that it scans directories for entities 
+or metadata. Therefore you need to use the `entities` option in the initialization function 
+and `entitiesDirs`/`entitiesDirsTs` will be ignored (see dynamically including entities as 
+an alternative solution). Also you need to fill `type` or `entity` attributes everywhere 
+(see above) and disable caching (it will decrease start-time slightly).
 
 #### Manually defining entities
 
@@ -97,9 +103,13 @@ await MikroORM.init({
 
 #### Dynamically loading dependencies
 
-This will make use of a Webpack feature called [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports). This way you can import dependencies as long as part of the path is known.
+This will make use of a Webpack feature called [dynamic imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports). 
+This way you can import dependencies as long as part of the path is known.
 
-In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) is used. This 'function' is only usable during the building process from Webpack so therefore there is an alternative solution provided that will as long as the environment variable WEBPACK is not set (e.g. during development with `ts-node`).
+In following example [`require.context`](https://webpack.js.org/guides/dependency-management/#requirecontext) 
+is used. This 'function' is only usable during the building process from Webpack so therefore 
+there is an alternative solution provided that will as long as the environment variable 
+WEBPACK is not set (e.g. during development with `ts-node`).
 
 Here, all files with the extension `.ts` will be imported from the directory `../entities`. 
 
@@ -132,7 +142,10 @@ async function getEntities(): Promise<any[]> {
 
 ### Webpack configuration
 
-Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but for building MikroORM and [Node.js](https://nodejs.org/) bundles it requires additional configuration. Configuration for Webpack is stored in the root of the project as `webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
+Webpack can be run without [configuration file](https://webpack.js.org/configuration/) but 
+for building MikroORM and [Node.js](https://nodejs.org/) bundles it requires additional 
+configuration. Configuration for Webpack is stored in the root of the project as 
+`webpack.config.js`. For all the options please refer to the following [page](https://webpack.js.org/configuration/).
 
 For bundling MikroORM the following configuration is required:
 
@@ -176,4 +189,6 @@ module.exports = {
 
 ### Running Webpack
 
-To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root of the project. It will probably throw a few warnings but you can ignore the errors regarding MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
+To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root 
+of the project. It will probably throw a few warnings but you can ignore the errors regarding 
+MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
