@@ -1,0 +1,160 @@
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: rgb(33, 175, 144);
+  --ifm-color-primary-darker: rgb(31, 165, 136);
+  --ifm-color-primary-darkest: rgb(26, 136, 112);
+  --ifm-color-primary-light: rgb(70, 203, 174);
+  --ifm-color-primary-lighter: rgb(102, 212, 189);
+  --ifm-color-primary-lightest: rgb(146, 224, 208);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.hero.hero--primary {
+  background-color: #159957;
+  background-image: linear-gradient(120deg, #155799, #159957);
+}
+
+.hero.hero--primary .button.button--secondary.button--outline {
+  color: #fff;
+}
+
+.hero.hero--primary .hero__title {
+  color: #fff;
+}
+
+.hero.hero--primary .hero__subtitle {
+  color: #fff;
+  font-size: 2.4rem;
+  text-align: left;
+  max-width: 500px;
+  margin: 30px 0;
+}
+
+.hero.hero--primary .button.button--outline:hover,
+.hero.hero--primary .button.button--outline:active,
+.hero.hero--primary .button.button--outline.button--active {
+  background-color: rgba(70, 203, 174, 0.5);
+}
+
+.navbar .navbar__link[href*=github],
+.navbar .navbar__link[href*=slack] {
+  font-size: 0;
+  padding: 4px;
+  margin: 0 4px;
+}
+
+.navbar .navbar__link[href*=github]:before,
+.navbar .navbar__link[href*=slack]:before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 32px;
+  background-image: url('/img/github-brand.svg');
+  background-size: cover;
+}
+
+.navbar .navbar__link[href*=slack]:before {
+  background-image: url('/img/slack-brand.svg');
+}
+
+.navbar .react-toggle {
+  display: none;
+}
+
+.button {
+  border-radius: 100px;
+  margin: 0 10px;
+}
+
+.github-button {
+  margin: 4px 0 0 20px;
+  position: relative;
+  top: 5px;
+}
+
+a[href*=edit] {
+  border: 1px solid #ccc;
+  border-radius: 100px;
+  padding: 8px 16px;
+  display: block;
+  margin: 0 auto;
+  width: 200px;
+  text-align: center;
+}
+
+.margin-vert--xl {
+  margin-bottom: 3rem !important;
+  margin-top: 3rem !important;
+}
+
+.pagination-nav .pagination-nav__item a {
+  border-radius: 100px 20px 20px 100px;
+  padding-left: 40px;
+}
+
+.pagination-nav .pagination-nav__item--next a {
+  border-radius: 20px 100px 100px 20px;
+  padding-right: 40px;
+}
+
+@media screen and (max-width: 1024px) {
+  .hero.hero--primary .hero__subtitle {
+    font-size: 2rem;
+  }
+
+  .hero.hero--primary .container img {
+    height: 260px;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .hero.hero--primary .hero__subtitle {
+    font-size: 2rem;
+    text-align: center;
+    max-width: inherit;
+  }
+
+  .buttons_src-pages- {
+    max-width: inherit !important;
+  }
+
+  .hero.hero--primary .container img {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .hero.hero--primary .hero__subtitle {
+    font-size: 1.4rem;
+  }
+
+  .buttons_src-pages- {
+    margin: 0 -30px;
+  }
+}
+
+@media screen and (max-width: 375px) {
+  .hero.hero--primary .button.button--outline {
+    font-size: 0.8rem;
+  }
+}
