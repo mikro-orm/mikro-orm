@@ -99,11 +99,15 @@ comparison by identity (`ent1 === ent2`).
 
 ## 📖 Documentation
 
-MikroORM's documentation, included in this repo in the root directory, is built with 
+MikroORM v3 documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
+
+> You can browse MikroORM v2 docs at https://mikro-orm.github.io/docs/v2/.
+
+> To upgrade to v3, please see the [upgrading guide](docs/upgrading-v2-to-v3.md).
 
 ## ✨ Core Features
 

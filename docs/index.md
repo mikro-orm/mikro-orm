@@ -18,6 +18,10 @@ compatible with Vanilla JavaScript.
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
+> You can browse MikroORM v2 docs at https://mikro-orm.github.io/docs/v2/.
+
+> To upgrade to v3, please see the [upgrading guide](docs/upgrading-v2-to-v3.md).
+
 ## Table of contents
 
 - Overview
