@@ -105,7 +105,7 @@
     "umzug": "^2.2.0",
     "uuid": "^3.3.2",
     "yargonaut": "^1.1.4",
-    "yargs": "^13.3.0"
+    "yargs": "^15.0.0"
   },
   "peerDependencies": {
     "mariadb": "^2.1.0",
