@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "3.0.0-alpha.38",
+  "version": "3.0.0-alpha.41",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -101,7 +101,6 @@
     "knex": "^0.20.1",
     "reflect-metadata": "^0.1.13",
     "ts-morph": "^4.3.3",
-    "typescript": "^3.6.4",
     "umzug": "^2.2.0",
     "uuid": "^3.3.2",
     "yargonaut": "^1.1.4",
@@ -156,6 +155,7 @@
     "rimraf": "^3.0.0",
     "semantic-release": "^15.13.24",
     "sqlite3": "^4.1.0",
+    "typescript": "3.6.4",
     "ts-jest": "^24.1.0",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
