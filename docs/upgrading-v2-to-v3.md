@@ -114,10 +114,11 @@ override the default implementation to accommodate their specific needs.
 If you used custom naming strategy, you will either need to implement this method yourself, 
 or extend `AbstractNamingStrategy`.
 
-## `TypescriptMetadataProvider` has been renamed
+## TypescriptMetadataProvider has been renamed
 
 The name is now `TsMorphMetadataProvider`, there is also newly added `ReflectMetadataProvider`
-that uses `reflect-metadata` instead.
+that uses `reflect-metadata` instead. As `TypescriptMetadataProvider` was the default, no 
+changes should be required. 
 
 ## Updated mongodb driver
 
