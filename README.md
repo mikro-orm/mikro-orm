@@ -133,9 +133,9 @@ MikroORM v3 documentation, included in this repo in the root directory, is built
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
-> You can browse MikroORM v2 docs at https://mikro-orm.github.io/docs/v2/.
+> You can browse MikroORM v2 docs at [https://mikro-orm.github.io/docs/v2/](https://mikro-orm.github.io/docs/v2/).
 
-> To upgrade to v3, please see the [upgrading guide](docs/upgrading-v2-to-v3.md).
+> To upgrade to v3, please see the [upgrading guide](https://mikro-orm.io/upgrading-v2-to-v3.md).
 
 ## ✨ Core Features
 
