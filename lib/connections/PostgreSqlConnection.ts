@@ -1,69 +1,29 @@
-import { Client } from 'pg';
-import { readFile } from 'fs-extra';
-import { Connection, QueryResult } from './Connection';
-import { EntityData, IEntity } from '../decorators';
+import { AbstractSqlConnection } from './AbstractSqlConnection';
 
-export class PostgreSqlConnection extends Connection {
-
-  protected client: Client;
+export class PostgreSqlConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
-    this.client = new Client(this.getConnectionOptions());
-    await this.client.connect();
-  }
-
-  async close(force?: boolean): Promise<void> {
-    await this.client.end();
-  }
-
-  async isConnected(): Promise<boolean> {
-    try {
-      await this.client.query('SELECT 1');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async beginTransaction(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'START TRANSACTION', [], 'run');
-  }
-
-  async commit(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `RELEASE SAVEPOINT ${savepoint}` : 'COMMIT', [], 'run');
-  }
-
-  async rollback(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `ROLLBACK TO SAVEPOINT ${savepoint}` : 'ROLLBACK', [], 'run');
+    this.client = this.createKnexClient('pg');
   }
 
   getDefaultClientUrl(): string {
-    return 'postgre://postgres@127.0.0.1:5432';
+    return 'postgresql://postgres@127.0.0.1:5432';
   }
 
-  async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
-    const res = await this.executeQuery(query, params, () => this.client.query(query, params));
-    return this.transformResult(res, method);
-  }
-
-  async loadFile(path: string): Promise<void> {
-    await this.client.query((await readFile(path)).toString());
-  }
-
-  private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
+  protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
     if (method === 'get') {
       return res.rows[0];
     }
 
-    if (method === 'run') {
-      return {
-        affectedRows: res.rowCount || 0,
-        insertId: res.rows[0] ? res.rows[0].id : 0,
-        row: res.rows[0],
-      };
+    if (method === 'all') {
+      return res.rows;
     }
 
-    return res.rows;
+    return {
+      affectedRows: res.rowCount,
+      insertId: res.rows[0] ? res.rows[0].id : 0,
+      row: res.rows[0],
+    } as unknown as T;
   }
 
 }

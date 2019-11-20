@@ -1,9 +1,8 @@
-import { ObjectID } from 'mongodb';
-import { Collection, MikroORM, Utils } from '../lib';
+import { ObjectId } from 'mongodb';
+import { Collection, EntityMetadata, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
-import { initORM, wipeDatabase } from './bootstrap';
-import { MetadataStorage } from '../lib/metadata';
-import { Book2 } from './entities-sql';
+import { initORMMongo, wipeDatabase } from './bootstrap';
+import { FooBar } from './entities/FooBar';
 
 class Test {}
 
@@ -11,7 +10,7 @@ describe('Utils', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('isObject', () => {
@@ -83,7 +82,7 @@ describe('Utils', () => {
     expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
     expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
     expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
-    expect(Utils.diff({a: new ObjectID('00000001885f0a3cc37dc9f0')}, {a: new ObjectID('00000001885f0a3cc37dc9f0')})).toEqual({});
+    expect(Utils.diff({a: new ObjectId('00000001885f0a3cc37dc9f0')}, {a: new ObjectId('00000001885f0a3cc37dc9f0')})).toEqual({});
   });
 
   test('diffEntities ignores collections', () => {
@@ -91,7 +90,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2);
-    expect(Utils.diffEntities(author1, author2).books).toBeUndefined();
+    expect(Utils.diffEntities(author1, author2, orm.getMetadata()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -100,17 +99,17 @@ describe('Utils', () => {
     const author2 = new Author('Name 2', 'e-mail');
     author2.favouriteBook = book;
     author2.version = 123;
-    await orm.em.persist(author2);
-    const diff = Utils.diffEntities(author1, author2);
+    await orm.em.persistAndFlush(author2);
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
-    expect(diff.favouriteBook instanceof ObjectID).toBe(true);
+    expect(diff.favouriteBook instanceof ObjectId).toBe(true);
   });
 
   test('prepareEntity ignores properties with `persist: false` flag', async () => {
     const author = new Author('Name 1', 'e-mail');
     author.version = 123;
     author.versionAsString = 'v123';
-    const o = Utils.prepareEntity(author);
+    const o = Utils.prepareEntity(author, orm.getMetadata());
     expect(o.version).toBeUndefined();
     expect(o.versionAsString).toBeUndefined();
   });
@@ -133,7 +132,9 @@ describe('Utils', () => {
    * regression test for running code coverage with nyc, mocha and ts-node and entity has default constructor value as enum parameter
    */
   test('getParamNames', () => {
-    expect(Utils.getParamNames(Test)).toEqual([]);
+    expect(Utils.getParamNames(Test, 'constructor')).toEqual([]);
+    expect(Utils.getParamNames(FooBar, 'constructor')).toEqual([]);
+    expect(Utils.getParamNames(Author, 'toJSON')).toEqual(['strict', 'strip', '...args']);
     expect(Utils.getParamNames('')).toEqual([]);
 
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
@@ -146,11 +147,20 @@ describe('Utils', () => {
     expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
   });
 
+  test('defaultValue', () => {
+    const prop1 = {} as any;
+    Utils.defaultValue(prop1, 'test', 'default');
+    expect(prop1.test).toBe('default');
+    const prop2 = { test: 'foo' } as any;
+    Utils.defaultValue(prop2, 'test', 'default');
+    expect(prop2.test).toBe('foo');
+  });
+
   test('extractPK with PK id/_id', () => {
-    const meta = MetadataStorage.getMetadata(Author.name);
+    const meta = orm.getMetadata().get(Author.name);
     expect(Utils.extractPK('abcd')).toBe('abcd');
     expect(Utils.extractPK(123)).toBe(123);
-    const id = new ObjectID(1);
+    const id = new ObjectId(1);
     expect(Utils.extractPK(id)).toBe(id);
     expect(Utils.extractPK({ id }, meta)).toBe(id);
     expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
@@ -160,11 +170,41 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK uuid', () => {
-    const meta = MetadataStorage.getMetadata(Book2.name);
+    const meta = { primaryKey: 'uuid' } as EntityMetadata;
     expect(Utils.extractPK({ id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ _id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ foo: 'bar' }, meta)).toBeNull();
     expect(Utils.extractPK({ uuid: 'uuid-123' }, meta)).toBe('uuid-123');
+  });
+
+  test('normalizePath', () => {
+    expect(Utils.normalizePath()).toBe('.');
+    expect(Utils.normalizePath('./test')).toBe('./test');
+    expect(Utils.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
+    expect(Utils.normalizePath('test/')).toBe('./test');
+    expect(Utils.normalizePath('/test')).toBe('/test');
+  });
+
+  test('relativePath', () => {
+    expect(Utils.relativePath('./test', process.cwd())).toBe('./test');
+    expect(Utils.relativePath('test', process.cwd())).toBe('./test');
+    expect(Utils.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
+    expect(Utils.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
+  });
+
+  test('absolutePath', () => {
+    expect(Utils.absolutePath('./test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
+    expect(Utils.absolutePath('test')).toBe(Utils.normalizePath(process.cwd() + '/test'));
+    expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(Utils.normalizePath(process.cwd() + '/tests'));
+    expect(Utils.absolutePath('./tests/cli')).toBe(Utils.normalizePath(process.cwd() + '/tests/cli'));
+    expect(Utils.absolutePath('')).toBe(Utils.normalizePath(process.cwd()));
+  });
+
+  test('pathExists wrapper', async () => {
+    await expect(Utils.pathExists('LIC*')).resolves.toEqual(true);
+    await expect(Utils.pathExists('tests')).resolves.toEqual(true);
+    await expect(Utils.pathExists('tests/**/*.ts')).resolves.toEqual(true);
+    await expect(Utils.pathExists('**/tests', { onlyDirectories: true })).resolves.toEqual(true);
   });
 
   test('lookup path from decorator', () => {

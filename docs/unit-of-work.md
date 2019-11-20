@@ -1,7 +1,7 @@
 ---
 ---
 
-# Unit of Work and transactions
+# Unit of Work and Transactions
 
 MikroORM uses the Identity Map pattern to track objects. Whenever you fetch an object from 
 the database, MikroORM will keep a reference to this object inside its `UnitOfWork`. 
@@ -40,16 +40,16 @@ even if it was executed just before. But instead of creating a second `Author` o
 first gets the primary key from the row and checks if it already has an object inside the 
 `UnitOfWork` with that primary key. 
 
-## Persisting managed entities
+## Persisting Managed Entities
 
-The identity map has a second use-case. When you call `EntityManager#flush()`, MikroORM will 
+The identity map has a second use-case. When you call `em.flush()`, MikroORM will 
 ask the identity map for all objects that are currently managed. This means you don't have to 
-call `EntityManager#persistLater()` over and over again to pass known objects to the 
+call `em.persistLater()` over and over again to pass known objects to the 
 `EntityManager`. This is a NO-OP for known entities, but leads to much code written that is 
 confusing to other developers.
 
 The following code WILL update your database with the changes made to the `Author` object, 
-even if you did not call `EntityManager#persistLater()`:
+even if you did not call `em.persistLater()`:
 
 ```typescript
 const authorRepository = orm.em.getRepository(Author);
@@ -58,7 +58,7 @@ jon.email = 'foo@bar.com';
 await authorRepository.flush(); // calling orm.em.flush() has same effect
 ```
 
-## How MikroORM detects changes
+## How MikroORM Detects Changes
 
 MikroORM is a data-mapper that tries to achieve persistence-ignorance (PI). This means you 
 map JS objects into a relational database that do not necessarily know about the database at 
@@ -68,8 +68,8 @@ For this MikroORM keeps a second map inside the `UnitOfWork`. Whenever you fetch
 from the database MikroORM will keep a copy of all the properties and associations inside 
 the `UnitOfWork`. 
 
-Now whenever you call `EntityManager#flush()` MikroORM will iterate over all entities you 
-previously marked for persisting via `EntityManager#persistLater()`. For each object it will
+Now whenever you call `em.flush()` MikroORM will iterate over all entities you 
+previously marked for persisting via `em.persistLater()`. For each object it will
 compare the original property and association values with the values that are currently set 
 on the object. If changes are detected then the object is queued for a UPDATE operation. 
 Only the fields that actually changed are updated.
@@ -79,9 +79,9 @@ Only the fields that actually changed are updated.
 First and most important implication of having Unit of Work is that it allows handling
 transactions automatically. 
 
-When you call `EntityManager#flush()`, all computed changes are queried inside a database
+When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
-of transactions simply by calling `EntityManager#persistLater()` and once all your changes 
+of transactions simply by calling `em.persistLater()` and once all your changes 
 are ready, simply calling `flush()` will run them inside a transaction. 
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
@@ -100,29 +100,29 @@ await em.persistAndFlush(user);
 You can find more information about transactions in [Transactions and concurrency](transactions.md) 
 page.
 
-### Beware: Auto-flushing and transactions
+### Beware: Auto-flushing and Transactions
 
-Originally there was only `EntityManager#persist(entity, flush = true)` method, that was
+> Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
+> `em.flush()` yourself to persist changes into database. You can still change this via ORM's
+> options to ease the transition but generally it is not recommended. 
+
+Originally there was only `em.persist(entity, flush = true)` method, that was
 automatically flushing changes to database, if not given second `false` parameter. This 
 behaviour can be now changed via `autoFlush` option when initializing the ORM:
 
 ```typescript
 const orm = await MikroORM.init({
-  autoFlush: false,
+  autoFlush: false, // defaults to false in v3, was true in v2
   // ...
 });
-await orm.em.persist(new Entity()); // no auto-flushing now
+orm.em.persist(new Entity()); // no auto-flushing now
 await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
 
-When using driver that supports transactions (all SQL drivers), you should either disable 
-auto-flushing, or use `persistLater()` method instead, as otherwise each `persist()` call 
-will immediately create new transaction to run the query.
-
-This behaviour will be changed in v3, `autoFlush` will stay configurable but the default 
-value will be `false`. Users are encouraged to use `persistAndFlush()` instead if they need
-the immediate persist. 
+When using driver that supports transactions (all SQL drivers), you should either keep auto-flushing 
+disabled, or use `persistLater()` method instead, as otherwise each `persist()` call will immediately 
+create new transaction to run the query.
 
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/unitofwork.html)
 > as the behaviour here is pretty much the same.

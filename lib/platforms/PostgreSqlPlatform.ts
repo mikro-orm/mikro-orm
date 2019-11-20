@@ -1,22 +1,9 @@
-import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { Platform } from './Platform';
 import { PostgreSqlSchemaHelper } from '../schema/PostgreSqlSchemaHelper';
 
 export class PostgreSqlPlatform extends Platform {
 
-  protected schemaHelper = new PostgreSqlSchemaHelper();
-
-  supportsSavePoints(): boolean {
-    return true;
-  }
-
-  getNamingStrategy(): { new(): NamingStrategy} {
-    return UnderscoreNamingStrategy;
-  }
-
-  getParameterPlaceholder(index?: number): string {
-    return '$' + index;
-  }
+  protected readonly schemaHelper = new PostgreSqlSchemaHelper();
 
   usesReturningStatement(): boolean {
     return true;
@@ -26,8 +13,8 @@ export class PostgreSqlPlatform extends Platform {
     return true;
   }
 
-  getReadLockSQL(): string {
-    return 'FOR SHARE';
+  getCurrentTimestampSQL(length: number): string {
+    return `current_timestamp(${length})`;
   }
 
 }

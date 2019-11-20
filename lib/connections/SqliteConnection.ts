@@ -1,36 +1,17 @@
-import sqlite, { Database } from 'sqlite';
-import { readFile } from 'fs-extra';
+import { ensureDir, readFile } from 'fs-extra';
+import { dirname } from 'path';
+import { Config } from 'knex';
 
-import { Connection, QueryResult } from './Connection';
-import { EntityData, IEntity } from '../decorators';
+const Bluebird = require('bluebird');
 
-export class SqliteConnection extends Connection {
+import { AbstractSqlConnection } from './AbstractSqlConnection';
 
-  protected client: SqliteDatabase;
+export class SqliteConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
-    this.client = await sqlite.open(this.config.get('dbName')) as SqliteDatabase;
-    await this.client.exec('PRAGMA foreign_keys = ON');
-  }
-
-  async close(force?: boolean): Promise<void> {
-    await this.client.close();
-  }
-
-  async isConnected(): Promise<boolean> {
-    return this.client.driver.open;
-  }
-
-  async beginTransaction(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `SAVEPOINT ${savepoint}` : 'BEGIN', [], 'run');
-  }
-
-  async commit(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `RELEASE SAVEPOINT ${savepoint}` : 'COMMIT', [], 'run');
-  }
-
-  async rollback(savepoint?: string): Promise<void> {
-    await this.execute(savepoint ? `ROLLBACK TO SAVEPOINT ${savepoint}` : 'ROLLBACK', [], 'run');
+    await ensureDir(dirname(this.config.get('dbName')));
+    this.client = this.createKnexClient(this.getPatchedDialect());
+    await this.client.raw('pragma foreign_keys = on');
   }
 
   getDefaultClientUrl(): string {
@@ -41,45 +22,91 @@ export class SqliteConnection extends Connection {
     return '';
   }
 
-  async execute(query: string, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<QueryResult | any | any[]> {
-    params = params.map(p => {
-      if (p instanceof Date) {
-        p = p.toISOString();
-      }
-
-      if (typeof p === 'boolean') {
-        p = +p;
-      }
-
-      return p;
-    });
-
-    const res = await this.executeQuery(query, params, async () => {
-      const statement = await this.client.prepare(query);
-      const result = await statement[method](...params);
-      await statement.finalize();
-
-      return result;
-    });
-
-    return this.transformResult(res, method);
-  }
-
   async loadFile(path: string): Promise<void> {
-    await this.client.exec((await readFile(path)).toString());
+    const conn = await this.client.client.acquireConnection();
+    await conn.exec((await readFile(path)).toString());
+    await this.client.client.releaseConnection(conn);
   }
 
-  private transformResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | EntityData<IEntity> | EntityData<IEntity>[] {
-    if (method === 'run') {
-      return {
-        affectedRows: res.changes,
-        insertId: res.lastID,
-      };
+  protected getKnexOptions(type: string): Config {
+    return {
+      client: type,
+      connection: {
+        filename: this.config.get('dbName'),
+      },
+      useNullAsDefault: true,
+    };
+  }
+
+  protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
+    if (method === 'get') {
+      return res[0];
     }
 
-    return res;
+    if (method === 'all') {
+      return res;
+    }
+
+    return {
+      insertId: res.lastID,
+      affectedRows: res.changes,
+    } as unknown as T;
+  }
+
+  /**
+   * monkey patch knex' sqlite dialect so it returns inserted id when doing raw insert query
+   */
+  private getPatchedDialect() {
+    const dialect = require('knex/lib/dialects/sqlite3/index.js');
+
+    const processResponse = dialect.prototype.processResponse;
+    dialect.prototype.processResponse = (obj: any, runner: any) => {
+      if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
+        return obj.context;
+      }
+
+      return processResponse(obj, runner);
+    };
+
+    dialect.prototype._query = (connection: any, obj: any) => {
+      const callMethod = this.getCallMethod(obj);
+
+      return new Bluebird((resolve: any, reject: any) => {
+        /* istanbul ignore if */
+        if (!connection || !connection[callMethod]) {
+          return reject(new Error(`Error calling ${callMethod} on connection.`));
+        }
+
+        connection[callMethod](obj.sql, obj.bindings, function (this: any, err: any, response: any) {
+          if (err) {
+            return reject(err);
+          }
+
+          obj.response = response;
+          obj.context = this;
+
+          return resolve(obj);
+        });
+      });
+    };
+
+    return dialect;
+  }
+
+  private getCallMethod(obj: any): string {
+    if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
+      return 'run';
+    }
+
+    switch (obj.method) {
+      case 'insert':
+      case 'update':
+      case 'counter':
+      case 'del':
+        return 'run';
+      default:
+        return 'all';
+    }
   }
 
 }
-
-export type SqliteDatabase = Database & { driver: { open: boolean } };

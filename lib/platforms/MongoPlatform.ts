@@ -1,12 +1,12 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Platform } from './Platform';
 import { MongoNamingStrategy, NamingStrategy } from '../naming-strategy';
-import { IPrimaryKey } from '../decorators';
+import { IPrimaryKey, Primary } from '../types';
 import { SchemaHelper } from '../schema';
 
 export class MongoPlatform extends Platform {
 
-  protected schemaHelper: SchemaHelper;
+  protected readonly schemaHelper?: SchemaHelper;
 
   usesPivotTable(): boolean {
     return false;
@@ -20,8 +20,8 @@ export class MongoPlatform extends Platform {
     return MongoNamingStrategy;
   }
 
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey | ObjectID): T {
-    if (data instanceof ObjectID) {
+  normalizePrimaryKey<T = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+    if (data instanceof ObjectId) {
       return data.toHexString() as unknown as T;
     }
 
@@ -29,15 +29,11 @@ export class MongoPlatform extends Platform {
   }
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    return new ObjectID(data);
+    return new ObjectId(data);
   }
 
   getSerializedPrimaryKeyField(field: string): string {
     return 'id';
-  }
-
-  getSchemaHelper(): SchemaHelper {
-    throw new Error(`${MongoPlatform.name} does not provide SchemaHelper`);
   }
 
 }

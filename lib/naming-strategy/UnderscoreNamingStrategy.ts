@@ -1,12 +1,12 @@
-import { NamingStrategy } from './NamingStrategy';
+import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
-export class UnderscoreNamingStrategy implements NamingStrategy {
+export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
 
   classToTableName(entityName: string): string {
     return this.underscore(entityName);
   }
 
-  joinColumnName(propertyName: string, className?: string): string {
+  joinColumnName(propertyName: string): string {
     return this.underscore(propertyName) + '_' + this.referenceColumnName();
   }
 

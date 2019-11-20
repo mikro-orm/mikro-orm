@@ -1,80 +1,44 @@
-PRAGMA foreign_keys=OFF;
+pragma foreign_keys = off;
 
+drop table if exists `author3`;
+drop table if exists `book3`;
+drop table if exists `book_tag3`;
+drop table if exists `publisher3`;
+drop table if exists `test3`;
+drop table if exists `book3_to_book_tag3`;
+drop table if exists `publisher3_to_test3`;
 
-DROP TABLE IF EXISTS "author3";
+create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` varchar not null, `email` varchar not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` varchar null, `born` datetime null);
+create unique index `author3_email_unique` on `author3` (`email`);
 
-CREATE TABLE "author3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "created_at" TEXT DEFAULT NULL,
-  "updated_at" TEXT DEFAULT NULL,
-  "name" TEXT NOT NULL,
-  "email" TEXT UNIQUE NOT NULL,
-  "age" INTEGER DEFAULT NULL,
-  "terms_accepted" INTEGER DEFAULT 0,
-  "identities" TEXT DEFAULT NULL,
-  "born" TEXT DEFAULT NULL
-);
+create table `book3` (`id` integer not null primary key autoincrement, `title` varchar not null, `foo` varchar null);
 
+create table `book_tag3` (`id` integer not null primary key autoincrement, `name` varchar not null, `version` datetime not null default current_timestamp);
 
-DROP TABLE IF EXISTS "book3";
+create table `publisher3` (`id` integer not null primary key autoincrement, `name` varchar not null, `type` varchar not null);
 
-CREATE TABLE "book3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "title" TEXT NOT NULL,
-  "foo" TEXT DEFAULT NULL
-);
+create table `test3` (`id` integer not null primary key autoincrement, `name` varchar null, `version` integer not null default 1);
 
+create table `book3_to_book_tag3` (`id` integer not null primary key autoincrement);
 
-DROP TABLE IF EXISTS "book_tag3";
+create table `publisher3_to_test3` (`id` integer not null primary key autoincrement);
 
-CREATE TABLE "book_tag3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "name" TEXT NOT NULL,
-  "version" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+alter table `author3` add column `favourite_book_id` integer null references `book3` (`id`) on delete set null on update cascade;
+create index `author3_favourite_book_id_index` on `author3` (`favourite_book_id`);
 
+alter table `book3` add column `author_id` integer null references `author3` (`id`) on delete set null on update cascade;
+alter table `book3` add column `publisher_id` integer null references `publisher3` (`id`) on delete set null on update cascade;
+create index `book3_author_id_index` on `book3` (`author_id`);
+create index `book3_publisher_id_index` on `book3` (`publisher_id`);
 
-DROP TABLE IF EXISTS "publisher3";
+alter table `book3_to_book_tag3` add column `book3_id` integer null references `book3` (`id`) on delete cascade on update cascade;
+alter table `book3_to_book_tag3` add column `book_tag3_id` integer null references `book_tag3` (`id`) on delete cascade on update cascade;
+create index `book3_to_book_tag3_book3_id_index` on `book3_to_book_tag3` (`book3_id`);
+create index `book3_to_book_tag3_book_tag3_id_index` on `book3_to_book_tag3` (`book_tag3_id`);
 
-CREATE TABLE "publisher3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "name" TEXT NOT NULL,
-  "type" TEXT NOT NULL
-);
+alter table `publisher3_to_test3` add column `publisher3_id` integer null references `publisher3` (`id`) on delete cascade on update cascade;
+alter table `publisher3_to_test3` add column `test3_id` integer null references `test3` (`id`) on delete cascade on update cascade;
+create index `publisher3_to_test3_publisher3_id_index` on `publisher3_to_test3` (`publisher3_id`);
+create index `publisher3_to_test3_test3_id_index` on `publisher3_to_test3` (`test3_id`);
 
-
-DROP TABLE IF EXISTS "test3";
-
-CREATE TABLE "test3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "name" TEXT DEFAULT NULL,
-  "version" INTEGER NOT NULL DEFAULT 1
-);
-
-
-DROP TABLE IF EXISTS "book3_to_book_tag3";
-
-CREATE TABLE "book3_to_book_tag3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT
-);
-
-
-DROP TABLE IF EXISTS "publisher3_to_test3";
-
-CREATE TABLE "publisher3_to_test3" (
-  "id" INTEGER PRIMARY KEY AUTOINCREMENT
-);
-
-
-ALTER TABLE "author3" ADD "favourite_book_id" INTEGER DEFAULT NULL REFERENCES "book3" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
-ALTER TABLE "book3" ADD "author_id" INTEGER DEFAULT NULL REFERENCES "author3" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "book3" ADD "publisher_id" INTEGER DEFAULT NULL REFERENCES "publisher3" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
-ALTER TABLE "book3_to_book_tag3" ADD "book3_id" INTEGER DEFAULT NULL REFERENCES "book3" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "book3_to_book_tag3" ADD "book_tag3_id" INTEGER DEFAULT NULL REFERENCES "book_tag3" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE "publisher3_to_test3" ADD "publisher3_id" INTEGER DEFAULT NULL REFERENCES "publisher3" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "publisher3_to_test3" ADD "test3_id" INTEGER DEFAULT NULL REFERENCES "test3" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-PRAGMA foreign_keys=ON;
+pragma foreign_keys = on;

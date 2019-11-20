@@ -3,9 +3,8 @@ dist: xenial
 
 node_js:
   - '8'
-  - '9'
   - '10'
-  - '11'
+  - '12'
   - 'node'
 
 services:
@@ -14,6 +13,7 @@ services:
   - postgresql
 
 cache:
+  yarn: true
   directories:
     - 'node_modules'
 

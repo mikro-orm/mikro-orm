@@ -1,16 +1,16 @@
-import { EntityProperty, IEntityType, IPrimaryKey } from '../decorators';
-import { MetadataStorage } from '../metadata';
+import { Dictionary, EntityProperty, AnyEntity, IPrimaryKey, Primary } from '../types';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
+import { wrap } from './EntityHelper';
 
-export class ArrayCollection<T extends IEntityType<T>> {
+export class ArrayCollection<T extends AnyEntity<T>> {
 
   [k: number]: T;
 
   protected readonly items: T[] = [];
-  private _property: EntityProperty;
+  private _property?: EntityProperty;
 
-  constructor(readonly owner: IEntityType<any>, items?: T[]) {
+  constructor(readonly owner: AnyEntity, items?: T[]) {
     if (items) {
       this.items = items;
       Object.assign(this, items);
@@ -21,25 +21,25 @@ export class ArrayCollection<T extends IEntityType<T>> {
     return [...this.items];
   }
 
-  toArray(): Record<string, any>[] {
+  toArray(): Dictionary[] {
     return this.getItems().map(item => {
-      const meta = MetadataStorage.getMetadata(item.constructor.name);
+      const meta = wrap(this.owner).__em.getMetadata().get(item.constructor.name);
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
-      return item.toJSON(...args);
+      return wrap(item).toJSON(...args);
     });
   }
 
-  getIdentifiers(field?: string): IPrimaryKey[] {
+  getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string): U[] {
     const items = this.getItems();
 
     if (items.length === 0) {
       return [];
     }
 
-    field = field || this.items[0].__serializedPrimaryKeyField;
+    field = field || wrap(this.items[0]).__meta.serializedPrimaryKey;
 
-    return this.getItems().map(i => i[field as keyof T]);
+    return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
 
   add(...items: T[]): void {
@@ -60,7 +60,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
 
   remove(...items: T[]): void {
     for (const item of items) {
-      const idx = this.items.findIndex(i => i.__serializedPrimaryKey === item.__serializedPrimaryKey);
+      const idx = this.items.findIndex(i => wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey);
 
       if (idx !== -1) {
         delete this[this.items.length - 1]; // remove last item
@@ -79,7 +79,7 @@ export class ArrayCollection<T extends IEntityType<T>> {
   contains(item: T): boolean {
     return !!this.items.find(i => {
       const objectIdentity = i === item;
-      const primaryKeyIdentity = !!i.__primaryKey && !!item.__primaryKey && i.__serializedPrimaryKey === item.__serializedPrimaryKey;
+      const primaryKeyIdentity = !!wrap(i).__primaryKey && !!wrap(item).__primaryKey && wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
@@ -108,18 +108,18 @@ export class ArrayCollection<T extends IEntityType<T>> {
   }
 
   protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.inversedBy as keyof T] as Collection<T>;
+    const collection = item[this.property.inversedBy as keyof T] as unknown as Collection<T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+      collection[method](this.owner as T);
     }
   }
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.mappedBy as keyof T] as Collection<T>;
+    const collection = item[this.property.mappedBy as keyof T] as unknown as Collection<T>;
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+      collection[method](this.owner as T);
     } else if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       const value = method === 'add' ? this.owner : null;
       item[this.property.mappedBy as keyof T] = value as T[keyof T];
@@ -132,16 +132,16 @@ export class ArrayCollection<T extends IEntityType<T>> {
     }
 
     if (method === 'add') {
-      return !collection.contains(this.owner);
+      return !collection.contains(this.owner as T);
     }
 
     // remove
-    return collection.contains(this.owner);
+    return collection.contains(this.owner as T);
   }
 
   protected get property() {
     if (!this._property) {
-      const meta = MetadataStorage.getMetadata(this.owner.constructor.name);
+      const meta = wrap(this.owner).__em.getMetadata().get(this.owner.constructor.name);
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

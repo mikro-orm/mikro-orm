@@ -2,7 +2,9 @@
 /dist
 /coverage
 /temp
+/tests/generated-entities
 /.idea
+/.vscode
 /yarn-error.log
 /.coveralls.yml
 !.gitkeep

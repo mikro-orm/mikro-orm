@@ -1,7 +1,7 @@
 ---
 ---
 
-# Usage with MySQL, PostgreSQL or SQLite
+# Usage with MySQL, MariaDB, PostgreSQL or SQLite
 
 To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and set 
 the type option to `mysql` when initializing ORM.
@@ -15,7 +15,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'mysql', // or 'sqlite' or 'postgresql'
+  type: 'mysql', // or 'sqlite' or 'postgresql' or 'mariadb'
 });
 ```
 
@@ -85,7 +85,7 @@ console.log(qb.getParams());
 const res1 = await qb.execute();
 
 // or run query without using QueryBuilder
-const driver = orm.em.getDriver<MySqlDriver>();
+const driver = orm.em.getDriver();
 const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
 ```
 
@@ -117,15 +117,12 @@ For more examples of how to work with `QueryBuilder`, take a look at `QueryBuild
 
 ## Transactions
 
-When you call `EntityManager#flush()`, all computed changes are queried [inside a database
+When you call `em.flush()`, all computed changes are queried [inside a database
 transaction](unit-of-work.md) by default, so you do not have to handle transactions manually. 
 
-When you need to explicitly handle the transaction, you can use `beginTransaction/commit/rollback` 
-methods on both `MySqlDriver` and their shortcuts on `EntityManager`. 
-
-You can also use `EntityManager.transactional(cb)` helper to run callback in transaction. It will
-provide forked `EntityManager` as a parameter with clear clear isolated identity map - please use that
-to make changes. 
+When you need to explicitly handle the transaction, you can use `em.transactional(cb)` 
+to run callback in transaction. It will provide forked `EntityManager` as a parameter 
+with clear isolated identity map - please use that to make changes. 
 
 ```typescript
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
@@ -135,14 +132,7 @@ await orm.em.transactional(async (em: EntityManager) => {
 });
 ```
 
-```typescript
-EntityManager.beginTransaction(): Promise<void>;
-EntityManager.commit(): Promise<void>;
-EntityManager.rollback(): Promise<void>;
-EntityManager.transactional(cb: (em: EntityManager) => Promise<any>): Promise<any>;
-```
-
-## LIKE queries
+## LIKE Queries
 
 SQL do support LIKE queries via native JS regular expressions:
 
@@ -157,7 +147,7 @@ const authors = await orm.em.find(Author2, { email: /exa.*le\.c.m$/ });
 console.log(authors); // all 3 authors found
 ```
 
-## Native collection methods
+## Native Collection Methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your
 database with initial fixtures. Using ORM for such operations can bring unnecessary
@@ -165,9 +155,9 @@ boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/na
 methods:
 
 ```typescript
-EntityManager.nativeInsert<T extends IEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
-EntityManager.nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
-EntityManager.nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
+em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
+em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
 Those methods execute native SQL queries generated via `QueryBuilder` based on entity 
@@ -189,7 +179,7 @@ instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory 
 ```typescript
 const qb = em.createQueryBuilder('Author');
 qb.select('*').where({ id: { $in: [...] } });
-const res = await em.getDriver<MySqlDriver>().execute(qb);
+const res = await em.getDriver().execute(qb);
 console.log(res); // unprocessed result of underlying database driver
 ```
 

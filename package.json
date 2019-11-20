@@ -1,20 +1,22 @@
 {
   "name": "mikro-orm",
-  "version": "2.7.9",
-  "description": "Simple typescript ORM for node.js based on data-mapper, unit-of-work and identity-map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JS.",
+  "version": "3.0.0-rc",
+  "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/B4nan/mikro-orm.git"
+    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
   },
   "keywords": [
     "orm",
     "mongo",
     "mongodb",
     "mysql",
+    "mariadb",
     "postgresql",
     "sqlite",
+    "sqlite3",
     "ts",
     "typescript",
     "js",
@@ -29,15 +31,21 @@
   "author": "Martin Adámek",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/B4nan/mikro-orm/issues"
+    "url": "https://github.com/mikro-orm/mikro-orm/issues"
   },
-  "homepage": "https://b4nan.github.io/mikro-orm/",
+  "homepage": "https://mikro-orm.io",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "test": "jest --runInBand",
-    "coverage": "rimraf temp && jest --runInBand --coverage",
+    "pretest": "node tests/pre-test",
+    "test": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
+    "posttest": "node tests/post-test",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 2",
+    "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "tslint -p ."
+  },
+  "bin": {
+    "mikro-orm": "./dist/cli.js"
   },
   "jest": {
     "transform": {
@@ -53,6 +61,9 @@
     "collectCoverage": false,
     "collectCoverageFrom": [
       "lib/**/*.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+      "lib/cli.ts"
     ]
   },
   "commitlint": {
@@ -79,46 +90,79 @@
     "pinVersions": false
   },
   "dependencies": {
+    "acorn-loose": "^7.0.0",
+    "acorn-walk": "^7.0.0",
+    "chalk": "^2.4.2",
+    "cli-highlight": "^2.1.1",
+    "cli-table3": "^0.5.1",
     "clone": "^2.1.0",
     "fast-deep-equal": "^2.0.0",
     "fs-extra": "^8.0.0",
     "globby": "^10.0.0",
-    "ts-morph": "^5.0.0",
-    "typescript": "^3.5.0",
-    "uuid": "^3.3.2"
+    "knex": "^0.20.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-morph": "^4.3.3",
+    "umzug": "^2.2.0",
+    "uuid": "^3.3.2",
+    "yargonaut": "^1.1.4",
+    "yargs": "^13.3.0"
   },
   "peerDependencies": {
-    "mongodb": "^3.2.0",
+    "mariadb": "^2.1.0",
+    "mongodb": "^3.3.4",
     "mysql2": "^2.0.0",
     "pg": "^7.10.0",
-    "sqlite": "^3.0.0"
+    "sqlite3": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "mariadb": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@commitlint/cli": "^8.0.0",
-    "@commitlint/config-conventional": "^8.0.0",
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^8.1.0",
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^8.0.0",
-    "@types/jest": "^24.0.11",
-    "@types/mongodb": "^3.1.23",
+    "@types/jest": "^24.0.18",
+    "@types/mongodb": "^3.3.11",
     "@types/mysql2": "types/mysql2",
-    "@types/node": "^11.13.5",
-    "@types/pg": "^7.4.14",
-    "@types/uuid": "^3.4.4",
-    "coveralls": "^3.0.3",
-    "husky": "^3.0.0",
-    "jest": "^24.7.1",
-    "lint-staged": "^9.0.0",
-    "mongodb": "^3.2.3",
+    "@types/node": "^12.7.5",
+    "@types/pg": "^7.11.1",
+    "@types/umzug": "^2.2.2",
+    "@types/uuid": "^3.4.5",
+    "@types/webpack-env": "^1.14.0",
+    "conditional-type-checks": "^1.0.1",
+    "conventional-changelog-angular": "^5.0.6",
+    "conventional-changelog-cli": "^2.0.28",
+    "coveralls": "^3.0.6",
+    "husky": "^3.0.5",
+    "jest": "^24.9.0",
+    "lint-staged": "^9.2.5",
+    "mariadb": "^2.1.1",
+    "mongodb": "^3.3.4",
     "mysql2": "^2.0.0",
-    "pg": "^7.10.0",
+    "pg": "^7.12.1",
     "rimraf": "^3.0.0",
-    "semantic-release": "^15.13.3",
-    "sqlite": "^3.0.3",
-    "ts-jest": "^24.0.2",
-    "ts-node": "^8.1.0",
-    "tslint": "^5.18.0",
+    "semantic-release": "^15.13.24",
+    "sqlite3": "^4.1.0",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.4.1",
+    "tslint": "^5.20.0",
     "tslint-eslint-rules": "^5.4.0",
-    "tslint-import-rules": "^0.3.0",
-    "tslint-lines-between-class-members": "^1.3.6"
+    "tslint-lines-between-class-members": "^1.3.6",
+    "typescript": "3.6.4"
   }
 }

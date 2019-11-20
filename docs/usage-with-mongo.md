@@ -22,27 +22,27 @@ When defining entity, do not forget to define primary key like this:
 
 ```typescript
 @PrimaryKey()
-_id: ObjectID;
+_id: ObjectId;
 ```
 
-## ObjectID and string id duality
+## ObjectId and string id duality
 
-Every entity has both `ObjectID` and `string` id available, also all methods of `EntityManager` 
+Every entity has both `ObjectId` and `string` id available, also all methods of `EntityManager` 
 and `EntityRepository` supports querying by both of them. 
 
 ```typescript
 const author = orm.em.getReference('...id...');
 console.log(author.id);  // returns '...id...'
-console.log(author._id); // returns ObjectID('...id...')
+console.log(author._id); // returns ObjectId('...id...')
 
 // all of those will return the same results
 const article = '...article id...'; // string id
 const book = '...book id...'; // string id
 const repo = orm.em.getRepository(Author);
 const foo1 = await repo.find({ id: { $in: [article] }, favouriteBook: book });
-const bar1 = await repo.find({ id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
+const bar1 = await repo.find({ id: { $in: [new ObjectId(article)] }, favouriteBook: new ObjectId(book) });
 const foo2 = await repo.find({ _id: { $in: [article] }, favouriteBook: book });
-const bar2 = await repo.find({ _id: { $in: [new ObjectID(article)] }, favouriteBook: new ObjectID(book) });
+const bar2 = await repo.find({ _id: { $in: [new ObjectId(article)] }, favouriteBook: new ObjectId(book) });
 ```
 
 ## ManyToMany collections with inlined pivot array
@@ -62,9 +62,9 @@ boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/na
 methods:
 
 ```typescript
-EntityManager.nativeInsert<T extends IEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
-EntityManager.nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
-EntityManager.nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
+em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
+em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
+em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
 ```
 
 Those methods execute native driver methods like Mongo's `insertOne/updateMany/deleteMany` collection methods respectively. 
@@ -82,7 +82,7 @@ EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 There is also shortcut for calling `aggregate` method:
 
 ```typescript
-EntityManager.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
+em.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```
 

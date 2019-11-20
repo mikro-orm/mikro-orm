@@ -1,13 +1,13 @@
 ---
 ---
 
-# EntityHelper and decorated entities
+# EntityHelper and Decorated Entities
 
-## Updating entity values with IEntity.assign()
+## Updating Entity Values with Entity.assign()
 
 When you want to update entity based on user input, you will usually have just plain
 string ids of entity relations as user input. Normally you would need to use 
-`EntityManager.getReference()` to create references from each id first, and then
+`em.getReference()` to create references from each id first, and then
 use those references to update entity relations:
 
 ```typescript
@@ -16,7 +16,7 @@ const book = new Book('Book', jon);
 book.author = orm.em.getReference<Author>(Author, '...id...');
 ```
 
-Same result can be easily achieved with `IEntity.assign()`:
+Same result can be easily achieved with `Entity.assign()`:
 
 ```typescript
 book.assign({ 
@@ -28,7 +28,7 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
-By default, `IEntity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
+By default, `Entity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
 e.g. it does not merge things recursively. To enable deep merging of object properties, 
 use second parameter to enable `mergeObjects` flag:
 

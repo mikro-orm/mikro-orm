@@ -1,18 +1,26 @@
-import { ObjectID } from 'mongodb';
-import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { ObjectId } from 'mongodb';
+import { Entity, ManyToOne, MongoEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBar } from './FooBar';
+import { Book } from './Book';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class FooBaz {
+export class FooBaz implements MongoEntity<FooBaz> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
 
   @Property()
-  name: string;
+  name!: string;
 
-  @OneToOne({ mappedBy: 'baz' })
-  bar: FooBar;
+  @OneToOne(() => FooBar, bar => bar.baz, { eager: true })
+  bar!: FooBar;
+
+  @ManyToOne({ eager: true })
+  book!: Book;
 
   static create(name: string) {
     const baz = new FooBaz();
@@ -22,5 +30,3 @@ export class FooBaz {
   }
 
 }
-
-export interface FooBaz extends IEntity<string> { }

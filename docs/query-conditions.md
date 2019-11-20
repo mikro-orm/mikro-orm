@@ -1,7 +1,7 @@
 ---
 ---
 
-# Smart query conditions
+# Smart Query Conditions
 
 When you want to make complex queries, you can easily end up with a lot of boilerplate code
 full of curly brackets:
@@ -67,7 +67,7 @@ will be converted automatically:
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
 ```
 
-For primary key lookup, you can provide the array directly to `EntityManager.find()`:
+For primary key lookup, you can provide the array directly to `em.find()`:
 
 ```typescript
 const res = await orm.em.find(Author, [1, 2, 7]);

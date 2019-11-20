@@ -1,27 +1,41 @@
-import { ObjectID } from 'mongodb';
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, IEntity, BeforeCreate } from '../../lib';
+import { ObjectId } from 'mongodb';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  MongoEntity,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  BeforeCreate,
+  Enum,
+} from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Publisher {
+export class Publisher implements MongoEntity<Publisher> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
 
   @Property()
   name: string;
 
-  @OneToMany({ entity: () => Book.name, fk: 'publisher' })
+  @OneToMany({ mappedBy: 'publisher' })
   books = new Collection<Book>(this);
 
-  @ManyToMany({ entity: () => Test.name, owner: true })
+  @ManyToMany({ eager: true })
   tests = new Collection<Test>(this);
 
-  @Property()
-  type: PublisherType = PublisherType.LOCAL;
+  @Enum()
+  type = PublisherType.LOCAL;
 
-  constructor(name: string = 'asd', type: PublisherType = PublisherType.LOCAL) {
+  constructor(name: string = 'asd', type = PublisherType.LOCAL) {
     this.name = name;
     this.type = type;
   }
@@ -32,8 +46,6 @@ export class Publisher {
   }
 
 }
-
-export interface Publisher extends IEntity { }
 
 export enum PublisherType {
   LOCAL = 'local',

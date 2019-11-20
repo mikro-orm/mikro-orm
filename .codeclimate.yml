@@ -3,7 +3,7 @@ version: "2"
 checks:
   file-lines:
     config:
-      threshold: 400
+      threshold: 500
   method-lines:
     config:
       threshold: 30
@@ -13,6 +13,9 @@ checks:
   return-statements:
     config:
       threshold: 5
+  method-complexity:
+    config:
+      threshold: 7
 
 engines:
   duplication:
@@ -21,4 +24,4 @@ engines:
       languages:
         typescript:
           # make it higher so it does not report bullshit like similarity of abstract method and its implementation
-          mass_threshold: 55
+          mass_threshold: 70

@@ -25,6 +25,8 @@ console.log(tags[0].books[0].author.name); // prints name of nested author
 4. Load all `Test`s associated with previously loaded `Publisher`s
 5. Load all `Author`s associated with previously loaded `Book`s
 
+> You can also populate all relationships by passing `populate: true`.
+
 For SQL drivers with pivot tables this means:
 
 ```sql

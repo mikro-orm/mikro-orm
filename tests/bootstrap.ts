@@ -1,21 +1,23 @@
-import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '../lib';
+import 'reflect-metadata';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, FooBaz2, Publisher2, Test2, FooBar2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { MySqlConnection } from '../lib/connections/MySqlConnection';
-import { SqliteConnection } from '../lib/connections/SqliteConnection';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
-import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 import { FooBaz } from './entities/FooBaz';
 import { FooBar } from './entities/FooBar';
+import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { MySqlDriver } from '../lib/drivers/MySqlDriver';
+import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
+import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
 
-export async function initORM() {
+export async function initORMMongo() {
   let hash = '';
 
   if (process.env.ORM_PARALLEL) {
@@ -25,67 +27,79 @@ export async function initORM() {
   // simulate ts-node to raise coverage
   process.argv[0] = process.argv[0].replace(/node$/, 'ts-node');
 
-  return MikroORM.init({
+  return MikroORM.init<MongoDriver>({
     entitiesDirs: ['dist/entities'], // will be ignored as we simulate ts-node
     entitiesDirsTs: ['entities'],
     dbName: `mikro-orm-test${hash}`,
     baseDir: BASE_DIR,
     debug: true,
+    highlight: false,
+    logger: i => i,
     type: 'mongo',
+    cache: { pretty: true },
   });
 }
 
-export async function initORMMySql() {
-  let port = 3307;
-
-  if (process.env.ORM_PORT) {
-    port = +process.env.ORM_PORT;
-  }
-
-  const orm = await MikroORM.init({
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
+  const orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
-    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+    discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     dbName: `mikro_orm_test`,
-    port,
+    port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
     baseDir: BASE_DIR,
-    debug: true,
+    debug: ['query'],
+    highlight: false,
+    logger: i => i,
     multipleStatements: true,
-    type: 'mysql',
+    type,
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: false },
+    replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
+    migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
 
-  const connection = orm.em.getConnection<MySqlConnection>();
+  await orm.getSchemaGenerator().ensureDatabase();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
   return orm;
 }
 
 export async function initORMPostgreSql() {
-  const orm = await MikroORM.init({
-    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
-    tsConfigPath: BASE_DIR + '/tsconfig.test.json',
+  const orm = await MikroORM.init<PostgreSqlDriver>({
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, Label2, BaseEntity2, BaseEntity22],
+    discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',
-    debug: true,
+    debug: ['query'],
+    highlight: false,
+    logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: false },
   });
 
-  const connection = orm.em.getConnection<PostgreSqlConnection>();
+  await orm.getSchemaGenerator().ensureDatabase();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
 
   return orm;
 }
 
 export async function initORMSqlite() {
-  const orm = await MikroORM.init({
+  const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
     dbName: './mikro_orm_test.db',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
-    debug: true,
+    debug: ['query'],
+    highlight: false,
+    logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
+    cache: { pretty: true },
   });
 
-  const connection = orm.em.getConnection<SqliteConnection>();
+  const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/sqlite-schema.sql');
 
   return orm;
@@ -103,28 +117,30 @@ export async function wipeDatabase(em: EntityManager) {
 }
 
 export async function wipeDatabaseMySql(em: EntityManager) {
-  await em.getConnection().execute('SET FOREIGN_KEY_CHECKS=0;');
+  await em.getConnection().execute('set foreign_key_checks = 0');
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
   await em.createQueryBuilder(BookTag2).truncate().execute();
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
-  await em.getConnection().execute('SET FOREIGN_KEY_CHECKS=1;');
+  await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
 }
 
 export async function wipeDatabasePostgreSql(em: EntityManager) {
-  await em.getConnection().execute(`SET session_replication_role = 'replica';`);
+  await em.getConnection().execute(`set session_replication_role = 'replica'`);
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
   await em.createQueryBuilder(BookTag2).truncate().execute();
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
-  await em.getConnection().execute(`SET session_replication_role = 'origin';`);
+  await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();
 }
 

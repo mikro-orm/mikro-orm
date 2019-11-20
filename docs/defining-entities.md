@@ -12,10 +12,10 @@ to [use entity constructors](entity-constructors.md), just do not forget to spec
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  id!: number;
 
   @Property()
   createdAt = new Date();
@@ -24,15 +24,15 @@ export class Book {
   updatedAt = new Date();
 
   @Property()
-  title: string;
+  title!: string;
 
   @ManyToOne() // when you provide correct type hint, ORM will read it for you
-  author: Author;
+  author!: Author;
 
-  @ManyToOne({ entity: () => Publisher }) // or you can specify the entity as class reference or string name
-  publisher: Publisher;
+  @ManyToOne(() => Publisher) // or you can specify the entity as class reference or string name
+  publisher?: Publisher;
 
-  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
+  @ManyToMany() // owning side can be simple as this!
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -41,31 +41,33 @@ export class Book {
   }
 
 }
-
-export interface Book extends IEntity<string> { }
 ```
 
-You will need to extend Book's interface with `IEntity`. The interface represents internal 
-methods added to your entity's prototype via `@Entity` decorator.
+You will need to mark the entity by implementing one of `*Entity` interfaces:
 
-> `IEntity` is generic interface, its type parameter depends on data type of normalized primary
-> key produced by used driver. SQL drivers usually use `number` and Mongo driver uses `string`.
-> This type default to union type `number | string`. Keep in mind that you have to worry about 
-> this only when you define your primary key as `_id` instead of `id`.
+- `IdEntity<T>` for numeric/string PK on `id` property (`id: number`)
+- `UuidEntity<T>` for string PK on `uuid` property (`uuid: string`)
+- `MongoEntity<T>` for mongo, where `id: string` and `_id: ObjectId` are required
+- `AnyEntity<T, PK>` for other possible properties (fill the PK property name to `PK` 
+parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
 
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
 
-Here is another example of `Author` entity, that was referenced from the `Book` one:
+Here is another example of `Author` entity, that was referenced from the `Book` one, this 
+time defined for mongo:
 
 **`./entities/Author.ts`**
 
 ```typescript
 @Entity()
-export class Author {
+export class Author implements MongoEntity<Author> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
 
   @Property()
   createdAt = new Date();
@@ -74,31 +76,34 @@ export class Author {
   updatedAt = new Date();
 
   @Property()
-  name: string;
+  name!: string;
 
   @Property()
-  email: string;
+  email!: string;
 
   @Property()
-  age: number;
+  age?: number;
 
   @Property()
   termsAccepted = false;
 
   @Property()
-  identities: string[];
+  identities?: string[];
 
   @Property()
-  born: Date;
+  born?: Date;
 
-  @OneToMany({ entity: () => Book, mappedBy: 'author' })
+  @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 
-  @ManyToOne()
-  favouriteBook: Book;
+  @ManyToMany()
+  friends = new Collection<Author>(this);
 
-  version: number;
-  versionAsString: string;
+  @ManyToOne()
+  favouriteBook?: Book;
+
+  @Property({ version: true })
+  version!: number;
 
   constructor(name: string, email: string) {
     this.name = name;
@@ -106,13 +111,93 @@ export class Author {
   }
 
 }
-
-export interface Author extends IEntity { }
 ```
 
-More information about how collections work can be found on [collections page](collections.md).
+More information about modelling relationships can be found on [modelling relationships page](relationships.md).
 
 If you want to define your entity in Vanilla JavaScript, take a look [here](usage-with-js.md).
+
+### Optional Properties
+
+When you define the property as optional (marked with `?`), this will be automatically considered
+as nullable property (mainly for SQL schema generator). 
+
+> This auto-detection works only when you omit the `type` attribute.
+
+### Enums
+
+To define enum property, use `@Enum()` decorator. Enums can be either numeric or string valued. 
+
+For schema generator to work properly in case of string enums, you need to define the enum 
+is same file as where it is used, so its values can be automatically discovered. If you want 
+to define the enum in another file, you should reexport it also in place where you use it. 
+
+> You can also set enum items manually via `items: string[]` attribute.  
+
+```typescript
+@Entity()
+export class User implements IdEntity<User> {
+
+  @Enum()
+  role!: UserRole; // string enum
+
+  @Enum()
+  status!: UserStatus; // numeric enum
+
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  MODERATOR = 'moderator',
+  USER = 'user',
+}
+
+export const enum UserStatus {
+  DISABLED,
+  ACTIVE,
+}
+``` 
+
+## Virtual Properties
+
+You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
+
+Following example defines User entity with `firstName` and `lastName` database fields, that 
+are both hidden from the serialized response, replaced with virtual properties `fullName` 
+(defined as a classic method) and `fullName2` (defined as a JavaScript getter).
+
+> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value
+> would be stored in the database. 
+
+```typescript
+@Entity()
+export class User implements IdEntity<User> {
+
+  @Property({ hidden: true })
+  firstName!: string;
+
+  @Property({ hidden: true })
+  lastName!: string;
+
+  @Property({ name: 'fullName' })
+  getFullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  @Property({ persist: false })
+  get fullName2() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+}
+
+const repo = orm.em.getRepository(User);
+const author = repo.create({ firstName: 'Jon', lastName: 'Snow' });
+
+console.log(author.getFullName()); // 'Jon Snow'
+console.log(author.fullName2); // 'Jon Snow'
+console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
+```
 
 ## Entity file names
 
@@ -127,6 +212,8 @@ You are free to choose one of those formats for entity filename (for a `BookTag`
 Entity name is inferred from the first part of file name before first dot occurs, so you can 
 add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
 
+> You can change this behaviour by defining custom `NamingStrategy.getClassName()` method.
+
 ## Using BaseEntity
 
 You can define your own base entity with properties that you require on all entities, like
@@ -138,10 +225,12 @@ primary key and created/updated time.
 **`./entities/BaseEntity.ts`**
 
 ```typescript
-export abstract class BaseEntity {
+import { v4 } from 'uuid';
+
+export abstract class BaseEntity implements UuidEntity<BaseEntity> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  uuid = v4();
 
   @Property()
   createdAt = new Date();
@@ -152,16 +241,85 @@ export abstract class BaseEntity {
 }
 ```
 
-## Note about SQL drivers and @PrimaryKey
+## Examples of entity definition with various primary keys
 
-All entities described above were defined with `_id: ObjectID` primary key - those were Mongo
-entities. 
-
-For SQL drivers, you will want to define your primary key as `id: number` instead:
+### Using id as primary key (SQL drivers)
 
 ```typescript
-@PrimaryKey()
-id: number;
+@Entity()
+export class Book implements IdEntity<Book> {
+
+  @PrimaryKey()
+  id!: number; // string is also supported
+
+  @Property()
+  title!: string;
+
+  @ManyToOne()
+  author!: Author;
+
+}
+```
+
+### Using UUID as primary key (SQL drivers)
+
+```typescript
+import { v4 } from 'uuid';
+
+@Entity()
+export class Book implements UuidEntity<Book> {
+
+  @PrimaryKey()
+  uuid = v4();
+
+  @Property()
+  title!: string;
+
+  @ManyToOne()
+  author!: Author;
+
+}
+```
+
+### Example of Mongo entity
+
+```typescript
+@Entity()
+export class Book implements MongoEntity<Book> {
+
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey() 
+  id!: string; // string variant of PK, will be handled automatically
+
+  @Property()
+  title!: string;
+
+  @ManyToOne()
+  author!: Author;
+
+}
+```
+
+### Using WrappedEntity interface
+
+```typescript
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne()
+  author!: Author;
+
+}
+
+export interface Book extends WrappedEntity<Book, 'id'> { };
 ```
 
 With your entities set up, you can start [using entity manager](entity-manager.md) and 

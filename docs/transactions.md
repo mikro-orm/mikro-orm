@@ -1,9 +1,9 @@
 ---
 ---
 
-# Transactions and concurrency
+# Transactions and Concurrency
 
-## Transaction demarcation
+## Transaction Demarcation
 
 Transaction demarcation is the task of defining your transaction boundaries. Proper 
 transaction demarcation is very important because if not done properly it can negatively 
@@ -46,33 +46,7 @@ The explicit alternative is to use the transactions API directly to control the 
 The code then looks like this:
 
 ```typescript
-await orm.em.beginTransaction(); // suspend auto-commit
-
-try {
-  //... do some work
-  const user = new User(...);
-  user.name = 'George';
-  await orm.em.persistAndFlush(user);
-  await orm.em.commit();
-} catch (e) {
-  await orm.em.rollback();
-  throw e;
-}
-```
-
-Explicit transaction demarcation is required when you want to include custom DBAL operations 
-in a unit of work or when you want to make use of some methods of the EntityManager API 
-that require an active transaction. Such methods will throw a `ValidationError` to inform 
-you of that requirement.
-
-A more convenient alternative for explicit transaction demarcation is the use of provided 
-control abstractions in the form of `em.transactional(cb)`. When used, these 
-control abstractions ensure that you never forget to rollback the transaction, in addition 
-to the obvious code reduction. An example that is functionally equivalent to the previously 
-shown code looks as follows:
-
-```typescript
-orm.em.transactional(_em => {
+await orm.em.transactional(_em => {
   //... do some work
   const user = new User(...);
   user.name = 'George';
@@ -80,8 +54,12 @@ orm.em.transactional(_em => {
 });
 ```
 
-`em.transactional(cb)` will flush the inner `EntityManager` prior to transaction 
-commit.
+Explicit transaction demarcation is required when you want to include custom DBAL operations 
+in a unit of work or when you want to make use of some methods of the EntityManager API 
+that require an active transaction. Such methods will throw a `ValidationError` to inform 
+you of that requirement.
+
+`em.transactional(cb)` will flush the inner `EntityManager` prior to transaction commit.
 
 ### Exception Handling
 
@@ -145,7 +123,7 @@ You designate a version field in an entity as follows. In this example we'll use
 export class User {
   // ...
   @Property({ version: true })
-  version: number;
+  version!: number;
   // ...
 }
 ```
@@ -156,7 +134,7 @@ Alternatively a datetime type can be used (which maps to a SQL timestamp or date
 export class User {
   // ...
   @Property({ version: true })
-  version: Date;
+  version!: Date;
   // ...
 }
 ```

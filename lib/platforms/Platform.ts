@@ -1,10 +1,10 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { IPrimaryKey } from '../decorators';
+import { IPrimaryKey, Primary } from '../types';
 import { SchemaHelper } from '../schema';
 
 export abstract class Platform {
 
-  protected abstract schemaHelper: SchemaHelper;
+  protected readonly abstract schemaHelper?: SchemaHelper;
 
   usesPivotTable(): boolean {
     return true;
@@ -14,16 +14,8 @@ export abstract class Platform {
     return true;
   }
 
-  supportsSavePoints(): boolean {
-    return false;
-  }
-
-  getNamingStrategy(): { new(): NamingStrategy} {
+  getNamingStrategy(): { new(): NamingStrategy } {
     return UnderscoreNamingStrategy;
-  }
-
-  getParameterPlaceholder(index?: number): string {
-    return '?';
   }
 
   usesReturningStatement(): boolean {
@@ -34,7 +26,7 @@ export abstract class Platform {
     return false;
   }
 
-  getSchemaHelper(): SchemaHelper {
+  getSchemaHelper(): SchemaHelper | undefined {
     return this.schemaHelper;
   }
 
@@ -42,15 +34,19 @@ export abstract class Platform {
     return false;
   }
 
+  allowsMultiInsert() {
+    return true;
+  }
+
   /**
-   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectID to string)
+   * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
    */
-  normalizePrimaryKey<T = number | string>(data: IPrimaryKey): T {
+  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey): T {
     return data as T;
   }
 
   /**
-   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectID)
+   * Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectId)
    */
   denormalizePrimaryKey(data: IPrimaryKey): IPrimaryKey {
     return data;
@@ -67,34 +63,7 @@ export abstract class Platform {
    * Returns the SQL specific for the platform to get the current timestamp
    */
   getCurrentTimestampSQL(length: number): string {
-    return 'CURRENT_TIMESTAMP' + (length ? `(${length})` : '');
-  }
-
-  /**
-   * Returns the FOR UPDATE expression.
-   *
-   */
-  getForUpdateSQL(): string {
-    return 'FOR UPDATE';
-  }
-
-  /**
-   * Returns the SQL snippet to append to any SELECT statement which locks rows in shared read lock.
-   *
-   * This defaults to the ANSI SQL "FOR UPDATE", which is an exclusive lock (Write). Some database
-   * vendors allow to lighten this constraint up to be a real read lock.
-   */
-  getReadLockSQL(): string {
-    return this.getForUpdateSQL();
-  }
-
-  /**
-   * Returns the SQL snippet to append to any SELECT statement which obtains an exclusive lock on the rows.
-   *
-   * The semantics of this lock mode should equal the SELECT .. FOR UPDATE of the ANSI SQL standard.
-   */
-  getWriteLockSQL(): string {
-    return this.getForUpdateSQL();
+    return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
 }

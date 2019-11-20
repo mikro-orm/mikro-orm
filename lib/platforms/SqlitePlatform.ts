@@ -3,22 +3,18 @@ import { SqliteSchemaHelper } from '../schema/SqliteSchemaHelper';
 
 export class SqlitePlatform extends Platform {
 
-  protected schemaHelper = new SqliteSchemaHelper();
-
-  supportsSavePoints(): boolean {
-    return true;
-  }
+  protected readonly schemaHelper = new SqliteSchemaHelper();
 
   requiresNullableForAlteringColumn() {
     return true;
   }
 
-  getCurrentTimestampSQL(length: number): string {
-    return super.getCurrentTimestampSQL(0);
+  allowsMultiInsert() {
+    return false;
   }
 
-  getForUpdateSQL(): string {
-    return '';
+  getCurrentTimestampSQL(length: number): string {
+    return super.getCurrentTimestampSQL(0);
   }
 
 }

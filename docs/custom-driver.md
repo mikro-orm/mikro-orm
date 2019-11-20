@@ -1,7 +1,7 @@
 ---
 ---
 
-# Creating custom driver
+# Creating Custom Driver
 
 If you want to use database that is not currently supported, you can implement your own driver.
 To do so, you will need to design 4 classes:
@@ -98,12 +98,12 @@ export class MyCustomSchemaHelper extends DatabaseDriver {
   protected readonly platform = new MyCustomPlatform;
 
   // and implement abstract methods
-  find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
-  findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
-  nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
-  nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
-  nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<QueryResult>;
-  count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
+  find<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: Record<string, QueryOrder>, limit?: number, offset?: number): Promise<T[]>;
+  findOne<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[]): Promise<T | null>;
+  nativeInsert<T extends AnyEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
+  nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
+  nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | IPrimaryKey): Promise<QueryResult>;
+  count<T extends AnyEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
 
 }
 ```

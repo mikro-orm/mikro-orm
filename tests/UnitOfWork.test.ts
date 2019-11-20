@@ -1,12 +1,8 @@
 import { Author } from './entities';
 import { EntityValidator, MikroORM } from '../lib';
 import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
-import { initORM, wipeDatabase } from './bootstrap';
-import { MetadataStorage } from '../lib/metadata';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 
-/**
- * @class UnitOfWorkTest
- */
 describe('UnitOfWork', () => {
 
   let orm: MikroORM;
@@ -14,9 +10,10 @@ describe('UnitOfWork', () => {
   let computer: ChangeSetComputer;
 
   beforeAll(async () => {
-    orm = await initORM();
+    orm = await initORMMongo();
     uow = new UnitOfWork(orm.em);
-    computer = uow['changeSetComputer'];
+    // @ts-ignore
+    computer = uow.changeSetComputer;
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
@@ -80,7 +77,7 @@ describe('UnitOfWork', () => {
 
     // string date with correct format will not be auto-corrected in strict mode
     const payload = { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 };
-    expect(() => validator.validate(author, payload, MetadataStorage.getMetadata(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
+    expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
   });
 
   test('changeSet is null for empty payload', async () => {
@@ -98,14 +95,19 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.persist(author);
-    expect(uow['persistStack'].length).toBe(1);
+    // @ts-ignore
+    expect(uow.persistStack.length).toBe(1);
     uow.persist(author);
-    expect(uow['persistStack'].length).toBe(1);
+    // @ts-ignore
+    expect(uow.persistStack.length).toBe(1);
     uow.remove(author);
-    expect(uow['persistStack'].length).toBe(0);
-    expect(uow['removeStack'].length).toBe(1);
+    // @ts-ignore
+    expect(uow.persistStack.length).toBe(0);
+    // @ts-ignore
+    expect(uow.removeStack.length).toBe(1);
     uow.remove(author);
-    expect(uow['removeStack'].length).toBe(1);
+    // @ts-ignore
+    expect(uow.removeStack.length).toBe(1);
   });
 
   afterAll(async () => orm.close(true));

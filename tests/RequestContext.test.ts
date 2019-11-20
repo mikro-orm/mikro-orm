@@ -1,15 +1,12 @@
-import { RequestContext, MikroORM } from '../lib';
-import { initORM, wipeDatabase } from './bootstrap';
+import { RequestContext, MikroORM, wrap } from '../lib';
+import { initORMMongo, wipeDatabase } from './bootstrap';
 import { Author, Book } from './entities';
 
-/**
- * @class RequestContextTest
- */
 describe('RequestContext', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORM());
+  beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('create new context', async () => {
@@ -18,7 +15,8 @@ describe('RequestContext', () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       // access UoW via property so we do not get the one from request context automatically
-      expect(em['unitOfWork'].getIdentityMap()).not.toBe(orm.em['unitOfWork'].getIdentityMap());
+      // @ts-ignore
+      expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
     });
     expect(RequestContext.currentRequestContext()).toBeUndefined();
@@ -28,7 +26,7 @@ describe('RequestContext', () => {
     const bible = new Book('Bible', new Author('God', 'hello@heaven.god'));
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = bible;
-    await orm.em.persist(author);
+    await orm.em.persistAndFlush(author);
     orm.em.clear();
 
     await new Promise(resolve => {
@@ -36,7 +34,7 @@ describe('RequestContext', () => {
         const em = RequestContext.getEntityManager()!;
         const jon = await em.findOne(Author, author.id, ['favouriteBook']);
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
-        expect(jon!.favouriteBook.isInitialized()).toBe(true);
+        expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
         expect(jon!.favouriteBook.title).toBe('Bible');
         resolve();
       });

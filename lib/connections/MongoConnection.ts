@@ -1,14 +1,15 @@
-import { Collection, Db, MongoClient, MongoClientOptions, ObjectID } from 'mongodb';
+import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions, ObjectId, UpdateWriteOpResult } from 'mongodb';
+import { inspect } from 'util';
+
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
-import { FilterQuery, IEntity } from '..';
-import { EntityName } from '../decorators';
+import { FilterQuery, AnyEntity, EntityName, Dictionary } from '../types';
 
 export class MongoConnection extends Connection {
 
-  protected client: MongoClient;
-  protected db: Db;
+  protected client!: MongoClient;
+  protected db!: Db;
 
   async connect(): Promise<void> {
     this.client = await MongoClient.connect(this.config.getClientUrl(), this.getConnectionOptions());
@@ -23,7 +24,7 @@ export class MongoConnection extends Connection {
     return this.client.isConnected();
   }
 
-  getCollection(name: EntityName<IEntity>): Collection {
+  getCollection(name: EntityName<AnyEntity>): Collection {
     return this.db.collection(this.getCollectionName(name));
   }
 
@@ -32,7 +33,7 @@ export class MongoConnection extends Connection {
   }
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
-    const ret: MongoClientOptions = { useNewUrlParser: true };
+    const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
     const user = this.config.get('user');
     const password = this.config.get('password');
 
@@ -40,7 +41,7 @@ export class MongoConnection extends Connection {
       ret.auth = { user, password };
     }
 
-    return ret;
+    return Utils.merge(ret, this.config.get('driverOptions'));
   }
 
   getClientUrl(): string {
@@ -55,24 +56,24 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[]): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const options = {} as Record<string, any>;
+    where = this.convertObjectIds(where as Dictionary);
+    const options: Dictionary = {};
 
     if (fields) {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection(collection).find(where, options);
-    let query = `db.getCollection("${collection}").find(${JSON.stringify(where)}, ${JSON.stringify(options)})`;
+    const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
+    let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
     if (orderBy && Object.keys(orderBy).length > 0) {
       orderBy = Object.keys(orderBy).reduce((p, c) => {
         const direction = orderBy![c];
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
       }, {});
-      query += `.sort(${JSON.stringify(orderBy)})`;
+      query += `.sort(${this.logObject(orderBy)})`;
       resultSet.sort(orderBy);
     }
 
@@ -94,43 +95,20 @@ export class MongoConnection extends Connection {
   }
 
   async insertOne<T>(collection: string, data: Partial<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    data = this.convertObjectIds(data);
-    const now = Date.now();
-    const res = await this.getCollection(collection).insertOne(data);
-    const query = `db.getCollection("${collection}").insertOne(${JSON.stringify(data)});`;
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('insertOne', collection, data);
   }
 
   async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    data = this.convertObjectIds(data);
-    const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
-    const query = `db.getCollection("${collection}").updateMany(${JSON.stringify(where)}, ${JSON.stringify(payload)});`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).updateMany(where, payload);
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('updateMany', collection, data, where);
   }
 
   async deleteMany<T>(collection: string, where: FilterQuery<T>): Promise<QueryResult> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const query = `db.getCollection("${collection}").deleteMany(${JSON.stringify(where)})`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).deleteMany(where);
-    this.logQuery(query, Date.now() - now);
-
-    return this.transformResult(res);
+    return this.runQuery<T>('deleteMany', collection, undefined, where);
   }
 
   async aggregate(collection: string, pipeline: any[]): Promise<any[]> {
     collection = this.getCollectionName(collection);
-    const query = `db.getCollection("${collection}").aggregate(${JSON.stringify(pipeline)}).toArray();`;
+    const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate(pipeline).toArray();
     this.logQuery(query, Date.now() - now);
@@ -139,27 +117,58 @@ export class MongoConnection extends Connection {
   }
 
   async countDocuments<T>(collection: string, where: FilterQuery<T>): Promise<number> {
-    collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where);
-    const query = `db.getCollection("${collection}").countDocuments(${JSON.stringify(where)})`;
-    const now = Date.now();
-    const res = await this.getCollection(collection).countDocuments(where);
-    this.logQuery(query, Date.now() - now);
-
-    return res;
+    return this.runQuery<T, number>('countDocuments', collection, undefined, where);
   }
 
-  private convertObjectIds(payload: any): any {
-    if (payload instanceof ObjectID) {
+  protected logQuery(query: string, took?: number): void {
+    super.logQuery(query, took, 'javascript');
+  }
+
+  private async runQuery<T, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>): Promise<U> {
+    collection = this.getCollectionName(collection);
+    data = this.convertObjectIds(data!);
+    where = this.convertObjectIds(where as Dictionary);
+    const now = Date.now();
+    let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
+    let query: string;
+
+    switch (method) {
+      case 'insertOne':
+        query = `db.getCollection('${collection}').insertOne(${this.logObject(data)});`;
+        res = await this.getCollection(collection).insertOne(data);
+        break;
+      case 'updateMany':
+        const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
+        query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)});`;
+        res = await this.getCollection(collection).updateMany(where as Dictionary, payload);
+        break;
+      case 'deleteMany':
+      case 'countDocuments':
+        query = `db.getCollection('${collection}').${method}(${this.logObject(where)});`;
+        res = await this.getCollection(collection)[method as 'deleteMany'](where as Dictionary); // cast to deleteMany to fix some typing weirdness
+        break;
+    }
+
+    this.logQuery(query!, Date.now() - now);
+
+    if (method === 'countDocuments') {
+      return res! as U;
+    }
+
+    return this.transformResult(res!) as U;
+  }
+
+  private convertObjectIds<T extends ObjectId | Dictionary | any[]>(payload: T): T {
+    if (payload instanceof ObjectId) {
       return payload;
     }
 
     if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectID(payload);
+      return new ObjectId(payload) as T;
     }
 
     if (Array.isArray(payload)) {
-      return payload.map((item: any) => this.convertObjectIds(item));
+      return payload.map((item: any) => this.convertObjectIds(item)) as T;
     }
 
     if (Utils.isObject(payload)) {
@@ -178,9 +187,23 @@ export class MongoConnection extends Connection {
     };
   }
 
-  private getCollectionName(name: EntityName<IEntity>): string {
+  private getCollectionName(name: EntityName<AnyEntity>): string {
     name = Utils.className(name);
-    return this.metadata[name] ? this.metadata[name].collection : name;
+    const meta = this.metadata.get(name, false, false);
+
+    return meta ? meta.collection : name;
+  }
+
+  private logObject(o: any): string {
+    return inspect(o, { depth: 5, compact: true, breakLength: 300 });
   }
 
 }
+
+ObjectId.prototype[inspect.custom] = function () {
+  return `ObjectId('${this.toHexString()}')`;
+};
+
+Date.prototype[inspect.custom] = function () {
+  return `ISODate('${this.toISOString()}')`;
+};

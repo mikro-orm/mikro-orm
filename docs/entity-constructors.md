@@ -1,7 +1,7 @@
 ---
 ---
 
-# Using entity constructors
+# Using Entity Constructors
 
 Internally, `MikroORM` never calls entity constructor, so you are free to use it as you wish.
 The constructor will be called only when you instantiate the class yourself via `new` operator,
@@ -12,19 +12,19 @@ but `publisher` will be optional:
 
 ```typescript
 @Entity()
-export class Book {
+export class Book implements IdEntity<Book> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  id!: number;
 
   @Property()
-  title: string;
+  title!: string;
 
   @ManyToOne()
-  author: Author;
+  author!: Author;
 
   @ManyToOne()
-  publisher: Publisher;
+  publisher?: Publisher;
 
   @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
   tags = new Collection<BookTag>(this);
@@ -35,8 +35,6 @@ export class Book {
   }
 
 }
-
-export interface Book extends IEntity { }
 ```
 
 [&larr; Back to table of contents](index.md#table-of-contents)

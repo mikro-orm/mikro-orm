@@ -1,4 +1,5 @@
 import { MetadataStorage } from '../metadata';
+import { HookType } from '../types';
 
 export function BeforeCreate() {
   return hook('beforeCreate');
@@ -16,6 +17,10 @@ export function AfterUpdate() {
   return hook('afterUpdate');
 }
 
+export function OnInit() {
+  return hook('onInit');
+}
+
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
@@ -30,7 +35,7 @@ export function AfterDelete() {
   return hook('afterDelete');
 }
 
-function hook(type: string) {
+function hook(type: HookType) {
   return function (target: any, method: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
 
@@ -38,6 +43,6 @@ function hook(type: string) {
       meta.hooks[type] = [];
     }
 
-    meta.hooks[type].push(method);
+    meta.hooks[type]!.push(method);
   };
 }

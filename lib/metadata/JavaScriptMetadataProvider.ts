@@ -1,12 +1,12 @@
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../types';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 
 export class JavaScriptMetadataProvider extends MetadataProvider {
 
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
-    const { schema } = require(meta.path);
+    const schema = this.getSchema(meta);
     Object.entries(schema.properties).forEach(([name, prop]) => {
       if (Utils.isString(prop)) {
         schema.properties[name] = { type: prop };
@@ -24,13 +24,13 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
    */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Utils.merge(meta, cache);
-    const { schema } = require(meta.path);
+    const schema = this.getSchema(meta);
 
     Object.entries(schema.properties).forEach(([name, prop]) => {
       if (Utils.isObject(prop)) {
         Object.entries(prop).forEach(([attribute, value]) => {
           if (!(attribute in meta.properties[name])) {
-            meta.properties[name][attribute as keyof EntityProperty] = value;
+            meta.properties[name][attribute] = value;
           }
         });
       }
@@ -47,6 +47,13 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
     if (prop.reference !== ReferenceType.SCALAR && typeof prop.cascade === 'undefined') {
       prop.cascade = [Cascade.PERSIST, Cascade.MERGE];
     }
+  }
+
+  private getSchema(meta: EntityMetadata) {
+    const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
+    const { schema } = require(path);
+
+    return schema;
   }
 
 }

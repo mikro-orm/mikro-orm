@@ -1,14 +1,25 @@
 import { URL } from 'url';
-import { Configuration } from '../utils';
+import { Transaction as KnexTransaction } from 'knex';
+import chalk from 'chalk';
+import highlight from 'cli-highlight';
+
+import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
+import { Dictionary } from '../types';
 
 export abstract class Connection {
 
-  protected readonly logger = this.config.getLogger();
-  protected readonly metadata = MetadataStorage.getMetadata();
+  protected metadata!: MetadataStorage;
   protected abstract client: any;
 
-  constructor(protected readonly config: Configuration) { }
+  constructor(protected readonly config: Configuration,
+              protected readonly options?: ConnectionOptions,
+              protected readonly type: 'read' | 'write' = 'write') {
+    if (!this.options) {
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
+      this.options = props.reduce((o, i) => { (o[i] as any) = this.config.get(i); return o; }, {} as ConnectionOptions);
+    }
+  }
 
   /**
    * Establishes connection to database
@@ -30,24 +41,7 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  /**
-   * Begins a transaction (if supported)
-   */
-  async beginTransaction(savepoint?: string): Promise<void> {
-    throw new Error(`Transactions are not supported by current driver`);
-  }
-
-  /**
-   * Commits statements in a transaction
-   */
-  async commit(savepoint?: string): Promise<void> {
-    throw new Error(`Transactions are not supported by current driver`);
-  }
-
-  /**
-   * Rollback changes in a transaction
-   */
-  async rollback(savepoint?: string): Promise<void> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
@@ -55,12 +49,12 @@ export abstract class Connection {
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
-    const url = new URL(this.config.getClientUrl());
-    ret.host = this.config.get('host', url.hostname);
-    ret.port = this.config.get('port', +url.port);
-    ret.user = this.config.get('user', url.username);
-    ret.password = this.config.get('password', url.password);
-    ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
+    const url = new URL(this.options!.clientUrl || this.config.getClientUrl());
+    this.options!.host = ret.host = this.config.get('host', url.hostname);
+    this.options!.port = ret.port = this.config.get('port', +url.port);
+    this.options!.user = ret.user = this.config.get('user', url.username);
+    this.options!.password = ret.password = this.config.get('password', url.password);
+    this.options!.dbName = ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
 
     return ret;
   }
@@ -72,26 +66,36 @@ export abstract class Connection {
     return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
   }
 
-  protected async executeQuery<T>(query: string, params: any[], cb: () => Promise<T>): Promise<T> {
+  setMetadata(metadata: MetadataStorage): void {
+    this.metadata = metadata;
+  }
+
+  protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {
+    const now = Date.now();
+
     try {
-      const now = Date.now();
       const res = await cb();
       this.logQuery(query, Date.now() - now);
 
       return res;
     } catch (e) {
-      e.message += `\n in query: ${query}`;
-
-      if (params && params.length) {
-        e.message += `\n with params: ${JSON.stringify(params)}`;
-      }
-
+      this.logQuery(chalk.red(query), Date.now() - now, undefined);
       throw e;
     }
   }
 
-  protected logQuery(query: string, took: number): void {
-    this.logger.debug(`[query-logger] ${query} [took ${took} ms]`);
+  protected logQuery(query: string, took?: number, language?: string): void {
+    if (this.config.get('highlight') && language) {
+      query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
+    }
+
+    let msg = query + (Utils.isDefined(took) ? chalk.grey(` [took ${chalk.grey(took)} ms]`) : '');
+
+    if (this.config.get('replicas', []).length > 0) {
+      msg += chalk.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
+    }
+
+    this.config.getLogger().log('query', msg);
   }
 
 }
@@ -99,7 +103,7 @@ export abstract class Connection {
 export interface QueryResult {
   affectedRows: number;
   insertId: number;
-  row?: Record<string, any>;
+  row?: Dictionary;
 }
 
 export interface ConnectionConfig {
@@ -109,3 +113,5 @@ export interface ConnectionConfig {
   password?: string;
   database?: string;
 }
+
+export type Transaction = KnexTransaction;

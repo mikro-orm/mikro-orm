@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property,
+  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -31,29 +31,39 @@ export class Author extends BaseEntity {
   @Property()
   born?: Date;
 
-  @OneToMany({ entity: () => Book, fk: 'author', referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+  @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
   books = new Collection<Book>(this);
 
-  @ManyToMany({ entity: () => Author, owner: true })
+  @ManyToMany()
   friends: Collection<Author> = new Collection<Author>(this);
 
   @ManyToOne()
-  favouriteBook: Book;
+  favouriteBook!: Book;
 
   @ManyToOne()
-  favouriteAuthor: Author;
+  favouriteAuthor!: Author;
 
   @Property({ persist: false })
-  version: number;
+  version!: number;
 
   @Property({ persist: false })
-  versionAsString: string;
+  versionAsString!: string;
 
   constructor(name: string, email: string) {
     super();
     this.name = name;
     this.email = email;
     this.foo = 'bar';
+  }
+
+  @Property({ name: 'code' })
+  getCode() {
+    return `${this.email} - ${this.name}`;
+  }
+
+  @Property({ persist: false })
+  get code2() {
+    return `${this.email} - ${this.name}`;
   }
 
   @BeforeCreate()
@@ -91,12 +101,12 @@ export class Author extends BaseEntity {
     Author.afterDestroyCalled += 1;
   }
 
-  assign(data: any): void {
-    EntityAssigner.assign(this, data);
+  assign(data: any): this {
+    return EntityAssigner.assign(this, data);
   }
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
-    const o = this.toObject(...args);
+    const o = wrap(this).toObject(...args);
     o.fooBar = 123;
 
     if (strict) {

@@ -1,15 +1,15 @@
-import { FilterQuery, IPrimaryKey, QueryOrder, QueryOrderMap, Utils } from '..';
-import { EntityData, IEntityType } from '../decorators';
+import { Dictionary, FilterQuery, Primary, QueryOrder, QueryOrderMap, Utils, wrap } from '..';
+import { EntityData, AnyEntity } from '../types';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 
-export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
+export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
 
   private initialized = false;
   private dirty = false;
   private _populated = false;
 
-  constructor(owner: IEntityType<any>, items?: T[], initialized = true) {
+  constructor(owner: AnyEntity, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
   }
@@ -24,7 +24,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     this.modify('add', items);
 
     for (const item of items) {
-      this.owner.__em.getUnitOfWork().cancelOrphanRemoval(item);
+      wrap(this.owner).__em.getUnitOfWork().cancelOrphanRemoval(item);
     }
   }
 
@@ -38,7 +38,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     this.dirty = !initialize;
 
     for (const item of items) {
-      this.owner.__em.getUnitOfWork().cancelOrphanRemoval(item);
+      wrap(this.owner).__em.getUnitOfWork().cancelOrphanRemoval(item);
     }
   }
 
@@ -47,7 +47,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
     if (this.property.orphanRemoval) {
       for (const item of items) {
-        this.owner.__em.getUnitOfWork().scheduleOrphanRemoval(item);
+        wrap(this.owner).__em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
   }
@@ -64,7 +64,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every(item => item.isInitialized());
+      return this.initialized && this.items.every(item => wrap(item).isInitialized());
     }
 
     return this.initialized;
@@ -86,12 +86,15 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     this.dirty = dirty && this.property.owner; // set dirty flag only to owning side
   }
 
-  async init(populate: string[] = []): Promise<this> {
-    const em = this.owner.__em;
+  async init(options?: InitOptions<T>): Promise<this>; // tslint:disable-next-line:lines-between-class-members
+  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>; // tslint:disable-next-line:lines-between-class-members
+  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
+    const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
+    const em = wrap(this.owner).__em;
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [this.owner.__primaryKey]);
-      this.set(map[this.owner.__primaryKey].map(item => em.merge<T>(this.property.type, item)), true);
+      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
+      this.set(map[wrap(this.owner).__primaryKey].map(item => em.merge<T>(this.property.type, item)), true);
 
       return this;
     }
@@ -105,12 +108,17 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
       return this;
     }
 
-    const { cond, orderBy } = this.createCondition();
+    where = this.createCondition<T>(options.where);
     const order = [...this.items]; // copy order of references
+    const customOrder = !!options.orderBy;
+    orderBy = this.createOrderBy(options.orderBy);
 
     this.items.length = 0;
-    const items = await em.find<T>(this.property.type, cond, populate, orderBy);
-    this.reorderItems(items, order);
+    const items = await em.find<T>(this.property.type, where, options.populate, orderBy);
+
+    if (!customOrder) {
+      this.reorderItems(items, order);
+    }
 
     this.items.push(...items);
     Object.assign(this, items);
@@ -121,26 +129,30 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     return this;
   }
 
-  private createCondition<T>(): { cond: FilterQuery<T>; orderBy?: QueryOrderMap } {
-    const cond: Record<string, any> = {};
-    let orderBy;
-
+  private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy as string] = this.owner.__primaryKey;
-      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
+      cond[this.property.mappedBy as string] = wrap(this.owner).__primaryKey;
     } else { // MANY_TO_MANY
-      this.createManyToManyCondition(cond);
+      this.createManyToManyCondition(cond as Dictionary);
     }
 
-    return { cond, orderBy };
+    return cond;
   }
 
-  private createManyToManyCondition(cond: Record<string, any>) {
-    if (this.property.owner || this.owner.__em.getDriver().getPlatform().usesPivotTable()) {
-      const pk = this.items[0].__primaryKeyField; // we know there is at least one item as it was checked in init method
-      cond[pk] = { $in: this.items.map(item => item.__primaryKey) };
+  private createOrderBy(orderBy: QueryOrderMap = {}): QueryOrderMap {
+    if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
+      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
+    }
+
+    return orderBy;
+  }
+
+  private createManyToManyCondition(cond: Dictionary) {
+    if (this.property.owner || wrap(this.owner).__em.getDriver().getPlatform().usesPivotTable()) {
+      const pk = wrap(this.items[0]).__meta.primaryKey; // we know there is at least one item as it was checked in load method
+      cond[pk] = { $in: this.items.map(item => wrap(item).__primaryKey) };
     } else {
-      cond[this.property.mappedBy] = this.owner.__primaryKey;
+      cond[this.property.mappedBy] = wrap(this.owner).__primaryKey;
     }
   }
 
@@ -152,7 +164,7 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection ${this.property.type}[] of entity ${this.owner.constructor.name}[${this.owner.__primaryKey}] not initialized`);
+      throw new Error(`Collection ${this.property.type}[] of entity ${this.owner.constructor.name}[${wrap(this.owner).__primaryKey}] not initialized`);
     }
   }
 
@@ -165,25 +177,31 @@ export class Collection<T extends IEntityType<T>> extends ArrayCollection<T> {
     }
   }
 
-  private mapToEntity(item: T | IPrimaryKey | EntityData<T>): T {
+  private mapToEntity(item: T | Primary<T> | EntityData<T>): T {
     if (Utils.isEntity(item)) {
-      return item;
+      return item as T;
     }
 
-    const em = this.owner.__em;
+    const em = wrap(this.owner).__em;
     let entity: T;
 
-    if (Utils.isPrimaryKey(item)) {
-      entity = em.getReference<T>(this.property.type, item);
+    if (Utils.isPrimaryKey<T>(item)) {
+      entity = em.getReference(this.property.type, item);
     } else {
-      entity = em.create<T>(this.property.type, item);
+      entity = em.create(this.property.type, item);
     }
 
-    if (entity.__primaryKey) {
+    if (wrap(entity).__primaryKey) {
       return em.merge<T>(this.property.type, entity);
     }
 
     return entity;
   }
 
+}
+
+export interface InitOptions<T> {
+  populate?: string[];
+  orderBy?: QueryOrderMap;
+  where?: FilterQuery<T>;
 }

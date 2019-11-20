@@ -25,11 +25,12 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
-## Custom repository
+## Custom Repository
 
 To use custom repository, just extend `EntityRepository<T>` class:
 
 ```typescript
+@Repository(Author)
 export class CustomAuthorRepository extends EntityRepository<Author> {
 
   // your custom methods...
@@ -40,11 +41,12 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
 }
 ```
 
-And register your repository as `@Entity` decorator:
+You can also omit the `@Repository` decorator and register your repository in `@Entity` 
+decorator instead:
 
 ```typescript
 @Entity({ customRepository: () => CustomAuthorRepository })
-export class Publisher {
+export class Author extends IdEntity<Author> {
   // ...
 }
 ```
@@ -52,7 +54,7 @@ export class Publisher {
 Note that we need to pass that repository reference inside a callback so we will not run
 into circular dependency issues when using entity references inside that repository.
 
-Now you can access your custom repository via `EntityManager.getRepository()` method.
+Now you can access your custom repository via `em.getRepository()` method.
 
 > You can also register custom base repository (for all entities where you do not specify 
 `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
@@ -63,7 +65,7 @@ or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/
 
 ## EntityRepository\<T\> API
 
-#### `find(where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
+#### `find(where: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
 
 Returns array of entities found for given condition. You can specify `FindOptions` to request
 population of referenced entities or control the pagination:
@@ -79,10 +81,16 @@ export interface FindOptions {
 
 ---
 
-#### `find(where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+#### `find(where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
 Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
 and `offset`.
+
+---
+
+#### `findAndCount(where: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
+
+Combination of `find` and `count` methods. 
 
 ---
 
@@ -106,6 +114,14 @@ if the entity is already managed, no database call will be made.
 
 ---
 
+#### `findOneOrFail(where: FilterQuery<T> | string, populate?: string[]): Promise<T>`
+
+Just like `findOne`, but throws when entity not found, so it always resolves to given entity. 
+You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
+`failHandler` option in `findOneOrFail` call.
+
+---
+
 #### `merge(data: EntityData<T>): T`
 
 Adds given entity to current Identity Map. After merging, entity becomes managed. 
@@ -120,13 +136,13 @@ loading it, if the entity is not yet loaded.
 
 ---
 
-#### `count(where: any): Promise<number>`
+#### `count(where?: FilterQuery<T>): Promise<number>`
 
 Gets count of entities matching the `where` condition. 
 
 ---
 
-#### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
+#### `persist(entity: AnyEntity | AnyEntity[], flush?: boolean): Promise<void>`
 
 Tells the EntityManager to make an instance managed and persistent. The entity will be 
 entered into the database at or before transaction commit or as a result of the flush 
@@ -135,13 +151,13 @@ configuration option.
 
 ---
 
-#### `persistAndFlush(entity: IEntity | IEntity[]): Promise<void>`
+#### `persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void>`
 
 Shortcut for `persist` & `flush`.
 
 ---
 
-#### `persistLater(entity: IEntity | IEntity[]): void`
+#### `persistLater(entity: AnyEntity | AnyEntity[]): void`
 
 Shortcut for just `persist`, without flushing. 
 
@@ -153,7 +169,7 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(where: IEntity | any, flush?: boolean): Promise<number>`
+#### `remove(where: AnyEntity | FilterQuery<T>, flush?: boolean): Promise<number>`
 
 When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
 otherwise it fires delete query with given `where` condition. 
@@ -162,7 +178,7 @@ This method fires `beforeDelete` and `afterDelete` hooks only if you provide ent
 
 ---
 
-#### `removeAndFlush(entity: IEntity): Promise<void>`
+#### `removeAndFlush(entity: AnyEntity): Promise<void>`
 
 Shortcut for `removeEntity` & `flush`.
 
@@ -170,7 +186,7 @@ This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
-#### `removeLater(entity: IEntity): void`
+#### `removeLater(entity: AnyEntity): void`
 
 Shortcut for `removeEntity` without flushing. 
 

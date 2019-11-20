@@ -1,18 +1,26 @@
 import fastEqual from 'fast-deep-equal';
 import clone from 'clone';
+import globby, { GlobbyOptions } from 'globby';
+import { isAbsolute, normalize, relative } from 'path';
+import { pathExists } from 'fs-extra';
+import { createHash } from 'crypto';
+// @ts-ignore
+import { parse } from 'acorn-loose';
+// @ts-ignore
+import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
-import { ArrayCollection, Collection, ReferenceType } from '../entity';
+import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../types';
+import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
 
 export class Utils {
 
-  static isDefined(data: any): data is object {
+  static isDefined<T = object>(data: any): data is T {
     return typeof data !== 'undefined';
   }
 
-  static isObject<T = Record<string, any>>(o: any): o is T {
-    return !!o && typeof o === 'object' && !Array.isArray(o);
+  static isObject<T = Dictionary>(o: any, not: Function[] = []): o is T {
+    return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
   }
 
   static isString(s: any): s is string {
@@ -31,10 +39,6 @@ export class Utils {
     return [...new Set(items)];
   }
 
-  static flatten<T>(arrays: T[][]): T[] {
-    return [].concat(...arrays as any[]);
-  }
-
   static merge(target: any, ...sources: any[]): any {
     if (!sources.length) {
       return target;
@@ -44,8 +48,8 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
-        if (Utils.isObject(value)) {
-          if (!target[key]) {
+        if (Utils.isObject(value, [Date, RegExp])) {
+          if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }
 
@@ -59,8 +63,8 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
-  static diff(a: Record<string, any>, b: Record<string, any>): Record<keyof (typeof a & typeof b), any> {
-    const ret: Record<string, any> = {};
+  static diff(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
+    const ret: Dictionary = {};
 
     Object.keys(b).forEach(k => {
       if (Utils.equals(a[k], b[k])) {
@@ -73,33 +77,38 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities<T extends IEntityType<T>>(a: T, b: T): EntityData<T> {
-    return Utils.diff(Utils.prepareEntity(a), Utils.prepareEntity(b)) as EntityData<T>;
+  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage): EntityData<T> {
+    return Utils.diff(Utils.prepareEntity(a, metadata), Utils.prepareEntity(b, metadata)) as EntityData<T>;
   }
 
-  static prepareEntity<T extends IEntityType<T>>(e: T): EntityData<T> {
-    const metadata = MetadataStorage.getMetadata();
-    const meta = metadata[e.constructor.name];
-    const ret = Utils.copy(e);
+  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
+    const meta = metadata.get<T>(entity.constructor.name);
+    const ret = Utils.copy(entity);
+    // @ts-ignore
     delete ret.__initialized;
 
     // remove collections and references
-    Object.values(meta.properties).forEach(prop => {
-      const pk = () => metadata[prop.type].primaryKey;
+    Object.values<EntityProperty>(meta.properties).forEach(prop => {
+      const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
+      const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+      const noPk = Utils.isEntity(entity[name]) && !entity[name][pk()];
+      const collection = entity[name] as unknown instanceof ArrayCollection;
 
-      if (e[name] as any instanceof ArrayCollection || (Utils.isEntity(e[name]) && !e[name][pk()])) {
+      if (collection || noPk || inverse) {
         return delete ret[name];
       }
 
-      if (Utils.isEntity(e[name])) {
-        return ret[prop.name] = ret[prop.name][pk()];
+      if (Utils.isEntity(entity[name]) || entity[name] as unknown instanceof Reference) {
+        return ret[prop.name] = entity[prop.name][pk()];
       }
     });
 
     // remove unknown properties
-    Object.keys(e).forEach(prop => {
-      if (!meta.properties[prop] || meta.properties[prop].persist === false) {
+    Object.keys(entity).forEach(prop => {
+      const property = meta.properties[prop as keyof T & string];
+
+      if (!property || property.persist === false || (property.primary && !ret[prop])) {
         delete ret[prop];
       }
     });
@@ -107,7 +116,7 @@ export class Utils {
     return ret;
   }
 
-  static copy(entity: any): any {
+  static copy<T>(entity: T): T {
     return clone(entity);
   }
 
@@ -119,49 +128,56 @@ export class Utils {
     return Array.isArray(data!) ? data : [data!];
   }
 
-  static renameKey(payload: any, from: string, to: string): void {
+  /**
+   * renames object key, keeps order of properties
+   */
+  static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && from in payload && !(to in payload)) {
-      payload[to] = payload[from];
-      delete payload[from];
+      Object.keys(payload).forEach(key => {
+        const value = payload[key];
+        delete payload[key];
+        payload[from === key ? to : key] = value;
+      }, payload);
     }
   }
 
-  static getParamNames(func: Function | string): string[] {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-    const ARGUMENT_NAMES = /([^\s,]+)/g;
-    const fnStr = func.toString().replace(STRIP_COMMENTS, ''); // strip comments
-    let paramsStr = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')); // extract params
-    paramsStr = paramsStr.replace(/{[^}]+}/g, '{}'); // simplify object default values like `a = { ... }`
-    paramsStr = paramsStr.replace(/\[[^\]]+]/g, '[]'); // simplify array default values like `a = [ ... ]`
-    const result = paramsStr.match(ARGUMENT_NAMES) as string[];
+  static getParamNames(func: Function | string, methodName?: string): string[] {
+    const ret: string[] = [];
+    const parsed = parse(func.toString());
 
-    if (result === null) {
-      return [];
-    }
-
-    // handle class with no constructor
-    if (result.length > 0 && result[0] === 'class') {
-      return [];
-    }
-
-    // strip default values
-    for (let i = 0; i < result.length; i++) {
-      if (result[i].includes('=')) {
-        result[i] = result[i].split('=')[0];
-        result.splice(i + 1, 1);
+    const checkNode = (node: any, methodName?: string) => {
+      if (methodName && !(node.key && (node.key as any).name === methodName)) {
+        return;
       }
-    }
 
-    return result.filter(i => i); // filter out empty strings
+      const params = node.value ? node.value.params : node.params;
+      ret.push(...params.map((p: any) => {
+        switch (p.type) {
+          case 'AssignmentPattern':
+            return p.left.name;
+          case 'RestElement':
+            return '...' + p.argument.name;
+          default:
+            return p.name;
+        }
+      }));
+    };
+
+    walk(parsed, {
+      MethodDefinition: (node: any) => checkNode(node, methodName),
+      FunctionDeclaration: (node: any) => checkNode(node, methodName),
+    });
+
+    return ret;
   }
 
-  static isPrimaryKey(key: any): key is IPrimaryKey {
+  static isPrimaryKey<T>(key: any): key is Primary<T> {
     return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key);
   }
 
-  static extractPK(data: any, meta?: EntityMetadata): IPrimaryKey | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata): Primary<T> | null {
     if (Utils.isPrimaryKey(data)) {
-      return data;
+      return data as Primary<T>;
     }
 
     if (Utils.isObject(data) && meta) {
@@ -171,12 +187,16 @@ export class Utils {
     return null;
   }
 
-  static isEntity<T = IEntity>(data: any): data is T {
+  static isEntity<T = AnyEntity>(data: any): data is T {
     return Utils.isObject(data) && !!data.__entity;
   }
 
+  static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
+    return data instanceof Reference;
+  }
+
   static isObjectID(key: any) {
-    return Utils.isObject(key) && key.constructor.name === 'ObjectID';
+    return Utils.isObject(key) && key.constructor.name.toLowerCase() === 'objectid';
   }
 
   static isEmpty(data: any): boolean {
@@ -197,6 +217,10 @@ export class Utils {
     }
 
     return classOrName.name;
+  }
+
+  static detectTsNode(): boolean {
+    return process.argv[0].endsWith('ts-node') || process.argv.slice(1).some(arg => arg.includes('ts-node')) || !!require.extensions['.ts'];
   }
 
   /**
@@ -229,6 +253,14 @@ export class Utils {
     return objectType.match(/\[object (\w+)]/)![1].toLowerCase();
   }
 
+  static wrapReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): Reference<T> | T {
+    if (prop.wrappedReference) {
+      return Reference.create(entity);
+    }
+
+    return entity;
+  }
+
   static async runSerial<T = any, U = any>(items: Iterable<U>, cb: (item: U) => Promise<T>): Promise<T[]> {
     const ret = [];
 
@@ -239,7 +271,7 @@ export class Utils {
     return ret;
   }
 
-  static isCollection(item: any, prop?: EntityProperty, type?: ReferenceType): item is Collection<IEntity> {
+  static isCollection(item: any, prop?: EntityProperty, type?: ReferenceType): item is Collection<AnyEntity> {
     if (!(item instanceof Collection)) {
       return false;
     }
@@ -248,7 +280,71 @@ export class Utils {
   }
 
   static normalizePath(...parts: string[]): string {
-    return parts.join('/').replace(/\\/g, '/');
+    let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
+    path = normalize(path).replace(/\\/g, '/');
+
+    return path.match(/^[/.]|[a-zA-Z]:/) ? path : './' + path;
+  }
+
+  static relativePath(path: string, relativeTo: string): string {
+    if (!path) {
+      return path;
+    }
+
+    path = Utils.normalizePath(path);
+
+    if (path.startsWith('.')) {
+      return path;
+    }
+
+    path = relative(relativeTo, path);
+
+    return Utils.normalizePath(path);
+  }
+
+  static absolutePath(path: string, baseDir = process.cwd()): string {
+    if (!path) {
+      return Utils.normalizePath(baseDir);
+    }
+
+    if (!isAbsolute(path)) {
+      path = baseDir + '/' + path;
+    }
+
+    return Utils.normalizePath(path);
+  }
+
+  static hash(data: string): string {
+    return createHash('md5').update(data).digest('hex');
+  }
+
+  static runIfNotEmpty(clause: () => any, data: any): void {
+    if (!Utils.isEmpty(data)) {
+      clause();
+    }
+  }
+
+  static defaultValue(prop: Dictionary, option: string, defaultValue: any): void {
+    prop[option] = option in prop ? prop[option] : defaultValue;
+  }
+
+  static findDuplicates<T>(items: T[]): T[] {
+    return items.reduce((acc, v, i, arr) => {
+      return arr.indexOf(v) !== i && acc.indexOf(v) === -1 ? acc.concat(v) : acc;
+    }, [] as T[]);
+  }
+
+  static randomInt(min: number, max: number): number {
+    return Math.round(Math.random() * (max - min)) + min;
+  }
+
+  static async pathExists(path: string, options: GlobbyOptions = {}): Promise<boolean> {
+    if (globby.hasMagic(path)) {
+      const found = await globby(path, options);
+      return found.length > 0;
+    }
+
+    return pathExists(path);
   }
 
 }

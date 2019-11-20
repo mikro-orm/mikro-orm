@@ -5,20 +5,22 @@
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
-```
+```sh
 $ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql
+$ yarn add mikro-orm mysql2  # for mysql/mariadb
+$ yarn add mikro-orm mariadb # for mysql/mariadb
 $ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite  # for sqlite
+$ yarn add mikro-orm sqlite3 # for sqlite
 ```
 
 or
 
-```
+```sh
 $ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql
+$ npm i -s mikro-orm mysql2  # for mysql/mariadb
+$ npm i -s mikro-orm mariadb # for mysql/mariadb
 $ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite  # for sqlite
+$ npm i -s mikro-orm sqlite3 # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -36,7 +38,6 @@ const orm = await MikroORM.init({
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
   baseDir: __dirname, // defaults to `process.cwd()`
-  autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -56,19 +57,22 @@ You should provide list of directories, not paths to entities directly. If you w
 instead, you should use `entities` array and use `globby` manually:
 
 ```typescript
-import { sync } from 'globby';
+import globby from 'globby';
 
 const orm = await MikroORM.init({
-  entities: sync('./dist/app/**/entities/*.js').map(require),
+  entities: await globby('./dist/app/**/entities/*.js').map(require),
   // ...
 });
 ```
 
-## Entity discovery in TypeScript
+> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
+> The object will be deeply merged, overriding all internally used options.
 
-Internally, `MikroORM` uses [performs analysis](metadata-cache.md) of source files of entities 
-to sniff types of all properties. This process can be slow if your project contains lots of 
-files. To speed up the discovery process a bit, you can provide more accurate paths where your
+## Entity Discovery in TypeScript
+
+Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files 
+of entities to sniff types of all properties. This process can be slow if your project contains lots 
+of files. To speed up the discovery process a bit, you can provide more accurate paths where your
 entity source files are: 
 
 ```typescript
@@ -79,9 +83,88 @@ const orm = await MikroORM.init({
 });
 ```
 
-## Request context
+You can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
-Then you will need to fork entity manager for each request so their identity maps will not 
+- `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
+- `JavaScriptMetadataProvider` that allows you to manually provide the entity schema (mainly for Vanilla JS)
+
+```typescript
+const orm = await MikroORM.init({
+  metadataProvider: ReflectMetadataProvider,
+  // ...
+});
+```
+
+## Setting up the Commandline Tool
+
+MikroORM ships with a number of command line tools that are very helpful during development, 
+like Schema Generator and Entity Generator. You can call this command from the NPM binary 
+directory or use `npx`:
+
+```sh
+$ node node_modules/.bin/mikro-orm
+$ npx mikro-orm
+
+# or when installed globally
+$ mikro-orm
+```
+
+For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that 
+exports your ORM configuration. TypeScript is also supported, just enable `useTsNode` flag in your
+`package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
+as well as use different file name:
+
+**`./package.json`**
+
+```json
+{
+  "name": "your-app",
+  "dependencies": { ... },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
+    ]
+  }
+}
+```
+
+**`./src/mikro-orm.config.ts`**
+
+```typescript
+// usually you will reexport existing configuration from somewhere else
+import { CONFIG } from './config';
+export = CONFIG.orm;
+```
+
+> You can also use different names for this file, simply rename it in the `configPaths` array
+> your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path
+> to override `configPaths` value.
+
+Now you should be able to start using the CLI. All available commands are listed in the CLI help:
+
+```sh
+Usage: mikro-orm <command> [options]
+
+Commands:
+  mikro-orm cache:clear        Clear metadata cache
+  mikro-orm generate-entities  Generate entities based on current database schema
+  mikro-orm schema:create      Create database schema based on current metadata
+  mikro-orm schema:drop        Drop database schema based on current metadata
+  mikro-orm schema:update      Update database schema based on current metadata
+
+Options:
+  -v, --version  Show version number                                   [boolean]
+  -h, --help     Show help                                             [boolean]
+
+Examples:
+  mikro-orm schema:update --run  Runs schema synchronization
+```
+
+## Request Context
+
+Then you will need to fork Entity Manager for each request so their identity maps will not 
 collide. To do so, use the `RequestContext` helper:
 
 ```typescript

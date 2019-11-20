@@ -1,55 +1,85 @@
+import { PoolConfig } from 'knex';
+import { fromJson, Theme } from 'cli-highlight';
+
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-
-// we need to import this directly to fix circular deps
-import { TypeScriptMetadataProvider } from '../metadata/TypeScriptMetadataProvider';
+import { MetadataProvider, TsMorphMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
-import { MetadataProvider } from '../metadata';
-import { EntityClass, EntityClassGroup, EntityName, EntityOptions, IEntity } from '../decorators';
+import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrimaryKey } from '../types';
 import { Hydrator, ObjectHydrator } from '../hydration';
-import { Logger, Utils } from '../utils';
+import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
-import { IDatabaseDriver } from '..';
+import { EntityOptions, IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
 
-export class Configuration {
+export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   static readonly DEFAULTS = {
     type: 'mongo',
+    pool: {},
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
-    tsConfigPath: process.cwd() + '/tsconfig.json',
-    autoFlush: true,
+    discovery: {
+      warnWhenNoEntities: true,
+      requireEntitiesArray: false,
+      tsConfigPath: process.cwd() + '/tsconfig.json',
+    },
+    autoFlush: false,
     strict: false,
-    logger: () => undefined,
+    // tslint:disable-next-line:no-console
+    logger: console.log.bind(console),
+    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
+    tsNode: false,
     debug: false,
+    verbose: false,
+    driverOptions: {},
+    migrations: {
+      tableName: 'mikro_orm_migrations',
+      path: process.cwd() + '/migrations',
+      pattern: /^[\w-]+\d+\.ts$/,
+      transactional: true,
+      disableForeignKeys: true,
+      allOrNothing: true,
+    },
     cache: {
       enabled: true,
+      pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
     },
-    metadataProvider: TypeScriptMetadataProvider,
+    metadataProvider: TsMorphMetadataProvider,
+    highlight: true,
+    highlightTheme: {
+      keyword: ['white', 'bold'],
+      built_in: ['cyan', 'dim'],
+      string: ['yellow'],
+      literal: 'cyan',
+      meta: ['yellow', 'dim'],
+    },
   };
 
   static readonly PLATFORMS = {
     mongo: 'MongoDriver',
     mysql: 'MySqlDriver',
+    mariadb: 'MariaDbDriver',
     postgresql: 'PostgreSqlDriver',
     sqlite: 'SqliteDriver',
   };
 
-  private readonly options: MikroORMOptions;
+  private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
-  private readonly driver: IDatabaseDriver;
+  private readonly driver: D;
   private readonly platform: Platform;
-  private readonly cache: Record<string, any> = {};
+  private readonly cache: Dictionary = {};
+  private readonly highlightTheme: Theme;
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
+    this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
     if (validate) {
       this.validateOptions();
@@ -58,11 +88,16 @@ export class Configuration {
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
+    this.highlightTheme = fromJson(this.options.highlightTheme!);
     this.init();
   }
 
-  get<T extends keyof MikroORMOptions, U>(key: T, defaultValue?: U): MikroORMOptions[T] {
-    return (this.options[key] || defaultValue) as MikroORMOptions[T];
+  get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
+    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
+  }
+
+  set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
+    this.options[key] = value;
   }
 
   getLogger(): Logger {
@@ -77,7 +112,7 @@ export class Configuration {
     return this.options.clientUrl!;
   }
 
-  getDriver(): IDatabaseDriver {
+  getDriver(): D {
     return this.driver;
   }
 
@@ -95,15 +130,19 @@ export class Configuration {
   }
 
   getCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.cache.adapter!, this.options.cache.options);
+    return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
-  getRepositoryClass(customRepository: EntityOptions['customRepository']): MikroORMOptions['entityRepository'] {
+  getRepositoryClass(customRepository: EntityOptions<AnyEntity>['customRepository']): MikroORMOptions<D>['entityRepository'] {
     if (customRepository) {
       return customRepository();
     }
 
     return this.options.entityRepository;
+  }
+
+  getHighlightTheme(): Theme {
+    return this.highlightTheme;
   }
 
   private init(): void {
@@ -125,12 +164,18 @@ export class Configuration {
       throw new Error('No database specified, please fill in `dbName` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0) {
+    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
+    }
+
+    const notDirectory = this.options.entitiesDirs.find(dir => dir.match(/\.[jt]s$/));
+
+    if (notDirectory) {
+      throw new Error(`Please provide path to directory in \`entitiesDirs\`, found: '${notDirectory}'`);
     }
   }
 
-  private initDriver(): IDatabaseDriver {
+  private initDriver(): D {
     if (!this.options.driver) {
       const driver = Configuration.PLATFORMS[this.options.type];
       this.options.driver = require('../drivers/' + driver)[driver];
@@ -150,34 +195,60 @@ export class Configuration {
 
 }
 
-export interface MikroORMOptions {
+export interface ConnectionOptions {
+  name?: string;
   dbName: string;
-  entities: (EntityClass<IEntity> | EntityClassGroup<IEntity>)[];
-  entitiesDirs: string[];
-  entitiesDirsTs: string[];
-  tsConfigPath: string;
-  autoFlush: boolean;
-  type: keyof typeof Configuration.PLATFORMS;
-  driver?: { new (config: Configuration): IDatabaseDriver };
-  namingStrategy?: { new (): NamingStrategy };
-  hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
-  entityRepository: { new (em: EntityManager, entityName: EntityName<IEntity>): EntityRepository<IEntity> };
   clientUrl?: string;
   host?: string;
   port?: number;
   user?: string;
   password?: string;
   multipleStatements?: boolean; // for mysql driver
+  pool: PoolConfig;
+}
+
+export type MigrationsOptions = {
+  tableName?: string;
+  path?: string;
+  pattern?: RegExp;
+  transactional?: boolean;
+  disableForeignKeys?: boolean;
+  allOrNothing?: boolean;
+};
+
+export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
+  entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
+  entitiesDirs: string[];
+  entitiesDirsTs: string[];
+  discovery: {
+    warnWhenNoEntities?: boolean;
+    requireEntitiesArray?: boolean;
+    tsConfigPath?: string;
+  };
+  autoFlush: boolean;
+  type: keyof typeof Configuration.PLATFORMS;
+  driver?: { new (config: Configuration): D };
+  driverOptions: Dictionary;
+  namingStrategy?: { new (): NamingStrategy };
+  hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
+  entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
+  replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   logger: (message: string) => void;
-  debug: boolean;
+  findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  debug: boolean | LoggerNamespace[];
+  highlight: boolean;
+  highlightTheme?: Record<string, string | string[]>;
+  tsNode: boolean;
   baseDir: string;
+  migrations: MigrationsOptions;
   cache: {
     enabled?: boolean;
+    pretty?: boolean;
     adapter?: { new (...params: any[]): CacheAdapter };
-    options?: Record<string, any>;
+    options?: Dictionary;
   };
   metadataProvider: { new (config: Configuration): MetadataProvider };
 }
 
-export type Options = Pick<MikroORMOptions, Exclude<keyof MikroORMOptions, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions<D>;

@@ -1,7 +1,7 @@
 ---
 ---
 
-# Metadata cache
+# Metadata Cache
 
 Under the hood, `MikroORM` uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
 TypeScript source files of all entities to be able to detect all types. Thanks to this, 
@@ -14,7 +14,7 @@ where your entities are via `entitiesDirsTs` option.
 After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter`
 will be used to store the cache inside `./temp` folder to JSON files. 
 
-## Automatic invalidation
+## Automatic Invalidation
 
 Entity metadata are cached together with modified time of the source file, and every time
 the cache is requested, it first checks if the cache is not invalid. This way you can forgot 
@@ -23,7 +23,7 @@ about the caching mechanism most of the time.
 One case where you can end up needing to wipe the cache manually is when you work withing a 
 git branch where contents of entities folder differs. 
 
-## Disabling metadata cache
+## Disabling Metadata Cache
 
 You can disable caching via:
 
@@ -34,7 +34,18 @@ await MikroORM.init({
 });
 ```
 
-## Using different temp folder
+## Pretty Printing
+
+By default, cached metadata will be one line JSON string. You can force pretty printing it:
+
+```typescript
+await MikroORM.init({
+  cache: { pretty: true },
+  // ...
+});
+```
+
+## Using Different temp Folder
 
 You can set the temp folder via:
 
@@ -45,7 +56,7 @@ await MikroORM.init({
 });
 ```
 
-## Providing custom cache adapter
+## Providing Custom Cache Adapter
 
 You can also implement your own cache adapter, for example to store the cache in redis. 
 To do so, just implement simple `CacheAdapter` interface:

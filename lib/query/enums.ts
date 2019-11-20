@@ -1,13 +1,13 @@
 export enum QueryType {
   TRUNCATE = 'TRUNCATE',
   SELECT = 'SELECT',
+  COUNT = 'COUNT',
   INSERT = 'INSERT',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
 }
 
 export enum QueryFlag {
-  COUNT = 'SELECT',
   DISTINCT = 'DISTINCT',
 }
 
@@ -23,4 +23,13 @@ export enum QueryOrderNumeric {
   DESC = -1,
 }
 
-export type QueryOrderMap = Record<string, QueryOrder | QueryOrderNumeric | keyof typeof QueryOrder>;
+export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof QueryOrder;
+export type QueryOrderKeys = QueryOrderKeysFlat | QueryOrderMap;
+
+export interface QueryOrderMap {
+  [x: string]: QueryOrderKeys;
+}
+
+export interface FlatQueryOrderMap {
+  [x: string]: QueryOrderKeysFlat;
+}

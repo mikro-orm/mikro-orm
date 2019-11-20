@@ -1,21 +1,25 @@
-import { ObjectID } from 'mongodb';
-import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { ObjectId } from 'mongodb';
+import { Entity, MongoEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBaz } from './FooBaz';
+import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class FooBar {
+export class FooBar implements MongoEntity<FooBar> {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
 
   @Property()
-  name: string;
+  name!: string;
 
-  @OneToOne({ inversedBy: 'bar', orphanRemoval: true })
-  baz: FooBaz | null;
+  @OneToOne({ eager: true, orphanRemoval: true })
+  baz!: FooBaz | null;
 
-  @OneToOne({ owner: true })
-  fooBar: FooBar;
+  @OneToOne()
+  fooBar!: FooBar;
 
   static create(name: string) {
     const bar = new FooBar();
@@ -25,5 +29,3 @@ export class FooBar {
   }
 
 }
-
-export interface FooBar extends IEntity<string> { }

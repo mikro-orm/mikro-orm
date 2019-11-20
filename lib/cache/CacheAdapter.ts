@@ -4,4 +4,6 @@ export interface CacheAdapter {
 
   set(name: string, data: any, origin: string): Promise<void>;
 
+  clear(): Promise<void>;
+
 }

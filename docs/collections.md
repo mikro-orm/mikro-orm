@@ -42,14 +42,14 @@ console.log(author.books.contains(book)); // false
 console.log(author.books.count()); // 0
 console.log(author.books.getItems()); // Book[]
 console.log(author.books.getIdentifiers()); // array of string | number
-console.log(author.books.getIdentifiers('_id')); // array of ObjectID
+console.log(author.books.getIdentifiers('_id')); // array of ObjectId
 
 // array access works as well
 console.log(author.books[1]); // Book
 console.log(author.books[12345]); // undefined, even if the collection is not initialized
 ```
 
-## OneToMany collections
+## OneToMany Collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
  
@@ -58,10 +58,10 @@ console.log(author.books[12345]); // undefined, even if the collection is not in
 export class Book {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
 
   @ManyToOne()
-  author: Author;
+  author!: Author;
 
 }
 
@@ -69,26 +69,37 @@ export class Book {
 export class Author {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
 
+  @OneToMany(() => Book, book => book.author)
+  books1 = new Collection<Book>(this);
+
+  // or via options object
   @OneToMany({ entity: () => Book, mappedBy: 'author' })
-  books = new Collection<Book>(this);
+  books2 = new Collection<Book>(this);
 
 }
 ```
 
-## ManyToMany collections
+## ManyToMany Collections
 
-As opposed to SQL databases, with MongoDB we do not need to have join tables for `ManyToMany` relations. 
-All references are stored as an array of `ObjectID`s on owning entity. 
+For ManyToMany, SQL drivers use pivot table that holds reference to both entities. 
+
+As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` 
+relations. All references are stored as an array of `ObjectId`s on owning entity. 
 
 ### Unidirectional
 
-Unidirectional `ManyToMany` relations are defined only on one side, and marked explicitly as `owner`:
+Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity`
+attribute, then it will be considered the owning side:
 
 ```typescript
+@ManyToMany(() => Book)
+books1 = new Collection<Book>(this);
+
+// or mark it as owner explicitly via options object
 @ManyToMany({ entity: () => Book, owner: true })
-books = new Collection<Book>(this);
+books2 = new Collection<Book>(this);
 ```
 
 ### Bidirectional
@@ -97,16 +108,38 @@ Bidirectional `ManyToMany` relations are defined on both sides, while one is own
 marked by `inversedBy` attribute pointing to the inverse side:
 
 ```typescript
+@ManyToMany(() => BookTag, tag => tag.books, { owner: true })
+tags = new Collection<BookTag>(this);
+
+// or via options object
 @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
 tags = new Collection<BookTag>(this);
 ```
 
-And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
+And on the inversed side we define it with `mappedBy` attribute pointing back to the owner:
 
 ```typescript
+@ManyToMany(() => Book, book => book.tags)
+books = new Collection<Book>(this);
+
+// or via options object
 @ManyToMany({ entity: () => Book, mappedBy: 'tags' })
 books = new Collection<Book>(this);
 ```
+
+### Forcing fixed order of collection items
+
+> Since v3 many to many collections does not require having auto increment primary key, that 
+> was used to ensure fixed order of collection items.
+
+To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will 
+start ordering by `id` column. Schema generator will convert the pivot table to have auto increment
+primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`. 
+
+You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when
+you fully populate the collection including its items, as it orders by the referenced entity 
+properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, 
+`fixedOrder` is used to maintain the insert order of items instead of ordering by some property. 
 
 ## Propagation of Collection's add() and remove() operations
 
@@ -142,5 +175,16 @@ console.log(book.tags.contains(tag)); // true
 > side to manipulate the collection.
 
 Same applies for `Collection.remove()`.
+
+## Filtering and ordering of collection items
+
+When initializing collection items via `collection.init()`, you can filter the collection
+as well as order its items:
+
+```typescript
+await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
+```
+
+> You should never modify partially loaded collection.
 
 [&larr; Back to table of contents](index.md#table-of-contents)

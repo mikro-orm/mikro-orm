@@ -1,5 +1,15 @@
-import { ObjectID } from 'mongodb';
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '../../lib';
+import { ObjectId } from 'mongodb';
+import {
+  Cascade,
+  Collection,
+  Entity,
+  IdentifiedReference,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  wrap,
+} from '../../lib';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -9,7 +19,7 @@ import { BaseEntity3 } from './BaseEntity3';
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
-  _id: ObjectID;
+  _id!: ObjectId;
 
   @Property()
   title: string;
@@ -18,19 +28,19 @@ export class Book extends BaseEntity3 {
   author: Author;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
-  publisher: Publisher;
+  publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
-  @ManyToMany({ entity: () => BookTag.name, inversedBy: 'books' })
+  @ManyToMany()
   tags = new Collection<BookTag>(this);
 
   @Property()
-  metaObject: object;
+  metaObject?: object;
 
   @Property()
-  metaArray: any[];
+  metaArray?: any[];
 
   @Property()
-  metaArrayOfStrings: string[];
+  metaArrayOfStrings?: string[];
 
   constructor(title: string, author?: Author) {
     super();
@@ -39,7 +49,7 @@ export class Book extends BaseEntity3 {
   }
 
   toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): { [p: string]: any } {
-    const o = this.toObject(...args);
+    const o = wrap(this).toObject(...args);
 
     if (strict) {
       strip.forEach(k => delete o[k]);

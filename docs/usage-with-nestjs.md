@@ -12,7 +12,7 @@ Simply install it next to Nest, MikroORM and underlying driver:
 $ yarn add mikro-orm nestjs-mikro-orm mongodb # for mongo
 $ yarn add mikro-orm nestjs-mikro-orm mysql2  # for mysql
 $ yarn add mikro-orm nestjs-mikro-orm pg      # for postgre
-$ yarn add mikro-orm nestjs-mikro-orm sqlite  # for sqlite
+$ yarn add mikro-orm nestjs-mikro-orm sqlite3 # for sqlite
 ```
 
 or
@@ -21,7 +21,7 @@ or
 $ npm i -s mikro-orm nestjs-mikro-orm mongodb # for mongo
 $ npm i -s mikro-orm nestjs-mikro-orm mysql2  # for mysql
 $ npm i -s mikro-orm nestjs-mikro-orm pg      # for postgre
-$ npm i -s mikro-orm nestjs-mikro-orm sqlite  # for sqlite
+$ npm i -s mikro-orm nestjs-mikro-orm sqlite3 # for sqlite
 ```
 
 Then import the `MikroOrmModule` in your top level module (usually called `AppModule`) via 

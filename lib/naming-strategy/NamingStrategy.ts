@@ -1,6 +1,11 @@
 export interface NamingStrategy {
 
   /**
+   * Return a name of the class based on its file name
+   */
+  getClassName(file: string, separator?: string): string;
+
+  /**
    * Return a table name for an entity class
    */
   classToTableName(entityName: string): string;

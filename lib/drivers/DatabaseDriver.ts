@@ -1,67 +1,49 @@
-import { FilterQuery, IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, IEntity, IEntityType, IPrimaryKey } from '../decorators';
+import { IDatabaseDriver } from './IDatabaseDriver';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary, Dictionary } from '../types';
 import { MetadataStorage } from '../metadata';
-import { Connection, QueryResult } from '../connections';
-import { Configuration, Utils } from '../utils';
+import { Connection, QueryResult, Transaction } from '../connections';
+import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
 import { LockMode } from '../unit-of-work';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  protected readonly connection: C;
-  protected readonly platform: Platform;
-  protected readonly metadata = MetadataStorage.getMetadata();
+  protected readonly connection!: C;
+  protected readonly replicas: C[] = [];
+  protected readonly platform!: Platform;
   protected readonly logger = this.config.getLogger();
-  protected transactionLevel = 0;
-  protected transactionRolledBack = false;
+  protected metadata!: MetadataStorage;
 
-  constructor(protected readonly config: Configuration) { }
+  protected constructor(protected readonly config: Configuration,
+                        protected readonly dependencies: string[]) { }
 
-  abstract async find<T extends IEntity>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
 
-  abstract async findOne<T extends IEntity>(entityName: string, where: FilterQuery<T> | string, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode): Promise<T | null>;
+  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
 
-  abstract async nativeInsert<T extends IEntityType<T>>(entityName: string, data: EntityData<T>): Promise<QueryResult>;
+  abstract async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeUpdate<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey, data: EntityData<T>): Promise<QueryResult>;
+  abstract async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async nativeDelete<T extends IEntity>(entityName: string, where: FilterQuery<IEntity> | IPrimaryKey): Promise<QueryResult>;
+  abstract async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async count<T extends IEntity>(entityName: string, where: FilterQuery<T>): Promise<number>;
+  abstract async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends IEntity>(prop: EntityProperty, owners: IPrimaryKey[]): Promise<Record<string, T[]>> {
-    if (!this.platform.usesPivotTable()) {
-      throw new Error(`${this.constructor.name} does not use pivot tables`);
-    }
-
-    const fk1 = prop.joinColumn;
-    const fk2 = prop.inverseJoinColumn;
-    const pivotTable = prop.owner ? prop.pivotTable : this.metadata[prop.type].properties[prop.mappedBy].pivotTable;
-    const orderBy = { [`${pivotTable}.${this.metadata[pivotTable].primaryKey}`]: QueryOrder.ASC };
-    const items = owners.length ? await this.find(prop.type, { [fk1]: { $in: owners } }, [pivotTable], orderBy) : [];
-
-    const map: Record<string, T[]> = {};
-    owners.forEach(owner => map['' + owner] = []);
-    items.forEach((item: any) => {
-      map['' + item[fk1]].push(item);
-      delete item[fk1];
-      delete item[fk2];
-    });
-
-    return map;
+  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+    throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  mapResult<T extends IEntityType<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
     if (!result || !meta) {
       return null;
     }
 
-    const ret = Object.assign({}, result);
+    const ret = Object.assign({}, result) as any;
 
     Object.values(meta.properties).forEach(prop => {
       if (prop.fieldName && prop.fieldName in ret) {
@@ -69,77 +51,100 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
 
       if (prop.type === 'boolean') {
-        ret[prop.name as keyof T] = !!ret[prop.name as keyof T] as T[keyof T];
+        ret[prop.name] = !!ret[prop.name];
       }
     });
 
     return ret as T;
   }
 
-  getConnection(): C {
-    return this.connection as C;
+  async connect(): Promise<C> {
+    await this.connection.connect();
+    await Promise.all(this.replicas.map(replica => replica.connect()));
+
+    return this.connection;
   }
 
-  async beginTransaction(): Promise<void> {
-    this.transactionLevel++;
-    await this.runTransaction('beginTransaction');
+  async reconnect(): Promise<C> {
+    await this.close(true);
+    return this.connect();
   }
 
-  async commit(): Promise<void> {
-    if (this.transactionRolledBack) {
-      throw new Error('Transaction commit failed because the transaction has been marked for rollback only');
+  getConnection(type: 'read' | 'write' = 'write'): C {
+    if (type === 'write' || this.replicas.length === 0) {
+      return this.connection as C;
     }
 
-    await this.runTransaction('commit');
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
+    const rand = Utils.randomInt(0, this.replicas.length - 1);
+
+    return this.replicas[rand] as C;
   }
 
-  async rollback(): Promise<void> {
-    await this.runTransaction('rollback');
-
-    if (this.transactionLevel === 1) {
-      this.transactionRolledBack = false;
-    } else if (!this.platform.supportsSavePoints()) {
-      this.transactionRolledBack = true;
-    }
-
-    this.transactionLevel = Math.max(this.transactionLevel - 1, 0);
-  }
-
-  async transactional(cb: () => Promise<any>): Promise<any> {
-    try {
-      await this.beginTransaction();
-      const ret = await cb();
-      await this.commit();
-
-      return ret;
-    } catch (e) {
-      await this.rollback();
-      throw e;
-    }
-  }
-
-  isInTransaction(): boolean {
-    return this.transactionLevel > 0;
+  async close(force?: boolean): Promise<void> {
+    await Promise.all(this.replicas.map(replica => replica.close(force)));
+    await this.connection.close(force);
   }
 
   getPlatform(): Platform {
     return this.platform;
   }
 
-  protected getPrimaryKeyField(entityName: string): string {
-    return this.metadata[entityName] ? this.metadata[entityName].primaryKey : this.config.getNamingStrategy().referenceColumnName();
+  setMetadata(metadata: MetadataStorage): void {
+    this.metadata = metadata;
+    this.connection.setMetadata(metadata);
   }
 
-  private async runTransaction(method: 'beginTransaction' | 'commit' | 'rollback'): Promise<void> {
-    if (this.transactionLevel === 1 || this.platform.supportsSavePoints()) {
-      const useSavepoint = this.transactionLevel !== 1 && this.platform.supportsSavePoints();
-      await this.connection[method](useSavepoint ? this.getSavePointName() : undefined);
+  getDependencies(): string[] {
+    return this.dependencies;
+  }
+
+  protected getPivotOrderBy(prop: EntityProperty, orderBy?: QueryOrderMap): QueryOrderMap {
+    if (orderBy) {
+      return orderBy;
     }
+
+    if (prop.orderBy) {
+      return prop.orderBy;
+    }
+
+    if (prop.fixedOrder) {
+      return { [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC };
+    }
+
+    return {};
   }
 
-  private getSavePointName(): string {
-    return `${this.constructor.name}_${this.transactionLevel}`;
+  protected getPrimaryKeyField(entityName: string): string {
+    const meta = this.metadata.get(entityName, false, false);
+    return meta ? meta.primaryKey : this.config.getNamingStrategy().referenceColumnName();
+  }
+
+  protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
+    const pivotMeta = this.metadata.get(prop.pivotTable);
+    let inverse: string;
+
+    if (prop.owner) {
+      const pivotProp1 = pivotMeta.properties[prop.type + '_inverse'];
+      inverse = pivotProp1.mappedBy;
+    } else {
+      const pivotProp1 = pivotMeta.properties[prop.type + '_owner'];
+      inverse = pivotProp1.inversedBy;
+    }
+
+    return pivotMeta.properties[inverse];
+  }
+
+  protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
+    const replicas = this.config.get('replicas', [])!;
+    const ret: C[] = [];
+    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
+
+    replicas.forEach((conf: Partial<ConnectionOptions>) => {
+      props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));
+      ret.push(cb(conf as ConnectionOptions));
+    });
+
+    return ret;
   }
 
 }

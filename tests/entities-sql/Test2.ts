@@ -1,20 +1,25 @@
-import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, IdEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { Book2 } from './Book2';
 
 @Entity()
-export class Test2 {
+export class Test2 implements IdEntity<Test2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ nullable: true })
-  name: string;
+  name?: string;
 
-  @OneToOne({ cascade: [], inversedBy: 'test' })
-  book: Book2;
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
+  book?: Book2;
 
   @Property({ version: true })
-  version: number;
+  version!: number;
+
+  constructor(props: Partial<Test2> = {}) {
+    this.id = props.id!;
+    this.name = props.name!;
+  }
 
   static create(name: string) {
     const t = new Test2();
@@ -24,5 +29,3 @@ export class Test2 {
   }
 
 }
-
-export interface Test2 extends IEntity<number> { }

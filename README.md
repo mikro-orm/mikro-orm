@@ -127,59 +127,78 @@ comparison by identity (`ent1 === ent2`).
 
 ## 📖 Documentation
 
-MikroORM's documentation, included in this repo in the root directory, is built with 
+MikroORM v3 documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
-## ✨ Core features
+> You can browse MikroORM v2 docs at https://mikro-orm.github.io/docs/v2/.
 
-- [Clean and simple entity definition](https://mikro-orm.io/defining-entities/)
+> To upgrade to v3, please see the [upgrading guide](docs/upgrading-v2-to-v3.md).
+
+## ✨ Core Features
+
+- [Clean and Simple Entity Definition](https://mikro-orm.io/defining-entities/)
 - [Identity Map](https://mikro-orm.io/identity-map/)
-- [Entity references](https://mikro-orm.io/entity-references/)
-- [Using entity constructors](https://mikro-orm.io/using-entity-constructors/)
+- [Entity References](https://mikro-orm.io/entity-references/)
+- [Using Entity Constructors](https://mikro-orm.io/using-entity-constructors/)
+- [Modelling Relationships](https://mikro-orm.io/relationships/)
 - [Collections](https://mikro-orm.io/collections/)
 - [Unit of Work](https://mikro-orm.io/unit-of-work/)
 - [Transactions](https://mikro-orm.io/transactions/)
 - [Cascading persist and remove](https://mikro-orm.io/cascading/)
 - [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
-- [Preloading deeply nested structures via populate](https://mikro-orm.io/nested-populate/)
-- [Property validation](https://mikro-orm.io/property-validation/)
-- [Lifecycle hooks](https://mikro-orm.io/lifecycle-hooks/)
-- [Vanilla JS support](https://mikro-orm.io/usage-with-js/)
+- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
+- [Property Validation](https://mikro-orm.io/property-validation/)
+- [Lifecycle Hooks](https://mikro-orm.io/lifecycle-hooks/)
+- [Vanilla JS Support](https://mikro-orm.io/usage-with-js/)
+- [Schema Generator](https://mikro-orm.io/schema-generator/)
+- [Entity Generator](https://mikro-orm.io/entity-generator/)
 
-## 📦 Example integrations
+## 📦 Example Integrations
 
 You can find example integrations for some popular frameworks in the [`mikro-orm-examples` repository](https://github.com/mikro-orm/mikro-orm-examples): 
 
-### TypeScript examples
+### TypeScript Examples
 
 - [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
 - [Nest + MySQL](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
+- [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
 - [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
 
-### JavaScript examples 
+### JavaScript Examples 
 - [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
 
-## 🚀 Quick start
+## Articles
+
+- Introducing MikroORM, TypeScript data-mapper ORM with Identity Map
+  - on [medium.com](https://medium.com/dailyjs/introducing-mikro-orm-typescript-data-mapper-orm-with-identity-map-9ba58d049e02)
+  - on [dev.to](https://dev.to/b4nan/introducing-mikroorm-typescript-data-mapper-orm-with-identity-map-pc8)
+- Handling transactions and concurrency in MikroORM
+  - on [medium.com](https://medium.com/dailyjs/handling-transactions-and-concurrency-in-mikro-orm-ba80d0a65805)
+  - on [dev.to](https://dev.to/b4nan/handling-transactions-and-concurrency-in-mikroorm-2cfj)
+
+## 🚀 Quick Start
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
 ```
 $ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql
+$ yarn add mikro-orm mysql2  # for mysql/mariadb
+$ yarn add mikro-orm mariadb # for mysql/mariadb
 $ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite  # for sqlite
+$ yarn add mikro-orm sqlite3 # for sqlite
 ```
 
 or
 
 ```
 $ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql
+$ npm i -s mikro-orm mysql2  # for mysql/mariadb
+$ npm i -s mikro-orm mariadb # for mysql/mariadb
 $ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite  # for sqlite
+$ npm i -s mikro-orm sqlite3 # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -196,7 +215,6 @@ const orm = await MikroORM.init({
   entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
-  autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -223,16 +241,20 @@ app.use((req, res, next) => {
 
 More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
 
-Now you can start defining your entities (in one of the `entitiesDirs` folders):
+Now you can start defining your entities (in one of the `entitiesDirs` folders). This is how
+simple entity can look like in mongo driver:
 
-**`./entities/Book.ts`**
+**`./entities/MongoBook.ts`**
 
 ```typescript
 @Entity()
-export class Book {
+export class MongoBook implements MongoEntity<MongoBook> {
 
   @PrimaryKey()
   _id: ObjectID;
+
+  @SerializedPrimaryKey()
+  id: string;
 
   @Property()
   title: string;
@@ -240,7 +262,7 @@ export class Book {
   @ManyToOne()
   author: Author;
 
-  @ManyToMany({ entity: () => BookTag, inversedBy: 'books' })
+  @ManyToMany()
   tags = new Collection<BookTag>(this);
 
   constructor(title: string, author: Author) {
@@ -249,8 +271,36 @@ export class Book {
   }
 
 }
+```
 
-export interface Book extends IEntity { }
+For SQL drivers, use `IdEntity` interface for `id: number` PK:
+
+**`./entities/SqlBook.ts`**
+
+```typescript
+@Entity()
+export class SqlBook implements IdEntity<SqlBook> {
+
+  @PrimaryKey()
+  id: number;
+
+}
+```
+
+If you want to use UUID primary keys, use `UuidEntity` interface:
+
+**`./entities/UuidBook.ts`**
+
+```typescript
+import { v4 } from 'uuid';
+
+@Entity()
+export class UuidBook implements UuidEntity<UuidBook> {
+
+  @PrimaryKey()
+  uuid = v4();
+
+}
 ```
 
 More information can be found in
@@ -335,7 +385,7 @@ for details on the process for submitting pull requests to us.
 
 See also the list of contributors who [participated](https://github.com/mikro-orm/mikro-orm/contributors) in this project.
 
-## Show your support
+## Show Your Support
 
 Please ⭐️ this repository if this project helped you!
 

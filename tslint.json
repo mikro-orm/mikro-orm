@@ -91,12 +91,10 @@
     "prefer-const": true,
     "jsdoc-format": true,
     "lines-between-class-members": [true, 1, {"exceptAfterSingleLine": true}],
-    "ter-padded-blocks": [true, {"classes": "always"}],
-    "tir-newline-after-import": [true]
+    "ter-padded-blocks": [true, {"classes": "always"}]
   },
   "rulesDirectory": [
     "node_modules/tslint-eslint-rules/dist/rules",
-    "node_modules/tslint-import-rules/dist/rules",
     "node_modules/tslint-lines-between-class-members"
   ]
 }

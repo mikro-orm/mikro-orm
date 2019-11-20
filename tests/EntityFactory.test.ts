@@ -1,47 +1,48 @@
-import { ObjectID } from 'mongodb';
-import { Book, Author, Publisher } from './entities';
-import { MikroORM, Collection, Utils } from '../lib';
+import { ObjectId } from 'mongodb';
+import { Book, Author, Publisher, Test } from './entities';
+import { MikroORM, Collection } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
-import { initORM, wipeDatabase } from './bootstrap';
-import { BaseEntity } from './entities/BaseEntity';
-import { MetadataDiscovery, MetadataStorage } from '../lib/metadata';
+import { initORMMongo, wipeDatabase } from './bootstrap';
+import { MetadataDiscovery } from '../lib/metadata';
+import { AuthorRepository } from './repositories/AuthorRepository';
+import { BookRepository } from './repositories/BookRepository';
 
-/**
- * @class EntityFactoryTest
- */
 describe('EntityFactory', () => {
 
   let orm: MikroORM;
   let factory: EntityFactory;
 
   beforeAll(async () => {
-    orm = await initORM();
-    await new MetadataDiscovery(orm.em, orm.config, orm.config.getLogger()).discover();
-    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config);
+    orm = await initORMMongo();
+    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
+    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em.getDriver(), orm.config, orm.getMetadata());
     expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
   test('should load entities', async () => {
-    const metadata = MetadataStorage.getMetadata();
+    const metadata = orm.getMetadata().getAll();
     expect(metadata).toBeInstanceOf(Object);
-    expect(metadata[BaseEntity.name].properties['foo'].type).toBe('string');
     expect(metadata[Author.name]).toBeInstanceOf(Object);
-    expect(metadata[Author.name].path).toBe(Utils.normalizePath(__dirname, 'entities/Author.ts'));
+    expect(metadata[Author.name].path).toBe('./entities/Author.ts');
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
-    expect(metadata[Author.name].properties['books'].type).toBe(Book.name);
-    expect(metadata[Author.name].properties['books'].reference).toBe(ReferenceType.ONE_TO_MANY);
-    expect(metadata[Author.name].properties['foo'].type).toBe('string');
-    expect(metadata[Book.name].properties['author'].type).toBe(Author.name);
-    expect(metadata[Book.name].properties['author'].reference).toBe(ReferenceType.MANY_TO_ONE);
-    expect(metadata[Publisher.name].properties['tests'].owner).toBe(true);
+    expect(metadata[Author.name].properties.books.type).toBe(Book.name);
+    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.foo.type).toBe('string');
+    expect(metadata[Author.name].properties.age.type).toBe('number');
+    expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
+    expect(metadata[Author.name].customRepository()).toBe(AuthorRepository);
+    expect(metadata[Book.name].properties.author.type).toBe(Author.name);
+    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].customRepository()).toBe(BookRepository);
+    expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
 
   test('should return reference', async () => {
     const ref = factory.createReference(Book, '5b0d19b28b21c648c2c8a600');
     expect(ref).toBeInstanceOf(Book);
-    expect(ref._id).toBeInstanceOf(ObjectID);
+    expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.title).toBeUndefined();
     expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
@@ -53,6 +54,13 @@ describe('EntityFactory', () => {
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
     expect(entity.email).toBe('mail@test.com');
+  });
+
+  test('entity ctor can have different params than props', async () => {
+    const entity = factory.create(Test, { name: 'test' }, false);
+    expect(entity).toBeInstanceOf(Test);
+    expect(entity._id).toBeUndefined();
+    expect(entity.name).toBe('test');
   });
 
   test('should return entity without id', async () => {

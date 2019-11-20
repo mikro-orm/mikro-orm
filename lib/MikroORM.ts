@@ -1,25 +1,32 @@
+import chalk from 'chalk';
+
 import { EntityManager } from './EntityManager';
-import { IDatabaseDriver } from './drivers';
-import { MetadataDiscovery } from './metadata';
+import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
+import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
 import { Configuration, Logger, Options } from './utils';
-import { EntityMetadata } from './decorators';
+import { SchemaGenerator } from './schema';
+import { EntityGenerator } from './schema/EntityGenerator';
+import { Migrator } from './migrations';
+import { NullCacheAdapter } from './cache';
 
-export class MikroORM {
+export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  em: EntityManager;
-  readonly config: Configuration;
-  private metadata: Record<string, EntityMetadata>;
-  private readonly driver: IDatabaseDriver;
+  em!: EntityManager<D>;
+  readonly config: Configuration<D>;
+  private metadata!: MetadataStorage;
+  private readonly driver: D;
   private readonly logger: Logger;
 
-  static async init(options: Options): Promise<MikroORM> {
-    const orm = new MikroORM(options);
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
+    const orm = new MikroORM<D>(options);
     const driver = await orm.connect();
-    orm.em = new EntityManager(orm.config, driver);
 
     try {
-      const storage = new MetadataDiscovery(orm.em, orm.config, orm.logger);
-      orm.metadata = await storage.discover();
+      const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config);
+      orm.metadata = await discovery.discover();
+      orm.em = new EntityManager(orm.config, driver, orm.metadata);
+      orm.metadata.decorate(orm.em);
+      driver.setMetadata(orm.metadata);
 
       return orm;
     } catch (e) {
@@ -28,23 +35,28 @@ export class MikroORM {
     }
   }
 
-  constructor(options: Options | Configuration) {
+  constructor(options: Options<D> | Configuration<D>) {
     if (options instanceof Configuration) {
       this.config = options;
     } else {
       this.config = new Configuration(options);
     }
 
+    if (process.env.WEBPACK) {
+      this.config.set('metadataProvider', ReflectMetadataProvider);
+      this.config.set('cache', { adapter: NullCacheAdapter });
+      this.config.set('discovery', { requireEntitiesArray: true });
+    }
+
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
   }
 
-  async connect(): Promise<IDatabaseDriver> {
-    const connection = this.driver.getConnection();
-    await connection.connect();
+  async connect(): Promise<D> {
+    const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
-    const dbName = this.config.get('dbName');
-    this.logger.info(`MikroORM: successfully connected to database ${dbName}${clientUrl ? ' on ' + clientUrl : ''}`);
+    const dbName = this.config.get('dbName')!;
+    this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
 
     return this.driver;
   }
@@ -54,11 +66,41 @@ export class MikroORM {
   }
 
   async close(force = false): Promise<void> {
-    return this.driver.getConnection().close(force);
+    return this.driver.close(force);
   }
 
-  getMetadata(): Record<string, EntityMetadata> {
+  getMetadata(): MetadataStorage {
     return this.metadata;
+  }
+
+  getSchemaGenerator(): SchemaGenerator {
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new SchemaGenerator(driver, this.metadata, this.config);
+  }
+
+  getEntityGenerator(): EntityGenerator {
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new EntityGenerator(driver, this.config);
+  }
+
+  getMigrator(): Migrator {
+    const driver = this.driver as object;
+
+    if (!(driver instanceof AbstractSqlDriver)) {
+      throw new Error('Not supported by given driver');
+    }
+
+    return new Migrator(driver, this.getSchemaGenerator(), this.config);
   }
 
 }

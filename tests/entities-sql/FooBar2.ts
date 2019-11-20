@@ -1,24 +1,24 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, IdEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
-export class FooBar2 extends BaseEntity22 {
+export class FooBar2 extends BaseEntity22 implements IdEntity<FooBar2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  name: string;
+  name!: string;
 
-  @OneToOne({ inversedBy: 'bar', orphanRemoval: true })
-  baz: FooBaz2;
+  @OneToOne({ orphanRemoval: true, nullable: true })
+  baz?: FooBaz2;
 
-  @OneToOne({ owner: true })
-  fooBar: FooBar2;
+  @OneToOne({ nullable: true })
+  fooBar?: FooBar2;
 
-  @Property({ version: true })
-  version: Date;
+  @Property({ version: true, length: 3 })
+  version!: Date;
 
   static create(name: string) {
     const bar = new FooBar2();

@@ -1,6 +1,5 @@
-import { EntityClass, EntityClassGroup, EntityMetadata, IEntityType } from '../decorators';
+import { EntityMetadata, EntityProperty } from '../types';
 import { Configuration, Utils } from '../utils';
-import { MetadataStorage } from './MetadataStorage';
 
 export abstract class MetadataProvider {
 
@@ -12,17 +11,17 @@ export abstract class MetadataProvider {
     Utils.merge(meta, cache);
   }
 
-  prepare<T extends IEntityType<T>>(entity: EntityClass<T> | EntityClassGroup<T>): EntityClass<T> {
-    // save path to entity from schema
-    if ('entity' in entity && 'schema' in entity) {
-      const schema = entity.schema;
-      const meta = MetadataStorage.getMetadata(entity.entity.name);
-      meta.path = schema.path;
-
-      return entity.entity;
+  protected async initProperties(meta: EntityMetadata, fallback: (prop: EntityProperty) => void | Promise<void>): Promise<void> {
+    // load types and column names
+    for (const prop of Object.values(meta.properties)) {
+      if (Utils.isString(prop.entity)) {
+        prop.type = prop.entity;
+      } else if (prop.entity) {
+        prop.type = Utils.className(prop.entity());
+      } else if (!prop.type) {
+        await fallback(prop);
+      }
     }
-
-    return entity;
   }
 
 }

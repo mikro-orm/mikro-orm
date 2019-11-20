@@ -1,22 +1,23 @@
-import { Entity, IEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, IdEntity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBar2 } from './FooBar2';
 
 @Entity()
-export class FooBaz2 {
+export class FooBaz2 implements IdEntity<FooBaz2> {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
   name: string;
 
-  @OneToOne({ mappedBy: 'baz' })
-  bar: FooBar2;
+  @OneToOne(() => FooBar2, 'baz')
+  bar?: FooBar2;
+
+  @Property({ version: true })
+  version!: Date;
 
   constructor(name: string) {
     this.name = name;
   }
 
 }
-
-export interface FooBaz2 extends IEntity<number> { }

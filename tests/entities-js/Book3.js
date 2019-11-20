@@ -31,16 +31,17 @@ const schema = {
     author: {
       reference: 'm:1',
       type: 'Author3',
-      fk: 'id',
+      mappedBy: 'id',
     },
     publisher: {
       reference: 'm:1',
       type: 'Publisher3',
-      fk: 'id',
+      mappedBy: 'id',
     },
     tags: {
       reference: 'm:n',
       owner: true,
+      fixedOrder: true,
       inversedBy: 'books',
       type: 'BookTag3',
     },

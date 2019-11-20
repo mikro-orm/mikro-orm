@@ -1,6 +1,6 @@
-import { NamingStrategy } from './NamingStrategy';
+import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
-export class MongoNamingStrategy implements NamingStrategy {
+export class MongoNamingStrategy extends AbstractNamingStrategy {
 
   classToTableName(entityName: string): string {
     return entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
