@@ -135,7 +135,7 @@ describe('CLIHelper', () => {
     expect(log.mock.calls.length).toBe(2);
     expect(log.mock.calls[0][0]).toBe('test');
 
-    if (chalk.enabled) {
+    if (chalk.level > 0) {
       expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m + [32m1[39m');
     }
   });
