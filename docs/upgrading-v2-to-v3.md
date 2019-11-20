@@ -123,3 +123,8 @@ changes should be required.
 ## Updated mongodb driver
 
 MongoDB driver version 3.3.4 or higher is now required.
+
+## EntityManager.find() now requires where parameter
+`EntityManager` has now same `find` method interface aligned with `EntityRepository`, 
+`where` parameter is now required. To select all entities, use `em.find(Entity, {})` 
+as value.
