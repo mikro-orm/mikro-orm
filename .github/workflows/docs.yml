@@ -1,0 +1,26 @@
+name: CI
+
+on: 
+  push:
+    branches: 
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js 12
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node_version }}
+
+    - name: Build docs
+      run: |
+        cd docs
+        yarn
+        yarn deploy
+      env:
+        GIT_USER: B4nan
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
