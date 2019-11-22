@@ -24,9 +24,6 @@ jobs:
         yarn config set ignore-engines true
         yarn
         ORM_PARALLEL=1 yarn coverage
-      env:
-        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: Teardown docker
       run: docker-compose down

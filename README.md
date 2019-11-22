@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/assets/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
+  <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
 TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/unit-of-work/) 
