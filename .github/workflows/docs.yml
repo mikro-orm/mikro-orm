@@ -27,5 +27,5 @@ jobs:
         yarn
         yarn deploy
       env:
-        GIT_USER: B4nan
+        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
