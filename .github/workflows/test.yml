@@ -38,10 +38,15 @@ jobs:
     - name: Test
       run: |
         yarn coverage > COVERAGE_RESULT
-        echo "$(cat COVERAGE_RESULT)"
-        yarn coveralls
+        cat ./coverage/lcov.info
+#        yarn coveralls
       env:
         ORM_PARALLEL: 1
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GH_TOKEN }}
 
     - name: Codeclimate
       uses: paambaati/codeclimate-action@v2.3.0
