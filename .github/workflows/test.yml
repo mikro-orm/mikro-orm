@@ -1,4 +1,4 @@
-name: CI
+name: build
 
 on: [push, pull_request]
 
@@ -19,11 +19,26 @@ jobs:
     - name: Init docker
       run: docker-compose up -d
 
-    - name: Run tests
+    - name: Install
       run: |
         yarn config set ignore-engines true
         yarn
-        ORM_PARALLEL=1 yarn coverage
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        chmod +x ./cc-test-reporter
+        ./cc-test-reporter before-build
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+
+    - name: Lint
+      run: yarn lint
+
+    - name: Run tests
+      run: ORM_PARALLEL=1 yarn coverage
+
+    - name: Run tests
+      run: |
+        ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+        yarn coveralls
 
     - name: Teardown docker
       run: docker-compose down
