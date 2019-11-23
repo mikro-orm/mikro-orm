@@ -35,15 +35,22 @@ jobs:
     - name: Lint
       run: yarn lint
 
-    - name: Run tests
+    - name: Test
+      run: yarn coverage > COVERAGE_RESULT
+      env:
+        ORM_PARALLEL: 1
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@v1.0.1
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+
+    - name: Codeclimate
       uses: paambaati/codeclimate-action@v2.3.0
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        ORM_PARALLEL: 1
       with:
-        coverageCommand: |
-          yarn coverage
-          yarn coveralls
+        coverageCommand: echo "$(cat COVERAGE_RESULT)"
 
     - name: Teardown docker
       run: docker-compose down
