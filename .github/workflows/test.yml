@@ -39,8 +39,9 @@ jobs:
       uses: paambaati/codeclimate-action@v2.3.0
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        ORM_PARALLEL: 1
       with:
-        coverageCommand: ORM_PARALLEL=1 yarn coverage
+        coverageCommand: yarn coverage
 
     - name: Coveralls
       run: yarn coveralls
