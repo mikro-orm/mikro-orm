@@ -41,10 +41,9 @@ jobs:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         ORM_PARALLEL: 1
       with:
-        coverageCommand: yarn coverage
-
-    - name: Coveralls
-      run: yarn coveralls
+        coverageCommand: |
+          yarn coverage
+          yarn coveralls
 
     - name: Teardown docker
       run: docker-compose down
