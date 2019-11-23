@@ -29,16 +29,21 @@ jobs:
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
+    - name: Build
+      run: yarn build
+
     - name: Lint
       run: yarn lint
 
     - name: Run tests
-      run: ORM_PARALLEL=1 yarn coverage
+      uses: paambaati/codeclimate-action@v2.2.4
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      with:
+        coverageCommand: ORM_PARALLEL=1 yarn coverage
 
-    - name: Run tests
-      run: |
-        ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-        yarn coveralls
+    - name: Coveralls
+      run: yarn coveralls
 
     - name: Teardown docker
       run: docker-compose down
