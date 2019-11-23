@@ -42,8 +42,8 @@ jobs:
 
     - name: Coveralls
       uses: coverallsapp/github-action@v1.0.1
-        with:
-          github-token: ${{ secrets.GH_TOKEN }}
+      with:
+        github-token: ${{ secrets.GH_TOKEN }}
 
     - name: Codeclimate
       uses: paambaati/codeclimate-action@v2.3.0
