@@ -14,7 +14,7 @@ MariaDB, PostgreSQL and SQLite databases.
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)
 [![Dependency Status](https://david-dm.org/mikro-orm/mikro-orm.svg)](https://david-dm.org/mikro-orm/mikro-orm)
-[![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/build/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm)
+[![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/build/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm/actions)
 
 ## 🤔 Unit of What?
 
