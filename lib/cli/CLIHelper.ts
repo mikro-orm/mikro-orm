@@ -17,7 +17,7 @@ import { ImportCommand } from './ImportCommand';
 
 export class CLIHelper {
 
-  static async getConfiguration(): Promise<Configuration> {
+  static async getConfiguration(validate = true): Promise<Configuration> {
     const paths = await CLIHelper.getConfigPaths();
 
     for (let path of paths) {
@@ -26,7 +26,7 @@ export class CLIHelper {
 
       if (await pathExists(path)) {
         const config = require(path);
-        return new Configuration(config.default || config);
+        return new Configuration(config.default || config, validate);
       }
     }
 

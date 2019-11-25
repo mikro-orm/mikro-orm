@@ -8,7 +8,7 @@ export class ClearCacheCommand implements CommandModule {
   describe = 'Clear metadata cache';
 
   async handler(args: Arguments) {
-    const config = await CLIHelper.getConfiguration();
+    const config = await CLIHelper.getConfiguration(false);
     const cache = config.getCacheAdapter();
     await cache.clear();
 
