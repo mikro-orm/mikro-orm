@@ -74,7 +74,8 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 - All features or bug fixes **must be tested**, ideally by both unit tests and integration tests.
 - If you are implementing new feature or extending public API, you should **document it**.
-- Follow defined rules in [tslint.json](tslint.json). All these will be checked by Travis CI when you submit your PR.
+- Follow defined rules in [tslint.json](tslint.json). All these will be checked by GitHub Actions 
+  when you submit your PR.
 
 Some highlights:
 
@@ -95,7 +96,7 @@ The commit message format is borrowed from Angular projects and you can find
 
 ## CI
 
-We automatically run all pull requests through [Travis CI](https://travis-ci.com/mikro-orm/mikro-orm).
+We automatically run all pull requests through [GitHub Actions](https://github.com/mikro-orm/mikro-orm/actions).
 
 - The test suite is ran against MongoDB, MySQL, PostgreSQL and SQLite on all supported Node.JS versions (`yarn test`).
 - The code is validated against our Coding Standard (`yarn lint`).
