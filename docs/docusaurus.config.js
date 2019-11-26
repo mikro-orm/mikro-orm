@@ -15,11 +15,11 @@ module.exports = {
   projectName: 'mikro-orm', // Usually your repo name.
   themeConfig: {
     gtag: { trackingID: 'UA-135618258-1' },
-    // algolia: {
-    //   apiKey: '47ecd3b21be71c5822571b9f59e52544',
-    //   indexName: 'docusaurus-2',
-    //   algoliaOptions: {},
-    // },
+    algolia: {
+      apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
+      indexName: 'mikro-orm',
+      algoliaOptions: {},
+    },
     navbar: {
       title: '',
       logo: {
