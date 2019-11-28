@@ -207,15 +207,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>);
 
-    if (entity) {
-      Object.defineProperty(entity, '__em', { value: this, writable: true });
-    }
-
     if (entity && wrap(entity).isInitialized() && !refresh) {
+      Object.defineProperty(entity, '__em', { value: this, writable: true });
       return entity;
     }
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>);
+    Object.defineProperty(entity, '__em', { value: this, writable: true });
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);
