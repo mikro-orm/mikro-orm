@@ -739,9 +739,9 @@
   dependencies:
     "@types/mysql" types/mysql#v2.0.0
 
-"@types/mysql@types/mysql":
+"@types/mysql@types/mysql#v2.0.0":
   version "2.0.0"
-  resolved "https://codeload.github.com/types/mysql/tar.gz/7d612ffd3f9d81c09df9daac09bb2d49a3c286d0"
+  resolved "https://codeload.github.com/types/mysql/tar.gz/da645a82afd66419ed439dddf174648aa68ba1f9"
 
 "@types/node@*", "@types/node@^12.0.2", "@types/node@^12.7.5":
   version "12.7.5"
