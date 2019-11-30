@@ -18,7 +18,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      algoliaOptions: {},
+      algoliaOptions: { facetFilters: ['version:v1'] },
     },
     navbar: {
       title: '',
