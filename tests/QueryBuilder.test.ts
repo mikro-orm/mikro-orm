@@ -93,7 +93,7 @@ describe('QueryBuilder', () => {
       .orWhere({ name: 'lol 321' })
       .andWhere({ type: PublisherType.GLOBAL })
       .limit(2, 1);
-    expect(qb2.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where (`e0`.`name` = ? and `e0`.`type` = ?) limit ? offset ?');
+    expect(qb2.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ? limit ? offset ?');
     expect(qb2.getParams()).toEqual(['lol 321', PublisherType.GLOBAL, 2, 1]);
   });
 
@@ -105,7 +105,7 @@ describe('QueryBuilder', () => {
       .andWhere({ name: 'test 321' })
       .andWhere({ name: 'lol 321' })
       .limit(2, 1);
-    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where (`e0`.`name` = ? and `e0`.`type` = ? and `e0`.`name` = ? and `e0`.`name` = ?) limit ? offset ?');
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ? and `e0`.`name` = ? and `e0`.`name` = ? limit ? offset ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 'test 321', 'lol 321', 2, 1]);
   });
 
@@ -431,13 +431,20 @@ describe('QueryBuilder', () => {
   test('select with operator (wrapped)', async () => {
     const qb1 = orm.em.createQueryBuilder(Test2);
     qb1.select('*').where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
-    expect(qb1.getQuery()).toEqual('select `e0`.* from `test2` as `e0` where (`e0`.`id` not in (?, ?) and `e0`.`id` > ?)');
+    expect(qb1.getQuery()).toEqual('select `e0`.* from `test2` as `e0` where `e0`.`id` not in (?, ?) and `e0`.`id` > ?');
     expect(qb1.getParams()).toEqual([3, 4, 2]);
 
     const qb2 = orm.em.createQueryBuilder(Test2);
     qb2.select('*').where({ id: { $nin: [3, 4], $gt: 2 } });
     expect(qb2.getQuery()).toEqual(qb1.getQuery());
     expect(qb2.getParams()).toEqual(qb1.getParams());
+  });
+
+  test('select with $and', async () => {
+    const qb1 = orm.em.createQueryBuilder(Test2);
+    qb1.select('*').where({ $and: [{ id: 1 }, { id: 2 }] });
+    expect(qb1.getQuery()).toEqual('select `e0`.* from `test2` as `e0` where `e0`.`id` = ? and `e0`.`id` = ?');
+    expect(qb1.getParams()).toEqual([1, 2]);
   });
 
   test('select with operator (not)', async () => {
@@ -550,14 +557,14 @@ describe('QueryBuilder', () => {
       { $not: { id: { $eq: 10 } } },
     ] });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
-      'where (`e0`.`id` in (?, ?, ?) ' +
+      'where `e0`.`id` in (?, ?, ?) ' +
       'and `e0`.`id` not in (?, ?) ' +
       'and `e0`.`id` > ? ' +
       'and `e0`.`id` < ? ' +
       'and `e0`.`id` >= ? ' +
       'and `e0`.`id` <= ? ' +
       'and `e0`.`id` != ? ' +
-      'and not (`e0`.`id` = ?))');
+      'and not (`e0`.`id` = ?)');
     expect(qb.getParams()).toEqual([1, 2, 7, 3, 4, 5, 10, 7, 8, 9, 10]);
   });
 
@@ -597,13 +604,13 @@ describe('QueryBuilder', () => {
       $nin: [8, 9],
     } });
     expect(qb.getQuery()).toEqual('select `e0`.* from `test2` as `e0` ' +
-      'where (`e0`.`version` > ? ' +
+      'where `e0`.`version` > ? ' +
       'and `e0`.`version` < ? ' +
       'and `e0`.`version` >= ? ' +
       'and `e0`.`version` <= ? ' +
       'and `e0`.`version` != ? ' +
       'and `e0`.`version` in (?, ?) ' +
-      'and `e0`.`version` not in (?, ?))');
+      'and `e0`.`version` not in (?, ?)');
     expect(qb.getParams()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
@@ -1038,6 +1045,17 @@ describe('QueryBuilder', () => {
       'limit ? offset ?';
     expect(clone.getQuery()).toEqual(sql2);
     expect(clone.getParams()).toEqual(['test 123', '%3', 'or this name', 10, 5]);
+  });
+
+  test('$or and $and combined', async () => {
+    const items = [{ name: 'value1', email: 'value2' }, { name: 'value3', email: 'value4' }];
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select('*').where({ $or: items });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
+
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+    qb2.select('*').where({ $or: items.map(i => ({ $and: [i] })) });
+    expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
   });
 
   test('CriteriaNode', async () => {

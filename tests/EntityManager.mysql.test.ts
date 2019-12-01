@@ -1512,7 +1512,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where (`e3`.`name` = ?)');
+      'where `e3`.`name` = ?');
   });
 
   test('partial selects', async () => {

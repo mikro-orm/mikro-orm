@@ -210,6 +210,10 @@ export class QueryBuilderHelper {
   appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
+        if (operator === '$or' && k === '$and') {
+          return qb.orWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
+        }
+
         return this.appendGroupCondition(type, qb, k, method, cond[k]);
       }
 
@@ -261,7 +265,7 @@ export class QueryBuilderHelper {
     // grouped condition for one field
     if (Object.keys(cond[key]).length > 1) {
       const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-      return void qb[m](inner => subCondition.map((sub: any) => this.appendQueryCondition(type, sub, inner, '$and', method)));
+      return void subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
 
     // operators
@@ -316,7 +320,7 @@ export class QueryBuilderHelper {
     // grouped condition for one field
     if (Object.keys(cond[key]).length > 1) {
       const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-      return void clause[m](inner => subCondition.map((sub: any) => this.appendJoinClause(inner, sub, '$and')));
+      return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
     }
 
     // operators
@@ -416,13 +420,20 @@ export class QueryBuilderHelper {
   }
 
   private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
-    const m = operator === '$or' ? 'orWhere' : 'andWhere';
-    qb[method](outer => subCondition.forEach((sub: any) => {
+    if (subCondition.length === 1) {
+      return this.appendQueryCondition(type, subCondition[0], qb, operator, method);
+    }
+
+    if (operator === '$and') {
+      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, operator));
+    }
+
+    qb[method](outer => subCondition.forEach(sub => {
       if (Object.keys(sub).length === 1) {
         return this.appendQueryCondition(type, sub, outer, operator);
       }
 
-      outer[m](inner => this.appendQueryCondition(type, sub, inner, '$and'));
+      outer.orWhere(inner => this.appendQueryCondition(type, sub, inner, '$and'));
     }));
   }
 

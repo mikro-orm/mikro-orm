@@ -1,4 +1,4 @@
-import { MySqlTableBuilder } from 'knex';
+import { CreateTableBuilder } from 'knex';
 import { IsSame, SchemaHelper } from './SchemaHelper';
 import { EntityProperty } from '../types';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
@@ -42,7 +42,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;\n';
   }
 
-  finalizeTable(table: MySqlTableBuilder): void {
+  finalizeTable(table: CreateTableBuilder): void {
     table.engine('InnoDB');
     table.charset('utf8');
   }
