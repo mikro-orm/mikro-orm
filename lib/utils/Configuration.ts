@@ -34,6 +34,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
     autoJoinOneToOneOwner: true,
+    forceUtcTimezone: false,
     tsNode: false,
     debug: false,
     verbose: false,
@@ -197,15 +198,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 }
 
 export interface ConnectionOptions {
-  name?: string;
   dbName: string;
+  name?: string;
   clientUrl?: string;
   host?: string;
   port?: number;
   user?: string;
   password?: string;
   multipleStatements?: boolean; // for mysql driver
-  pool: PoolConfig;
+  pool?: PoolConfig;
 }
 
 export type MigrationsOptions = {
@@ -232,6 +233,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
   autoJoinOneToOneOwner: boolean;
+  forceUtcTimezone: boolean;
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
   replicas?: Partial<ConnectionOptions>[];

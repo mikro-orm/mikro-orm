@@ -29,6 +29,7 @@ describe('EntityManagerPostgre', () => {
       password: 'secret',
       user: 'user',
       logger: jest.fn(),
+      forceUtcTimezone: true,
     } as any, false);
     const driver = new PostgreSqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
@@ -1073,6 +1074,18 @@ describe('EntityManagerPostgre', () => {
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
       'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
       'where "e3"."name" = $1');
+  });
+
+  test('datetime is stored in correct timezone', async () => {
+    const author = new Author2('n', 'e');
+    author.born = new Date('2000-01-01T00:00:00Z');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const res = await orm.em.getConnection().execute<{ born: string }[]>(`select to_char(born, 'YYYY-MM-DD HH24:MI:SS.US') as born from author2 where id = ${author.id}`);
+    expect(res[0].born).toBe('2000-01-01 00:00:00.000000');
+    const a = await orm.em.findOneOrFail(Author2, author.id);
+    expect(+a.born!).toBe(+author.born);
   });
 
   afterAll(async () => orm.close(true));

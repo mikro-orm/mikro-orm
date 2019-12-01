@@ -303,7 +303,7 @@ export class Author2 {
   @Property({ nullable: true })
   identities?: object;
 
-  @Property({ nullable: true })
+  @Property({ type: 'timestamp', nullable: true })
   born?: Date;
 
   @ManyToOne({ entity: () => Book2, nullable: true })

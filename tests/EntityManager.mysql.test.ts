@@ -31,6 +31,7 @@ describe('EntityManagerMySql', () => {
       password: 'secret',
       user: 'user',
       logger: jest.fn(),
+      forceUtcTimezone: true,
     } as any, false);
     const driver = new MySqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
@@ -39,6 +40,7 @@ describe('EntityManagerMySql', () => {
       password: 'secret',
       port: 3308,
       user: 'user',
+      timezone: 'Z',
     });
   });
 
@@ -1631,6 +1633,18 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[12][0]).toMatch(/select `e0`.*, `e1`\.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`title` = \?.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[13][0]).toMatch(/update `author2` set `name` = \?, `favourite_book_uuid_pk` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
+  });
+
+  test('datetime is stored in correct timezone', async () => {
+    const author = new Author2('n', 'e');
+    author.born = new Date('2000-01-01T00:00:00Z');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const res = await orm.em.getConnection().execute<{ born: string }[]>(`select date_format(born, '%Y-%m-%d %T.%f') as born from author2 where id = ${author.id}`);
+    expect(res[0].born).toBe('2000-01-01 00:00:00.000000');
+    const a = await orm.em.findOneOrFail(Author2, author.id);
+    expect(+a.born!).toBe(+author.born);
   });
 
   afterAll(async () => orm.close(true));

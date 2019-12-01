@@ -840,6 +840,18 @@ describe('EntityManagerSqlite', () => {
     expect(a5.id).toBe(author.id);
   });
 
+  test('datetime is stored in correct timezone', async () => {
+    const author = new Author3('n', 'e');
+    author.born = new Date('2000-01-01T00:00:00Z');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const res = await orm.em.getConnection().execute<{ born: number }[]>(`select born as born from author3 where id = ${author.id}`);
+    expect(res[0].born).toBe(+author.born);
+    const a = await orm.em.findOneOrFail<any>(Author3, author.id);
+    expect(+a.born!).toBe(+author.born);
+  });
+
   afterAll(async () => {
     await orm.close(true);
     unlinkSync(orm.config.get('dbName'));

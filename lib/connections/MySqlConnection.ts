@@ -18,6 +18,10 @@ export class MySqlConnection extends AbstractSqlConnection {
       ret.multipleStatements = this.config.get('multipleStatements');
     }
 
+    if (this.config.get('forceUtcTimezone')) {
+      ret.timezone = 'Z';
+    }
+
     return ret;
   }
 
