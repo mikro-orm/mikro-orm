@@ -196,7 +196,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
       alias = nestedAlias;
     }
 
-    if (!nestedAlias && this.parent && this.prop && this.prop.reference !== ReferenceType.SCALAR) {
+    if (this.shouldAutoJoin(nestedAlias)) {
       alias = this.autoJoin(qb, ownerAlias);
     }
 
@@ -226,6 +226,17 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => QueryBuilderHelper.isOperator(k, false));
 
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
+  }
+
+  private shouldAutoJoin(nestedAlias: string | undefined): boolean {
+    if (!this.prop || !this.parent) {
+      return false;
+    }
+
+    const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
+    const operatorKeys = knownKey && Object.keys(this.payload).every(key => QueryBuilderHelper.isOperator(key, false));
+
+    return !nestedAlias && !operatorKeys;
   }
 
   private autoJoin(qb: QueryBuilder, alias: string): string {

@@ -1058,6 +1058,12 @@ describe('QueryBuilder', () => {
     expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
   });
 
+  test('select fk by operator should not trigger auto-joining', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select('*').where({ favouriteBook: { $in: ['1', '2', '3'] } });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`favourite_book_uuid_pk` in (?, ?, ?)');
+  });
+
   test('CriteriaNode', async () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
