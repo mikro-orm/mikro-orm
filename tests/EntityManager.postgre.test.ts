@@ -1011,6 +1011,70 @@ describe('EntityManagerPostgre', () => {
     expect(test.id).toBeDefined();
   });
 
+  test('find by joined property', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const t1 = Test2.create('t1');
+    t1.book = book1;
+    const t2 = Test2.create('t2');
+    t2.book = book2;
+    const t3 = Test2.create('t3');
+    t3.book = book3;
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    author.favouriteBook = book3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
+    expect(res1).toHaveLength(3);
+    expect(res1[0].test).toBeUndefined();
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
+      'where "e1"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
+    expect(res2).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
+      'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
+      'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
+      'where "e3"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } });
+    expect(res3).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
+      'where "e1"."favourite_book_uuid_pk" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
+    expect(res4).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
+      'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
+      'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
+      'where "e3"."name" = $1');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

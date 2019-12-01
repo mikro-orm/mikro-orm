@@ -74,6 +74,7 @@ export async function initORMPostgreSql() {
     type: 'postgresql',
     debug: ['query'],
     highlight: false,
+    autoJoinOneToOneOwner: false,
     logger: i => i,
     metadataProvider: ReflectMetadataProvider,
     cache: { enabled: false },

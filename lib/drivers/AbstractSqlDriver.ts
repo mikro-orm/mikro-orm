@@ -24,7 +24,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
     const meta = this.metadata.get(entityName);
-    populate = this.populateMissingReferences(meta, populate);
+    populate = this.autoJoinOneToOneOwner(meta, populate);
 
     if (fields && !fields.includes(meta.primaryKey)) {
       fields.unshift(meta.primaryKey);
@@ -42,7 +42,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
     const meta = this.metadata.get(entityName);
-    populate = this.populateMissingReferences(meta, populate);
+    populate = this.autoJoinOneToOneOwner(meta, populate);
     const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
@@ -124,7 +124,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
-    const populate = this.populateMissingReferences(meta, [prop.pivotTable]);
+    const populate = this.autoJoinOneToOneOwner(meta, [prop.pivotTable]);
     qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy);
     const items = owners.length ? await qb.execute('all') : [];
     const fk1 = prop.joinColumn;
@@ -144,7 +144,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected populateMissingReferences(meta: EntityMetadata, populate: string[]): string[] {
+  protected autoJoinOneToOneOwner(meta: EntityMetadata, populate: string[]): string[] {
+    if (!this.config.get('autoJoinOneToOneOwner')) {
+      return populate;
+    }
+
     const toPopulate = Object.values(meta.properties)
       .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
       .map(prop => prop.name);

@@ -33,6 +33,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     baseDir: process.cwd(),
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
+    autoJoinOneToOneOwner: true,
     tsNode: false,
     debug: false,
     verbose: false,
@@ -230,6 +231,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
+  autoJoinOneToOneOwner: boolean;
   hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
   replicas?: Partial<ConnectionOptions>[];
