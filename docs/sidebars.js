@@ -16,6 +16,7 @@ module.exports = {
       'transactions',
       'cascading',
       'deployment',
+      'decorators',
     ],
     'Advanced Features': [
       'nested-populate',

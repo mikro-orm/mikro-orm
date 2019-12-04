@@ -30,7 +30,6 @@ export function ManyToMany<T extends AnyEntity<T>>(
 }
 
 export interface ManyToManyOptions<T extends AnyEntity<T>> extends ReferenceOptions<T> {
-  entity?: string | (() => EntityName<T>);
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
   mappedBy?: (string & keyof T) | ((e: T) => any);
