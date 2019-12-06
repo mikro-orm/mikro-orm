@@ -38,10 +38,21 @@ const entities = res.map(a => orm.em.map(Author, a));
 console.log(entities); // Author[]
 ```
 
-You can also get clear and configured knex instance from the connection:
+You can also get clear and configured knex instance from the connection via `getKnex()` method.
+As this method is not available on the base `Connection` class, you will need to either manually
+type cast the connection to `AbstractSqlConnection` (or the actual implementation you are using, 
+e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance, 
+which will be then automatically inferred in `em.getConnection()` method.
+
+> Driver and connection implementations are not directly exported from `mikro-orm` module. 
+> You can import them from `mikro-orm/dist` (e.g. `import { PostgreSqlDriver } from 'mikro-orm/dist/drivers/PostgreSqlDriver'`).
 
 ```typescript
-const conn = orm.em.getConnection();
+const conn = orm.em.getConnection() as AbstractSqlConnection;
+// you can make sure the `em` is correctly typed to `EntityManager<AbstractSqlDriver>`
+// or one of its implementations:
+// const em: EntityManager<AbstractSqlDriver> = orm.em;
+
 const knex = conn.getKnex();
 
 // do what ever you need with `knex`
