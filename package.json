@@ -101,7 +101,7 @@
     "globby": "^10.0.0",
     "knex": "^0.20.3",
     "reflect-metadata": "^0.1.13",
-    "ts-morph": "^4.3.3",
+    "ts-morph": "^6.0.0",
     "umzug": "^2.2.0",
     "uuid": "^3.3.3",
     "yargonaut": "^1.1.4",
