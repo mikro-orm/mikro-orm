@@ -1012,13 +1012,13 @@ describe('EntityManagerMongo', () => {
     const book3 = new Book('My Life on The Wall, part 3', author);
     const publisher1 = new Publisher('B1 publisher');
     publisher1.tests.add(Test.create('t11'), Test.create('t12'));
-    book1.publisher = Reference.create(publisher1);
+    book1.publisher = wrap(publisher1).toReference();
     const publisher2 = new Publisher('B2 publisher');
     publisher2.tests.add(Test.create('t21'), Test.create('t22'));
-    book2.publisher = Reference.create(publisher2);
+    book2.publisher = wrap(publisher2).toReference();
     const publisher3 = new Publisher('B3 publisher');
     publisher3.tests.add(Test.create('t31'), Test.create('t32'));
-    book3.publisher = Reference.create(publisher3);
+    book3.publisher = wrap(publisher3).toReference();
     const tag1 = new BookTag('silly');
     const tag2 = new BookTag('funny');
     const tag3 = new BookTag('sick');
@@ -1601,6 +1601,8 @@ describe('EntityManagerMongo', () => {
     ref3.set(author2);
     expect(ref3.unwrap()).toBe(author2);
     expect(ref3.id).toBe(author2.id);
+    ref3.set(Reference.create(author));
+    expect(ref3.id).toBe(author.id);
 
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);

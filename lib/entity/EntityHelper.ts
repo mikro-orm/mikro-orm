@@ -4,6 +4,7 @@ import { EntityData, EntityMetadata, AnyEntity, IWrappedEntity, Primary, Wrapped
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { LockMode } from '../unit-of-work';
+import { Reference } from './Reference';
 
 export class EntityHelper {
 
@@ -79,6 +80,10 @@ export class EntityHelper {
 
     prototype.populated = function (this: T, populated: boolean = true) {
       Object.defineProperty(this, '__populated', { value: populated, writable: true });
+    };
+
+    prototype.toReference = function (this: T) {
+      return Reference.create(this);
     };
 
     prototype.toObject = function (this: T, ignoreFields: string[] = []) {

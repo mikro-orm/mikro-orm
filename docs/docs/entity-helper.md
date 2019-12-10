@@ -56,6 +56,7 @@ interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?: boolean, lockMode?: LockMode): Promise<this>;
+  toReference(): IdentifiedReference<T, PK>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): this;
