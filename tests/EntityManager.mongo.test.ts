@@ -1579,7 +1579,8 @@ describe('EntityManagerMongo', () => {
 
   test('reference wrapper', async () => {
     const author = new Author('God', 'hello@heaven.god');
-    await orm.em.persistAndFlush(author);
+    const author2 = new Author('God 2', 'hello2@heaven.god');
+    await orm.em.persistAndFlush([author, author2]);
     orm.em.clear();
 
     const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, true);
@@ -1595,6 +1596,11 @@ describe('EntityManagerMongo', () => {
     const ref2 = Reference.create(author);
     const ref3 = Reference.create(ref2);
     expect(ref2).toBe(ref3);
+
+    expect(ref3.unwrap()).toBe(author);
+    ref3.set(author2);
+    expect(ref3.unwrap()).toBe(author2);
+    expect(ref3.id).toBe(author2.id);
 
     const ent = await ref.load();
     expect(ent).toBeInstanceOf(Author);

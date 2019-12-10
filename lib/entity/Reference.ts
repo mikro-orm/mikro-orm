@@ -6,19 +6,20 @@ export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id
 
 export class Reference<T extends AnyEntity<T>> {
 
-  constructor(private readonly entity: T) {
+  constructor(private entity: T) {
+    this.set(entity);
     const wrapped = wrap(this.entity);
 
     Object.defineProperty(this, wrapped.__meta.primaryKey, {
       get() {
-        return wrapped.__primaryKey;
+        return wrap(this.entity).__primaryKey;
       },
     });
 
     if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKey !== wrapped.__meta.serializedPrimaryKey) {
       Object.defineProperty(this, wrapped.__meta.serializedPrimaryKey, {
         get() {
-          return wrapped.__serializedPrimaryKey;
+          return wrap(this.entity).__serializedPrimaryKey;
         },
       });
     }
@@ -43,6 +44,14 @@ export class Reference<T extends AnyEntity<T>> {
   async get<K extends keyof T>(prop: K): Promise<T[K]> {
     await this.load();
     return this.entity[prop];
+  }
+
+  set(entity: T | IdentifiedReference<T>): void {
+    if (entity instanceof Reference) {
+      entity = entity.unwrap();
+    }
+
+    this.entity = entity;
   }
 
   unwrap(): T {

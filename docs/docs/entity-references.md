@@ -111,6 +111,12 @@ book.author = Reference.create(repo.getReference(2));
 await orm.em.flush();
 ```
 
+If the reference already exist, you can also re-assign to it via `set()` method:
+
+```typescript
+book.author.set(new Author(...));
+```
+
 ## What is IdentifiedReference?
 
 `IdentifiedReference` is an intersection type that adds primary key property to the `Reference` 
