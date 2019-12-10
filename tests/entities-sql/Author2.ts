@@ -31,6 +31,9 @@ export class Author2 extends BaseEntity2 {
   termsAccepted: boolean = false;
 
   @Property({ nullable: true })
+  optional?: boolean;
+
+  @Property({ nullable: true })
   identities?: string[];
 
   @Property({ length: 0, nullable: true })

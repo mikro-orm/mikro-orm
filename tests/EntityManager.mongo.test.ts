@@ -1669,6 +1669,21 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.findOneOrFail(Author, '0000007b5c9c61c332380f79', { failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Author');
   });
 
+  test('setting optional boolean to false', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOneOrFail(Author, author.id);
+    expect(a1.optional).toBeUndefined();
+    a1.optional = false;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author, author.id);
+    expect(a2.optional).toBe(false);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

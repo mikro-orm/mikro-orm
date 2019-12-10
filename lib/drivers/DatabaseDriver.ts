@@ -50,7 +50,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         Utils.renameKey(ret, prop.fieldName, prop.name);
       }
 
-      if (prop.type === 'boolean') {
+      if (prop.type === 'boolean' && ![null, undefined].includes(ret[prop.name])) {
         ret[prop.name] = !!ret[prop.name];
       }
     });

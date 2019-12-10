@@ -1647,6 +1647,21 @@ describe('EntityManagerMySql', () => {
     expect(+a.born!).toBe(+author.born);
   });
 
+  test('setting optional boolean to false', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOneOrFail(Author2, author.id);
+    expect(a1.optional).toBeNull();
+    a1.optional = false;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author2, author.id);
+    expect(a2.optional).toBe(false);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

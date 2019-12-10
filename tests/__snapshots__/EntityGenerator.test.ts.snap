@@ -30,6 +30,9 @@ export class Author2 {
   termsAccepted: boolean = true;
 
   @Property({ nullable: true })
+  optional?: boolean;
+
+  @Property({ nullable: true })
   identities?: object;
 
   @Property({ nullable: true })
@@ -299,6 +302,9 @@ export class Author2 {
 
   @Property()
   termsAccepted: boolean = true;
+
+  @Property({ nullable: true })
+  optional?: boolean;
 
   @Property({ nullable: true })
   identities?: object;

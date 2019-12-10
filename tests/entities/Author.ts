@@ -25,6 +25,9 @@ export class Author extends BaseEntity {
   @Property()
   termsAccepted = false;
 
+  @Property()
+  optional?: boolean;
+
   @Property({ fieldName: 'identitiesArray' })
   identities?: string[];
 
