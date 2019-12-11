@@ -3,10 +3,11 @@ title: Naming Strategy
 ---
 
 When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 2 basic naming strategies you can choose from:
+strategy. There are 3 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of all SQL drivers
 - `MongoNamingStrategy` - default of `MongoDriver`
+- `EntityCaseNamingStrategy` - uses unchanged entity and property names
 
 You can override this when initializing ORM. You can also provide your own naming strategy, just 
 implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:

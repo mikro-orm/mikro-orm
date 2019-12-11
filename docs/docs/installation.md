@@ -41,6 +41,8 @@ const orm = await MikroORM.init({
 console.log(orm.em); // access EntityManager via `em` property
 ```
 
+> Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
+
 You can also provide paths where you store your entities via `entitiesDirs` array. Internally
 it uses [`globby`](https://github.com/sindresorhus/globby) so you can use 
 [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns). 

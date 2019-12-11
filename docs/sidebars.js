@@ -33,6 +33,7 @@ module.exports = {
       'entity-generator',
       'migrations',
       'read-connections',
+      'configuration',
     ],
     'Usage with Different Drivers': [
       'usage-with-sql',
@@ -47,7 +48,7 @@ module.exports = {
     'Example Integrations': [
       { type: 'link', label: 'Express + MongoDB + TypeScript', href: 'https://github.com/mikro-orm/express-ts-example-app' },
       { type: 'link', label: 'NestJS + MySQL + TypeScript', href: 'https://github.com/mikro-orm/nestjs-example-app' },
-      { type: 'link', label: 'RealWorld example app (Nest + MySQL', href: 'https://github.com/mikro-orm/nestjs-realworld-example-app' },
+      { type: 'link', label: 'RealWorld example app (Nest + MySQL)', href: 'https://github.com/mikro-orm/nestjs-realworld-example-app' },
       { type: 'link', label: 'Express + MongoDB + JavaScript', href: 'https://github.com/mikro-orm/express-js-example-app' },
     ],
   },

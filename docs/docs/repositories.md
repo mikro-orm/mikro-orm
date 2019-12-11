@@ -57,7 +57,7 @@ into circular dependency issues when using entity references inside that reposit
 Now you can access your custom repository via `em.getRepository()` method.
 
 > You can also register custom base repository (for all entities where you do not specify 
-`customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`
+> `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
 
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
