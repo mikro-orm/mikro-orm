@@ -1,5 +1,5 @@
 import { MikroORM, EntityManager, Configuration } from '../lib';
-import { Author } from './entities';
+import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
 
@@ -42,14 +42,15 @@ describe('MikroORM', () => {
 
   test('should load itself with entity manager', async () => {
     const orm = await MikroORM.init({
-      entitiesDirs: ['entities'],
+      entities: [Test],
       dbName: 'mikro-orm-test',
-      baseDir: __dirname,
+      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
+      cache: { enabled: false },
     });
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test']);
     expect(await orm.isConnected()).toBe(true);
 
     await orm.close();

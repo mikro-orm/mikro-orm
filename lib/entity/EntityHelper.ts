@@ -24,6 +24,7 @@ export class EntityHelper {
     }
 
     EntityHelper.defineBaseProperties(meta, em);
+    EntityHelper.defineBaseHelperMethods(meta);
     EntityHelper.definePrimaryKeyProperties(meta);
     const prototype = meta.prototype as IWrappedEntity<T, keyof T> & T;
 
@@ -71,7 +72,9 @@ export class EntityHelper {
         },
       },
     });
+  }
 
+  private static defineBaseHelperMethods<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
     const prototype = meta.prototype as IWrappedEntity<T, keyof T> & T;
 
     prototype.isInitialized = function (this: IWrappedEntity<T, keyof T>) {

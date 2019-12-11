@@ -85,9 +85,9 @@ console.log((await book.author.load()).name); // ok, author already loaded
 console.log(book.author.unwrap().name); // ok, author already loaded
 ```
 
-If you explicitly provide `entity` or `type` decorator parameter, or you use different 
-metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you 
-will also need to explicitly set `wrappedReference` parameter:
+If you use different metadata provider than `TsMorphMetadataProvider` 
+(e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` 
+parameter:
 
 ```typescript
 @ManyToOne(() => Author, { wrappedReference: true })

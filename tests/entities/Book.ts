@@ -27,7 +27,7 @@ export class Book extends BaseEntity3 {
   @ManyToOne()
   author: Author;
 
-  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne(() => Publisher, { cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany()

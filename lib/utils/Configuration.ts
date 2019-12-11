@@ -23,6 +23,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
+      alwaysAnalyseProperties: true,
       tsConfigPath: process.cwd() + '/tsconfig.json',
     },
     autoFlush: false,
@@ -225,6 +226,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;
+    alwaysAnalyseProperties?: boolean;
     tsConfigPath?: string;
   };
   autoFlush: boolean;

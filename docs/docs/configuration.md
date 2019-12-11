@@ -49,12 +49,16 @@ MikroORM.init({
   discovery: {
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
     requireEntitiesArray: true, // force usage of `entities` instead of `entitiesDirs`
-    
+    alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
+
     // you can explicitly specify the path to your tsconfig.json (used only when `entitiesDirsTs` is not provided)
     tsConfigPath: string,
   },
 });
 ```
+
+> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly 
+> provide `nullable` and `wrappedReference` parameters (where applicable).
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 

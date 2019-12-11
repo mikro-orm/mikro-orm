@@ -45,7 +45,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     if (process.env.WEBPACK) {
       this.config.set('metadataProvider', ReflectMetadataProvider);
       this.config.set('cache', { adapter: NullCacheAdapter });
-      this.config.set('discovery', { requireEntitiesArray: true });
+      this.config.set('discovery', { requireEntitiesArray: true, alwaysAnalyseProperties: false });
     }
 
     this.driver = this.config.getDriver();

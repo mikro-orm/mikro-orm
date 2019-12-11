@@ -15,7 +15,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       return;
     }
 
-    await this.initProperties(meta, prop => this.initPropertyType(meta, prop));
+    await this.initProperties(meta);
   }
 
   async getExistingSourceFile(meta: EntityMetadata): Promise<SourceFile> {
@@ -23,11 +23,36 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return this.getSourceFile(path)!;
   }
 
+  protected async initProperties(meta: EntityMetadata): Promise<void> {
+    // load types and column names
+    for (const prop of Object.values(meta.properties)) {
+      const type = this.extractType(prop);
+
+      if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
+        await this.initPropertyType(meta, prop);
+      }
+
+      prop.type = type || prop.type;
+    }
+  }
+
+  private extractType(prop: EntityProperty): string {
+    if (Utils.isString(prop.entity)) {
+      return prop.entity;
+    }
+
+    if (prop.entity) {
+      return Utils.className(prop.entity());
+    }
+
+    return prop.type;
+  }
+
   private async initPropertyType(meta: EntityMetadata, prop: EntityProperty): Promise<void> {
     const { type, optional } = await this.readTypeFromSource(meta, prop);
     prop.type = type;
 
-    if (!prop.nullable && optional) {
+    if (optional) {
       prop.nullable = true;
     }
 
@@ -39,6 +64,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = await this.getExistingSourceFile(meta);
     const properties = source.getClass(meta.className)!.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
+
+    if (!property) {
+      return { type: prop.type, optional: prop.nullable };
+    }
+
     const type = property.getType().getText(property);
     const optional = property.hasQuestionToken ? property.hasQuestionToken() : undefined;
 

@@ -14,7 +14,7 @@ export class Test implements MongoEntity<Test> {
   name: any;
 
   @Property({ hidden: true })
-  hiddenField = Date.now();
+  hiddenField?: number = Date.now();
 
   constructor(props: Partial<Test> = {}) {
     this._id = props._id;
