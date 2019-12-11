@@ -121,7 +121,18 @@ If you want to define your entity in Vanilla JavaScript, take a look [here](usag
 When you define the property as optional (marked with `?`), this will be automatically considered
 as nullable property (mainly for SQL schema generator). 
 
-> This auto-detection works only when you omit the `type` attribute.
+> This auto-detection works only when you omit the `type`/`entity` attribute.
+
+```typescript
+@ManyToOne()
+favouriteBook?: Book; // correct: no `type` or `entity` provided, **will** be marked as `nullable`
+
+@ManyToOne(() => Book, { nullable: true })
+favouriteBook?: Book; // correct, `entity` provided and explicitly marked as `nullable`
+
+@ManyToOne(() => Book)
+favouriteBook?: Book; // wrong, not marked as `nullable`
+```
 
 ### Enums
 
