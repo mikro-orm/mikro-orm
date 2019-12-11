@@ -109,7 +109,7 @@
 
 ### BREAKING CHANGES
 
-Please see the [upgrading guide](docs/upgrading-v2-to-v3.md).
+Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
