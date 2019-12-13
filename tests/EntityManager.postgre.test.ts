@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Utils, wrap } from '../lib';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
@@ -215,11 +215,11 @@ describe('EntityManagerPostgre', () => {
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
 
     const book1 = new Book2('My Life on The Wall, part 1', author);
-    book1.publisher = publisher;
+    book1.publisher = wrap(publisher).toReference();
     const book2 = new Book2('My Life on The Wall, part 2', author);
-    book2.publisher = publisher;
+    book2.publisher = wrap(publisher).toReference();
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book3.publisher = publisher;
+    book3.publisher = wrap(publisher).toReference();
 
     const repo = orm.em.getRepository(Book2);
     repo.persist(book1);
@@ -289,8 +289,9 @@ describe('EntityManagerPostgre', () => {
 
         expect(book.author).toBeInstanceOf(Author2);
         expect(wrap(book.author).isInitialized()).toBe(true);
-        expect(book.publisher).toBeInstanceOf(Publisher2);
-        expect(wrap(book.publisher).isInitialized()).toBe(false);
+        expect(book.publisher).toBeInstanceOf(Reference);
+        expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher2);
+        expect(book.publisher!.isInitialized()).toBe(false);
       }
     }
 
@@ -528,11 +529,11 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(pub);
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    bible.publisher = pub;
+    bible.publisher = wrap(pub).toReference();
     const bible2 = new Book2('Bible pt. 2', god);
-    bible2.publisher = pub;
+    bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
-    bible3.publisher = pub;
+    bible3.publisher = wrap(pub).toReference();
     await orm.em.persistAndFlush([bible, bible2, bible3]);
     orm.em.clear();
 
@@ -567,8 +568,10 @@ describe('EntityManagerPostgre', () => {
 
   test('populate ManyToOne relation', async () => {
     const authorRepository = orm.em.getRepository(Author2);
+    const publisher = new Publisher2('Publisher');
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
+    bible.publisher = wrap(publisher).toReference();
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
@@ -587,6 +590,13 @@ describe('EntityManagerPostgre', () => {
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
     expect(jon.favouriteBook!.title).toBe('Bible');
+
+    const em2 = orm.em.fork();
+    const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
+    expect(wrap(bible2).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher).__em!.id).toBe(em2.id);
+    const publisher2 = await bible2.publisher!.load();
+    expect(wrap(publisher2).__em!.id).toBe(em2.id);
   });
 
   test('many to many relation', async () => {
@@ -753,12 +763,12 @@ describe('EntityManagerPostgre', () => {
     const book1 = new Book2('My Life on The Wall, part 1', author);
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
-    book1.publisher = new Publisher2('B1 publisher');
-    book1.publisher.tests.add(Test2.create('t11'), Test2.create('t12'));
-    book2.publisher = new Publisher2('B2 publisher');
-    book2.publisher.tests.add(Test2.create('t21'), Test2.create('t22'));
-    book3.publisher = new Publisher2('B3 publisher');
-    book3.publisher.tests.add(Test2.create('t31'), Test2.create('t32'));
+    book1.publisher = wrap(new Publisher2('B1 publisher')).toReference();
+    book1.publisher.unwrap().tests.add(Test2.create('t11'), Test2.create('t12'));
+    book2.publisher = wrap(new Publisher2('B2 publisher')).toReference();
+    book2.publisher.unwrap().tests.add(Test2.create('t21'), Test2.create('t22'));
+    book3.publisher = wrap(new Publisher2('B3 publisher')).toReference();
+    book3.publisher.unwrap().tests.add(Test2.create('t31'), Test2.create('t32'));
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -780,12 +790,13 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books[0].author).toBeInstanceOf(Author2);
     expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
-    expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
+    expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
     expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
-    expect(tags[0].books[0].publisher!.tests.isInitialized(true)).toBe(true);
-    expect(tags[0].books[0].publisher!.tests.count()).toBe(2);
-    expect(tags[0].books[0].publisher!.tests[0].name).toBe('t11');
-    expect(tags[0].books[0].publisher!.tests[1].name).toBe('t12');
+    expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
 
     orm.em.clear();
     const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
@@ -795,12 +806,13 @@ describe('EntityManagerPostgre', () => {
     expect(books[0].author).toBeInstanceOf(Author2);
     expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(books[0].author.name).toBe('Jon Snow');
-    expect(books[0].publisher).toBeInstanceOf(Publisher2);
-    expect(wrap(books[0].publisher).isInitialized()).toBe(true);
-    expect(books[0].publisher!.tests.isInitialized(true)).toBe(true);
-    expect(books[0].publisher!.tests.count()).toBe(2);
-    expect(books[0].publisher!.tests[0].name).toBe('t11');
-    expect(books[0].publisher!.tests[1].name).toBe('t12');
+    expect(books[0].publisher).toBeInstanceOf(Reference);
+    expect(books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
+    expect(books[0].publisher!.isInitialized()).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(books[0].publisher!.unwrap().tests[1].name).toBe('t12');
   });
 
   test('hooks', async () => {

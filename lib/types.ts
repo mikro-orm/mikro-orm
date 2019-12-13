@@ -1,7 +1,17 @@
 import { QueryOrder } from './query';
-import { AssignOptions, Cascade, Collection, EntityRepository, IdentifiedReference, ReferenceType } from './entity';
+import {
+  AssignOptions,
+  Cascade,
+  Collection,
+  EntityRepository,
+  EntityValidator,
+  IdentifiedReference,
+  ReferenceType,
+} from './entity';
 import { EntityManager } from './EntityManager';
 import { LockMode } from './unit-of-work';
+import { Platform } from './platforms';
+import { MetadataStorage } from './metadata';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -77,7 +87,8 @@ export interface IWrappedEntity<T, PK extends keyof T> {
   assign(data: any, options?: AssignOptions | boolean): this;
   __uuid: string;
   __meta: EntityMetadata;
-  __em: EntityManager;
+  __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
+  __em?: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;

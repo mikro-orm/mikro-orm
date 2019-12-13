@@ -2,6 +2,7 @@ import { Dictionary, FilterQuery, Primary, QueryOrder, QueryOrderMap, Utils, wra
 import { EntityData, AnyEntity } from '../types';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
+import { ValidationError } from '../utils';
 
 export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
 
@@ -20,12 +21,9 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   }
 
   add(...items: T[]): void {
-    items = items.map(item => this.mapToEntity(item));
+    items.map(item => this.validateItemType(item));
     this.modify('add', items);
-
-    for (const item of items) {
-      wrap(this.owner).__em.getUnitOfWork().cancelOrphanRemoval(item);
-    }
+    this.cancelOrphanRemoval(items);
   }
 
   set(items: T[], initialize = false): void {
@@ -33,21 +31,19 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
       this.initialized = true;
     }
 
-    items = items.map(item => this.mapToEntity(item));
+    items.map(item => this.validateItemType(item));
     super.set(items);
-    this.dirty = !initialize;
-
-    for (const item of items) {
-      wrap(this.owner).__em.getUnitOfWork().cancelOrphanRemoval(item);
-    }
+    this.setDirty(!initialize);
+    this.cancelOrphanRemoval(items);
   }
 
   remove(...items: T[]): void {
     this.modify('remove', items);
+    const em = wrap(this.owner).__em;
 
-    if (this.property.orphanRemoval) {
+    if (this.property.orphanRemoval && em) {
       for (const item of items) {
-        wrap(this.owner).__em.getUnitOfWork().scheduleOrphanRemoval(item);
+        em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
   }
@@ -91,6 +87,10 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
     const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
     const em = wrap(this.owner).__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.owner);
+    }
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
@@ -148,7 +148,7 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   }
 
   private createManyToManyCondition(cond: Dictionary) {
-    if (this.property.owner || wrap(this.owner).__em.getDriver().getPlatform().usesPivotTable()) {
+    if (this.property.owner || wrap(this.owner).__internal.platform.usesPivotTable()) {
       const pk = wrap(this.items[0]).__meta.primaryKey; // we know there is at least one item as it was checked in load method
       cond[pk] = { $in: this.items.map(item => wrap(item).__primaryKey) };
     } else {
@@ -177,25 +177,22 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     }
   }
 
-  private mapToEntity(item: T | Primary<T> | EntityData<T>): T {
-    if (Utils.isEntity(item)) {
-      return item as T;
-    }
-
+  private cancelOrphanRemoval(items: T[]): void {
     const em = wrap(this.owner).__em;
-    let entity: T;
 
-    if (Utils.isPrimaryKey<T>(item)) {
-      entity = em.getReference(this.property.type, item);
-    } else {
-      entity = em.create(this.property.type, item);
+    if (!em) {
+      return;
     }
 
-    if (wrap(entity).__primaryKey) {
-      return em.merge<T>(this.property.type, entity);
+    for (const item of items) {
+      em!.getUnitOfWork().cancelOrphanRemoval(item);
     }
+  }
 
-    return entity;
+  private validateItemType(item: T | Primary<T> | EntityData<T>): void {
+    if (!Utils.isEntity(item)) {
+      throw ValidationError.notEntity(this.owner, this.property, item);
+    }
   }
 
 }

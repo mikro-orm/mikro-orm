@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, UuidEntity } from '../../lib';
+import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, UuidEntity } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -32,8 +32,8 @@ export class Book2 implements UuidEntity<Book2> {
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
-  publisher?: Publisher2;
+  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
+  publisher?: IdentifiedReference<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;

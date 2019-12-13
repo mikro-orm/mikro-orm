@@ -23,7 +23,7 @@ export class ArrayCollection<T extends AnyEntity<T>> {
 
   toArray(): Dictionary[] {
     return this.getItems().map(item => {
-      const meta = wrap(this.owner).__em.getMetadata().get(item.constructor.name);
+      const meta = wrap(this.owner).__internal.metadata.get(item.constructor.name);
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return wrap(item).toJSON(...args);
@@ -141,7 +141,7 @@ export class ArrayCollection<T extends AnyEntity<T>> {
 
   protected get property() {
     if (!this._property) {
-      const meta = wrap(this.owner).__em.getMetadata().get(this.owner.constructor.name);
+      const meta = wrap(this.owner).__meta;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

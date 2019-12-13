@@ -218,7 +218,7 @@ describe('EntityManagerMongo', () => {
     const bar = wrap(new FooBar()).assign({
       name: 'fb',
       baz: { name: 'fz' },
-    });
+    }, { em: orm.em });
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -230,11 +230,22 @@ describe('EntityManagerMongo', () => {
     expect(b.name).toBe('fz');
   });
 
+  test(`entity.init() and collection.init() works only for managed entities`, async () => {
+    const author = new Author('a', 'b');
+    await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(wrap(author.books).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+  });
+
   test(`persisting 1:1 created via assign from inverse (gh #210)`, async () => {
+    expect(() => wrap(new FooBaz()).assign({
+      name: 'fz',
+      bar: { name: 'fb' },
+    })).toThrowError('To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })');
+
     const baz = wrap(new FooBaz()).assign({
       name: 'fz',
       bar: { name: 'fb' },
-    });
+    }, { em: orm.em });
     await orm.em.persistAndFlush(baz);
     orm.em.clear();
 
@@ -1527,7 +1538,9 @@ describe('EntityManagerMongo', () => {
     Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
-    await orm.em.persistLater(book);
+    expect(() => orm.em.persistLater(book)).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
+
+    wrap(book).assign({ tags: ['0000007b5c9c61c332380f78', tag] }, { em: orm.em });
     expect(book.tags).toBeInstanceOf(Collection);
     expect(book.tags[0]).toBeInstanceOf(BookTag);
     expect(book.tags[1]).toBeInstanceOf(BookTag);
@@ -1545,19 +1558,13 @@ describe('EntityManagerMongo', () => {
   test('automatically fix PK in collection instead of entity when flushing (m:n)', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
-    book.tags.set(['0000007b5c9c61c332380f78' as any]);
-    expect(book.tags).not.toBeInstanceOf(BookTag);
-    expect(book.tags[0]).toBeInstanceOf(BookTag);
-    expect(book.tags[0].id).toBe('0000007b5c9c61c332380f78');
-    expect(book.tags.isInitialized()).toBe(true);
-    expect(book.tags.isDirty()).toBe(true);
+    expect(() => book.tags.set(['0000007b5c9c61c332380f78' as any])).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given.`);
   });
 
   test('automatically map raw results to entities when setting collection items', async () => {
     const god = new Author('God', 'hello@heaven.god');
     const bookData = { title: 'Bible', author: god.id };
-    god.books.add(bookData as any);
-    expect(god.books[0]).toBeInstanceOf(Book);
+    expect(() => god.books.add(bookData as any)).toThrowError(`Entity of type Book expected for property Author.books, { title: 'Bible', author: null } of type object given.`);
   });
 
   test('allow undefined value in nullable properties', async () => {

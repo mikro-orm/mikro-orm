@@ -1,11 +1,11 @@
-import { IDatabaseDriver, wrap } from '..';
+import { EntityManager, wrap } from '..';
 import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../types';
 import { EntityFactory } from '../entity';
 
 export abstract class Hydrator {
 
   constructor(protected readonly factory: EntityFactory,
-              protected readonly driver: IDatabaseDriver) { }
+              protected readonly em: EntityManager) { }
 
   hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity: boolean): void {
     if (data[meta.primaryKey]) {

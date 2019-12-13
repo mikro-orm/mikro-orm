@@ -1,20 +1,20 @@
-import { Configuration, Utils } from '../utils';
+import { Utils } from '../utils';
 import { AnyEntity, Constructor, EntityData, EntityMetadata, EntityName, Primary } from '../types';
-import { MetadataStorage } from '../metadata';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
-import { IDatabaseDriver } from '..';
+import { EntityManager } from '..';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 export class EntityFactory {
 
-  private readonly hydrator = this.config.getHydrator(this);
+  private readonly driver = this.em.getDriver();
+  private readonly config = this.em.config;
+  private readonly metadata = this.em.getMetadata();
+  private readonly hydrator = this.config.getHydrator(this, this.em);
 
   constructor(private readonly unitOfWork: UnitOfWork,
-              private readonly driver: IDatabaseDriver,
-              private readonly config: Configuration,
-              private readonly metadata: MetadataStorage) { }
+              private readonly em: EntityManager) { }
 
   create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
     entityName = Utils.className(entityName);

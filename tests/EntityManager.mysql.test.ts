@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import chalk from 'chalk';
 
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Utils, wrap } from '../lib';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
@@ -132,7 +132,8 @@ describe('EntityManagerMySql', () => {
     expect(book.createdAt).toBeInstanceOf(Date);
     expect(book.author).toBeInstanceOf(Author2);
     expect(book.author.id).toBe(123);
-    expect(book.publisher).toBeInstanceOf(Publisher2);
+    expect(book.publisher).toBeInstanceOf(Reference);
+    expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher2);
     expect(book.publisher!.id).toBe(321);
     expect(book.tags.length).toBe(3);
     expect(book.tags[0]).toBeInstanceOf(BookTag2);
@@ -296,13 +297,13 @@ describe('EntityManagerMySql', () => {
     // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
     const book1 = new Book2('My Life on The Wall, part 1', author);
     book1.createdAt = new Date(Date.now() + 1);
-    book1.publisher = publisher;
+    book1.publisher = wrap(publisher).toReference();
     const book2 = new Book2('My Life on The Wall, part 2', author);
     book2.createdAt = new Date(Date.now() + 2);
-    book2.publisher = publisher;
+    book2.publisher = wrap(publisher).toReference();
     const book3 = new Book2('My Life on The Wall, part 3', author);
     book3.createdAt = new Date(Date.now() + 3);
-    book3.publisher = publisher;
+    book3.publisher = wrap(publisher).toReference();
 
     const repo = orm.em.getRepository(Book2);
     repo.persist(book1);
@@ -373,7 +374,8 @@ describe('EntityManagerMySql', () => {
 
         expect(book.author).toBeInstanceOf(Author2);
         expect(wrap(book.author).isInitialized()).toBe(true);
-        expect(book.publisher).toBeInstanceOf(Publisher2);
+        expect(book.publisher).toBeInstanceOf(Reference);
+        expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher2);
         expect(wrap(book.publisher).isInitialized()).toBe(false);
       }
     }
@@ -661,11 +663,11 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(pub);
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
-    bible.publisher = pub;
+    bible.publisher = wrap(pub).toReference();
     const bible2 = new Book2('Bible pt. 2', god);
-    bible2.publisher = pub;
+    bible2.publisher = wrap(pub).toReference();
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
-    bible3.publisher = pub;
+    bible3.publisher = wrap(pub).toReference();
     await orm.em.persistAndFlush([bible, bible2, bible3]);
     orm.em.clear();
 
@@ -983,14 +985,14 @@ describe('EntityManagerMySql', () => {
 
     // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
     book1.createdAt = new Date(Date.now() + 1);
-    book1.publisher = new Publisher2('B1 publisher');
-    book1.publisher.tests.add(Test2.create('t11'), Test2.create('t12'));
+    book1.publisher = wrap(new Publisher2('B1 publisher')).toReference();
+    book1.publisher.unwrap().tests.add(Test2.create('t11'), Test2.create('t12'));
     book2.createdAt = new Date(Date.now() + 2);
-    book2.publisher = new Publisher2('B2 publisher');
-    book2.publisher.tests.add(Test2.create('t21'), Test2.create('t22'));
+    book2.publisher = wrap(new Publisher2('B2 publisher')).toReference();
+    book2.publisher.unwrap().tests.add(Test2.create('t21'), Test2.create('t22'));
     book3.createdAt = new Date(Date.now() + 3);
-    book3.publisher = new Publisher2('B3 publisher');
-    book3.publisher.tests.add(Test2.create('t31'), Test2.create('t32'));
+    book3.publisher = wrap(new Publisher2('B3 publisher')).toReference();
+    book3.publisher.unwrap().tests.add(Test2.create('t31'), Test2.create('t32'));
 
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
@@ -1013,12 +1015,13 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books[0].author).toBeInstanceOf(Author2);
     expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
-    expect(tags[0].books[0].publisher).toBeInstanceOf(Publisher2);
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
+    expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
     expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
-    expect(tags[0].books[0].publisher!.tests.isInitialized(true)).toBe(true);
-    expect(tags[0].books[0].publisher!.tests.count()).toBe(2);
-    expect(tags[0].books[0].publisher!.tests[0].name).toBe('t11');
-    expect(tags[0].books[0].publisher!.tests[1].name).toBe('t12');
+    expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
 
     orm.em.clear();
     const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
@@ -1028,12 +1031,13 @@ describe('EntityManagerMySql', () => {
     expect(books[0].author).toBeInstanceOf(Author2);
     expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(books[0].author.name).toBe('Jon Snow');
-    expect(books[0].publisher).toBeInstanceOf(Publisher2);
+    expect(books[0].publisher).toBeInstanceOf(Reference);
+    expect(books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
     expect(wrap(books[0].publisher).isInitialized()).toBe(true);
-    expect(books[0].publisher!.tests.isInitialized(true)).toBe(true);
-    expect(books[0].publisher!.tests.count()).toBe(2);
-    expect(books[0].publisher!.tests[0].name).toBe('t11');
-    expect(books[0].publisher!.tests[1].name).toBe('t12');
+    expect(books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(books[0].publisher!.unwrap().tests[1].name).toBe('t12');
   });
 
   test('hooks', async () => {

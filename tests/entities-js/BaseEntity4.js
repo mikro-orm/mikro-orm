@@ -6,8 +6,7 @@ const { Collection, ReferenceType } = require('../../lib');
 class BaseEntity4 {
 
   constructor() {
-    const meta = this['__em'].getMetadata().get(this.constructor.name);
-    const props = meta.properties;
+    const props = this['__meta'].properties;
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {

@@ -12,10 +12,11 @@ export class EntityAssigner {
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
-    const em = wrap(entity).__em;
-    const meta = em.getMetadata().get(entity.constructor.name);
-    const props = meta.properties;
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
+    const em = options.em || wrap(entity).__em;
+    const meta = wrap(entity).__internal.metadata.get(entity.constructor.name);
+    const validator = wrap(entity).__internal.validator;
+    const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
       if (options.onlyProperties && !(prop in props)) {
@@ -24,16 +25,16 @@ export class EntityAssigner {
 
       const value = data[prop as keyof EntityData<T>];
 
-      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value) {
-        return EntityAssigner.assignReference<T>(entity, value, props[prop], em);
+      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value && EntityAssigner.validateEM(em)) {
+        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);
       }
 
-      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value)) {
-        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em);
+      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!);
       }
 
       if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (!props[prop].getter || props[prop].setter)) {
-        return entity[prop as keyof T] = em.getValidator().validateProperty(props[prop], value, entity);
+        return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
       }
 
       if (options.mergeObjects && Utils.isObject(value)) {
@@ -62,6 +63,14 @@ export class EntityAssigner {
     if (prop2 && !entity[prop.name][prop2.name]) {
       entity[prop.name][prop2.name] = Utils.wrapReference(entity, prop2);
     }
+  }
+
+  private static validateEM(em?: EntityManager): boolean {
+    if (!em) {
+      throw new Error(`To use assign() on not managed entities, explicitly provide EM instance: wrap(entity).assign(data, { em: orm.em })`);
+    }
+
+    return true;
   }
 
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
@@ -122,4 +131,5 @@ export class EntityAssigner {
 export interface AssignOptions {
   onlyProperties?: boolean;
   mergeObjects?: boolean;
+  em?: EntityManager;
 }
