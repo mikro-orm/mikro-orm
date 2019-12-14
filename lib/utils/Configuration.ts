@@ -123,9 +123,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.cached(this.options.namingStrategy || this.platform.getNamingStrategy());
   }
 
-  getHydrator(factory: EntityFactory): Hydrator {
+  getHydrator(factory: EntityFactory, em: EntityManager): Hydrator {
     // Hydrator cannot be cached as it would have reference to wrong factory
-    return new this.options.hydrator(factory, this.driver);
+    return new this.options.hydrator(factory, em);
   }
 
   getMetadataProvider(): MetadataProvider {
@@ -236,7 +236,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   namingStrategy?: { new (): NamingStrategy };
   autoJoinOneToOneOwner: boolean;
   forceUtcTimezone: boolean;
-  hydrator: { new (factory: EntityFactory, driver: IDatabaseDriver): Hydrator };
+  hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;

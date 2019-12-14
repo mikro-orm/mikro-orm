@@ -1,7 +1,7 @@
 import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../types';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../types';
 import { Reference } from './Reference';
 import { wrap } from './EntityHelper';
 
@@ -9,7 +9,7 @@ export class EntityTransformer {
 
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
     const wrapped = wrap(entity);
-    const platform = wrapped.__em.getDriver().getPlatform();
+    const platform = wrapped.__internal.platform;
     const pk = platform.getSerializedPrimaryKeyField(wrapped.__meta.primaryKey);
     const meta = wrapped.__meta;
     const pkProp = meta.properties[meta.primaryKey];
@@ -60,14 +60,13 @@ export class EntityTransformer {
 
   private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     const child = wrap(entity[prop] as unknown as T | Reference<T>);
-    const platform = child.__em.getDriver().getPlatform();
 
     if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
       const args = [...child.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];
       return child.toJSON(...args) as T[keyof T];
     }
 
-    return platform.normalizePrimaryKey(child.__primaryKey as IPrimaryKey) as unknown as T[keyof T];
+    return child.__internal.platform.normalizePrimaryKey(child.__primaryKey as IPrimaryKey) as unknown as T[keyof T];
   }
 
   private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {

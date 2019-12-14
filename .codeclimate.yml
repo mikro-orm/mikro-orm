@@ -6,7 +6,7 @@ checks:
       threshold: 500
   method-lines:
     config:
-      threshold: 30
+      threshold: 50
   method-count:
     config:
       threshold: 40

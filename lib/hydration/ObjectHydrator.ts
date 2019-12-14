@@ -1,6 +1,6 @@
 import { EntityData, EntityProperty, AnyEntity, Primary } from '../types';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
+import { Collection, EntityAssigner, ReferenceType } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
@@ -42,7 +42,7 @@ export class ObjectHydrator extends Hydrator {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
       entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items) as unknown as T[keyof T];
     } else if (!entity[prop.name as keyof T]) {
-      const items = this.driver.getPlatform().usesPivotTable() ? undefined : [];
+      const items = this.em.getDriver().getPlatform().usesPivotTable() ? undefined : [];
       entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, newEntity) as unknown as T[keyof T];
     }
   }
@@ -75,7 +75,7 @@ export class ObjectHydrator extends Hydrator {
     }
 
     const child = this.factory.create(prop.type, value as EntityData<T>);
-    wrap(child).__em.merge(child);
+    this.em.merge(child);
 
     return child;
   }

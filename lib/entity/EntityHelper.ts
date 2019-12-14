@@ -5,11 +5,19 @@ import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
+import { Platform } from '../platforms';
+import { ValidationError } from '../utils';
 
 export class EntityHelper {
 
   static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
-    await wrap(entity).__em.findOne(entity.constructor.name, entity, { refresh: true, lockMode });
+    const em = wrap(entity).__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(entity);
+    }
+
+    await em.findOne(entity.constructor.name, entity, { refresh: true, lockMode });
     wrap(entity).populated(populated);
     Object.defineProperty(entity, '__lazyInitialized', { value: true, writable: true });
 
@@ -20,7 +28,7 @@ export class EntityHelper {
     const pk = meta.properties[meta.primaryKey];
 
     if (pk.name === '_id') {
-      EntityHelper.defineIdProperty(meta, em);
+      EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
     }
 
     EntityHelper.defineBaseProperties(meta, em);
@@ -44,24 +52,31 @@ export class EntityHelper {
   /**
    * defines magic id property getter/setter if PK property is `_id` and there is no `id` property defined
    */
-  private static defineIdProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
+  private static defineIdProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, platform: Platform): void {
     Object.defineProperty(meta.prototype, 'id', {
       get(): string | null {
-        return this._id ? em.getDriver().getPlatform().normalizePrimaryKey<string>(this._id) : null;
+        return this._id ? platform.normalizePrimaryKey<string>(this._id) : null;
       },
       set(id: string): void {
-        this._id = id ? em.getDriver().getPlatform().denormalizePrimaryKey(id) : null;
+        this._id = id ? platform.denormalizePrimaryKey(id) : null;
       },
     });
   }
 
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager) {
+    const internal = {
+      platform: em.getDriver().getPlatform(),
+      metadata: em.getMetadata(),
+      validator: em.getValidator(),
+    };
+
     Object.defineProperties(meta.prototype, {
       __populated: { value: false, writable: true },
       __lazyInitialized: { value: false, writable: true },
       __entity: { value: true },
-      __em: { value: em, writable: true },
+      __em: { value: undefined, writable: true },
       __meta: { value: meta },
+      __internal: { value: internal },
       __uuid: {
         get(): string {
           if (!this.___uuid) {

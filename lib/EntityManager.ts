@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 import { Configuration, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
@@ -9,11 +11,12 @@ import { Transaction } from './connections';
 
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
+  readonly id = uuid();
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Record<string, EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
-  private readonly entityFactory = new EntityFactory(this.unitOfWork, this.driver, this.config, this.metadata);
+  private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
   private transactionContext?: Transaction;
 
   constructor(readonly config: Configuration,
@@ -208,12 +211,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>);
 
     if (entity && wrap(entity).isInitialized() && !refresh) {
-      Object.defineProperty(entity, '__em', { value: this, writable: true });
       return entity;
     }
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>);
-    Object.defineProperty(entity, '__em', { value: this, writable: true });
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);

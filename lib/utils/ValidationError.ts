@@ -73,6 +73,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity ${entity.constructor.name} is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()`);
   }
 
+  static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
+    return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${Utils.getObjectType(data)} given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
+  }
+
   static notVersioned(meta: EntityMetadata): ValidationError {
     return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.name}`);
   }

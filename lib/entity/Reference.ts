@@ -1,6 +1,9 @@
 import { Dictionary, EntityMetadata, AnyEntity, Primary } from '../types';
 import { EntityManager } from '../EntityManager';
 import { wrap } from './EntityHelper';
+import { Platform } from '../platforms';
+import { MetadataStorage } from '../metadata';
+import { EntityValidator } from './EntityValidator';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
@@ -78,8 +81,12 @@ export class Reference<T extends AnyEntity<T>> {
     return wrap(this.entity).__uuid;
   }
 
-  get __em(): EntityManager {
+  get __em(): EntityManager | undefined {
     return wrap(this.entity).__em;
+  }
+
+  get __internal(): { platform: Platform; metadata: MetadataStorage; validator: EntityValidator } {
+    return wrap(this.entity).__internal;
   }
 
   get __meta(): EntityMetadata {

@@ -32,6 +32,7 @@ export class UnitOfWork {
 
   merge<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], mergeData = true): void {
     const wrapped = wrap(entity);
+    wrapped.__em = this.em;
 
     if (!wrapped.__primaryKey) {
       return;
@@ -392,7 +393,6 @@ export class UnitOfWork {
       const collection = new Collection<AnyEntity>(entity);
       entity[prop.name as keyof T] = collection as unknown as T[keyof T];
       collection.set(reference as AnyEntity[]);
-      collection.setDirty();
     }
   }
 

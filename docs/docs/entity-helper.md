@@ -30,6 +30,19 @@ console.log(book.author); // instance of Author with id: '...id...'
 console.log(book.author.id); // '...id...'
 ```
 
+To use `entity.assign()` on not managed entities, you need to provide `EntityManager` 
+instance explicitly: 
+
+```typescript
+import { wrap } from 'mikro-orm';
+
+const book = new Book();
+wrap(book).assign({ 
+  title: 'Better Book 1', 
+  author: '...id...',
+}, { em: orm.em });
+```
+
 By default, `entity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
 e.g. it does not merge things recursively. To enable deep merging of object properties, 
 use second parameter to enable `mergeObjects` flag:

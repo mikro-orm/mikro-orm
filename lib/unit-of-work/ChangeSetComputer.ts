@@ -75,9 +75,9 @@ export class ChangeSetComputer {
   private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal)
     const data = this.originalEntityData[changeSet.entity.__uuid] as EntityData<T>;
+    const em = changeSet.entity.__em;
 
-    if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload) {
-      const em = changeSet.entity.__em;
+    if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {
       const orphan = em.getReference(prop.type, data[prop.name] as Primary<T>);
       em.getUnitOfWork().scheduleOrphanRemoval(orphan);
     }

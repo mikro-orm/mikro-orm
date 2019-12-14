@@ -82,6 +82,20 @@ override the order column name via `fixedOrderColumn: 'order'`.
 
 You can also specify default ordering via `orderBy: { ... }` attribute.
 
+## EntityAssigner.assign() requires EM for new entities
+
+Previously all entities had internal reference to the root EM - the one created when 
+initializing the ORM. Now only managed entities (those merged to the EM, e.g. loaded 
+from the database) have this internal reference. 
+
+To use `assign()` method on new (not managed) entities, you need to provide the `em`
+parameter:
+
+```typescript
+const book = new Book();
+wrap(book).assign(data, { em: orm.em });
+```
+
 ## Strict FilterQuery and smart query conditions
 
 `FilterQuery` now does not allow using smart query operators. You can either cast your condition 

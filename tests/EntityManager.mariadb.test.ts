@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 
-import { Collection, EntityManager, MikroORM, QueryOrder, wrap } from '../lib';
+import { Collection, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '../lib';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
@@ -76,13 +76,13 @@ describe('EntityManagerMariaDb', () => {
     // as we order by Book.createdAt when populating collection, we need to make sure values will be sequential
     const book1 = new Book2('My Life on The Wall, part 1', author);
     book1.createdAt = new Date(Date.now() + 1);
-    book1.publisher = publisher;
+    book1.publisher = wrap(publisher).toReference();
     const book2 = new Book2('My Life on The Wall, part 2', author);
     book2.createdAt = new Date(Date.now() + 2);
-    book2.publisher = publisher;
+    book2.publisher = wrap(publisher).toReference();
     const book3 = new Book2('My Life on The Wall, part 3', author);
     book3.createdAt = new Date(Date.now() + 3);
-    book3.publisher = publisher;
+    book3.publisher = wrap(publisher).toReference();
 
     const repo = orm.em.getRepository(Book2);
     repo.persist(book1);
@@ -151,8 +151,9 @@ describe('EntityManagerMariaDb', () => {
 
         expect(book.author).toBeInstanceOf(Author2);
         expect(wrap(book.author).isInitialized()).toBe(true);
-        expect(book.publisher).toBeInstanceOf(Publisher2);
-        expect(wrap(book.publisher).isInitialized()).toBe(false);
+        expect(book.publisher).toBeInstanceOf(Reference);
+        expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher2);
+        expect(book.publisher!.isInitialized()).toBe(false);
       }
     }
 
