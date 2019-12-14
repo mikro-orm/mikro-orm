@@ -24,15 +24,16 @@ describe('UnitOfWork', () => {
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.name of type 'string' to '111' of type 'number'`);
 
     // string date with unknown format will throw
-    Object.assign(author, { name: '333', email: '444', born: 'asd' });
-    expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.born of type 'date' to 'asd' of type 'string'`);
+    Object.assign(author, { name: '333', email: '444', createdAt: 'asd' });
+    expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.createdAt of type 'date' to 'asd' of type 'string'`);
+    delete author.createdAt;
 
     // number bool with other value than 0/1 will throw
     Object.assign(author, { termsAccepted: 2 });
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
 
     // string date with correct format will be auto-corrected
-    Object.assign(author, { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 });
+    Object.assign(author, { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 });
     let changeSet = computer.computeChangeSet(author)!;
     expect(typeof changeSet.payload.name).toBe('string');
     expect(changeSet.payload.name).toBe('333');
@@ -40,17 +41,17 @@ describe('UnitOfWork', () => {
     expect(changeSet.payload.email).toBe('444');
     expect(typeof changeSet.payload.termsAccepted).toBe('boolean');
     expect(changeSet.payload.termsAccepted).toBe(true);
-    expect(changeSet.payload.born instanceof Date).toBe(true);
+    expect(changeSet.payload.createdAt instanceof Date).toBe(true);
 
     // Date object will be ok
-    Object.assign(author, { born: new Date() });
+    Object.assign(author, { createdAt: new Date() });
     changeSet = (await computer.computeChangeSet(author))!;
-    expect(changeSet.payload.born instanceof Date).toBe(true);
+    expect(changeSet.payload.createdAt instanceof Date).toBe(true);
 
     // null will be ok
-    Object.assign(author, { born: null });
+    Object.assign(author, { createdAt: null });
     changeSet = (await computer.computeChangeSet(author))!;
-    expect(changeSet.payload.born).toBeNull();
+    expect(changeSet.payload.createdAt).toBeNull();
 
     // string number with correct format will be auto-corrected
     Object.assign(author, { age: '21' });
@@ -76,8 +77,8 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
 
     // string date with correct format will not be auto-corrected in strict mode
-    const payload = { name: '333', email: '444', born: '2018-01-01', termsAccepted: 1 };
-    expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrowError(`Trying to set Author.born of type 'date' to '2018-01-01' of type 'string'`);
+    const payload = { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 };
+    expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrowError(`Trying to set Author.createdAt of type 'date' to '2018-01-01' of type 'string'`);
   });
 
   test('changeSet is null for empty payload', async () => {

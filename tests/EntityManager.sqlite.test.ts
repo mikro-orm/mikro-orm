@@ -176,7 +176,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible, true);
 
     const author = new Author3('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('1990-03-23');
     author.favouriteBook = bible;
 
     const publisher = new Publisher3('7K publisher', 'global');
@@ -237,7 +237,7 @@ describe('EntityManagerSqlite', () => {
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
-      born: jon.born,
+      born: '1990-03-23',
       email: 'snow@wall.st',
       name: 'Jon Snow',
     });
@@ -523,7 +523,7 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persist(bible, true);
 
     let jon = new Author3('Jon Snow', 'snow@wall.st');
-    jon.born = new Date();
+    jon.born = new Date('1990-03-23');
     jon.favouriteBook = bible;
     await orm.em.persist(jon, true);
     orm.em.clear();
@@ -811,7 +811,7 @@ describe('EntityManagerSqlite', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book], true);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
   });
@@ -842,14 +842,14 @@ describe('EntityManagerSqlite', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author3('n', 'e');
-    author.born = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ born: number }[]>(`select born as born from author3 where id = ${author.id}`);
-    expect(res[0].born).toBe(+author.born);
+    const res = await orm.em.getConnection().execute<{ created_at: number }[]>(`select created_at as created_at from author3 where id = ${author.id}`);
+    expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail<any>(Author3, author.id);
-    expect(+a.born!).toBe(+author.born);
+    expect(+a.createdAt!).toBe(+author.createdAt);
   });
 
   afterAll(async () => {

@@ -28,7 +28,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('2000-01-01');
     author.favouriteBook = bible;
 
     const publisher = new Publisher('7K publisher', PublisherType.GLOBAL);
@@ -92,7 +92,7 @@ describe('EntityManagerMongo', () => {
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
-      born: jon.born,
+      born: '2000-01-01',
       name: 'Jon Snow',
       foo: 'bar',
     });
@@ -502,14 +502,14 @@ describe('EntityManagerMongo', () => {
     expect(author.name).toBe('Jon Snow');
   });
 
-  test('populate ManyToOne relation', async () => {
+  test('populate ManyToOne relation via init()', async () => {
     const authorRepository = orm.em.getRepository(Author);
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author('Jon Snow', 'snow@wall.st');
-    jon.born = new Date();
+    jon.born = new Date('1990-03-23');
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -517,6 +517,7 @@ describe('EntityManagerMongo', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
+    expect(jon.born).toEqual(new Date('1990-03-23'));
     expect(jon.favouriteBook).toBeInstanceOf(Book);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
 

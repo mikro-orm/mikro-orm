@@ -16,6 +16,7 @@ export class EntityAssigner {
     const em = options.em || wrap(entity).__em;
     const meta = wrap(entity).__internal.metadata.get(entity.constructor.name);
     const validator = wrap(entity).__internal.validator;
+    const platform = wrap(entity).__internal.platform;
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
@@ -23,7 +24,11 @@ export class EntityAssigner {
         return;
       }
 
-      const value = data[prop as keyof EntityData<T>];
+      let value = data[prop as keyof EntityData<T>];
+
+      if (props[prop] && props[prop].customType) {
+        value = props[prop].customType.convertToJSValue(value, platform);
+      }
 
       if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);

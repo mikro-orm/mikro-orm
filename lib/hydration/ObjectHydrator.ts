@@ -26,6 +26,10 @@ export class ObjectHydrator extends Hydrator {
       return;
     }
 
+    if (prop.customType) {
+      value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
+    }
+
     entity[prop.name as keyof T] = value;
   }
 

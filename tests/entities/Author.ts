@@ -1,5 +1,5 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType,
   Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap,
 } from '../../lib';
 
@@ -31,7 +31,7 @@ export class Author extends BaseEntity {
   @Property({ fieldName: 'identitiesArray' })
   identities?: string[];
 
-  @Property()
+  @Property({ type: DateType })
   born?: Date;
 
   @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })

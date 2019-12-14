@@ -34,11 +34,14 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    if (this.originalEntityData[wrap(entity).__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[wrap(entity).__uuid] as T, entity, this.metadata);
+    const wrapped = wrap(entity);
+    const platform = wrapped.__internal.platform;
+
+    if (this.originalEntityData[wrapped.__uuid]) {
+      return Utils.diffEntities<T>(this.originalEntityData[wrapped.__uuid] as T, entity, this.metadata, platform);
     }
 
-    return Utils.prepareEntity(entity, this.metadata);
+    return Utils.prepareEntity(entity, this.metadata, platform);
   }
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

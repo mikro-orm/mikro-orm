@@ -17,4 +17,8 @@ export class PostgreSqlPlatform extends Platform {
     return `current_timestamp(${length})`;
   }
 
+  getTimeTypeDeclarationSQL(): string {
+    return 'time(0)';
+  }
+
 }

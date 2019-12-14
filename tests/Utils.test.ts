@@ -90,7 +90,7 @@ describe('Utils', () => {
     author1.books = new Collection<Book>(author1);
     const author2 = new Author('Name 2', 'e-mail');
     author2.books = new Collection<Book>(author2);
-    expect(Utils.diffEntities(author1, author2, orm.getMetadata()).books).toBeUndefined();
+    expect(Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
@@ -100,7 +100,7 @@ describe('Utils', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush(author2);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
     expect(diff.favouriteBook instanceof ObjectId).toBe(true);
   });
@@ -109,7 +109,7 @@ describe('Utils', () => {
     const author = new Author('Name 1', 'e-mail');
     author.version = 123;
     author.versionAsString = 'v123';
-    const o = Utils.prepareEntity(author, orm.getMetadata());
+    const o = Utils.prepareEntity(author, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(o.version).toBeUndefined();
     expect(o.versionAsString).toBeUndefined();
   });

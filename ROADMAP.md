@@ -9,16 +9,13 @@ discuss specifics.
 
 ## Planned features
 
-- Association scopes
-- Value transformers (e.g. mapping of `Date` object to formatted string)
+- Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - Schema sync (allow automatic synchronization during development)
-- Migrations via `umzug`
-- Improved support for data types like date, time, timestamp
 - Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination
 - Composite primary keys
 - Map collections
-- Single table inheritance #33
-- Embedded entities (allow in-lining child entity into parent one with prefixed keys)
+- Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
+- Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
 - Slow query log
