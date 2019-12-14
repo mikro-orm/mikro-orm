@@ -1,4 +1,4 @@
-# [3.0.0-rc3](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2019-12-10)
+# [3.0.0-rc4](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2019-12-14)
 
 
 ### Bug Fixes
@@ -16,10 +16,18 @@
 * **core:** make sure constructor params are sniffer from the constructor ([fdd157c](https://github.com/mikro-orm/mikro-orm/commit/fdd157ca21618611a010a100d6fddb882e09d0d2))
 * **core:** always ensure correct EM instance when merging entity ([72f4525](https://github.com/mikro-orm/mikro-orm/commit/72f4525e6d2048691fb0b9875a025ae5dfea7c5f))
 * **core:** do not map null value in bool props to false ([e54dbbd](https://github.com/mikro-orm/mikro-orm/commit/e54dbbd93ab056dd9903e72e67b552bcb38f2778)), closes [#262](https://github.com/mikro-orm/mikro-orm/issues/262)
+* **core:** always ensure correct EM instance when merging entity ([72f4525](https://github.com/mikro-orm/mikro-orm/commit/72f4525e6d2048691fb0b9875a025ae5dfea7c5f))
+* **core:** do not map null value in bool props to false ([e54dbbd](https://github.com/mikro-orm/mikro-orm/commit/e54dbbd93ab056dd9903e72e67b552bcb38f2778)), closes [#262](https://github.com/mikro-orm/mikro-orm/issues/262)
+* **core:** do not set EM to entity until merging [BC] ([#270](https://github.com/mikro-orm/mikro-orm/issues/270)) ([d09c3ab](https://github.com/mikro-orm/mikro-orm/commit/d09c3ab1debeaf5e701c0a069ababbd93d775d15)), closes [#267](https://github.com/mikro-orm/mikro-orm/issues/267)
 * **deps:** update dependency ts-morph to v4 ([#162](https://github.com/mikro-orm/mikro-orm/issues/162)) ([b6dd073](https://github.com/mikro-orm/mikro-orm/commit/b6dd07305b940b9db28af4a0711101a0f5744163))
 * **deps:** update dependency chalk to v3 ([#243](https://github.com/mikro-orm/mikro-orm/issues/243)) ([0a17eb7](https://github.com/mikro-orm/mikro-orm/commit/0a17eb7ba7d8711d20c6c9adcbe80a3f934ff5ff))
 * **deps:** update dependency ts-morph to v5 ([#229](https://github.com/mikro-orm/mikro-orm/issues/229)) ([ab66d9c](https://github.com/mikro-orm/mikro-orm/commit/ab66d9c1b2d1a34db747a5168c500d85ced64c8d))
 * **deps:** update dependency yargs to v15 ([#244](https://github.com/mikro-orm/mikro-orm/issues/244)) ([0fe3a55](https://github.com/mikro-orm/mikro-orm/commit/0fe3a5592c2bb70e93a2f6cf2e1a0d4ac7a2cc37))
+* **deps:** update dependency @docusaurus/core to ^2.0.0-alpha ([#257](https://github.com/mikro-orm/mikro-orm/issues/257)) ([82d0b3b](https://github.com/mikro-orm/mikro-orm/commit/82d0b3b343767c715dea902d8d956683ff885266))
+* **deps:** update dependency @docusaurus/core to v2.0.0-alpha.38 ([#260](https://github.com/mikro-orm/mikro-orm/issues/260)) ([a8a5386](https://github.com/mikro-orm/mikro-orm/commit/a8a53860511104d1e686398686185ee934a8df6b))
+* **deps:** update dependency @docusaurus/preset-classic to ^2.0.0-alpha ([#258](https://github.com/mikro-orm/mikro-orm/issues/258)) ([bfc7455](https://github.com/mikro-orm/mikro-orm/commit/bfc74557ac1b8bd835b6b1664346068ff41c19df))
+* **deps:** update dependency @docusaurus/preset-classic to v2.0.0-alpha.38 ([#259](https://github.com/mikro-orm/mikro-orm/issues/259)) ([c3c80c9](https://github.com/mikro-orm/mikro-orm/commit/c3c80c9e6469a490b95204eba30b2766b0803974))
+* **deps:** update dependency fast-deep-equal to v3 ([#250](https://github.com/mikro-orm/mikro-orm/issues/250)) ([546e950](https://github.com/mikro-orm/mikro-orm/commit/546e95023b36b7ca13b5aa6e4df56f0f7effbf08))
 * **deps:** update dependency @docusaurus/core to ^2.0.0-alpha ([#257](https://github.com/mikro-orm/mikro-orm/issues/257)) ([82d0b3b](https://github.com/mikro-orm/mikro-orm/commit/82d0b3b343767c715dea902d8d956683ff885266))
 * **deps:** update dependency @docusaurus/core to v2.0.0-alpha.38 ([#260](https://github.com/mikro-orm/mikro-orm/issues/260)) ([a8a5386](https://github.com/mikro-orm/mikro-orm/commit/a8a53860511104d1e686398686185ee934a8df6b))
 * **deps:** update dependency @docusaurus/preset-classic to ^2.0.0-alpha ([#258](https://github.com/mikro-orm/mikro-orm/issues/258)) ([bfc7455](https://github.com/mikro-orm/mikro-orm/commit/bfc74557ac1b8bd835b6b1664346068ff41c19df))
@@ -33,11 +41,14 @@
 * **query-builder:** fix malformed query when populate and join are used ([244db67](https://github.com/mikro-orm/mikro-orm/commit/244db6724635cecf9b2a29ac442a4b602e561723))
 * **query-builder:** do not ignore parent operator in complex conditions ([b9c00bc](https://github.com/mikro-orm/mikro-orm/commit/b9c00bc61befa271d9007ed7cec8374ed134ba9a)), closes [#247](https://github.com/mikro-orm/mikro-orm/issues/247)
 * **query-builder:** do not trigger auto-joining when not needed ([b7b7a46](https://github.com/mikro-orm/mikro-orm/commit/b7b7a46bdbd2710ebf901b075dd2b0c09739fd83)), closes [#249](https://github.com/mikro-orm/mikro-orm/issues/249)
+* **query-builder:** do not ignore parent operator in complex conditions ([b9c00bc](https://github.com/mikro-orm/mikro-orm/commit/b9c00bc61befa271d9007ed7cec8374ed134ba9a)), closes [#247](https://github.com/mikro-orm/mikro-orm/issues/247)
+* **query-builder:** do not trigger auto-joining when not needed ([b7b7a46](https://github.com/mikro-orm/mikro-orm/commit/b7b7a46bdbd2710ebf901b075dd2b0c09739fd83)), closes [#249](https://github.com/mikro-orm/mikro-orm/issues/249)
 * **schema:** do not make FK fields nullable if not needed ([9c0ffc1](https://github.com/mikro-orm/mikro-orm/commit/9c0ffc1390ff9ce19f69ea54137977bff40f8d0b)), closes [#218](https://github.com/mikro-orm/mikro-orm/issues/218)
 * **schema:** prefer user-defined collection names in naming strategy ([28f59ec](https://github.com/mikro-orm/mikro-orm/commit/28f59ec746f7ff99396d2cf337e6d78250b14f2e)), closes [#111](https://github.com/mikro-orm/mikro-orm/issues/111)
 * **serializing:** add check for circular references in toObject() ([f7eaabb](https://github.com/mikro-orm/mikro-orm/commit/f7eaabb73f6f26c97bcc13f606a6bf328021cb81)), closes [#205](https://github.com/mikro-orm/mikro-orm/issues/205)
 * **serializing:** do not ignore already visited collection items ([ee4b50b](https://github.com/mikro-orm/mikro-orm/commit/ee4b50b08d8cde789170df3182847771d5b2b30f)), closes [#222](https://github.com/mikro-orm/mikro-orm/issues/222)
 * **sql:** support self-referencing m:n in pivot tables ([3157572](https://github.com/mikro-orm/mikro-orm/commit/3157572846befd24347e6645ccfbec0f411e934f))
+* **sql:** support uuid like PKs in M:N references ([#272](https://github.com/mikro-orm/mikro-orm/issues/272)) ([2abc19f](https://github.com/mikro-orm/mikro-orm/commit/2abc19f770331d6d5a033f09297523217fb17217)), closes [#268](https://github.com/mikro-orm/mikro-orm/issues/268)
 
 
 ### Features
@@ -71,6 +82,7 @@
 * **core:** use knex to generate sql + enable connection pooling [BC] ([#76](https://github.com/mikro-orm/mikro-orm/issues/76)) ([6d79e57](https://github.com/mikro-orm/mikro-orm/commit/6d79e57dacba9a4e07d3d9e027a68ed7fd7188e2)), closes [#64](https://github.com/mikro-orm/mikro-orm/issues/64)
 * **core:** add `Reference.set()` method ([08cbead](https://github.com/mikro-orm/mikro-orm/commit/08cbead10a5c637dc44194786d9a062f81579d46)), closes [#264](https://github.com/mikro-orm/mikro-orm/issues/264)
 * **core:** add `WrappedEntity.toReference()` method ([de01463](https://github.com/mikro-orm/mikro-orm/commit/de014635090540b79a5ae69536ddc9fa960f8ed1)), closes [#264](https://github.com/mikro-orm/mikro-orm/issues/264)
+* **core:** add `refresh` parameter to `FindOptions` ([#271](https://github.com/mikro-orm/mikro-orm/issues/271)) ([a558935](https://github.com/mikro-orm/mikro-orm/commit/a558935b20576e5a343c81aa434364e1b251a60b)), closes [#269](https://github.com/mikro-orm/mikro-orm/issues/269)
 * **drivers:** allow passing additional driver options ([1ceb0c1](https://github.com/mikro-orm/mikro-orm/commit/1ceb0c1a60015ba203c39bb20215630817e0019f))
 * **drivers:** add native UUID postgres type ([#188](https://github.com/mikro-orm/mikro-orm/issues/188)) ([8fd89fd](https://github.com/mikro-orm/mikro-orm/commit/8fd89fdd0fcdee37112ebfffd3fe14e6555bb2f7))
 * **drivers:** add support for MariaDB ([#120](https://github.com/mikro-orm/mikro-orm/issues/120)) ([833834b](https://github.com/mikro-orm/mikro-orm/commit/833834b8d4149a849c8d1b7224de9193008281af)), closes [#110](https://github.com/mikro-orm/mikro-orm/issues/110)
