@@ -1,5 +1,5 @@
+<a name="3.0.0-rc4"></a>
 # [3.0.0-rc4](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2019-12-14)
-
 
 ### Bug Fixes
 
