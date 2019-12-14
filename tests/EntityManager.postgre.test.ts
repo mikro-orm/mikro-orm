@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
-import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
@@ -566,7 +566,7 @@ describe('EntityManagerPostgre', () => {
     expect(author.name).toBe('Jon Snow');
   });
 
-  test('populate ManyToOne relation', async () => {
+  test('populate ManyToOne relation via init()', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const publisher = new Publisher2('Publisher');
     const god = new Author2('God', 'hello@heaven.god');
@@ -597,6 +597,65 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(bible2.publisher).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
     expect(wrap(publisher2).__em!.id).toBe(em2.id);
+  });
+
+  test('populate OneToOne relation', async () => {
+    const bar = FooBar2.create('bar');
+    const baz = new FooBaz2('baz');
+    bar.baz = baz;
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: ['baz'], refresh: true }))!;
+    expect(b1.baz).toBeInstanceOf(FooBaz2);
+    expect(b1.baz!.id).toBe(baz.id);
+    expect(wrap(b1).toJSON()).toMatchObject({ baz: wrap(baz).toJSON() });
+  });
+
+  test('populate OneToOne relation on inverse side', async () => {
+    const bar = FooBar2.create('bar');
+    const baz = new FooBaz2('baz');
+    bar.baz = baz;
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    // autoJoinOneToOneOwner: false
+    const b0 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id });
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* from "foo_baz2" as "e0" where "e0"."id" = $1 limit $2');
+    expect(b0.bar).toBeUndefined();
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, ['bar']);
+    expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e0"."id" = $1 limit $2');
+    expect(mock.mock.calls[2][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(b1.bar).toBeInstanceOf(FooBar2);
+    expect(b1.bar!.id).toBe(bar.id);
+    expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, ['bar']);
+    expect(mock.mock.calls[3][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e1"."id" = $1 limit $2');
+    expect(mock.mock.calls[4][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(b2.bar).toBeInstanceOf(FooBar2);
+    expect(b2.bar!.id).toBe(bar.id);
+    expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+  });
+
+  test('populate OneToOne relation with uuid PK', async () => {
+    const author = new Author2('name', 'email');
+    const book = new Book2('b1', author);
+    const test = Test2.create('t');
+    test.book = book;
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    expect(b1.uuid).not.toBeNull();
+    expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
   });
 
   test('many to many relation', async () => {

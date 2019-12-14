@@ -77,7 +77,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const qb = this.createQueryBuilder(entityName, ctx, true);
     const res = await qb.insert(data).execute('run', false);
     res.row = res.row || {};
-    res.insertId = res.insertId || res.row[pk] || data[pk];
+    res.insertId = data[pk] || res.insertId || res.row[pk];
     await this.processManyToMany(entityName, res.insertId, collections, ctx);
 
     return res;

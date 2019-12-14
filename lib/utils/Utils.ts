@@ -187,12 +187,20 @@ export class Utils {
     return null;
   }
 
-  static isEntity<T = AnyEntity>(data: any): data is T {
+  static isEntity<T = AnyEntity>(data: any, allowReference = false): data is T {
+    if (allowReference && Utils.isReference(data)) {
+      return true;
+    }
+
     return Utils.isObject(data) && !!data.__entity;
   }
 
   static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
     return data instanceof Reference;
+  }
+
+  static unwrapReference<T extends AnyEntity<T>>(ref: T | Reference<T>): T {
+    return Utils.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
   }
 
   static isObjectID(key: any) {

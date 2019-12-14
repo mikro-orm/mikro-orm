@@ -76,12 +76,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.merge<T>(entityName, data);
+      const entity = this.merge<T>(entityName, data, options.refresh);
       ret.push(entity);
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate(entityName, unique, options.populate || [], where, options.orderBy || {});
+    await this.entityLoader.populate(entityName, unique, options.populate || [], where, options.orderBy || {}, options.refresh);
 
     return unique;
   }
@@ -394,7 +394,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       await this.lock(entity, options.lockMode, options.lockVersion);
     }
 
-    await this.entityLoader.populate(entity.constructor.name, [entity], options.populate || [], where, options.orderBy || {});
+    await this.entityLoader.populate(entity.constructor.name, [entity], options.populate || [], where, options.orderBy || {}, options.refresh);
 
     return entity;
   }
@@ -410,6 +410,7 @@ export interface FindOptions {
   orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
+  refresh?: boolean;
   fields?: string[];
 }
 
