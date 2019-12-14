@@ -1,4 +1,4 @@
-import { EntityMetadata, AnyEntity, Dictionary } from '../types';
+import { EntityMetadata, AnyEntity, Dictionary } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';

@@ -1,4 +1,4 @@
-import { IPrimaryKey } from '../types';
+import { IPrimaryKey } from '../typings';
 
 export class EntityIdentifier {
 

@@ -2,7 +2,7 @@ import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
-import { EntityName, EntityProperty, AnyEntity } from '../types';
+import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function ManyToOne<T extends AnyEntity<T>>(
   entity: ManyToOneOptions<T> | string | ((e?: any) => EntityName<T>) = {},

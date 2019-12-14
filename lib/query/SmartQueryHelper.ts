@@ -1,5 +1,5 @@
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { AnyEntity, EntityMetadata, FilterQuery } from '../types';
+import { AnyEntity, EntityMetadata, FilterQuery } from '../typings';
 import { Reference } from '../entity';
 import { Utils } from '../utils';
 

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, AnyEntity, FilterQuery } from '../types';
+import { EntityData, AnyEntity, FilterQuery } from '../typings';
 import { QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';

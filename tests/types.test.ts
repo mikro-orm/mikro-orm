@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import {
   CollectionItem, DeepPartialEntity, EntityOrPrimary, FilterQuery, FilterValue, OneOrArray, OperatorMap, PartialEntity,
   Primary, PrimaryKeyType, Query, StringProp,
-} from '../lib/types';
+} from '../lib/typings';
 import { Author2, Book2, BookTag2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection } from '../lib/entity';

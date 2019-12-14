@@ -1,7 +1,7 @@
 export {
   Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData,
   AnyEntity, WrappedEntity, IdEntity, UuidEntity, MongoEntity, EntityProperty, EntityMetadata,
-} from './types';
+} from './typings';
 export * from './MikroORM';
 export * from './entity';
 export * from './EntityManager';

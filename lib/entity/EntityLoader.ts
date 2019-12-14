@@ -1,4 +1,4 @@
-import { AnyEntity, EntityProperty, FilterQuery, Primary } from '../types';
+import { AnyEntity, EntityProperty, FilterQuery, Primary } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';

@@ -1,4 +1,4 @@
-import { Dictionary, EntityMetadata, AnyEntity, Primary } from '../types';
+import { Dictionary, EntityMetadata, AnyEntity, Primary } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { wrap } from './EntityHelper';
 import { Platform } from '../platforms';

@@ -1,5 +1,5 @@
 import { EntityManager, wrap } from '..';
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
 import { EntityFactory } from '../entity';
 
 export abstract class Hydrator {

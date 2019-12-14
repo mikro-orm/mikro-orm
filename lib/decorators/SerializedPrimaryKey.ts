@@ -2,7 +2,7 @@ import { MetadataStorage } from '../metadata';
 import { ReferenceType } from '../entity';
 import { PropertyOptions } from '.';
 import { Utils } from '../utils';
-import { AnyEntity, EntityProperty } from '../types';
+import { AnyEntity, EntityProperty } from '../typings';
 
 export function SerializedPrimaryKey(options: SerializedPrimaryKeyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {

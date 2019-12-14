@@ -3,7 +3,7 @@ import { readFile } from 'fs-extra';
 
 import { Connection, QueryResult } from './Connection';
 import { Utils } from '../utils';
-import { EntityData, AnyEntity } from '../types';
+import { EntityData, AnyEntity } from '../typings';
 
 export abstract class AbstractSqlConnection extends Connection {
 

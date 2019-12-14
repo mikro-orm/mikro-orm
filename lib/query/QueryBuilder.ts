@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
-import { Dictionary, EntityProperty, AnyEntity } from '../types';
+import { Dictionary, EntityProperty, AnyEntity } from '../typings';
 import { ReferenceType } from '../entity';
 import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';

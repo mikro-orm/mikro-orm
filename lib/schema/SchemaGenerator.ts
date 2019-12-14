@@ -1,6 +1,6 @@
 import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
 import { AbstractSqlDriver, Cascade, Configuration, DatabaseSchema, IsSame, ReferenceType, Utils } from '..';
-import { EntityMetadata, EntityProperty } from '../types';
+import { EntityMetadata, EntityProperty } from '../typings';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { Column, DatabaseTable } from './DatabaseTable';

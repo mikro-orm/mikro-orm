@@ -86,7 +86,7 @@ export interface IWrappedEntity<T, PK extends keyof T> {
   toJSON(...args: any[]): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): this;
   __uuid: string;
-  __meta: EntityMetadata;
+  __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
   __em?: EntityManager;
   __initialized?: boolean;

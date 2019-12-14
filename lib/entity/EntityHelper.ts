@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityMetadata, AnyEntity, IWrappedEntity, Primary, WrappedEntity } from '../types';
+import { EntityData, EntityMetadata, AnyEntity, IWrappedEntity, Primary, WrappedEntity } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { LockMode } from '../unit-of-work';

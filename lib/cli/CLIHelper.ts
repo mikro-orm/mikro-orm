@@ -11,7 +11,7 @@ import { GenerateEntitiesCommand } from './GenerateEntitiesCommand';
 import { SchemaCommandFactory } from './SchemaCommandFactory';
 import { MigrationCommandFactory } from './MigrationCommandFactory';
 import { DebugCommand } from './DebugCommand';
-import { Dictionary } from '../types';
+import { Dictionary } from '../typings';
 import { GenerateCacheCommand } from './GenerateCacheCommand';
 import { ImportCommand } from './ImportCommand';
 

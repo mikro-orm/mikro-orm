@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../types';
+import { EntityMetadata, EntityProperty } from '../typings';
 import { ReferenceType } from '../entity';
 
 export class ReflectMetadataProvider extends MetadataProvider {

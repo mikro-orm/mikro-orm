@@ -1,5 +1,5 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { IPrimaryKey, Primary } from '../types';
+import { IPrimaryKey, Primary } from '../typings';
 import { SchemaHelper } from '../schema';
 
 export abstract class Platform {

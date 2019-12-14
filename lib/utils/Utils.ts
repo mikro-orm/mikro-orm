@@ -10,7 +10,7 @@ import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
-import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../types';
+import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../typings';
 import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
 
 export class Utils {

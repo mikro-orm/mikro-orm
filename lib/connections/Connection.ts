@@ -5,7 +5,7 @@ import highlight from 'cli-highlight';
 
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { Dictionary } from '../types';
+import { Dictionary } from '../typings';
 
 export abstract class Connection {
 

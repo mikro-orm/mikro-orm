@@ -1,5 +1,5 @@
 import { EntityManager, FindOneOptions, FindOneOrFailOptions, FindOptions } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary } from '../types';
+import { EntityData, EntityName, AnyEntity, Primary } from '../typings';
 import { QueryBuilder, QueryOrderMap } from '../query';
 import { FilterQuery, IdentifiedReference, Reference } from '..';
 

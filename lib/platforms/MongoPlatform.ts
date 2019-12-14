@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Platform } from './Platform';
 import { MongoNamingStrategy, NamingStrategy } from '../naming-strategy';
-import { IPrimaryKey, Primary } from '../types';
+import { IPrimaryKey, Primary } from '../typings';
 import { SchemaHelper } from '../schema';
 
 export class MongoPlatform extends Platform {

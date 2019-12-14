@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { Dictionary, EntityProperty } from '../types';
+import { Dictionary, EntityProperty } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { Utils } from '../utils';

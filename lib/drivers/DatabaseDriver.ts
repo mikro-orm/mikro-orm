@@ -1,5 +1,5 @@
 import { IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary, Dictionary } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary, Dictionary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';

@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../types';
+import { EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../typings';
 import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { FilterQuery, IDatabaseDriver, Transaction } from '..';

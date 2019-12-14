@@ -1,4 +1,4 @@
-import { EntityData, EntityProperty, AnyEntity, Primary } from '../types';
+import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection, EntityAssigner, ReferenceType } from '../entity';
 import { Utils } from '../utils';

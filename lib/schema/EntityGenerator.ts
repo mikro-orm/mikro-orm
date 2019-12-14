@@ -3,7 +3,7 @@ import { ensureDir, writeFile } from 'fs-extra';
 
 import { AbstractSqlDriver, Configuration, DatabaseSchema, Dictionary, Utils } from '..';
 import { Platform } from '../platforms';
-import { EntityProperty } from '../types';
+import { EntityProperty } from '../typings';
 import { Column, DatabaseTable } from './DatabaseTable';
 
 export class EntityGenerator {

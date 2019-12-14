@@ -1,7 +1,7 @@
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';

@@ -2,7 +2,7 @@ import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { inspect } from 'util';
 
 import { Utils, ValidationError } from '../utils';
-import { Dictionary, EntityMetadata, EntityProperty } from '../types';
+import { Dictionary, EntityMetadata, EntityProperty } from '../typings';
 import { FlatQueryOrderMap, QueryOrderNumeric, QueryType } from './enums';
 import { Platform } from '../platforms';
 import { JoinOptions } from './QueryBuilder';

@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { AnyEntity, Constructor, EntityData, EntityMetadata, EntityName, Primary } from '../types';
+import { AnyEntity, Constructor, EntityData, EntityMetadata, EntityName, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager } from '..';

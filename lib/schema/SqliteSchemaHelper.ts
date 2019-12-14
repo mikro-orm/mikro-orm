@@ -1,5 +1,5 @@
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { Dictionary, EntityProperty } from '../types';
+import { Dictionary, EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column } from './DatabaseTable';
 import { Connection } from '../connections';

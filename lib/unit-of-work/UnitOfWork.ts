@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, AnyEntity, Primary } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, AnyEntity, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType, wrap } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';

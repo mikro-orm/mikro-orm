@@ -3,7 +3,7 @@ import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 import { QueryOrder } from '../query';
-import { EntityName, EntityProperty, AnyEntity } from '../types';
+import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function OneToMany<T extends AnyEntity<T>>(
   entity: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),

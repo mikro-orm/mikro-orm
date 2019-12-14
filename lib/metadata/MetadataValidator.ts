@@ -1,4 +1,4 @@
-import { EntityMetadata, EntityProperty } from '../types';
+import { EntityMetadata, EntityProperty } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from '../entity';
 import { MetadataStorage } from './MetadataStorage';

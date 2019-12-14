@@ -1,4 +1,4 @@
-import { EntityMetadata, EntityProperty } from '../types';
+import { EntityMetadata, EntityProperty } from '../typings';
 import { Configuration, Utils } from '../utils';
 
 export abstract class MetadataProvider {

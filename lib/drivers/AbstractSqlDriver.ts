@@ -1,5 +1,5 @@
 import { Transaction } from 'knex';
-import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../types';
+import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';

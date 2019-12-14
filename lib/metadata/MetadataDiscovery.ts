@@ -2,7 +2,7 @@ import { extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
-import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity } from '../types';
+import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
 import { Configuration, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';

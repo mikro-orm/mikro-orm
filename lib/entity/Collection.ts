@@ -1,5 +1,5 @@
 import { Dictionary, FilterQuery, Primary, QueryOrder, QueryOrderMap, Utils, wrap } from '..';
-import { EntityData, AnyEntity } from '../types';
+import { EntityData, AnyEntity } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 import { ValidationError } from '../utils';

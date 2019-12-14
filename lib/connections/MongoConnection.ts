@@ -4,7 +4,7 @@ import { inspect } from 'util';
 import { Connection, ConnectionConfig, QueryResult } from './Connection';
 import { Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
-import { FilterQuery, AnyEntity, EntityName, Dictionary } from '../types';
+import { FilterQuery, AnyEntity, EntityName, Dictionary } from '../typings';
 
 export class MongoConnection extends Connection {
 

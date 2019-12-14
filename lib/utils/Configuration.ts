@@ -5,7 +5,7 @@ import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { MetadataProvider, TsMorphMetadataProvider } from '../metadata';
 import { EntityFactory, EntityRepository } from '../entity';
-import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrimaryKey } from '../types';
+import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrimaryKey } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';

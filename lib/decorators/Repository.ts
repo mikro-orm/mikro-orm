@@ -1,4 +1,4 @@
-import { AnyEntity, Constructor, EntityClass } from '../types';
+import { AnyEntity, Constructor, EntityClass } from '../typings';
 import { EntityRepository } from '../entity';
 import { MetadataStorage } from '../metadata';
 

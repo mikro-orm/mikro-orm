@@ -1,5 +1,5 @@
 import { SCALAR_TYPES } from './EntityFactory';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
 

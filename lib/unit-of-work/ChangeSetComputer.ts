@@ -1,6 +1,6 @@
 import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityProperty, AnyEntity, Primary } from '../types';
+import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
 

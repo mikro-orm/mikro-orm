@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { ReferenceType } from '../entity';
 import { PropertyOptions } from '.';
-import { EntityProperty, AnyEntity, Dictionary } from '../types';
+import { EntityProperty, AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils';
 
 export function Enum(options: EnumOptions | (() => Dictionary) = {}): Function {

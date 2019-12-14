@@ -1,8 +1,7 @@
-
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
-import { EntityName, EntityProperty, AnyEntity } from '../types';
+import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {

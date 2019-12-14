@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary } from '../types';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';

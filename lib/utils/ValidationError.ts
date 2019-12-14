@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../types';
+import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../typings';
 import { Utils } from './Utils';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {

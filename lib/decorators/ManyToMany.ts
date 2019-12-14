@@ -2,7 +2,7 @@ import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
-import { EntityName, EntityProperty, AnyEntity } from '../types';
+import { EntityName, EntityProperty, AnyEntity } from '../typings';
 import { QueryOrder } from '../query';
 
 export function ManyToMany<T extends AnyEntity<T>>(

@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { HookType } from '../types';
+import { HookType } from '../typings';
 
 export function BeforeCreate() {
   return hook('beforeCreate');
