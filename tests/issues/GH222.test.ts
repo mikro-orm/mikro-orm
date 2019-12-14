@@ -1,19 +1,7 @@
-import {
-  Collection,
-  Entity,
-  IdEntity,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  ReflectMetadataProvider,
-  wrap,
-} from '../../lib';
+import { Collection, Entity, IdEntity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
-import { unlinkSync } from "fs";
+import { unlinkSync } from 'fs';
 
 @Entity()
 export class A implements IdEntity<A> {
