@@ -93,7 +93,13 @@ export class CriteriaNode {
     }
 
     if (this.parent) {
-      ret = this.parent.getPath() + '.' + ret;
+      const parentPath = this.parent.getPath();
+
+      if (parentPath) {
+        ret = this.parent.getPath() + '.' + ret;
+      } else if (this.parent.entityName && ret) {
+        ret = this.parent.entityName + '.' + ret;
+      }
     }
 
     return ret;

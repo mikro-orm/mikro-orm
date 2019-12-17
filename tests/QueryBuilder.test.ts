@@ -1064,6 +1064,23 @@ describe('QueryBuilder', () => {
     expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`favourite_book_uuid_pk` in (?, ?, ?)');
   });
 
+  test('select and order by auto-joined property', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'a');
+    qb1.select('*').where({
+      $or: [
+        { author: { name: 'test' } },
+        { publisher: { name: 'RR' } },
+      ],
+    }).orderBy({
+      author: { email: 'ASC' },
+    });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `book2` as `a` ' +
+      'left join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+      'left join `publisher2` as `e2` on `a`.`publisher_id` = `e2`.`id` ' +
+      'where (`e1`.`name` = ? or `e2`.`name` = ?) ' +
+      'order by `e1`.`email` asc');
+  });
+
   test('CriteriaNode', async () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
