@@ -32,7 +32,7 @@ export class UnitOfWork {
 
   merge<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], mergeData = true): void {
     const wrapped = wrap(entity);
-    wrapped.__em = this.em;
+    Object.defineProperty(wrapped, '__em', { value: this.em, writable: true });
 
     if (!wrapped.__primaryKey) {
       return;
