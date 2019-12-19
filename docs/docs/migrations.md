@@ -3,7 +3,7 @@ title: Migrations
 ---
 
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows you to generate migrations with current schema difference.
+It allows you to generate migrations with current schema differences.
 
 By default, each migration will be all executed inside a transaction, and all of them will 
 be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
@@ -22,10 +22,10 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, you can implement `down` method, which by default throws an error. 
+To support undoing those changed, you can implement the `down` method, which throws an error by default. 
 
-Transactions are by default wrapped in a transactions. You can override this behaviour on 
-per transaction basis by implementing `isTransactional(): boolean` method.
+Migrations are by default wrapped in a transaction. You can override this behaviour on 
+per migration basis by implementing the `isTransactional(): boolean` method.
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
@@ -70,7 +70,7 @@ npx mikro-orm migration:down --to 0                           # migratee down al
 
 ## Using the Migrator programmatically
 
-Or you can create simple script where you initialize MikroORM like this:
+Or you can create a simple script where you initialize MikroORM like this:
 
 **`./migrate.ts`**
 
@@ -105,7 +105,7 @@ $ ts-node migrate
 
 ### MySQL
 
-There is no way to rollback DDL changes in MySQL, implicit commit is forced for those 
+There is no way to rollback DDL changes in MySQL. An implicit commit is forced for those 
 queries automatically, so transactions are not working as expected. 
 
 - https://github.com/mikro-orm/mikro-orm/issues/217
