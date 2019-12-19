@@ -31,9 +31,9 @@ export class EntityFactory {
     }
 
     const entity = this.createEntity(data, meta);
-    this.hydrator.hydrate(entity, meta, data, newEntity);
 
     if (initialized) {
+      this.hydrator.hydrate(entity, meta, data, newEntity);
       delete entity.__initialized;
     } else {
       entity.__initialized = initialized;

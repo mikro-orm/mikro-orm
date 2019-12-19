@@ -127,7 +127,7 @@ export class ArrayCollection<T extends AnyEntity<T>> {
   }
 
   protected shouldPropagateToCollection(collection: Collection<T>, method: 'add' | 'remove'): boolean {
-    if (!collection.isInitialized()) {
+    if (!collection || !collection.isInitialized()) {
       return false;
     }
 

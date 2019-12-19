@@ -82,6 +82,19 @@ override the order column name via `fixedOrderColumn: 'order'`.
 
 You can also specify default ordering via `orderBy: { ... }` attribute.
 
+## Entity references now don't have instantiated collections
+
+Previously all entity instances, including entity references (not fully loaded entities where
+we know only the primary key), had instantiated collection classes. Now only initialized entities
+have them.
+
+```typescript
+const book = em.getReference(Book, 1);
+console.log(book.tags); // undefined
+await book.init();
+console.log(book.tags); // instance of Collection (not initialized)
+```
+
 ## EntityAssigner.assign() requires EM for new entities
 
 Previously all entities had internal reference to the root EM - the one created when 
