@@ -1056,6 +1056,17 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books[0].author.books.isInitialized(true)).toBe(true);
   });
 
+  test('reference has no collection initialized', async () => {
+    const book1 = new Book('t', new Author('a', 'e'));
+    await orm.em.fork().persistAndFlush(book1);
+    const book = orm.em.getReference(Book, book1.id);
+    expect(book.tags).toBeUndefined();
+    await wrap(book).init();
+    expect(book.tags).not.toBeUndefined();
+    expect(book.tags).toBeInstanceOf(Collection);
+    expect(book.tags.isInitialized()).toBe(true);
+  });
+
   test('populating one to many relation', async () => {
     let author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);

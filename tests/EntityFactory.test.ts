@@ -45,6 +45,7 @@ describe('EntityFactory', () => {
     expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(ref.title).toBeUndefined();
+    expect(ref.tags).toBeUndefined();
     expect(ref.toJSON()).toEqual({ id: '5b0d19b28b21c648c2c8a600' });
   });
 
@@ -57,7 +58,7 @@ describe('EntityFactory', () => {
   });
 
   test('entity ctor can have different params than props', async () => {
-    const entity = factory.create(Test, { name: 'test' }, false);
+    const entity = factory.create(Test, { name: 'test' });
     expect(entity).toBeInstanceOf(Test);
     expect(entity._id).toBeUndefined();
     expect(entity.name).toBe('test');

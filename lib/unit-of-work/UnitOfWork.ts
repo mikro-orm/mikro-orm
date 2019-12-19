@@ -184,14 +184,17 @@ export class UnitOfWork {
     }
 
     visited.push(entity);
-    const meta = this.metadata.get<T>(entity.constructor.name);
     const wrapped = wrap(entity);
+
+    if (!wrapped.isInitialized()) {
+      return;
+    }
 
     if (!wrapped.__primaryKey && !this.identifierMap[wrapped.__uuid]) {
       this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
     }
 
-    for (const prop of Object.values<EntityProperty>(meta.properties)) {
+    for (const prop of Object.values<EntityProperty>(wrapped.__meta.properties)) {
       const reference = this.unwrapReference(entity, prop);
       this.processReference(entity, prop, reference, visited);
     }
@@ -333,7 +336,7 @@ export class UnitOfWork {
     const collection = reference as Collection<AnyEntity>;
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection.isInitialized(requireFullyInitialized)) {
+    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection && collection.isInitialized(requireFullyInitialized)) {
       collection.getItems().forEach(item => this.cascade(item, type, visited));
     }
   }
