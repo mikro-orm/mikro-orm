@@ -384,7 +384,7 @@ export class UnitOfWork {
     const reference = this.unwrapReference(entity, prop);
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference)) {
-      entity[prop.name] = this.em.getReference<T[string & keyof T]>(prop.type, reference as Primary<T[string & keyof T]>);
+      entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, !!prop.wrappedReference) as T[string & keyof T];
     }
 
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
