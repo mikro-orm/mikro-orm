@@ -39,6 +39,7 @@ jobs:
       env:
         ORM_PARALLEL: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
     - name: Codeclimate
       uses: paambaati/codeclimate-action@v2.3.0
