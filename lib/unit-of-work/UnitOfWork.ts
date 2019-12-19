@@ -312,7 +312,7 @@ export class UnitOfWork {
 
     const meta = this.metadata.get<T>(entity.constructor.name);
 
-    for (const prop of Object.values<EntityProperty>(meta.properties)) {
+    for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR)) {
       this.cascadeReference<T>(entity, prop, type, visited);
     }
   }
