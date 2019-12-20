@@ -17,7 +17,7 @@ export class FooBar2 extends BaseEntity22 implements IdEntity<FooBar2> {
   @OneToOne({ nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ version: true, length: 3 })
+  @Property({ version: true, length: 0 })
   version!: Date;
 
   static create(name: string) {

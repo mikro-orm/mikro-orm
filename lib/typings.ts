@@ -12,6 +12,7 @@ import { EntityManager } from './EntityManager';
 import { LockMode } from './unit-of-work';
 import { Platform } from './platforms';
 import { MetadataStorage } from './metadata';
+import { Type } from './types';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -111,6 +112,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   entity: () => EntityName<T>;
   type: string;
   columnType: string;
+  customType: Type;
   primary: boolean;
   length?: any;
   reference: ReferenceType;

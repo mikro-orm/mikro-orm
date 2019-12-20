@@ -289,7 +289,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('1990-03-23');
+    author.bornTime = '00:23:59';
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -356,7 +357,8 @@ describe('EntityManagerMySql', () => {
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
-      born: jon.born,
+      born: '1990-03-23',
+      bornTime: '00:23:59',
       email: 'snow@wall.st',
       name: 'Jon Snow',
     });
@@ -1323,7 +1325,7 @@ describe('EntityManagerMySql', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
     expect(typeof diff.favouriteBook).toBe('string');
     expect(diff.favouriteBook).toBe(book.uuid);
@@ -1523,7 +1525,7 @@ describe('EntityManagerMySql', () => {
 
   test('partial selects', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('1990-03-23');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
@@ -1600,7 +1602,7 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.em.config, { logger });
 
     let author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('1990-03-23');
     author.books.add(new Book2('B', author));
     await orm.em.persistAndFlush(author);
     expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);

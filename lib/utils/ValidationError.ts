@@ -1,6 +1,7 @@
 import { inspect } from 'util';
-import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../typings';
+import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey, Constructor } from '../typings';
 import { Utils } from './Utils';
+import { Type } from '../types';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
@@ -126,6 +127,16 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static invalidPropertyName(entityName: string, invalid: string): ValidationError {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
+  }
+
+  static invalidType(type: Constructor<Type>, value: any, mode: string): ValidationError {
+    const valueType = Utils.getObjectType(value);
+
+    if (value instanceof Date) {
+      value = value.toISOString();
+    }
+
+    return new ValidationError(`Could not convert ${mode} value '${value}' of type '${valueType}' to type ${type.name}`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {

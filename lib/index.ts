@@ -14,6 +14,7 @@ export * from './query/QueryBuilder';
 export * from './drivers';
 export * from './connections';
 export * from './platforms';
+export * from './types';
 export * from './naming-strategy';
 export * from './metadata/MetadataProvider';
 export * from './metadata/JavaScriptMetadataProvider';

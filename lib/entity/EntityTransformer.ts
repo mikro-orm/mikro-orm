@@ -24,7 +24,7 @@ export class EntityTransformer {
     // normal properties
     Object.keys(entity)
       .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
-      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T, entity, ignoreFields, visited)])
+      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T & string, entity, ignoreFields, visited)])
       .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[prop as keyof T] = value as T[keyof T]);
 
@@ -46,7 +46,14 @@ export class EntityTransformer {
     return hidden && prop !== meta.primaryKey && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
+    const property = wrap(entity).__meta.properties[prop];
+    const platform = wrap(entity).__internal.platform;
+
+    if (property && property.customType) {
+      return property.customType.toJSON(entity[prop], platform);
+    }
+
     if (entity[prop] as unknown instanceof ArrayCollection) {
       return EntityTransformer.processCollection(prop, entity);
     }

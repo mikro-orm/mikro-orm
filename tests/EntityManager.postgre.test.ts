@@ -209,7 +209,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date();
+    author.born = new Date('1990-03-23');
     author.favouriteBook = bible;
 
     const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
@@ -270,7 +270,7 @@ describe('EntityManagerPostgre', () => {
         { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
-      born: jon.born,
+      born: '1990-03-23',
       email: 'snow@wall.st',
       name: 'Jon Snow',
     });
@@ -575,7 +575,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bible);
 
     let jon = new Author2('Jon Snow', 'snow@wall.st');
-    jon.born = new Date();
+    jon.born = new Date('1990-03-23');
     jon.favouriteBook = bible;
     await orm.em.persistAndFlush(jon);
     orm.em.clear();
@@ -583,6 +583,7 @@ describe('EntityManagerPostgre', () => {
     jon = (await authorRepository.findOne(jon.id))!;
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
+    expect(jon.born).toEqual(new Date('1990-03-23'));
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
 
@@ -1001,7 +1002,7 @@ describe('EntityManagerPostgre', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata());
+    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
     expect(typeof diff.favouriteBook).toBe('string');
     expect(diff.favouriteBook).toBe(book.uuid);
@@ -1149,14 +1150,14 @@ describe('EntityManagerPostgre', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.born = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ born: string }[]>(`select to_char(born, 'YYYY-MM-DD HH24:MI:SS.US') as born from author2 where id = ${author.id}`);
-    expect(res[0].born).toBe('2000-01-01 00:00:00.000000');
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
+    expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.born!).toBe(+author.born);
+    expect(+a.createdAt!).toBe(+author.createdAt);
   });
 
   afterAll(async () => orm.close(true));

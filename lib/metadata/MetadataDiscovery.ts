@@ -8,6 +8,7 @@ import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
+import { Type } from '../types';
 
 export class MetadataDiscovery {
 
@@ -238,6 +239,7 @@ export class MetadataDiscovery {
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
       this.initVersionProperty(meta, prop);
+      this.initCustomType(prop);
       this.initColumnType(prop, meta.path);
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
@@ -408,6 +410,17 @@ export class MetadataDiscovery {
 
     meta.versionProperty = prop.name;
     prop.default = this.getDefaultVersionValue(prop);
+  }
+
+  private initCustomType(prop: EntityProperty): void {
+    if (Object.getPrototypeOf(prop.type) === Type) {
+      prop.customType = Type.getType(prop.type as any);
+    }
+
+    if (prop.customType) {
+      prop.type = prop.customType.constructor.name;
+      prop.columnType = prop.customType.getColumnType(prop, this.platform);
+    }
   }
 
   private initColumnType(prop: EntityProperty, path?: string): void {

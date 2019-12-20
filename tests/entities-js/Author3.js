@@ -1,4 +1,4 @@
-const { Collection, ReferenceType } = require('../../lib');
+const { Collection, DateType, TimeType, ReferenceType } = require('../../lib');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
@@ -11,6 +11,7 @@ const { BaseEntity4 } = require('./index').BaseEntity4;
  * @property {boolean} termsAccepted
  * @property {string[]} identities
  * @property {Date} born
+ * @property {string} bornTime
  * @property {Collection<Book3>} books
  * @property {Book3} favouriteBook
  * @property {number} version
@@ -91,8 +92,14 @@ const schema = {
       nullable: true,
     },
     born: {
-      type: 'Date',
+      type: DateType,
       nullable: true,
+      length: 3,
+    },
+    bornTime: {
+      type: TimeType,
+      nullable: true,
+      length: 3,
     },
     books: {
       reference: ReferenceType.ONE_TO_MANY,

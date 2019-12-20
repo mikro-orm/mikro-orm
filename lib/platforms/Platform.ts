@@ -66,4 +66,12 @@ export abstract class Platform {
     return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
+  getDateTypeDeclarationSQL(length: number): string {
+    return 'date' + (length ? `(${length})` : '');
+  }
+
+  getTimeTypeDeclarationSQL(length: number): string {
+    return 'time' + (length ? `(${length})` : '');
+  }
+
 }

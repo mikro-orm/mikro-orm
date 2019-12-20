@@ -31,7 +31,7 @@ extend the `@Property()` decorator, so you can also use its parameters there.
 | Parameter | Type | Optional | Description |
 |-----------|------|----------|-------------|
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
-| `type` | `string` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md)). |
+| `type` | `string` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
 | `onUpdate` | `() => any` | yes | Automatically update the property value every time entity gets updated. |
 | `persist` | `boolean` | yes | Set to `false` to define [Shadow Property](serializing.md#shadow-properties). |
 | `hidden` | `boolean` | yes | Set to `true` to omit the property when [Serializing](serializing.md). |

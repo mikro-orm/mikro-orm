@@ -12,6 +12,7 @@ import { simple as walk } from 'acorn-walk';
 import { MetadataStorage } from '../metadata';
 import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../typings';
 import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
+import { Platform } from '../platforms';
 
 export class Utils {
 
@@ -77,18 +78,22 @@ export class Utils {
     return ret;
   }
 
-  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage): EntityData<T> {
-    return Utils.diff(Utils.prepareEntity(a, metadata), Utils.prepareEntity(b, metadata)) as EntityData<T>;
+  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
+    return Utils.diff(Utils.prepareEntity(a, metadata, platform), Utils.prepareEntity(b, metadata, platform)) as EntityData<T>;
   }
 
-  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage): EntityData<T> {
+  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
     const meta = metadata.get<T>(entity.constructor.name);
     const ret = Utils.copy(entity);
     // @ts-ignore
     delete ret.__initialized;
 
-    // remove collections and references
+    // remove collections and references, process custom types
     Object.values<EntityProperty>(meta.properties).forEach(prop => {
+      if (prop.customType && prop.name in ret) {
+        return ret[prop.name] = prop.customType.convertToDatabaseValue(entity[prop.name], platform);
+      }
+
       const pk = () => metadata.get(prop.type).primaryKey;
       const name = prop.name as keyof T;
       const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;

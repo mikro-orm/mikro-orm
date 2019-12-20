@@ -35,8 +35,11 @@ export class Author2 {
   @Property({ nullable: true })
   identities?: object;
 
-  @Property({ nullable: true })
-  born?: Date;
+  @Property({ columnType: 'date', nullable: true })
+  born?: string;
+
+  @Property({ columnType: 'time', nullable: true })
+  bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, nullable: true })
   favouriteBook?: Book2;
@@ -309,8 +312,11 @@ export class Author2 {
   @Property({ nullable: true })
   identities?: object;
 
-  @Property({ type: 'timestamp', nullable: true })
+  @Property({ type: 'date', nullable: true })
   born?: Date;
+
+  @Property({ type: 'time', nullable: true })
+  bornTime?: Date;
 
   @ManyToOne({ entity: () => Book2, nullable: true })
   favouriteBook?: Book2;
@@ -589,8 +595,11 @@ export class Author3 {
   @Property({ nullable: true })
   identities?: string;
 
-  @Property({ nullable: true })
-  born?: Date;
+  @Property({ columnType: 'date', nullable: true })
+  born?: string;
+
+  @Property({ columnType: 'time', nullable: true })
+  bornTime?: string;
 
   @ManyToOne({ entity: () => Book3, nullable: true })
   favouriteBook?: Book3;

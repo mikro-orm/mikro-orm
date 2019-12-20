@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany,
+  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany, DateType, TimeType,
 } from '../../lib';
 
 import { Book2 } from './Book2';
@@ -36,8 +36,11 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Property({ length: 0, nullable: true })
+  @Property({ type: DateType, nullable: true })
   born?: Date;
+
+  @Property({ type: TimeType, nullable: true })
+  bornTime?: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;

@@ -168,6 +168,29 @@ export const enum UserStatus {
 }
 ``` 
 
+## Custom Types
+
+You can define custom types by extending `Type` abstract class. It has 4 optional methods:
+
+- `convertToDatabaseValue(value: any, platform: Platform): any`
+
+  Converts a value from its JS representation to its database representation of this type.
+
+- `convertToJSValue(value: any, platform: Platform): any`
+
+  Converts a value from its database representation to its JS representation of this type.
+
+- `toJSON(value: any, platform: Platform): any`
+
+  Converts a value from its JS representation to its serialized JSON form of this type.
+  By default converts to the database value.
+  
+- `getColumnType(prop: EntityProperty, platform: Platform): string`
+
+  Gets the SQL declaration snippet for a field of this type.
+
+More information can be found in [Custom Types](custom-types.md) section.
+
 ## Virtual Properties
 
 You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
