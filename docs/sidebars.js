@@ -27,6 +27,7 @@ module.exports = {
       'property-validation',
       'lifecycle-hooks',
       'naming-strategy',
+      'custom-types',
       'metadata-cache',
       'debugging',
       'schema-generator',
