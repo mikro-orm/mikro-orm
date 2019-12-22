@@ -119,6 +119,7 @@ await MikroORM.init({
     // ...
     entities: await getEntities(),
     cache: { enabled: false },
+    discovery: { alwaysAnalyseProperties: false } //since rc-4
     // ...
 });
 
