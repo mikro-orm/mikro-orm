@@ -222,7 +222,7 @@ console.log(orm.em); // access EntityManager via `em` property
 There are more ways to configure your entities, take a look at 
 [installation page](https://mikro-orm.io/installation/).
 
-> Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
+> Read more about all the possible configuration options in [Advanced Configuration](https://mikro-orm.io/docs/configuration) section.
 
 Then you will need to fork entity manager for each request so their 
 [identity maps](https://mikro-orm.io/identity-map/) will not collide. 
