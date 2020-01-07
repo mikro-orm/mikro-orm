@@ -10,6 +10,9 @@ entities in selected folders.
 ```typescript
 MikroORM.init({
   entities: [Author, Book, Publisher, BookTag],
+  discovery: {
+    requireEntitiesArray: true, // force usage of `entities` instead of `entitiesDirs`
+  }
 });
 ```
 
