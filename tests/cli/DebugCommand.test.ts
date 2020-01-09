@@ -10,7 +10,7 @@ jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { dump, getSettings, ge
 
 import { DebugCommand } from '../../lib/cli/DebugCommand';
 import { Configuration, Utils } from '../../lib/utils';
-import { FooBar } from '../entities/FooBar';
+import FooBar from '../entities/FooBar';
 import { FooBaz } from '../entities/FooBaz';
 
 describe('DebugCommand', () => {

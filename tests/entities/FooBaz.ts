@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Entity, ManyToOne, MongoEntity, OneToOne, PrimaryKey, Property } from '../../lib';
-import { FooBar } from './FooBar';
+import FooBar from './FooBar';
 import { Book } from './Book';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 

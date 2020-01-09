@@ -4,7 +4,7 @@ import { FooBaz } from './FooBaz';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class FooBar implements MongoEntity<FooBar> {
+export default class FooBar implements MongoEntity<FooBar> {
 
   @PrimaryKey()
   _id!: ObjectId;

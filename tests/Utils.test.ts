@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Collection, EntityMetadata, MikroORM, Utils } from '../lib';
 import { Author, Book } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
-import { FooBar } from './entities/FooBar';
+import FooBar from './entities/FooBar';
 
 class Test {}
 

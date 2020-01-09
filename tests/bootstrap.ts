@@ -6,7 +6,7 @@ import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 import { FooBaz } from './entities/FooBaz';
-import { FooBar } from './entities/FooBar';
+import FooBar from './entities/FooBar';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';

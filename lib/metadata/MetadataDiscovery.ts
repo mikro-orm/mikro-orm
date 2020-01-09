@@ -470,7 +470,8 @@ export class MetadataDiscovery {
   }
 
   private getEntityClass(path: string, name: string, validate = true) {
-    const target = require(path)[name];
+    const exports = require(path);
+    const target = exports.default || exports[name];
 
     if (!target && validate) {
       throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));

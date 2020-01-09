@@ -8,7 +8,7 @@ import { initORMMongo, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { MongoConnection } from '../lib/connections/MongoConnection';
 import { Logger } from '../lib/utils';
-import { FooBar } from './entities/FooBar';
+import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
