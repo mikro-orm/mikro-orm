@@ -156,7 +156,7 @@
     "mysql2": "^2.0.1",
     "pg": "^7.14.0",
     "rimraf": "^3.0.0",
-    "semantic-release": "^15.13.31",
+    "semantic-release": "^16.0.0",
     "sqlite3": "^4.1.0",
     "ts-jest": "^24.2.0",
     "ts-node": "^8.5.2",
