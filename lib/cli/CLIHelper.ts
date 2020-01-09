@@ -53,7 +53,9 @@ export class CLIHelper {
     const settings = await CLIHelper.getSettings();
 
     if (settings.useTsNode) {
-      require('ts-node').register();
+      require('ts-node').register({
+        project: settings.tsConfigPath,
+      });
     }
 
     return yargs
@@ -182,5 +184,6 @@ export class CLIHelper {
 
 export interface Settings {
   useTsNode?: boolean;
+  tsConfigPath?: string;
   configPaths?: string[];
 }
