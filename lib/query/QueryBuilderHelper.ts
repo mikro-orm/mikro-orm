@@ -275,7 +275,12 @@ export class QueryBuilderHelper {
       throw new Error(`Invalid query condition: ${inspect(cond)}`);
     }
 
-    const replacement = QueryBuilderHelper.OPERATORS[op];
+    let replacement = QueryBuilderHelper.OPERATORS[op];
+
+    if (cond[key][op] === null && ['$eq', '$ne'].includes(op)) {
+      replacement = op === '$eq' ? 'is' : 'is not';
+    }
+
     qb[m](this.mapper(key, type), replacement, cond[key][op]);
   }
 

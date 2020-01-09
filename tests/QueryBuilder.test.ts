@@ -614,6 +614,18 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
+  test('select where (not) null via $eq/$ne operators', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    qb1.select('*').where({ publisher: { $ne: null } });
+    expect(qb1.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where `e0`.`publisher_id` is not null');
+    expect(qb1.getParams()).toEqual([]);
+
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({ publisher: { $eq: null } });
+    expect(qb2.getQuery()).toEqual('select `e0`.* from `book2` as `e0` where `e0`.`publisher_id` is null');
+    expect(qb2.getParams()).toEqual([]);
+  });
+
   test('select count query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.count().where({ name: 'test 123', type: PublisherType.GLOBAL });

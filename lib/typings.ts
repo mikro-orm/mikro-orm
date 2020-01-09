@@ -70,7 +70,7 @@ export type OperatorMap<T> = {
 export type StringProp<T> = T extends string ? string | RegExp : never;
 export type EntityOrPrimary<T> = true extends IsEntity<T> ? DeepPartialEntity<T> | PartialEntity<T> | Primary<T> | T : never;
 export type CollectionItem<T> = T extends Collection<infer K> ? EntityOrPrimary<K> : never;
-export type FilterValue<T> = T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>>;
+export type FilterValue<T> = T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>> | null;
 export type Query<T> = true extends IsEntity<T>
   ? { [K in keyof T]?: Query<T[K]> | FilterValue<T[K]> | null } | FilterValue<T>
   : T extends Collection<infer K>

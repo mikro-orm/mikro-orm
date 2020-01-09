@@ -100,7 +100,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   where(cond: Dictionary, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: Dictionary | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
-    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false));
+    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false))!;
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -292,7 +292,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName));
+    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName))!;
     const aliasedName = `${fromAlias}.${prop.name}`;
     const ret: string[] = [];
 

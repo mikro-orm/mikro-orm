@@ -75,11 +75,11 @@ describe('check typings', () => {
   });
 
   test('FilterValue', async () => {
-    assert<IsExact<FilterValue<string>, RegExp | string | OperatorMap<string>>>(true); // strings allow regexps
-    assert<IsExact<FilterValue<number>, number | OperatorMap<number>>>(true);
+    assert<IsExact<FilterValue<string>, RegExp | string | null | OperatorMap<string>>>(true); // strings allow regexps
+    assert<IsExact<FilterValue<number>, number | null | OperatorMap<number>>>(true);
     assert<Has<FilterValue<string>, number>>(false);
-    assert<IsExact<FilterValue<Date>, Date | OperatorMap<Date>>>(true);
-    assert<IsExact<FilterValue<RegExp>, RegExp | OperatorMap<RegExp>>>(true);
+    assert<IsExact<FilterValue<Date>, Date | null | OperatorMap<Date>>>(true);
+    assert<IsExact<FilterValue<RegExp>, RegExp | null | OperatorMap<RegExp>>>(true);
 
     // require specific type
     assert<Has<FilterValue<number>, string>>(false);
@@ -226,6 +226,10 @@ describe('check typings', () => {
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
     ok01 = { name: 'asd' };
     ok01 = { $or: [{ name: 'asd' }, { age: 18 }] };
+
+    let ok02: FilterQuery<Book2>;
+    ok02 = { publisher: { $ne: undefined } };
+    ok02 = { publisher: { $ne: null } };
   });
 
   // there is no way to test this currently, uncomment to check they all fail

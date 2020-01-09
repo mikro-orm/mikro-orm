@@ -1668,6 +1668,22 @@ describe('EntityManagerMySql', () => {
     expect(a2.optional).toBe(false);
   });
 
+  test('find where property is not null ($ne operator)', async () => {
+    const author = new Author2('n', 'e');
+    const book1 = new Book2('b1', author);
+    book1.publisher = wrap(new Publisher2('p')).toReference();
+    const book2 = new Book2('b2', author);
+    await orm.em.persistAndFlush([book1, book2]);
+    orm.em.clear();
+
+    const res = await orm.em.find(Book2, { publisher: { $ne: null } });
+    expect(res.length).toBe(1);
+    expect(res[0].publisher).toBeInstanceOf(Reference);
+    expect(res[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
+    expect(res[0].publisher!.isInitialized()).toBe(false);
+    expect(res[0].publisher!.id).toBe(1);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
