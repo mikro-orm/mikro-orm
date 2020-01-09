@@ -1,12 +1,17 @@
 import { Configuration } from '../../lib/utils';
+import { CLIHelper } from '../../lib/cli/CLIHelper';
 
-const showHelp = jest.fn();
 const close = jest.fn();
-const migrator = { getExecutedMigrations: jest.fn(() => [{ name: '1', executed_at: new Date() }]) };
 const config = new Configuration({} as any, false);
-const getORM = async () => ({ getMigrator: () => migrator, config, close });
-jest.mock('yargs', () => ({ showHelp }));
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn(), dumpTable: jest.fn() } }));
+const migrator = { getExecutedMigrations: jest.fn(() => [{ name: '1', executed_at: new Date() }]) };
+const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
+showHelpMock.mockReturnValue('');
+const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+getORMMock.mockResolvedValue({ getMigrator: () => migrator, config, close } as any);
+const dumpMock = jest.spyOn(CLIHelper, 'dump');
+dumpMock.mockImplementation(() => {});
+const dumpTableMock = jest.spyOn(CLIHelper, 'dumpTable');
+dumpTableMock.mockImplementation(() => {});
 
 (global as any).console.log = jest.fn();
 

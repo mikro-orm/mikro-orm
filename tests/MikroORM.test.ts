@@ -40,13 +40,20 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(`Entity 'BadName' not found in ./entities-3/bad-name.model.ts`);
   });
 
-  test('should load itself with entity manager', async () => {
-    const orm = await MikroORM.init({
+  test('should use CLI config', async () => {
+    const options = {
       entities: [Test],
       dbName: 'mikro-orm-test',
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
       cache: { enabled: false },
-    });
+    };
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
+    const pkg = { 'mikro-orm': { useTsNode: true } } as any;
+    jest.mock('../package.json', () => pkg, { virtual: true });
+
+    const orm = await MikroORM.init();
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);

@@ -1,11 +1,16 @@
 import { Configuration } from '../../lib/utils';
+import { CLIHelper } from '../../lib/cli/CLIHelper';
 
 const close = jest.fn();
+const config = new Configuration({} as any, false);
 const connection = { loadFile: jest.fn() };
 const em = { getConnection: () => connection };
-const config = new Configuration({} as any, false);
-const getORM = async () => ({ em, config, close });
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn() } }));
+const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
+showHelpMock.mockReturnValue('');
+const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+getORMMock.mockResolvedValue({ em, config, close } as any);
+const dumpMock = jest.spyOn(CLIHelper, 'dump');
+dumpMock.mockImplementation(() => {});
 
 (global as any).console.log = jest.fn();
 

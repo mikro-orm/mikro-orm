@@ -53,6 +53,8 @@ parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
 
+> From v3 you can also use default exports when defining your entity.
+
 Here is another example of `Author` entity, that was referenced from the `Book` one, this 
 time defined for mongo:
 

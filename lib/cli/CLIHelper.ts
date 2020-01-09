@@ -14,10 +14,11 @@ import { DebugCommand } from './DebugCommand';
 import { Dictionary } from '../typings';
 import { GenerateCacheCommand } from './GenerateCacheCommand';
 import { ImportCommand } from './ImportCommand';
+import { IDatabaseDriver } from '../drivers';
 
 export class CLIHelper {
 
-  static async getConfiguration(validate = true): Promise<Configuration> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true): Promise<Configuration<D>> {
     const paths = await CLIHelper.getConfigPaths();
 
     for (let path of paths) {

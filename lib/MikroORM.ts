@@ -8,6 +8,7 @@ import { SchemaGenerator } from './schema';
 import { EntityGenerator } from './schema/EntityGenerator';
 import { Migrator } from './migrations';
 import { NullCacheAdapter } from './cache';
+import { CLIHelper } from './cli/CLIHelper';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -22,8 +23,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
+   * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
+    if (!options) {
+      options = await CLIHelper.getConfiguration<D>();
+    }
+
     const orm = new MikroORM<D>(options);
     const driver = await orm.connect();
 

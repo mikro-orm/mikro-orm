@@ -1,12 +1,15 @@
 import { Configuration } from '../../lib/utils';
+import { CLIHelper } from '../../lib/cli/CLIHelper';
 
-const showHelp = jest.fn();
 const close = jest.fn();
-const entityGenerator = { generate: jest.fn(() => []) };
 const config = new Configuration({} as any, false);
-const getORM = async () => ({ getEntityGenerator: () => entityGenerator, config, close });
-jest.mock('yargs', () => ({ showHelp }));
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getORM, dump: jest.fn() } }));
+const entityGenerator = { generate: jest.fn(() => []) };
+const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
+showHelpMock.mockReturnValue('');
+const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+getORMMock.mockResolvedValue({ getEntityGenerator: () => entityGenerator, config, close } as any);
+const dumpMock = jest.spyOn(CLIHelper, 'dump');
+dumpMock.mockImplementation(() => {});
 
 import { GenerateEntitiesCommand } from '../../lib/cli/GenerateEntitiesCommand';
 
@@ -29,9 +32,9 @@ describe('GenerateEntitiesCommand', () => {
   test('handler', async () => {
     const cmd = new GenerateEntitiesCommand();
 
-    expect(showHelp.mock.calls.length).toBe(0);
+    expect(showHelpMock.mock.calls.length).toBe(0);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(showHelp.mock.calls.length).toBe(1);
+    expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(entityGenerator.generate.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);

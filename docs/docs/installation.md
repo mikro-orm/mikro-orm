@@ -163,6 +163,11 @@ Examples:
   mikro-orm schema:update --run  Runs schema synchronization
 ```
 
+To verify your setup, you can use `mikro-orm debug` command.
+
+> When you have CLI config properly set up, you can omit the `options` parameter
+> when calling `MikroORM.init()`.
+
 ## Request Context
 
 Then you will need to fork Entity Manager for each request so their identity maps will not 
