@@ -1,5 +1,5 @@
-<a name="3.0.0-rc5"></a>
-# [3.0.0-rc.5](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2019-12-20)
+<a name="3.0.0-rc6"></a>
+# [3.0.0-rc.6](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2020-01-09)
 
 ### Bug Fixes
 
@@ -17,6 +17,7 @@
 * **core:** ignore inverse side of 1:1 when computing change set ([a2768dd](https://github.com/mikro-orm/mikro-orm/commit/a2768dd4eb8e66033b1748e227e1032c53e43064)), closes [#183](https://github.com/mikro-orm/mikro-orm/issues/183)
 * **core:** make `em.find()` where parameter required ([3393d52](https://github.com/mikro-orm/mikro-orm/commit/3393d52a98f83169fe84eae1cfbf2d79aa4e7d62))
 * **core:** make sure constructor params are sniffer from the constructor ([fdd157c](https://github.com/mikro-orm/mikro-orm/commit/fdd157ca21618611a010a100d6fddb882e09d0d2))
+* **core:** `requireEntitiesArray` should be used only for validation ([066b0ea](https://github.com/mikro-orm/mikro-orm/commit/066b0eab58972d8bc5567ee131226472ec0e1ddb)), closes [#293](https://github.com/mikro-orm/mikro-orm/issues/293)
 * **deps:** update dependency @docusaurus/core to ^2.0.0-alpha ([#257](https://github.com/mikro-orm/mikro-orm/issues/257)) ([82d0b3b](https://github.com/mikro-orm/mikro-orm/commit/82d0b3b343767c715dea902d8d956683ff885266))
 * **deps:** update dependency @docusaurus/core to v2.0.0-alpha.38 ([#260](https://github.com/mikro-orm/mikro-orm/issues/260)) ([a8a5386](https://github.com/mikro-orm/mikro-orm/commit/a8a53860511104d1e686398686185ee934a8df6b))
 * **deps:** update dependency @docusaurus/preset-classic to ^2.0.0-alpha ([#258](https://github.com/mikro-orm/mikro-orm/issues/258)) ([bfc7455](https://github.com/mikro-orm/mikro-orm/commit/bfc74557ac1b8bd835b6b1664346068ff41c19df))
@@ -41,6 +42,7 @@
 * **serializing:** do not ignore already visited collection items ([ee4b50b](https://github.com/mikro-orm/mikro-orm/commit/ee4b50b08d8cde789170df3182847771d5b2b30f)), closes [#222](https://github.com/mikro-orm/mikro-orm/issues/222)
 * **sql:** support self-referencing m:n in pivot tables ([3157572](https://github.com/mikro-orm/mikro-orm/commit/3157572846befd24347e6645ccfbec0f411e934f))
 * **sql:** support uuid like PKs in M:N references ([#272](https://github.com/mikro-orm/mikro-orm/issues/272)) ([2abc19f](https://github.com/mikro-orm/mikro-orm/commit/2abc19f770331d6d5a033f09297523217fb17217)), closes [#268](https://github.com/mikro-orm/mikro-orm/issues/268)
+* **sql:** support $ne and $eq operators with null ([5f16f0a](https://github.com/mikro-orm/mikro-orm/commit/5f16f0a6e960442004cb802fd3550bbf64ac6722)), closes [#285](https://github.com/mikro-orm/mikro-orm/issues/285)
 
 
 ### Features
@@ -49,6 +51,7 @@
 * **cli:** add `database:import` command to run external sql dumps ([aea3614](https://github.com/mikro-orm/mikro-orm/commit/aea3614f019d860c15603a839f0e7d5a58b785ae))
 * **cli:** add `debug` command to help with setting up the CLI ([7919071](https://github.com/mikro-orm/mikro-orm/commit/7919071e4f64f0a205a45841c66813ee21866022)), closes [#136](https://github.com/mikro-orm/mikro-orm/issues/136)
 * **cli:** add basic CLI tool ([#102](https://github.com/mikro-orm/mikro-orm/issues/102)) ([d20db41](https://github.com/mikro-orm/mikro-orm/commit/d20db41873786e8289fe7b10a42ef3f5e3dc433a)), closes [#101](https://github.com/mikro-orm/mikro-orm/issues/101)
+* **cli:** allow specifying path to tsconfig.json ([00a1a4d](https://github.com/mikro-orm/mikro-orm/commit/00a1a4ddcac1d60bc77f36b460bcc81a54a57f66)), closes [#298](https://github.com/mikro-orm/mikro-orm/issues/298)
 * **core:** add support for custom types ([#276](https://github.com/mikro-orm/mikro-orm/issues/276)) ([96b2cad](https://github.com/mikro-orm/mikro-orm/commit/96b2cad350063e1cbf3f2485a762fba83c6f448c))
 * **core:** add `@Repository` decorator ([e4ca716](https://github.com/mikro-orm/mikro-orm/commit/e4ca7165a3753b1cf58a96c0cba7ac292aba302e))
 * **core:** add `em.findAndCount()` method ([1be8eb1](https://github.com/mikro-orm/mikro-orm/commit/1be8eb1915bc2a5a21a815eedb9512faf2c2c99a)), closes [#123](https://github.com/mikro-orm/mikro-orm/issues/123)
@@ -76,6 +79,8 @@
 * **core:** simplify entity definition and rework typings of FilterQuery ([#193](https://github.com/mikro-orm/mikro-orm/issues/193)) ([a343763](https://github.com/mikro-orm/mikro-orm/commit/a343763ec4eab56a6c378a9fb96524e9563ff0cc)), closes [#124](https://github.com/mikro-orm/mikro-orm/issues/124) [#171](https://github.com/mikro-orm/mikro-orm/issues/171)
 * **core:** use composite PK in many to many relations ([#204](https://github.com/mikro-orm/mikro-orm/issues/204)) ([e73bbdb](https://github.com/mikro-orm/mikro-orm/commit/e73bbdb4b6bfb03e08807e64807fd8b67ed92458)), closes [#121](https://github.com/mikro-orm/mikro-orm/issues/121)
 * **core:** use knex to generate sql + enable connection pooling [BC] ([#76](https://github.com/mikro-orm/mikro-orm/issues/76)) ([6d79e57](https://github.com/mikro-orm/mikro-orm/commit/6d79e57dacba9a4e07d3d9e027a68ed7fd7188e2)), closes [#64](https://github.com/mikro-orm/mikro-orm/issues/64)
+* **core:** make options parameter optional in MikroORM.init() ([280d9a8](https://github.com/mikro-orm/mikro-orm/commit/280d9a8ebca2a16c94e703658a3e84d08c2c0b06))
+* **core:** support default exported entities ([9065ff6](https://github.com/mikro-orm/mikro-orm/commit/9065ff61227a27f62f0fc82e2067f3b11da74ca0)), closes [#294](https://github.com/mikro-orm/mikro-orm/issues/294)
 * **drivers:** add native UUID postgres type ([#188](https://github.com/mikro-orm/mikro-orm/issues/188)) ([8fd89fd](https://github.com/mikro-orm/mikro-orm/commit/8fd89fdd0fcdee37112ebfffd3fe14e6555bb2f7))
 * **drivers:** add support for MariaDB ([#120](https://github.com/mikro-orm/mikro-orm/issues/120)) ([833834b](https://github.com/mikro-orm/mikro-orm/commit/833834b8d4149a849c8d1b7224de9193008281af)), closes [#110](https://github.com/mikro-orm/mikro-orm/issues/110)
 * **drivers:** allow passing additional driver options ([1ceb0c1](https://github.com/mikro-orm/mikro-orm/commit/1ceb0c1a60015ba203c39bb20215630817e0019f))
