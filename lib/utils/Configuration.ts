@@ -95,18 +95,30 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     this.init();
   }
 
+  /**
+   * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
+   */
   get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
     return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
   }
 
+  /**
+   * Overrides specified configuration value.
+   */
   set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
     this.options[key] = value;
   }
 
+  /**
+   * Gets Logger instance.
+   */
   getLogger(): Logger {
     return this.logger;
   }
 
+  /**
+   * Gets current client URL (connection string).
+   */
   getClientUrl(hidePassword = false): string {
     if (hidePassword) {
       return this.options.clientUrl!.replace(/\/\/([^:]+):(.+)@/, '//$1:*****@');
@@ -115,27 +127,44 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.options.clientUrl!;
   }
 
+  /**
+   * Gets current database driver instance.
+   */
   getDriver(): D {
     return this.driver;
   }
 
+  /**
+   * Gets instance of NamingStrategy. (cached)
+   */
   getNamingStrategy(): NamingStrategy {
     return this.cached(this.options.namingStrategy || this.platform.getNamingStrategy());
   }
 
+  /**
+   * Gets instance of Hydrator. Hydrator cannot be cached as it would have reference to wrong (global) EntityFactory.
+   */
   getHydrator(factory: EntityFactory, em: EntityManager): Hydrator {
-    // Hydrator cannot be cached as it would have reference to wrong factory
     return new this.options.hydrator(factory, em);
   }
 
+  /**
+   * Gets instance of MetadataProvider. (cached)
+   */
   getMetadataProvider(): MetadataProvider {
     return this.cached(this.options.metadataProvider, this);
   }
 
+  /**
+   * Gets instance of CacheAdapter. (cached)
+   */
   getCacheAdapter(): CacheAdapter {
     return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
+  /**
+   * Gets EntityRepository class to be instantiated.
+   */
   getRepositoryClass(customRepository: EntityOptions<AnyEntity>['customRepository']): MikroORMOptions<D>['entityRepository'] {
     if (customRepository) {
       return customRepository();
@@ -144,6 +173,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.options.entityRepository;
   }
 
+  /**
+   * Gets highlight there used when logging SQL.
+   */
   getHighlightTheme(): Theme {
     return this.highlightTheme;
   }

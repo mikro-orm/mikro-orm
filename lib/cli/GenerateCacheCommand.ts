@@ -8,6 +8,9 @@ export class GenerateCacheCommand implements CommandModule {
   command = 'cache:generate';
   describe = 'Generate metadata cache for production';
 
+  /**
+   * @inheritdoc
+   */
   async handler(args: Arguments) {
     const config = await CLIHelper.getConfiguration(false);
     config.set('logger', CLIHelper.dump.bind(null));

@@ -9,6 +9,9 @@ import { EntityGenerator } from './schema/EntityGenerator';
 import { Migrator } from './migrations';
 import { NullCacheAdapter } from './cache';
 
+/**
+ * Helper class for bootstrapping the MikroORM.
+ */
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
   em!: EntityManager<D>;
@@ -17,6 +20,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly driver: D;
   private readonly logger: Logger;
 
+  /**
+   * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
+   */
   static async init<D extends IDatabaseDriver = IDatabaseDriver>(options: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
     const orm = new MikroORM<D>(options);
     const driver = await orm.connect();
@@ -52,6 +58,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     this.logger = this.config.getLogger();
   }
 
+  /**
+   * Connects to the database.
+   */
   async connect(): Promise<D> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
@@ -61,18 +70,30 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver;
   }
 
+  /**
+   * Checks whether the database connection is active.
+   */
   async isConnected(): Promise<boolean> {
     return this.driver.getConnection().isConnected();
   }
 
+  /**
+   * Closes the database connection.
+   */
   async close(force = false): Promise<void> {
     return this.driver.close(force);
   }
 
+  /**
+   * Gets the MetadataStorage.
+   */
   getMetadata(): MetadataStorage {
     return this.metadata;
   }
 
+  /**
+   * Gets the SchemaGenerator.
+   */
   getSchemaGenerator(): SchemaGenerator {
     const driver = this.driver as object;
 
@@ -83,6 +104,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return new SchemaGenerator(driver, this.metadata, this.config);
   }
 
+  /**
+   * Gets the EntityGenerator.
+   */
   getEntityGenerator(): EntityGenerator {
     const driver = this.driver as object;
 
@@ -93,6 +117,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return new EntityGenerator(driver, this.config);
   }
 
+  /**
+   * Gets the Migrator.
+   */
   getMigrator(): Migrator {
     const driver = this.driver as object;
 

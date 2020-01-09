@@ -8,6 +8,9 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
   command = 'generate-entities';
   describe = 'Generate entities based on current database schema';
 
+  /**
+   * @inheritdoc
+   */
   builder(args: Argv) {
     args.option('s', {
       alias: 'save',
@@ -28,6 +31,9 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
     return args as unknown as Argv<U>;
   }
 
+  /**
+   * @inheritdoc
+   */
   async handler(args: Arguments<U>) {
     if (!args.save && !args.dump) {
       yargs.showHelp();

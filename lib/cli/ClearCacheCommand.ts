@@ -7,6 +7,9 @@ export class ClearCacheCommand implements CommandModule {
   command = 'cache:clear';
   describe = 'Clear metadata cache';
 
+  /**
+   * @inheritdoc
+   */
   async handler(args: Arguments) {
     const config = await CLIHelper.getConfiguration(false);
     const cache = config.getCacheAdapter();

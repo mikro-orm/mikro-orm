@@ -9,6 +9,9 @@ export class DebugCommand implements CommandModule {
   command = 'debug';
   describe = 'Debug CLI configuration';
 
+  /**
+   * @inheritdoc
+   */
   async handler(args: Arguments) {
     CLIHelper.dump(`Current ${chalk.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();

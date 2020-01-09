@@ -10,6 +10,9 @@ export class FileCacheAdapter implements CacheAdapter {
               private readonly baseDir: string,
               private readonly pretty = false) { }
 
+  /**
+   * @inheritdoc
+   */
   async get(name: string): Promise<any> {
     const path = await this.path(name);
 
@@ -27,6 +30,9 @@ export class FileCacheAdapter implements CacheAdapter {
     return payload.data;
   }
 
+  /**
+   * @inheritdoc
+   */
   async set(name: string, data: any, origin: string): Promise<void> {
     const path = await this.path(name);
     const opts = this.pretty ? { spaces: 2 } : {};
@@ -34,6 +40,9 @@ export class FileCacheAdapter implements CacheAdapter {
     await writeJSON(path, { data, origin, hash }, opts);
   }
 
+  /**
+   * @inheritdoc
+   */
   async clear(): Promise<void> {
     const path = await this.path('*');
     const files = await globby(path);

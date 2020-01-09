@@ -9,6 +9,10 @@ import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 
+/**
+ * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
+ * such as UnitOfWork, Query Language and Repository API.
+ */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   readonly id = uuid();
@@ -24,16 +28,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly metadata: MetadataStorage,
               private readonly useContext = true) { }
 
+  /**
+   * Gets the Driver instance used by this EntityManager
+   */
   getDriver(): D {
     return this.driver;
   }
 
+  /**
+   * Gets the Connection instance, by default returns write connection
+   */
   getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
     return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
   }
 
-  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): U;
-  getRepository<T extends AnyEntity<T>>(entityName: EntityName<T>): EntityRepository<T> {
+  /**
+   * Gets repository for given entity. You can pass either string name or entity class reference.
+   */
+  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): U {
     entityName = Utils.className(entityName);
 
     if (!this.repositoryMap[entityName]) {
@@ -42,13 +54,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
 
-    return this.repositoryMap[entityName] as unknown as EntityRepository<T>;
+    return this.repositoryMap[entityName] as unknown as U;
   }
 
+  /**
+   * Gets EntityValidator instance
+   */
   getValidator(): EntityValidator {
     return this.validator;
   }
 
+  /**
+   * Creates a QueryBuilder instance
+   */
   createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
     entityName = Utils.className(entityName);
     const driver = this.driver as object;
@@ -60,8 +78,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return new QueryBuilder<T>(entityName, this.metadata, driver, this.transactionContext, alias, type, this);
   }
 
+  /**
+   * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
+   */
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<T[]>;
+
+  /**
+   * Finds all entities matching your `where` query.
+   */
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+
+  /**
+   * Finds all entities matching your `where` query.
+   */
   async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
@@ -86,8 +115,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return unique;
   }
 
+  /**
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
+   * where first element is the array of entities and the second is the count.
+   */
   async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions): Promise<[T[], number]>;
+
+  /**
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
+   * where first element is the array of entities and the second is the count.
+   */
   async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]>;
+
+  /**
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
+   * where first element is the array of entities and the second is the count.
+   */
   async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]> {
     const entities = await this.find(entityName, where, populate as string[], orderBy, limit, offset);
     const count = await this.count<T>(entityName, where);
@@ -95,8 +138,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return [entities, count];
   }
 
+  /**
+   * Finds first entity matching your `where` query.
+   */
   async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOptions): Promise<T | null>;
+
+  /**
+   * Finds first entity matching your `where` query.
+   */
   async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T | null>;
+
+  /**
+   * Finds first entity matching your `where` query.
+   */
   async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOneOptions, orderBy?: QueryOrderMap): Promise<T | null> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions>(populate) ? populate : { populate, orderBy };
@@ -124,8 +178,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
+  /**
+   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * You can override the factory for creating this method via `options.failHandler` locally
+   * or via `Configuration.findOneOrFailHandler` globally.
+   */
   async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOrFailOptions): Promise<T>;
+
+  /**
+   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * You can override the factory for creating this method via `options.failHandler` locally
+   * or via `Configuration.findOneOrFailHandler` globally.
+   */
   async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T>;
+
+  /**
+   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * You can override the factory for creating this method via `options.failHandler` locally
+   * or via `Configuration.findOneOrFailHandler` globally.
+   */
   async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOneOrFailOptions, orderBy?: QueryOrderMap): Promise<T> {
     const entity = await this.findOne(entityName, where, populate as string[], orderBy);
 
@@ -139,6 +210,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
+  /**
+   * Runs your callback wrapped inside a database transaction.
+   */
   async transactional<T>(cb: (em: EntityManager) => Promise<T>, ctx = this.transactionContext): Promise<T> {
     const em = this.fork(false);
     return em.getConnection().transactional(async trx => {
@@ -150,10 +224,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, ctx);
   }
 
+  /**
+   * Runs your callback wrapped inside a database transaction.
+   */
   async lock(entity: AnyEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {
     await this.getUnitOfWork().lock(entity, lockMode, lockVersion);
   }
 
+  /**
+   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   */
   async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>> {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
@@ -163,6 +243,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return res.insertId as Primary<T>;
   }
 
+  /**
+   * Fires native update query. Calling this has no side effects on the context (identity map).
+   */
   async nativeUpdate<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
@@ -174,6 +257,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return res.affectedRows;
   }
 
+  /**
+   * Fires native delete query. Calling this has no side effects on the context (identity map).
+   */
   async nativeDelete<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName, false, false));
@@ -183,6 +269,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return res.affectedRows;
   }
 
+  /**
+   * Maps raw database result to an entity and merges it to this EntityManager.
+   */
   map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityData<T>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
@@ -199,8 +288,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver.aggregate(entityName, pipeline);
   }
 
+  /**
+   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
+   * via second parameter. By default it will return already loaded entities without modifying them.
+   */
   merge<T extends AnyEntity<T>>(entity: T, refresh?: boolean): T;
+
+  /**
+   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
+   * via second parameter. By default it will return already loaded entities without modifying them.
+   */
   merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, refresh?: boolean): T;
+
+  /**
+   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
+   * via second parameter. By default it will return already loaded entities without modifying them.
+   */
   merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean): T {
     if (Utils.isEntity(entityName)) {
       return this.merge(entityName.constructor.name, entityName as EntityData<T>, data as boolean);
@@ -234,10 +337,26 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>; // tslint:disable-next-line:lines-between-class-members
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>): T; // tslint:disable-next-line:lines-between-class-members
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false): T; // tslint:disable-next-line:lines-between-class-members
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: boolean): T | Reference<T>; // tslint:disable-next-line:lines-between-class-members
+  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;
+
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>): T;
+
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false): T;
+
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: boolean): T | Reference<T>;
+
+  /**
+   * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+   */
   getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped = false): T | Reference<T> {
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
     this.getUnitOfWork().merge(entity, [entity], false);
@@ -249,6 +368,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
+  /**
+   * Returns total number of entities matching your `where` query.
+   */
   async count<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
@@ -257,6 +379,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver.count(entityName, where, this.transactionContext);
   }
 
+  /**
+   * Tells the EntityManager to make an instance managed and persistent. You can force flushing via second parameter.
+   * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
+   */
   persist(entity: AnyEntity | AnyEntity[], flush = this.config.get('autoFlush')): void | Promise<void> {
     if (flush) {
       return this.persistAndFlush(entity);
@@ -265,11 +391,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.persistLater(entity);
   }
 
+  /**
+   * Persists your entity immediately, flushing all not yet persisted changes to the database too.
+   * Equivalent to `em.persistLater(e) && em.flush()`.
+   */
   async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
     this.persistLater(entity);
     await this.flush();
   }
 
+  /**
+   * Tells the EntityManager to make an instance managed and persistent.
+   * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
+   */
   persistLater(entity: AnyEntity | AnyEntity[]): void {
     const entities = Utils.asArray(entity);
 
@@ -278,7 +412,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
-  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: any, flush = this.config.get('autoFlush')): void | Promise<number> {
+  /**
+   * Removes an entity instance or all entities matching your `where` query. When deleting entity by instance, you
+   * will need to flush your changes. You can force flushing via third parameter.
+   */
+  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush = this.config.get('autoFlush')): void | Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
@@ -289,6 +427,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.nativeDelete(entityName, where);
   }
 
+  /**
+   * Removes an entity instance. You can force flushing via second parameter.
+   * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
+   */
   removeEntity<T extends AnyEntity<T>>(entity: T, flush = this.config.get('autoFlush')): void | Promise<void> {
     if (flush) {
       return this.removeAndFlush(entity);
@@ -297,29 +439,41 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.removeLater(entity);
   }
 
+  /**
+   * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
+   * Equivalent to `em.removeLater(e) && em.flush()`
+   */
   async removeAndFlush(entity: AnyEntity): Promise<void> {
     this.getUnitOfWork().remove(entity);
     await this.flush();
   }
 
+  /**
+   * Removes an entity instance.
+   * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
+   */
   removeLater(entity: AnyEntity): void {
     this.getUnitOfWork().remove(entity);
   }
 
   /**
-   * flush changes to database
+   * Flushes all changes to objects that have been queued up to now to the database.
+   * This effectively synchronizes the in-memory state of managed objects with the database.
    */
   async flush(): Promise<void> {
     await this.getUnitOfWork().commit();
   }
 
   /**
-   * clear identity map, detaching all entities
+   * Clears the EntityManager. All entities that are currently managed by this EntityManager become detached.
    */
   clear(): void {
     this.getUnitOfWork().clear();
   }
 
+  /**
+   * Checks whether given property can be populated on the entity.
+   */
   canPopulate(entityName: string | Function, property: string): boolean {
     entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
@@ -353,24 +507,39 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return em;
   }
 
+  /**
+   * Gets the UnitOfWork used by the EntityManager to coordinate operations.
+   */
   getUnitOfWork(): UnitOfWork {
     const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
     return em.unitOfWork;
   }
 
+  /**
+   * Gets the EntityFactory used by the EntityManager.
+   */
   getEntityFactory(): EntityFactory {
     const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
     return em.entityFactory;
   }
 
+  /**
+   * Checks whether this EntityManager is currently operating inside a database transaction.
+   */
   isInTransaction(): boolean {
     return !!this.transactionContext;
   }
 
+  /**
+   * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
+   */
   getTransactionContext<T extends Transaction = Transaction>(): T {
     return this.transactionContext as T;
   }
 
+  /**
+   * Gets the MetadataStorage.
+   */
   getMetadata(): MetadataStorage {
     return this.metadata;
   }

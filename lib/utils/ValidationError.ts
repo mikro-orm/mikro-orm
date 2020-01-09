@@ -13,6 +13,9 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     this.message = message;
   }
 
+  /**
+   * Gets instance of entity that caused this error.
+   */
   getEntity(): AnyEntity | undefined {
     return this.entity;
   }
