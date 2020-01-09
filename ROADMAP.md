@@ -19,3 +19,10 @@ discuss specifics.
 - Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
 - Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
 - Slow query log
+- Leverage async iterators for collections (node 10+)
+
+## Planned breaking changes for v4
+
+- Require node 10+
+- Require TS 3.7 or newer
+- Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
