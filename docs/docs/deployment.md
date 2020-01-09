@@ -87,6 +87,15 @@ and `entitiesDirs`/`entitiesDirsTs` will be ignored (see dynamically including e
 an alternative solution). Also you need to fill `type` or `entity` attributes everywhere 
 (see above) and disable caching (it will decrease start-time slightly).
 
+#### Disabling dynamic file access
+
+First thing you should do is to disable dynamic file access in the discovery process via the
+`discovery.disableDynamicFileAccess` toggle. This will effectively do:
+
+- set metadata provider to `ReflectMetadataProvider`
+- disable caching
+- disallow usage of `entitiesDirs`
+
 #### Manually defining entities
 
 ```typescript
@@ -95,7 +104,7 @@ import { Author, Book, BookTag, Publisher, Test } from '../entities';
 await MikroORM.init({
   ...
   entities: [Author, Book, BookTag, Publisher, Test],
-  cache: { enabled: false },
+  discovery: { disableDynamicFileAccess: true },
   ...
 });
 ```
@@ -116,10 +125,10 @@ Here, all files with the extension `.ts` will be imported from the directory `..
 
 ```typescript
 await MikroORM.init({
-    // ...
-    entities: await getEntities(),
-    cache: { enabled: false },
-    // ...
+  // ...
+  entities: await getEntities(),
+  discovery: { disableDynamicFileAccess: true },
+  // ...
 });
 
 async function getEntities(): Promise<any[]> {

@@ -4,14 +4,6 @@ import { MikroORM, Options } from '../lib';
 
 describe('Webpack', () => {
 
-  beforeAll(() => {
-    process.env.WEBPACK = 'true';
-  });
-
-  afterAll(() => {
-    delete process.env.WEBPACK;
-  });
-
   test('should create entity', async () => {
     let port = 3307;
 
@@ -24,7 +16,7 @@ describe('Webpack', () => {
       port,
       multipleStatements: true,
       type: 'mysql',
-      cache: { enabled: false },
+      discovery: { disableDynamicFileAccess: true },
       entities: [AuthorWp, BookWp],
     });
 
@@ -42,6 +34,7 @@ describe('Webpack', () => {
       dbName: `mikro_orm_test`,
       type: 'mysql',
       entities: [AuthorWpI, BookWpI],
+      discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = `Please provide either 'type' or 'entity' attribute in AuthorWpI.books`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
@@ -52,6 +45,7 @@ describe('Webpack', () => {
       dbName: `mikro_orm_test`,
       type: 'mysql',
       entitiesDirs: ['not/existing'],
+      discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
