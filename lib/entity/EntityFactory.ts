@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { AnyEntity, Constructor, EntityData, EntityMetadata, EntityName, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityName, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager } from '..';
@@ -56,14 +56,7 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
-    let Entity: Constructor<T>;
-
-    if (this.config.get('discovery').requireEntitiesArray) {
-      Entity = this.config.get('entities').find(f => (f as Function).name === meta.name) as Constructor<T>;
-    } else {
-      const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
-      Entity = require(path)[meta.name];
-    }
+    const Entity = this.metadata.get<T>(meta.name).class;
 
     if (!data[meta.primaryKey]) {
       const params = this.extractConstructorParams<T>(meta, data);

@@ -167,4 +167,5 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;
+  class: Constructor<T>;
 }

@@ -2,7 +2,7 @@ import { extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
-import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
+import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Configuration, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
@@ -88,7 +88,7 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(file);
       const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
-      const target = this.getPrototype(path, name);
+      const target = this.getEntityClass(path, name);
       this.metadata.set(name, MetadataStorage.getMetadata(name));
       await this.discoverEntity(target, path);
     }
@@ -112,6 +112,7 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- processing entity ${chalk.cyan(entity.name)}`);
 
     const meta = this.metadata.get(entity.name, true);
+    meta.class = entity as Constructor<T>;
     meta.prototype = entity.prototype;
     meta.className = entity.name;
     meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
@@ -443,7 +444,7 @@ export class MetadataDiscovery {
 
   private initEnumValues(prop: EntityProperty, path: string): void {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const target = this.getPrototype(path, prop.type, false);
+    const target = this.getEntityClass(path, prop.type, false);
 
     if (target) {
       const keys = Object.keys(target);
@@ -468,7 +469,7 @@ export class MetadataDiscovery {
     prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
   }
 
-  private getPrototype(path: string, name: string, validate = true) {
+  private getEntityClass(path: string, name: string, validate = true) {
     const target = require(path)[name];
 
     if (!target && validate) {
