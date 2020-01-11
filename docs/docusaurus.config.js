@@ -13,8 +13,9 @@ module.exports = {
   url: 'https://mikro-orm.io',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
-  organizationName: 'mikro-orm', // Usually your GitHub org/user name.
-  projectName: 'mikro-orm', // Usually your repo name.
+  organizationName: 'mikro-orm',
+  projectName: 'mikro-orm',
+  scripts: ['/js/custom.js'],
   themeConfig: {
     gtag: { trackingID: 'UA-135618258-1' },
     algolia: {
