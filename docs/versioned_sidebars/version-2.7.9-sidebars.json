@@ -1,0 +1,142 @@
+{
+  "version-2.7.9/docs": [
+    {
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-2.7.9/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/defining-entities"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/entity-manager"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/repositories"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Fundamentals",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-2.7.9/identity-map"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/entity-references"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/entity-constructors"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/collections"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/unit-of-work"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/transactions"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/cascading"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Advanced Features",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-2.7.9/nested-populate"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/query-conditions"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/serializing"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/entity-helper"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/property-validation"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/lifecycle-hooks"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/naming-strategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/metadata-cache"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/debugging"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/schema-generator"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Usage with Different Drivers",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-2.7.9/usage-with-sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/usage-with-mongo"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Recipes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-2.7.9/usage-with-nestjs"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/usage-with-js"
+        },
+        {
+          "type": "doc",
+          "id": "version-2.7.9/custom-driver"
+        }
+      ]
+    }
+  ]
+}

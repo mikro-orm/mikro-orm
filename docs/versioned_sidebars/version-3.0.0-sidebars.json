@@ -1,0 +1,208 @@
+{
+  "version-3.0.0/docs": [
+    {
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.0.0/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/defining-entities"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/relationships"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/entity-manager"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/repositories"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Fundamentals",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.0.0/identity-map"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/entity-references"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/entity-constructors"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/collections"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/unit-of-work"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/transactions"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/cascading"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/deployment"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/decorators"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Advanced Features",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.0.0/nested-populate"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/query-conditions"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/serializing"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/entity-helper"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/property-validation"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/lifecycle-hooks"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/naming-strategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/custom-types"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/metadata-providers"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/metadata-cache"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/debugging"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/schema-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/entity-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/migrations"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/read-connections"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/configuration"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Usage with Different Drivers",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.0.0/usage-with-sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/usage-with-mongo"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Recipes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-3.0.0/usage-with-nestjs"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/usage-with-js"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/custom-driver"
+        },
+        {
+          "type": "doc",
+          "id": "version-3.0.0/multiple-schemas"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Example Integrations",
+      "items": [
+        {
+          "type": "link",
+          "label": "Express + MongoDB + TypeScript",
+          "href": "https://github.com/mikro-orm/express-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NestJS + MySQL + TypeScript",
+          "href": "https://github.com/mikro-orm/nestjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "RealWorld example app (Nest + MySQL)",
+          "href": "https://github.com/mikro-orm/nestjs-realworld-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + MongoDB + JavaScript",
+          "href": "https://github.com/mikro-orm/express-js-example-app"
+        }
+      ]
+    }
+  ]
+}

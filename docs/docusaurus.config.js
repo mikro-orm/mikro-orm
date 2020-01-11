@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+const versions = require('./versions.json');
+
 module.exports = {
   title: 'MikroORM',
   tagline: 'TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.',
@@ -27,6 +29,20 @@ module.exports = {
         src: 'img/logo.svg',
       },
       links: [
+        {
+          to: 'versions',
+          label: `${versions[0]}`,
+          position: 'left',
+          style: {
+            whiteSpace: 'nowrap',
+            padding: '0',
+            fontSize: 'calc(0.9 * var(--ifm-font-size-base))',
+            textDecoration: 'underline',
+            position: 'relative',
+            left: '-8px',
+            top: '1px',
+          },
+        },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         {
@@ -52,7 +68,7 @@ module.exports = {
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
             { label: 'Migration from v2 to v3', to: 'docs/upgrading-v2-to-v3' },
-            { label: 'Version 2.7 docs', to: 'docs/v2/installation' },
+            { label: 'Version 2.7 docs', to: 'docs/2.7.9/installation' },
           ],
         },
         {
@@ -81,7 +97,7 @@ module.exports = {
         alt: 'MikroORM',
         src: 'img/logo-header.svg',
       },
-      copyright: `Copyright © ${new Date().getFullYear()} Martin Adámek. Built with Docusaurus. `,
+      copyright: `Copyright © 2018-${new Date().getFullYear()} Martin Adámek. Built with Docusaurus. `,
     },
   },
   presets: [

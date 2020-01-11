@@ -20,6 +20,7 @@ discuss specifics.
 - Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
 - Slow query log
 - Leverage async iterators for collections (node 10+)
+- Multi tenant support ([schema per tenant](https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation))
 
 ## Planned breaking changes for v4
 
