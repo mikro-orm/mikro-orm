@@ -35,15 +35,15 @@
 }
 
 .hero.hero--primary .button.button--secondary.button--outline {
-  color: #fff;
+  color: #f5f6f7;
 }
 
 .hero.hero--primary .hero__title {
-  color: #fff;
+  color: #f5f6f7;
 }
 
 .hero.hero--primary .hero__subtitle {
-  color: #fff;
+  color: #f5f6f7;
   font-size: 2.4rem;
   text-align: left;
   max-width: 500px;
@@ -78,7 +78,7 @@
 }
 
 .navbar .react-toggle {
-  display: none;
+  margin: 0 0 0 8px;
 }
 
 .button {
@@ -115,6 +115,30 @@ a[href*=edit] {
 .pagination-nav .pagination-nav__item--next a {
   border-radius: 20px 100px 100px 20px;
   padding-right: 40px;
+}
+
+html[data-theme="dark"] .navbar .navbar__brand {
+  background-image: url('/img/logo-dark.svg');
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: contain;
+}
+
+html[data-theme="dark"] .navbar .navbar__brand img {
+  visibility: hidden;
+}
+
+html[data-theme="dark"] .hero.hero--primary {
+  background-color: #0d572f;
+  background-image: linear-gradient(120deg, #0c335a, #0c5430);
+}
+
+html[data-theme="dark"] .navbar .navbar__link[href*=github]:before {
+  background-image: url('/img/github-brand-dark.svg');
+}
+
+html[data-theme="dark"] .navbar .navbar__link[href*=slack]:before {
+  background-image: url('/img/slack-brand-dark.svg');
 }
 
 @media screen and (max-width: 1024px) {
