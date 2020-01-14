@@ -26,15 +26,25 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     this.cancelOrphanRemoval(items);
   }
 
-  set(items: T[], initialize = false): void {
-    if (initialize) {
-      this.initialized = true;
+  set(items: T[]): void {
+    items.map(item => this.validateItemType(item));
+    this.validateModification(items);
+    super.set(items);
+    this.setDirty();
+    this.cancelOrphanRemoval(items);
+  }
+
+  /**
+   * @internal
+   */
+  hydrate(items: T[], validate = false): void {
+    if (validate) {
+      this.validateModification(items);
     }
 
-    items.map(item => this.validateItemType(item));
-    super.set(items);
-    this.setDirty(!initialize);
-    this.cancelOrphanRemoval(items);
+    this.initialized = true;
+    this.dirty = false;
+    super.hydrate(items);
   }
 
   remove(...items: T[]): void {
@@ -94,7 +104,7 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
-      this.set(map[wrap(this.owner).__primaryKey].map(item => em.merge<T>(this.property.type, item)), true);
+      this.hydrate(map[wrap(this.owner).__primaryKey].map(item => em.merge<T>(this.property.type, item)));
 
       return this;
     }
@@ -158,13 +168,14 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
 
   private modify(method: 'add' | 'remove', items: T[]): void {
     this.checkInitialized();
+    this.validateModification(items);
     super[method](...items);
     this.setDirty();
   }
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection ${this.property.type}[] of entity ${this.owner.constructor.name}[${wrap(this.owner).__primaryKey}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${wrap(this.owner).__primaryKey}] not initialized`);
     }
   }
 
@@ -192,6 +203,15 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   private validateItemType(item: T | Primary<T> | EntityData<T>): void {
     if (!Utils.isEntity(item)) {
       throw ValidationError.notEntity(this.owner, this.property, item);
+    }
+  }
+
+  private validateModification(items: T[]): void {
+    // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
+    const manyToManyInverse = this.property.reference === ReferenceType.MANY_TO_MANY && this.property.mappedBy;
+
+    if (manyToManyInverse && items.find(item => !item[this.property.mappedBy] || !item[this.property.mappedBy].isInitialized())) {
+      throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }
 

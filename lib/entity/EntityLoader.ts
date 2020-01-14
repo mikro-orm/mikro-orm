@@ -74,14 +74,14 @@ export class EntityLoader {
   private initializeOneToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
       const items = children.filter(child => child[(prop.mappedBy)] as object === entity);
-      (entity[field] as unknown as Collection<AnyEntity>).set(items, true);
+      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
 
   private initializeManyToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
       const items = children.filter(child => (child[prop.mappedBy] as object as Collection<AnyEntity>).contains(entity));
-      (entity[field] as unknown as Collection<AnyEntity>).set(items, true);
+      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
 
@@ -142,7 +142,7 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const items = map[wrap(entity).__primaryKey as number].map(item => this.em.merge(prop.type, item, refresh));
-      (entity[field] as unknown as Collection<AnyEntity>).set(items, true);
+      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }
 

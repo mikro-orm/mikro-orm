@@ -113,7 +113,7 @@ export class EntityAssigner {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
     }
 
-    collection.set(items, true);
+    collection.hydrate(items, true);
     collection.setDirty();
   }
 

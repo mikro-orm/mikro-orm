@@ -39,6 +39,7 @@ describe('EntityManagerSqlite', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(SqliteDriver);
     expect(await driver.findOne(Book3.name, { title: '123' })).toBeNull();
+    expect(await driver.nativeInsert(Book3.name, { title: '123' })).not.toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
@@ -581,11 +582,11 @@ describe('EntityManagerSqlite', () => {
     tags = await orm.em.find(BookTag3, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.removeAll()).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection Book3\[] of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();

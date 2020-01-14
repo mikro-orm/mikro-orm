@@ -569,11 +569,11 @@ describe('EntityManagerMongo', () => {
     tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
-    expect(() => tags[0].books.getItems()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.removeAll()).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection Book\[] of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
+    expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
 
     // test M:N lazy load
     orm.em.clear();
@@ -1701,6 +1701,41 @@ describe('EntityManagerMongo', () => {
 
     const a2 = await orm.em.findOneOrFail(Author, author.id);
     expect(a2.optional).toBe(false);
+  });
+
+  test('many to many working with inverse side', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    let book4 = new Book('Another Book', author);
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    orm.em.persist([book1, book2, book3, book4]);
+    await orm.em.flush();
+    orm.em.clear();
+
+    let tag = await orm.em.findOneOrFail(BookTag, tag1.id, ['books']);
+    const err = 'You cannot modify inverse side of M:N collection BookTag.books when the owning side is not initialized. Consider working with the owning side instead (Book.tags).';
+    expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrowError(err);
+    orm.em.clear();
+
+    tag = await orm.em.findOneOrFail(BookTag, tag1.id, ['books']);
+    book4 = await orm.em.findOneOrFail(Book, book4.id, ['tags']);
+    tag.books.add(book4);
+    tag.books.add(new Book('ttt', new Author('aaa', 'bbb')));
+    await orm.em.flush();
+    orm.em.clear();
+
+    tag = await orm.em.findOneOrFail(BookTag, tag1.id, ['books']);
+    expect(tag.books.count()).toBe(4);
   });
 
   afterAll(async () => orm.close(true));

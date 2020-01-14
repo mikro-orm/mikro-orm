@@ -58,6 +58,12 @@ export class ArrayCollection<T extends AnyEntity<T>> {
     this.add(...items);
   }
 
+  hydrate(items: T[]): void {
+    this.items.length = 0;
+    this.items.push(...items);
+    Object.assign(this, this.items);
+  }
+
   remove(...items: T[]): void {
     for (const item of items) {
       const idx = this.items.findIndex(i => wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey);

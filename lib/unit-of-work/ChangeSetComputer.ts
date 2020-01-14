@@ -3,13 +3,15 @@ import { MetadataStorage } from '../metadata';
 import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
+import { Platform } from '../platforms';
 
 export class ChangeSetComputer {
 
   constructor(private readonly validator: EntityValidator,
               private readonly originalEntityData: Record<string, EntityData<AnyEntity>>,
               private readonly identifierMap: Record<string, EntityIdentifier>,
-              private readonly metadata: MetadataStorage) { }
+              private readonly metadata: MetadataStorage,
+              private readonly platform: Platform) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
     const changeSet = { entity } as ChangeSet<T>;
@@ -35,13 +37,12 @@ export class ChangeSetComputer {
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const wrapped = wrap(entity);
-    const platform = wrapped.__internal.platform;
 
     if (this.originalEntityData[wrapped.__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[wrapped.__uuid] as T, entity, this.metadata, platform);
+      return Utils.diffEntities<T>(this.originalEntityData[wrapped.__uuid] as T, entity, this.metadata, this.platform);
     }
 
-    return Utils.prepareEntity(entity, this.metadata, platform);
+    return Utils.prepareEntity(entity, this.metadata, this.platform);
   }
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

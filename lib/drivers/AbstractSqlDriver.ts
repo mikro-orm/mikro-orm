@@ -186,9 +186,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     const props = this.metadata.get(entityName).properties;
-    const owners = Object.keys(collections).filter(k => props[k].owner);
 
-    for (const k of owners) {
+    for (const k of Object.keys(collections)) {
       const prop = props[k];
       const qb1 = this.createQueryBuilder(prop.pivotTable, ctx, true);
       await this.connection.execute(qb1.getKnex().where({ [prop.joinColumn]: pk }).delete());

@@ -86,7 +86,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static multipleVersionFields(meta: EntityMetadata, fields: string[]): ValidationError {
-    return new ValidationError(`Entity ${meta.name} has multiple version properties defined: '${fields.join("', '")}'. Only one version property is allowed per entity.`);
+    return new ValidationError(`Entity ${meta.name} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
   }
 
   static invalidVersionFieldType(meta: EntityMetadata): ValidationError {
@@ -140,6 +140,15 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     }
 
     return new ValidationError(`Could not convert ${mode} value '${value}' of type '${valueType}' to type ${type.name}`);
+  }
+
+  static cannotModifyInverseCollection(owner: AnyEntity, property: EntityProperty): ValidationError {
+    const inverseCollection = `${owner.constructor.name}.${property.name}`;
+    const ownerCollection = `${property.type}.${property.mappedBy}`;
+    const error = `You cannot modify inverse side of M:N collection ${inverseCollection} when the owning side is not initialized. `
+      + `Consider working with the owning side instead (${ownerCollection}).`;
+
+    return  new ValidationError(error, owner);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
