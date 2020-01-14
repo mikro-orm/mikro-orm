@@ -1359,7 +1359,7 @@ describe('EntityManagerMongo', () => {
 
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), termsAccepted: .*, name: '.*', email: '.*', foo: '.*' }\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* }\);/);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b1', author: ObjectId\('.*'\) }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b2', author: ObjectId\('.*'\) }\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'b3', author: ObjectId\('.*'\) }\);/);
@@ -1562,7 +1562,7 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.isDirty()).toBe(true);
 
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), termsAccepted: false, name: 'Jon Snow', email: 'snow@wall\.st', foo: 'bar' }\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false }\);/);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ title: 'B123', author: ObjectId\('.*'\) }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }\);/);
   });
@@ -1671,7 +1671,7 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls.length).toBe(1);
 
     if (chalk.level > 0) {
-      expect(mock.mock.calls[0][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mtermsAccepted\[39m: \[36mfalse\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mfoo\[39m: \[33m'bar'\[39m }\)/);
+      expect(mock.mock.calls[0][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mfoo\[39m: \[33m'bar'\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mtermsAccepted\[39m: \[36mfalse\[39m }\)/);
     }
   });
 
@@ -1736,6 +1736,19 @@ describe('EntityManagerMongo', () => {
 
     tag = await orm.em.findOneOrFail(BookTag, tag1.id, ['books']);
     expect(tag.books.count()).toBe(4);
+  });
+
+  // this should run in ~600ms (when running single test locally)
+  test('perf: one to many', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    for (let i = 1; i <= 300; i++) {
+      author.books.add(new Book('My Life on The Wall, part ' + i, author));
+    }
+
+    await orm.em.flush();
+    expect(author.books.getItems().every(b => b.id)).toBe(true);
   });
 
   afterAll(async () => orm.close(true));

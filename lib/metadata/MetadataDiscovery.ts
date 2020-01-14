@@ -244,6 +244,12 @@ export class MetadataDiscovery {
       this.initColumnType(prop, meta.path);
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKey);
+    const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
+
+    if (serializedPKProp && meta.serializedPrimaryKey !== meta.primaryKey) {
+      serializedPKProp.persist = false;
+    }
+
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {

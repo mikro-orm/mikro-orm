@@ -10,7 +10,7 @@ import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
-import { Dictionary, EntityData, EntityMetadata, EntityProperty, AnyEntity, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Primary } from '../typings';
 import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
 
@@ -115,40 +115,44 @@ export class Utils {
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
   static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
+    if ((entity as Dictionary).__prepared) {
+      return entity;
+    }
+
     const meta = metadata.get<T>(entity.constructor.name);
-    const ret = Utils.copy(entity);
-    // @ts-ignore
-    delete ret.__initialized;
+    const ret = Object.create(Object.getPrototypeOf(entity));
 
     // remove collections and references, process custom types
     Object.values<EntityProperty>(meta.properties).forEach(prop => {
-      if (prop.customType && prop.name in ret) {
-        return ret[prop.name] = prop.customType.convertToDatabaseValue(entity[prop.name], platform);
+      if (!(prop.name in entity)) {
+        return;
       }
 
       const pk = () => metadata.get(prop.type).primaryKey;
-      const name = prop.name as keyof T;
       const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
-      const noPk = Utils.isEntity(entity[name]) && !entity[name][pk()];
-      const collection = entity[name] as unknown instanceof ArrayCollection;
+      const noPk = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
+      const collection = entity[prop.name] as unknown instanceof ArrayCollection;
 
-      if (collection || noPk || inverse) {
-        return delete ret[name];
+      if (collection || noPk || inverse || prop.persist === false || (prop.primary && !entity[prop.name])) {
+        return;
       }
 
-      if (Utils.isEntity(entity[name]) || entity[name] as unknown instanceof Reference) {
+      if (Utils.isEntity(entity[prop.name]) || entity[prop.name] as unknown instanceof Reference) {
         return ret[prop.name] = entity[prop.name][pk()];
       }
-    });
 
-    // remove unknown properties
-    Object.keys(entity).forEach(prop => {
-      const property = meta.properties[prop as keyof T & string];
-
-      if (!property || property.persist === false || (property.primary && !ret[prop])) {
-        delete ret[prop];
+      if (prop.customType) {
+        return ret[prop.name] = prop.customType.convertToDatabaseValue(entity[prop.name], platform);
       }
+
+      if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
+        return ret[prop.name] = Utils.copy(entity[prop.name]);
+      }
+
+      ret[prop.name] = entity[prop.name];
     });
+
+    Object.defineProperty(ret, '__prepared', { value: true });
 
     return ret;
   }

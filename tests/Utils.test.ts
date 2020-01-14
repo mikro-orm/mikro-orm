@@ -114,6 +114,13 @@ describe('Utils', () => {
     expect(o.versionAsString).toBeUndefined();
   });
 
+  test('prepareEntity clones object properties', async () => {
+    const author = new Author('Name 1', 'e-mail');
+    author.updatedAt = new Date();
+    const o = Utils.prepareEntity(author, orm.getMetadata(), orm.em.getDriver().getPlatform());
+    expect(o.updatedAt).not.toBe(author.updatedAt);
+  });
+
   test('copy', () => {
     const a = {a: 'a', b: 'c'};
     const b = Utils.copy(a);
