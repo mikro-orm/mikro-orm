@@ -82,6 +82,12 @@
   background-image: url('/img/slack-brand.svg');
 }
 
+.navbar a[data-type="versions"] {
+  white-space: nowrap;
+  text-decoration: underline;
+  position: relative;
+}
+
 .navbar .react-toggle {
   margin: 0 0 0 8px;
 }
@@ -153,6 +159,15 @@ html[data-theme="dark"] .navbar .navbar__link[href*=slack]:before {
 
   .hero.hero--primary .container img {
     height: 260px;
+  }
+}
+
+@media screen and (min-width: 701px) {
+  .navbar a[data-type="versions"] {
+    padding: 0;
+    font-size: calc(0.9 * var(--ifm-font-size-base));
+    left: -8px;
+    top: 1px;
   }
 }
 

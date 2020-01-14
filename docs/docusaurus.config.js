@@ -21,7 +21,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      algoliaOptions: { facetFilters: ['version:v1'] },
+      algoliaOptions: { filters: `version:${versions[0]}` },
     },
     navbar: {
       title: '',
@@ -34,15 +34,7 @@ module.exports = {
           to: 'versions',
           label: `${versions[0]}`,
           position: 'left',
-          style: {
-            whiteSpace: 'nowrap',
-            padding: '0',
-            fontSize: 'calc(0.9 * var(--ifm-font-size-base))',
-            textDecoration: 'underline',
-            position: 'relative',
-            left: '-8px',
-            top: '1px',
-          },
+          'data-type': 'versions',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
