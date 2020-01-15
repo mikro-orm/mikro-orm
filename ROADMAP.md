@@ -11,7 +11,6 @@ discuss specifics.
 
 - Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - Schema sync (allow automatic synchronization during development)
-- Support for RegExp search in SQL drivers
 - Collection expressions - support querying parts of collection
 - Collection pagination
 - Composite primary keys

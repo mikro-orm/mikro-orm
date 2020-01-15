@@ -27,6 +27,8 @@ export class QueryBuilderHelper {
     $lte: '<=',
     $ne: '!=',
     $not: 'not',
+    $like: 'like',
+    $re: 'regexp',
   };
 
   constructor(private readonly entityName: string,
@@ -184,6 +186,18 @@ export class QueryBuilderHelper {
     return meta ? meta.collection : entityName;
   }
 
+  /**
+   * Checks whether the RE can be rewritten to simple LIKE query
+   */
+  isSimpleRegExp(re: any): boolean {
+    if (!(re instanceof RegExp)) {
+      return false;
+    }
+
+    // when including the opening bracket/paren we consider it complex
+    return !re.source.match(/[{\[(]/);
+  }
+
   getRegExpParam(re: RegExp): string {
     const value = re.source
       .replace(/\.\*/g, '%') // .* -> %
@@ -229,7 +243,7 @@ export class QueryBuilderHelper {
   private appendQuerySubCondition(qb: KnexQueryBuilder, type: QueryType, method: 'where' | 'having', cond: any, key: string, operator?: '$and' | '$or'): void {
     const m = operator === '$or' ? 'orWhere' : method;
 
-    if (cond[key] instanceof RegExp) {
+    if (this.isSimpleRegExp(cond[key])) {
       return void qb[m](this.mapper(key, type), 'like', this.getRegExpParam(cond[key]));
     }
 
@@ -263,13 +277,19 @@ export class QueryBuilderHelper {
 
   private processObjectSubCondition(cond: any, key: string, qb: KnexQueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
     // grouped condition for one field
-    if (Object.keys(cond[key]).length > 1) {
-      const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+    let value = cond[key];
+
+    if (Object.keys(value).length > 1) {
+      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return void subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
 
+    if (value instanceof RegExp) {
+      value = { $re: value.source };
+    }
+
     // operators
-    const op = Object.keys(QueryBuilderHelper.OPERATORS).find(op => op in cond[key]);
+    const op = Object.keys(QueryBuilderHelper.OPERATORS).find(op => op in value);
 
     if (!op) {
       throw new Error(`Invalid query condition: ${inspect(cond)}`);
@@ -277,11 +297,15 @@ export class QueryBuilderHelper {
 
     let replacement = QueryBuilderHelper.OPERATORS[op];
 
-    if (cond[key][op] === null && ['$eq', '$ne'].includes(op)) {
+    if (value[op] === null && ['$eq', '$ne'].includes(op)) {
       replacement = op === '$eq' ? 'is' : 'is not';
     }
 
-    qb[m](this.mapper(key, type), replacement, cond[key][op]);
+    if (op === '$re') {
+      replacement = this.platform.getRegExpOperator();
+    }
+
+    qb[m](this.mapper(key, type), replacement, value[op]);
   }
 
   private appendJoinClause(clause: JoinClause, cond: Dictionary, operator?: '$and' | '$or'): void {

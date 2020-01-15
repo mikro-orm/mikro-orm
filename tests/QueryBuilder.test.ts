@@ -300,6 +300,55 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: /^c.o.*l-te.*st\.c.m$/ });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` like ?');
     expect(qb.getParams()).toEqual(['c_o%l-te%st.c_m']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: /^(te){1,3}st$/ });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['^(te){1,3}st$']);
+  });
+
+  test('select by like', async () => {
+    let qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $like: '%test%' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` like ?');
+    expect(qb.getParams()).toEqual(['%test%']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $like: 'test%' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` like ?');
+    expect(qb.getParams()).toEqual(['test%']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $like: '%t_st' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` like ?');
+    expect(qb.getParams()).toEqual(['%t_st']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $like: 'c_o%l-te%st.c_m' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` like ?');
+    expect(qb.getParams()).toEqual(['c_o%l-te%st.c_m']);
+  });
+
+  test('select by regexp operator', async () => {
+    let qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $re: 'test' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['test']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $re: '^test' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['^test']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $re: 't.st$' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['t.st$']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $re: '^c.o.*l-te.*st\.c.m$' } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['^c.o.*l-te.*st\.c.m$']);
   });
 
   test('select by m:1', async () => {

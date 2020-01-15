@@ -66,6 +66,8 @@ export type OperatorMap<T> = {
   $gte?: Query<T>;
   $lt?: Query<T>;
   $lte?: Query<T>;
+  $like?: string;
+  $re?: string;
 };
 export type StringProp<T> = T extends string ? string | RegExp : never;
 export type EntityOrPrimary<T> = true extends IsEntity<T> ? DeepPartialEntity<T> | PartialEntity<T> | Primary<T> | T : never;

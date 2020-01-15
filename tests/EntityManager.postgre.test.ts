@@ -358,6 +358,13 @@ describe('EntityManagerPostgre', () => {
     expect(authors[0].name).toBe('Author 1');
     expect(authors[1].name).toBe('Author 2');
     expect(authors[2].name).toBe('Author 3');
+    orm.em.clear();
+
+    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le\.c.m$' } });
+    expect(authors2.length).toBe(3);
+    expect(authors2[0].name).toBe('Author 1');
+    expect(authors2[1].name).toBe('Author 2');
+    expect(authors2[2].name).toBe('Author 3');
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {

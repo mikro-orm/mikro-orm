@@ -21,4 +21,8 @@ export class PostgreSqlPlatform extends Platform {
     return 'time(0)';
   }
 
+  getRegExpOperator(): string {
+    return '~';
+  }
+
 }

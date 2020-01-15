@@ -74,4 +74,8 @@ export abstract class Platform {
     return 'time' + (length ? `(${length})` : '');
   }
 
+  getRegExpOperator(): string {
+    return 'regexp';
+  }
+
 }
