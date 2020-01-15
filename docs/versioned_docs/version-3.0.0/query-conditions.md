@@ -90,6 +90,8 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$lte`   | lower or equal     | Matches values that are less than or equal to a specified value. |
 | `$ne`	   | not equal          | Matches all values that are not equal to a specified value. |
 | `$nin`   | not contains       | Matches none of the values specified in an array. |
+| `$like`  | like               | Uses LIKE operator |
+| `$re`    | regexp             | Uses REGEXP operator |
 
 ### Logical
 
