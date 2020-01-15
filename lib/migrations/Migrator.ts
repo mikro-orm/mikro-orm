@@ -98,13 +98,7 @@ export class Migrator {
       options.migrations = options.migrations.map(m => this.prefix(m));
     }
 
-    if (options.to) {
-      options.to = this.prefix(options.to);
-    }
-
-    if (options.from) {
-      options.from = this.prefix(options.from);
-    }
+    ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.prefix(options[k]));
 
     return options as T;
   }

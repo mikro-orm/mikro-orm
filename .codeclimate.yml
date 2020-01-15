@@ -12,7 +12,7 @@ checks:
       threshold: 40
   return-statements:
     config:
-      threshold: 5
+      threshold: 7
   method-complexity:
     config:
       threshold: 7

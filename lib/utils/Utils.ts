@@ -129,11 +129,12 @@ export class Utils {
       }
 
       const pk = () => metadata.get(prop.type).primaryKey;
-      const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
-      const noPk = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
       const collection = entity[prop.name] as unknown instanceof ArrayCollection;
+      const noPkRef = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
+      const noPkProp = prop.primary && !entity[prop.name];
+      const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
 
-      if (collection || noPk || inverse || prop.persist === false || (prop.primary && !entity[prop.name])) {
+      if (collection || noPkProp || noPkRef || inverse || prop.persist === false) {
         return;
       }
 
