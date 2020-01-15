@@ -1,5 +1,5 @@
-<a name="3.0.0-rc6"></a>
-# [3.0.0-rc.6](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...master) (2020-01-09)
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...v3.0.0) (2020-01-15)
 
 ### Bug Fixes
 
@@ -97,6 +97,7 @@
 * **mongo:** improve query logging, use `inspect` instead of `stringify` ([da842a3](https://github.com/mikro-orm/mikro-orm/commit/da842a3adbfe5a1e200e8aa88ac9de5b0142587f))
 * **postgres:** use timestamps with time zone by default ([bd48124](https://github.com/mikro-orm/mikro-orm/commit/bd48124d3a32b4abc13c2dee4ddeceb351c1f520)), closes [#161](https://github.com/mikro-orm/mikro-orm/issues/161)
 * **query-builder:** allow mapping to entities directly via getResult() ([beca08e](https://github.com/mikro-orm/mikro-orm/commit/beca08edf15eb86a36124ecc5053797aea5e5b34))
+* **query-builder:** add $like and $re operators (regexp support) ([e6da98f](https://github.com/mikro-orm/mikro-orm/commit/e6da98fe68a47fc56acd9451c634c0c8bc8239b3))
 * **schema:** add basic entity generator ([#98](https://github.com/mikro-orm/mikro-orm/issues/98)) ([cc48b52](https://github.com/mikro-orm/mikro-orm/commit/cc48b52adf2dd4859286897e109ccb1da02d1179)), closes [#78](https://github.com/mikro-orm/mikro-orm/issues/78)
 * **schema:** add basic schema update ([#97](https://github.com/mikro-orm/mikro-orm/issues/97)) ([9bff976](https://github.com/mikro-orm/mikro-orm/commit/9bff97634d6087f591aa56325ac6f9e43e0e2bcc))
 * **schema:** add support for create/drop database ([#237](https://github.com/mikro-orm/mikro-orm/issues/237)) ([6e58332](https://github.com/mikro-orm/mikro-orm/commit/6e583320b470cdce2a9b2285ba79f17533d8d65c))
@@ -114,6 +115,7 @@
 ### Performance Improvements
 
 * **core:** do not cascade persist entity references ([#279](https://github.com/mikro-orm/mikro-orm/issues/279)) ([9d9e261](https://github.com/mikro-orm/mikro-orm/commit/9d9e26151c538d4bb41565ba4433752c522dc4c7))
+* **core:** make Utils.prepareEntity() faster ([69d2cf4](https://github.com/mikro-orm/mikro-orm/commit/69d2cf49115e9d4d1b5ff993e8f170f7c8b38d6c))
 * **sql:** use multi-insert when populating m:n collections ([5ece088](https://github.com/mikro-orm/mikro-orm/commit/5ece0880811675fda69fbcbd1febf3d30f3b6788))
 
 
