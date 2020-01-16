@@ -178,6 +178,9 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - Handling transactions and concurrency in MikroORM
   - on [medium.com](https://medium.com/dailyjs/handling-transactions-and-concurrency-in-mikro-orm-ba80d0a65805)
   - on [dev.to](https://dev.to/b4nan/handling-transactions-and-concurrency-in-mikroorm-2cfj)
+- MikroORM 3: Knex.js, CLI, Schema Updates, Entity Generator and more…
+  - on [medium.com](https://medium.com/dailyjs/mikro-orm-3-knex-js-cli-schema-updates-entity-generator-and-more-e51ecbbc508c)
+  - on [dev.to](https://dev.to/b4nan/mikroorm-3-knex-js-cli-schema-updates-entity-generator-and-more-3g56)
 
 ## 🚀 Quick Start
 
