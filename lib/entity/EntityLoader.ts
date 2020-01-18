@@ -73,7 +73,7 @@ export class EntityLoader {
 
   private initializeOneToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
-      const items = children.filter(child => child[(prop.mappedBy)] as object === entity);
+      const items = children.filter(child => Utils.unwrapReference(child[prop.mappedBy]) as object === entity);
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
