@@ -1,13 +1,5 @@
 import { QueryOrder } from './query';
-import {
-  AssignOptions,
-  Cascade,
-  Collection,
-  EntityRepository,
-  EntityValidator,
-  IdentifiedReference,
-  ReferenceType,
-} from './entity';
+import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType } from './entity';
 import { EntityManager } from './EntityManager';
 import { LockMode } from './unit-of-work';
 import { Platform } from './platforms';
@@ -18,7 +10,7 @@ export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 
 export type PartialEntityProperty<T, P extends keyof T> = null | (T extends Date | RegExp ? T : T[P] | (true extends IsEntity<T[P]> ? PartialEntity<T[P]> | Primary<T[P]> : never));
-export type PartialEntity<T> = { [P in keyof T]?: PartialEntityProperty<T, P> };
+export type PartialEntity<T> = T extends Reference<infer U> ? { [P in keyof U]?: PartialEntityProperty<U, P> } : { [P in keyof T]?: PartialEntityProperty<T, P> };
 
 export type DeepPartialEntity<T> = {
   [P in keyof T]?: null | (T[P] extends (infer U)[]
@@ -39,7 +31,7 @@ export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
 export type IPrimaryKeyValue = number | string | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
-export type IsEntity<T> = T extends { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string } ? true : never;
+export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string } ? true : never;
 
 export type UnionOfArrays<T> = T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9 | infer T10
   ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] | T8[] | T9[] | T10[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9

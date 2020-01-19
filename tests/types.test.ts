@@ -229,7 +229,7 @@ describe('check typings', () => {
 
     let ok02: FilterQuery<Book2>;
     ok02 = { publisher: { $ne: undefined } };
-    ok02 = { publisher: { $ne: null } };
+    ok02 = { publisher: { name: 'test' } };
   });
 
   // there is no way to test this currently, uncomment to check they all fail
