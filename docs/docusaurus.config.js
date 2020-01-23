@@ -6,6 +6,11 @@
  */
 
 const versions = require('./versions.json');
+let filters = `version:${versions[0]}`;
+
+if (versions[1] && versions[0].replace(/\.\d+$/, '') === versions[1].replace(/\.\d+$/, '')) {
+  filters += ` OR version:${versions[1]}`;
+}
 
 module.exports = {
   title: 'MikroORM',
@@ -21,7 +26,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      algoliaOptions: { filters: `version:${versions[0]}` },
+      algoliaOptions: { filters },
     },
     navbar: {
       title: '',
