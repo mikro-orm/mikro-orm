@@ -1729,6 +1729,22 @@ describe('EntityManagerMySql', () => {
     expect(res[0].publisher!.id).toBe(1);
   });
 
+  test('calling Collection.init in parallel', async () => {
+    const author = new Author2('n', 'e');
+    author.books.add(new Book2('b1', author));
+    author.books.add(new Book2('b2', author));
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const author2 = await orm.em.findOneOrFail(Author2, author.id);
+    const p1 = author2.books.init();
+    const p2 = author2.books.init();
+    await Promise.all([p1, p2]);
+
+    // fails with 2 b/c the post is in the collection twice
+    expect(author2.books.length).toEqual(2);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

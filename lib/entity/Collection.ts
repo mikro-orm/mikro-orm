@@ -122,14 +122,13 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
-
-    this.items.length = 0;
     const items = await em.find<T>(this.property.type, where, options.populate, orderBy);
 
     if (!customOrder) {
       this.reorderItems(items, order);
     }
 
+    this.items.length = 0;
     this.items.push(...items);
     Object.assign(this, items);
     this.initialized = true;
