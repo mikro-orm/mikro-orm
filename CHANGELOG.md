@@ -1,4 +1,18 @@
-<a name="3.0.1"></a>
+## [3.1.0](https://github.com/mikro-orm/mikro-orm/compare/v3.0.1...v3.1.0) (2020-01-27)
+
+
+### Bug Fixes
+
+* **core:** do not reset collections too early ([ad6337e](https://github.com/mikro-orm/mikro-orm/commit/ad6337e3df5a5a5c2283343e37f735814a4644a0)), closes [#312](https://github.com/mikro-orm/mikro-orm/issues/312)
+
+
+### Features
+
+* **core:** add `em.populate()` helper method ([26d2f33](https://github.com/mikro-orm/mikro-orm/commit/26d2f33d0619e7e3b5c2b3728815f8d2f5faf0ac)), closes [#310](https://github.com/mikro-orm/mikro-orm/issues/310)
+* **core:** add `Reference.getEntity()` and `Reference.getProperty()` ([05dc5ce](https://github.com/mikro-orm/mikro-orm/commit/05dc5ceb00d96a1080a49c472edab1036d2370d7)), closes [#304](https://github.com/mikro-orm/mikro-orm/issues/304)
+
+
+
 ## [3.0.1](https://github.com/mikro-orm/mikro-orm/compare/v3.0.0...v3.0.1) (2020-01-23)
 
 ### Bug Fixes
@@ -8,7 +22,6 @@
 
 
 
-<a name="3.0.0"></a>
 # [3.0.0](https://github.com/mikro-orm/mikro-orm/compare/v2.7.9...v3.0.0) (2020-01-15)
 
 ### Bug Fixes
@@ -135,7 +148,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.9"></a>
 ## [2.7.9](https://github.com/B4nan/mikro-orm/compare/v2.7.8...v2.7.9) (2019-10-10)
 
 ### Bug Fixes
@@ -145,7 +157,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.8"></a>
 ## [2.7.8](https://github.com/mikro-orm/mikro-orm/compare/v2.7.7...v2.7.8) (2019-09-19)
 
 ### Bug Fixes
@@ -154,7 +165,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.7"></a>
 ## [2.7.7](https://github.com/mikro-orm/mikro-orm/compare/v2.7.6...v2.7.7) (2019-09-01)
 
 ### Bug Fixes
@@ -163,7 +173,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.6"></a>
 ## [2.7.6](https://github.com/mikro-orm/mikro-orm/compare/v2.7.5...v2.7.6) (2019-08-15)
 
 ### Bug Fixes
@@ -172,7 +181,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.5"></a>
 ## [2.7.5](https://github.com/mikro-orm/mikro-orm/compare/v2.7.4...v2.7.5) (2019-08-08)
 
 ### Features
@@ -181,7 +189,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.4"></a>
 ## [2.7.4](https://github.com/mikro-orm/mikro-orm/compare/v2.7.3...v2.7.4) (2019-07-23)
 
 ### Bug Fixes
@@ -190,7 +197,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.3"></a>
 ## [2.7.3](https://github.com/mikro-orm/mikro-orm/compare/v2.7.2...v2.7.3) (2019-07-02)
 
 ### Bug Fixes
@@ -202,7 +208,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.2"></a>
 ## [2.7.2](https://github.com/mikro-orm/mikro-orm/compare/v2.7.1...v2.7.2) (2019-06-14)
 
 ### Bug Fixes
@@ -211,7 +216,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.1"></a>
 ## [2.7.1](https://github.com/mikro-orm/mikro-orm/compare/v2.7.0...v2.7.1) (2019-06-12)
 
 ### Bug Fixes
@@ -220,7 +224,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.7.0"></a>
 # [2.7.0](https://github.com/mikro-orm/mikro-orm/compare/v2.6.0...v2.7.0) (2019-06-11)
 
 ### Features
@@ -231,7 +234,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.6.0"></a>
 # [2.6.0](https://github.com/mikro-orm/mikro-orm/compare/v2.5.0...v2.6.0) (2019-05-27)
 
 ### Features
@@ -248,7 +250,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.5.0"></a>
 # [2.5.0](https://github.com/mikro-orm/mikro-orm/compare/v2.4.0...v2.5.0) (2019-05-13)
 
 ### Bug Fixes
@@ -266,7 +267,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.4.0"></a>
 # [2.4.0](https://github.com/mikro-orm/mikro-orm/compare/v2.3.2...v2.4.0) (2019-04-27)
 
 ### Bug Fixes
@@ -285,7 +285,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.3.2"></a>
 ## [2.3.2](https://github.com/mikro-orm/mikro-orm/compare/v2.3.1...v2.3.2) (2019-04-26)
 
 ### Bug Fixes
@@ -296,7 +295,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.3.1"></a>
 ## [2.3.1](https://github.com/mikro-orm/mikro-orm/compare/v2.3.0...v2.3.1) (2019-04-25)
 
 ### Bug Fixes
@@ -305,7 +303,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.3.0"></a>
 # [2.3.0](https://github.com/mikro-orm/mikro-orm/compare/v2.2.2...v2.3.0) (2019-04-24)
 
 ### Bug Fixes
@@ -321,7 +318,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.2.2"></a>
 ## [2.2.2](https://github.com/mikro-orm/mikro-orm/compare/v2.2.1...v2.2.2) (2019-04-18)
 
 ### Bug Fixes
@@ -330,7 +326,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.2.1"></a>
 ## [2.2.1](https://github.com/mikro-orm/mikro-orm/compare/v2.2.0...v2.2.1) (2019-04-18)
 
 ### Bug Fixes
@@ -345,7 +340,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.2.0"></a>
 # [2.2.0](https://github.com/mikro-orm/mikro-orm/compare/v2.1.1...v2.2.0) (2019-04-14)
 
 ### Bug Fixes
@@ -372,7 +366,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.1.1"></a>
 ## [2.1.1](https://github.com/mikro-orm/mikro-orm/compare/v2.1.0...v2.1.1) (2019-04-05)
 
 ### Features
@@ -381,7 +374,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.1.0"></a>
 # [2.1.0](https://github.com/mikro-orm/mikro-orm/compare/v2.0.3...v2.1.0) (2019-04-04)
 
 ### Bug Fixes
@@ -413,7 +405,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.0.3"></a>
 ## [2.0.3](https://github.com/mikro-orm/mikro-orm/compare/v2.0.2...v2.0.3) (2019-03-12)
 
 ### Bug Fixes
@@ -424,7 +415,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.0.2"></a>
 ## [2.0.2](https://github.com/mikro-orm/mikro-orm/compare/v2.0.1...v2.0.2) (2019-03-10)
 
 ### Bug Fixes
@@ -433,7 +423,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.0.1"></a>
 ## [2.0.1](https://github.com/mikro-orm/mikro-orm/compare/v2.0.0...v2.0.1) (2019-03-10)
 
 ### Bug Fixes
@@ -446,7 +435,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
 
 
 
-<a name="2.0.0"></a>
 # [2.0.0](https://github.com/mikro-orm/mikro-orm/compare/v1.2.3...v2.0.0) (2019-03-09)
 
 ### Bug Fixes
