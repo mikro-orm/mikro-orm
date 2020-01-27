@@ -9,7 +9,7 @@ checks:
       threshold: 50
   method-count:
     config:
-      threshold: 40
+      threshold: 50
   return-statements:
     config:
       threshold: 7
@@ -24,4 +24,4 @@ engines:
       languages:
         typescript:
           # make it higher so it does not report bullshit like similarity of abstract method and its implementation
-          mass_threshold: 70
+          mass_threshold: 80

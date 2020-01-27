@@ -106,6 +106,10 @@ export class EntityRepository<T extends AnyEntity<T>> {
     return this.em.canPopulate(this.entityName, property);
   }
 
+  async populate(entities: T[], populate: string | string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T[]> {
+    return this.em.populate(entities, populate, where, orderBy, refresh, validate);
+  }
+
   /**
    * Creates new instance of given entity and populates it with given data
    */

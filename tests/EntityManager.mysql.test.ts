@@ -330,9 +330,12 @@ describe('EntityManagerMySql', () => {
     expect(noBooks.length).toBe(0);
     orm.em.clear();
 
-    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']))!;
-    const authors = await authorRepository.findAll(['books', 'favouriteBook']);
+    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }))!;
+    await orm.em.populate(jon, ['books', 'favouriteBook']);
+    const authors = await authorRepository.findAll();
+    await orm.em.populate(authors, ['books', 'favouriteBook']);
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
+    await expect(orm.em.populate([], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
     // count test
     const count = await authorRepository.count();

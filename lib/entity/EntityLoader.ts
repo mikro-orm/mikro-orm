@@ -14,16 +14,12 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
+  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: string | string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
 
-    if (populate === true) {
-      populate = this.lookupAllRelationships(entityName);
-    } else if (lookup) {
-      populate = this.lookupEagerLoadedRelationships(entityName, populate);
-    }
+    populate = this.normalizePopulate(entityName, populate, lookup);
 
     const invalid = populate.find(field => !this.em.canPopulate(entityName, field));
 
@@ -34,6 +30,20 @@ export class EntityLoader {
     for (const field of populate) {
       await this.populateField<T>(entityName, entities, field, where, orderBy, refresh);
     }
+  }
+
+  private normalizePopulate(entityName: string, populate: string | string[] | true, lookup: boolean): string[] {
+    if (populate === true) {
+      populate = this.lookupAllRelationships(entityName);
+    } else {
+      populate = Utils.asArray(populate);
+    }
+
+    if (lookup) {
+      populate = this.lookupEagerLoadedRelationships(entityName, populate);
+    }
+
+    return populate;
   }
 
   /**

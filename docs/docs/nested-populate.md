@@ -56,18 +56,13 @@ db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 ```
 
-## Using EntityLoader manually
+## Populating already loaded entities
 
-Under the hood, EntityManager uses EntityLoader to populate other entities. You can use it
-manually if you already have list of entities (e.g. queried via QueryBuilder):
+To populate existing entities, you can use `em.populate()`.
 
 ```typescript
-import { EntityLoader } from 'mikro-orm';
-
-const loader = new EntityLoader(orm.em);
-const res = await orm.em.createQueryBuilder(Author).select('*').execute();
-const authors = res.map(data => orm.em.merge(Author, data));
-await loader.populate(Author, authors, ['books.tags']);
+const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
+await em.populate(authors, ['books.tags']);
 
 // now your Author entities will have `books` collections populated, 
 // as well as they will have their `tags` collections populated.

@@ -99,6 +99,25 @@ for (const author of authors) {
 }
 ```
 
+To populate entity relations, you can use `populate` parameter.
+
+```typescript
+const books = await orm.em.find(Book, { foo: 1 }, ['author.friends']);
+```
+
+You can also use `em.populate()` helper to populate relations (or to ensure they 
+are fully populated) on already loaded entities. This is also handy when loading 
+entities via `QueryBuilder`:
+
+```typescript
+const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
+await em.populate(authors, ['books.tags']);
+
+// now your Author entities will have `books` collections populated, 
+// as well as they will have their `tags` collections populated.
+console.log(authors[0].books[0].tags[0]); // initialized BookTag
+```
+
 ### Conditions Object (`FilterQuery<T>`)
 
 Querying entities via conditions object (`where` in `em.find(Entity, where: FilterQuery<T>)`) 

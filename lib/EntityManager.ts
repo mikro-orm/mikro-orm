@@ -491,6 +491,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
+  async populate<T extends AnyEntity<T>, K extends T | T[]>(entities: K, populate: string | string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<K> {
+    const entitiesArray = Utils.asArray(entities);
+
+    if (entitiesArray.length === 0) {
+      return entities;
+    }
+
+    const entityName = entitiesArray[0].constructor.name;
+    await this.entityLoader.populate(entityName, entitiesArray, populate, where, orderBy, refresh, validate);
+
+    return entities;
+  }
+
   /**
    * Returns new EntityManager instance with its own identity map
    *
