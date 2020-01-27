@@ -58,7 +58,19 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   unwrap(): T {
-    return wrap(this.entity);
+    return this.entity;
+  }
+
+  getEntity(): T {
+    if (!this.isInitialized()) {
+      throw new Error(`Reference<${this.__meta.name}> ${this.__primaryKey} not initialized`);
+    }
+
+    return this.entity;
+  }
+
+  getProperty<K extends keyof T>(prop: K): T[K] {
+    return this.getEntity()[prop];
   }
 
   isInitialized(): boolean {

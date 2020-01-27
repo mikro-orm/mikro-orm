@@ -1611,6 +1611,8 @@ describe('EntityManagerMongo', () => {
     expect(ref._id).toBeInstanceOf(ObjectId);
     expect(ref.unwrap()).toBeInstanceOf(Author);
     expect(wrap(ref.unwrap()).isInitialized()).toBe(false);
+    expect(() => ref.getEntity()).toThrowError(`Reference<Author> ${ref.id} not initialized`);
+    expect(() => ref.getProperty('email')).toThrowError(`Reference<Author> ${ref.id} not initialized`);
 
     const ref2 = Reference.create(author);
     const ref3 = Reference.create(ref2);
@@ -1632,6 +1634,7 @@ describe('EntityManagerMongo', () => {
     expect(ref4.isInitialized()).toBe(false);
     await expect(ref4.get('name')).resolves.toBe('God');
     expect(ref4.isInitialized()).toBe(true);
+    expect(ref4.getProperty('name')).toBe('God');
     await expect(ref4.get('email')).resolves.toBe('hello@heaven.god');
   });
 

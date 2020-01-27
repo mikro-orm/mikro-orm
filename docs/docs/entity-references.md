@@ -85,6 +85,20 @@ console.log((await book.author.load()).name); // ok, author already loaded
 console.log(book.author.unwrap().name); // ok, author already loaded
 ```
 
+There are also `getEntity()` and `getProperty()` methods that are synchronous getters, 
+that will first check if the wrapped entity is initialized, and if not, it will throw 
+and error.
+
+```typescript
+const book = await orm.em.findOne(Book, 1);
+console.log(book.author instanceof Reference); // true
+console.log(book.author.isInitialized()); // false
+console.log(book.author.getEntity()); // Error: Reference<Author> 123 not initialized
+console.log(book.author.getProperty('name')); // Error: Reference<Author> 123 not initialized
+console.log((await book.author.get('name'))); // ok, loading the author first
+console.log(book.author.getProperty('name')); // ok, author already loaded
+```
+
 If you use different metadata provider than `TsMorphMetadataProvider` 
 (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` 
 parameter:
