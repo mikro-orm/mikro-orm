@@ -5,12 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+const pkg = require('../package.json');
 const versions = require('./versions.json');
 let filters = `version:${versions[0]}`;
 
-if (versions[1] && versions[0].replace(/\.\d+$/, '') === versions[1].replace(/\.\d+$/, '')) {
-  filters += ` OR version:${versions[1]}`;
-}
+filters += ` OR version:3.0.1`; // for back compatibility
 
 module.exports = {
   title: 'MikroORM',
@@ -37,7 +36,7 @@ module.exports = {
       links: [
         {
           to: 'versions',
-          label: `${versions[0]}`,
+          label: `${pkg.version}`,
           position: 'left',
           'data-type': 'versions',
         },
@@ -66,7 +65,7 @@ module.exports = {
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
             { label: 'Migration from v2 to v3', to: 'docs/upgrading-v2-to-v3' },
-            { label: 'Version 2.7 docs', to: 'docs/2.7.9/installation' },
+            { label: 'Version 2.7 docs', to: 'docs/2.7/installation' },
           ],
         },
         {

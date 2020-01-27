@@ -1,24 +1,24 @@
 {
-  "version-2.7.9/docs": [
+  "version-2.7/docs": [
     {
       "type": "category",
       "label": "Overview",
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.9/installation"
+          "id": "version-2.7/installation"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/defining-entities"
+          "id": "version-2.7/defining-entities"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/entity-manager"
+          "id": "version-2.7/entity-manager"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/repositories"
+          "id": "version-2.7/repositories"
         }
       ]
     },
@@ -28,31 +28,31 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.9/identity-map"
+          "id": "version-2.7/identity-map"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/entity-references"
+          "id": "version-2.7/entity-references"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/entity-constructors"
+          "id": "version-2.7/entity-constructors"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/collections"
+          "id": "version-2.7/collections"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/unit-of-work"
+          "id": "version-2.7/unit-of-work"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/transactions"
+          "id": "version-2.7/transactions"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/cascading"
+          "id": "version-2.7/cascading"
         }
       ]
     },
@@ -62,47 +62,47 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.9/nested-populate"
+          "id": "version-2.7/nested-populate"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/query-conditions"
+          "id": "version-2.7/query-conditions"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/query-builder"
+          "id": "version-2.7/query-builder"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/serializing"
+          "id": "version-2.7/serializing"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/entity-helper"
+          "id": "version-2.7/entity-helper"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/property-validation"
+          "id": "version-2.7/property-validation"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/lifecycle-hooks"
+          "id": "version-2.7/lifecycle-hooks"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/naming-strategy"
+          "id": "version-2.7/naming-strategy"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/metadata-cache"
+          "id": "version-2.7/metadata-cache"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/debugging"
+          "id": "version-2.7/debugging"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/schema-generator"
+          "id": "version-2.7/schema-generator"
         }
       ]
     },
@@ -112,11 +112,11 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.9/usage-with-sql"
+          "id": "version-2.7/usage-with-sql"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/usage-with-mongo"
+          "id": "version-2.7/usage-with-mongo"
         }
       ]
     },
@@ -126,15 +126,15 @@
       "items": [
         {
           "type": "doc",
-          "id": "version-2.7.9/usage-with-nestjs"
+          "id": "version-2.7/usage-with-nestjs"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/usage-with-js"
+          "id": "version-2.7/usage-with-js"
         },
         {
           "type": "doc",
-          "id": "version-2.7.9/custom-driver"
+          "id": "version-2.7/custom-driver"
         }
       ]
     }
