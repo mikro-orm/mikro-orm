@@ -134,10 +134,15 @@ as well as use different file name:
 **`./src/mikro-orm.config.ts`**
 
 ```typescript
-// usually you will reexport existing configuration from somewhere else
-import { CONFIG } from './config';
-export = CONFIG.orm;
+export default {
+  entities: [Author, Book, BookTag],
+  dbName: 'my-db-name',
+  type: 'postgresql',
+};
 ```
+
+Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options
+parameter and the CLI config will be automatically used. 
 
 > You can also use different names for this file, simply rename it in the `configPaths` array
 > your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path
