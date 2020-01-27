@@ -7,9 +7,6 @@
 
 const pkg = require('../package.json');
 const versions = require('./versions.json');
-let filters = `version:${versions[0]}`;
-
-filters += ` OR version:3.0.1`; // for back compatibility
 
 module.exports = {
   title: 'MikroORM',
@@ -25,7 +22,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      algoliaOptions: { filters },
+      algoliaOptions: { filters: `version:${versions[0]}` },
     },
     navbar: {
       title: '',
