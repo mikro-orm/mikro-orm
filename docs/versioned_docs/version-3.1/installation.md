@@ -115,6 +115,8 @@ exports your ORM configuration. TypeScript is also supported, just enable `useTs
 `package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
 as well as use different file name:
 
+> Do not forget to install `ts-node` when enabling `useTsNode` flag.
+
 **`./package.json`**
 
 ```json
