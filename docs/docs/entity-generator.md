@@ -43,4 +43,3 @@ $ ts-node generate-entities
 
 - many to many relations are not supported, pivot table will be represented as separate entity
 - in mysql, tinyint columns will be defined as boolean properties
-- in postgresql, `NOT NULL` columns won't be generated with the `!` TypeScript non-null assertion operator
