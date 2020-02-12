@@ -9,19 +9,19 @@ import { Book2 } from './Book2';
 export class Author2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ length: 255 })
-  email: string;
+  email!: string;
 
   @Property({ nullable: true })
   age?: number;
@@ -56,10 +56,10 @@ import { Author2 } from './Author2';
 export class Author2ToAuthor2 {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
-  author21: Author2;
+  author21!: Author2;
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
-  author22: Author2;
+  author22!: Author2;
 
 }
 ",
@@ -70,10 +70,10 @@ import { Author2 } from './Author2';
 export class AuthorToFriend {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
-  author21: Author2;
+  author21!: Author2;
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
-  author22: Author2;
+  author22!: Author2;
 
 }
 ",
@@ -85,10 +85,10 @@ import { Publisher2 } from './Publisher2';
 export class Book2 {
 
   @PrimaryKey({ length: 36 })
-  uuidPk: string;
+  uuidPk!: string;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Property({ length: 255, nullable: true })
   title?: string;
@@ -106,7 +106,7 @@ export class Book2 {
   meta?: object;
 
   @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE] })
-  author: Author2;
+  author!: Author2;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
@@ -124,13 +124,13 @@ import { BookTag2 } from './BookTag2';
 export class Book2ToBookTag2 {
 
   @PrimaryKey()
-  order: number;
+  order!: number;
 
   @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
-  book2: Book2;
+  book2!: Book2;
 
   @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
-  bookTag2: BookTag2;
+  bookTag2!: BookTag2;
 
 }
 ",
@@ -140,10 +140,10 @@ export class Book2ToBookTag2 {
 export class BookTag2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 50 })
-  name: string;
+  name!: string;
 
 }
 ",
@@ -155,10 +155,10 @@ import { BookTag2 } from './BookTag2';
 export class BookToTagUnordered {
 
   @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
-  book2: Book2;
+  book2!: Book2;
 
   @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
-  bookTag2: BookTag2;
+  bookTag2!: BookTag2;
 
 }
 ",
@@ -169,10 +169,10 @@ import { FooBaz2 } from './FooBaz2';
 export class FooBar2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;
@@ -181,7 +181,7 @@ export class FooBar2 {
   fooBar?: FooBar2;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  version: Date;
+  version!: Date;
 
 }
 ",
@@ -191,13 +191,13 @@ export class FooBar2 {
 export class FooBaz2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  version: Date;
+  version!: Date;
 
 }
 ",
@@ -207,13 +207,13 @@ export class FooBaz2 {
 export class Publisher2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ type: 'enum' })
-  type: string;
+  type!: string;
 
   @Property({ nullable: true })
   enum1?: boolean;
@@ -237,13 +237,13 @@ import { Test2 } from './Test2';
 export class Publisher2ToTest2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
-  publisher2: Publisher2;
+  publisher2!: Publisher2;
 
   @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
-  test2: Test2;
+  test2!: Test2;
 
 }
 ",
@@ -255,7 +255,7 @@ import { FooBar2 } from './FooBar2';
 export class Test2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255, nullable: true })
   name?: string;
@@ -286,19 +286,19 @@ import { Book2 } from './Book2';
 export class Author2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ length: 255 })
-  email: string;
+  email!: string;
 
   @Property({ nullable: true })
   age?: number;
@@ -333,10 +333,10 @@ import { Author2 } from './Author2';
 export class Author2ToAuthor2 {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
-  author21: Author2;
+  author21!: Author2;
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
-  author22: Author2;
+  author22!: Author2;
 
 }
 ",
@@ -347,10 +347,10 @@ import { Author2 } from './Author2';
 export class AuthorToFriend {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
-  author21: Author2;
+  author21!: Author2;
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
-  author22: Author2;
+  author22!: Author2;
 
 }
 ",
@@ -362,10 +362,10 @@ import { Publisher2 } from './Publisher2';
 export class Book2 {
 
   @PrimaryKey({ length: 36 })
-  uuidPk: string;
+  uuidPk!: string;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Property({ length: 255, nullable: true })
   title?: string;
@@ -383,7 +383,7 @@ export class Book2 {
   meta?: object;
 
   @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE] })
-  author: Author2;
+  author!: Author2;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
@@ -401,13 +401,13 @@ import { BookTag2 } from './BookTag2';
 export class Book2ToBookTag2 {
 
   @PrimaryKey()
-  order: number;
+  order!: number;
 
   @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
-  book2: Book2;
+  book2!: Book2;
 
   @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
-  bookTag2: BookTag2;
+  bookTag2!: BookTag2;
 
 }
 ",
@@ -417,10 +417,10 @@ export class Book2ToBookTag2 {
 export class BookTag2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 50 })
-  name: string;
+  name!: string;
 
 }
 ",
@@ -432,10 +432,10 @@ import { BookTag2 } from './BookTag2';
 export class BookToTagUnordered {
 
   @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
-  book2: Book2;
+  book2!: Book2;
 
   @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
-  bookTag2: BookTag2;
+  bookTag2!: BookTag2;
 
 }
 ",
@@ -446,10 +446,10 @@ import { FooBaz2 } from './FooBaz2';
 export class FooBar2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;
@@ -458,7 +458,7 @@ export class FooBar2 {
   fooBar?: FooBar2;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  version: Date;
+  version!: Date;
 
 }
 ",
@@ -468,13 +468,13 @@ export class FooBar2 {
 export class FooBaz2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
-  version: Date;
+  version!: Date;
 
 }
 ",
@@ -484,10 +484,10 @@ export class FooBaz2 {
 export class Label2 {
 
   @PrimaryKey({ type: 'uuid' })
-  uuid: string;
+  uuid!: string;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
 }
 ",
@@ -497,13 +497,13 @@ export class Label2 {
 export class Publisher2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255 })
-  name: string;
+  name!: string;
 
   @Property({ type: 'text' })
-  type: string;
+  type!: string;
 
   @Property({ type: 'int2', nullable: true })
   enum1?: number;
@@ -527,13 +527,13 @@ import { Test2 } from './Test2';
 export class Publisher2ToTest2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
-  publisher2: Publisher2;
+  publisher2!: Publisher2;
 
   @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
-  test2: Test2;
+  test2!: Test2;
 
 }
 ",
@@ -544,7 +544,7 @@ import { Book2 } from './Book2';
 export class Test2 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ length: 255, nullable: true })
   name?: string;
@@ -572,7 +572,7 @@ import { Book3 } from './Book3';
 export class Author3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ nullable: true })
   createdAt?: Date;
@@ -581,16 +581,16 @@ export class Author3 {
   updatedAt?: Date;
 
   @Property()
-  name: string;
+  name!: string;
 
   @Property()
-  email: string;
+  email!: string;
 
   @Property({ nullable: true })
   age?: number;
 
   @Property()
-  termsAccepted: number;
+  termsAccepted!: number;
 
   @Property({ nullable: true })
   identities?: string;
@@ -614,10 +614,10 @@ import { Publisher3 } from './Publisher3';
 export class Book3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  title: string;
+  title!: string;
 
   @Property({ nullable: true })
   foo?: string;
@@ -638,7 +638,7 @@ import { BookTag3 } from './BookTag3';
 export class Book3ToBookTag3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL], nullable: true })
   book3?: Book3;
@@ -654,13 +654,13 @@ export class Book3ToBookTag3 {
 export class BookTag3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  name: string;
+  name!: string;
 
   @Property({ default: \`current_timestamp\` })
-  version: Date;
+  version!: Date;
 
 }
 ",
@@ -670,13 +670,13 @@ export class BookTag3 {
 export class Publisher3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property()
-  name: string;
+  name!: string;
 
   @Property()
-  type: string;
+  type!: string;
 
 }
 ",
@@ -688,7 +688,7 @@ import { Test3 } from './Test3';
 export class Publisher3ToTest3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL], nullable: true })
   publisher3?: Publisher3;
@@ -704,7 +704,7 @@ export class Publisher3ToTest3 {
 export class Test3 {
 
   @PrimaryKey()
-  id: number;
+  id!: number;
 
   @Property({ nullable: true })
   name?: string;
