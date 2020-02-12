@@ -70,10 +70,12 @@ export class EntityGenerator {
   }
 
   private getPropertyDefinition(column: Column, prop: string, type: string, defaultValue: any): string {
-    const ret = `${prop}${column.nullable ? '?' : '!'}: ${type}`;
-
     // string defaults are usually things like SQL functions
-    if (!defaultValue || typeof defaultValue === 'string') {
+    const useDefault = defaultValue && typeof defaultValue !== 'string';
+    const optional = column.nullable ? '?' : (useDefault ? '' : '!');
+    const ret = `${prop}${optional}: ${type}`;
+
+    if (!useDefault) {
       return ret + ';';
     }
 
