@@ -31,20 +31,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const orm = new MikroORM<D>(options);
-    const driver = await orm.connect();
+    const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config);
+    orm.metadata = await discovery.discover();
+    orm.em = new EntityManager(orm.config, orm.driver, orm.metadata);
+    orm.metadata.decorate(orm.em);
+    orm.driver.setMetadata(orm.metadata);
+    await orm.connect();
 
-    try {
-      const discovery = new MetadataDiscovery(MetadataStorage.init(), orm.driver.getPlatform(), orm.config);
-      orm.metadata = await discovery.discover();
-      orm.em = new EntityManager(orm.config, driver, orm.metadata);
-      orm.metadata.decorate(orm.em);
-      driver.setMetadata(orm.metadata);
-
-      return orm;
-    } catch (e) {
-      await orm.close(true);
-      throw e;
-    }
+    return orm;
   }
 
   constructor(options: Options<D> | Configuration<D>) {
@@ -71,7 +65,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName')!;
-    this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
+
+    if (await this.isConnected()) {
+      this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
+    } else {
+      this.logger.log('info', chalk.red(`MikroORM failed to connect to database ${dbName}${clientUrl ? ' on ' + clientUrl : ''}`));
+    }
 
     return this.driver;
   }

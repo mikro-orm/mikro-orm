@@ -5,15 +5,9 @@ import { MikroORM, Options } from '../lib';
 describe('Webpack', () => {
 
   test('should create entity', async () => {
-    let port = 3307;
-
-    if (process.env.ORM_PORT) {
-      port = +process.env.ORM_PORT;
-    }
-
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
-      port,
+      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
       multipleStatements: true,
       type: 'mysql',
       discovery: { disableDynamicFileAccess: true },
