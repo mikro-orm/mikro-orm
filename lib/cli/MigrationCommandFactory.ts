@@ -64,10 +64,6 @@ export class MigrationCommandFactory {
       type: 'boolean',
       desc: 'Dumps all queries to console',
     });
-    args.option('disable-fk-checks', {
-      type: 'boolean',
-      desc: 'Do not skip foreign key checks',
-    });
     args.option('p', {
       alias: 'path',
       type: 'string',
