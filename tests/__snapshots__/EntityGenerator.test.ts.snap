@@ -376,7 +376,7 @@ export class Book2 {
   @Property({ type: 'float8', nullable: true })
   price?: number;
 
-  @Property({ type: 'float8', nullable: true })
+  @Property({ type: 'numeric', nullable: true })
   double?: number;
 
   @Property({ nullable: true })

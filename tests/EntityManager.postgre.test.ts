@@ -206,6 +206,7 @@ describe('EntityManagerPostgre', () => {
 
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
+    bible.double = 123.45;
     await orm.em.persistAndFlush(bible);
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
