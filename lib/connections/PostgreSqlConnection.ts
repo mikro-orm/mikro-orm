@@ -14,6 +14,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   getConnectionOptions(): PgConnectionConfig {
     const ret: PgConnectionConfig = super.getConnectionOptions();
+    types.setTypeParser(1700, str => parseFloat(str));
 
     if (this.config.get('forceUtcTimezone')) {
       [1082, 1083, 1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // date, time, timestamp types
