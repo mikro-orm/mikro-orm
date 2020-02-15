@@ -16,8 +16,12 @@ drop table if exists `publisher2_to_test2`;
 
 create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null, `terms_accepted` tinyint(1) not null default 0, `optional` tinyint(1) null, `identities` json null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table `author2` add unique `author2_email_unique`(`email`);
+alter table `author2` add index `author2_born_index`(`born`);
+alter table `author2` add index `born_time_idx`(`born_time`);
 alter table `author2` add index `author2_favourite_book_uuid_pk_index`(`favourite_book_uuid_pk`);
 alter table `author2` add index `author2_favourite_author_id_index`(`favourite_author_id`);
+alter table `author2` add index `custom_email_index_name`(`email`);
+alter table `author2` add index `author2_terms_accepted_index`(`terms_accepted`);
 
 create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) not null default current_timestamp(3), `title` varchar(255) null, `perex` text null, `price` float null, `double` double null, `meta` json null, `author_id` int(11) unsigned not null, `publisher_id` int(11) unsigned null, `foo` varchar(255) null) default character set utf8 engine = InnoDB;
 alter table `book2` add primary key `book2_pkey`(`uuid_pk`);

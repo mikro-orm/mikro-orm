@@ -170,6 +170,33 @@ export const enum UserStatus {
 }
 ``` 
 
+## Indexes
+
+You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator. 
+You can use it either on entity class, or on entity property:
+
+```typescript
+@Entity()
+@Index({ properties: ['name', 'age'] }) // compound index, with generated name
+@Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
+@Unique({ properties: ['name', 'email'] })
+export class Author implements IdEntity<Author> {
+
+  @Property()
+  @Unique()
+  email!: string;
+
+  @Property()
+  @Index() // generated name
+  age?: number;
+
+  @Index({ name: 'born_index' })
+  @Property()
+  born?: Date;
+
+}
+```
+
 ## Custom Types
 
 You can define custom types by extending `Type` abstract class. It has 4 optional methods:

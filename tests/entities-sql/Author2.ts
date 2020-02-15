@@ -1,12 +1,15 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany, DateType, TimeType,
+  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique,
 } from '../../lib';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
 
 @Entity()
+@Index({ properties: ['name', 'age'] })
+@Index({ name: 'custom_idx_name_123', properties: ['name'] })
+@Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
 
   static beforeDestroyCalled = 0;
@@ -21,12 +24,15 @@ export class Author2 extends BaseEntity2 {
   @Property()
   name: string;
 
-  @Property({ unique: true })
+  @Property({ unique: 'custom_email_unique_name' })
+  @Index({ name: 'custom_email_index_name' })
   email: string;
 
   @Property({ nullable: true })
   age?: number;
 
+  @Index()
+  @Unique()
   @Property({ default: 0 })
   termsAccepted: boolean = false;
 
@@ -36,10 +42,10 @@ export class Author2 extends BaseEntity2 {
   @Property({ nullable: true })
   identities?: string[];
 
-  @Property({ type: DateType, nullable: true })
+  @Property({ type: DateType, index: true, nullable: true })
   born?: Date;
 
-  @Property({ type: TimeType, nullable: true })
+  @Property({ type: TimeType, index: 'born_time_idx', nullable: true })
   bornTime?: string;
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })

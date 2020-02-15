@@ -113,7 +113,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   wrappedReference?: boolean;
   fieldName: string;
   default?: any;
-  unique?: boolean;
+  index?: boolean | string;
+  unique?: boolean | string;
   nullable?: boolean;
   unsigned: boolean;
   persist?: boolean;
@@ -158,6 +159,8 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
+  indexes: { properties: string | string[]; name?: string; type?: string }[];
+  uniques: { properties: string | string[]; name?: string }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;
