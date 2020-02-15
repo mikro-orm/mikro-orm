@@ -27,6 +27,8 @@ services:
       - 5432:5432
     volumes:
       - postgre:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
 
 volumes:
   mongo:
