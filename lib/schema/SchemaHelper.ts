@@ -228,9 +228,9 @@ export abstract class SchemaHelper {
 }
 
 export interface IsSame {
-  all: boolean;
-  sameTypes: boolean;
-  sameNullable: boolean;
-  sameDefault: boolean;
-  sameIndex: boolean;
+  all?: boolean;
+  sameTypes?: boolean;
+  sameNullable?: boolean;
+  sameDefault?: boolean;
+  sameIndex?: boolean;
 }

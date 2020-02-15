@@ -32,12 +32,13 @@ export type PropertyOptions = {
   length?: any;
   onUpdate?: () => any;
   default?: any;
-  unique?: boolean;
   nullable?: boolean;
   unsigned?: boolean;
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
+  index?: boolean | string;
+  unique?: boolean | string;
 };
 
 export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {

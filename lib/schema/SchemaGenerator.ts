@@ -164,6 +164,16 @@ export class SchemaGenerator {
         table.primary(meta.primaryKeys.map(prop => meta.properties[prop].fieldName));
       }
 
+      meta.indexes.forEach(index => {
+        const properties = Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldName);
+        table.index(properties, index.name, index.type);
+      });
+
+      meta.uniques.forEach(index => {
+        const properties = Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldName);
+        table.unique(properties, index.name);
+      });
+
       this.helper.finalizeTable(table);
     });
   }
@@ -249,7 +259,7 @@ export class SchemaGenerator {
     return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
-  private createTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter = false): ColumnBuilder {
+  private createTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): ColumnBuilder {
     if (prop.primary && !meta.compositePK && prop.type === 'number') {
       return table.increments(prop.fieldName);
     }
@@ -270,11 +280,15 @@ export class SchemaGenerator {
       table.dropForeign([column.fk.columnName], column.fk.constraintName);
     }
 
-    if (column.fk && !diff.sameIndex && equalDefinition) {
-      return this.createForeignKey(table, meta, prop);
+    if (column.indexes.length > 0 && !diff.sameIndex) {
+      table.dropIndex(column.indexes.map(index => index.columnName));
     }
 
-    this.createTableColumn(table, meta, prop, true).alter();
+    if (column.fk && !diff.sameIndex && equalDefinition) {
+      return this.createForeignKey(table, meta, prop, diff);
+    }
+
+    this.createTableColumn(table, meta, prop, diff).alter();
   }
 
   private dropTableColumn(table: TableBuilder, column: Column): void {
@@ -286,17 +300,20 @@ export class SchemaGenerator {
     table.dropColumn(column.name);
   }
 
-  private configureColumn(meta: EntityMetadata, prop: EntityProperty, col: ColumnBuilder, alter: boolean) {
+  private configureColumn(meta: EntityMetadata, prop: EntityProperty, col: ColumnBuilder, alter?: IsSame) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
-    const indexed = prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys();
+    const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
+    const index = indexed && !(alter && alter.sameIndex);
+    const indexName = Utils.isString(prop.index) ? prop.index : undefined;
+    const uniqueName = Utils.isString(prop.unique) ? prop.unique : undefined;
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
 
-    Utils.runIfNotEmpty(() => col.unique(), prop.unique);
     Utils.runIfNotEmpty(() => col.nullable(), nullable);
     Utils.runIfNotEmpty(() => col.notNullable(), !nullable);
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), prop.unsigned);
-    Utils.runIfNotEmpty(() => col.index(), indexed);
+    Utils.runIfNotEmpty(() => col.index(indexName), index);
+    Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
     Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
 
     return col;
@@ -308,14 +325,14 @@ export class SchemaGenerator {
       .forEach(prop => this.createForeignKey(table, meta, prop));
   }
 
-  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty): void {
+  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff: IsSame = {}): void {
     if (this.helper.supportsSchemaConstraints()) {
       this.createForeignKeyReference(table.foreign(prop.fieldName) as ColumnBuilder, prop);
 
       return;
     }
 
-    this.createTableColumn(table, meta, prop, true);
+    this.createTableColumn(table, meta, prop, diff);
 
     // knex does not allow adding new columns with FK in sqlite
     // @see https://github.com/knex/knex/issues/3351

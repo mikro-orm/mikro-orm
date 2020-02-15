@@ -122,6 +122,43 @@ enum3 = 3;
 enum4 = 'a';
 ```
 
+### @Index() and @Unique()
+
+Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can 
+use those decorators both on the entity level and on property level. To create compound
+index, use the decorator on the entity level and provide list of property names via the
+`properties` option.
+
+See [Defining Entities](defining-entities.md#indexes).
+
+| Parameter    | Type     | Optional | Description |
+|--------------|----------|----------|-------------|
+| `name`       | `string` | yes      | index name  |
+| `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
+| `type`       | `string` | yes      | index type, not available for `@Unique()` |
+
+```typescript
+@Entity()
+@Index({ properties: ['name', 'age'] }) // compound index, with generated name
+@Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
+@Unique({ properties: ['name', 'email'] })
+export class Author implements IdEntity<Author> {
+k
+  @Property()
+  @Unique()
+  email!: string;
+
+  @Index() // generated name
+  @Property()
+  age?: number;
+
+  @Index({ name: 'born_index' })
+  @Property()
+  born?: Date;
+
+}
+```
+
 ## Entity Relationships
 
 All relationship decorators have `entity`, `cascade` and `eager` optional parameters. 

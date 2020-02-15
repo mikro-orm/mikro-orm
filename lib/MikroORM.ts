@@ -65,11 +65,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const connection = await this.driver.connect();
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName')!;
+    const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
 
     if (await this.isConnected()) {
-      this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(dbName)}${clientUrl ? ' on ' + chalk.green(clientUrl) : ''}`);
+      this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(db)}`);
     } else {
-      this.logger.log('info', chalk.red(`MikroORM failed to connect to database ${dbName}${clientUrl ? ' on ' + clientUrl : ''}`));
+      this.logger.log('info', chalk.red(`MikroORM failed to connect to database ${db}`));
     }
 
     return this.driver;

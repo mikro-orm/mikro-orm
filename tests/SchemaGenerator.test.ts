@@ -148,6 +148,9 @@ describe('SchemaGenerator', () => {
         },
       },
       name: 'NewTable',
+      hooks: {},
+      indexes: [],
+      uniques: [],
       collection: 'new_table',
       primaryKey: 'id',
     } as any;
@@ -324,10 +327,15 @@ describe('SchemaGenerator', () => {
       name: 'NewTable',
       collection: 'new_table',
       primaryKey: 'id',
+      hooks: {},
+      indexes: [],
+      uniques: [],
     } as any;
     meta.set('NewTable', newTableMeta);
     const authorMeta = meta.get('Author2');
     authorMeta.properties.termsAccepted.default = false;
+
+    await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-create-table');
     await generator.updateSchema();
 

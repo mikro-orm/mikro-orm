@@ -17,6 +17,10 @@ drop table if exists "label2" cascade;
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "optional" bool null, "identities" json null, "born" date null, "born_time" time(0) without time zone null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "author2_email_unique" unique ("email");
+create index "author2_born_index" on "author2" ("born");
+create index "born_time_idx" on "author2" ("born_time");
+create index "custom_email_index_name" on "author2" ("email");
+create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 
 create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" numeric null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");

@@ -420,7 +420,7 @@ export class Utils {
     }
   }
 
-  static defaultValue(prop: Dictionary, option: string, defaultValue: any): void {
+  static defaultValue<T extends Dictionary>(prop: T, option: keyof T, defaultValue: any): void {
     prop[option] = option in prop ? prop[option] : defaultValue;
   }
 

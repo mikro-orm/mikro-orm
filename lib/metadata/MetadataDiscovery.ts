@@ -280,6 +280,9 @@ export class MetadataDiscovery {
       collection: prop.pivotTable,
       pivotTable: true,
       properties: {} as Record<string, EntityProperty>,
+      hooks: {},
+      indexes: [] as any[],
+      uniques: [] as any[],
     } as EntityMetadata;
 
     if (prop.fixedOrder) {
@@ -391,7 +394,7 @@ export class MetadataDiscovery {
       meta.primaryKey = primary.name;
     }
 
-    Object.keys(base.hooks || {}).forEach(type => {
+    Object.keys(base.hooks).forEach(type => {
       meta.hooks[type] = meta.hooks[type] || [];
       meta.hooks[type].unshift(...base.hooks[type]);
     });

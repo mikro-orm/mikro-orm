@@ -1,4 +1,6 @@
-import { MikroORM, EntityManager, Configuration } from '../lib';
+(global as any).process.env.FORCE_COLOR = 0;
+
+import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '../lib';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
@@ -34,6 +36,21 @@ describe('MikroORM', () => {
 
   test('should throw when multiple entities with same file name discovered', async () => {
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+  });
+
+  test('should report connection failure', async () => {
+    const logger = jest.fn();
+    await MikroORM.init({
+      dbName: 'not-found',
+      baseDir: BASE_DIR,
+      cache: { enabled: false },
+      metadataProvider: ReflectMetadataProvider,
+      type: 'mysql',
+      entitiesDirs: ['entities-sql'],
+      debug: ['info'],
+      logger,
+    });
+    expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
   });
 
   test('should throw when multiple entities with same class name discovered', async () => {

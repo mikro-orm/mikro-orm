@@ -16,7 +16,7 @@ export class MetadataStorage {
   static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>; // tslint:disable-next-line:lines-between-class-members
   static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Record<string, EntityMetadata> | EntityMetadata<T> {
     if (entity && !MetadataStorage.metadata[entity]) {
-      MetadataStorage.metadata[entity] = { properties: {}, hooks: {} } as EntityMetadata;
+      MetadataStorage.metadata[entity] = { properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
     }
 
     if (entity) {
@@ -40,7 +40,7 @@ export class MetadataStorage {
     }
 
     if (!this.metadata[entity] && init) {
-      this.metadata[entity] = { properties: {} } as EntityMetadata;
+      this.metadata[entity] = { properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
     }
 
     return this.metadata[entity];
