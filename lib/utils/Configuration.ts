@@ -9,7 +9,7 @@ import { Dictionary, EntityClass, EntityClassGroup, EntityName, AnyEntity, IPrim
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
-import { EntityOptions, IDatabaseDriver } from '..';
+import { EntityOptions, EntitySchema, IDatabaseDriver } from '..';
 import { Platform } from '../platforms';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
@@ -253,7 +253,7 @@ export type MigrationsOptions = {
 };
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
-  entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity>)[];
+  entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesDirs: string[];
   entitiesDirsTs: string[];
   discovery: {

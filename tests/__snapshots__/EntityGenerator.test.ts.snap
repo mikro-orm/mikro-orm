@@ -616,6 +616,12 @@ export class Book3 {
   @PrimaryKey()
   id!: number;
 
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
   @Property()
   title!: string;
 

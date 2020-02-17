@@ -3,6 +3,8 @@ const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
  * @property {number} id
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
  * @property {string} title
  * @property {Author3} author
  * @property {Publisher3} publisher
@@ -16,6 +18,8 @@ class Book3 extends BaseEntity4 {
    */
   constructor(title, author) {
     super();
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
     this.title = title;
     this.author = author;
     this.tags = new Collection(this);
@@ -27,6 +31,15 @@ const schema = {
   name: 'Book3',
   extends: 'BaseEntity4',
   properties: {
+    createdAt: {
+      type: 'Date',
+      nullable: true,
+    },
+    updatedAt: {
+      type: 'Date',
+      nullable: true,
+      onUpdate: () => new Date(),
+    },
     title: 'string',
     author: {
       reference: 'm:1',

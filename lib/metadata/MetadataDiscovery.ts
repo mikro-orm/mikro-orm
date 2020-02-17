@@ -2,13 +2,14 @@ import { extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
-import { EntityClass, EntityClassGroup, EntityMetadata, EntityProperty, AnyEntity, Constructor } from '../typings';
+import { AnyEntity, Constructor, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
 import { Configuration, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
 import { Type } from '../types';
+import { EntitySchema } from '../schema';
 
 export class MetadataDiscovery {
 
@@ -88,18 +89,21 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(file);
       const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
-      const target = this.getEntityClass(path, name);
+      const target = this.getEntityClassOrSchema(path, name);
       this.metadata.set(name, MetadataStorage.getMetadata(name));
       await this.discoverEntity(target, path);
     }
   }
 
-  private prepare<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T>): EntityClass<T> {
+  private prepare<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
+    if ('schema' in entity && entity.schema instanceof EntitySchema) {
+      return entity.schema;
+    }
+
     // save path to entity from schema
     if ('entity' in entity && 'schema' in entity) {
-      const schema = entity.schema;
       const meta = this.metadata.get(entity.entity.name, true);
-      meta.path = schema.path;
+      meta.path = (entity.schema as EntityMetadata).path;
 
       return entity.entity;
     }
@@ -107,43 +111,58 @@ export class MetadataDiscovery {
     return entity;
   }
 
-  private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T>, path?: string): Promise<void> {
+  private getSchema<T extends AnyEntity<T>>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
+    if (entity instanceof EntitySchema) {
+      return entity;
+    }
+
+    const schema = new EntitySchema<T>(this.metadata.get<T>(entity.name, true));
+    schema.setClass(entity);
+    schema.meta.useCache = true;
+
+    return schema;
+  }
+
+  private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
     this.logger.log('discovery', `- processing entity ${chalk.cyan(entity.name)}`);
-
-    const meta = this.metadata.get(entity.name, true);
-    meta.class = entity as Constructor<T>;
-    meta.prototype = entity.prototype;
-    meta.className = entity.name;
-    meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
-    meta.toJsonParams = Utils.getParamNames(entity, 'toJSON').filter(p => p !== '...args');
-    const cache = meta.path && await this.cache.get(entity.name + extname(meta.path));
+    const schema = this.getSchema(entity as Constructor<T>);
+    const meta = schema.init().meta;
+    this.metadata.set(meta.className, meta);
+    schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
+    const cache = meta.useCache && meta.path && await this.cache.get(meta.className + extname(meta.path));
 
     if (cache) {
-      this.logger.log('discovery', `- using cached metadata for entity ${chalk.cyan(entity.name)}`);
+      this.logger.log('discovery', `- using cached metadata for entity ${chalk.cyan(meta.className)}`);
       this.metadataProvider.loadFromCache(meta, cache);
       this.discovered.push(meta);
 
       return;
     }
 
-    await this.metadataProvider.loadEntityMetadata(meta, entity.name);
+    if (!(entity instanceof EntitySchema)) {
+      await this.metadataProvider.loadEntityMetadata(meta, meta.className);
+    }
 
     if (!meta.collection && meta.name) {
       meta.collection = this.namingStrategy.classToTableName(meta.name);
     }
 
-    await this.saveToCache(meta, entity);
+    await this.saveToCache(meta);
     this.discovered.push(meta);
   }
 
-  private async saveToCache<T extends AnyEntity<T>>(meta: EntityMetadata, entity: EntityClass<T>): Promise<void> {
+  private async saveToCache<T extends AnyEntity<T>>(meta: EntityMetadata): Promise<void> {
+    if (!meta.useCache) {
+      return;
+    }
+
     const copy = Object.assign({}, meta);
     delete copy.prototype;
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {
-      await this.cache.set(entity.name + extname(meta.path), copy, meta.path);
+      await this.cache.set(meta.className + extname(meta.path), copy, meta.path);
     }
   }
 
@@ -453,7 +472,8 @@ export class MetadataDiscovery {
 
   private initEnumValues(prop: EntityProperty, path: string): void {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const target = this.getEntityClass(path, prop.type, false);
+    const exports = require(path);
+    const target = exports[prop.type] || exports.default;
 
     if (target) {
       const keys = Object.keys(target);
@@ -478,11 +498,16 @@ export class MetadataDiscovery {
     prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
   }
 
-  private getEntityClass(path: string, name: string, validate = true) {
+  private getEntityClassOrSchema(path: string, name: string) {
     const exports = require(path);
     const target = exports.default || exports[name];
+    const schema = Object.values(exports).find(item => item instanceof EntitySchema);
 
-    if (!target && validate) {
+    if (schema) {
+      return schema;
+    }
+
+    if (!target) {
       throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
 

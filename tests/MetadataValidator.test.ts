@@ -1,5 +1,5 @@
 import { ReferenceType } from '../lib/entity';
-import { MetadataStorage, MetadataValidator } from '../lib/metadata';
+import { MetadataStorage, MetadataValidator, ReflectMetadataProvider } from '../lib/metadata';
 import { MikroORM } from '../lib';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BASE_DIR } from './bootstrap';
@@ -117,6 +117,7 @@ describe('MetadataValidator', () => {
       entities: [FooBar2, FooBaz2],
       dbName: `mikro_orm_test`,
       port,
+      metadataProvider: ReflectMetadataProvider,
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,

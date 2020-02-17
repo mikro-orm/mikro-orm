@@ -31,7 +31,7 @@ export class Book extends BaseEntity3 {
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany()
-  tags = new Collection<BookTag>(this);
+  tags: Collection<BookTag> = new Collection<BookTag>(this);
 
   @Property()
   metaObject?: object;

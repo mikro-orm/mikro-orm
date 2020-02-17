@@ -149,11 +149,12 @@ export class MigrationCommandFactory {
       return msg + ' to previous version';
     }
 
-    if (method === 'down' && options.to === 0) {
-      return msg + ' to the first version';
+    if (options.to === 0) {
+      const v = { down: 'first', up: 'latest'}[method];
+      return `${msg} to the ${v} version`;
     }
 
-    if (method === 'up' && (Utils.isEmpty(options) || options.to === 0)) {
+    if (method === 'up' && Utils.isEmpty(options)) {
       return msg + ' to the latest version';
     }
 

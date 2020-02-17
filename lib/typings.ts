@@ -5,6 +5,7 @@ import { LockMode } from './unit-of-work';
 import { Platform } from './platforms';
 import { MetadataStorage } from './metadata';
 import { Type } from './types';
+import { EntitySchema } from './schema';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -97,7 +98,7 @@ export type IdEntity<T extends { id: number | string }> = AnyEntity<T, 'id'>;
 export type UuidEntity<T extends { uuid: string }> = AnyEntity<T, 'uuid'>;
 export type MongoEntity<T extends { _id: IPrimaryKey; id: string }> = AnyEntity<T, 'id' | '_id'>;
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
-export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> };
+export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T>;
 export type EntityData<T extends AnyEntity<T>> = { [K in keyof T]?: T[K] | Primary<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
 
@@ -108,6 +109,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   columnType: string;
   customType: Type;
   primary: boolean;
+  serializedPrimaryKey: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
@@ -128,6 +130,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   getterName?: keyof T;
   cascade: Cascade[];
   orphanRemoval?: boolean;
+  onCreate?: () => any;
   onUpdate?: () => any;
   owner: boolean;
   inversedBy: string;
@@ -148,7 +151,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   name: string;
   className: string;
   pivotTable: boolean;
-  constructorParams: (keyof T & string)[];
+  constructorParams: string[];
   toJsonParams: string[];
   extends: string;
   collection: string;
@@ -165,4 +168,6 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;
   class: Constructor<T>;
+  abstract: boolean;
+  useCache: boolean;
 }

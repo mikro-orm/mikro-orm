@@ -7,9 +7,7 @@ export function Entity(options: EntityOptions<any> = {}): Function {
   return function <T extends { new(...args: any[]): AnyEntity<T> }>(target: T) {
     const meta = MetadataStorage.getMetadata(target.name);
     Utils.merge(meta, options);
-    meta.name = target.name;
-    meta.constructorParams = Utils.getParamNames(target, 'constructor');
-    meta.extends = Object.getPrototypeOf(target).name || undefined;
+    meta.class = target;
     Utils.lookupPathFromDecorator(meta);
 
     return target;

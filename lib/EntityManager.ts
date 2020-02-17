@@ -162,7 +162,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && wrap(entity).isInitialized() && !options.refresh && isOptimisticLocking) {
-      return this.lockAndPopulate(entity, where, options);
+      return this.lockAndPopulate(entityName, entity, where, options);
     }
 
     this.validator.validateParams(where);
@@ -173,7 +173,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     entity = this.merge(entityName, data as EntityData<T>, options.refresh) as T;
-    await this.lockAndPopulate(entity, where, options);
+    await this.lockAndPopulate(entityName, entity, where, options);
 
     return entity;
   }
@@ -571,12 +571,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
-  private async lockAndPopulate<T extends AnyEntity<T>>(entity: T, where: FilterQuery<T>, options: FindOneOptions): Promise<T> {
+  private async lockAndPopulate<T extends AnyEntity<T>>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions): Promise<T> {
     if (options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, options.lockVersion);
     }
 
-    await this.entityLoader.populate(entity.constructor.name, [entity], options.populate || [], where, options.orderBy || {}, options.refresh);
+    await this.entityLoader.populate(entityName, [entity], options.populate || [], where, options.orderBy || {}, options.refresh);
 
     return entity;
   }
