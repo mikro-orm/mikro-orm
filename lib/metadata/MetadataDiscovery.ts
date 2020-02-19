@@ -1,4 +1,4 @@
-import { extname } from 'path';
+import { basename, extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
@@ -72,23 +72,25 @@ export class MetadataDiscovery {
   }
 
   private async discoverDirectory(basePath: string): Promise<void> {
-    const files = await globby('*', { cwd: Utils.normalizePath(this.config.get('baseDir'), basePath) });
+    const files = await globby(Utils.normalizePath(basePath, '*'), { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${files.length} files from directory ${basePath}`);
 
-    for (const file of files) {
+    for (const filepath of files) {
+      const filename = basename(filepath);
+
       if (
-        !file.match(/\.[jt]s$/) ||
-        file.endsWith('.js.map') ||
-        file.endsWith('.d.ts') ||
-        file.startsWith('.') ||
-        file.match(/index\.[jt]s$/)
+        !filename.match(/\.[jt]s$/) ||
+        filename.endsWith('.js.map') ||
+        filename.endsWith('.d.ts') ||
+        filename.startsWith('.') ||
+        filename.match(/index\.[jt]s$/)
       ) {
-        this.logger.log('discovery', `- ignoring file ${file}`);
+        this.logger.log('discovery', `- ignoring file ${filename}`);
         continue;
       }
 
-      const name = this.namingStrategy.getClassName(file);
-      const path = Utils.normalizePath(this.config.get('baseDir'), basePath, file);
+      const name = this.namingStrategy.getClassName(filename);
+      const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
       const target = this.getEntityClassOrSchema(path, name);
       this.metadata.set(name, MetadataStorage.getMetadata(name));
       await this.discoverEntity(target, path);

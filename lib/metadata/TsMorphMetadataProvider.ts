@@ -1,3 +1,4 @@
+import globby from 'globby';
 import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
 import { pathExists } from 'fs-extra';
 
@@ -119,8 +120,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     for (const dir of dirs) {
       const path = Utils.normalizePath(this.config.get('baseDir'), dir);
+      const files = await globby(`${path}/*`);
 
-      if (!await pathExists(path)) {
+      if (files.length === 0) {
         throw new Error(`Path ${path} does not exist`);
       }
 
