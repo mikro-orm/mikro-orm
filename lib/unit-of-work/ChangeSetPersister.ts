@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey } from '../typings';
+import { AnyEntity, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { FilterQuery, IDatabaseDriver, Transaction } from '..';
@@ -78,6 +78,10 @@ export class ChangeSetPersister {
       changeSet.payload[prop.name as keyof T] = value.getValue();
     } else if (Array.isArray(value) && value.some(item => item as object instanceof EntityIdentifier)) {
       changeSet.payload[prop.name as keyof T] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item) as unknown as T[keyof T];
+    }
+
+    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
+      changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name as keyof T] = prop.onCreate();
     }
 
     if (prop.onUpdate) {

@@ -2,6 +2,51 @@
 title: Defining Entities
 ---
 
+There are two ways how you can define your entities:
+
+- Decorated classes
+- `EntitySchema` helper
+
+# EntitySchema helper
+
+With `EntitySchema` helper you define the schema programmatically. 
+
+**`./entities/Book.ts`**
+
+```typescript
+export interface Book extends BaseEntity {
+  title: string;
+  author: Author;
+  publisher: Publisher;
+  tags: Collection<BookTag>;
+}
+
+export const schema = new EntitySchema<Book, BaseEntity>({
+  name: 'Book',
+  extends: 'BaseEntity',
+  properties: {
+    title: { type: 'string' },
+    author: { reference: 'm:1', entity: 'Author', inversedBy: 'books' },
+    publisher: { reference: 'm:1', entity: 'Publisher', inversedBy: 'books' },
+    tags: { reference: 'm:n', entity: 'BookTag', inversedBy: 'books', fixedOrder: true },
+  },
+});
+```
+
+When creating new entity instances, you will need to use `em.create()` method that will
+create instance of internally created class. 
+
+```typescript
+const repo = em.getRepository<Author>('Author');
+const author = repo.create('Author', { name: 'name', email: 'email' }); // instance of internal Author class
+await repo.persistAndFlush(author);
+```
+
+You can optionally use custom class for entity instances. Read more about this approach 
+in [Defining Entities via EntitySchema section](entity-schema.md).
+
+# Classes and Decorators
+
 Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator.
 No real restrictions are made, you do not have to extend any base class, you are more than welcome
 to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with
@@ -253,7 +298,7 @@ export class User implements IdEntity<User> {
 
 }
 
-const repo = orm.em.getRepository(User);
+const repo = em.getRepository(User);
 const author = repo.create({ firstName: 'Jon', lastName: 'Snow' });
 
 console.log(author.getFullName()); // 'Jon Snow'

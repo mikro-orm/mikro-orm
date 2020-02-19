@@ -30,6 +30,7 @@ export type PropertyOptions = {
   columnType?: string;
   type?: any;
   length?: any;
+  onCreate?: () => any;
   onUpdate?: () => any;
   default?: any;
   nullable?: boolean;
@@ -39,6 +40,8 @@ export type PropertyOptions = {
   version?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
+  primary?: boolean;
+  serializedPrimaryKey?: boolean;
 };
 
 export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {

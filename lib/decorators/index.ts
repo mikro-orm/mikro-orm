@@ -1,5 +1,4 @@
 export * from './PrimaryKey';
-export * from './SerializedPrimaryKey';
 export * from './Entity';
 export * from './OneToOne';
 export * from './ManyToOne';

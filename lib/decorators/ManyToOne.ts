@@ -1,8 +1,8 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType } from '../entity';
-import { EntityName, EntityProperty, AnyEntity } from '../typings';
+import { ReferenceType } from '../entity';
+import { AnyEntity, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T extends AnyEntity<T>>(
   entity: ManyToOneOptions<T> | string | ((e?: any) => EntityName<T>) = {},
@@ -17,10 +17,8 @@ export function ManyToOne<T extends AnyEntity<T>>(
 
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
-    const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE] } as EntityProperty;
-    const prop = Object.assign(property, options);
-    Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
-    meta.properties[propertyName] = prop;
+    const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
+    meta.properties[propertyName] = Object.assign(property, options);
   };
 }
 

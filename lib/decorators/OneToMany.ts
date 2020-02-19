@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType } from '../entity';
+import { ReferenceType } from '../entity';
 import { QueryOrder } from '../query';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
@@ -30,23 +30,8 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
       }
     }
 
-    const prop = {
-      name: propertyName,
-      reference,
-      cascade: [Cascade.PERSIST, Cascade.MERGE],
-    } as EntityProperty<T>;
+    const prop = { name: propertyName, reference } as EntityProperty<T>;
     Object.assign(prop, options);
-
-    if (reference === ReferenceType.ONE_TO_ONE) {
-      Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
-      prop.owner = prop.owner || !!prop.inversedBy || !prop.mappedBy;
-      prop.unique = prop.owner;
-
-      if (prop.owner && options.mappedBy) {
-        Utils.renameKey(prop, 'mappedBy', 'inversedBy');
-      }
-    }
-
     meta.properties[propertyName] = prop;
   };
 }

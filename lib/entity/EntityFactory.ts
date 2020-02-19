@@ -18,7 +18,6 @@ export class EntityFactory {
 
   create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
     entityName = Utils.className(entityName);
-    data = Object.assign({}, data);
     const meta = this.metadata.get(entityName);
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
@@ -56,6 +55,10 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
+    if (data instanceof meta.class) {
+      return data as T;
+    }
+
     const Entity = this.metadata.get<T>(meta.name).class;
 
     if (!data[meta.primaryKey]) {

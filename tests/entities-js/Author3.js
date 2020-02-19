@@ -1,4 +1,4 @@
-const { Collection, DateType, TimeType, ReferenceType } = require('../../lib');
+const { Collection, DateType, TimeType, ReferenceType, EntitySchema } = require('../../lib');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
@@ -61,9 +61,8 @@ class Author3 extends BaseEntity4 {
 Author3.beforeDestroyCalled = 0;
 Author3.afterDestroyCalled = 0;
 
-const schema = {
-  name: 'Author3',
-  extends: 'BaseEntity4',
+const schema = new EntitySchema({
+  class: Author3,
   properties: {
     createdAt: {
       type: 'Date',
@@ -74,7 +73,7 @@ const schema = {
       nullable: true,
       onUpdate: () => new Date(),
     },
-    name: 'string',
+    name: { type: 'string' },
     email: {
       type: 'string',
       unique: true,
@@ -120,7 +119,7 @@ const schema = {
     afterDelete: ['afterDelete'],
   },
   path: __filename,
-};
+});
 
 module.exports.Author3 = Author3;
 module.exports.entity = Author3;

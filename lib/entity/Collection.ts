@@ -89,7 +89,7 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   }
 
   setDirty(dirty = true): void {
-    this.dirty = dirty && this.property.owner; // set dirty flag only to owning side
+    this.dirty = dirty && !!this.property.owner; // set dirty flag only to owning side
   }
 
   async init(options?: InitOptions<T>): Promise<this>; // tslint:disable-next-line:lines-between-class-members

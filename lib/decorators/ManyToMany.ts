@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType } from '../entity';
+import { ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 import { QueryOrder } from '../query';
 
@@ -12,19 +12,9 @@ export function ManyToMany<T extends AnyEntity<T>>(
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
-    options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
-
-    if (!options.owner && !options.inversedBy && !options.mappedBy) {
-      options.owner = true;
-    }
-
-    if (options.owner) {
-      Utils.renameKey(options, 'mappedBy', 'inversedBy');
-    }
-
     const meta = MetadataStorage.getMetadata(target.constructor.name);
     Utils.lookupPathFromDecorator(meta);
-    const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY, owner: !!options.inversedBy, cascade: [Cascade.PERSIST, Cascade.MERGE] } as EntityProperty<T>;
+    const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY } as EntityProperty<T>;
     meta.properties[propertyName] = Object.assign(property, options);
   };
 }

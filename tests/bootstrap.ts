@@ -11,6 +11,14 @@ import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
+import { schema as Author4 } from './entities-schema/Author4';
+import { schema as Book4 } from './entities-schema/Book4';
+import { schema as BookTag4 } from './entities-schema/BookTag4';
+import { schema as Publisher4 } from './entities-schema/Publisher4';
+import { schema as Test4 } from './entities-schema/Test4';
+import { schema as FooBar4 } from './entities-schema/FooBar4';
+import { schema as FooBaz4 } from './entities-schema/FooBaz4';
+import { schema as BaseEntity5 } from './entities-schema/BaseEntity5';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -109,6 +117,22 @@ export async function initORMSqlite() {
   return orm;
 }
 
+export async function initORMSqlite2() {
+  const orm = await MikroORM.init<SqliteDriver>({
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
+    dbName: TEMP_DIR + '/mikro_orm_entity_schema.db',
+    baseDir: BASE_DIR,
+    driver: SqliteDriver,
+    debug: ['query'],
+    highlight: false,
+    logger: i => i,
+    cache: { pretty: true },
+  });
+  await orm.getSchemaGenerator().createSchema();
+
+  return orm;
+}
+
 export async function wipeDatabase(em: EntityManager) {
   await em.getRepository(Author).remove({});
   await em.getRepository(Book).remove({});
@@ -149,12 +173,23 @@ export async function wipeDatabasePostgreSql(em: EntityManager) {
 }
 
 export async function wipeDatabaseSqlite(em: EntityManager) {
-  await em.createQueryBuilder(Author3.entity).delete().execute('run');
-  await em.createQueryBuilder(Book3.entity).delete().execute('run');
-  await em.createQueryBuilder(BookTag3.entity).delete().execute('run');
-  await em.createQueryBuilder(Publisher3.entity).delete().execute('run');
-  await em.createQueryBuilder(Test3.entity).delete().execute('run');
-  await em.createQueryBuilder('book3_to_book_tag3').delete().execute('run');
-  await em.createQueryBuilder('publisher3_to_test3').delete().execute('run');
+  await em.createQueryBuilder('Author3').delete().execute();
+  await em.remove('Book3', {});
+  await em.remove('BookTag3', {});
+  await em.remove('Publisher3', {});
+  await em.remove('Test3', {});
+  await em.remove('book3_to_book_tag3', {});
+  await em.remove('publisher3_to_test3', {});
+  em.clear();
+}
+
+export async function wipeDatabaseSqlite2(em: EntityManager) {
+  await em.remove('Author4', {});
+  await em.remove('Book4', {});
+  await em.remove('BookTag4', {});
+  await em.remove('Publisher4', {});
+  await em.remove('Test4', {});
+  await em.remove('book4_to_book_tag4', {});
+  await em.remove('publisher4_to_test4', {});
   em.clear();
 }
