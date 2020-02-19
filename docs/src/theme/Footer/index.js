@@ -77,6 +77,7 @@ function Footer() {
                                   width={100}
                                   height={30}
                                   title="GitHub Stars"
+                                  key={key}
                           />
                         );
                       }
