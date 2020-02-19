@@ -35,7 +35,7 @@ export class CLIHelper {
   }
 
   static async getORM(warnWhenNoEntities?: boolean): Promise<MikroORM> {
-    const options = await CLIHelper.getConfiguration();
+    const options = await CLIHelper.getConfiguration(warnWhenNoEntities);
     const settings = await CLIHelper.getSettings();
     options.getLogger().setDebugMode(false);
 
