@@ -6,6 +6,8 @@ import { Configuration, MikroORM } from '../lib';
 
 describe('EntityGenerator', () => {
 
+  jest.setTimeout(10e3);
+
   test('generate entities from schema [mysql]', async () => {
     const orm = await initORMMySql();
     const generator = orm.getEntityGenerator();
