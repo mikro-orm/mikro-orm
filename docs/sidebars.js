@@ -28,6 +28,7 @@ module.exports = {
       'lifecycle-hooks',
       'naming-strategy',
       'custom-types',
+      'entity-schema',
       'metadata-providers',
       'metadata-cache',
       'debugging',
