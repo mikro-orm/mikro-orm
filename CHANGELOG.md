@@ -1,3 +1,20 @@
+# [3.2.0](https://github.com/mikro-orm/mikro-orm/compare/v3.1.1...v3.2.0) (2020-02-19)
+
+
+### Bug Fixes
+
+* **cli:** do not require existing entities in generate-entities command ([4d5853f](https://github.com/mikro-orm/mikro-orm/commit/4d5853f9fa3c9832c9f9272a8e9624b71883f056)), closes [#340](https://github.com/mikro-orm/mikro-orm/issues/340)
+* **discovery:** fix support for globbing ([995a3e8](https://github.com/mikro-orm/mikro-orm/commit/995a3e86e0b339023734b2f2cc01fb59a5da22db)), closes [#341](https://github.com/mikro-orm/mikro-orm/issues/341)
+* **typing:** align EntityRepository populate signature to EntityManager ([#343](https://github.com/mikro-orm/mikro-orm/issues/343)) ([ec5a30e](https://github.com/mikro-orm/mikro-orm/commit/ec5a30e871b85705b2bdc30711e8b94b4a9634ad))
+
+
+### Features
+
+* **mapping:** allow defining schema via EntitySchema helper ([#335](https://github.com/mikro-orm/mikro-orm/issues/335)) ([6d1a24c](https://github.com/mikro-orm/mikro-orm/commit/6d1a24c4be1e1fd6c9d39489b61328a3bb15175e)), closes [#283](https://github.com/mikro-orm/mikro-orm/issues/283)
+* **sql:** add @Index() and @Unique() decorators ([#331](https://github.com/mikro-orm/mikro-orm/issues/331)) ([6f86db3](https://github.com/mikro-orm/mikro-orm/commit/6f86db3b019e6b6bec8bc0bb8de6452ed0ca616a)), closes [#328](https://github.com/mikro-orm/mikro-orm/issues/328) [#226](https://github.com/mikro-orm/mikro-orm/issues/226)
+
+
+
 ## [3.1.1](https://github.com/mikro-orm/mikro-orm/compare/v3.1.0...v3.1.1) (2020-02-15)
 
 
@@ -52,10 +69,6 @@
 * **core:** make `em.find()` where parameter required ([3393d52](https://github.com/mikro-orm/mikro-orm/commit/3393d52a98f83169fe84eae1cfbf2d79aa4e7d62))
 * **core:** make sure constructor params are sniffer from the constructor ([fdd157c](https://github.com/mikro-orm/mikro-orm/commit/fdd157ca21618611a010a100d6fddb882e09d0d2))
 * **core:** `requireEntitiesArray` should be used only for validation ([066b0ea](https://github.com/mikro-orm/mikro-orm/commit/066b0eab58972d8bc5567ee131226472ec0e1ddb)), closes [#293](https://github.com/mikro-orm/mikro-orm/issues/293)
-* **deps:** update dependency @docusaurus/core to ^2.0.0-alpha ([#257](https://github.com/mikro-orm/mikro-orm/issues/257)) ([82d0b3b](https://github.com/mikro-orm/mikro-orm/commit/82d0b3b343767c715dea902d8d956683ff885266))
-* **deps:** update dependency @docusaurus/core to v2.0.0-alpha.38 ([#260](https://github.com/mikro-orm/mikro-orm/issues/260)) ([a8a5386](https://github.com/mikro-orm/mikro-orm/commit/a8a53860511104d1e686398686185ee934a8df6b))
-* **deps:** update dependency @docusaurus/preset-classic to ^2.0.0-alpha ([#258](https://github.com/mikro-orm/mikro-orm/issues/258)) ([bfc7455](https://github.com/mikro-orm/mikro-orm/commit/bfc74557ac1b8bd835b6b1664346068ff41c19df))
-* **deps:** update dependency @docusaurus/preset-classic to v2.0.0-alpha.38 ([#259](https://github.com/mikro-orm/mikro-orm/issues/259)) ([c3c80c9](https://github.com/mikro-orm/mikro-orm/commit/c3c80c9e6469a490b95204eba30b2766b0803974))
 * **deps:** update dependency chalk to v3 ([#243](https://github.com/mikro-orm/mikro-orm/issues/243)) ([0a17eb7](https://github.com/mikro-orm/mikro-orm/commit/0a17eb7ba7d8711d20c6c9adcbe80a3f934ff5ff))
 * **deps:** update dependency fast-deep-equal to v3 ([#250](https://github.com/mikro-orm/mikro-orm/issues/250)) ([546e950](https://github.com/mikro-orm/mikro-orm/commit/546e95023b36b7ca13b5aa6e4df56f0f7effbf08))
 * **deps:** update dependency ts-morph to v4 ([#162](https://github.com/mikro-orm/mikro-orm/issues/162)) ([b6dd073](https://github.com/mikro-orm/mikro-orm/commit/b6dd07305b940b9db28af4a0711101a0f5744163))
