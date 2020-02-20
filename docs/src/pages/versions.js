@@ -19,8 +19,8 @@ import versions from '../../versions.json';
 function Version() {
   const context = useDocusaurusContext();
   const {siteConfig = {}} = context;
-  const latestVersion = pkg.version;
-  const pastVersions = versions.filter(version => version !== versions[0]).map(v => v + '.0');
+  const latestVersion = [versions[0], pkg.version];
+  const pastVersions = versions.filter(version => version !== versions[0]).map(v => [v, v + '.0']);
   const repoUrl = `https://github.com/${siteConfig.organizationName}/${siteConfig.projectName}`;
   return (
     <Layout
@@ -34,14 +34,14 @@ function Version() {
           <table>
             <tbody>
             <tr>
-              <th>{latestVersion}</th>
+              <th>{latestVersion[0]}</th>
               <td>
                 <Link to={useBaseUrl('/docs/installation')}>
                   Documentation
                 </Link>
               </td>
               <td>
-                <a href={`${repoUrl}/releases/tag/v${latestVersion}`}>
+                <a href={`${repoUrl}/releases/tag/v${latestVersion[1]}`}>
                   Release Notes
                 </a>
               </td>
@@ -77,15 +77,15 @@ function Version() {
             <table>
               <tbody>
               {pastVersions.map(version => (
-                <tr key={version}>
-                  <th>{version}</th>
+                <tr key={version[0]}>
+                  <th>{version[0]}</th>
                   <td>
-                    <Link to={useBaseUrl(`/docs/${version}/installation`)}>
+                    <Link to={useBaseUrl(`/docs/${version[0]}/installation`)}>
                       Documentation
                     </Link>
                   </td>
                   <td>
-                    <a href={`${repoUrl}/releases/tag/v${version}`}>
+                    <a href={`${repoUrl}/releases/tag/v${version[1]}`}>
                       Release Notes
                     </a>
                   </td>
