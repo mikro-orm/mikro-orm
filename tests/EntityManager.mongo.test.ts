@@ -591,7 +591,8 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
     expect(book.tags.getItems()[0]._id).toBeDefined();
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
-    await book.tags.init();
+    const items2 = await book.tags.loadItems();
+    expect(book.tags.getItems()).toEqual(items2);
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(true);
 
     // test collection CRUD

@@ -49,7 +49,7 @@ console.log(author.books[12345]); // undefined, even if the collection is not in
 
 const author = orm.em.findOne(Author, '...'); // books collection has not been populated
 console.log(author.books.getItems()); // throws because the collection has not been initialized
-// Sugar for await init() and getItems()
+// initialize collection if not already loaded and return its items as array
 console.log(await author.books.loadItems()); // Book[]
 ```
 

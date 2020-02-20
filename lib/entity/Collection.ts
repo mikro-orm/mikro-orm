@@ -19,9 +19,10 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
    * Initializes the collection and returns the items
    */
   async loadItems(): Promise<T[]> {
-    if (!this.isInitialized()) {
+    if (!this.isInitialized(true)) {
       await this.init();
     }
+
     return super.getItems();
   }
 
