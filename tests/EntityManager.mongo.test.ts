@@ -591,9 +591,13 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);
     expect(book.tags.getItems()[0]._id).toBeDefined();
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(false);
+    const initSpy = jest.spyOn(Collection.prototype, 'init');
     const items2 = await book.tags.loadItems();
+    expect(initSpy).toBeCalledTimes(1);
     expect(book.tags.getItems()).toEqual(items2);
-    expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(true);
+    const items3 = await book.tags.loadItems();
+    expect(initSpy).toBeCalledTimes(1);
+    expect(items3).toEqual(items2);
 
     // test collection CRUD
     // remove

@@ -1,11 +1,11 @@
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, AnyEntity, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType, wrap } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
 import { Utils, ValidationError } from '../utils';
-import { IPrimaryKey, LockMode, Transaction } from '..';
+import { CommitOrderCalculator, IPrimaryKey, LockMode, Transaction } from '..';
 
 export class UnitOfWork {
 
@@ -22,10 +22,11 @@ export class UnitOfWork {
   private readonly removeStack: AnyEntity[] = [];
   private readonly orphanRemoveStack: AnyEntity[] = [];
   private readonly changeSets: ChangeSet<AnyEntity>[] = [];
+  private readonly collectionUpdates: Collection<AnyEntity>[] = [];
   private readonly extraUpdates: [AnyEntity, string, AnyEntity | Reference<AnyEntity>][] = [];
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.metadata, this.platform);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.metadata, this.platform);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata);
 
   constructor(private readonly em: EntityManager) { }
@@ -97,17 +98,17 @@ export class UnitOfWork {
   async commit(): Promise<void> {
     this.computeChangeSets();
 
-    if (this.changeSets.length === 0) {
+    if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.length === 0) {
       return this.postCommitCleanup(); // nothing to do, do not start transaction
     }
 
+    this.reorderChangeSets();
     const runInTransaction = !this.em.isInTransaction() && this.em.getDriver().getPlatform().supportsTransactions();
-    const promise = async (tx: Transaction) => await Utils.runSerial(this.changeSets, changeSet => this.commitChangeSet(changeSet, tx));
 
     if (runInTransaction) {
-      await this.em.getConnection('write').transactional(trx => promise(trx));
+      await this.em.getConnection('write').transactional(trx => this.persistToDatabase(trx));
     } else {
-      await promise(this.em.getTransactionContext());
+      await this.persistToDatabase(this.em.getTransactionContext());
     }
 
     this.postCommitCleanup();
@@ -148,16 +149,6 @@ export class UnitOfWork {
 
     while (this.persistStack.length) {
       this.findNewEntities(this.persistStack.shift()!);
-    }
-
-    while (this.extraUpdates.length) {
-      const extraUpdate = this.extraUpdates.shift()!;
-      extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
-      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
-
-      if (changeSet) {
-        this.changeSets.push(changeSet);
-      }
     }
 
     for (const entity of Object.values(this.orphanRemoveStack)) {
@@ -212,7 +203,7 @@ export class UnitOfWork {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && reference) {
-      return this.processToOneReference(parent, prop, reference, visited);
+      return this.processToOneReference(reference, visited);
     }
 
     if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
@@ -220,12 +211,7 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: AnyEntity[]): void {
-    if (!this.hasIdentifier(reference) && visited.includes(reference)) {
-      this.extraUpdates.push([parent, prop.name, reference]);
-      delete parent[prop.name];
-    }
-
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: AnyEntity[]): void {
     if (!this.originalEntityData[reference.__uuid]) {
       this.findNewEntities(reference, visited);
     }
@@ -244,7 +230,23 @@ export class UnitOfWork {
       .forEach(item => this.findNewEntities(item, visited));
   }
 
-  private async commitChangeSet<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx: Transaction): Promise<void> {
+  private async commitChangeSet<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
+    if (changeSet.type === ChangeSetType.CREATE) {
+      Object.values<EntityProperty>(changeSet.entity.__meta.properties)
+        .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
+        .filter(prop => changeSet.entity[prop.name])
+        .forEach(prop => {
+          const cs = this.changeSets.find(cs => cs.entity === changeSet.entity[prop.name]);
+          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+          if (isScheduledForInsert) {
+            this.extraUpdates.push([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+            delete changeSet.entity[prop.name];
+            delete changeSet.payload[prop.name];
+          }
+        });
+    }
+
     const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
     await this.runHooks(`before${type}` as HookType, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet, ctx);
@@ -262,7 +264,7 @@ export class UnitOfWork {
     const hooks = this.metadata.get<T>(entity.constructor.name).hooks;
 
     if (hooks && hooks[type] && hooks[type]!.length > 0) {
-      const copy = Utils.copy(entity);
+      const copy = Utils.prepareEntity(entity, this.metadata, this.platform);
       await Utils.runSerial(hooks[type]!, hook => (entity[hook] as unknown as () => Promise<any>)());
 
       if (payload) {
@@ -288,16 +290,8 @@ export class UnitOfWork {
     this.removeStack.length = 0;
     this.orphanRemoveStack.length = 0;
     this.changeSets.length = 0;
-  }
-
-  private hasIdentifier<T extends AnyEntity<T>>(entity: T): boolean {
-    const pk = this.metadata.get<T>(entity.constructor.name).primaryKey;
-
-    if (entity[pk]) {
-      return true;
-    }
-
-    return this.identifierMap[wrap(entity).__uuid] && !!this.identifierMap[wrap(entity).__uuid].getValue();
+    this.collectionUpdates.length = 0;
+    this.extraUpdates.length = 0;
   }
 
   private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[]): void {
@@ -407,6 +401,79 @@ export class UnitOfWork {
     }
 
     return reference;
+  }
+
+  private async persistToDatabase(tx?: Transaction): Promise<void> {
+    for (const changeSet of this.changeSets) {
+      await this.commitChangeSet(changeSet, tx);
+    }
+
+    while (this.extraUpdates.length) {
+      const extraUpdate = this.extraUpdates.shift()!;
+      extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
+
+      if (changeSet) {
+        await this.commitChangeSet(changeSet, tx);
+      }
+    }
+
+    for (const coll of this.collectionUpdates) {
+      await this.changeSetPersister.persistCollectionToDatabase(coll, tx);
+    }
+  }
+
+  /**
+   * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
+   */
+  private reorderChangeSets() {
+    const order = this.getCommitOrder();
+    const typeOrder = [ChangeSetType.CREATE, ChangeSetType.UPDATE, ChangeSetType.DELETE];
+    const compare = <T, K extends keyof T>(base: T[], arr: T[K][], a: T, b: T, key: K) => {
+      if (arr.indexOf(a[key]) === arr.indexOf(b[key])) {
+        return base.indexOf(a) - base.indexOf(b); // ensure stable order
+      }
+
+      return arr.indexOf(a[key]) - arr.indexOf(b[key]);
+    };
+
+    const copy = this.changeSets.slice(); // make copy to maintain order
+    this.changeSets.sort((a, b) => {
+      if (a.type !== b.type) {
+        return compare(copy, typeOrder, a, b, 'type');
+      }
+
+      return compare(copy, order, a, b, 'name');
+    });
+  }
+
+  private getCommitOrder(): string[] {
+    const calc = new CommitOrderCalculator();
+    const types = Utils.unique(this.changeSets.map(cs => cs.name));
+    types.forEach(entityName => calc.addNode(entityName));
+    let entityName = types.pop();
+
+    while (entityName) {
+      for (const prop of Object.values<EntityProperty>(this.metadata.get(entityName).properties)) {
+        if (!calc.hasNode(prop.type)) {
+          continue;
+        }
+
+        this.addCommitDependency(calc, prop, entityName);
+      }
+
+      entityName = types.pop();
+    }
+
+    return calc.sort();
+  }
+
+  private addCommitDependency(calc: CommitOrderCalculator, prop: EntityProperty, entityName: string): void {
+    if (!(prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) && prop.reference !== ReferenceType.MANY_TO_ONE) {
+      return;
+    }
+
+    calc.addDependency(prop.type, entityName, prop.nullable ? 0 : 1);
   }
 
 }

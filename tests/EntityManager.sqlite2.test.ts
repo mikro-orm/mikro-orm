@@ -131,7 +131,7 @@ describe('EntityManagerSqlite2', () => {
     const bible = orm.em.create<Book4>('Book4', { title: 'Bible', author: god });
     expect(bible.author).toBe(god);
     bible.author = god;
-    await orm.em.persist(bible, true);
+    await orm.em.persistAndFlush(bible);
 
     const author = orm.em.create<Author4>('Author4', { name: 'Jon Snow', email: 'snow@wall.st' });
     author.born = new Date('1990-03-23');

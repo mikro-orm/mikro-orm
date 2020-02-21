@@ -84,6 +84,7 @@ export interface IWrappedEntity<T, PK extends keyof T> {
   __uuid: string;
   __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
+  __data: Dictionary;
   __em?: EntityManager;
   __initialized?: boolean;
   __populated: boolean;
