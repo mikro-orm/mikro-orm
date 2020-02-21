@@ -23,16 +23,7 @@ export class EntityFactory {
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    const platform = this.driver.getPlatform();
-    const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
-
-    // denormalize PK to value required by driver
-    if (data[pk] || data[meta.primaryKey]) {
-      const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
-      delete data[pk];
-      data[meta.primaryKey as keyof T] = id as Primary<T> & T[keyof T];
-    }
-
+    this.denormalizePrimaryKey(data, meta);
     const entity = this.createEntity(data, meta);
 
     if (initialized && !Utils.isEntity(data)) {
@@ -62,10 +53,6 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
-    if (data instanceof meta.class) {
-      return data as T;
-    }
-
     const Entity = this.metadata.get<T>(meta.name).class;
 
     if (!data[meta.primaryKey]) {
@@ -84,6 +71,20 @@ export class EntityFactory {
     entity[meta.primaryKey] = data[meta.primaryKey];
 
     return entity;
+  }
+
+  /**
+   * denormalize PK to value required by driver (e.g. ObjectId)
+   */
+  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): void {
+    const platform = this.driver.getPlatform();
+    const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
+
+    if (data[pk] || data[meta.primaryKey]) {
+      const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
+      delete data[pk];
+      data[meta.primaryKey as keyof T] = id as Primary<T> & T[keyof T];
+    }
   }
 
   /**

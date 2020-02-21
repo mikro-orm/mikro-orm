@@ -128,6 +128,7 @@ export async function initORMSqlite2() {
     logger: i => i,
     cache: { pretty: true },
   });
+  await orm.getSchemaGenerator().dropSchema();
   await orm.getSchemaGenerator().createSchema();
 
   return orm;

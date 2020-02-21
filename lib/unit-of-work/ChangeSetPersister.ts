@@ -1,6 +1,6 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
-import { EntityIdentifier, wrap } from '../entity';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
+import { Collection, EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { FilterQuery, IDatabaseDriver, Transaction } from '..';
 import { QueryResult } from '../connections';
@@ -24,6 +24,13 @@ export class ChangeSetPersister {
     await this.persistEntity(changeSet, meta, ctx);
   }
 
+  async persistCollectionToDatabase<T extends AnyEntity<T>>(coll: Collection<T>, ctx?: Transaction): Promise<void> {
+    const pk = this.metadata.get(coll.property.type).primaryKey;
+    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+    await this.driver.nativeUpdate(coll.owner.constructor.name, wrap(coll.owner).__primaryKey, data, ctx);
+    coll.setDirty(false);
+  }
+
   private async persistEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>, ctx?: Transaction): Promise<void> {
     let res: QueryResult | undefined;
 
@@ -45,6 +52,7 @@ export class ChangeSetPersister {
     }
 
     await this.processOptimisticLock(meta, changeSet, res, ctx);
+    changeSet.persisted = true;
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
@@ -76,8 +84,6 @@ export class ChangeSetPersister {
 
     if (value instanceof EntityIdentifier) {
       changeSet.payload[prop.name as keyof T] = value.getValue();
-    } else if (Array.isArray(value) && value.some(item => item as object instanceof EntityIdentifier)) {
-      changeSet.payload[prop.name as keyof T] = value.map(item => item instanceof EntityIdentifier ? item.getValue() : item) as unknown as T[keyof T];
     }
 
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {

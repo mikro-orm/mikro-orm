@@ -546,7 +546,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the transaction context (driver dependent object used to make sure queries are executed on same connection).
    */
-  getTransactionContext<T extends Transaction = Transaction>(): T {
+  getTransactionContext<T extends Transaction = Transaction>(): T | undefined {
     return this.transactionContext as T;
   }
 

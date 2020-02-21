@@ -124,6 +124,13 @@ describe('EntityFactory', () => {
     expect(p1.tests).toBeInstanceOf(Collection);
   });
 
+  test('create return entity without hydrating it if it is already an entity', async () => {
+    const p1 = new Publisher();
+    expect(p1.name).toBe('asd');
+    const p2 = factory.create(Publisher, p1);
+    expect(p2).toBe(p1);
+  });
+
   test('create should ignore invalid reference values', async () => {
     const a = factory.create(Author, { favouriteAuthor: false } as any);
     expect(a).toBeInstanceOf(Author);

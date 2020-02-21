@@ -1,6 +1,6 @@
 import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
@@ -10,6 +10,7 @@ export class ChangeSetComputer {
   constructor(private readonly validator: EntityValidator,
               private readonly originalEntityData: Record<string, EntityData<AnyEntity>>,
               private readonly identifierMap: Record<string, EntityIdentifier>,
+              private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform) { }
 
@@ -48,9 +49,9 @@ export class ChangeSetComputer {
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
-      this.processManyToMany(changeSet, prop, changeSet.entity[prop.name as keyof T] as unknown as Collection<T>);
-    } else if (isToOneOwner && changeSet.entity[prop.name as keyof T]) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && (changeSet.entity[prop.name] as unknown as Collection<T>).isDirty()) {
+      this.collectionUpdates.push(changeSet.entity[prop.name] as unknown as Collection<T> as Collection<AnyEntity>);
+    } else if (isToOneOwner && changeSet.entity[prop.name]) {
       this.processManyToOne(prop, changeSet);
     }
 
@@ -60,19 +61,11 @@ export class ChangeSetComputer {
   }
 
   private processManyToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const pk = this.metadata.get(prop.type).primaryKey as keyof T;
-    const entity = changeSet.entity[prop.name as keyof T] as unknown as T;
+    const pk = this.metadata.get(prop.type).primaryKey;
+    const entity = changeSet.entity[prop.name] as unknown as T;
 
     if (!entity[pk]) {
       changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
-    }
-  }
-
-  private processManyToMany<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, collection: Collection<T>): void {
-    if (collection.isDirty()) {
-      const pk = this.metadata.get(prop.type).primaryKey as keyof T;
-      changeSet.payload[prop.name] = collection.getItems().map(item => item[pk] || this.identifierMap[wrap(item).__uuid]);
-      collection.setDirty(false);
     }
   }
 
