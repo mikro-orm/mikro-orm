@@ -13,6 +13,7 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   constructor(owner: AnyEntity, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
+    Object.defineProperty(this, '_populated', { enumerable: false });
   }
 
   /**

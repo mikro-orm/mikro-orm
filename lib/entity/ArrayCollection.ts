@@ -15,6 +15,10 @@ export class ArrayCollection<T extends AnyEntity<T>> {
       this.items = items;
       Object.assign(this, items);
     }
+
+    Object.defineProperty(this, 'items', { enumerable: false });
+    Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
+    Object.defineProperty(this, '_property', { enumerable: false, writable: true });
   }
 
   getItems(): T[] {
@@ -105,6 +109,19 @@ export class ArrayCollection<T extends AnyEntity<T>> {
     }
   }
 
+  /**
+   * @internal
+   */
+  get property() {
+    if (!this._property) {
+      const meta = wrap(this.owner).__meta;
+      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      this._property = meta.properties[field!];
+    }
+
+    return this._property;
+  }
+
   protected propagate(item: T, method: 'add' | 'remove'): void {
     if (this.property.owner && this.property.inversedBy) {
       this.propagateToInverseSide(item, method);
@@ -143,16 +160,6 @@ export class ArrayCollection<T extends AnyEntity<T>> {
 
     // remove
     return collection.contains(this.owner as T);
-  }
-
-  protected get property() {
-    if (!this._property) {
-      const meta = wrap(this.owner).__meta;
-      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
-      this._property = meta.properties[field!];
-    }
-
-    return this._property;
   }
 
 }
