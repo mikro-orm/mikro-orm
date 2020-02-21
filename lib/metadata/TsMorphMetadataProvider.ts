@@ -1,6 +1,5 @@
 import globby from 'globby';
 import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
-import { pathExists } from 'fs-extra';
 
 import { MetadataProvider } from './MetadataProvider';
 import { EntityMetadata, EntityProperty } from '../typings';
