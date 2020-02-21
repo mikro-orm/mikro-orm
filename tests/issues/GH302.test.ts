@@ -1,16 +1,4 @@
-import {
-  Entity,
-  IdentifiedReference,
-  IdEntity,
-  MikroORM,
-  OneToOne,
-  PrimaryKey,
-  ReflectMetadataProvider,
-  Property,
-  wrap,
-  Reference,
-  ManyToOne, OneToMany, Collection,
-} from '../../lib';
+import { Entity, IdentifiedReference, IdEntity, MikroORM, PrimaryKey, ReflectMetadataProvider, Property, Reference, ManyToOne, OneToMany, Collection } from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { unlinkSync } from 'fs';

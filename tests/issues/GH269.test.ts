@@ -74,6 +74,16 @@ describe('GH issue 269', () => {
     expect(bb.a!.unwrap().name).toBe('my name is a');
     expect(bb.a!.unwrap().b).toBeInstanceOf(Reference);
     expect(bb.a!.unwrap().b!.isInitialized()).toBe(true);
+
+    const a2 = new A();
+    const b2 = new B();
+    a2.name = 'a2';
+    b2.name = 'b2';
+    b2.a = Reference.create(a2);
+    const spy = jest.spyOn(Reference.prototype, 'set');
+    b.a = b2.a;
+    expect(b.a!.unwrap().b!.unwrap()).toBe(b);
+    expect(spy).toBeCalledTimes(1);
   });
 
   test('1:1 populates owner even with autoJoinOneToOneOwner: false and when already loaded', async () => {
