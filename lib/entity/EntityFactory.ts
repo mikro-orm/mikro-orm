@@ -17,6 +17,10 @@ export class EntityFactory {
               private readonly em: EntityManager) { }
 
   create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
+    if (Utils.isEntity<T>(data)) {
+      return data;
+    }
+
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
     const platform = this.driver.getPlatform();
@@ -31,8 +35,11 @@ export class EntityFactory {
 
     const entity = this.createEntity(data, meta);
 
-    if (initialized) {
+    if (initialized && !Utils.isEntity(data)) {
       this.hydrator.hydrate(entity, meta, data, newEntity);
+    }
+
+    if (initialized) {
       delete entity.__initialized;
     } else {
       entity.__initialized = initialized;
