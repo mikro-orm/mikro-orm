@@ -1,8 +1,12 @@
 import { ObjectId } from 'mongodb';
+import { inspect } from 'util';
+
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, wrap } from '../lib';
+import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, Utils, wrap } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
+import FooBar from './entities/FooBar';
+import { FooBaz } from './entities/FooBaz';
 
 describe('EntityAssignerMongo', () => {
 
@@ -148,6 +152,99 @@ describe('EntityAssignerMongo', () => {
 
     author.id = '';
     expect(author._id).toBeNull();
+  });
+
+  test('setting m:1 reference is propagated to 1:m collection', async () => {
+    const author = new Author('n', 'e');
+    const book = new Book('t');
+    book.author = author;
+    expect(author.books.getItems()).toContain(book);
+    await orm.em.persistAndFlush(book);
+    orm.em.clear();
+
+    const b = await orm.em.findOneOrFail(Book, book.id);
+    expect(Utils.prepareEntity(b, orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
+      _id: b._id,
+      title: b.title,
+      author: b.author._id,
+    });
+  });
+
+  test('setting 1:1 reference is propagated to the inverse side', async () => {
+    const bar = FooBar.create('bar');
+    const baz = FooBaz.create('baz');
+    bar.baz = baz;
+    expect(baz.bar).toBe(bar);
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b = await orm.em.findOneOrFail(FooBar, bar.id);
+    expect(Utils.prepareEntity(b, orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
+      _id: b._id,
+      name: b.name,
+      baz: b.baz!._id,
+    });
+  });
+
+  test('custom inspect shows get/set props', async () => {
+    const bar = FooBar.create('bar');
+    bar.baz = FooBaz.create('baz');
+
+    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
+    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
+      expect(inspect(bar)).toBe('FooBar {\n' +
+        "  name: 'bar',\n" +
+        "  baz: FooBaz { name: 'baz', bar: FooBar { name: 'bar', baz: [FooBaz] } }\n" +
+        '}');
+    }
+
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    god.favouriteAuthor = god;
+    delete god.createdAt;
+    delete god.updatedAt;
+    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+
+    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
+    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
+      expect(inspect(god)).toBe('Author {\n' +
+        '  hookTest: false,\n' +
+        '  termsAccepted: false,\n' +
+        '  books: Collection {\n' +
+        "    '0': Book {\n" +
+        '      tags: [Collection],\n' +
+        "      title: 'Bible',\n" +
+        '      author: [Author],\n' +
+        '      publisher: [Reference]\n' +
+        '    },\n' +
+        '    initialized: true,\n' +
+        '    dirty: false\n' +
+        '  },\n' +
+        '  friends: Collection { initialized: true, dirty: false },\n' +
+        "  name: 'God',\n" +
+        "  email: 'hello@heaven.god',\n" +
+        "  foo: 'bar',\n" +
+        '  favouriteAuthor: Author {\n' +
+        '    hookTest: false,\n' +
+        '    termsAccepted: false,\n' +
+        "    books: Collection { '0': [Book], initialized: true, dirty: false },\n" +
+        '    friends: Collection { initialized: true, dirty: false },\n' +
+        "    name: 'God',\n" +
+        "    email: 'hello@heaven.god',\n" +
+        "    foo: 'bar',\n" +
+        '    favouriteAuthor: Author {\n' +
+        '      hookTest: false,\n' +
+        '      termsAccepted: false,\n' +
+        '      books: [Collection],\n' +
+        '      friends: [Collection],\n' +
+        "      name: 'God',\n" +
+        "      email: 'hello@heaven.god',\n" +
+        "      foo: 'bar',\n" +
+        '      favouriteAuthor: [Author]\n' +
+        '    }\n' +
+        '  }\n' +
+        '}');
+    }
   });
 
   afterAll(async () => orm.close(true));

@@ -1,12 +1,16 @@
 import { v4 as uuid } from 'uuid';
+import { inspect } from 'util';
+
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityMetadata, AnyEntity, IWrappedEntity, Primary, WrappedEntity } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IWrappedEntity, Primary, WrappedEntity } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
 import { Platform } from '../platforms';
-import { ValidationError } from '../utils';
+import { Utils, ValidationError } from '../utils';
+import { ReferenceType } from './enums';
+import { Collection } from './Collection';
 
 export class EntityHelper {
 
@@ -35,6 +39,10 @@ export class EntityHelper {
     EntityHelper.defineBaseHelperMethods(meta);
     EntityHelper.definePrimaryKeyProperties(meta);
     const prototype = meta.prototype as IWrappedEntity<T, keyof T> & T;
+
+    if (em.config.get('propagateToOneOwner')) {
+      EntityHelper.defineReferenceProperties(meta);
+    }
 
     if (!prototype.assign) { // assign can be overridden
       prototype.assign = function (this: T, data: EntityData<T>, options?: AssignOptions): IWrappedEntity<T, keyof T> & T {
@@ -131,6 +139,72 @@ export class EntityHelper {
         },
       },
     });
+  }
+
+  /**
+   * Defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of
+   * changes to the inverse side of bi-directional relations.
+   * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
+   * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
+   */
+  private static defineReferenceProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
+    Object
+      .values<EntityProperty>(meta.properties)
+      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy))
+      .forEach(prop => {
+        Object.defineProperty(meta.prototype, prop.name, {
+          set(val: AnyEntity) {
+            if (!('__data' in this)) {
+              Object.defineProperty(this, '__data', { value: {} });
+            }
+
+            EntityHelper.defineReferenceProperty(prop, this, val);
+          },
+        });
+      });
+
+    meta.prototype[inspect.custom] = function (depth: number) {
+      const ret = inspect({ ...this }, { depth });
+      return ret === '[Object]' ? `[${meta.name}]` : meta.name + ' ' + ret;
+    };
+  }
+
+  private static defineReferenceProperty<T extends AnyEntity<T>>(prop: EntityProperty<T>, ref: T, val: AnyEntity): void {
+    Object.defineProperty(ref, prop.name, {
+      get() {
+        return this.__data[prop.name];
+      },
+      set(val: AnyEntity | Reference<AnyEntity>) {
+        this.__data[prop.name] = Utils.wrapReference(val as T, prop);
+        const entity = Utils.unwrapReference(val as T);
+        EntityHelper.propagate(entity, this, prop);
+      },
+      enumerable: true,
+      configurable: true,
+    });
+    ref[prop.name] = val as T[string & keyof T];
+  }
+
+  private static propagate<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
+    const inverse = entity && entity[prop.inversedBy || prop.mappedBy];
+
+    if (prop.reference === ReferenceType.MANY_TO_ONE && inverse && wrap(inverse).isInitialized()) {
+      (inverse as Collection<T>).add(owner);
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity).isInitialized() && Utils.unwrapReference(inverse) !== owner) {
+      EntityHelper.propagateOneToOne(entity, owner, prop);
+    }
+  }
+
+  private static propagateOneToOne<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
+    const inverse = entity[prop.inversedBy || prop.mappedBy];
+
+    if (Utils.isReference(inverse)) {
+      inverse.set(owner);
+    } else {
+      entity[prop.inversedBy || prop.mappedBy] = Utils.wrapReference(owner, prop);
+    }
   }
 
 }

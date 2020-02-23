@@ -36,6 +36,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entityRepository: EntityRepository,
     hydrator: ObjectHydrator,
     autoJoinOneToOneOwner: true,
+    propagateToOneOwner: true,
     forceUtcTimezone: false,
     tsNode: false,
     debug: false,
@@ -269,6 +270,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
   autoJoinOneToOneOwner: boolean;
+  propagateToOneOwner: boolean;
   forceUtcTimezone: boolean;
   hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };

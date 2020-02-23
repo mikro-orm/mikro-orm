@@ -120,26 +120,16 @@ export class Utils {
     }
 
     const meta = metadata.get<T>(entity.constructor.name);
-    const ret = Object.create(Object.getPrototypeOf(entity));
+    const ret = {} as EntityData<T>;
 
-    // remove collections and references, process custom types
-    Object.values<EntityProperty>(meta.properties).forEach(prop => {
-      if (!(prop.name in entity)) {
+    // copy all props, ignore collections and references, process custom types
+    Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
+      if (Utils.shouldIgnoreProperty(metadata, entity, prop)) {
         return;
       }
 
-      const pk = () => metadata.get(prop.type).primaryKey;
-      const collection = entity[prop.name] as unknown instanceof ArrayCollection;
-      const noPkRef = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
-      const noPkProp = prop.primary && !entity[prop.name];
-      const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
-
-      if (collection || noPkProp || noPkRef || inverse || prop.persist === false) {
-        return;
-      }
-
-      if (Utils.isEntity(entity[prop.name]) || entity[prop.name] as unknown instanceof Reference) {
-        return ret[prop.name] = entity[prop.name][pk()];
+      if (Utils.isEntity(entity[prop.name], true)) {
+        return ret[prop.name] = entity[prop.name][metadata.get(prop.type).primaryKey];
       }
 
       if (prop.customType) {
@@ -156,6 +146,24 @@ export class Utils {
     Object.defineProperty(ret, '__prepared', { value: true });
 
     return ret;
+  }
+
+  private static shouldIgnoreProperty<T>(metadata: MetadataStorage, entity: T, prop: EntityProperty<T>) {
+    if (!(prop.name in entity)) {
+      return true;
+    }
+
+    const pk = () => metadata.get(prop.type).primaryKey;
+    const collection = entity[prop.name] as unknown instanceof ArrayCollection;
+    const noPkRef = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
+    const noPkProp = prop.primary && !entity[prop.name];
+    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+
+    // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
+    const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
+    const emptyRef = isSetter && entity[prop.name] === undefined;
+
+    return collection || noPkProp || noPkRef || inverse || emptyRef || prop.persist === false;
   }
 
   /**
@@ -346,9 +354,9 @@ export class Utils {
   /**
    * Wraps the entity in a `Reference` wrapper if the property is defined as `wrappedReference`.
    */
-  static wrapReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): Reference<T> | T {
-    if (prop.wrappedReference) {
-      return Reference.create(entity);
+  static wrapReference<T extends AnyEntity<T>>(entity: T | Reference<T>, prop: EntityProperty<T>): Reference<T> | T {
+    if (entity && prop.wrappedReference && !Utils.isReference(entity)) {
+      return Reference.create(entity as T);
     }
 
     return entity;

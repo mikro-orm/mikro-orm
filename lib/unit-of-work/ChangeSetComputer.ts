@@ -50,7 +50,7 @@ export class ChangeSetComputer {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && (changeSet.entity[prop.name] as unknown as Collection<T>).isDirty()) {
-      this.collectionUpdates.push(changeSet.entity[prop.name] as unknown as Collection<T> as Collection<AnyEntity>);
+      this.collectionUpdates.push(changeSet.entity[prop.name] as unknown as Collection<AnyEntity>);
     } else if (isToOneOwner && changeSet.entity[prop.name]) {
       this.processManyToOne(prop, changeSet);
     }

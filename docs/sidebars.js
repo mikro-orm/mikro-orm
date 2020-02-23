@@ -22,6 +22,7 @@ module.exports = {
       'nested-populate',
       'query-conditions',
       'query-builder',
+      'propagation',
       'serializing',
       'entity-helper',
       'property-validation',

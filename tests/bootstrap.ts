@@ -125,6 +125,7 @@ export async function initORMSqlite2() {
     driver: SqliteDriver,
     debug: ['query'],
     highlight: false,
+    propagateToOneOwner: false,
     logger: i => i,
     cache: { pretty: true },
   });
