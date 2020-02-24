@@ -189,10 +189,11 @@ describe('EntityAssignerMongo', () => {
   test('custom inspect shows get/set props', async () => {
     const bar = FooBar.create('bar');
     bar.baz = FooBaz.create('baz');
+    let actual = inspect(bar);
 
     // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
     if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
-      expect(inspect(bar)).toBe('FooBar {\n' +
+      expect(actual).toBe('FooBar {\n' +
         "  name: 'bar',\n" +
         "  baz: FooBaz { name: 'baz', bar: FooBar { name: 'bar', baz: [FooBaz] } }\n" +
         '}');
@@ -204,10 +205,11 @@ describe('EntityAssignerMongo', () => {
     delete god.createdAt;
     delete god.updatedAt;
     bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    actual = inspect(god);
 
     // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
     if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
-      expect(inspect(god)).toBe('Author {\n' +
+      expect(actual).toBe('Author {\n' +
         '  hookTest: false,\n' +
         '  termsAccepted: false,\n' +
         '  books: Collection {\n' +
