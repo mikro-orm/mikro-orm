@@ -478,8 +478,7 @@ export class MetadataDiscovery {
     const target = exports[prop.type] || exports.default;
 
     if (target) {
-      const keys = Object.keys(target);
-      const items = Object.values<string>(target).filter(val => !keys.includes(val));
+      const items = Utils.extractEnumValues(target);
       Utils.defaultValue(prop, 'items', items);
     }
 

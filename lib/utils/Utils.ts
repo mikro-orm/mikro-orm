@@ -451,4 +451,19 @@ export class Utils {
     return pathExists(path);
   }
 
+  /**
+   * Extracts all possible values of a TS enum. Works with both string and numeric enums.
+   */
+  static extractEnumValues(target: Dictionary): (string | number)[] {
+    const keys = Object.keys(target);
+    const values = Object.values<string | number>(target);
+    const numeric = !!values.find(v => typeof v === 'number');
+
+    if (numeric) {
+      return values.filter(val => !keys.includes(val as string));
+    }
+
+    return values;
+  }
+
 }

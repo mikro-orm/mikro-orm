@@ -8,6 +8,11 @@ export enum PublisherType {
   GLOBAL = 'global',
 }
 
+export enum PublisherType2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
 export const enum Enum1 {
   Value1,
   Value2,
@@ -32,6 +37,9 @@ export class Publisher2 extends BaseEntity2 {
 
   @Enum(() => PublisherType)
   type = PublisherType.LOCAL;
+
+  @Enum(() => PublisherType2)
+  type2 = PublisherType2.LOCAL;
 
   @Enum({ nullable: true })
   enum1?: Enum1;

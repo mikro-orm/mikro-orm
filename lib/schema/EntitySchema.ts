@@ -44,9 +44,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
   addEnum(name: string & keyof T, type: TypeType = 'enum', options: EnumOptions = {}): void {
     if (options.items instanceof Function) {
-      const type = options.items();
-      const keys = Object.keys(type);
-      options.items = Object.values<string>(type).filter(val => !keys.includes(val));
+      options.items = Utils.extractEnumValues(options.items());
     }
 
     const prop = { enum: true, ...options };

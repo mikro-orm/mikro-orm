@@ -214,6 +214,33 @@ describe('Utils', () => {
     await expect(Utils.pathExists('**/tests', { onlyDirectories: true })).resolves.toEqual(true);
   });
 
+  test('extractEnumKeys', async () => {
+    enum PublisherType {
+      LOCAL = 'local',
+      GLOBAL = 'global',
+    }
+
+    enum PublisherType2 {
+      LOCAL = 'LOCAL',
+      GLOBAL = 'GLOBAL',
+    }
+
+    enum PublisherType3 {
+      LOCAL = 'local',
+      GLOBAL = 'GLOBAL',
+    }
+
+    enum Enum2 {
+      PROP1 = 1,
+      PROP2 = 2,
+    }
+
+    expect(Utils.extractEnumValues(PublisherType)).toEqual(['local', 'global']);
+    expect(Utils.extractEnumValues(PublisherType2)).toEqual(['LOCAL', 'GLOBAL']);
+    expect(Utils.extractEnumValues(PublisherType3)).toEqual(['local', 'GLOBAL']);
+    expect(Utils.extractEnumValues(Enum2)).toEqual([1, 2]);
+  });
+
   test('lookup path from decorator', () => {
     // with tslib, compiled
     const stack1 = [

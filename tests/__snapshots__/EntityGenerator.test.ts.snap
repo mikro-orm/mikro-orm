@@ -215,6 +215,9 @@ export class Publisher2 {
   @Property({ type: 'enum' })
   type!: string;
 
+  @Property({ type: 'enum' })
+  type2!: string;
+
   @Property({ nullable: true })
   enum1?: boolean;
 
@@ -504,6 +507,9 @@ export class Publisher2 {
 
   @Property({ type: 'text' })
   type!: string;
+
+  @Property({ type: 'text' })
+  type2!: string;
 
   @Property({ type: 'int2', nullable: true })
   enum1?: number;
