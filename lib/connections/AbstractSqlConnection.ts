@@ -51,6 +51,9 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.transformRawResult<T>(res, method);
   }
 
+  /**
+   * Execute raw SQL queries from file
+   */
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
     await this.client.raw(buf.toString());
