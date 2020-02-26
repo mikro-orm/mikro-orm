@@ -48,6 +48,7 @@
     "mikro-orm": "./dist/cli.js"
   },
   "jest": {
+    "testTimeout": 10000,
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
