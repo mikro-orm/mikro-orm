@@ -71,7 +71,7 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
-        if (Utils.isObject(value, [Date, RegExp])) {
+        if (Utils.isObject(value, [Date, RegExp, Buffer])) {
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }

@@ -72,6 +72,11 @@ describe('Utils', () => {
     expect(Utils.merge('a', 'b')).toEqual('a');
   });
 
+  test('merge Buffers', () => {
+    const buffer = Buffer.from('Test buffer');
+    expect(Utils.merge({}, {a: buffer})).toEqual({a: buffer});
+  });
+
   test('diff', () => {
     expect(Utils.diff({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toEqual({a: 'b'});
     expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', c: {d: 'e', f: ['g', 'h']}});
