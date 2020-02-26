@@ -5,7 +5,7 @@ import { FilterQuery, IdentifiedReference, Reference } from '..';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 
-  constructor(private readonly em: EntityManager,
+  constructor(protected readonly em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
 
   persist(entity: AnyEntity | AnyEntity[], flush = this.em.config.get('autoFlush')): void | Promise<void> {
