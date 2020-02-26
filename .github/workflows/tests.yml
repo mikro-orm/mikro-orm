@@ -35,7 +35,8 @@ jobs:
     - name: Test
       run: |
         yarn coverage > COVERAGE_RESULT
-        yarn coveralls
+        echo "$(cat COVERAGE_RESULT)"
+        if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then yarn coveralls; fi
       env:
         ORM_PARALLEL: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
