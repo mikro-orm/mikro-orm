@@ -41,7 +41,7 @@ export class UnitOfWork {
 
     this.identityMap[`${wrapped.constructor.name}-${wrapped.__serializedPrimaryKey}`] = wrapped;
 
-    if (!this.originalEntityData[wrapped.__uuid] || mergeData) {
+    if (mergeData) {
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
     }
 
@@ -303,7 +303,7 @@ export class UnitOfWork {
 
     switch (type) {
       case Cascade.PERSIST: this.persist(entity, visited); break;
-      case Cascade.MERGE: this.merge(entity, visited, false); break;
+      case Cascade.MERGE: this.merge(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 

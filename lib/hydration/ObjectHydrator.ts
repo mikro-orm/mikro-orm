@@ -1,4 +1,4 @@
-import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
 import { Utils } from '../utils';
@@ -44,7 +44,9 @@ export class ObjectHydrator extends Hydrator {
   private hydrateManyToManyOwner<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (Array.isArray(value)) {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
-      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items) as unknown as T[keyof T];
+      const coll = new Collection<AnyEntity>(entity, items);
+      entity[prop.name as keyof T] = coll as unknown as T[keyof T];
+      coll.setDirty();
     } else if (!entity[prop.name as keyof T]) {
       const items = this.em.getDriver().getPlatform().usesPivotTable() ? undefined : [];
       entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, newEntity) as unknown as T[keyof T];

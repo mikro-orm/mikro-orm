@@ -144,6 +144,15 @@ describe('EntityFactory', () => {
     expect(book.author).toBe(author);
   });
 
+  test('create should flag collections as dirty', async () => {
+    const a = new Author('n', 'e');
+    const t1 = new BookTag('t1');
+    const t2 = new BookTag('t2');
+    const t3 = new BookTag('t3');
+    const b = factory.create(Book, { title: 'b', author: a, tags: [t1, t2, t3] });
+    expect(b.tags.isDirty()).toBe(true);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
