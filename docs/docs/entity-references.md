@@ -28,7 +28,7 @@ will think that desired entities are always loaded:
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number;
@@ -61,7 +61,7 @@ directly.
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from 'mikro-orm';
 
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number;
@@ -156,7 +156,7 @@ You can also have non-standard primary key like `uuid`:
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number;
@@ -175,7 +175,7 @@ and `ObjectId` PK values:
 
 ```typescript
 @Entity()
-export class Book implements MongoEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   _id!: ObjectId;

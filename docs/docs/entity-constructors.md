@@ -11,7 +11,7 @@ but `publisher` will be optional:
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number;

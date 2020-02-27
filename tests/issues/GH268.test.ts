@@ -1,12 +1,12 @@
 import { unlinkSync } from 'fs';
 import { v4 } from 'uuid';
 
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, UuidEntity } from '../../lib';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 
 @Entity()
-export class A implements UuidEntity<A> {
+export class A {
 
   @PrimaryKey()
   uuid: string = v4();
@@ -20,7 +20,7 @@ export class A implements UuidEntity<A> {
 }
 
 @Entity()
-export class B implements UuidEntity<B> {
+export class B {
 
   @PrimaryKey()
   uuid: string = v4();

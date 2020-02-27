@@ -1,21 +1,11 @@
 import { ObjectId } from 'mongodb';
-import {
-  Collection,
-  Entity,
-  ManyToMany,
-  MongoEntity,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  BeforeCreate,
-  Enum,
-} from '../../lib';
+import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, BeforeCreate, Enum } from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Publisher implements MongoEntity<Publisher> {
+export class Publisher {
 
   @PrimaryKey()
   _id!: ObjectId;

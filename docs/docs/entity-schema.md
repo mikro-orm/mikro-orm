@@ -92,7 +92,7 @@ Do not forget that base entities needs to be discovered just like normal entitie
 **`./entities/BaseEntity.ts`**
 
 ```typescript
-export interface BaseEntity extends IdEntity<BaseEntity> {
+export interface BaseEntity {
   id: number;
   createdAt: Date;
   updatedAt: Date;
@@ -162,7 +162,7 @@ export const schema = new EntitySchema<FooBar>({
 ## MongoDB example
 
 ```typescript
-export class BookTag implements MongoEntity<BookTag> {
+export class BookTag {
   _id!: ObjectId;
   id!: string;
   name: string;

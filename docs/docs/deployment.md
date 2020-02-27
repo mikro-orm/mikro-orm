@@ -28,7 +28,7 @@ manually:
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey({ type: 'number' })
   id!: number;

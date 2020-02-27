@@ -17,8 +17,7 @@ const orm = await MikroORM.init({
 
 ## Defining entity
 
-When defining entity, implement `MongoEntity<T>` interface and do not forget to define 
-primary key like this:
+When defining entity, do not forget to define primary key like this:
 
 ```typescript
 @PrimaryKey()

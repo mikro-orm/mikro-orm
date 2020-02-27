@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
-import { Collection, MongoEntity, EntitySchema } from '../../lib';
+import { Collection, EntitySchema } from '../../lib';
 import { Book } from './Book';
 
-export class BookTag implements MongoEntity<BookTag> {
+export class BookTag {
 
   _id!: ObjectId;
   id!: string;

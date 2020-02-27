@@ -1,8 +1,8 @@
-import { Entity, MongoEntity, PrimaryKey, Property } from '../../lib';
+import { Entity, PrimaryKey, Property } from '../../lib';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Test implements MongoEntity<Test> {
+export class Test {
 
   @PrimaryKey({ type: 'ObjectId' })
   _id: any;

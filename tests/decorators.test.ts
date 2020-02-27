@@ -1,17 +1,17 @@
-import { AnyEntity, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '../lib';
+import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '../lib';
 import { Test } from './entities';
 import { MetadataStorage } from '../lib/metadata';
 import { ReferenceType } from '../lib/entity';
 
-class Test2 implements AnyEntity<Test2> {}
+class Test2 {}
 
-class Test3 implements AnyEntity<Test3> {}
+class Test3 {}
 
-class Test4 implements AnyEntity<Test4> {}
+class Test4 {}
 
-class Test5 implements AnyEntity<Test5> {}
+class Test5 {}
 
-class Test6 implements AnyEntity<Test6> {}
+class Test6 {}
 
 describe('decorators', () => {
 

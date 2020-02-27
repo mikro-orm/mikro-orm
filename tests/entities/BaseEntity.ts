@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
-import { BeforeCreate, MongoEntity, PrimaryKey, Property } from '../../lib';
+import { BeforeCreate, PrimaryKey, Property } from '../../lib';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
-export abstract class BaseEntity implements MongoEntity<BaseEntity> {
+export abstract class BaseEntity {
 
   @PrimaryKey()
   _id!: ObjectId;

@@ -1,8 +1,8 @@
-import { BeforeCreate, Collection, IdEntity, PrimaryKey, Property } from '../../lib';
+import { BeforeCreate, Collection, PrimaryKey, Property } from '../../lib';
 import { MetadataStorage } from '../../lib/metadata';
 import { ReferenceType } from '../../lib/entity';
 
-export abstract class BaseEntity2 implements IdEntity<BaseEntity2> {
+export abstract class BaseEntity2 {
 
   @PrimaryKey()
   id!: number;

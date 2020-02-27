@@ -69,7 +69,7 @@ MongoDB's aggregations.
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @Property({ persist: false })
   count?: number;

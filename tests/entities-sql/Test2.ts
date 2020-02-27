@@ -1,8 +1,8 @@
-import { Entity, IdEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { Book2 } from './Book2';
 
 @Entity()
-export class Test2 implements IdEntity<Test2> {
+export class Test2 {
 
   @PrimaryKey()
   id!: number;

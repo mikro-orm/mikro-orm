@@ -68,7 +68,7 @@ Then you can use this type when defining your entity properties:
 
 ```typescript
 @Entity()
-export class FooBar implements IdEntity<FooBar> {
+export class FooBar {
 
   @PrimaryKey()
   id!: number;

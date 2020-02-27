@@ -18,7 +18,7 @@ abstract base classes.
 
 ```typescript
 @Entity({ collection: 'authors' })
-export class Author implements IdEntity<Author> { ... }
+export class Author { ... }
 ```
 
 ## Entity Properties
@@ -142,8 +142,8 @@ See [Defining Entities](defining-entities.md#indexes).
 @Index({ properties: ['name', 'age'] }) // compound index, with generated name
 @Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
 @Unique({ properties: ['name', 'email'] })
-export class Author implements IdEntity<Author> {
-k
+export class Author {
+
   @Property()
   @Unique()
   email!: string;

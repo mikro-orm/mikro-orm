@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb';
-import { Entity, MongoEntity, OneToOne, PrimaryKey } from '../../lib';
+import { Entity, OneToOne, PrimaryKey } from '../../lib';
 import { Dup1 } from './dup1.model';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Dup2 implements MongoEntity<Dup2> {
+export class Dup2 {
 
   @PrimaryKey({ type: 'ObjectId' })
   _id!: ObjectId;

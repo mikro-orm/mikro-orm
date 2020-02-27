@@ -24,10 +24,12 @@ await orm.em.persist(new Entity(), true); // you can still use second parameter 
 
 ## Reworked entity definition
 
+> Implementing those interfaces is optional.  
+
 Now it is no longer needed to merge entities with `IEntity` interface, that was polluting entity's 
 interface with internal methods. New interfaces `IdentifiedEntity<T>`, `UuidEntity<T>` and `MongoEntity<T>` 
-are introduced, that should be implemented by entities. They are not adding any new properties or methods, 
-keeping the entity's interface clean.
+are introduced, that can be implemented by entities. They are not adding any new properties or methods, 
+keeping the entity's interface clean. This is also the reason why they can be omitted.
 
 `IEntity` interface has been renamed to `AnyEntity<T, PK>` and it no longer has public methods 
 like `toJSON()`, `toObject()` or `init()`. One can use `wrap()` method provided by ORM that
@@ -35,7 +37,7 @@ will enhance property type when needed with those methods (`await wrap(book.auth
 To keep all methods available on the entity, you can still use interface merging with 
 `WrappedEntity<T, PK>` that both extends `AnyEntity<T, PK>` and defines all those methods.
 
-You will need to mark the entity by implementing one of `*Entity` interfaces:
+You can mark the entity by implementing one of `*Entity` interfaces:
 
 - `IdEntity<T>` for numeric/string PK on `id` property (`id: number`)
 - `UuidEntity<T>` for string PK on `uuid` property (`uuid: string`)

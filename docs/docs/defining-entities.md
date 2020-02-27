@@ -56,7 +56,7 @@ to [use entity constructors](entity-constructors.md), just do not forget to spec
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number;
@@ -87,14 +87,6 @@ export class Book implements IdEntity<Book> {
 }
 ```
 
-You will need to mark the entity by implementing one of `*Entity` interfaces:
-
-- `IdEntity<T>` for numeric/string PK on `id` property (`id: number`)
-- `UuidEntity<T>` for string PK on `uuid` property (`uuid: string`)
-- `MongoEntity<T>` for mongo, where `id: string` and `_id: ObjectId` are required
-- `AnyEntity<T, PK>` for other possible properties (fill the PK property name to `PK` 
-parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
-
 As you can see, entity properties are decorated either with `@Property` decorator, or with one
 of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. 
 
@@ -107,7 +99,7 @@ time defined for mongo:
 
 ```typescript
 @Entity()
-export class Author implements MongoEntity<Author> {
+export class Author {
 
   @PrimaryKey()
   _id!: ObjectId;
@@ -193,7 +185,7 @@ to define the enum in another file, you should reexport it also in place where y
 
 ```typescript
 @Entity()
-export class User implements IdEntity<User> {
+export class User {
 
   @Enum()
   role!: UserRole; // string enum
@@ -225,7 +217,7 @@ You can use it either on entity class, or on entity property:
 @Index({ properties: ['name', 'age'] }) // compound index, with generated name
 @Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
 @Unique({ properties: ['name', 'email'] })
-export class Author implements IdEntity<Author> {
+export class Author {
 
   @Property()
   @Unique()
@@ -278,7 +270,7 @@ are both hidden from the serialized response, replaced with virtual properties `
 
 ```typescript
 @Entity()
-export class User implements IdEntity<User> {
+export class User {
 
   @Property({ hidden: true })
   firstName!: string;
@@ -334,7 +326,7 @@ primary key and created/updated time.
 ```typescript
 import { v4 } from 'uuid';
 
-export abstract class BaseEntity implements UuidEntity<BaseEntity> {
+export abstract class BaseEntity {
 
   @PrimaryKey()
   uuid = v4();
@@ -354,7 +346,7 @@ export abstract class BaseEntity implements UuidEntity<BaseEntity> {
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   id!: number; // string is also supported
@@ -374,7 +366,7 @@ export class Book implements IdEntity<Book> {
 import { v4 } from 'uuid';
 
 @Entity()
-export class Book implements UuidEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   uuid = v4();
@@ -392,7 +384,7 @@ export class Book implements UuidEntity<Book> {
 
 ```typescript
 @Entity()
-export class Book implements MongoEntity<Book> {
+export class Book {
 
   @PrimaryKey()
   _id!: ObjectId;

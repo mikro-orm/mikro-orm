@@ -1,10 +1,10 @@
-import { Entity, IdentifiedReference, IdEntity, MikroORM, PrimaryKey, ReflectMetadataProvider, Property, Reference, ManyToOne, OneToMany, Collection } from '../../lib';
+import { Entity, IdentifiedReference, MikroORM, PrimaryKey, ReflectMetadataProvider, Property, Reference, ManyToOne, OneToMany, Collection } from '../../lib';
 import { BASE_DIR } from '../bootstrap';
 import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { unlinkSync } from 'fs';
 
 @Entity()
-export class A implements IdEntity<A> {
+export class A {
 
   @PrimaryKey({ type: 'number' })
   id: number;
@@ -23,7 +23,7 @@ export class A implements IdEntity<A> {
 }
 
 @Entity()
-export class B implements IdEntity<B> {
+export class B {
 
   @PrimaryKey({ type: 'number' })
   id!: number;

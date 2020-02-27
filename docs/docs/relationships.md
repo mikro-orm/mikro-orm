@@ -26,7 +26,7 @@ There are multiple ways how to define the relationship, all of following is equi
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   @ManyToOne() // plain decorator is enough, type will be sniffer via reflection!
   author1!: Author;
@@ -54,7 +54,7 @@ Again, all of following is equivalent:
 
 ```typescript
 @Entity()
-export class Author implements IdEntity<Author> {
+export class Author {
 
   @OneToMany(() => Book, book => book.author)
   books1 = new Collection<Book>(this);
@@ -89,7 +89,7 @@ that the foreign key column is also unique.
 
 ```typescript
 @Entity()
-export class User implements IdEntity<User> {
+export class User {
 
   // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
   @OneToOne()
@@ -110,7 +110,7 @@ export class User implements IdEntity<User> {
 
 ```typescript
 @Entity()
-export class User implements IdEntity<User> {
+export class User {
 
   @OneToOne({ mappedBy: 'bestFriend1' })
   bestFriend1!: User;
@@ -134,7 +134,7 @@ Here are examples of how you can define ManyToMany relationship:
 
 ```typescript
 @Entity()
-export class Book implements IdEntity<Book> {
+export class Book {
 
   // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
   @ManyToMany()
@@ -160,7 +160,7 @@ export class Book implements IdEntity<Book> {
 
 ```typescript
 @Entity()
-export class BookTag implements IdEntity<BookTag> {
+export class BookTag {
 
   // inverse side has to point to the owning side via `mappedBy` attribute/parameter
   @ManyToMany(() => Book, book => book.tags)

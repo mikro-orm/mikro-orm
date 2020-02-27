@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb';
-import { Entity, MongoEntity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
 import { FooBaz } from './FooBaz';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export default class FooBar implements MongoEntity<FooBar> {
+export default class FooBar {
 
   @PrimaryKey()
   _id!: ObjectId;

@@ -61,7 +61,7 @@ Let's define the `User` entity used in previous example:
 
 ```typescript
 @Entity()
-export class User implements IdEntity<User> {
+export class User {
 
   @PrimaryKey()
   id!: number;
@@ -253,7 +253,7 @@ simple entity can look like in mongo driver:
 
 ```typescript
 @Entity()
-export class MongoBook implements MongoEntity<MongoBook> {
+export class MongoBook {
 
   @PrimaryKey()
   _id: ObjectID;
@@ -278,13 +278,13 @@ export class MongoBook implements MongoEntity<MongoBook> {
 }
 ```
 
-For SQL drivers, use `IdEntity` interface for `id: number` PK:
+For SQL drivers, you can use `id: number` PK:
 
 **`./entities/SqlBook.ts`**
 
 ```typescript
 @Entity()
-export class SqlBook implements IdEntity<SqlBook> {
+export class SqlBook {
 
   @PrimaryKey()
   id: number;
@@ -292,7 +292,7 @@ export class SqlBook implements IdEntity<SqlBook> {
 }
 ```
 
-If you want to use UUID primary keys, use `UuidEntity` interface:
+Or if you want to use UUID primary keys:
 
 **`./entities/UuidBook.ts`**
 
@@ -300,7 +300,7 @@ If you want to use UUID primary keys, use `UuidEntity` interface:
 import { v4 } from 'uuid';
 
 @Entity()
-export class UuidBook implements UuidEntity<UuidBook> {
+export class UuidBook {
 
   @PrimaryKey()
   uuid = v4();
