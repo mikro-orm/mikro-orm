@@ -469,7 +469,9 @@ export class MetadataDiscovery {
     }
 
     const meta = this.metadata.get(prop.type);
-    prop.columnType = this.schemaHelper.getTypeDefinition(meta.properties[meta.primaryKey]);
+    const pk = meta.properties[meta.primaryKey];
+    this.initCustomType(pk);
+    prop.columnType = this.schemaHelper.getTypeDefinition(pk);
   }
 
   private initEnumValues(prop: EntityProperty, path: string): void {
