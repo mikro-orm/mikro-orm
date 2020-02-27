@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Book, Author, Publisher, Test } from './entities';
+import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { MikroORM, Collection } from '../lib';
 import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -136,6 +136,12 @@ describe('EntityFactory', () => {
     expect(a).toBeInstanceOf(Author);
     expect(a.name).toBeUndefined();
     expect(a.favouriteAuthor).toBeUndefined();
+  });
+
+  test('create works with entity constructor param', async () => {
+    const author = new Author('n', 'e');
+    const book = factory.create(Book, { title: 't', author });
+    expect(book.author).toBe(author);
   });
 
   afterAll(async () => orm.close(true));

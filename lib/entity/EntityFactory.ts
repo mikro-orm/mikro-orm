@@ -94,7 +94,16 @@ export class EntityFactory {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(meta.properties[k].reference) && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
-        return entity || this.createReference(meta.properties[k].type, data[k]);
+
+        if (entity) {
+          return entity;
+        }
+
+        if (Utils.isEntity<T>(data[k])) {
+          return data[k];
+        }
+
+        return this.createReference(meta.properties[k].type, data[k]);
       }
 
       return data[k];

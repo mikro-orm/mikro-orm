@@ -1,6 +1,6 @@
 import { EntityData, EntityProperty, AnyEntity, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, ReferenceType } from '../entity';
+import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
@@ -79,7 +79,10 @@ export class ObjectHydrator extends Hydrator {
     }
 
     const child = this.factory.create(prop.type, value as EntityData<T>);
-    this.em.merge(child);
+
+    if (wrap(child).__primaryKey) {
+      this.em.merge(child);
+    }
 
     return child;
   }

@@ -1,7 +1,6 @@
 import { EntitySchema } from '../../lib/schema';
-import { IdEntity } from '../../lib';
 
-export interface BaseEntity5 extends IdEntity<BaseEntity5> {
+export interface BaseEntity5 {
   id: number;
   createdAt: Date;
   updatedAt: Date;
