@@ -29,10 +29,10 @@ export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
   ? PK | string : T extends { uuid: infer PK }
   ? PK : T extends { id: infer PK }
   ? PK : never;
-export type IPrimaryKeyValue = number | string | { toHexString(): string };
+export type IPrimaryKeyValue = number | string | bigint | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
-export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string } ? true : never;
+export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string | bigint } ? true : never;
 
 export type UnionOfArrays<T> = T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9 | infer T10
   ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] | T8[] | T9[] | T10[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9
@@ -96,7 +96,7 @@ export interface IWrappedEntity<T, PK extends keyof T> {
 
 export type AnyEntity<T = any, PK extends keyof T = keyof T> = { [K in PK]?: T[K] } & { [PrimaryKeyType]?: T[PK] };
 export type WrappedEntity<T, PK extends keyof T> = IWrappedEntity<T, PK> & AnyEntity<T, PK>;
-export type IdEntity<T extends { id: number | string }> = AnyEntity<T, 'id'>;
+export type IdEntity<T extends { id: number | string | bigint }> = AnyEntity<T, 'id'>;
 export type UuidEntity<T extends { uuid: string }> = AnyEntity<T, 'uuid'>;
 export type MongoEntity<T extends { _id: IPrimaryKey; id: string }> = AnyEntity<T, 'id' | '_id'>;
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };

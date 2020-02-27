@@ -8,13 +8,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
   static readonly TYPES = {
     boolean: ['tinyint(1)', 'tinyint'],
-    number: ['int(?)', 'int', 'float', 'double', 'tinyint', 'smallint', 'bigint'],
+    number: ['int(?)', 'int', 'float', 'double', 'tinyint', 'smallint'],
     float: ['float'],
     double: ['double'],
     tinyint: ['tinyint'],
     smallint: ['smallint'],
-    bigint: ['bigint'],
-    string: ['varchar(?)', 'varchar', 'text', 'enum'],
+    string: ['varchar(?)', 'varchar', 'text', 'enum', 'bigint'],
     Date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
     date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
     text: ['text'],

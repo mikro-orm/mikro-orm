@@ -48,6 +48,7 @@ module.exports = {
       'usage-with-js',
       'custom-driver',
       'multiple-schemas',
+      'using-bigint-pks',
     ],
     'Example Integrations': [
       { type: 'link', label: 'Express + MongoDB + TypeScript', href: 'https://github.com/mikro-orm/express-ts-example-app' },

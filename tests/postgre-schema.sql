@@ -25,7 +25,7 @@ create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" numeric null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
-create table "book_tag2" ("id" serial primary key, "name" varchar(50) not null);
+create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
 create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null);
 
@@ -44,9 +44,9 @@ alter table "author_to_friend" add constraint "author_to_friend_pkey" primary ke
 create table "author2_to_author2" ("author2_1_id" int4 not null, "author2_2_id" int4 not null);
 alter table "author2_to_author2" add constraint "author2_to_author2_pkey" primary key ("author2_1_id", "author2_2_id");
 
-create table "book2_to_book_tag2" ("order" serial primary key, "book2_uuid_pk" varchar(36) not null, "book_tag2_id" int4 not null);
+create table "book2_to_book_tag2" ("order" serial primary key, "book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null);
 
-create table "book_to_tag_unordered" ("book2_uuid_pk" varchar(36) not null, "book_tag2_id" int4 not null, primary key ("book2_uuid_pk", "book_tag2_id"));
+create table "book_to_tag_unordered" ("book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null, primary key ("book2_uuid_pk", "book_tag2_id"));
 
 create table "publisher2_to_test2" ("id" serial primary key, "publisher2_id" int4 not null, "test2_id" int4 not null);
 

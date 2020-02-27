@@ -1,4 +1,4 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
@@ -216,7 +216,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.getKnexQuery().toSQL().toNative().sql;
   }
 
-  getParams(): any[] {
+  getParams(): readonly Value[] {
     return this.getKnexQuery().toSQL().toNative().bindings;
   }
 

@@ -269,6 +269,10 @@ export class SchemaGenerator {
   }
 
   private createTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): ColumnBuilder {
+    if (prop.primary && !meta.compositePK && this.platform.isBigIntProperty(prop)) {
+      return table.bigIncrements(prop.fieldName);
+    }
+
     if (prop.primary && !meta.compositePK && prop.type === 'number') {
       return table.increments(prop.fieldName);
     }

@@ -28,7 +28,7 @@ alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 
-create table `book_tag2` (`id` int unsigned not null auto_increment primary key, `name` varchar(50) not null) default character set utf8 engine = InnoDB;
+create table `book_tag2` (`id` bigint unsigned not null auto_increment primary key, `name` varchar(50) not null) default character set utf8 engine = InnoDB;
 
 create table `publisher2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` enum('local', 'global') not null, `type2` enum('LOCAL', 'GLOBAL') not null, `enum1` tinyint(2) null, `enum2` tinyint(2) null, `enum3` tinyint(2) null, `enum4` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
@@ -56,11 +56,11 @@ alter table `author2_to_author2` add index `author2_to_author2_author2_1_id_inde
 alter table `author2_to_author2` add index `author2_to_author2_author2_2_id_index`(`author2_2_id`);
 alter table `author2_to_author2` add primary key `author2_to_author2_pkey`(`author2_1_id`, `author2_2_id`);
 
-create table `book2_to_book_tag2` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table `book2_to_book_tag2` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book2_uuid_pk_index`(`book2_uuid_pk`);
 alter table `book2_to_book_tag2` add index `book2_to_book_tag2_book_tag2_id_index`(`book_tag2_id`);
 
-create table `book_to_tag_unordered` (`book2_uuid_pk` varchar(36) not null, `book_tag2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table `book_to_tag_unordered` (`book2_uuid_pk` varchar(36) not null, `book_tag2_id` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table `book_to_tag_unordered` add index `book_to_tag_unordered_book2_uuid_pk_index`(`book2_uuid_pk`);
 alter table `book_to_tag_unordered` add index `book_to_tag_unordered_book_tag2_id_index`(`book_tag2_id`);
 alter table `book_to_tag_unordered` add primary key `book_to_tag_unordered_pkey`(`book2_uuid_pk`, `book_tag2_id`);

@@ -1,5 +1,6 @@
 import { Platform } from './Platform';
 import { PostgreSqlSchemaHelper } from '../schema/PostgreSqlSchemaHelper';
+import { EntityProperty } from '../typings';
 
 export class PostgreSqlPlatform extends Platform {
 
@@ -23,6 +24,10 @@ export class PostgreSqlPlatform extends Platform {
 
   getRegExpOperator(): string {
     return '~';
+  }
+
+  isBigIntProperty(prop: EntityProperty): boolean {
+    return super.isBigIntProperty(prop) || prop.columnType === 'bigserial';
   }
 
 }

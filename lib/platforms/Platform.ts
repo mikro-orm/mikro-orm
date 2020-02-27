@@ -1,5 +1,5 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { IPrimaryKey, Primary } from '../typings';
+import { EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { SchemaHelper } from '../schema';
 
 export abstract class Platform {
@@ -76,6 +76,14 @@ export abstract class Platform {
 
   getRegExpOperator(): string {
     return 'regexp';
+  }
+
+  isBigIntProperty(prop: EntityProperty): boolean {
+    return prop.columnType === 'bigint';
+  }
+
+  getBigIntTypeDeclarationSQL(): string {
+    return 'bigint';
   }
 
 }

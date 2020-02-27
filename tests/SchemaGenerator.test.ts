@@ -165,8 +165,8 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.born.nullable = false;
     authorMeta.properties.born.default = 42;
     authorMeta.properties.age.default = 42;
-    authorMeta.properties.favouriteAuthor.type = 'BookTag2';
-    authorMeta.properties.favouriteAuthor.referencedTableName = 'book_tag2';
+    authorMeta.properties.favouriteAuthor.type = 'FooBar2';
+    authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-alter-column');
     await generator.updateSchema();
 
@@ -370,8 +370,8 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.name.nullable = false;
     authorMeta.properties.name.default = 42;
     authorMeta.properties.age.default = 42;
-    authorMeta.properties.favouriteAuthor.type = 'BookTag2';
-    authorMeta.properties.favouriteAuthor.referencedTableName = 'book_tag2';
+    authorMeta.properties.favouriteAuthor.type = 'FooBar2';
+    authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-column');
     await generator.updateSchema();
 

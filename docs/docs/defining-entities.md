@@ -416,6 +416,24 @@ export class Book {
 }
 ```
 
+### Using BigInt as primary key (MySQL and PostgreSQL)
+
+You can use `BigIntType` to support `bigint`s. By default it will represent the value as
+a `string`.  
+
+```typescript
+@Entity()
+export class Book {
+
+  @PrimaryKey({ type: BigIntType })
+  id: string;
+
+}
+```
+
+If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](using-bigint-pks.md).
+
+
 ### Example of Mongo entity
 
 ```typescript
