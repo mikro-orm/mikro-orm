@@ -164,6 +164,6 @@
     "tslint": "^5.20.1",
     "tslint-eslint-rules": "^5.4.0",
     "tslint-lines-between-class-members": "^1.3.6",
-    "typescript": "3.6.4"
+    "typescript": "3.8.3"
   }
 }
