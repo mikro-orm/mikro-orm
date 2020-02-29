@@ -132,8 +132,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * where first element is the array of entities and the second is the count.
    */
   async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]> {
-    const entities = await this.find(entityName, where, populate as string[], orderBy, limit, offset);
-    const count = await this.count<T>(entityName, where);
+    const [entities, count] = await Promise.all([
+      this.find(entityName, where, populate as string[], orderBy, limit, offset),
+      this.count(entityName, where),
+    ]);
 
     return [entities, count];
   }
