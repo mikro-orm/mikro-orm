@@ -135,12 +135,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   private getIndexesSQL(tableName: string, schemaName: string): string {
     return `select i.indexname as constraint_name, k.column_name, c.contype = 'u' as unique, c.contype = 'p' as primary
-         from pg_catalog.pg_indexes i
-         join pg_catalog.pg_constraint c on c.conname = i.indexname
-         join pg_catalog.pg_class rel on rel.oid = c.conrelid
-         join pg_catalog.pg_namespace nsp on nsp.oid = c.connamespace
-         join information_schema.key_column_usage k on k.constraint_name = c.conname and k.table_schema = 'public' and k.table_name = '${tableName}'
-         where nsp.nspname = '${schemaName}' and rel.relname = '${tableName}'`;
+      from pg_catalog.pg_indexes i
+      join pg_catalog.pg_constraint c on c.conname = i.indexname
+      join pg_catalog.pg_class rel on rel.oid = c.conrelid
+      join pg_catalog.pg_namespace nsp on nsp.oid = c.connamespace
+      join information_schema.key_column_usage k on k.constraint_name = c.conname and k.table_schema = 'public' and k.table_name = '${tableName}'
+      where nsp.nspname = '${schemaName}' and rel.relname = '${tableName}'`;
   }
 
 }
