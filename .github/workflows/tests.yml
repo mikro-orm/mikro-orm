@@ -36,14 +36,16 @@ jobs:
       run: |
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
-        if [ -n \"$COVERALLS_REPO_TOKEN\" ]; then yarn coveralls; fi
       env:
         ORM_PARALLEL: 1
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Codeclimate
-      uses: paambaati/codeclimate-action@v2.3.0
+      uses: paambaati/codeclimate-action@v2.5.3
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
       with:
