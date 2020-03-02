@@ -11,6 +11,7 @@ export class ChangeSetComputer {
               private readonly originalEntityData: Record<string, EntityData<AnyEntity>>,
               private readonly identifierMap: Record<string, EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
+              private readonly removeStack: AnyEntity[],
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform) { }
 
@@ -48,6 +49,13 @@ export class ChangeSetComputer {
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+
+    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && (changeSet.entity[prop.name] as unknown as Collection<T>).isInitialized()) {
+      const collection = changeSet.entity[prop.name] as unknown as Collection<AnyEntity>;
+      collection.getItems()
+        .filter(item => this.removeStack.includes(item))
+        .forEach(item => collection.remove(item));
+    }
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && (changeSet.entity[prop.name] as unknown as Collection<T>).isDirty()) {
       this.collectionUpdates.push(changeSet.entity[prop.name] as unknown as Collection<AnyEntity>);

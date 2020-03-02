@@ -26,7 +26,7 @@ export class UnitOfWork {
   private readonly extraUpdates: [AnyEntity, string, AnyEntity | Reference<AnyEntity>][] = [];
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.metadata, this.platform);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata);
 
   constructor(private readonly em: EntityManager) { }
@@ -67,8 +67,12 @@ export class UnitOfWork {
     return this.identityMap;
   }
 
-  persist<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = []): void {
+  persist<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], checkRemoveStack = false): void {
     if (this.persistStack.includes(entity)) {
+      return;
+    }
+
+    if (checkRemoveStack && this.removeStack.includes(entity)) {
       return;
     }
 
@@ -78,7 +82,7 @@ export class UnitOfWork {
 
     this.persistStack.push(entity);
     this.cleanUpStack(this.removeStack, entity);
-    this.cascade(entity, Cascade.PERSIST, visited);
+    this.cascade(entity, Cascade.PERSIST, visited, checkRemoveStack);
   }
 
   remove(entity: AnyEntity, visited: AnyEntity[] = []): void {
@@ -145,7 +149,7 @@ export class UnitOfWork {
 
     Object.values(this.identityMap)
       .filter(entity => !this.removeStack.includes(entity) && !this.orphanRemoveStack.includes(entity))
-      .forEach(entity => this.persist(entity));
+      .forEach(entity => this.persist(entity, [], true));
 
     while (this.persistStack.length) {
       this.findNewEntities(this.persistStack.shift()!);
@@ -294,7 +298,7 @@ export class UnitOfWork {
     this.extraUpdates.length = 0;
   }
 
-  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[]): void {
+  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[], checkRemoveStack = false): void {
     if (visited.includes(entity)) {
       return;
     }
@@ -302,7 +306,7 @@ export class UnitOfWork {
     visited.push(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist(entity, visited); break;
+      case Cascade.PERSIST: this.persist(entity, visited, checkRemoveStack); break;
       case Cascade.MERGE: this.merge(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
@@ -310,11 +314,11 @@ export class UnitOfWork {
     const meta = this.metadata.get<T>(entity.constructor.name);
 
     for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR)) {
-      this.cascadeReference<T>(entity, prop, type, visited);
+      this.cascadeReference<T>(entity, prop, type, visited, checkRemoveStack);
     }
   }
 
-  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: AnyEntity[]): void {
+  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: AnyEntity[], checkRemoveStack: boolean): void {
     this.fixMissingReference(entity, prop);
 
     if (!this.shouldCascade(prop, type)) {
@@ -324,14 +328,14 @@ export class UnitOfWork {
     const reference = this.unwrapReference(entity, prop);
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference) {
-      return this.cascade(reference as T, type, visited);
+      return this.cascade(reference as T, type, visited, checkRemoveStack);
     }
 
     const collection = reference as Collection<AnyEntity>;
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection && collection.isInitialized(requireFullyInitialized)) {
-      collection.getItems().forEach(item => this.cascade(item, type, visited));
+      collection.getItems().forEach(item => this.cascade(item, type, visited, checkRemoveStack));
     }
   }
 
