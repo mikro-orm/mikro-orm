@@ -68,7 +68,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.UPDATE, data);
   }
 
-  delete(cond: any = {}): this {
+  delete(cond: QBFilterQuery = {}): this {
     return this.init(QueryType.DELETE, undefined, cond);
   }
 
@@ -86,14 +86,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.COUNT);
   }
 
-  join(field: string, alias: string, cond: Dictionary = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
+  join(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
     const extraFields = this.joinReference(field, alias, cond, type, path);
     this._fields!.push(...extraFields);
 
     return this;
   }
 
-  leftJoin(field: string, alias: string, cond: Dictionary = {}): this {
+  leftJoin(field: string, alias: string, cond: QBFilterQuery = {}): this {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
@@ -144,7 +144,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  having(cond: Dictionary | string, params?: any[]): this {
+  having(cond: QBFilterQuery | string, params?: any[]): this {
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
     }
