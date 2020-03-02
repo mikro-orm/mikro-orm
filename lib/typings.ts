@@ -72,6 +72,7 @@ export type Query<T> = true extends IsEntity<T>
     ? { [KK in keyof K]?: Query<K[KK]> | FilterValue<K[KK]> | null } | FilterValue<K>
     : FilterValue<T>;
 export type FilterQuery<T> = GroupOperatorMap<Query<T>> | Query<T> | { [PrimaryKeyType]?: any };
+export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary;
 
 export interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;

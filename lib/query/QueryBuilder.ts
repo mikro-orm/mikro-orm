@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction } from 'knex';
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
-import { Dictionary, EntityProperty, AnyEntity } from '../typings';
+import { Dictionary, EntityProperty, AnyEntity, QBFilterQuery } from '../typings';
 import { ReferenceType } from '../entity';
 import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
@@ -97,9 +97,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  where(cond: Dictionary, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
+  where(cond: QBFilterQuery<T>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
   where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
-  where(cond: Dictionary | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
+  where(cond: QBFilterQuery<T> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
     cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false))!;
 
     if (Utils.isString(cond)) {
@@ -122,15 +122,15 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  andWhere(cond: Dictionary): this; // tslint:disable-next-line:lines-between-class-members
+  andWhere(cond: QBFilterQuery<T>): this; // tslint:disable-next-line:lines-between-class-members
   andWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
-  andWhere(cond: Dictionary | string, params?: any[]): this {
+  andWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: Dictionary): this; // tslint:disable-next-line:lines-between-class-members
+  orWhere(cond: QBFilterQuery<T>): this; // tslint:disable-next-line:lines-between-class-members
   orWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
-  orWhere(cond: Dictionary | string, params?: any[]): this {
+  orWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
 
