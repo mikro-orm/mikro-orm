@@ -1142,6 +1142,12 @@ describe('QueryBuilder', () => {
       'order by `e1`.`email` asc');
   });
 
+  test('select by PK via operator', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select('*').where({ $in: [1, 2] });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`id` in (?, ?)');
+  });
+
   test('CriteriaNode', async () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };

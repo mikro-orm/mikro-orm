@@ -295,6 +295,17 @@ export class QueryBuilderHelper {
       throw new Error(`Invalid query condition: ${inspect(cond)}`);
     }
 
+    const replacement = this.getOperatorReplacement(op, value);
+
+    if (key === op) { // substitute top level operators with PK
+      const meta = this.metadata.get(this.entityName);
+      key = meta.properties[meta.primaryKey].fieldName;
+    }
+
+    qb[m](this.mapper(key, type), replacement, value[op]);
+  }
+
+  private getOperatorReplacement(op: string, value: Dictionary): string {
     let replacement = QueryBuilderHelper.OPERATORS[op];
 
     if (value[op] === null && ['$eq', '$ne'].includes(op)) {
@@ -305,7 +316,7 @@ export class QueryBuilderHelper {
       replacement = this.platform.getRegExpOperator();
     }
 
-    qb[m](this.mapper(key, type), replacement, value[op]);
+    return replacement;
   }
 
   private appendJoinClause(clause: JoinClause, cond: Dictionary, operator?: '$and' | '$or'): void {
