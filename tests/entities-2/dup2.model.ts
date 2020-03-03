@@ -13,6 +13,6 @@ export class Dup2 {
   id!: string;
 
   @OneToOne({ type: 'Dup1', owner: true })
-  dup1?: Dup1;
+  dup12?: Dup1;
 
 }

@@ -12,6 +12,6 @@ export class Dup1 {
   id!: string;
 
   @Property({ type: 'string' })
-  name?: string;
+  name1?: string;
 
 }

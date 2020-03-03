@@ -136,6 +136,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
   }
 
+  static multipleDecorators(entityName: string, propertyName: string): ValidationError {
+    return new ValidationError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
+  }
+
   static invalidType(type: Constructor<Type>, value: any, mode: string): ValidationError {
     const valueType = Utils.getObjectType(value);
 

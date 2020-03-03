@@ -8,6 +8,12 @@ export class EntityValidator {
 
   constructor(private strict: boolean) { }
 
+  static validateSingleDecorator(meta: EntityMetadata, propertyName: string): void {
+    if (meta.properties[propertyName] && meta.properties[propertyName].reference) {
+      throw ValidationError.multipleDecorators(meta.className, propertyName);
+    }
+  }
+
   validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
     Object.values(meta.properties).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {

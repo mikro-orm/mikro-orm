@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType } from '../entity';
+import { EntityValidator, ReferenceType } from '../entity';
 import { AnyEntity, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T extends AnyEntity<T>>(
@@ -16,6 +16,7 @@ export function ManyToOne<T extends AnyEntity<T>>(
     }
 
     const meta = MetadataStorage.getMetadata(target.constructor.name);
+    EntityValidator.validateSingleDecorator(meta, propertyName);
     Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);

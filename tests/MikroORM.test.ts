@@ -1,6 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '../lib';
+import { MetadataStorage } from '../lib/metadata';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
@@ -9,6 +10,11 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 describe('MikroORM', () => {
 
   jest.setTimeout(10e3);
+
+  beforeEach(() => {
+    const meta = MetadataStorage.getMetadata();
+    // Object.keys(meta).forEach(k => delete meta[k]);
+  });
 
   test('should throw when not enough config provided', async () => {
     expect(() => new MikroORM({ entitiesDirs: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` option');
@@ -62,6 +68,11 @@ describe('MikroORM', () => {
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entities: [BaseEntity2], entitiesDirsTs: ['entities-sql'] })).rejects.toThrowError(err);
+  });
+
+  test('should throw when only multiple property decorators are used', async () => {
+    const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-4'] })).rejects.toThrowError(err);
   });
 
   test('should use CLI config', async () => {

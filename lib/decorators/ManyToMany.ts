@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType } from '../entity';
+import { EntityValidator, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 import { QueryOrder } from '../query';
 
@@ -13,6 +13,7 @@ export function ManyToMany<T extends AnyEntity<T>>(
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
     const meta = MetadataStorage.getMetadata(target.constructor.name);
+    EntityValidator.validateSingleDecorator(meta, propertyName);
     Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY } as EntityProperty<T>;
     meta.properties[propertyName] = Object.assign(property, options);

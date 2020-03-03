@@ -35,10 +35,6 @@ describe('decorators', () => {
     OneToOne({ entity: () => Test, inversedBy: 'test5' } as any)(new Test6(), 'test1');
     expect(storage.Test6.properties.test1).toMatchObject({ reference: ReferenceType.ONE_TO_ONE, name: 'test1', inversedBy: 'test5' });
     expect(storage.Test6.properties.test1.entity()).toBe(Test);
-
-    OneToOne({ entity: () => Test, mappedBy: 'test5', owner: true } as any)(new Test6(), 'test1');
-    expect(storage.Test6.properties.test1).toMatchObject({ reference: ReferenceType.ONE_TO_ONE, name: 'test1', mappedBy: 'test5', owner: true });
-    expect(storage.Test6.properties.test1.entity()).toBe(Test);
   });
 
   test('OneToMany', () => {

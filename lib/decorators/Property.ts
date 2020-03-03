@@ -1,11 +1,12 @@
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType } from '../entity';
+import { Cascade, EntityValidator, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
+    EntityValidator.validateSingleDecorator(meta, propertyName);
     Utils.lookupPathFromDecorator(meta);
     options.name = options.name || propertyName;
     const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;

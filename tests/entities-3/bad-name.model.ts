@@ -2,7 +2,7 @@ import { Entity, PrimaryKey, Property } from '../../lib';
 import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
-export class Test {
+export class BadNameTest {
 
   @PrimaryKey({ type: 'ObjectId' })
   _id: any;
