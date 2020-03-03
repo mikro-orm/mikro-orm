@@ -338,15 +338,8 @@ export class Utils {
       line++;
     }
 
-    if (stack[line].match(/\(.+\)/i)) {
-      meta.path = Utils.normalizePath(
-        stack[line].match(/\((.*):\d+:\d+\)/)![1],
-      );
-    } else {
-      meta.path = Utils.normalizePath(
-        stack[line].match(/at\s*(.*):\d+:\d+$/)![1],
-      );
-    }
+    const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
+    meta.path = Utils.normalizePath(stack[line].match(re)![1]);
 
     return meta.path;
   }
