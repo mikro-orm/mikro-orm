@@ -1,3 +1,16 @@
+## [3.3.5](https://github.com/mikro-orm/mikro-orm/compare/v3.3.4...v3.3.5) (2020-03-03)
+
+
+### Bug Fixes
+
+* **core:** improve default value handling in postgres ([#381](https://github.com/mikro-orm/mikro-orm/issues/381)) ([154aab2](https://github.com/mikro-orm/mikro-orm/commit/154aab2f6752890cb0b34a97602b60ca78591f56)), closes [#380](https://github.com/mikro-orm/mikro-orm/issues/380)
+* **mapping:** infer correct type of enums with ts-morph ([2aae486](https://github.com/mikro-orm/mikro-orm/commit/2aae48673827b8e49711072ca1049bf8171bf5ff))
+* **mapping:** throw when only abstract entities were discovered ([00d7543](https://github.com/mikro-orm/mikro-orm/commit/00d754368be5f812f37b84cc6f8211cd0c672ebb))
+* **utils:** improve path detection based in decorators ([#378](https://github.com/mikro-orm/mikro-orm/issues/378)) ([c3c5a43](https://github.com/mikro-orm/mikro-orm/commit/c3c5a4305da8c8accd9545665a4448b4ac35b44a))
+* **validation:** throw when multiple property decorators are used ([5a8d3f2](https://github.com/mikro-orm/mikro-orm/commit/5a8d3f2dce5e1c0a4dd381326a1d38cfb94ed96d))
+
+
+
 ## [3.3.4](https://github.com/mikro-orm/mikro-orm/compare/v3.3.3...v3.3.4) (2020-03-02)
 
 
