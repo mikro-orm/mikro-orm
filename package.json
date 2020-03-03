@@ -49,16 +49,7 @@
   },
   "jest": {
     "testTimeout": 10000,
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/tests/.*\\.(test|spec))\\.(js|ts)$",
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "ts",
-      "js",
-      "json"
-    ],
+    "preset": "ts-jest",
     "collectCoverage": false,
     "collectCoverageFrom": [
       "lib/**/*.ts"
