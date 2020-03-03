@@ -338,7 +338,15 @@ export class Utils {
       line++;
     }
 
-    meta.path = Utils.normalizePath(stack[line].match(/\((.*):\d+:\d+\)/)![1]);
+    if (stack[line].match(/\(.+\)/i)) {
+      meta.path = Utils.normalizePath(
+        stack[line].match(/\((.*):\d+:\d+\)/)![1],
+      );
+    } else {
+      meta.path = Utils.normalizePath(
+        stack[line].match(/at\s*(.*):\d+:\d+$/)![1],
+      );
+    }
 
     return meta.path;
   }
