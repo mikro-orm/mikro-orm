@@ -77,8 +77,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       name: col.column_name,
       type: col.udt_name,
       maxLength: col.length,
-      defaultValue: col.column_default,
       nullable: col.is_nullable === 'YES',
+      defaultValue: this.normalizeDefaultValue(col.column_default, col.length),
     }));
   }
 
@@ -118,6 +118,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {
+    if (!defaultValue) {
+      return defaultValue;
+    }
+
+    const match = defaultValue.match(/^'(.*)'::(.*)$/);
+
+    if (match) {
+      if (match[2] === 'integer') {
+        return +match[1];
+      }
+
+      return `'${match[1]}'`;
+    }
+
     return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 

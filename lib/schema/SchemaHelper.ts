@@ -131,7 +131,7 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Record<string, string[]> = {}) {
+  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Record<string, string[]> = {}): string | number {
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();
     const norm = defaultValues[genericValue];
 
