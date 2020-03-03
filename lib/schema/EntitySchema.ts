@@ -25,14 +25,16 @@ type Metadata<T, U> =
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined> {
 
   private readonly _meta: EntityMetadata<T> = {} as EntityMetadata<T>;
+  private readonly internal: boolean;
   private initialized = false;
 
-  constructor(meta: Metadata<T, U> | EntityMetadata<T>) {
+  constructor(meta: Metadata<T, U> | EntityMetadata<T>, internal = false) {
     meta.name = meta.class ? meta.class.name : meta.name;
     Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, indexes: [], uniques: [] }, meta);
+    this.internal = internal;
   }
 
-  addProperty(name: string & keyof T, type: TypeType, options: PropertyOptions | EntityProperty = {}): void {
+  addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions | EntityProperty = {}): void {
     const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
 
     if (type && Object.getPrototypeOf(type) === Type) {
@@ -42,13 +44,13 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.properties[name] = prop;
   }
 
-  addEnum(name: string & keyof T, type: TypeType = 'enum', options: EnumOptions = {}): void {
+  addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
     }
 
     const prop = { enum: true, ...options };
-    this.addProperty(name, type, prop);
+    this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 
   addVersion(name: string & keyof T, type: TypeType, options: PropertyOptions = {}): void {

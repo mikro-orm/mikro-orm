@@ -118,7 +118,7 @@ export class MetadataDiscovery {
       return entity;
     }
 
-    const schema = new EntitySchema<T>(this.metadata.get<T>(entity.name, true));
+    const schema = new EntitySchema<T>(this.metadata.get<T>(entity.name, true), true);
     schema.setClass(entity);
     schema.meta.useCache = true;
 
