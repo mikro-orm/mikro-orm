@@ -45,6 +45,11 @@ export class MetadataValidator {
     discovered
       .filter(meta => meta.extends && !discovered.find(m => m.className === meta.extends))
       .forEach(meta => { throw ValidationError.fromUnknownBaseEntity(meta); });
+
+    // validate we found at least one entity (not just abstract/base entities)
+    if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
+      throw ValidationError.onlyAbstractEntitiesDiscovered();
+    }
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {

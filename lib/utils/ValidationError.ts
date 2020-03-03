@@ -112,6 +112,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError('No entities were discovered');
   }
 
+  static onlyAbstractEntitiesDiscovered(): ValidationError {
+    return new ValidationError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?');
+  }
+
   static duplicateEntityDiscovered(paths: string[]): ValidationError {
     return new ValidationError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
   }

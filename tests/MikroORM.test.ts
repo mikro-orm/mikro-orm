@@ -4,6 +4,7 @@ import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from 
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { FooBaz2 } from './entities-sql';
+import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('MikroORM', () => {
 
@@ -54,7 +55,13 @@ describe('MikroORM', () => {
   });
 
   test('should throw when multiple entities with same class name discovered', async () => {
-    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(`Entity 'BadName' not found in ./entities-3/bad-name.model.ts`);
+    const err = `Entity 'BadName' not found in ./entities-3/bad-name.model.ts`;
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(err);
+  });
+
+  test('should throw when only abstract entities were discovered', async () => {
+    const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entities: [BaseEntity2], entitiesDirsTs: ['entities-sql'] })).rejects.toThrowError(err);
   });
 
   test('should use CLI config', async () => {
