@@ -304,7 +304,7 @@ MikroORM.init({
     transactional: true, // run each migration inside transaction
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     allOrNothing: true, // run all migrations in current batch in master transaction
-    emit: 'js' | 'ts', // migration generation mode
+    emit: 'ts', // migration generation mode
   },
 });
 ```

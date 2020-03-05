@@ -10,7 +10,7 @@ export class MigrationGenerator {
 
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly options: MigrationsOptions) {
-    this.project.manipulationSettings.set({quoteKind: QuoteKind.Single, indentationText: IndentationText.TwoSpaces});
+    this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single, indentationText: IndentationText.TwoSpaces });
   }
 
   async generate(diff: string[], path?: string): Promise<[string, string]> {
@@ -35,8 +35,9 @@ export class MigrationGenerator {
       writer.block(() => {
         writer.blankLine();
         writer.write(`async up()`);
-        if (this.options.emit === 'ts')
+        if (this.options.emit === 'ts') {
           writer.write(`: Promise<void>`);
+        }
         writer.block(() => diff.forEach(sql => this.createStatement(writer, sql)));
         writer.blankLine();
       });
