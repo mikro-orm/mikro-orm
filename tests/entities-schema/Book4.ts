@@ -10,6 +10,7 @@ export interface Book4 extends BaseEntity5 {
   author: Author4;
   publisher: Publisher4;
   tags: Collection<BookTag4>;
+  tagsUnordered: Collection<BookTag4>;
 }
 
 export const schema = new EntitySchema<Book4, BaseEntity5>({
@@ -19,6 +20,7 @@ export const schema = new EntitySchema<Book4, BaseEntity5>({
     title: { type: 'string' },
     author: { reference: 'm:1', entity: 'Author4', inversedBy: 'books' },
     publisher: { reference: 'm:1', entity: 'Publisher4', inversedBy: 'books' },
-    tags: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', fixedOrder: true },
+    tags: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_ordered', fixedOrder: true },
+    tagsUnordered: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_unordered' },
   },
 });

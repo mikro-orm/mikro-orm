@@ -191,7 +191,8 @@ export async function wipeDatabaseSqlite2(em: EntityManager) {
   await em.remove('BookTag4', {});
   await em.remove('Publisher4', {});
   await em.remove('Test4', {});
-  await em.remove('book4_to_book_tag4', {});
+  await em.remove('tags_ordered', {});
+  await em.remove('tags_unordered', {});
   await em.remove('publisher4_to_test4', {});
   em.clear();
 }

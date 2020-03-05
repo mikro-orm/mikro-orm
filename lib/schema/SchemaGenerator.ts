@@ -157,7 +157,7 @@ export class SchemaGenerator {
     return this.knex.schema.createTable(meta.collection, table => {
       Object
         .values(meta.properties)
-        .filter(prop => this.shouldHaveColumn(prop))
+        .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => this.createTableColumn(table, meta, prop));
 
       if (meta.compositePK) {
@@ -210,7 +210,7 @@ export class SchemaGenerator {
   }
 
   private computeTableDifference(meta: EntityMetadata, table: DatabaseTable): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; remove: Column[] } {
-    const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(prop, true));
+    const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(meta, prop, true));
     const columns = table.getColumns();
     const create: EntityProperty[] = [];
     const update: { prop: EntityProperty; column: Column; diff: IsSame }[] = [];
@@ -247,9 +247,13 @@ export class SchemaGenerator {
     return builder;
   }
 
-  private shouldHaveColumn(prop: EntityProperty, update = false): boolean {
+  private shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty, update = false): boolean {
     if (prop.persist === false) {
       return false;
+    }
+
+    if (meta.pivotTable) {
+      return true;
     }
 
     if (prop.reference !== ReferenceType.SCALAR && !this.helper.supportsSchemaConstraints() && !update) {
@@ -332,7 +336,9 @@ export class SchemaGenerator {
       return;
     }
 
-    this.createTableColumn(table, meta, prop, diff);
+    if (!meta.pivotTable) {
+      this.createTableColumn(table, meta, prop, diff);
+    }
 
     // knex does not allow adding new columns with FK in sqlite
     // @see https://github.com/knex/knex/issues/3351

@@ -1,4 +1,4 @@
-import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
 import { SchemaGenerator } from '../lib/schema';
 import { ReferenceType } from '../lib/entity';
 import { Configuration, Utils } from '../lib/utils';
@@ -223,6 +223,31 @@ describe('SchemaGenerator', () => {
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('generate schema from metadata [sqlite2]', async () => {
+    const orm = await initORMSqlite2();
+    const generator = orm.getSchemaGenerator();
+    const dump = await generator.generate();
+    expect(dump).toMatchSnapshot('sqlite2-schema-dump');
+
+    const dropDump = await generator.getDropSchemaSQL(false, true);
+    expect(dropDump).toMatchSnapshot('sqlite2-drop-schema-dump-1');
+    await generator.dropSchema(true, true);
+
+    const dropDump2 = await generator.getDropSchemaSQL();
+    expect(dropDump2).toMatchSnapshot('sqlite2-drop-schema-dump-2');
+    await generator.dropSchema();
+
+    const createDump = await generator.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('sqlite2-create-schema-dump');
+    await generator.createSchema();
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('sqlite2-update-schema-dump');
     await generator.updateSchema();
 
     await orm.close(true);

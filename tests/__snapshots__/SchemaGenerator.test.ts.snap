@@ -448,9 +448,13 @@ create table \`publisher3\` (\`id\` integer not null primary key autoincrement, 
 
 create table \`test3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar null, \`version\` integer not null default 1);
 
-create table \`book3_to_book_tag3\` (\`id\` integer not null primary key autoincrement);
+create table \`book3_to_book_tag3\` (\`id\` integer not null primary key autoincrement, \`book3_id\` integer not null, \`book_tag3_id\` integer not null);
+create index \`book3_to_book_tag3_book3_id_index\` on \`book3_to_book_tag3\` (\`book3_id\`);
+create index \`book3_to_book_tag3_book_tag3_id_index\` on \`book3_to_book_tag3\` (\`book_tag3_id\`);
 
-create table \`publisher3_to_test3\` (\`id\` integer not null primary key autoincrement);
+create table \`publisher3_to_test3\` (\`id\` integer not null primary key autoincrement, \`publisher3_id\` integer not null, \`test3_id\` integer not null);
+create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test3\` (\`publisher3_id\`);
+create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
 
 alter table \`author3\` add column \`favourite_book_id\` integer null;
 create index \`author3_favourite_book_id_index\` on \`author3\` (\`favourite_book_id\`);
@@ -459,16 +463,6 @@ alter table \`book3\` add column \`author_id\` integer null;
 alter table \`book3\` add column \`publisher_id\` integer null;
 create index \`book3_author_id_index\` on \`book3\` (\`author_id\`);
 create index \`book3_publisher_id_index\` on \`book3\` (\`publisher_id\`);
-
-alter table \`book3_to_book_tag3\` add column \`book3_id\` integer null;
-alter table \`book3_to_book_tag3\` add column \`book_tag3_id\` integer null;
-create index \`book3_to_book_tag3_book3_id_index\` on \`book3_to_book_tag3\` (\`book3_id\`);
-create index \`book3_to_book_tag3_book_tag3_id_index\` on \`book3_to_book_tag3\` (\`book_tag3_id\`);
-
-alter table \`publisher3_to_test3\` add column \`publisher3_id\` integer null;
-alter table \`publisher3_to_test3\` add column \`test3_id\` integer null;
-create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test3\` (\`publisher3_id\`);
-create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
 
 pragma foreign_keys = on;
 "
@@ -524,9 +518,13 @@ create table \`publisher3\` (\`id\` integer not null primary key autoincrement, 
 
 create table \`test3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar null, \`version\` integer not null default 1);
 
-create table \`book3_to_book_tag3\` (\`id\` integer not null primary key autoincrement);
+create table \`book3_to_book_tag3\` (\`id\` integer not null primary key autoincrement, \`book3_id\` integer not null, \`book_tag3_id\` integer not null);
+create index \`book3_to_book_tag3_book3_id_index\` on \`book3_to_book_tag3\` (\`book3_id\`);
+create index \`book3_to_book_tag3_book_tag3_id_index\` on \`book3_to_book_tag3\` (\`book_tag3_id\`);
 
-create table \`publisher3_to_test3\` (\`id\` integer not null primary key autoincrement);
+create table \`publisher3_to_test3\` (\`id\` integer not null primary key autoincrement, \`publisher3_id\` integer not null, \`test3_id\` integer not null);
+create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test3\` (\`publisher3_id\`);
+create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
 
 alter table \`author3\` add column \`favourite_book_id\` integer null;
 create index \`author3_favourite_book_id_index\` on \`author3\` (\`favourite_book_id\`);
@@ -536,21 +534,161 @@ alter table \`book3\` add column \`publisher_id\` integer null;
 create index \`book3_author_id_index\` on \`book3\` (\`author_id\`);
 create index \`book3_publisher_id_index\` on \`book3\` (\`publisher_id\`);
 
-alter table \`book3_to_book_tag3\` add column \`book3_id\` integer null;
-alter table \`book3_to_book_tag3\` add column \`book_tag3_id\` integer null;
-create index \`book3_to_book_tag3_book3_id_index\` on \`book3_to_book_tag3\` (\`book3_id\`);
-create index \`book3_to_book_tag3_book_tag3_id_index\` on \`book3_to_book_tag3\` (\`book_tag3_id\`);
-
-alter table \`publisher3_to_test3\` add column \`publisher3_id\` integer null;
-alter table \`publisher3_to_test3\` add column \`test3_id\` integer null;
-create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test3\` (\`publisher3_id\`);
-create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
-
 pragma foreign_keys = on;
 "
 `;
 
 exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-update-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-create-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
+create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
+
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+
+create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
+
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`type\` text check (\`type\` in ('local', 'global')) not null default local);
+
+create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar null, \`version\` integer not null default 1);
+
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`version\` datetime not null default current_timestamp);
+
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
+
+create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null);
+create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);
+create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);
+
+create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, primary key (\`book4_id\`, \`book_tag4_id\`));
+create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);
+create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);
+
+create table \`publisher4_to_test4\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null);
+create index \`publisher4_to_test4_publisher4_id_index\` on \`publisher4_to_test4\` (\`publisher4_id\`);
+create index \`publisher4_to_test4_test4_id_index\` on \`publisher4_to_test4\` (\`test4_id\`);
+
+alter table \`author4\` add column \`favourite_book_id\` integer null;
+create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
+
+alter table \`book4\` add column \`author_id\` integer null;
+alter table \`book4\` add column \`publisher_id\` integer null;
+create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
+create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
+
+alter table \`foo_bar4\` add column \`baz_id\` integer null;
+alter table \`foo_bar4\` add column \`foo_bar_id\` integer null;
+create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
+create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
+create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
+create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-drop-schema-dump-1 1`] = `
+"drop table if exists \`author4\`;
+drop table if exists \`book4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`tags_unordered\`;
+drop table if exists \`publisher4_to_test4\`;
+drop table if exists \`mikro_orm_migrations\`;
+
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-drop-schema-dump-2 1`] = `
+"pragma foreign_keys = off;
+
+drop table if exists \`author4\`;
+drop table if exists \`book4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`tags_unordered\`;
+drop table if exists \`publisher4_to_test4\`;
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+drop table if exists \`author4\`;
+drop table if exists \`book4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`tags_unordered\`;
+drop table if exists \`publisher4_to_test4\`;
+
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
+create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
+
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+
+create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
+
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`type\` text check (\`type\` in ('local', 'global')) not null default local);
+
+create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar null, \`version\` integer not null default 1);
+
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`version\` datetime not null default current_timestamp);
+
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
+
+create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null);
+create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);
+create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);
+
+create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, primary key (\`book4_id\`, \`book_tag4_id\`));
+create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);
+create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);
+
+create table \`publisher4_to_test4\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null);
+create index \`publisher4_to_test4_publisher4_id_index\` on \`publisher4_to_test4\` (\`publisher4_id\`);
+create index \`publisher4_to_test4_test4_id_index\` on \`publisher4_to_test4\` (\`test4_id\`);
+
+alter table \`author4\` add column \`favourite_book_id\` integer null;
+create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
+
+alter table \`book4\` add column \`author_id\` integer null;
+alter table \`book4\` add column \`publisher_id\` integer null;
+create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
+create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
+
+alter table \`foo_bar4\` add column \`baz_id\` integer null;
+alter table \`foo_bar4\` add column \`foo_bar_id\` integer null;
+create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
+create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
+create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
+create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `
 "pragma foreign_keys = off;
 
 pragma foreign_keys = on;
