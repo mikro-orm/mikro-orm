@@ -17,7 +17,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when not enough config provided', async () => {
-    expect(() => new MikroORM({ entitiesDirs: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` option');
+    expect(() => new MikroORM({ entitiesDirs: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` or `clientUrl` option');
     expect(() => new MikroORM({ entities: [], entitiesDirs: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` or `entitiesDirs` option');
     expect(() => new MikroORM({ entitiesDirs: ['entities/*.js'], dbName: 'test' })).toThrowError(`Please provide path to directory in \`entitiesDirs\`, found: 'entities/*.js'`);
     expect(() => new MikroORM({ entitiesDirs: ['entities/*.ts'], dbName: 'test' })).toThrowError(`Please provide path to directory in \`entitiesDirs\`, found: 'entities/*.ts'`);

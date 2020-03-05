@@ -197,8 +197,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private validateOptions(): void {
-    if (!this.options.dbName) {
-      throw new Error('No database specified, please fill in `dbName` option');
+    if (!this.options.dbName && !this.options.clientUrl) {
+      throw new Error('No database specified, please fill in `dbName` or `clientUrl` option');
     }
 
     if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.discovery.warnWhenNoEntities) {
@@ -233,7 +233,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 }
 
 export interface ConnectionOptions {
-  dbName: string;
+  dbName?: string;
   name?: string;
   clientUrl?: string;
   host?: string;

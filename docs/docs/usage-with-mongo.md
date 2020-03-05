@@ -12,6 +12,7 @@ const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...',
+  type: 'mongo',
 });
 ```
 

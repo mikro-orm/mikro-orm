@@ -96,7 +96,7 @@ through `clientUrl`, or partially through one of following options:
 
 ```typescript
 export interface ConnectionOptions {
-  dbName: string;
+  dbName?: string;
   name?: string; // for logging only (when replicas are used)
   clientUrl?: string;
   host?: string;

@@ -52,7 +52,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   const orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
-    dbName: `mikro_orm_test`,
+    clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
     port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
     baseDir: BASE_DIR,
     debug: ['query'],

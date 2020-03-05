@@ -26,3 +26,4 @@ discuss specifics.
 - Require node 10+
 - Require TS 3.7 or newer
 - Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
+- Drop default value for db `type`
