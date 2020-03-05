@@ -49,12 +49,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
+      emit: 'ts',
     },
     cache: {
       enabled: true,
       pretty: false,
       adapter: FileCacheAdapter,
-      options: { cacheDir: process.cwd() + '/temp' },
+      options: {cacheDir: process.cwd() + '/temp'},
     },
     metadataProvider: TsMorphMetadataProvider,
     highlight: true,
@@ -251,6 +252,7 @@ export type MigrationsOptions = {
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;
+  emit?: 'js' | 'ts';
 };
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
@@ -266,14 +268,14 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   };
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
-  driver?: { new (config: Configuration): D };
+  driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
-  namingStrategy?: { new (): NamingStrategy };
+  namingStrategy?: { new(): NamingStrategy };
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   forceUtcTimezone: boolean;
-  hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
-  entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
+  hydrator: { new(factory: EntityFactory, em: EntityManager): Hydrator };
+  entityRepository: { new(em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   logger: (message: string) => void;
@@ -287,10 +289,12 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   cache: {
     enabled?: boolean;
     pretty?: boolean;
-    adapter?: { new (...params: any[]): CacheAdapter };
+    adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
   };
-  metadataProvider: { new (config: Configuration): MetadataProvider };
+  metadataProvider: { new(config: Configuration): MetadataProvider };
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions<D>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
+  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
+  | MikroORMOptions<D>;
