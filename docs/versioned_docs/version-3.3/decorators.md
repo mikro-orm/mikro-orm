@@ -11,13 +11,14 @@ abstract base classes.
 
 | Parameter | Type | Optional | Description |
 |-----------|------|----------|-------------|
-| `collection` | `string` | yes | Override default collection/table name. |
+| `tableName` | `string` | yes | Override default collection/table name. |
+| `collection` | `string` | yes | Alias for `tableName`. |
 | `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
 
 > You can also use `@Repository()` decorator instead of `customRepository` parameter.
 
 ```typescript
-@Entity({ collection: 'authors' })
+@Entity({ tableName: 'authors' })
 export class Author implements IdEntity<Author> { ... }
 ```
 

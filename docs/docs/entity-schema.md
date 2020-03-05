@@ -119,7 +119,7 @@ these additional parameters:
 name: string;
 class: Constructor<T>;
 extends: string;
-collection: string;
+tableName: string; // alias for `collection: string`
 properties: { [K in keyof T & string]: EntityProperty<T[K]> };
 indexes: { properties: string | string[]; name?: string; type?: string }[];
 uniques: { properties: string | string[]; name?: string }[];
@@ -139,7 +139,7 @@ export enum MyEnum {
 
 export const schema = new EntitySchema<FooBar>({
   name: 'FooBar',
-  collection: 'tbl_foo_bar',
+  tableName: 'tbl_foo_bar',
   indexes: [{ name: 'idx1', properties: 'name' }],
   uniques: [{ name: 'unq1', properties: ['name', 'email'] }],
   customRepository: () => FooBarRepository,

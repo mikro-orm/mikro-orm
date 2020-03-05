@@ -11,10 +11,10 @@ terminology, it is called database, but from implementation point of view, it is
 All you need to do is simply define the table name including schema name in `collection` option:
 
 ```typescript
-@Entity({ collection: 'first_schema.foo' })
+@Entity({ tableName: 'first_schema.foo' })
 export class Foo { ... }
 
-@Entity({ collection: 'second_schema.bar' })
+@Entity({ tableName: 'second_schema.bar' })
 export class Bar { ... }
 ```
 

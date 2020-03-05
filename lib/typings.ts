@@ -152,6 +152,7 @@ export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
   name: string;
   className: string;
+  tableName: string;
   pivotTable: boolean;
   constructorParams: string[];
   toJsonParams: string[];

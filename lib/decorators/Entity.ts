@@ -15,6 +15,7 @@ export function Entity(options: EntityOptions<any> = {}): Function {
 }
 
 export type EntityOptions<T extends AnyEntity<T>> = {
+  tableName?: string;
   collection?: string;
   customRepository?: () => Constructor<EntityRepository<T>>;
 };

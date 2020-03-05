@@ -17,7 +17,7 @@ abstract base classes.
 > You can also use `@Repository()` decorator instead of `customRepository` parameter.
 
 ```typescript
-@Entity({ collection: 'authors' })
+@Entity({ tableName: 'authors' })
 export class Author { ... }
 ```
 

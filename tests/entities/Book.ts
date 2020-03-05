@@ -5,7 +5,7 @@ import { Author } from './Author';
 import { BookTag } from './book-tag';
 import { BaseEntity3 } from './BaseEntity3';
 
-@Entity({ collection: 'books-table' })
+@Entity({ tableName: 'books-table' })
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
