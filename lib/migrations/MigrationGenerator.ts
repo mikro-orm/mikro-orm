@@ -21,9 +21,9 @@ export class MigrationGenerator {
     const fileName = `${className}.${this.options.emit}`;
     const migration = this.project.createSourceFile(path + '/' + fileName, writer => {
       if (this.options.emit === 'js') {
-        writer.writeLine(`"use strict";`);
-        writer.writeLine(`Object.defineProperty(exports, "__esModule", { value: true });`);
-        writer.writeLine(`const Migration = require("mikro-orm").Migration;`);
+        writer.writeLine(`'use strict';`);
+        writer.writeLine(`Object.defineProperty(exports, '__esModule', { value: true });`);
+        writer.writeLine(`const Migration = require('mikro-orm').Migration;`);
       } else {
         writer.writeLine(`import { Migration } from 'mikro-orm';`);
       }
