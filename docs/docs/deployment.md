@@ -158,39 +158,24 @@ configuration. Configuration for Webpack is stored in the root of the project as
 For bundling MikroORM the following configuration is required:
 
 ```javascript
-const optionalModules = [
-  ...Object.keys(require('knex/package.json').browser),
-  ...Object.keys(require('mikro-orm/package.json').peerDependencies),
-];
-
 module.exports = {
   target: 'node',
   module: {
     rules: [
       { test: /\.ts$/, loader: 'ts-loader' },
-      {
-            test: /\.mjs$/,
-            include: /node_modules/,
-            type: "javascript/auto"
-      }
+      { test: /\.mjs$/, include: /node_modules/, type: 'javascript/auto' },
     ],
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
+  externals: {
+    knex: 'commonjs knex',
+    umzug: 'commonjs umzug',
+    'mikro-orm': 'commonjs mikro-orm',
   },
   plugins: [
     new webpack.EnvironmentPlugin({ WEBPACK: true }),
-    new webpack.IgnorePlugin({
-      checkResource: rsrc => {
-        if (optionalModules.includes(rsrc.split('/')[0])) {
-          try {
-            require.resolve(rsrc);
-            return false;
-          } catch {
-            return true;  
-          }
-        }
-
-        return false;
-      },
-    }),
   ],
 };
 ```
