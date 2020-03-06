@@ -1,41 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Migrator generate js schema migration: migration-js-dump 1`] = `
-Object {
-  "code": "'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-const Migration = require('mikro-orm').Migration;
-
-class Migration20191013214813 extends Migration {
-
-  async up() {
-    this.addSql('alter table \`book2\` drop \`foo\`;');
-
-    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
-    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
-    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
-  }
-
-}
-exports.Migration20191013214813 = Migration20191013214813;
-",
-  "diff": Array [
-    "alter table \`book2\` drop \`foo\`;",
-    "",
-    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
-    "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-    "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
-    "alter table \`test2\` drop \`foo___bar\`;",
-    "alter table \`test2\` drop \`foo___baz\`;",
-    undefined,
-    undefined,
-  ],
-  "fileName": "Migration20191013214813.js",
-}
-`;
-
 exports[`Migrator generate schema migration: migration-dump 1`] = `
 Object {
   "code": "import { Migration } from 'mikro-orm';
