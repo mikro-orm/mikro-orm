@@ -51,7 +51,7 @@ describe('GH issue 269', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test('1:1 populates owner even with autoJoinOneToOneOwner: false', async () => {

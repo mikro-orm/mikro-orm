@@ -855,7 +855,7 @@ describe('EntityManagerSqlite', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
 });

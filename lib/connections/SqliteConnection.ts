@@ -9,7 +9,7 @@ import { AbstractSqlConnection } from './AbstractSqlConnection';
 export class SqliteConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
-    await ensureDir(dirname(this.config.get('dbName')));
+    await ensureDir(dirname(this.config.get('dbName')!));
     this.client = this.createKnexClient(this.getPatchedDialect());
     await this.client.raw('pragma foreign_keys = on');
   }

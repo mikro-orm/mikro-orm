@@ -67,7 +67,7 @@ describe('GH issue 222', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test('cascade persist with pre-filled PK and with cycles', async () => {

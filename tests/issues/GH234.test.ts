@@ -52,7 +52,7 @@ describe('GH issue 234', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test('search by m:n', async () => {

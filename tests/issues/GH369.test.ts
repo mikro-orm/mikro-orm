@@ -48,7 +48,7 @@ describe('GH issue 369', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test(`removing entity that is inside a 1:m collection`, async () => {

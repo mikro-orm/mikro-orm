@@ -55,7 +55,7 @@ describe('GH issue 302', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test('populate m:1 with reference wrapper', async () => {

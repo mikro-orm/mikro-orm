@@ -192,8 +192,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
     }
 
-    const url = new URL(this.getClientUrl());
-    this.options.dbName = this.get('dbName', url.pathname.replace(/^\//, ''));
+    try {
+      const url = new URL(this.getClientUrl());
+      this.options.dbName = this.get('dbName', url.pathname.replace(/^\//, ''));
+    } catch {
+      // ignore possible parsing failures, e.g. `:` inside password
+    }
 
     if (this.options.entitiesDirsTs.length === 0) {
       this.options.entitiesDirsTs = this.options.entitiesDirs;

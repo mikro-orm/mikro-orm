@@ -37,7 +37,7 @@ describe('GH issue 380', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test(`schema updates respect default values`, async () => {

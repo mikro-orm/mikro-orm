@@ -53,7 +53,7 @@ describe('GH issue 268', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName'));
+    unlinkSync(orm.config.get('dbName')!);
   });
 
   test('m:n with uuid PKs', async () => {
