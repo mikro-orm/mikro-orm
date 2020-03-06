@@ -1,5 +1,6 @@
 import { PoolConfig } from 'knex';
 import { fromJson, Theme } from 'cli-highlight';
+import { URL } from 'url';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
@@ -190,6 +191,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
     }
+
+    const url = new URL(this.getClientUrl());
+    this.options.dbName = this.get('dbName', url.pathname.replace(/^\//, ''));
 
     if (this.options.entitiesDirsTs.length === 0) {
       this.options.entitiesDirsTs = this.options.entitiesDirs;
