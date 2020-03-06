@@ -20,31 +20,13 @@ export class MigrationGenerator {
     const className = `Migration${time}`;
     const fileName = `${className}.${this.options.emit}`;
     const migration = this.project.createSourceFile(path + '/' + fileName, writer => {
+
       if (this.options.emit === 'js') {
-        writer.writeLine(`'use strict';`);
-        writer.writeLine(`Object.defineProperty(exports, '__esModule', { value: true });`);
-        writer.writeLine(`const Migration = require('mikro-orm').Migration;`);
+        this.generateJSMigrationFile(writer, className, diff);
       } else {
-        writer.writeLine(`import { Migration } from 'mikro-orm';`);
+        this.generateTSMigrationFile(writer, className, diff);
       }
-      writer.blankLine();
-      if (this.options.emit === 'ts') {
-        writer.write(`export `);
-      }
-      writer.write(`class ${className} extends Migration`);
-      writer.block(() => {
-        writer.blankLine();
-        writer.write(`async up()`);
-        if (this.options.emit === 'ts') {
-          writer.write(`: Promise<void>`);
-        }
-        writer.block(() => diff.forEach(sql => this.createStatement(writer, sql)));
-        writer.blankLine();
-      });
-      if (this.options.emit === 'js') {
-        writer.writeLine(`exports.${className} = ${className}`);
-      }
-      writer.write('');
+
     });
 
     const ret = migration.getFullText();
@@ -59,6 +41,39 @@ export class MigrationGenerator {
     } else {
       writer.blankLine();
     }
+  }
+
+  generateJSMigrationFile(writer: CodeBlockWriter, className: string, diff: string[]) {
+    writer.writeLine(`'use strict';`);
+    writer.writeLine(`Object.defineProperty(exports, '__esModule', { value: true });`);
+    writer.writeLine(`const Migration = require('mikro-orm').Migration;`);
+    writer.blankLine();
+    writer.write(`class ${className} extends Migration`);
+
+    writer.block(() => {
+      writer.blankLine();
+      writer.write(`async up()`);
+      writer.block(() => diff.forEach(sql => this.createStatement(writer, sql)));
+      writer.blankLine();
+    });
+
+    writer.writeLine(`exports.${className} = ${className};`);
+    writer.write('');
+  }
+
+  generateTSMigrationFile(writer: CodeBlockWriter, className: string, diff: string[]) {
+    writer.writeLine(`import { Migration } from 'mikro-orm';`);
+    writer.blankLine();
+    writer.write(`export class ${className} extends Migration`);
+
+    writer.block(() => {
+      writer.blankLine();
+      writer.write('async up(): Promise<void>');
+      writer.block(() => diff.forEach(sql => this.createStatement(writer, sql)));
+      writer.blankLine();
+    });
+
+    writer.write('');
   }
 
 }
