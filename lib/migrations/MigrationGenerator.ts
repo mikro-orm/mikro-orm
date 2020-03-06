@@ -20,15 +20,12 @@ export class MigrationGenerator {
     const className = `Migration${time}`;
     const fileName = `${className}.${this.options.emit}`;
     const migration = this.project.createSourceFile(path + '/' + fileName, writer => {
-
       if (this.options.emit === 'js') {
         this.generateJSMigrationFile(writer, className, diff);
       } else {
         this.generateTSMigrationFile(writer, className, diff);
       }
-
     });
-
     const ret = migration.getFullText();
     await writeFile(migration.getFilePath(), ret);
 
