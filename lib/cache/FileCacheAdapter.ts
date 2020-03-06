@@ -34,9 +34,12 @@ export class FileCacheAdapter implements CacheAdapter {
    * @inheritdoc
    */
   async set(name: string, data: any, origin: string): Promise<void> {
-    const path = await this.path(name);
+    const [path, hash] = await Promise.all([
+      this.path(name),
+      this.getHash(origin),
+    ]);
+
     const opts = this.pretty ? { spaces: 2 } : {};
-    const hash = await this.getHash(origin);
     await writeJSON(path, { data, origin, hash }, opts);
   }
 
@@ -47,9 +50,9 @@ export class FileCacheAdapter implements CacheAdapter {
     const path = await this.path('*');
     const files = await globby(path);
 
-    for (const file of files) {
-      await unlink(file);
-    }
+    await Promise.all(
+      files.map((file) => unlink(file)),
+    );
   }
 
   private async path(name: string): Promise<string> {

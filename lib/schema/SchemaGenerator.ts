@@ -17,10 +17,12 @@ export class SchemaGenerator {
               private readonly config: Configuration) { }
 
   async generate(): Promise<string> {
-    let ret = await this.getDropSchemaSQL(false);
-    ret += await this.getCreateSchemaSQL(false);
+    const [dropSchema, createSchema] = await Promise.all([
+      this.getDropSchemaSQL(false),
+      this.getCreateSchemaSQL(false),
+    ]);
 
-    return this.wrapSchema(ret);
+    return this.wrapSchema(dropSchema + createSchema);
   }
 
   async createSchema(wrap = true): Promise<void> {
