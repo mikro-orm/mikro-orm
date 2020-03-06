@@ -2,8 +2,8 @@ import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Pri
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
-import { LockMode } from '../unit-of-work';
 import { MetadataStorage } from '../metadata';
+import { LockMode } from '../unit-of-work';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -18,12 +18,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]>;
+  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate?: string[], orderBy?: QueryOrderMap, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null>;
+  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction): Promise<T | null>;
 
   nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
@@ -52,4 +52,24 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   getDependencies(): string[];
 
+}
+
+export interface FindOptions {
+  populate?: string[] | boolean;
+  orderBy?: QueryOrderMap;
+  limit?: number;
+  offset?: number;
+  refresh?: boolean;
+  fields?: string[];
+  schema?: string;
+}
+
+export interface FindOneOptions {
+  populate?: string[] | boolean;
+  orderBy?: QueryOrderMap;
+  lockMode?: LockMode;
+  lockVersion?: number | Date;
+  refresh?: boolean;
+  fields?: string[];
+  schema?: string;
 }

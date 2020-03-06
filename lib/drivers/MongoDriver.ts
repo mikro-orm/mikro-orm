@@ -2,11 +2,10 @@ import { ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
 import { EntityData, AnyEntity, FilterQuery } from '../typings';
-import { QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { QueryResult } from '../connections';
-import { LockMode } from '../unit-of-work';
+import { FindOneOptions, FindOptions } from './IDatabaseDriver';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -17,20 +16,20 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     super(config, ['mongodb']);
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[], orderBy?: QueryOrderMap, fields?: string[], limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions): Promise<T[]> {
     where = this.renameFields(entityName, where);
-    const res = await this.getConnection('read').find<T>(entityName, where, orderBy, limit, offset, fields);
+    const res = await this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, options.fields);
 
     return res.map((r: T) => this.mapResult<T>(r, this.metadata.get(entityName))!);
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions = { populate: [], orderBy: {} }): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
       where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
     }
 
     where = this.renameFields(entityName, where);
-    const res = await this.getConnection('read').find<T>(entityName, where, orderBy, 1, undefined, fields);
+    const res = await this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, options.fields);
 
     return this.mapResult<T>(res[0], this.metadata.get(entityName));
   }

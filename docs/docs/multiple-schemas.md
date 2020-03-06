@@ -21,3 +21,17 @@ export class Bar { ... }
 Then use those entities as usual. Resulting SQL queries will use this `tableName` value as a 
 table name so as long as your connection has access to given schema, everything should work 
 as expected.
+
+You can also query for entity in specific schema via `EntityManager`, `EntityRepository` or 
+`QueryBuilder`:
+
+```typescript
+const user = await em.findOne(User, { ... }, { schema: 'client-123' });
+```
+
+To create entity in specific schema, you will need to use `QueryBuilder`:
+
+```typescript
+const qb = em.createQueryBuilder(User);
+await qb.insert({ email: 'foo@bar.com' }).withSchema('client-123');
+```

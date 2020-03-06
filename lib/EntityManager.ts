@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Configuration, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { AbstractSqlDriver, IDatabaseDriver } from './drivers';
+import { AbstractSqlDriver, IDatabaseDriver, FindOneOptions, FindOptions } from './drivers';
 import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQuery, Primary, Dictionary } from './typings';
 import { QueryBuilder, QueryOrderMap, SmartQueryHelper } from './query';
 import { MetadataStorage } from './metadata';
@@ -96,7 +96,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions>(populate) ? populate : { populate, orderBy, limit, offset };
-    const results = await this.driver.find(entityName, where, this.preparePopulate(options.populate), options.orderBy || {}, options.fields, options.limit, options.offset, this.transactionContext);
+    options.orderBy = options.orderBy || {};
+    const results = await this.driver.find<T>(entityName, where, { ...options, populate: this.preparePopulate(options.populate) }, this.transactionContext);
 
     if (results.length === 0) {
       return [];
@@ -110,7 +111,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate(entityName, unique, options.populate || [], where, options.orderBy || {}, options.refresh);
+    await this.entityLoader.populate<T>(entityName, unique, options.populate || [], where, options.orderBy, options.refresh);
 
     return unique;
   }
@@ -166,7 +167,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, this.preparePopulate(options.populate), options.orderBy, options.fields, options.lockMode, this.transactionContext);
+    const data = await this.driver.findOne(entityName, where, { ...options, populate: this.preparePopulate(options.populate) }, this.transactionContext);
 
     if (!data) {
       return null;
@@ -585,24 +586,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return Array.isArray(populate) ? populate : [];
   }
 
-}
-
-export interface FindOptions {
-  populate?: string[] | boolean;
-  orderBy?: QueryOrderMap;
-  limit?: number;
-  offset?: number;
-  refresh?: boolean;
-  fields?: string[];
-}
-
-export interface FindOneOptions {
-  populate?: string[] | boolean;
-  orderBy?: QueryOrderMap;
-  lockMode?: LockMode;
-  lockVersion?: number | Date;
-  refresh?: boolean;
-  fields?: string[];
 }
 
 export interface FindOneOrFailOptions extends FindOneOptions {
