@@ -9,7 +9,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     boolean: ['bool', 'boolean'],
     number: ['int4', 'integer', 'int8', 'int2', 'int', 'float', 'float8', 'double', 'double precision', 'bigint', 'smallint', 'decimal', 'numeric', 'real'],
     float: ['float'],
-    double: ['double', 'double precision', 'float8'],
+    double: ['double precision', 'float8'],
     tinyint: ['int2'],
     smallint: ['int2'],
     bigint: ['bigint'],
