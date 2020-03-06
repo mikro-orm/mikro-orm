@@ -33,7 +33,7 @@ export class Author2 extends BaseEntity2 {
 
   @Index()
   @Unique()
-  @Property({ default: 0 })
+  @Property({ default: false })
   termsAccepted: boolean = false;
 
   @Property({ nullable: true })
