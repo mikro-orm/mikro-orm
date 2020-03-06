@@ -258,6 +258,7 @@ qb.groupBy(fields: string | string[]): QueryBuilder;
 qb.having(cond: Record<string, any>): QueryBuilder;
 qb.limit(limit: number, offset?: number): QueryBuilder;
 qb.offset(offset: number): QueryBuilder;
+qb.withSchema(schema?: string): QueryBuilder;
 qb.execute<T>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): T;
 qb.getResult<T>(): T[];
 qb.getSingleResult<T>(): T;

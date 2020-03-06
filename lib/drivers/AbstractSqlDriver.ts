@@ -6,8 +6,8 @@ import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
 import { QueryBuilder, QueryBuilderHelper, QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
-import { LockMode } from '../unit-of-work';
 import { Platform } from '../platforms';
+import { FindOneOptions, FindOptions } from './IDatabaseDriver';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
@@ -22,44 +22,47 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     this.platform = platform;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], limit?: number, offset?: number, ctx?: Transaction): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction): Promise<T[]> {
     const meta = this.metadata.get(entityName);
-    populate = this.autoJoinOneToOneOwner(meta, populate);
+    options = { populate: [], orderBy: {}, ...(options || {}) };
+    options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
 
-    if (fields && !fields.includes(meta.primaryKey)) {
-      fields.unshift(meta.primaryKey);
+    if (options.fields && !options.fields.includes(meta.primaryKey)) {
+      options.fields.unshift(meta.primaryKey);
     }
 
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    qb.select(fields || '*').populate(populate).where(where as Dictionary).orderBy(orderBy);
+    qb.select(options.fields || '*').populate(options.populate).where(where as Dictionary).orderBy(options.orderBy!).withSchema(options.schema);
 
-    if (limit !== undefined) {
-      qb.limit(limit, offset);
+    if (options.limit !== undefined) {
+      qb.limit(options.limit, options.offset);
     }
 
     return qb.execute('all');
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, populate: string[] = [], orderBy: QueryOrderMap = {}, fields?: string[], lockMode?: LockMode, ctx?: Transaction): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction): Promise<T | null> {
+    options = { populate: [], orderBy: {}, ...(options || {}) };
     const meta = this.metadata.get(entityName);
-    populate = this.autoJoinOneToOneOwner(meta, populate);
+    options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
     const pk = meta.primaryKey;
 
     if (Utils.isPrimaryKey(where)) {
       where = { [pk]: where } as FilterQuery<T>;
     }
 
-    if (fields && !fields.includes(pk)) {
-      fields.unshift(pk);
+    if (options.fields && !options.fields.includes(pk)) {
+      options.fields.unshift(pk);
     }
 
     return this.createQueryBuilder(entityName, ctx, !!ctx)
-      .select(fields || '*')
-      .populate(populate)
+      .select(options.fields || '*')
+      .populate(options.populate)
       .where(where as Dictionary)
-      .orderBy(orderBy)
+      .orderBy(options.orderBy!)
       .limit(1)
-      .setLockMode(lockMode)
+      .setLockMode(options.lockMode)
+      .withSchema(options.schema)
       .execute('get');
   }
 

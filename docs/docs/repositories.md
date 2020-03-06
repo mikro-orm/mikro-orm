@@ -76,6 +76,7 @@ export interface FindOptions {
   orderBy?: { [k: string]: QueryOrder };
   limit?: number;
   offset?: number;
+  schema?: string;
 }
 ```
 

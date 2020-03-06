@@ -49,7 +49,7 @@ export async function initORMMongo() {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
-  const orm = await MikroORM.init<D>({
+  let orm = await MikroORM.init<D>({
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
@@ -70,6 +70,14 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   await orm.getSchemaGenerator().ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
+  orm.config.set('dbName', 'mikro_orm_test_schema_2');
+  await orm.getSchemaGenerator().ensureDatabase();
+  await orm.em.getDriver().reconnect();
+  await orm.getSchemaGenerator().dropSchema();
+  await connection.loadFile(__dirname + '/mysql-schema.sql');
+  await orm.close(true);
+  orm.config.set('dbName', 'mikro_orm_test');
+  orm = await MikroORM.init<D>(orm.config);
 
   return orm;
 }
@@ -153,6 +161,7 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(BookTag2).truncate().execute();
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
+  await em.createQueryBuilder('author2_to_author2').truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_to_test2').truncate().execute();

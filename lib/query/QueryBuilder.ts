@@ -26,6 +26,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private finalized = false;
   private _joins: Record<string, JoinOptions> = {};
   private _aliasMap: Record<string, string> = {};
+  private _schema?: string;
   private _cond: Dictionary = {};
   private _data!: Dictionary;
   private _orderBy: QueryOrderMap = {};
@@ -176,6 +177,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
+  withSchema(schema?: string): this {
+    this._schema = schema;
+
+    return this;
+  }
+
   setLockMode(mode?: LockMode): this {
     if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.context) {
       throw ValidationError.transactionRequired();
@@ -269,7 +276,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy'];
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
     qb.finalized = false;
 
@@ -356,6 +363,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   private getQueryBase(): KnexQueryBuilder {
     const qb = this.getKnex();
+
+    if (this._schema) {
+      qb.withSchema(this._schema);
+    }
 
     switch (this.type) {
       case QueryType.SELECT:

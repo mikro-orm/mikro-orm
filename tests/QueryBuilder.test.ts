@@ -889,13 +889,14 @@ describe('QueryBuilder', () => {
     expect(qb3.getParams()).toEqual(['My Publisher 1']);
 
     const qb4 = orm.em.createQueryBuilder(Author2);
+    qb4.withSchema('test123');
     qb4.select('*').where({ books: { publisher: { tests: { name: 'Test 2' } } } }).orderBy({ books: { publisher: { tests: { name: QueryOrder.DESC } } } });
     expect(qb4.getQuery()).toEqual('select `e0`.* ' +
-      'from `author2` as `e0` ' +
-      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
-      'left join `publisher2` as `e2` on `e1`.`publisher_id` = `e2`.`id` ' +
-      'left join `publisher2_to_test2` as `e4` on `e2`.`id` = `e4`.`publisher2_id` ' +
-      'left join `test2` as `e3` on `e4`.`test2_id` = `e3`.`id` ' +
+      'from `test123`.`author2` as `e0` ' +
+      'left join `test123`.`book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `test123`.`publisher2` as `e2` on `e1`.`publisher_id` = `e2`.`id` ' +
+      'left join `test123`.`publisher2_to_test2` as `e4` on `e2`.`id` = `e4`.`publisher2_id` ' +
+      'left join `test123`.`test2` as `e3` on `e4`.`test2_id` = `e3`.`id` ' +
       'where `e3`.`name` = ? order by `e3`.`name` desc');
     expect(qb4.getParams()).toEqual(['Test 2']);
 
@@ -1018,8 +1019,8 @@ describe('QueryBuilder', () => {
     expect(qb2.getParams()).toEqual([2359, 'test 123', true]);
 
     const qb3 = orm.em.createQueryBuilder(BookTag2);
-    qb3.insert({ books: 123 });
-    expect(qb3.getQuery()).toEqual('insert into `book_tag2` (`books`) values (?)');
+    qb3.insert({ books: 123 }).withSchema('test123');
+    expect(qb3.getQuery()).toEqual('insert into `test123`.`book_tag2` (`books`) values (?)');
     expect(qb3.getParams()).toEqual([123]);
   });
 
@@ -1032,10 +1033,11 @@ describe('QueryBuilder', () => {
 
   test('update query with entity in data', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.withSchema('test123');
     const test = Test2.create('test');
     test.id = 321;
     qb.update({ name: 'test 123', test }).where({ id: 123, type: PublisherType.LOCAL });
-    expect(qb.getQuery()).toEqual('update `publisher2` set `name` = ?, `test` = ? where `id` = ? and `type` = ?');
+    expect(qb.getQuery()).toEqual('update `test123`.`publisher2` set `name` = ?, `test` = ? where `id` = ? and `type` = ?');
     expect(qb.getParams()).toEqual(['test 123', 321, 123, PublisherType.LOCAL]);
   });
 

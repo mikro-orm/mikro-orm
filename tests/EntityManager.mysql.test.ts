@@ -1729,6 +1729,26 @@ describe('EntityManagerMySql', () => {
     expect(res[0].publisher!.id).toBe(1);
   });
 
+  test('find with different schema', async () => {
+    const author = new Author2('n', 'e');
+    const book1 = new Book2('b1', author);
+    book1.publisher = wrap(new Publisher2('p')).toReference();
+    const book2 = new Book2('b2', author);
+    await orm.em.persistAndFlush([book1, book2]);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2' });
+    const res2 = await orm.em.find(Book2, { publisher: { $ne: null } });
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `e0` left join `mikro_orm_test_schema_2`.`test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`publisher_id` is not null');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`publisher_id` is not null');
+    expect(res1.length).toBe(0);
+    expect(res2.length).toBe(1);
+  });
+
   test('calling Collection.init in parallel', async () => {
     const author = new Author2('n', 'e');
     author.books.add(new Book2('b1', author));
