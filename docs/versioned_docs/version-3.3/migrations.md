@@ -39,8 +39,7 @@ await MikroORM.init({
     path: './migrations', // path to the folder with migrations
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
-    allOrNothing: true, // wrap all migrations in master transaction,
-    emit: 'ts', // migration generation mode
+    allOrNothing: true, // wrap all migrations in master transaction
   },
 })
 ```
