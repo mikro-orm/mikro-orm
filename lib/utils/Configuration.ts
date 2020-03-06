@@ -55,7 +55,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       enabled: true,
       pretty: false,
       adapter: FileCacheAdapter,
-      options: {cacheDir: process.cwd() + '/temp'},
+      options: { cacheDir: process.cwd() + '/temp' },
     },
     metadataProvider: TsMorphMetadataProvider,
     highlight: true,
@@ -268,7 +268,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   };
   autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
-  driver?: { new(config: Configuration): D };
+  driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
   autoJoinOneToOneOwner: boolean;
@@ -295,6 +295,4 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   metadataProvider: { new (config: Configuration): MetadataProvider };
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
-  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
-  | MikroORMOptions<D>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions<D>;
