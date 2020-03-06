@@ -408,6 +408,42 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('update empty schema from metadata [mysql]', async () => {
+    const orm = await initORMMySql();
+    const generator = orm.getSchemaGenerator();
+    await generator.dropSchema();
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('mysql-update-empty-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update empty schema from metadata [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const generator = orm.getSchemaGenerator();
+    await generator.dropSchema();
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('postgres-update-empty-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update empty schema from metadata [sqlite]', async () => {
+    const orm = await initORMSqlite();
+    const generator = orm.getSchemaGenerator();
+    await generator.dropSchema();
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
   test('not supported [mongodb]', async () => {
     const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
     expect(() => mongoOrm.getSchemaGenerator()).toThrowError('Not supported by given driver');

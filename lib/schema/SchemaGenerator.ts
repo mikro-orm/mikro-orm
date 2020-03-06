@@ -91,6 +91,10 @@ export class SchemaGenerator {
       ret += this.getUpdateTableSQL(meta, schema);
     }
 
+    for (const meta of Object.values(this.metadata.getAll())) {
+      ret += this.getUpdateTableFKsSQL(meta, schema);
+    }
+
     const definedTables = Object.values(this.metadata.getAll()).map(meta => meta.collection);
     const remove = schema.getTables().filter(table => !definedTables.includes(table.name));
 
@@ -126,19 +130,20 @@ export class SchemaGenerator {
 
   private getUpdateTableSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
     const table = schema.getTable(meta.collection);
-    let ret = '';
 
     if (!table) {
-      ret += this.dump(this.createTable(meta));
-      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
-
-      return ret;
+      return this.dump(this.createTable(meta));
     }
 
-    const sql = this.updateTable(meta, table).map(builder => this.dump(builder));
-    ret += sql.join('\n');
+    return this.updateTable(meta, table).map(builder => this.dump(builder)).join('\n');
+  }
 
-    return ret;
+  private getUpdateTableFKsSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
+    if (schema.getTable(meta.collection)) {
+      return '';
+    }
+
+    return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
   }
 
   private async wrapSchema(sql: string, wrap = true): Promise<string> {

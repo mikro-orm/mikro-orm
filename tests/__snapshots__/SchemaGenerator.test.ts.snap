@@ -4,7 +4,7 @@ exports[`SchemaGenerator generate schema from metadata [mysql]: mysql-create-sch
 "set names utf8;
 set foreign_key_checks = 0;
 
-create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null, \`terms_accepted\` tinyint(1) not null default 0, \`optional\` tinyint(1) null, \`identities\` json null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` json null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
 alter table \`author2\` add index \`author2_born_index\`(\`born\`);
 alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);
@@ -129,7 +129,7 @@ drop table if exists \`book2_to_book_tag2\`;
 drop table if exists \`book_to_tag_unordered\`;
 drop table if exists \`publisher2_to_test2\`;
 
-create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null, \`terms_accepted\` tinyint(1) not null default 0, \`optional\` tinyint(1) null, \`identities\` json null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` json null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
 alter table \`author2\` add index \`author2_born_index\`(\`born\`);
 alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);
@@ -236,7 +236,7 @@ exports[`SchemaGenerator generate schema from metadata [postgres]: postgres-crea
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default 0, \\"optional\\" bool null, \\"identities\\" json null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default false, \\"optional\\" bool null, \\"identities\\" json null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
 alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
 create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
 create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
@@ -247,7 +247,7 @@ create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\
 alter table \\"author2\\" add constraint \\"author2_terms_accepted_unique\\" unique (\\"terms_accepted\\");
 alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
@@ -349,7 +349,7 @@ drop table if exists \\"book2_to_book_tag2\\" cascade;
 drop table if exists \\"book_to_tag_unordered\\" cascade;
 drop table if exists \\"publisher2_to_test2\\" cascade;
 
-create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default 0, \\"optional\\" bool null, \\"identities\\" json null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default false, \\"optional\\" bool null, \\"identities\\" json null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
 alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
 create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
 create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
@@ -360,7 +360,7 @@ create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\
 alter table \\"author2\\" add constraint \\"author2_terms_accepted_unique\\" unique (\\"terms_accepted\\");
 alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
@@ -690,6 +690,208 @@ pragma foreign_keys = on;
 
 exports[`SchemaGenerator generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `
 "pragma foreign_keys = off;
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator update empty schema from metadata [mysql]: mysql-update-empty-schema-dump 1`] = `
+"set names utf8;
+set foreign_key_checks = 0;
+
+create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` json null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
+alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);
+alter table \`author2\` add index \`author2_born_index\`(\`born\`);
+alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);
+alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);
+alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);
+alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);
+alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);
+alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);
+alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);
+alter table \`author2\` add unique \`author2_terms_accepted_unique\`(\`terms_accepted\`);
+alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);
+
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8 engine = InnoDB;
+alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
+alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
+alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
+
+create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
+
+create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
+
+create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`version\` int(11) not null default 1) default character set utf8 engine = InnoDB;
+alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
+alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
+
+create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int(11) unsigned null, \`foo_bar_id\` int(11) unsigned null, \`version\` datetime not null default current_timestamp) default character set utf8 engine = InnoDB;
+alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);
+alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
+
+create table \`author_to_friend\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);
+alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author_to_friend\` add primary key \`author_to_friend_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
+
+create table \`author2_to_author2\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table \`author2_to_author2\` add index \`author2_to_author2_author2_1_id_index\`(\`author2_1_id\`);
+alter table \`author2_to_author2\` add index \`author2_to_author2_author2_2_id_index\`(\`author2_2_id\`);
+alter table \`author2_to_author2\` add primary key \`author2_to_author2_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
+
+create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
+alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book_tag2_id_index\`(\`book_tag2_id\`);
+
+create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
+alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
+alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);
+
+create table \`publisher2_to_test2\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int(11) unsigned not null, \`test2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table \`publisher2_to_test2\` add index \`publisher2_to_test2_publisher2_id_index\`(\`publisher2_id\`);
+alter table \`publisher2_to_test2\` add index \`publisher2_to_test2_test2_id_index\`(\`test2_id\`);
+
+alter table \`author2\` add constraint \`author2_favourite_book_uuid_pk_foreign\` foreign key (\`favourite_book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update cascade on delete set null;
+alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`author2\` (\`id\`) on update cascade on delete set null;
+
+alter table \`book2\` add constraint \`book2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`);
+alter table \`book2\` add constraint \`book2_publisher_id_foreign\` foreign key (\`publisher_id\`) references \`publisher2\` (\`id\`) on update cascade on delete cascade;
+
+alter table \`test2\` add constraint \`test2_book_uuid_pk_foreign\` foreign key (\`book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on delete set null;
+
+alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
+alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
+
+alter table \`author_to_friend\` add constraint \`author_to_friend_author2_1_id_foreign\` foreign key (\`author2_1_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;
+alter table \`author_to_friend\` add constraint \`author_to_friend_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;
+
+alter table \`author2_to_author2\` add constraint \`author2_to_author2_author2_1_id_foreign\` foreign key (\`author2_1_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;
+alter table \`author2_to_author2\` add constraint \`author2_to_author2_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;
+
+alter table \`book2_to_book_tag2\` add constraint \`book2_to_book_tag2_book2_uuid_pk_foreign\` foreign key (\`book2_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update cascade on delete cascade;
+alter table \`book2_to_book_tag2\` add constraint \`book2_to_book_tag2_book_tag2_id_foreign\` foreign key (\`book_tag2_id\`) references \`book_tag2\` (\`id\`) on update cascade on delete cascade;
+
+alter table \`book_to_tag_unordered\` add constraint \`book_to_tag_unordered_book2_uuid_pk_foreign\` foreign key (\`book2_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update cascade on delete cascade;
+alter table \`book_to_tag_unordered\` add constraint \`book_to_tag_unordered_book_tag2_id_foreign\` foreign key (\`book_tag2_id\`) references \`book_tag2\` (\`id\`) on update cascade on delete cascade;
+
+alter table \`publisher2_to_test2\` add constraint \`publisher2_to_test2_publisher2_id_foreign\` foreign key (\`publisher2_id\`) references \`publisher2\` (\`id\`) on update cascade on delete cascade;
+alter table \`publisher2_to_test2\` add constraint \`publisher2_to_test2_test2_id_foreign\` foreign key (\`test2_id\`) references \`test2\` (\`id\`) on update cascade on delete cascade;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int4 null, \\"terms_accepted\\" bool not null default false, \\"optional\\" bool null, \\"identities\\" json null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" varchar(36) null, \\"favourite_author_id\\" int4 null);
+alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
+create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
+create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
+create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");
+create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");
+create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");
+create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");
+alter table \\"author2\\" add constraint \\"author2_terms_accepted_unique\\" unique (\\"terms_accepted\\");
+alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
+
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+
+create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
+
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
+
+create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" varchar(36) null, \\"version\\" int4 not null default 1);
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
+
+create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int4 null, \\"foo_bar_id\\" int4 null, \\"version\\" timestamptz(0) not null default current_timestamp(0));
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
+
+create table \\"author_to_friend\\" (\\"author2_1_id\\" int4 not null, \\"author2_2_id\\" int4 not null);
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+create table \\"author2_to_author2\\" (\\"author2_1_id\\" int4 not null, \\"author2_2_id\\" int4 not null);
+alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
+
+create table \\"publisher2_to_test2\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
+
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete set null;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");
+alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;
+
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2_to_book_tag2\\" add constraint \\"book2_to_book_tag2_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book2_to_book_tag2\\" add constraint \\"book2_to_book_tag2_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"publisher2_to_test2\\" add constraint \\"publisher2_to_test2_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"publisher2_to_test2\\" add constraint \\"publisher2_to_test2_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator update empty schema from metadata [sqlite]: sqlite-update-empty-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
+create unique index \`author3_email_unique\` on \`author3\` (\`email\`);
+
+create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+
+create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
+
+create table \`publisher3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar not null, \`type\` varchar not null);
+
+create table \`test3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar null, \`version\` integer not null default 1);
+
+create table \`book3_to_book_tag3\` (\`id\` integer not null primary key autoincrement, \`book3_id\` integer not null, \`book_tag3_id\` integer not null);
+create index \`book3_to_book_tag3_book3_id_index\` on \`book3_to_book_tag3\` (\`book3_id\`);
+create index \`book3_to_book_tag3_book_tag3_id_index\` on \`book3_to_book_tag3\` (\`book_tag3_id\`);
+
+create table \`publisher3_to_test3\` (\`id\` integer not null primary key autoincrement, \`publisher3_id\` integer not null, \`test3_id\` integer not null);
+create index \`publisher3_to_test3_publisher3_id_index\` on \`publisher3_to_test3\` (\`publisher3_id\`);
+create index \`publisher3_to_test3_test3_id_index\` on \`publisher3_to_test3\` (\`test3_id\`);
+
+alter table \`author3\` add column \`favourite_book_id\` integer null;
+create index \`author3_favourite_book_id_index\` on \`author3\` (\`favourite_book_id\`);
+
+alter table \`book3\` add column \`author_id\` integer null;
+alter table \`book3\` add column \`publisher_id\` integer null;
+create index \`book3_author_id_index\` on \`book3\` (\`author_id\`);
+create index \`book3_publisher_id_index\` on \`book3\` (\`publisher_id\`);
 
 pragma foreign_keys = on;
 "
