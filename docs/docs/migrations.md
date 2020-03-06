@@ -40,6 +40,7 @@ await MikroORM.init({
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
+    emit: 'ts', // migration generation mode
   },
 })
 ```

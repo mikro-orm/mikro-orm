@@ -50,6 +50,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
+      emit: 'ts',
     },
     cache: {
       enabled: true,
@@ -259,6 +260,7 @@ export type MigrationsOptions = {
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;
+  emit?: 'js' | 'ts';
 };
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
