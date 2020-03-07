@@ -471,6 +471,12 @@ export class MetadataDiscovery {
     const meta = this.metadata.get(prop.type);
     const pk = meta.properties[meta.primaryKey];
     this.initCustomType(pk);
+
+    if (pk.customType) {
+      prop.columnType = pk.customType.getColumnType(pk, this.platform);
+      return;
+    }
+
     prop.columnType = this.schemaHelper.getTypeDefinition(pk);
   }
 
@@ -491,14 +497,14 @@ export class MetadataDiscovery {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       const meta2 = this.metadata.get(prop.type);
       const pk = meta2.properties[meta2.primaryKey];
-      prop.unsigned = pk.type === 'number';
+      prop.unsigned = pk.type === 'number' || this.platform.isBigIntProperty(pk);
       prop.referenceColumnName = pk.fieldName;
       prop.referencedTableName = meta2.collection;
 
       return;
     }
 
-    prop.unsigned = (prop.primary || prop.unsigned) && prop.type === 'number';
+    prop.unsigned = (prop.primary || prop.unsigned) && (prop.type === 'number' || this.platform.isBigIntProperty(prop));
   }
 
   private getEntityClassOrSchema(path: string, name: string) {

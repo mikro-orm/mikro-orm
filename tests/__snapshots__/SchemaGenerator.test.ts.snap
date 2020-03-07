@@ -22,7 +22,7 @@ alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
-create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
+create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
 
 create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
@@ -48,11 +48,11 @@ alter table \`author2_to_author2\` add index \`author2_to_author2_author2_1_id_i
 alter table \`author2_to_author2\` add index \`author2_to_author2_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_to_author2\` add primary key \`author2_to_author2_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book_tag2_id_index\`(\`book_tag2_id\`);
 
-create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
 alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);
@@ -147,7 +147,7 @@ alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
-create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
+create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
 
 create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
@@ -173,11 +173,11 @@ alter table \`author2_to_author2\` add index \`author2_to_author2_author2_1_id_i
 alter table \`author2_to_author2\` add index \`author2_to_author2_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_to_author2\` add primary key \`author2_to_author2_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book_tag2_id_index\`(\`book_tag2_id\`);
 
-create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
 alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);
@@ -250,7 +250,7 @@ alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique 
 create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
-create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
 
@@ -272,9 +272,9 @@ alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" pr
 create table \\"author2_to_author2\\" (\\"author2_1_id\\" int4 not null, \\"author2_2_id\\" int4 not null);
 alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
 
-create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 
-create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
 
 create table \\"publisher2_to_test2\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -363,7 +363,7 @@ alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique 
 create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
-create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
 
@@ -385,9 +385,9 @@ alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" pr
 create table \\"author2_to_author2\\" (\\"author2_1_id\\" int4 not null, \\"author2_2_id\\" int4 not null);
 alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
 
-create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 
-create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
 
 create table \\"publisher2_to_test2\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -717,7 +717,7 @@ alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
-create table \`book_tag2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
+create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8 engine = InnoDB;
 
 create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8 engine = InnoDB;
 
@@ -743,11 +743,11 @@ alter table \`author2_to_author2\` add index \`author2_to_author2_author2_1_id_i
 alter table \`author2_to_author2\` add index \`author2_to_author2_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_to_author2\` add primary key \`author2_to_author2_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book2_to_book_tag2\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book2_to_book_tag2\` add index \`book2_to_book_tag2_book_tag2_id_index\`(\`book_tag2_id\`);
 
-create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+create table \`book_to_tag_unordered\` (\`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8 engine = InnoDB;
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book2_uuid_pk_index\`(\`book2_uuid_pk\`);
 alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);
 alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);
@@ -804,7 +804,7 @@ alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique 
 create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
-create table \\"book_tag2\\" (\\"id\\" serial primary key, \\"name\\" varchar(50) not null);
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
 
@@ -826,9 +826,9 @@ alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" pr
 create table \\"author2_to_author2\\" (\\"author2_1_id\\" int4 not null, \\"author2_2_id\\" int4 not null);
 alter table \\"author2_to_author2\\" add constraint \\"author2_to_author2_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
 
-create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book2_to_book_tag2\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 
-create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" int4 not null);
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" varchar(36) not null, \\"book_tag2_id\\" bigint not null);
 alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
 
 create table \\"publisher2_to_test2\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -910,7 +910,7 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column
 "alter table \`author2\` modify \`age\` int(11) null default 42, modify \`born\` int not null default 42;
 alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
-alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`book_tag2\` (\`id\`) on update cascade on delete set null;
+alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
 
 "
 `;
@@ -977,7 +977,7 @@ alter table \\"author2\\" alter column \\"age\\" drop not null;
 alter table \\"author2\\" alter column \\"age\\" type int4 using (\\"age\\"::int4);
 alter table \\"author2\\" alter column \\"age\\" set default 42;
 alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
-alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete set null;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
 
 "
 `;

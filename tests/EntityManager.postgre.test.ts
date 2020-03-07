@@ -685,11 +685,11 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persist(book2);
     await orm.em.persistAndFlush(book3);
 
-    expect(tag1.id).toBeDefined();
-    expect(tag2.id).toBeDefined();
-    expect(tag3.id).toBeDefined();
-    expect(tag4.id).toBeDefined();
-    expect(tag5.id).toBeDefined();
+    expect(typeof tag1.id).toBe('string');
+    expect(typeof tag2.id).toBe('string');
+    expect(typeof tag3.id).toBe('string');
+    expect(typeof tag4.id).toBe('string');
+    expect(typeof tag5.id).toBe('string');
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag2);
@@ -772,6 +772,17 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
     expect(book.tags.count()).toBe(0);
+  });
+
+  test('bigint support', async () => {
+    const t = new BookTag2('test');
+    t.id = '9223372036854775807';
+    await orm.em.persistAndFlush(t);
+    expect(t.id).toBe('9223372036854775807');
+    orm.em.clear();
+
+    const t2 = await orm.em.findOneOrFail(BookTag2, t.id);
+    expect(t2.id).toBe('9223372036854775807');
   });
 
   test('populating many to many relation', async () => {

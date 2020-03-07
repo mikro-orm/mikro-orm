@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
@@ -110,7 +111,7 @@ export class EntityAssigner {
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;
-      throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(invalid)}`);
+      throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
     collection.hydrate(items, true);

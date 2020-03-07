@@ -138,7 +138,7 @@ describe('EntityAssignerMongo', () => {
     EntityAssigner.assign(book, { tags: [wrap(tag2).toObject()] });
     expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
     expect(book.tags.isDirty()).toBe(true);
-    expect(() => EntityAssigner.assign(book, { tags: [false] } as EntityData<Book>)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [false]`);
+    expect(() => EntityAssigner.assign(book, { tags: [false] } as EntityData<Book>)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
     expect(() => EntityAssigner.assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 

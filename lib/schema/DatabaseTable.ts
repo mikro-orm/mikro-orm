@@ -24,6 +24,7 @@ export class DatabaseTable {
       v.unique = index.some(i => i.unique && !i.primary);
       v.fk = fks[v.name];
       v.indexes = index.filter(i => !i.primary);
+      v.defaultValue = v.defaultValue && v.defaultValue.toString().startsWith('nextval(') ? null : v.defaultValue;
       o[v.name] = v;
 
       return o;
@@ -41,7 +42,7 @@ export interface Column {
   unique: boolean;
   nullable: boolean;
   maxLength: number;
-  defaultValue: string;
+  defaultValue: string | null;
 }
 
 export interface ForeignKey {

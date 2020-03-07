@@ -22,6 +22,8 @@ export class MySqlConnection extends AbstractSqlConnection {
       ret.timezone = 'Z';
     }
 
+    ret.supportBigNumbers = true;
+
     return ret;
   }
 

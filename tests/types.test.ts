@@ -28,6 +28,10 @@ describe('check typings', () => {
     // object id allows string
     assert<IsExact<Primary<Author>, ObjectId | string>>(true);
     assert<IsExact<Primary<Author>, number>>(false);
+
+    // bigint support
+    assert<IsExact<Primary<BookTag2>, string>>(true);
+    assert<IsExact<Primary<BookTag2>, number>>(false);
   });
 
   test('EntityOrPrimary', async () => {
@@ -206,7 +210,10 @@ describe('check typings', () => {
     assert<Has<FilterQuery<Book2>, { author: { favouriteBook?: { title?: string } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: FilterValue<BookTag2> } } }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: BookTag2[] } } }>>(true);
-    assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: number[] } } }>>(true);
+    assert<IsAssignable<FilterQuery<Book2>, { author: { favouriteBook: { tags: string[] } } }>>(true);
+    assert<IsAssignable<FilterQuery<Book2>, { tags: string[] }>>(true);
+    assert<IsAssignable<FilterQuery<Book2>, { tags: string }>>(true);
+    assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(true);
   });
 
   test('FilterQuery ok assignments', async () => {
@@ -222,7 +229,7 @@ describe('check typings', () => {
     ok01 = { books: { author: { born: new Date() } } };
     ok01 = { books: { author: { born: new Date() } }, favouriteBook: {} as Book2 };
     ok01 = { books: { tags: { name: 'asd' } } };
-    ok01 = { books: { tags: 1 } };
+    ok01 = { books: { tags: '1' } };
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
     ok01 = { name: 'asd' };
     ok01 = { $or: [{ name: 'asd' }, { age: 18 }] };
