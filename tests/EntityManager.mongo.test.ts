@@ -487,6 +487,24 @@ describe('EntityManagerMongo', () => {
     expect(driver.getConnection().getCollection(BookTag.name).collectionName).toBe('book-tag');
   });
 
+  test('ensure indexes', async () => {
+    await orm.em.getDriver().ensureIndexes();
+    const conn = orm.em.getDriver().getConnection('write');
+    const authorInfo = await conn.getCollection('author').indexInformation();
+    const bookInfo = await conn.getCollection('books-table').indexInformation();
+    expect(authorInfo).toEqual({
+      _id_: [['_id', 1]],
+      born_1: [['born', 1]],
+      email_1: [['email', 1]],
+      custom_idx_1: [['name', 1], ['email', 1]],
+    });
+    expect(bookInfo).toEqual({
+      _id_: [['_id', 1]],
+      publisher_idx: [['publisher', 1]],
+      title_1_author_1: [['title', 1], ['author', 1]],
+    });
+  });
+
   test('should use user and password as connection options', async () => {
     const config = new Configuration({ user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);

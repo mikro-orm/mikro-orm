@@ -71,6 +71,7 @@ describe('EntityManagerMySql', () => {
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+    await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
   });
 
   test('driver appends errored query', async () => {

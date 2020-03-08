@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType,
-  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap,
+  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap, Index, Unique,
 } from '../../lib';
 
 import { Book } from './Book';
@@ -8,6 +8,7 @@ import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
 
 @Entity({ customRepository: () => AuthorRepository })
+@Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
 export class Author extends BaseEntity {
 
   static beforeDestroyCalled = 0;
@@ -16,6 +17,7 @@ export class Author extends BaseEntity {
   @Property()
   name: string;
 
+  @Unique()
   @Property()
   email: string;
 
@@ -32,6 +34,7 @@ export class Author extends BaseEntity {
   identities?: string[];
 
   @Property({ type: DateType })
+  @Index()
   born?: Date;
 
   @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
