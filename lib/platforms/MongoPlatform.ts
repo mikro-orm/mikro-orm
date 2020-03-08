@@ -12,10 +12,6 @@ export class MongoPlatform extends Platform {
     return false;
   }
 
-  supportsTransactions(): boolean {
-    return false;
-  }
-
   getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
   }
@@ -34,6 +30,10 @@ export class MongoPlatform extends Platform {
 
   getSerializedPrimaryKeyField(field: string): string {
     return 'id';
+  }
+
+  usesImplicitTransactions(): boolean {
+    return false;
   }
 
 }

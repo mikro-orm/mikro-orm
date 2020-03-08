@@ -41,11 +41,15 @@ Before you submit your pull request consider the following guidelines:
 - Search [GitHub](https://github.com/mikro-orm/mikro-orm/pulls) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
 
-- Fork the project, install NPM dependencies and start docker to have all databases ready:
+- Fork the project, install NPM dependencies and start docker to have all databases ready.
+  [run-rs](https://www.npmjs.com/package/run-rs) is used to manage mongodb replica set.
+  On windows you might need to execute `run-rs` directly as well as adjust some configuration,
+  refer to their docs for more information. 
 
     ```sh
     yarn
     docker-compose up -d
+    yarn run-rs
     ```
 
 - Run tests before you start working, to be sure they all pass and your setup is working correctly:

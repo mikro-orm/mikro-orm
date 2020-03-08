@@ -107,7 +107,8 @@ export class UnitOfWork {
     }
 
     this.reorderChangeSets();
-    const runInTransaction = !this.em.isInTransaction() && this.em.getDriver().getPlatform().supportsTransactions();
+    const platform = this.em.getDriver().getPlatform();
+    const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
     if (runInTransaction) {
       await this.em.getConnection('write').transactional(trx => this.persistToDatabase(trx));

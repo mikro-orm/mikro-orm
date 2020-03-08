@@ -1,6 +1,5 @@
 import { PoolConfig } from 'knex';
 import { fromJson, Theme } from 'cli-highlight';
-import { URL } from 'url';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
@@ -193,11 +192,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
     }
 
-    try {
-      const url = new URL(this.getClientUrl());
-      this.options.dbName = this.get('dbName', url.pathname.replace(/^\//, ''));
-    } catch {
-      // ignore possible parsing failures, e.g. `:` inside password
+    if (!('implicitTransactions' in this.options)) {
+      this.set('implicitTransactions', this.platform.usesImplicitTransactions());
+    }
+
+    const url = this.getClientUrl().match(/:\/\/.+\/([^?]+)/);
+
+    if (url) {
+      this.options.dbName = this.get('dbName', url[1]);
     }
 
     if (this.options.entitiesDirsTs.length === 0) {
@@ -279,6 +281,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
+  implicitTransactions?: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   forceUtcTimezone: boolean;
@@ -290,7 +293,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlight: boolean;
-  highlightTheme?: Record<string, string | string[]>;
+  highlightTheme?: Dictionary<string | string[]>;
   tsNode: boolean;
   baseDir: string;
   migrations: MigrationsOptions;

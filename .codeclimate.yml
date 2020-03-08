@@ -21,6 +21,7 @@ engines:
   duplication:
     enabled: true
     config:
+      count_threshold: 3
       languages:
         typescript:
           # make it higher so it does not report bullshit like similarity of abstract method and its implementation

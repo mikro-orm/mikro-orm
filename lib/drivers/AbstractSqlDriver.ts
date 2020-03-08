@@ -1,7 +1,7 @@
-import { Transaction } from 'knex';
+import { Transaction as KnexTransaction } from 'knex';
 import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
 import { DatabaseDriver } from './DatabaseDriver';
-import { QueryResult } from '../connections';
+import { QueryResult, Transaction } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { ReferenceType } from '../entity';
 import { QueryBuilder, QueryBuilderHelper, QueryOrderMap } from '../query';
@@ -22,7 +22,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     this.platform = platform;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
     const meta = this.metadata.get(entityName);
     options = { populate: [], orderBy: {}, ...(options || {}) };
     options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
@@ -41,7 +41,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return qb.execute('all');
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     options = { populate: [], orderBy: {}, ...(options || {}) };
     const meta = this.metadata.get(entityName);
     options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
@@ -66,7 +66,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .execute('get');
   }
 
-  async count(entityName: string, where: any, ctx?: Transaction): Promise<number> {
+  async count(entityName: string, where: any, ctx?: Transaction<KnexTransaction>): Promise<number> {
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
     const pk = this.metadata.get(entityName).primaryKey;
     const res = await qb.count(pk, true).where(where).execute('get', false);
@@ -74,7 +74,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return +res.count;
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
     const collections = this.extractManyToMany(entityName, data);
     const pk = this.getPrimaryKeyField(entityName);
     const qb = this.createQueryBuilder(entityName, ctx, true);
@@ -86,7 +86,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
     const pk = this.getPrimaryKeyField(entityName);
 
     if (Utils.isPrimaryKey(where)) {
@@ -106,7 +106,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction): Promise<QueryResult> {
+  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       const pk = this.getPrimaryKeyField(entityName);
       where = { [pk]: where };
@@ -159,7 +159,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return [...populate, ...toPopulate];
   }
 
-  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction, write?: boolean): QueryBuilder<T> {
+  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean): QueryBuilder<T> {
     return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
   }
 
@@ -183,7 +183,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return ret;
   }
 
-  protected async processManyToMany<T extends AnyEntity<T>>(entityName: string, pk: Primary<T>, collections: EntityData<T>, ctx?: Transaction) {
+  protected async processManyToMany<T extends AnyEntity<T>>(entityName: string, pk: Primary<T>, collections: EntityData<T>, ctx?: Transaction<KnexTransaction>) {
     if (!this.metadata.get(entityName, false, false)) {
       return;
     }

@@ -106,17 +106,11 @@ describe('MetadataValidator', () => {
   });
 
   test('validates missing base entity definition', async () => {
-    let port = 3307;
-
-    if (process.env.ORM_PORT) {
-      port = +process.env.ORM_PORT;
-    }
-
     // base entity with properties
     await expect(MikroORM.init({
       entities: [FooBar2, FooBaz2],
       dbName: `mikro_orm_test`,
-      port,
+      port: 3307,
       metadataProvider: ReflectMetadataProvider,
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
@@ -127,7 +121,7 @@ describe('MetadataValidator', () => {
     await expect(MikroORM.init({
       entities: [Author2, Book2, BookTag2, Publisher2, Test2],
       dbName: `mikro_orm_test`,
-      port,
+      port: 3307,
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,

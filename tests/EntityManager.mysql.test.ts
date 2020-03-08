@@ -67,6 +67,7 @@ describe('EntityManagerMySql', () => {
       affectedRows: 1,
       insertId: 0,
     });
+    expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
