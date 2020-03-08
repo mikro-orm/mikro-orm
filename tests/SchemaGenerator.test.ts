@@ -4,7 +4,7 @@ import { ReferenceType } from '../lib/entity';
 import { Configuration, Utils } from '../lib/utils';
 import { MikroORM } from '../lib';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { BookTag2, FooBar2, FooBaz2 } from './entities-sql';
+import { FooBar2, FooBaz2 } from './entities-sql';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 describe('SchemaGenerator', () => {
@@ -17,7 +17,7 @@ describe('SchemaGenerator', () => {
       entities: [FooBar2, FooBaz2, BaseEntity22],
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
-      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      port: 3307,
       baseDir: BASE_DIR,
       type: 'mysql',
     });
@@ -34,7 +34,7 @@ describe('SchemaGenerator', () => {
       entities: [FooBar2, FooBaz2, BaseEntity22],
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
-      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      port: 3307,
       baseDir: BASE_DIR,
       type: 'mysql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
@@ -54,7 +54,7 @@ describe('SchemaGenerator', () => {
       entities: [FooBar2, FooBaz2, BaseEntity22],
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
-      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      port: 3307,
       baseDir: BASE_DIR,
       type: 'mariadb',
     });
@@ -72,7 +72,7 @@ describe('SchemaGenerator', () => {
       entities: [FooBar2, FooBaz2, BaseEntity22],
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
-      port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+      port: 3307,
       baseDir: BASE_DIR,
       type: 'mariadb',
       migrations: { path: BASE_DIR + '/../temp/migrations' },

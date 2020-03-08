@@ -26,26 +26,26 @@ export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
 
 export async function initORMMongo() {
-  let hash = '';
-
-  if (process.env.ORM_PARALLEL) {
-    hash = '-' + Math.random().toString(36).substring(6);
-  }
-
   // simulate ts-node to raise coverage
   process.argv[0] = process.argv[0].replace(/node$/, 'ts-node');
 
-  return MikroORM.init<MongoDriver>({
+  const orm = await MikroORM.init<MongoDriver>({
     entitiesDirs: ['dist/entities'], // will be ignored as we simulate ts-node
     entitiesDirsTs: ['entities'],
-    dbName: `mikro-orm-test${hash}`,
+    clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
     baseDir: BASE_DIR,
     debug: true,
     highlight: false,
     logger: i => i,
     type: 'mongo',
+    implicitTransactions: true,
     cache: { pretty: true },
   });
+
+  // create collections first so we can use transactions
+  await orm.em.getDriver().createCollections();
+
+  return orm;
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
@@ -53,7 +53,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
-    port: process.env.ORM_PORT ? +process.env.ORM_PORT : 3307,
+    port: 3307,
     baseDir: BASE_DIR,
     debug: ['query'],
     highlight: false,

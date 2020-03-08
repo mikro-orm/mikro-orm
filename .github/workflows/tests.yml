@@ -19,6 +19,9 @@ jobs:
     - name: EditorConfig Lint
       uses: docker://mstruebing/editorconfig-checker:2.0.3
 
+    - name: Install libkrb5-dev (for run-rs)
+      run: sudo apt install libkrb5-dev
+
     - name: Init docker
       run: docker-compose up -d
 
@@ -37,10 +40,9 @@ jobs:
 
     - name: Test
       run: |
+        yarn run-rs-in-background
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
-      env:
-        ORM_PARALLEL: 1
 
     - name: Coveralls
       uses: coverallsapp/github-action@master

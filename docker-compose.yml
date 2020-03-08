@@ -1,13 +1,7 @@
 version: "3.4"
 
 services:
-  mongo:
-    container_name: mongo
-    image: mongo:4.2
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo:/data/db
+  # mongodb is managed via `run-rs`
 
   mysql:
     container_name: mysql
@@ -31,6 +25,5 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
 volumes:
-  mongo:
   mysql:
   postgre:

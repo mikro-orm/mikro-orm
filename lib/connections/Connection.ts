@@ -1,5 +1,4 @@
 import { URL } from 'url';
-import { Transaction as KnexTransaction } from 'knex';
 import chalk from 'chalk';
 import highlight from 'cli-highlight';
 
@@ -114,4 +113,4 @@ export interface ConnectionConfig {
   database?: string;
 }
 
-export type Transaction = KnexTransaction;
+export type Transaction<T = any> = T;

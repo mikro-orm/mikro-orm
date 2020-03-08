@@ -14,6 +14,10 @@ export abstract class Platform {
     return true;
   }
 
+  usesImplicitTransactions(): boolean {
+    return true;
+  }
+
   getNamingStrategy(): { new(): NamingStrategy } {
     return UnderscoreNamingStrategy;
   }

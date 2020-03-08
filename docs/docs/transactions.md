@@ -2,6 +2,8 @@
 title: Transactions and Concurrency
 ---
 
+> Starting v3.4, transactions are also supported in [MongoDB driver](usage-with-mongo.md).
+
 ## Transaction Demarcation
 
 Transaction demarcation is the task of defining your transaction boundaries. Proper 

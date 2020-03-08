@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
@@ -40,7 +40,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Record<string, T[]>>;
+  loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 

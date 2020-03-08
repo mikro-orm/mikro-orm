@@ -57,6 +57,34 @@ to store array of collection items (identifiers). This approach has two main ben
 initializing the collection.
 2. As there are no pivot tables, resulting database queries are much simpler.
 
+## Transactions
+
+Starting with v3.4, MongoDB driver supports transactions. To use transactions, there
+are several things you need to respect:
+
+- you need to use replica set (see [run-rs](https://github.com/vkarpov15/run-rs))
+- implicit transactions are disabled by default
+    - use `implicitTransactions: true` to enable them globally
+    - or use explicit transaction demarcation via `em.transactional()`
+- you need to explicitly create all collections before working with them
+    - use `em.getDriver().createCollections()` method to do so
+
+```sh
+# first create replica set
+$ run-rs -v 4.2.3
+```
+
+```typescript
+const orm = await MikroORM.init({
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/my-db-name?replicaSet=rs0',
+  type: 'mongo',
+  implicitTransactions: true, // defaults to false
+});
+
+await orm.em.getDriver().createCollections();
+```
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your
