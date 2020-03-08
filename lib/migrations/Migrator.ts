@@ -121,6 +121,6 @@ export class Migrator {
 
 }
 
-export type UmzugMigration = { path: string; file: string };
+export type UmzugMigration = { path?: string; file: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
 export type MigrationResult = { fileName: string; code: string; diff: string[] };
