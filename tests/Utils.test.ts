@@ -91,17 +91,17 @@ describe('Utils', () => {
   });
 
   test('diffEntities ignores collections', () => {
-    const author1 = new Author('Name 1', 'e-mail');
+    const author1 = new Author('Name 1', 'e-mail1');
     author1.books = new Collection<Book>(author1);
-    const author2 = new Author('Name 2', 'e-mail');
+    const author2 = new Author('Name 2', 'e-mail2');
     author2.books = new Collection<Book>(author2);
     expect(Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform()).books).toBeUndefined();
   });
 
   test('prepareEntity changes entity to string id', async () => {
-    const author1 = new Author('Name 1', 'e-mail');
+    const author1 = new Author('Name 1', 'e-mail1');
     const book = new Book('test', author1);
-    const author2 = new Author('Name 2', 'e-mail');
+    const author2 = new Author('Name 2', 'e-mail2');
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush(author2);

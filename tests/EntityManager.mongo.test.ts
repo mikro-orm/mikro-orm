@@ -259,8 +259,8 @@ describe('EntityManagerMongo', () => {
 
   test('findOne should work with options parameter', async () => {
     const repo = orm.em.getRepository(Author) as AuthorRepository;
-    const author = new Author('name 1', 'email');
-    const author2 = new Author('name 2', 'email');
+    const author = new Author('name 1', 'email1');
+    const author2 = new Author('name 2', 'email2');
     await repo.persistAndFlush([author, author2]);
     orm.em.clear();
 

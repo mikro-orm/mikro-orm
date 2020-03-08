@@ -134,8 +134,9 @@ export class MongoConnection extends Connection {
       await session.withTransaction(async () => ret = await cb(session));
       session.endSession();
       this.logQuery('db.commit();');
-    } catch {
+    } catch (e) {
       this.logQuery('db.rollback();');
+      throw e;
     }
 
     return ret;
