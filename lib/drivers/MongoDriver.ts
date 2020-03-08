@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, AnyEntity, FilterQuery } from '../typings';
+import { EntityData, AnyEntity, FilterQuery, EntityMetadata } from '../typings';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { FindOneOptions, FindOptions } from './IDatabaseDriver';
@@ -70,9 +70,43 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async createCollections(): Promise<void> {
-    await Promise.all(Object.values(this.metadata.getAll()).map(meta => {
-      return this.getConnection('write').createCollection(meta.collection);
-    }));
+    const promises = Object.values(this.metadata.getAll())
+      .map(meta => this.getConnection('write').createCollection(meta.collection));
+
+    await Promise.all(promises);
+  }
+
+  async dropCollections(): Promise<void> {
+    const db = this.getConnection('write').getDb();
+    const collections = await db.listCollections().toArray();
+    const existing = collections.map(c => c.name);
+    const promises = Object.values(this.metadata.getAll())
+      .filter(meta => existing.includes(meta.collection))
+      .map(meta => this.getConnection('write').dropCollection(meta.collection));
+
+    await Promise.all(promises);
+  }
+
+  async ensureIndexes(): Promise<void> {
+    await this.createCollections();
+    const promises: Promise<string>[] = [];
+
+    const createIndexes = (meta: EntityMetadata, type: 'indexes' | 'uniques') => {
+      meta[type].forEach(index => {
+        const properties = Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldName);
+        promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
+          name: index.name,
+          unique: type === 'uniques',
+        }));
+      });
+    };
+
+    for (const meta of Object.values(this.metadata.getAll())) {
+      createIndexes(meta, 'indexes');
+      createIndexes(meta, 'uniques');
+    }
+
+    await Promise.all(promises);
   }
 
   private renameFields<T>(entityName: string, data: T): T {

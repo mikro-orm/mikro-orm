@@ -85,6 +85,28 @@ const orm = await MikroORM.init({
 await orm.em.getDriver().createCollections();
 ```
 
+## Indexes
+
+Starting with v3.4, MongoDB driver supports indexes and unique constraints. You can 
+use `@Index()` and `@Unique()` as described in [Defining Entities section](defining-entities.md#indexes).
+To automatically create new indexes when initializing the ORM, you need to enable
+`ensureIndexes` option. 
+
+```typescript
+const orm = await MikroORM.init({
+  entitiesDirs: ['entities'], // relative to `baseDir`
+  dbName: 'my-db-name',
+  type: 'mongo',
+  ensureIndexes: true, // defaults to false
+});
+``` 
+
+Alternatively you can call `ensureIndexes()` method on the `MongoDriver`:
+
+```typescript
+await orm.em.getDriver().ensureIndexes();
+```
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your

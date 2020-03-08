@@ -32,6 +32,10 @@ export class MongoConnection extends Connection {
     return this.db.createCollection(this.getCollectionName(name));
   }
 
+  dropCollection(name: EntityName<AnyEntity>): Promise<boolean> {
+    return this.db.dropCollection(this.getCollectionName(name));
+  }
+
   getDefaultClientUrl(): string {
     return 'mongodb://127.0.0.1:27017';
   }
@@ -54,6 +58,10 @@ export class MongoConnection extends Connection {
     const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
 
     return match ? `${match[1]}://${options.auth ? options.auth.user + ':*****@' : ''}${match[2]}` : clientUrl;
+  }
+
+  getDb(): Db {
+    return this.db;
   }
 
   async execute(query: string): Promise<any> {

@@ -38,12 +38,14 @@ export async function initORMMongo() {
     highlight: false,
     logger: i => i,
     type: 'mongo',
+    ensureIndexes: true,
     implicitTransactions: true,
     cache: { pretty: true },
   });
 
   // create collections first so we can use transactions
-  await orm.em.getDriver().createCollections();
+  await orm.em.getDriver().dropCollections();
+  await orm.em.getDriver().ensureIndexes();
 
   return orm;
 }

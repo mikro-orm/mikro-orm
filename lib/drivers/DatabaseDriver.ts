@@ -97,6 +97,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
+  async ensureIndexes(): Promise<void> {
+    throw new Error(`${this.constructor.name} does not use ensureIndexes`);
+  }
+
   protected getPivotOrderBy(prop: EntityProperty, orderBy?: QueryOrderMap): QueryOrderMap {
     if (orderBy) {
       return orderBy;

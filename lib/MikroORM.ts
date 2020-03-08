@@ -38,6 +38,10 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.driver.setMetadata(orm.metadata);
     await orm.connect();
 
+    if (orm.config.get('ensureIndexes')) {
+      await orm.driver.ensureIndexes();
+    }
+
     return orm;
   }
 
