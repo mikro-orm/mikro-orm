@@ -20,7 +20,7 @@ export abstract class SchemaHelper {
     //
   }
 
-  getTypeDefinition(prop: EntityProperty, types: Record<string, string[]> = {}, lengths: Record<string, number> = {}, allowZero = false): string {
+  getTypeDefinition(prop: EntityProperty, types: Dictionary<string[]> = {}, lengths: Dictionary<number> = {}, allowZero = false): string {
     let t = prop.type.toLowerCase();
 
     if (prop.enum) {
@@ -36,7 +36,7 @@ export abstract class SchemaHelper {
     return type;
   }
 
-  isSame(prop: EntityProperty, column: Column, types: Record<string, string[]> = {}, defaultValues: Record<string, string[]> = {}): IsSame {
+  isSame(prop: EntityProperty, column: Column, types: Dictionary<string[]> = {}, defaultValues: Dictionary<string[]> = {}): IsSame {
     const sameTypes = this.hasSameType(prop, column.type, types);
     const sameNullable = column.nullable === !!prop.nullable;
     const sameDefault = this.hasSameDefaultValue(column, prop, defaultValues);
@@ -54,7 +54,7 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  getTypeFromDefinition(type: string, defaultType: string, types?: Record<string, string[]>): string {
+  getTypeFromDefinition(type: string, defaultType: string, types?: Dictionary<string[]>): string {
     type = type.replace(/\(.+\)/, '');
 
     const found = Object.entries(types!)
@@ -64,7 +64,7 @@ export abstract class SchemaHelper {
     return found || defaultType;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Record<string, Index[]>, tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Dictionary<Index[]>, tableName: string, schemaName?: string): Promise<string[]> {
     const ret = [];
 
     for (const idx of Object.values(indexes)) {
@@ -92,7 +92,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Record<string, any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<any[]>> {
     throw new Error('Not supported by given driver');
   }
 
@@ -115,7 +115,7 @@ export abstract class SchemaHelper {
     }, {});
   }
 
-  private processTypeWildCard(prop: EntityProperty, lengths: Record<string, number>, propType: string, allowZero: boolean, type: string): string {
+  private processTypeWildCard(prop: EntityProperty, lengths: Dictionary<number>, propType: string, allowZero: boolean, type: string): string {
     let length = prop.length || lengths[propType];
 
     if (allowZero) {
@@ -131,7 +131,7 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Record<string, string[]> = {}): string | number {
+  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}): string | number {
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();
     const norm = defaultValues[genericValue];
 
@@ -175,7 +175,7 @@ export abstract class SchemaHelper {
     }
   }
 
-  private hasSameType(prop: EntityProperty, infoType: string, types: Record<string, string[]>): boolean {
+  private hasSameType(prop: EntityProperty, infoType: string, types: Dictionary<string[]>): boolean {
     const columnType = prop.columnType && prop.columnType.replace(/\([?\d]+\)/, '').toLowerCase();
     infoType = infoType.replace(/\([?\d]+\)/, '').toLowerCase();
 
@@ -194,7 +194,7 @@ export abstract class SchemaHelper {
     return propTypes.includes(columnType);
   }
 
-  private hasSameDefaultValue(info: Column, prop: EntityProperty, defaultValues: Record<string, string[]>): boolean {
+  private hasSameDefaultValue(info: Column, prop: EntityProperty, defaultValues: Dictionary<string[]>): boolean {
     if (info.defaultValue && prop.default) {
       const defaultValue = info.defaultValue.toString().replace(/\([?\d]+\)/, '').toLowerCase();
       const propDefault = prop.default.toString().toLowerCase();

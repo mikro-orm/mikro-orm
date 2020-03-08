@@ -68,7 +68,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Record<string, any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<any[]>> {
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
 
     for (const index of indexes) {

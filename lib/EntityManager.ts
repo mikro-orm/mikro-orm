@@ -17,7 +17,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   readonly id = uuid();
   private readonly validator = new EntityValidator(this.config.get('strict'));
-  private readonly repositoryMap: Record<string, EntityRepository<AnyEntity>> = {};
+  private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);

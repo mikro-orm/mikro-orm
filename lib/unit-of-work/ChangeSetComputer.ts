@@ -1,6 +1,6 @@
 import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
@@ -8,8 +8,8 @@ import { Platform } from '../platforms';
 export class ChangeSetComputer {
 
   constructor(private readonly validator: EntityValidator,
-              private readonly originalEntityData: Record<string, EntityData<AnyEntity>>,
-              private readonly identifierMap: Record<string, EntityIdentifier>,
+              private readonly originalEntityData: Dictionary<EntityData<AnyEntity>>,
+              private readonly identifierMap: Dictionary<EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly removeStack: AnyEntity[],
               private readonly metadata: MetadataStorage,

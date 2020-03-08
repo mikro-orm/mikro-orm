@@ -19,13 +19,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   type!: QueryType;
   _fields?: string[];
   _populate: string[] = [];
-  _populateMap: Record<string, string> = {};
+  _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 1;
   private flags: Set<QueryFlag> = new Set();
   private finalized = false;
-  private _joins: Record<string, JoinOptions> = {};
-  private _aliasMap: Record<string, string> = {};
+  private _joins: Dictionary<JoinOptions> = {};
+  private _aliasMap: Dictionary<string> = {};
   private _schema?: string;
   private _cond: Dictionary = {};
   private _data!: Dictionary;

@@ -1,5 +1,5 @@
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { AnyEntity, EntityMetadata, FilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, FilterQuery } from '../typings';
 import { Reference } from '../entity';
 import { Utils } from '../utils';
 
@@ -80,7 +80,7 @@ export class SmartQueryHelper {
     return { [entity.__primaryKeyField]: entity.__primaryKey };
   }
 
-  private static processExpression<T>(expr: string, value: T): Record<string, T> {
+  private static processExpression<T>(expr: string, value: T): Dictionary<T> {
     switch (expr) {
       case '>': return { $gt: value };
       case '<': return { $lt: value };

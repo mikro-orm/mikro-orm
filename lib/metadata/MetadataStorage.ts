@@ -5,16 +5,16 @@ import { EntityHelper } from '../entity';
 
 export class MetadataStorage {
 
-  private static readonly metadata: Record<string, EntityMetadata> = {};
-  private readonly metadata: Record<string, EntityMetadata>;
+  private static readonly metadata: Dictionary<EntityMetadata> = {};
+  private readonly metadata: Dictionary<EntityMetadata>;
 
-  constructor(metadata: Record<string, EntityMetadata> = {}) {
+  constructor(metadata: Dictionary<EntityMetadata> = {}) {
     this.metadata = Utils.copy(metadata);
   }
 
-  static getMetadata(): Record<string, EntityMetadata>; // tslint:disable-next-line:lines-between-class-members
+  static getMetadata(): Dictionary<EntityMetadata>; // tslint:disable-next-line:lines-between-class-members
   static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>; // tslint:disable-next-line:lines-between-class-members
-  static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Record<string, EntityMetadata> | EntityMetadata<T> {
+  static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
     if (entity && !MetadataStorage.metadata[entity]) {
       MetadataStorage.metadata[entity] = { className: entity, properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
     }

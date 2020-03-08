@@ -33,7 +33,7 @@ export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
-              private readonly aliasMap: Record<string, string>,
+              private readonly aliasMap: Dictionary<string>,
               private readonly metadata: MetadataStorage,
               private readonly knex: Knex,
               private readonly platform: Platform) { }
@@ -107,7 +107,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Record<string, JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Dictionary<JoinOptions> {
     const join = {
       prop, type, cond, ownerAlias,
       alias: pivotAlias,
@@ -117,7 +117,7 @@ export class QueryBuilderHelper {
       primaryKey: prop.referenceColumnName,
     } as JoinOptions;
     const name = `${ownerAlias}.${prop.name}`;
-    const ret: Record<string, JoinOptions> = {};
+    const ret: Dictionary<JoinOptions> = {};
 
     if (prop.owner) {
       ret[name] = Object.assign(join, { table: prop.pivotTable });
@@ -149,7 +149,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  processJoins(qb: KnexQueryBuilder, joins: Record<string, JoinOptions>): void {
+  processJoins(qb: KnexQueryBuilder, joins: Dictionary<JoinOptions>): void {
     Object.values(joins).forEach(join => {
       const table = `${join.table} as ${join.alias}`;
       const left = `${join.ownerAlias}.${join.primaryKey!}`;
@@ -375,7 +375,7 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Record<string, string>): { column: string; order: string }[] {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): { column: string; order: string }[] {
     return Object.keys(orderBy).map(k => {
       // tslint:disable-next-line:prefer-const
       let [alias, field] = this.splitField(k);

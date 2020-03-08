@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { Collection, EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { FilterQuery, IDatabaseDriver, Transaction } from '..';
@@ -9,7 +9,7 @@ import { ValidationError } from '../utils';
 export class ChangeSetPersister {
 
   constructor(private readonly driver: IDatabaseDriver,
-              private readonly identifierMap: Record<string, EntityIdentifier>,
+              private readonly identifierMap: Dictionary<EntityIdentifier>,
               private readonly metadata: MetadataStorage) { }
 
   async persistToDatabase<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {

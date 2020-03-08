@@ -1,5 +1,5 @@
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { EntityProperty } from '../typings';
+import { Dictionary, EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column } from './DatabaseTable';
 
@@ -81,7 +81,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }));
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Record<string, any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<any[]>> {
     const sql = this.getIndexesSQL(tableName, schemaName);
     const indexes = await connection.execute<any[]>(sql);
 

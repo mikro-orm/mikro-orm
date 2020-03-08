@@ -1,4 +1,4 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType, wrap } from '../entity';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
@@ -10,13 +10,13 @@ import { CommitOrderCalculator, IPrimaryKey, LockMode, Transaction } from '..';
 export class UnitOfWork {
 
   /** map of references to managed entities */
-  private readonly identityMap = Object.create(null) as Record<string, AnyEntity>;
+  private readonly identityMap = Object.create(null) as Dictionary<AnyEntity>;
 
   /** holds copy of identity map so we can compute changes when persisting managed entities */
-  private readonly originalEntityData = Object.create(null) as Record<string, EntityData<AnyEntity>>;
+  private readonly originalEntityData = Object.create(null) as Dictionary<EntityData<AnyEntity>>;
 
   /** map of wrapped primary keys so we can compute change set without eager commit */
-  private readonly identifierMap = Object.create(null) as Record<string, EntityIdentifier>;
+  private readonly identifierMap = Object.create(null) as Dictionary<EntityIdentifier>;
 
   private readonly persistStack: AnyEntity[] = [];
   private readonly removeStack: AnyEntity[] = [];
@@ -63,7 +63,7 @@ export class UnitOfWork {
     return this.getById<T>(entityName, pk);
   }
 
-  getIdentityMap(): Record<string, AnyEntity> {
+  getIdentityMap(): Dictionary<AnyEntity> {
     return this.identityMap;
   }
 

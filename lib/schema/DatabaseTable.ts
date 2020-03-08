@@ -1,8 +1,10 @@
+import { Dictionary } from '../typings';
+
 export class DatabaseTable {
 
-  private columns!: Record<string, Column>;
-  private indexes!: Record<string, Index[]>;
-  private foreignKeys!: Record<string, ForeignKey>;
+  private columns!: Dictionary<Column>;
+  private indexes!: Dictionary<Index[]>;
+  private foreignKeys!: Dictionary<ForeignKey>;
 
   constructor(readonly name: string,
               readonly schema?: string) { }
@@ -15,7 +17,7 @@ export class DatabaseTable {
     return this.columns[name];
   }
 
-  init(cols: Column[], indexes: Record<string, Index[]>, pks: string[], fks: Record<string, ForeignKey>): void {
+  init(cols: Column[], indexes: Dictionary<Index[]>, pks: string[], fks: Dictionary<ForeignKey>): void {
     this.indexes = indexes;
     this.foreignKeys = fks;
     this.columns = cols.reduce((o, v) => {
