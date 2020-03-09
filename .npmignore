@@ -6,4 +6,5 @@
 /temp
 /yarn-error.log
 /mikro_orm_test.db
+/data
 /.*
