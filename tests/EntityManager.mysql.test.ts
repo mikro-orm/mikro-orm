@@ -1,12 +1,34 @@
 import { v4 } from 'uuid';
 import chalk from 'chalk';
 
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import {
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryOrder,
+  Reference,
+  Utils,
+  wrap,
+} from '../lib';
+import {
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  FooParam2,
+  Publisher2,
+  PublisherType,
+  Test2,
+} from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
+import { Address2 } from './entities-sql/Address2';
 
 describe('EntityManagerMySql', () => {
 
@@ -793,7 +815,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test.config']))!;
     expect(b1.uuid).not.toBeNull();
     expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
   });
@@ -1449,7 +1471,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[4][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[6][0]).toMatch('commit');
-    expect(mock.mock.calls[7][0]).toMatch('select `e0`.* from `author2` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[7][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
   });
 
   test('self referencing 1:1 (1 step)', async () => {
@@ -1635,7 +1657,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const [authors1, count1] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 10 });
+    const [authors1, count1] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 10, orderBy: { id: QueryOrder.ASC } });
     expect(authors1).toHaveLength(10);
     expect(count1).toBe(30);
     expect(authors1[0]).toBeInstanceOf(Author2);
@@ -1643,7 +1665,7 @@ describe('EntityManagerMySql', () => {
     expect(authors1[9].name).toBe('God 20');
     orm.em.clear();
 
-    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'] });
+    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'], orderBy: { id: QueryOrder.ASC } });
     expect(authors2).toHaveLength(5);
     expect(authors2[0].email).toBeUndefined();
     expect(count2).toBe(30);
@@ -1689,9 +1711,9 @@ describe('EntityManagerMySql', () => {
     author = (await orm.em.findOne(Author2, author))!;
     await orm.em.findOne(Author2, author, { refresh: true });
     await orm.em.findOne(Author2, author, { refresh: true });
-    expect(mock.mock.calls[4][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[5][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[6][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[4][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[5][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[6][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
 
     author.name = 'Jon Blow';
     await orm.em.flush();
@@ -1793,6 +1815,84 @@ describe('EntityManagerMySql', () => {
 
     // fails with 2 b/c the post is in the collection twice
     expect(author2.books.length).toEqual(2);
+  });
+
+  test('composite keys 1 - dynamic attributes', async () => {
+    const test = Test2.create('t');
+    test.config.add(new Configuration2(test, 'foo', '1'));
+    test.config.add(new Configuration2(test, 'bar', '2'));
+    test.config.add(new Configuration2(test, 'baz', '3'));
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const t = await orm.em.findOneOrFail(Test2, test.id, ['config']);
+    expect(t.getConfiguration()).toEqual({
+      foo: '1',
+      bar: '2',
+      baz: '3',
+    });
+  });
+
+  test('composite keys 2 - working with composite entity', async () => {
+    const bar = FooBar2.create('bar');
+    bar.id = 7;
+    const baz = new FooBaz2('baz');
+    baz.id = 3;
+    const param = new FooParam2(bar, baz, 'val');
+    await orm.em.persistAndFlush(param);
+    orm.em.clear();
+
+    const p1 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p1.bar.id).toBe(bar.id);
+    expect(p1.baz.id).toBe(baz.id);
+    expect(p1.value).toBe('val');
+
+    p1.value = 'val2';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const p2 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p2.bar.id).toBe(bar.id);
+    expect(p2.baz.id).toBe(baz.id);
+    expect(p2.value).toBe('val2');
+    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap()).sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~3']);
+
+    const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p3).toBe(p2);
+
+    await orm.em.removeEntity(p3, true);
+    const p4 = await orm.em.findOne(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p4).toBeNull();
+  });
+
+  test('composite keys 3 - simple derived entity', async () => {
+    const author = new Author2('n', 'e');
+    author.id = 5;
+    author.address = new Address2(author, 'v1');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    expect(a1.address!.value).toBe('v1');
+    expect(a1.address!.author).toBe(a1);
+
+    a1.address!.value = 'v2';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    expect(a2.address!.value).toBe('v2');
+    expect(a2.address!.author).toBe(a2);
+
+    const address = await orm.em.findOneOrFail(Address2, author.id as any);
+    expect(address.author).toBe(a2);
+    expect(address.author.address).toBe(address);
+
+    await orm.em.removeEntity(a2, true);
+    const a3 = await orm.em.findOne(Author2, author.id);
+    expect(a3).toBeNull();
+    const address2 = await orm.em.findOne(Address2, author.id as any);
+    expect(address2).toBeNull();
   });
 
   afterAll(async () => orm.close(true));

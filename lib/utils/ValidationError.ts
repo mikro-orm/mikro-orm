@@ -38,6 +38,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`${meta.className} entity is missing @PrimaryKey()`);
   }
 
+  // TODO add hint about possibly not discovered entity
   static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): ValidationError {
     if (owner) {
       return ValidationError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);

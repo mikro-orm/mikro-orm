@@ -7,6 +7,7 @@ import {
 import { Author2, Book2, BookTag2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection } from '../lib/entity';
+import { FooParam2 } from './entities-sql/FooParam2';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -237,6 +238,9 @@ describe('check typings', () => {
     let ok02: FilterQuery<Book2>;
     ok02 = { publisher: { $ne: undefined } };
     ok02 = { publisher: { name: 'test' } };
+
+    let ok03: FilterQuery<FooParam2>;
+    ok03 = { bar: 1, baz: 2 };
   });
 
   // there is no way to test this currently, uncomment to check they all fail

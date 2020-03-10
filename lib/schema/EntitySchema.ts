@@ -1,7 +1,15 @@
 import { AnyEntity, Constructor, EntityMetadata, EntityName, EntityProperty } from '../typings';
 import {
-  EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions,
-  PrimaryKeyOptions, PropertyOptions, SerializedPrimaryKeyOptions, UniqueOptions,
+  EnumOptions,
+  IndexOptions,
+  ManyToManyOptions,
+  ManyToOneOptions,
+  OneToManyOptions,
+  OneToOneOptions,
+  PrimaryKeyOptions,
+  PropertyOptions,
+  SerializedPrimaryKeyOptions,
+  UniqueOptions,
 } from '../decorators';
 import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Type } from '../types';
@@ -148,24 +156,40 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       return this;
     }
 
-    if (this._meta.class) {
-      this.setClass(this._meta.class);
-    } else {
-      this.setClass(({ [this.name]: class {} })[this.name] as Constructor<T>);
+    if (!this._meta.class) {
+      this._meta.class = ({ [this.name]: class {} })[this.name] as Constructor<T>;
     }
+
+    this.setClass(this._meta.class);
 
     if (this._meta.abstract) {
       delete this._meta.name;
     }
 
+    this.initProperties();
+    this.initPrimaryKeys();
+    this.initialized = true;
+
+    return this;
+  }
+
+  private initProperties(): void {
     Object.entries<Property<T[keyof T]>>(this._meta.properties).forEach(([name, options]) => {
       options.type = 'customType' in options ? options.customType.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
-        case ReferenceType.ONE_TO_ONE: this.addOneToOne(name as keyof T & string, options.type, options); break;
-        case ReferenceType.ONE_TO_MANY: this.addOneToMany(name as keyof T & string, options.type, options); break;
-        case ReferenceType.MANY_TO_ONE: this.addManyToOne(name as keyof T & string, options.type, options); break;
-        case ReferenceType.MANY_TO_MANY: this.addManyToMany(name as keyof T & string, options.type, options); break;
+        case ReferenceType.ONE_TO_ONE:
+          this.addOneToOne(name as keyof T & string, options.type, options);
+          break;
+        case ReferenceType.ONE_TO_MANY:
+          this.addOneToMany(name as keyof T & string, options.type, options);
+          break;
+        case ReferenceType.MANY_TO_ONE:
+          this.addManyToOne(name as keyof T & string, options.type, options);
+          break;
+        case ReferenceType.MANY_TO_MANY:
+          this.addManyToMany(name as keyof T & string, options.type, options);
+          break;
         default:
           if ((options as EntityProperty).enum) {
             this.addEnum(name as keyof T & string, options.type, options);
@@ -180,7 +204,9 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
           }
       }
     });
+  }
 
+  private initPrimaryKeys(): void {
     const pks = Object.values<EntityProperty<T>>(this._meta.properties).filter(prop => prop.primary);
 
     if (pks.length > 0) {
@@ -189,15 +215,16 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       this._meta.compositePK = pks.length > 1;
     }
 
+    // FK used as PK, we need to cascade
+    if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
+      pks[0].cascade.push(Cascade.REMOVE);
+    }
+
     const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);
 
     if (serializedPrimaryKey) {
       this._meta.serializedPrimaryKey = serializedPrimaryKey.name;
     }
-
-    this.initialized = true;
-
-    return this;
   }
 
   private normalizeType(options: PropertyOptions | EntityProperty, type: string | any | Constructor<Type>) {

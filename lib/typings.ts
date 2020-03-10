@@ -32,6 +32,7 @@ export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
 export type IPrimaryKeyValue = number | string | bigint | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
+export type IsScalar<T> = T extends number | string | bigint | Date | RegExp ? true : never;
 export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string | bigint } ? true : never;
 
 export type UnionOfArrays<T> = T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9 | infer T10
@@ -63,7 +64,7 @@ export type OperatorMap<T> = {
   $re?: string;
 };
 export type StringProp<T> = T extends string ? string | RegExp : never;
-export type EntityOrPrimary<T> = true extends IsEntity<T> ? DeepPartialEntity<T> | PartialEntity<T> | Primary<T> | T : never;
+export type EntityOrPrimary<T> = true extends IsScalar<T> ? never : DeepPartialEntity<T> | PartialEntity<T> | Primary<T> | T;
 export type CollectionItem<T> = T extends Collection<infer K> ? EntityOrPrimary<K> : never;
 export type FilterValue<T> = T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>> | null;
 export type Query<T> = true extends IsEntity<T>

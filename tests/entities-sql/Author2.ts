@@ -1,10 +1,28 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate,
-  Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique,
+  AfterCreate,
+  AfterDelete,
+  AfterUpdate,
+  BeforeCreate,
+  BeforeDelete,
+  BeforeUpdate,
+  Collection,
+  Entity,
+  OneToMany,
+  Property,
+  ManyToOne,
+  QueryOrder,
+  OnInit,
+  ManyToMany,
+  DateType,
+  TimeType,
+  Index,
+  Unique,
+  OneToOne, Cascade,
 } from '../../lib';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
+import { Address2 } from './Address2';
 
 @Entity()
 @Index({ properties: ['name', 'age'] })
@@ -32,7 +50,6 @@ export class Author2 extends BaseEntity2 {
   age?: number;
 
   @Index()
-  @Unique()
   @Property({ default: false })
   termsAccepted: boolean = false;
 
@@ -50,6 +67,9 @@ export class Author2 extends BaseEntity2 {
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;
+
+  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
+  address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
   friends = new Collection<Author2>(this);

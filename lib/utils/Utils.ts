@@ -11,7 +11,7 @@ import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Primary } from '../typings';
-import { ArrayCollection, Collection, Reference, ReferenceType } from '../entity';
+import { ArrayCollection, Collection, Reference, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
 
 export class Utils {
@@ -245,11 +245,29 @@ export class Utils {
       return data as Primary<T>;
     }
 
+    if (Utils.isEntity(data) && !meta) {
+      meta = wrap(data).__meta;
+    }
+
     if (Utils.isObject(data) && meta) {
+      if (meta.compositePK) {
+        return Utils.getCompositeKeyHash(data, meta) as Primary<T>;
+      }
+
       return data[meta.primaryKey] || data[meta.serializedPrimaryKey] || null;
     }
 
     return null;
+  }
+
+  static getCompositeKeyHash<T>(entity: T, meta: EntityMetadata<T>): string {
+    return meta.primaryKeys.map(pk => {
+      if (Utils.isEntity(entity[pk], true)) {
+        return wrap(entity[pk]).__serializedPrimaryKey;
+      }
+
+      return entity[pk];
+    }).join('~');
   }
 
   /**

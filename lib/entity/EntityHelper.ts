@@ -126,7 +126,7 @@ export class EntityHelper {
       __primaryKeyField: { value: meta.primaryKey },
       __primaryKey: {
         get(): Primary<T> {
-          return this[meta.primaryKey];
+          return EntityHelper.getPrimaryKeyValue(this, meta);
         },
         set(id: Primary<T>): void {
           this[meta.primaryKey] = id;
@@ -134,11 +134,34 @@ export class EntityHelper {
       },
       __serializedPrimaryKeyField: { value: meta.serializedPrimaryKey },
       __serializedPrimaryKey: {
-        get(): Primary<T> {
+        get(): Primary<T> | string {
+          if (meta.compositePK) {
+            return Utils.getCompositeKeyHash(this, meta);
+          }
+
+          if (Utils.isEntity(this[meta.serializedPrimaryKey])) {
+            return wrap(this[meta.serializedPrimaryKey]).__serializedPrimaryKey;
+          }
+
           return this[meta.serializedPrimaryKey];
         },
       },
     });
+  }
+
+  private static getPrimaryKeyValue<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>) {
+    if (meta.compositePK) {
+      return meta.primaryKeys.reduce((o, pk) => {
+        o[pk] = Utils.extractPK(entity[pk]);
+        return o;
+      }, {} as any);
+    }
+
+    if (Utils.isEntity(entity[meta.primaryKey])) {
+      return wrap(entity[meta.primaryKey]).__primaryKey;
+    }
+
+    return entity[meta.primaryKey];
   }
 
   /**

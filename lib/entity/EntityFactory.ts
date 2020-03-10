@@ -59,6 +59,7 @@ export class EntityFactory {
       const params = this.extractConstructorParams<T>(meta, data);
       meta.constructorParams.forEach(prop => delete data[prop]);
 
+      // creates new instance via constructor as this is the new entity
       return new Entity(...params);
     }
 
@@ -66,9 +67,18 @@ export class EntityFactory {
       return this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey]);
     }
 
-    // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
+    // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(Entity.prototype);
-    entity[meta.primaryKey] = data[meta.primaryKey];
+
+    meta.primaryKeys.forEach(pk => {
+      const prop = meta.properties[pk];
+
+      if (prop.reference === ReferenceType.SCALAR) {
+        entity[meta.primaryKey] = data[meta.primaryKey];
+      } else {
+        entity[meta.primaryKey] = this.createReference(prop.type, data[meta.primaryKey]);
+      }
+    });
 
     return entity;
   }

@@ -1,6 +1,6 @@
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { AnyEntity, Dictionary, EntityMetadata, FilterQuery } from '../typings';
-import { Reference } from '../entity';
+import { Reference, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class SmartQueryHelper {
@@ -34,10 +34,10 @@ export class SmartQueryHelper {
   }
 
   static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, meta?: EntityMetadata<T>): FilterQuery<T> {
-    where = SmartQueryHelper.processParams(where) || {};
-    const rootPrimaryKey = meta ? meta.primaryKey : entityName;
+    where = SmartQueryHelper.processParams(where, true) || {};
 
     if (Array.isArray(where)) {
+      const rootPrimaryKey = meta ? meta.primaryKey : entityName;
       return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => SmartQueryHelper.processWhere(sub, entityName, meta)) } } as FilterQuery<T>;
     }
 
@@ -73,7 +73,7 @@ export class SmartQueryHelper {
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
-    if (root) {
+    if (root || wrap(entity).__meta.compositePK) {
       return entity.__primaryKey;
     }
 
