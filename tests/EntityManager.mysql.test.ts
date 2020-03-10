@@ -10,7 +10,6 @@ import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
 describe('EntityManagerMySql', () => {
 
-  jest.setTimeout(10e3);
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());

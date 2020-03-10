@@ -9,8 +9,6 @@ import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 describe('SchemaGenerator', () => {
 
-  jest.setTimeout(10e3);
-
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({

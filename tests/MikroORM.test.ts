@@ -9,8 +9,6 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('MikroORM', () => {
 
-  jest.setTimeout(10e3);
-
   beforeEach(() => {
     const meta = MetadataStorage.getMetadata();
     // Object.keys(meta).forEach(k => delete meta[k]);

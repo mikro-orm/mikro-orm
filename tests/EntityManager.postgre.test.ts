@@ -8,7 +8,6 @@ import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 describe('EntityManagerPostgre', () => {
 
-  jest.setTimeout(10e3);
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql());

@@ -10,7 +10,6 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityAssignerMongo', () => {
 
-  jest.setTimeout(10e3);
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
