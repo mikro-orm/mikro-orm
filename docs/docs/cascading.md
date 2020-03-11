@@ -122,9 +122,12 @@ cascading mode which can be specified using the `orphanRemoval` flag of the `@On
 and `@OneToMany` properties:
 
 ```typescript
+@Entity()
 export class Author {
+
   @OneToMany({ entity: () => Book, mappedBy: 'author', orphanRemoval: true })
   books = new Collection<Book>(this);
+
 }
 ```
 
@@ -144,3 +147,23 @@ await orm.em.persistAndFlush(author); // book1 will be removed, as well as all o
 
 In this example, no `Book` would be removed with simple `Cascade.REMOVE` as no remove operation
 was executed. 
+
+## Declarative Referential Integrity
+
+> This is only supported in SQL drivers.
+
+As opposed to the application level cascading controlled by the `cascade` option, we can
+also define database level referential integrity actions: `on update` and `on delete`.
+
+Their values are automatically inferred from the `cascade` option value. You can also 
+control the value manually via `onUpdateIntegrity` and `onDelete` options. 
+
+```typescript
+@Entity()
+export class Book {
+
+  @ManyToOne({ onUpdateIntegrity: 'set null', onDelete: 'cascade' })
+  author?: Author;
+
+}
+```

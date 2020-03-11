@@ -50,7 +50,7 @@ create table "book_to_tag_unordered" ("book2_uuid_pk" varchar(36) not null, "boo
 
 create table "publisher2_to_test2" ("id" serial primary key, "publisher2_id" int4 not null, "test2_id" int4 not null);
 
-alter table "author2" add constraint "author2_favourite_book_uuid_pk_foreign" foreign key ("favourite_book_uuid_pk") references "book2" ("uuid_pk") on update cascade on delete set null;
+alter table "author2" add constraint "author2_favourite_book_uuid_pk_foreign" foreign key ("favourite_book_uuid_pk") references "book2" ("uuid_pk") on update no action on delete cascade;
 alter table "author2" add constraint "author2_favourite_author_id_foreign" foreign key ("favourite_author_id") references "author2" ("id") on update cascade on delete set null;
 
 alter table "book2" add constraint "book2_author_id_foreign" foreign key ("author_id") references "author2" ("id");

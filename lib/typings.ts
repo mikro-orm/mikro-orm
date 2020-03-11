@@ -134,6 +134,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   orphanRemoval?: boolean;
   onCreate?: () => any;
   onUpdate?: () => any;
+  onDelete?: string;
+  onUpdateIntegrity?: string;
   owner: boolean;
   inversedBy: string;
   mappedBy: string;

@@ -142,12 +142,14 @@ export class EntityGenerator {
     }
 
     const cascade = ['Cascade.MERGE'];
+    const onUpdate = column.fk.updateRule.toLowerCase();
+    const onDelete = column.fk.deleteRule.toLowerCase();
 
-    if (column.fk.updateRule.toLowerCase() === 'cascade') {
+    if (onUpdate === 'cascade') {
       cascade.push('Cascade.PERSIST');
     }
 
-    if (column.fk.deleteRule.toLowerCase() === 'cascade') {
+    if (onDelete === 'cascade') {
       cascade.push('Cascade.REMOVE');
     }
 

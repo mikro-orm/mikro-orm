@@ -2,7 +2,7 @@
 
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 Array [
-  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+  "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -41,7 +41,7 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book2, nullable: true })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.MERGE, Cascade.REMOVE], nullable: true })
   favouriteBook?: Book2;
 
   @ManyToOne({ entity: () => Author2, nullable: true })
@@ -282,7 +282,7 @@ export class Test2 {
 
 exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
 Array [
-  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+  "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -321,7 +321,7 @@ export class Author2 {
   @Property({ type: 'time', nullable: true })
   bornTime?: Date;
 
-  @ManyToOne({ entity: () => Book2, nullable: true })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.MERGE, Cascade.REMOVE], nullable: true })
   favouriteBook?: Book2;
 
   @ManyToOne({ entity: () => Author2, nullable: true })

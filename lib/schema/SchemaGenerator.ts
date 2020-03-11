@@ -363,12 +363,12 @@ export class SchemaGenerator {
     col.references(pk2.fieldName).inTable(meta2.collection);
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
 
-    if (cascade || prop.nullable) {
-      col.onDelete(cascade ? 'cascade' : 'set null');
+    if (prop.onDelete || cascade || prop.nullable) {
+      col.onDelete(prop.onDelete || (cascade ? 'cascade' : 'set null'));
     }
 
-    if (prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
-      col.onUpdate('cascade');
+    if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
+      col.onUpdate(prop.onUpdateIntegrity || 'cascade');
     }
   }
 
