@@ -1803,6 +1803,22 @@ describe('EntityManagerMongo', () => {
     expect(tag.books.count()).toBe(4);
   });
 
+  test('transactions with embedded transaction', async () => {
+    try {
+      await orm.em.transactional(async em => {
+        // this transaction should not be commit
+        await em.transactional(async subEm => {
+          const god1 = new Author('test202003121545', 'test202003121545@heaven1.god');
+          await subEm.persistAndFlush(god1);
+        });
+        throw new Error(); // rollback the transaction
+      });
+    } catch { }
+
+    const res1 = await orm.em.findOne(Author, { name: 'test202003121545' });
+    expect(res1).toBeNull();
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');

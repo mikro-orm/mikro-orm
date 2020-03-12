@@ -134,7 +134,7 @@ export class MongoConnection extends Connection {
   }
 
   async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, ctx?: Transaction<ClientSession>): Promise<T> {
-    const session = this.client.startSession();
+    const session = ctx || this.client.startSession();
     let ret: T = null as unknown as T;
 
     try {
