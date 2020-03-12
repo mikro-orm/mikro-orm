@@ -156,7 +156,6 @@ export class MongoConnection extends Connection {
 
   private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
-    data = this.convertObjectIds(data!);
     where = this.convertObjectIds(where as Dictionary);
     const options: Dictionary = { session: ctx };
     const now = Date.now();
@@ -169,9 +168,9 @@ export class MongoConnection extends Connection {
         res = await this.getCollection(collection).insertOne(data, options);
         break;
       case 'updateMany':
-        const payload = Object.keys(data).some(k => k.startsWith('$')) ? data : { $set: data };
+        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
         query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`;
-        res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload, options);
+        res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload!, options);
         break;
       case 'deleteMany':
       case 'countDocuments':
