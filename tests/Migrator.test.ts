@@ -57,6 +57,14 @@ describe('Migrator', () => {
     await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('migration is skipped when no diff', async () => {
+    const migrator = orm.getMigrator();
+    const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
+    getSchemaDiffMock.mockResolvedValueOnce([]);
+    const migration = await migrator.createMigration();
+    expect(migration).toEqual({ fileName: '', code: '', diff: [] });
+  });
+
   test('run schema migration', async () => {
     const upMock = jest.spyOn(umzug.prototype, 'up');
     const downMock = jest.spyOn(umzug.prototype, 'down');

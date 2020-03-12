@@ -119,8 +119,12 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration) {
+  private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank);
+
+    if (ret.diff.length === 0) {
+      return CLIHelper.dump(chalk.green(`No changes required, schema is up-to-date`));
+    }
 
     if (args.dump) {
       CLIHelper.dump(chalk.green('Creating migration with following queries:'));

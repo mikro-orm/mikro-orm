@@ -1,3 +1,5 @@
+(global as any).process.env.FORCE_COLOR = 0;
+
 import { Configuration } from '../../lib/utils';
 import { CLIHelper } from '../../lib/cli/CLIHelper';
 
@@ -29,9 +31,17 @@ describe('CreateMigrationCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(migrator.createMigration.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
+
     await expect(cmd.handler({ blank: true, dump: true } as any)).resolves.toBeUndefined();
     expect(migrator.createMigration.mock.calls.length).toBe(2);
     expect(close.mock.calls.length).toBe(2);
+    expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
+
+    migrator.createMigration.mockImplementationOnce(() => ({ fileName: '', code: '', diff: [] }));
+    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    expect(migrator.createMigration.mock.calls.length).toBe(3);
+    expect(close.mock.calls.length).toBe(3);
+    expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 
 });

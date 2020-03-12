@@ -32,6 +32,11 @@ export class Migrator {
 
   async createMigration(path?: string, blank = false): Promise<MigrationResult> {
     const diff = blank ? ['select 1'] : await this.getSchemaDiff();
+
+    if (diff.length === 0) {
+      return { fileName: '', code: '', diff };
+    }
+
     const migration = await this.generator.generate(diff, path);
 
     return {
