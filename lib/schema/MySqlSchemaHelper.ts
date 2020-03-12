@@ -56,7 +56,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
-    return `select table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
+    return `select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
   getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty): string {
@@ -72,7 +72,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
-    const sql = `select column_name, column_default, is_nullable, data_type, column_key, ifnull(datetime_precision, character_maximum_length) length
+    const sql = `select column_name as column_name, column_default as column_default, is_nullable as is_nullable, data_type as data_type, column_key as column_key, ifnull(datetime_precision, character_maximum_length) length
       from information_schema.columns where table_schema = database() and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
 
