@@ -83,6 +83,9 @@
     ],
     "pinVersions": false
   },
+  "engines": {
+    "node": ">= 8.9.0"
+  },
   "dependencies": {
     "acorn-loose": "^7.0.0",
     "acorn-walk": "^7.1.1",
