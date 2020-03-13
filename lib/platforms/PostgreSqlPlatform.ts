@@ -27,7 +27,7 @@ export class PostgreSqlPlatform extends Platform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return super.isBigIntProperty(prop) || prop.columnType === 'bigserial';
+    return super.isBigIntProperty(prop) || (prop.columnTypes && prop.columnTypes[0] === 'bigserial');
   }
 
 }

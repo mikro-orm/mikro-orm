@@ -1,23 +1,6 @@
 import {
-  AfterCreate,
-  AfterDelete,
-  AfterUpdate,
-  BeforeCreate,
-  BeforeDelete,
-  BeforeUpdate,
-  Collection,
-  Entity,
-  OneToMany,
-  Property,
-  ManyToOne,
-  QueryOrder,
-  OnInit,
-  ManyToMany,
-  DateType,
-  TimeType,
-  Index,
-  Unique,
-  OneToOne, Cascade,
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
+  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade,
 } from '../../lib';
 
 import { Book2 } from './Book2';

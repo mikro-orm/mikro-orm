@@ -38,7 +38,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`${meta.className} entity is missing @PrimaryKey()`);
   }
 
-  // TODO add hint about possibly not discovered entity
   static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): ValidationError {
     if (owner) {
       return ValidationError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);
@@ -161,7 +160,11 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     const error = `You cannot modify inverse side of M:N collection ${inverseCollection} when the owning side is not initialized. `
       + `Consider working with the owning side instead (${ownerCollection}).`;
 
-    return  new ValidationError(error, owner);
+    return new ValidationError(error, owner);
+  }
+
+  static invalidCompositeIdentifier(meta: EntityMetadata): ValidationError {
+    return new ValidationError(`Composite key required for entity ${meta.className}.`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {

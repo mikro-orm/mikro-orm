@@ -16,12 +16,12 @@ export class MongoPlatform extends Platform {
     return MongoNamingStrategy;
   }
 
-  normalizePrimaryKey<T = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
     if (data instanceof ObjectId) {
-      return data.toHexString() as unknown as T;
+      return data.toHexString() as T;
     }
 
-    return data as unknown as T;
+    return data as T;
   }
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {

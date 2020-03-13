@@ -35,7 +35,7 @@ describe('EntityGenerator', () => {
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
     const writer = { writeLine: jest.fn(), blankLineIfLastNot: jest.fn(), blankLine: jest.fn(), block: jest.fn(), write: jest.fn() };
-    generator.createProperty(writer as any, { name: 'test', type: 'varchar(50)', defaultValue: 'null::character varying', nullable: true } as any);
+    generator.createProperty(writer as any, { name: 'test', type: 'varchar(50)', defaultValue: 'null::character varying', nullable: true } as any, []);
     expect(writer.writeLine.mock.calls.length).toBe(2);
     expect(writer.writeLine.mock.calls[0][0]).toBe(`@Property({ type: 'varchar(50)', nullable: true })`);
 

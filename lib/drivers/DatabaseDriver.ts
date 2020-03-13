@@ -1,5 +1,5 @@
 import { FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Primary, Dictionary } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
@@ -34,14 +34,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T extends AnyEntity<T>>(coll: Collection<T>, ctx?: Transaction): Promise<void> {
-    const pk = this.metadata.get(coll.property.type).primaryKey;
+  async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+    const pk = this.metadata.get(coll.property.type).primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate(coll.owner.constructor.name, wrap(coll.owner).__primaryKey, data, ctx);
+    await this.nativeUpdate<T>(coll.owner.constructor.name, wrap(coll.owner).__primaryKey, data, ctx);
   }
 
   mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
@@ -52,8 +52,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const ret = Object.assign({}, result) as any;
 
     Object.values(meta.properties).forEach(prop => {
-      if (prop.fieldName && prop.fieldName in ret) {
-        Utils.renameKey(ret, prop.fieldName, prop.name);
+      if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => joinColumn in ret)) {
+        const temp: any[] = [];
+        prop.fieldNames.forEach(joinColumn => {
+          temp.push(ret[joinColumn]);
+          delete ret[joinColumn];
+        });
+
+        ret[prop.name] = temp;
+      } else if (prop.fieldNames && prop.fieldNames[0] in ret) {
+        Utils.renameKey(ret, prop.fieldNames[0], prop.name);
       }
 
       if (prop.type === 'boolean' && ![null, undefined].includes(ret[prop.name])) {
@@ -124,9 +132,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return {};
   }
 
-  protected getPrimaryKeyField(entityName: string): string {
+  protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.get(entityName, false, false);
-    return meta ? meta.primaryKey : this.config.getNamingStrategy().referenceColumnName();
+    return meta ? meta.primaryKeys : [this.config.getNamingStrategy().referenceColumnName()];
   }
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {

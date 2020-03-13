@@ -43,19 +43,20 @@ export class EntityGenerator {
   }
 
   async createEntity(table: DatabaseTable): Promise<void> {
+    const properties: [string, string][] = [];
     const entity = this.project.createSourceFile(this.namingStrategy.getClassName(table.name, '_') + '.ts', writer => {
       writer.writeLine(`import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, OneToOne, ManyToMany, Cascade } from 'mikro-orm';`);
       writer.blankLine();
       writer.writeLine('@Entity()');
       writer.write(`export class ${this.namingStrategy.getClassName(table.name, '_')}`);
-      writer.block(() => table.getColumns().forEach(column => this.createProperty(writer, column)));
+      writer.block(() => table.getColumns().forEach(column => this.createProperty(writer, column, properties)));
       writer.write('');
     });
 
     this.sources.push(entity);
   }
 
-  createProperty(writer: CodeBlockWriter, column: Column): void {
+  createProperty(writer: CodeBlockWriter, column: Column, properties: [string, string][]): void {
     const prop = this.getPropertyName(column);
     const type = this.getPropertyType(column);
     const columnType = this.getPropertyType(column, '__false') === '__false' ? column.type : undefined;
@@ -63,6 +64,12 @@ export class EntityGenerator {
     const decorator = this.getPropertyDecorator(prop, column, type, defaultValue, columnType);
     const definition = this.getPropertyDefinition(column, prop, type, defaultValue);
 
+    // in case of composite keys in references, we get duplicates, so ignore them here
+    if (properties.find(prop => prop[0] === decorator && prop[1] === definition )) {
+      return;
+    }
+
+    properties.push([decorator, definition]);
     writer.blankLineIfLastNot();
     writer.writeLine(decorator);
     writer.writeLine(definition);

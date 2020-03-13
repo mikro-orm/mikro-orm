@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, Car2, CarOwner2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
@@ -66,6 +66,30 @@ describe('QueryBuilder', () => {
     qb.select(['id', 'name', 'type']).where({ name: { $in: ['test 123', 'lol 321'] }, type: PublisherType.GLOBAL }).limit(2, 1);
     expect(qb.getQuery()).toEqual('select `e0`.`id`, `e0`.`name`, `e0`.`type` from `publisher2` as `e0` where `e0`.`name` in (?, ?) and `e0`.`type` = ? limit ? offset ?');
     expect(qb.getParams()).toEqual(['test 123', 'lol 321', PublisherType.GLOBAL, 2, 1]);
+  });
+
+  test('select in query with composite keys', async () => {
+    const qb = orm.em.createQueryBuilder(Car2);
+    qb.select('*').where({ 'name~~~year': { $in: [['test 123', 123], ['lol 321', 321]] } }).orderBy({ 'name~~~year': QueryOrder.DESC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `car2` as `e0` where (`e0`.`name`, `e0`.`year`) in ((?, ?), (?, ?)) order by `e0`.`name` desc, `e0`.`year` desc');
+    expect(qb.getParams()).toEqual(['test 123', 123, 'lol 321', 321]);
+  });
+
+  test('select query with auto-joined composite key entity', async () => {
+    const qb1 = orm.em.createQueryBuilder(CarOwner2);
+    qb1.select('*').where({ car: { name: 'Audi A8', year: 2010 } });
+    expect(qb1.getQuery()).toEqual('select `e0`.* from `car_owner2` as `e0` where `e0`.`name` = ? and `e0`.`year` = ?');
+    expect(qb1.getParams()).toEqual(['Audi A8', 2010]);
+
+    const qb2 = orm.em.createQueryBuilder(CarOwner2);
+    qb2.select('*').where({ car: ['Audi A8', 2010] });
+    expect(qb2.getQuery()).toEqual('select `e0`.* from `car_owner2` as `e0` where (`e0`.`car_name`, `e0`.`car_year`) = (?, ?)');
+    expect(qb2.getParams()).toEqual(['Audi A8', 2010]);
+
+    const qb3 = orm.em.createQueryBuilder(CarOwner2);
+    qb3.select('*').where({ car: [['Audi A8', 2010]] });
+    expect(qb3.getQuery()).toEqual('select `e0`.* from `car_owner2` as `e0` where (`e0`.`car_name`, `e0`.`car_year`) in ((?, ?))');
+    expect(qb3.getParams()).toEqual(['Audi A8', 2010]);
   });
 
   test('select andWhere/orWhere', async () => {
@@ -461,6 +485,16 @@ describe('QueryBuilder', () => {
     sql += 'where `e1`.`author2_2_id` in (?, ?)';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual([1, 2]);
+  });
+
+  test('select by m:n with composite keys', async () => {
+    const qb = orm.em.createQueryBuilder(User2);
+    qb.select('*').populate(['user2_to_car2']).where({ 'user2_to_car2.Car2_inverse': { $in: [ [1, 2], [3, 4] ] } });
+    const sql = 'select `e0`.*, `e1`.`user2_first_name`, `e1`.`user2_last_name`, `e1`.`car2_name`, `e1`.`car2_year` ' +
+      'from `user2` as `e0` left join `user2_to_car2` as `e1` on `e0`.`first_name` = `e1`.`user2_first_name` and `e0`.`last_name` = `e1`.`user2_last_name` ' +
+      'where (`e1`.`car2_name`, `e1`.`car2_year`) in ((?, ?), (?, ?))';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual([1, 2, 3, 4]);
   });
 
   test('select by m:n with unknown populate ignored', async () => {

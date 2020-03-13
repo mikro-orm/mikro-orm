@@ -124,12 +124,12 @@ export class Utils {
 
     // copy all props, ignore collections and references, process custom types
     Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
-      if (Utils.shouldIgnoreProperty(metadata, entity, prop)) {
+      if (Utils.shouldIgnoreProperty(entity, prop)) {
         return;
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
-        return ret[prop.name] = entity[prop.name][metadata.get(prop.type).primaryKey];
+        return ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.get(prop.type).primaryKeys, true);
       }
 
       if (prop.customType) {
@@ -148,14 +148,13 @@ export class Utils {
     return ret;
   }
 
-  private static shouldIgnoreProperty<T>(metadata: MetadataStorage, entity: T, prop: EntityProperty<T>) {
+  private static shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>) {
     if (!(prop.name in entity)) {
       return true;
     }
 
-    const pk = () => metadata.get(prop.type).primaryKey;
     const collection = entity[prop.name] as unknown instanceof ArrayCollection;
-    const noPkRef = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
+    const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name]).__primaryKeys.every(pk => pk);
     const noPkProp = prop.primary && !entity[prop.name];
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
 
@@ -233,7 +232,11 @@ export class Utils {
   /**
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
-  static isPrimaryKey<T>(key: any): key is Primary<T> {
+  static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
+    if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v))) {
+      return true;
+    }
+
     return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key);
   }
 
@@ -254,20 +257,79 @@ export class Utils {
         return Utils.getCompositeKeyHash(data, meta) as Primary<T>;
       }
 
-      return data[meta.primaryKey] || data[meta.serializedPrimaryKey] || null;
+      return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
     }
 
     return null;
   }
 
   static getCompositeKeyHash<T>(entity: T, meta: EntityMetadata<T>): string {
-    return meta.primaryKeys.map(pk => {
+    const pks = meta.primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk], true)) {
         return wrap(entity[pk]).__serializedPrimaryKey;
       }
 
       return entity[pk];
-    }).join('~');
+    });
+
+    return Utils.getPrimaryKeyHash(pks as string[]);
+  }
+
+  static getPrimaryKeyHash(pks: string[]): string {
+    return pks.join('~~~');
+  }
+
+  static splitPrimaryKeys(key: string): string[] {
+    return key.split('~~~');
+  }
+
+  static getPrimaryKeyValue<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]) {
+    if (primaryKeys.length > 1) {
+      return Utils.getPrimaryKeyCond(entity, primaryKeys);
+    }
+
+    if (Utils.isEntity(entity[primaryKeys[0]])) {
+      return wrap(entity[primaryKeys[0]]).__primaryKey;
+    }
+
+    return entity[primaryKeys[0]];
+  }
+
+  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
+    if (allowScalar && primaryKeys.length === 1) {
+      if (Utils.isEntity(entity[primaryKeys[0]])) {
+        return wrap(entity[primaryKeys[0]]).__primaryKey;
+      }
+
+      return entity[primaryKeys[0]];
+    }
+
+    return primaryKeys.map(pk => {
+      if (Utils.isEntity(entity[pk])) {
+        return wrap(entity[pk]).__primaryKey;
+      }
+
+      return entity[pk];
+    });
+  }
+
+  static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> {
+    return primaryKeys.reduce((o, pk) => {
+      o[pk] = Utils.extractPK(entity[pk]);
+      return o;
+    }, {} as any);
+  }
+
+  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], primaryKeys: string[]): Record<string, Primary<T>> {
+    return primaryKeys.reduce((o, pk, idx) => {
+      o[pk] = Utils.extractPK(pks[idx]);
+      return o;
+    }, {} as any);
+  }
+
+  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>): Primary<T>[] {
+    const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
+    return meta.primaryKeys.map(pk => data[pk]) as Primary<T>[];
   }
 
   /**
@@ -483,6 +545,10 @@ export class Utils {
     }
 
     return values;
+  }
+
+  static flatten<T>(arrays: T[][]): T[] {
+    return ([] as T[]).concat.apply([], arrays);
   }
 
 }

@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, Property } from '../../lib';
+import { Entity, ManyToOne, PrimaryKeyType, Property } from '../../lib';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -13,6 +13,8 @@ export class FooParam2 {
 
   @Property()
   value: string;
+
+  [PrimaryKeyType]: [number, number];
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {
     this.bar = bar;

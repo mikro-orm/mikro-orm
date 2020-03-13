@@ -4,10 +4,9 @@ import {
   CollectionItem, DeepPartialEntity, EntityOrPrimary, FilterQuery, FilterValue, OneOrArray, OperatorMap, PartialEntity,
   Primary, PrimaryKeyType, Query, StringProp,
 } from '../lib/typings';
-import { Author2, Book2, BookTag2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooParam2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection } from '../lib/entity';
-import { FooParam2 } from './entities-sql/FooParam2';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -258,7 +257,7 @@ describe('check typings', () => {
   //   fail01 = { favouriteBook: [1, '2'] };
   //   fail01 = { favouriteBook: [1, 2] };
   //   fail01 = { books: { tags: { name: 1 } } };
-  //   fail01 = { books: { tags: '1' } };
+  //   fail01 = { books: { tags: true } };
   //   fail01 = { books: { tags: { books: { title: 123 } } } };
   //
   //   let fail02: FilterQuery<Book2>;

@@ -69,10 +69,10 @@ export class ChangeSetComputer {
   }
 
   private processManyToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const pk = this.metadata.get(prop.type).primaryKey;
+    const pks = this.metadata.get(prop.type).primaryKeys;
     const entity = changeSet.entity[prop.name] as unknown as T;
 
-    if (!entity[pk]) {
+    if (pks.length === 1 && !entity[pks[0]]) {
       changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
     }
   }

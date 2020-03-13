@@ -176,6 +176,39 @@ export class BookToTagUnordered {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class Car2 {
+
+  @PrimaryKey({ length: 255 })
+  name!: string;
+
+  @PrimaryKey()
+  year!: number;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Car2 } from './Car2';
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToOne({ entity: () => Car2 })
+  car!: Car2;
+
+}
+",
   "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Test2 } from './Test2';
 
@@ -323,6 +356,37 @@ export class Test2 {
 
   @Property({ fieldName: 'foo___baz', nullable: true })
   fooBaz?: number;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class User2 {
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Car2 } from './Car2';
+import { User2 } from './User2';
+
+@Entity()
+export class User2ToCar2 {
+
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
+  user2!: User2;
+
+  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true })
+  car2!: Car2;
 
 }
 ",

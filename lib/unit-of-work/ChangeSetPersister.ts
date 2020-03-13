@@ -2,7 +2,7 @@ import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { FilterQuery, IDatabaseDriver, Transaction } from '..';
+import { FilterQuery, IDatabaseDriver, Transaction, Utils } from '..';
 import { QueryResult } from '../connections';
 import { ValidationError } from '../utils';
 
@@ -54,7 +54,7 @@ export class ChangeSetPersister {
     }
 
     const cond = {
-      [changeSet.entity.__meta.primaryKey]: changeSet.entity.__primaryKey,
+      ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
       [meta.versionProperty]: changeSet.entity[meta.versionProperty],
     } as FilterQuery<T>;
 
@@ -68,31 +68,35 @@ export class ChangeSetPersister {
 
     if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
       const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__primaryKey, { populate: [meta.versionProperty] }, ctx);
-      changeSet.entity[meta.versionProperty] = e![meta.versionProperty] as any;
+      (changeSet.entity as T)[meta.versionProperty] = e![meta.versionProperty];
     }
   }
 
-  private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty): void {
+  private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const value = changeSet.payload[prop.name];
 
-    if (value instanceof EntityIdentifier) {
-      changeSet.payload[prop.name as keyof T] = value.getValue();
+    if (value as unknown instanceof EntityIdentifier) {
+      changeSet.payload[prop.name] = value.getValue();
     }
 
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
-      changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name as keyof T] = prop.onCreate();
+      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate();
     }
 
     if (prop.onUpdate) {
-      changeSet.entity[prop.name as keyof T] = changeSet.payload[prop.name as keyof T] = prop.onUpdate();
+      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate();
     }
   }
 
+  /**
+   * Maps values returned via `returning` statement (postgres) or the inserted id (other sql drivers).
+   * No need to handle composite keys here as they need to be set upfront.
+   */
   private mapReturnedValues<T extends AnyEntity<T>>(entity: T, res: QueryResult, meta: EntityMetadata<T>): void {
     if (res.row && Object.keys(res.row).length > 0) {
       Object.values<EntityProperty>(meta.properties).forEach(prop => {
-        if (res.row![prop.fieldName]) {
-          entity[prop.name as keyof T] = res.row![prop.fieldName] as T[keyof T];
+        if (prop.fieldNames && res.row![prop.fieldNames[0]]) {
+          entity[prop.name] = res.row![prop.fieldNames[0]];
         }
       });
     }

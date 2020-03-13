@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2, Car2, CarOwner2, User2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
@@ -19,8 +19,6 @@ import { schema as Test4 } from './entities-schema/Test4';
 import { schema as FooBar4 } from './entities-schema/FooBar4';
 import { schema as FooBaz4 } from './entities-schema/FooBaz4';
 import { schema as BaseEntity5 } from './entities-schema/BaseEntity5';
-import { FooParam2 } from './entities-sql/FooParam2';
-import { Address2 } from './entities-sql/Address2';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
 
@@ -54,7 +52,7 @@ export async function initORMMongo() {
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
   let orm = await MikroORM.init<D>({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22],
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22, Car2, CarOwner2, User2],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
     port: 3307,
@@ -168,6 +166,9 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(FooBar2).truncate().execute();
   await em.createQueryBuilder(FooBaz2).truncate().execute();
   await em.createQueryBuilder(FooParam2).truncate().execute();
+  await em.createQueryBuilder(Configuration2).truncate().execute();
+  await em.createQueryBuilder(Car2).truncate().execute();
+  await em.createQueryBuilder(CarOwner2).truncate().execute();
   await em.createQueryBuilder('author2_to_author2').truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();

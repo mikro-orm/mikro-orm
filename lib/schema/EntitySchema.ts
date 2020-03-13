@@ -1,15 +1,7 @@
 import { AnyEntity, Constructor, EntityMetadata, EntityName, EntityProperty } from '../typings';
 import {
-  EnumOptions,
-  IndexOptions,
-  ManyToManyOptions,
-  ManyToOneOptions,
-  OneToManyOptions,
-  OneToOneOptions,
-  PrimaryKeyOptions,
-  PropertyOptions,
-  SerializedPrimaryKeyOptions,
-  UniqueOptions,
+  EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
+  SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
 import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Type } from '../types';
@@ -45,6 +37,17 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions | EntityProperty = {}): void {
+    const rename = <U> (data: U, from: string, to: string): void => {
+      if (options[from] && !options[to]) {
+        options[to] = [options[from]];
+      }
+    };
+
+    rename(options, 'fieldName', 'fieldNames');
+    rename(options, 'joinColumn', 'joinColumns');
+    rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
+    rename(options, 'referenceColumnName', 'referencedColumnNames');
+
     const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
 
     if (type && Object.getPrototypeOf(type) === Type) {
@@ -210,7 +213,6 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     const pks = Object.values<EntityProperty<T>>(this._meta.properties).filter(prop => prop.primary);
 
     if (pks.length > 0) {
-      this._meta.primaryKey = pks[0].name;
       this._meta.primaryKeys = pks.map(prop => prop.name);
       this._meta.compositePK = pks.length > 1;
     }

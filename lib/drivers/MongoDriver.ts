@@ -93,7 +93,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const createIndexes = (meta: EntityMetadata, type: 'indexes' | 'uniques') => {
       meta[type].forEach(index => {
-        const properties = Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldName);
+        const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
         promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
           name: index.name,
           unique: type === 'uniques',
@@ -118,8 +118,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       if (meta && meta.properties[k]) {
         const prop = meta.properties[k];
 
-        if (prop.fieldName) {
-          Utils.renameKey(data, k, prop.fieldName);
+        if (prop.fieldNames) {
+          Utils.renameKey(data, k, prop.fieldNames[0]);
         }
       }
     });

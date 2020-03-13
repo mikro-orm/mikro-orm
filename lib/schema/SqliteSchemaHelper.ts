@@ -27,8 +27,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return 'pragma foreign_keys = on;\n';
   }
 
-  isSame(prop: EntityProperty, type: Column): IsSame {
-    return super.isSame(prop, type, SqliteSchemaHelper.TYPES);
+  isSame(prop: EntityProperty, type: Column, idx?: number): IsSame {
+    return super.isSame(prop, type, idx, SqliteSchemaHelper.TYPES);
   }
 
   getTypeDefinition(prop: EntityProperty): string {
@@ -88,8 +88,8 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {});
   }
 
-  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty): string {
-    return super.getRenameColumnSQL(tableName, from, to, '`');
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0): string {
+    return super.getRenameColumnSQL(tableName, from, to, idx, '`');
   }
 
   getForeignKeysSQL(tableName: string): string {

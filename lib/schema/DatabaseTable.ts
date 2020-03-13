@@ -39,6 +39,7 @@ export interface Column {
   name: string;
   type: string;
   fk: ForeignKey;
+  fks: ForeignKey[];
   indexes: Index[];
   primary: boolean;
   unique: boolean;

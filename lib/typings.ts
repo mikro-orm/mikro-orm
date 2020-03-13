@@ -29,6 +29,7 @@ export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
   ? PK | string : T extends { uuid: infer PK }
   ? PK : T extends { id: infer PK }
   ? PK : never;
+export type PrimaryMap<T extends AnyEntity<T>> = Record<keyof T, Primary<T>>;
 export type IPrimaryKeyValue = number | string | bigint | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
@@ -91,7 +92,8 @@ export interface IWrappedEntity<T, PK extends keyof T> {
   __initialized?: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
-  __primaryKey: T[PK] & Primary<T>;
+  __primaryKey: PrimaryMap<T>;
+  __primaryKeys: Primary<T>[];
   __serializedPrimaryKey: string & keyof T;
 }
 
@@ -109,14 +111,14 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
   type: string;
-  columnType: string;
+  columnTypes: string[];
   customType: Type;
   primary: boolean;
   serializedPrimaryKey: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
-  fieldName: string;
+  fieldNames: string[];
   default?: any;
   index?: boolean | string;
   unique?: boolean | string;
@@ -144,9 +146,9 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;
-  joinColumn: string;
-  inverseJoinColumn: string;
-  referenceColumnName: string;
+  joinColumns: string[];
+  inverseJoinColumns: string[];
+  referencedColumnNames: string[];
   referencedTableName: string;
 }
 
@@ -162,7 +164,6 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   extends: string;
   collection: string;
   path: string;
-  primaryKey: keyof T & string;
   primaryKeys: (keyof T & string)[];
   compositePK: boolean;
   versionProperty: keyof T & string;

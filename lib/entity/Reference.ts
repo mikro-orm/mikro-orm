@@ -13,13 +13,15 @@ export class Reference<T extends AnyEntity<T>> {
     this.set(entity);
     const wrapped = wrap(this.entity);
 
-    Object.defineProperty(this, wrapped.__meta.primaryKey, {
-      get() {
-        return wrap(this.entity).__primaryKey;
-      },
+    wrapped.__meta.primaryKeys.forEach(primaryKey => {
+      Object.defineProperty(this, primaryKey, {
+        get() {
+          return this.entity[primaryKey];
+        },
+      });
     });
 
-    if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKey !== wrapped.__meta.serializedPrimaryKey) {
+    if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKeys[0] !== wrapped.__meta.serializedPrimaryKey) {
       Object.defineProperty(this, wrapped.__meta.serializedPrimaryKey, {
         get() {
           return wrap(this.entity).__serializedPrimaryKey;
@@ -87,6 +89,10 @@ export class Reference<T extends AnyEntity<T>> {
 
   get __primaryKey(): Primary<T> {
     return wrap(this.entity).__primaryKey as Primary<T>;
+  }
+
+  get __primaryKeys(): Primary<T>[] {
+    return wrap(this.entity).__primaryKeys;
   }
 
   get __uuid(): string {

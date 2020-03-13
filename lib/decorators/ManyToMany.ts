@@ -29,6 +29,8 @@ export interface ManyToManyOptions<T extends AnyEntity<T>> extends ReferenceOpti
   fixedOrderColumn?: string;
   pivotTable?: string;
   joinColumn?: string;
+  joinColumns?: string[];
   inverseJoinColumn?: string;
+  inverseJoinColumns?: string[];
   referenceColumnName?: string;
 }

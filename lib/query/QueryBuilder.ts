@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex'
 import { Utils, ValidationError } from '../utils';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SmartQueryHelper } from './SmartQueryHelper';
-import { Dictionary, EntityProperty, AnyEntity, QBFilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, QBFilterQuery } from '../typings';
 import { ReferenceType } from '../entity';
 import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums';
 import { LockMode } from '../unit-of-work';
@@ -77,8 +77,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.TRUNCATE);
   }
 
-  count(field?: string, distinct = false): this {
-    this._fields = [field || this.metadata.get(this.entityName).primaryKey];
+  count(field?: string | string[], distinct = false): this {
+    this._fields = [...(field ? Utils.asArray(field) : this.metadata.get(this.entityName).primaryKeys)];
 
     if (distinct) {
       this.flags.add(QueryFlag.DISTINCT);
@@ -338,8 +338,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
 
-      if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE) {
-        Utils.renameKey(this._cond, this._joins[f].inverseJoinColumn!, `${this._joins[f].alias}.${this._joins[f].inverseJoinColumn!}`);
+      if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
+        this._joins[f].inverseJoinColumns!.forEach(inverseJoinColumn => {
+          Utils.renameKey(this._cond, inverseJoinColumn, `${this._joins[f].alias}.${inverseJoinColumn!}`);
+        });
       }
     });
 
@@ -433,9 +435,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const inverse = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
     const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;
     const pivotAlias = this.getNextAlias();
+
     this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, pivotAlias, 'leftJoin');
-    Utils.renameKey(this._cond, `${field}.${owner.name}`, `${pivotAlias}.${owner.fieldName}`);
-    Utils.renameKey(this._cond, `${field}.${inverse.name}`, `${pivotAlias}.${inverse.fieldName}`);
+    Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
+    Utils.renameKey(this._cond, `${field}.${inverse.name}`, Utils.getPrimaryKeyHash(inverse.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
     this._populateMap[field] = this._joins[field].alias;
   }
 
@@ -447,9 +450,9 @@ export interface JoinOptions {
   alias: string;
   ownerAlias: string;
   inverseAlias?: string;
-  joinColumn?: string;
-  inverseJoinColumn?: string;
-  primaryKey?: string;
+  joinColumns?: string[];
+  inverseJoinColumns?: string[];
+  primaryKeys?: string[];
   path?: string;
   prop: EntityProperty;
   cond: Dictionary;

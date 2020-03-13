@@ -182,7 +182,7 @@ describe('Utils', () => {
   });
 
   test('extractPK with PK uuid', () => {
-    const meta = { primaryKey: 'uuid' } as EntityMetadata;
+    const meta = { primaryKeys: ['uuid'] } as EntityMetadata;
     expect(Utils.extractPK({ id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ _id: '...' }, meta)).toBeNull();
     expect(Utils.extractPK({ foo: 'bar' }, meta)).toBeNull();

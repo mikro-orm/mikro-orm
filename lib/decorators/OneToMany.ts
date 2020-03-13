@@ -42,7 +42,9 @@ export type OneToManyOptions<T extends AnyEntity<T>> = ReferenceOptions<T> & {
   orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder };
   joinColumn?: string;
+  joinColumns?: string[];
   inverseJoinColumn?: string;
+  inverseJoinColumns?: string[];
   referenceColumnName?: string;
   mappedBy?: (string & keyof T) | ((e: T) => any);
 };

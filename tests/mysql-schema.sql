@@ -11,11 +11,15 @@ drop table if exists `foo_bar2`;
 drop table if exists `foo_baz2`;
 drop table if exists `foo_param2`;
 drop table if exists `configuration2`;
+drop table if exists `car2`;
+drop table if exists `car_owner2`;
+drop table if exists `user2`;
 drop table if exists `author_to_friend`;
 drop table if exists `author2_to_author2`;
 drop table if exists `book2_to_book_tag2`;
 drop table if exists `book_to_tag_unordered`;
 drop table if exists `publisher2_to_test2`;
+drop table if exists `user2_to_car2`;
 
 create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` json null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8 engine = InnoDB;
 alter table `author2` add unique `custom_email_unique_name`(`email`);
@@ -63,8 +67,23 @@ alter table `foo_param2` add index `foo_param2_baz_id_index`(`baz_id`);
 alter table `foo_param2` add primary key `foo_param2_pkey`(`bar_id`, `baz_id`);
 
 create table `configuration2` (`property` varchar(255) not null, `test_id` int(11) unsigned not null, `value` varchar(255) not null) default character set utf8 engine = InnoDB;
+alter table `configuration2` add index `configuration2_property_index`(`property`);
 alter table `configuration2` add index `configuration2_test_id_index`(`test_id`);
 alter table `configuration2` add primary key `configuration2_pkey`(`property`, `test_id`);
+
+create table `car2` (`name` varchar(255) not null, `year` int(11) unsigned not null, `price` int(11) not null) default character set utf8 engine = InnoDB;
+alter table `car2` add index `car2_name_index`(`name`);
+alter table `car2` add index `car2_year_index`(`year`);
+alter table `car2` add primary key `car2_pkey`(`name`, `year`);
+
+create table `car_owner2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `car_name` varchar(255) not null, `car_year` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table `car_owner2` add index `car_owner2_car_name_index`(`car_name`);
+alter table `car_owner2` add index `car_owner2_car_year_index`(`car_year`);
+
+create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null) default character set utf8 engine = InnoDB;
+alter table `user2` add index `user2_first_name_index`(`first_name`);
+alter table `user2` add index `user2_last_name_index`(`last_name`);
+alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
 
 create table `author_to_friend` (`author2_1_id` int(11) unsigned not null, `author2_2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `author_to_friend` add index `author_to_friend_author2_1_id_index`(`author2_1_id`);
@@ -89,6 +108,13 @@ create table `publisher2_to_test2` (`id` int unsigned not null auto_increment pr
 alter table `publisher2_to_test2` add index `publisher2_to_test2_publisher2_id_index`(`publisher2_id`);
 alter table `publisher2_to_test2` add index `publisher2_to_test2_test2_id_index`(`test2_id`);
 
+create table `user2_to_car2` (`user2_first_name` varchar(100) not null, `user2_last_name` varchar(100) not null, `car2_name` varchar(100) not null, `car2_year` int(11) unsigned not null) default character set utf8 engine = InnoDB;
+alter table `user2_to_car2` add index `user2_to_car2_user2_first_name_index`(`user2_first_name`);
+alter table `user2_to_car2` add index `user2_to_car2_user2_last_name_index`(`user2_last_name`);
+alter table `user2_to_car2` add index `user2_to_car2_car2_name_index`(`car2_name`);
+alter table `user2_to_car2` add index `user2_to_car2_car2_year_index`(`car2_year`);
+alter table `user2_to_car2` add primary key `user2_to_car2_pkey`(`user2_first_name`, `user2_last_name`, `car2_name`, `car2_year`);
+
 alter table `author2` add constraint `author2_favourite_book_uuid_pk_foreign` foreign key (`favourite_book_uuid_pk`) references `book2` (`uuid_pk`) on update no action on delete cascade;
 alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on update cascade on delete set null;
 
@@ -108,6 +134,9 @@ alter table `foo_param2` add constraint `foo_param2_baz_id_foreign` foreign key 
 
 alter table `configuration2` add constraint `configuration2_test_id_foreign` foreign key (`test_id`) references `test2` (`id`) on update cascade;
 
+alter table `car_owner2` add constraint `car_owner2_car_name_foreign` foreign key (`car_name`) references `car2` (`name`) on update cascade;
+alter table `car_owner2` add constraint `car_owner2_car_year_foreign` foreign key (`car_year`) references `car2` (`year`) on update cascade;
+
 alter table `author_to_friend` add constraint `author_to_friend_author2_1_id_foreign` foreign key (`author2_1_id`) references `author2` (`id`) on update cascade on delete cascade;
 alter table `author_to_friend` add constraint `author_to_friend_author2_2_id_foreign` foreign key (`author2_2_id`) references `author2` (`id`) on update cascade on delete cascade;
 
@@ -122,5 +151,10 @@ alter table `book_to_tag_unordered` add constraint `book_to_tag_unordered_book_t
 
 alter table `publisher2_to_test2` add constraint `publisher2_to_test2_publisher2_id_foreign` foreign key (`publisher2_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 alter table `publisher2_to_test2` add constraint `publisher2_to_test2_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;
+
+alter table `user2_to_car2` add constraint `user2_to_car2_user2_first_name_foreign` foreign key (`user2_first_name`) references `user2` (`first_name`) on update cascade on delete cascade;
+alter table `user2_to_car2` add constraint `user2_to_car2_user2_last_name_foreign` foreign key (`user2_last_name`) references `user2` (`last_name`) on update cascade on delete cascade;
+alter table `user2_to_car2` add constraint `user2_to_car2_car2_name_foreign` foreign key (`car2_name`) references `car2` (`name`) on update cascade on delete cascade;
+alter table `user2_to_car2` add constraint `user2_to_car2_car2_year_foreign` foreign key (`car2_year`) references `car2` (`year`) on update cascade on delete cascade;
 
 set foreign_key_checks = 1;

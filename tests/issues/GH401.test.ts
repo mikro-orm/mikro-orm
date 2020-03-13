@@ -29,6 +29,7 @@ describe('GH issue 401', () => {
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
+    await orm.em.remove(Entity401, {});
   });
 
   afterAll(() => orm.close(true));

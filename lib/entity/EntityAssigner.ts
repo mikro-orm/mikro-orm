@@ -86,14 +86,14 @@ export class EntityAssigner {
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
     let valid = false;
 
-    if (Utils.isEntity(value) || value instanceof Reference) {
-      entity[prop.name as keyof T] = value as T[keyof T];
+    if (Utils.isEntity(value, true)) {
+      entity[prop.name] = value;
       valid = true;
-    } else if (Utils.isPrimaryKey(value)) {
-      entity[prop.name as keyof T] = Utils.wrapReference(em.getReference(prop.type, value), prop) as T[keyof T];
+    } else if (Utils.isPrimaryKey(value, true)) {
+      entity[prop.name] = Utils.wrapReference(em.getReference<T>(prop.type, value), prop);
       valid = true;
     } else if (Utils.isObject<T[keyof T]>(value)) {
-      entity[prop.name as keyof T] = Utils.wrapReference(em.create(prop.type, value) as T[keyof T], prop) as T[keyof T];
+      entity[prop.name] = Utils.wrapReference(em.create(prop.type, value), prop);
       valid = true;
     }
 

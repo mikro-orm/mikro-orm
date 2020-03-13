@@ -32,7 +32,7 @@ create table "address2" ("author_id" int4 not null, "value" varchar(255) not nul
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 alter table "address2" add constraint "address2_author_id_unique" unique ("author_id");
 
-create table "book2" ("uuid_pk" character varying(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" numeric null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
+create table "book2" ("uuid_pk" varchar(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null, "perex" text null, "price" float null, "double" numeric null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
@@ -49,12 +49,16 @@ alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
 create table "foo_param2" ("bar_id" int4 not null, "baz_id" int4 not null, "value" varchar(255) not null);
+create index "foo_param2_bar_id_index" on "foo_param2" ("bar_id");
+create index "foo_param2_baz_id_index" on "foo_param2" ("baz_id");
 alter table "foo_param2" add constraint "foo_param2_pkey" primary key ("bar_id", "baz_id");
 
 create table "label2" ("uuid" uuid not null, "name" varchar(255) not null);
 alter table "label2" add constraint "label2_pkey" primary key ("uuid");
 
 create table "configuration2" ("property" varchar(255) not null, "test_id" int4 not null, "value" varchar(255) not null);
+create index "configuration2_property_index" on "configuration2" ("property");
+create index "configuration2_test_id_index" on "configuration2" ("test_id");
 alter table "configuration2" add constraint "configuration2_pkey" primary key ("property", "test_id");
 
 create table "author_to_friend" ("author2_1_id" int4 not null, "author2_2_id" int4 not null);
