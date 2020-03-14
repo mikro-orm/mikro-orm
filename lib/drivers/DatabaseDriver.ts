@@ -5,6 +5,7 @@ import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
+import { Collection, wrap } from '../entity';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -35,6 +36,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
+  }
+
+  async syncCollection<T extends AnyEntity<T>>(coll: Collection<T>, ctx?: Transaction): Promise<void> {
+    const pk = this.metadata.get(coll.property.type).primaryKey;
+    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+    await this.nativeUpdate(coll.owner.constructor.name, wrap(coll.owner).__primaryKey, data, ctx);
   }
 
   mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {

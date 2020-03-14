@@ -6,6 +6,7 @@ import { ValidationError } from '../utils';
 
 export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
 
+  private snapshot: T[] = []; // used to create a diff of the collection at commit time
   private initialized = false;
   private dirty = false;
   private _populated = false;
@@ -13,6 +14,7 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
   constructor(owner: AnyEntity, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
+    Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
   }
 
@@ -58,8 +60,8 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     }
 
     this.initialized = true;
-    this.dirty = false;
     super.hydrate(items);
+    this.takeSnapshot();
   }
 
   remove(...items: T[]): void {
@@ -151,6 +153,21 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     this.populated();
 
     return this;
+  }
+
+  /**
+   * @internal
+   */
+  takeSnapshot(): void {
+    this.snapshot = [...this.items];
+    this.setDirty(false);
+  }
+
+  /**
+   * @internal
+   */
+  getSnapshot() {
+    return this.snapshot;
   }
 
   private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
