@@ -34,7 +34,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 

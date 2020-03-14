@@ -4,14 +4,14 @@ import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
 import { ValidationError } from '../utils';
 
-export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
+export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
 
   private snapshot: T[] = []; // used to create a diff of the collection at commit time
   private initialized = false;
   private dirty = false;
   private _populated = false;
 
-  constructor(owner: AnyEntity, items?: T[], initialized = true) {
+  constructor(owner: O, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
     Object.defineProperty(this, 'snapshot', { enumerable: false });
@@ -120,8 +120,8 @@ export class Collection<T extends AnyEntity<T>> extends ArrayCollection<T> {
     }
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
-      this.hydrate(map[wrap(this.owner).__primaryKey].map(item => em.merge<T>(this.property.type, item)));
+      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
+      this.hydrate(map[wrap(this.owner).__primaryKey as string].map(item => em.merge<T>(this.property.type, item)));
 
       return this;
     }

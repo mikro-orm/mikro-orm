@@ -1,16 +1,16 @@
-import { Dictionary, EntityProperty, AnyEntity, IPrimaryKey, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
 import { wrap } from './EntityHelper';
 
-export class ArrayCollection<T extends AnyEntity<T>> {
+export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   [k: number]: T;
 
   protected readonly items: T[] = [];
   private _property?: EntityProperty;
 
-  constructor(readonly owner: AnyEntity, items?: T[]) {
+  constructor(readonly owner: O, items?: T[]) {
     if (items) {
       this.items = items;
       Object.assign(this, items);
@@ -112,14 +112,14 @@ export class ArrayCollection<T extends AnyEntity<T>> {
   /**
    * @internal
    */
-  get property() {
+  get property(): EntityProperty {
     if (!this._property) {
       const meta = wrap(this.owner).__meta;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }
 
-    return this._property;
+    return this._property!;
   }
 
   protected propagate(item: T, method: 'add' | 'remove'): void {
@@ -131,35 +131,34 @@ export class ArrayCollection<T extends AnyEntity<T>> {
   }
 
   protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.inversedBy as keyof T] as unknown as Collection<T>;
+    const collection = item[this.property.inversedBy as keyof T] as unknown as Collection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner as T);
+      collection[method](this.owner);
     }
   }
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.mappedBy as keyof T] as unknown as Collection<T>;
+    const collection = item[this.property.mappedBy as keyof T] as unknown as Collection<O, T>;
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner as T);
+      collection[method](this.owner);
     } else if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      const value = method === 'add' ? this.owner : null;
-      item[this.property.mappedBy as keyof T] = value as T[keyof T];
+      item[this.property.mappedBy] = method === 'add' ? this.owner : null;
     }
   }
 
-  protected shouldPropagateToCollection(collection: Collection<T>, method: 'add' | 'remove'): boolean {
+  protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove'): boolean {
     if (!collection || !collection.isInitialized()) {
       return false;
     }
 
     if (method === 'add') {
-      return !collection.contains(this.owner as T);
+      return !collection.contains(this.owner);
     }
 
     // remove
-    return collection.contains(this.owner as T);
+    return collection.contains(this.owner);
   }
 
 }

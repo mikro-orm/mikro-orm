@@ -134,7 +134,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     await this.updateCollectionDiff(coll.property, pk, deleteDiff, insertDiff, ctx);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const meta = this.metadata.get(prop.type);
 
