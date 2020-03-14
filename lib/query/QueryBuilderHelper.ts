@@ -72,7 +72,7 @@ export class QueryBuilderHelper {
       if (meta && meta.properties[k]) {
         const prop = meta.properties[k];
 
-        if (Array.isArray(data[k]) || (Utils.isObject(data[k]) && !(data[k] instanceof Date))) {
+        if (!prop.customType && (Array.isArray(data[k]) || Utils.isObject(data[k], [Date]))) {
           data[k] = JSON.stringify(data[k]);
         }
 
