@@ -1,6 +1,6 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
-import { Collection, EntityIdentifier, wrap } from '../entity';
+import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
+import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { FilterQuery, IDatabaseDriver, Transaction } from '..';
 import { QueryResult } from '../connections';
@@ -22,13 +22,6 @@ export class ChangeSetPersister {
 
     // persist the entity itself
     await this.persistEntity(changeSet, meta, ctx);
-  }
-
-  async persistCollectionToDatabase<T extends AnyEntity<T>>(coll: Collection<T>, ctx?: Transaction): Promise<void> {
-    const pk = this.metadata.get(coll.property.type).primaryKey;
-    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.driver.nativeUpdate(coll.owner.constructor.name, wrap(coll.owner).__primaryKey, data, ctx);
-    coll.setDirty(false);
   }
 
   private async persistEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>, ctx?: Transaction): Promise<void> {

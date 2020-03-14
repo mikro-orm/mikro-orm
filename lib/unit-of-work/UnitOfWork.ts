@@ -424,7 +424,8 @@ export class UnitOfWork {
     }
 
     for (const coll of this.collectionUpdates) {
-      await this.changeSetPersister.persistCollectionToDatabase(coll, tx);
+      await this.em.getDriver().syncCollection(coll, tx);
+      coll.takeSnapshot();
     }
   }
 

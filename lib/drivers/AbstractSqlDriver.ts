@@ -3,7 +3,7 @@ import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityP
 import { DatabaseDriver } from './DatabaseDriver';
 import { QueryResult, Transaction } from '../connections';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
-import { ReferenceType } from '../entity';
+import { Collection, ReferenceType, wrap } from '../entity';
 import { QueryBuilder, QueryBuilderHelper, QueryOrderMap } from '../query';
 import { Configuration, Utils } from '../utils';
 import { Platform } from '../platforms';
@@ -81,7 +81,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const res = await qb.insert(data).execute('run', false);
     res.row = res.row || {};
     res.insertId = data[pk] || res.insertId || res.row[pk];
-    await this.processManyToMany(entityName, res.insertId, collections, ctx);
+    await this.processManyToMany(entityName, res.insertId, collections, false, ctx);
 
     return res;
   }
@@ -101,7 +101,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await qb.update(data).where(where as Dictionary).execute('run', false);
     }
 
-    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName, false, false))!, collections, ctx);
+    await this.processManyToMany(entityName, Utils.extractPK(data[pk] || where, this.metadata.get(entityName, false, false))!, collections, true, ctx);
 
     return res;
   }
@@ -113,6 +113,25 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     return this.createQueryBuilder(entityName, ctx, true).delete(where).execute('run', false);
+  }
+
+  async syncCollection<T extends AnyEntity<T>>(coll: Collection<T>, ctx?: Transaction): Promise<void> {
+    const pk = wrap(coll.owner).__primaryKey;
+    const snapshot = coll.getSnapshot().map(item => wrap(item).__primaryKey);
+    const current = coll.getItems().map(item => wrap(item).__primaryKey);
+    const deleteDiff = snapshot.filter(item => !current.includes(item));
+    const insertDiff = current.filter(item => !snapshot.includes(item));
+    const target = snapshot.filter(item => current.includes(item)).concat(...insertDiff);
+    const equals = Utils.equals(current, target);
+
+    // wrong order if we just delete and insert to the end
+    if (coll.property.fixedOrder && !equals) {
+      deleteDiff.length = insertDiff.length = 0;
+      deleteDiff.push(...snapshot);
+      insertDiff.push(...current);
+    }
+
+    await this.updateCollectionDiff(coll.property, pk, deleteDiff, insertDiff, ctx);
   }
 
   async loadFromPivotTable<T extends AnyEntity<T>>(prop: EntityProperty, owners: Primary<T>[], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
@@ -183,7 +202,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return ret;
   }
 
-  protected async processManyToMany<T extends AnyEntity<T>>(entityName: string, pk: Primary<T>, collections: EntityData<T>, ctx?: Transaction<KnexTransaction>) {
+  protected async processManyToMany<T extends AnyEntity<T>>(entityName: string, pk: Primary<T>, collections: EntityData<T>, clear: boolean, ctx?: Transaction<KnexTransaction>) {
     if (!this.metadata.get(entityName, false, false)) {
       return;
     }
@@ -191,21 +210,34 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const props = this.metadata.get(entityName).properties;
 
     for (const k of Object.keys(collections)) {
-      const prop = props[k];
+      await this.updateCollectionDiff(props[k], pk, clear, collections[k], ctx);
+    }
+  }
+
+  protected async updateCollectionDiff<T extends AnyEntity<T>>(prop: EntityProperty<T>, pk: Primary<T>, deleteDiff: Primary<T>[] | boolean, insertDiff: Primary<T>[], ctx?: Transaction): Promise<void> {
+    if (!deleteDiff) {
+      deleteDiff = [];
+    }
+
+    if (deleteDiff === true || deleteDiff.length > 0) {
       const qb1 = this.createQueryBuilder(prop.pivotTable, ctx, true);
-      await this.connection.execute(qb1.getKnex().where({ [prop.joinColumn]: pk }).delete());
-      const items = [];
+      const knex = qb1.getKnex();
 
-      for (const item of collections[k]) {
-        items.push({ [prop.joinColumn]: pk, [prop.inverseJoinColumn]: item });
+      if (Array.isArray(deleteDiff)) {
+        knex.whereIn(prop.inverseJoinColumn, deleteDiff);
       }
 
-      if (this.platform.allowsMultiInsert()) {
-        const qb2 = this.createQueryBuilder(prop.pivotTable, ctx, true);
-        await this.connection.execute(qb2.getKnex().insert(items));
-      } else {
-        await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).insert(item).execute('run', false));
-      }
+      knex.andWhere(prop.joinColumn, pk).delete();
+      await this.connection.execute(knex);
+    }
+
+    const items = insertDiff.map(item => ({ [prop.joinColumn]: pk, [prop.inverseJoinColumn]: item }));
+
+    if (this.platform.allowsMultiInsert()) {
+      const qb2 = this.createQueryBuilder(prop.pivotTable, ctx, true);
+      await this.connection.execute(qb2.getKnex().insert(items));
+    } else {
+      await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).insert(item).execute('run', false));
     }
   }
 

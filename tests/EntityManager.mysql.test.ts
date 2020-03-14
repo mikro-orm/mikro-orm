@@ -1145,9 +1145,9 @@ describe('EntityManagerMySql', () => {
   test('many to many collection does have fixed order', async () => {
     const repo = orm.em.getRepository(Publisher2);
     const publisher = new Publisher2();
-    const t1 = Test2.create('t1');
-    const t2 = Test2.create('t2');
-    const t3 = Test2.create('t3');
+    let t1 = Test2.create('t1');
+    let t2 = Test2.create('t2');
+    let t3 = Test2.create('t3');
     await orm.em.persistAndFlush([t1, t2, t3]);
     publisher.tests.add(t2, t1, t3);
     await repo.persistAndFlush(publisher);
@@ -1159,6 +1159,15 @@ describe('EntityManagerMySql', () => {
 
     await ent.tests.init();
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
+
+    [t1, t2, t3] = ent.tests.getItems();
+    ent.tests.set([t3, t2, t1]);
+    await repo.flush();
+    orm.em.clear();
+
+    const ent1 = (await repo.findOne(publisher.id, ['tests']))!;
+    await expect(ent1.tests.count()).toBe(3);
+    await expect(ent1.tests.getIdentifiers()).toEqual([t3.id, t2.id, t1.id]);
   });
 
   test('collection allows custom where and orderBy', async () => {
@@ -1372,6 +1381,14 @@ describe('EntityManagerMySql', () => {
 
     const res7 = await orm.em.nativeDelete<Author2>('author2', res4);
     expect(res7).toBe(1);
+
+    const id = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+
+    const res8 = await orm.em.nativeUpdate(Author2, id, { friends: [id] });
+    expect(res8).toBe(0);
+
+    const res9 = await orm.em.nativeUpdate(Author2, id, {});
+    expect(res9).toBe(0);
 
     await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by MySqlDriver driver');
   });

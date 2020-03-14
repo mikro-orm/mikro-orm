@@ -4,6 +4,7 @@ import { QueryOrderMap } from '../query';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { LockMode } from '../unit-of-work';
+import { Collection } from '../entity';
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
@@ -30,6 +31,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
+
+  syncCollection<T extends AnyEntity<T>>(collection: Collection<T>, ctx?: Transaction): Promise<void>;
 
   count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
