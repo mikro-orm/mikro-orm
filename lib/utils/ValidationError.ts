@@ -35,12 +35,12 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static fromMissingPrimaryKey(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`${meta.name} entity is missing @PrimaryKey()`);
+    return new ValidationError(`${meta.className} entity is missing @PrimaryKey()`);
   }
 
   static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): ValidationError {
     if (owner) {
-      return ValidationError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.name}`);
+      return ValidationError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);
     }
 
     return ValidationError.fromMessage(meta, prop, `has unknown '${key}' reference: ${prop.type}.${prop[key]}`);
@@ -58,15 +58,19 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     const type = key === 'inversedBy' ? 'owning' : 'inverse';
     const other = key === 'inversedBy' ? 'mappedBy' : 'inversedBy';
 
-    return new ValidationError(`Both ${meta.name}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
+    return new ValidationError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
   static fromMergeWithoutPK(meta: EntityMetadata): void {
-    throw new ValidationError(`You cannot merge entity '${meta.name}' without identifier!`);
+    throw new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
+  }
+
+  static fromUnknownEntity(className: string): ValidationError {
+    return new ValidationError(`Entity '${className}' entity was not discovered, please make sure to provide it in 'entities' array when initializing the ORM`);
   }
 
   static fromUnknownBaseEntity(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`Entity '${meta.name}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
+    return new ValidationError(`Entity '${meta.className}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
   }
 
   static transactionRequired(): ValidationError {
@@ -82,16 +86,16 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notVersioned(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.name}`);
+    return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
   }
 
   static multipleVersionFields(meta: EntityMetadata, fields: string[]): ValidationError {
-    return new ValidationError(`Entity ${meta.name} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
+    return new ValidationError(`Entity ${meta.className} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
   }
 
   static invalidVersionFieldType(meta: EntityMetadata): ValidationError {
     const prop = meta.properties[meta.versionProperty];
-    return new ValidationError(`Version property ${meta.name}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
+    return new ValidationError(`Version property ${meta.className}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
   }
 
   static lockFailed(entityOrName: AnyEntity | string): ValidationError {
@@ -160,7 +164,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
-    return new ValidationError(`${meta.name}.${prop.name} ${message}`);
+    return new ValidationError(`${meta.className}.${prop.name} ${message}`);
   }
 
 }

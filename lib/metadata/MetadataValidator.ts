@@ -50,6 +50,13 @@ export class MetadataValidator {
     if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
       throw ValidationError.onlyAbstractEntitiesDiscovered();
     }
+
+    // check for not discovered entities
+    discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
+      if (prop.reference !== ReferenceType.SCALAR && !discovered.find(m => m.className === prop.type)) {
+        throw ValidationError.fromUnknownEntity(prop.type);
+      }
+    }));
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
