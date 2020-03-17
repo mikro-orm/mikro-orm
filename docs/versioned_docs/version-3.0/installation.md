@@ -23,10 +23,11 @@ $ npm i -s mikro-orm sqlite3 # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
-in `tsconfig.json` via:
+as well as `esModuleInterop` in `tsconfig.json` via:
 
 ```json
-"experimentalDecorators": true
+"experimentalDecorators": true,
+"esModuleInterop": true
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
@@ -35,6 +36,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 const orm = await MikroORM.init({
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
+  type: 'mongo', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
   baseDir: __dirname, // defaults to `process.cwd()`
 });
@@ -139,7 +141,7 @@ as well as use different file name:
 export default {
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
-  type: 'postgresql',
+  type: 'mongo',
 };
 ```
 
