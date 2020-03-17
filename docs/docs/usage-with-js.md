@@ -3,10 +3,17 @@ title: Usage with JavaScript
 sidebar_label: Usage with Vanilla JS
 ---
 
-To use `mikro-orm` with Vanilla JavaScript, define your entities like this:
+Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without 
+decorators, which works also for Vanilla JavaScript.
+
+> Read more about `EntitySchema` in [this section](entity-schema.md).
+
+Here is an example of such entity:
+
+**`./entities/Author.js`**
 
 ```javascript
-const { Collection } = require('mikro-orm');
+const { Collection, EntitySchema } = require('mikro-orm');
 const { Book } = require('./Book');
 const { BaseEntity } = require('./BaseEntity');
 
@@ -35,6 +42,7 @@ class Author extends BaseEntity {
     super();
     this.name = name;
     this.email = email;
+    this.books = new Collection(this);
     this.createdAt = new Date();
     this.updatedAt = new Date();
     this.termsAccepted = false;
@@ -42,33 +50,20 @@ class Author extends BaseEntity {
 
 }
 
-const schema = {
-  name: 'Author',
-  extends: 'BaseEntity',
+export const schema = new EntitySchema({
+  class: Author,
   properties: {
-    createdAt: 'Date',
-    updatedAt: {
-      type: 'Date',
-      onUpdate: () => new Date(),
-    },
-    name: 'string',
-    email: 'string',
-    age: 'number',
-    termsAccepted: 'boolean',
-    identities: 'string[]',
-    born: 'Date',
-    books: {
-      reference: '1:m',
-      mappedBy: 'author',
-      type: 'Book',
-    },
-    favouriteBook: {
-      reference: 'm:1',
-      type: 'Book',
-    },
+    name: { type: 'string' },
+    email: { type: 'string', unique: true },
+    age: { type: 'number', nullable: true },
+    termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
+    identities: { type: 'string[]', nullable: true },
+    born: { type: DateType, nullable: true, length: 3 },
+    books: { reference: '1:m', entity: () => 'Book', mappedBy: book => book.author },
+    favouriteBook: { reference: 'm:1', type: 'Book' },
+    version: { type: 'number', persist: false },
   },
-  path: __filename,
-};
+});
 
 module.exports.Author = Author;
 module.exports.entity = Author;
@@ -89,16 +84,15 @@ export enum ReferenceType {
 }
 ```
 
-When initializing ORM, provide `JavaScriptMetadataProvider` as metadata provider:
+You can register your entities as usual (both via `entities` array or via `entitiesDirs`).
 
 ```javascript
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'],
-  dbName: '...',
-  metadataProvider: JavaScriptMetadataProvider,
+  entities: [Author, Book, BookTag, BaseEntity],
+  dbName: 'my-db-name',
+  type: 'mysql',
 });
 ```
 
 For more examples of plain JavaScript entity definitions take a look
-[at the tests](https://github.com/mikro-orm/mikro-orm/blob/master/tests/entities-js) or at
 [Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js). 
