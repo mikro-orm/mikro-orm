@@ -25,8 +25,11 @@ When defining entity, do not forget to define primary key like this:
 _id: ObjectId;
 
 @SerializedPrimaryKey()
-id!: string;
+id!: string; // won't be saved in the database
 ```
+
+> Only `_id: ObjectId` will be saved in the database. `id: string` is virtual and is 
+> also optional. 
 
 ## ObjectId and string id duality
 
@@ -75,7 +78,11 @@ $ run-rs -v 4.2.3
 ```
 
 ```typescript
-const orm = await MikroORM.init({
+import { MikroORM } from 'mikro-orm';
+import { MongoDriver } from 'mikro-orm/dist/drivers/MongoDriver';
+
+// make sure to provide the MongoDriver type hint
+const orm = await MikroORM.init<MongoDriver>({
   entitiesDirs: ['entities'], // relative to `baseDir`
   clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/my-db-name?replicaSet=rs0',
   type: 'mongo',
@@ -84,6 +91,9 @@ const orm = await MikroORM.init({
 
 await orm.em.getDriver().createCollections();
 ```
+
+> The `createCollections` method is present on the `MongoDriver` class only. You need 
+> to have the entity manager correctly typed (as `EntityManager<MongoDriver>`).
 
 ## Indexes
 

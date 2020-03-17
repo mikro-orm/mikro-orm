@@ -12,21 +12,24 @@ const orm = await MikroORM.init({
   entitiesDirs: ['entities'], // relative to `baseDir`
   dbName: 'my-db-name',
   clientUrl: '...',
+  type: 'mongo',
 });
 ```
 
 ## Defining entity
 
-When defining entity, implement `MongoEntity<T>` interface and do not forget to define 
-primary key like this:
+When defining entity, do not forget to define primary key like this:
 
 ```typescript
 @PrimaryKey()
 _id: ObjectId;
 
 @SerializedPrimaryKey()
-id!: string;
+id!: string; // won't be saved in the database
 ```
+
+> Only `_id: ObjectId` will be saved in the database. `id: string` is virtual and is 
+> also optional. 
 
 ## ObjectId and string id duality
 
