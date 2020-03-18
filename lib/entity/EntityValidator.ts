@@ -70,7 +70,8 @@ export class EntityValidator {
   }
 
   validatePrimaryKey<T extends AnyEntity<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
-    if (!entity || (!entity[meta.primaryKey] && !entity[meta.serializedPrimaryKey])) {
+    // tslint:disable-next-line:triple-equals - Want fuzzy equals to catch both null and undefined and allow for primary keys with the number 0
+    if (!entity || (entity[meta.primaryKey] == null && entity[meta.serializedPrimaryKey] == null )) {
       throw ValidationError.fromMergeWithoutPK(meta);
     }
   }

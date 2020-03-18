@@ -156,7 +156,8 @@ export class Utils {
     const pk = () => metadata.get(prop.type).primaryKey;
     const collection = entity[prop.name] as unknown instanceof ArrayCollection;
     const noPkRef = Utils.isEntity(entity[prop.name]) && !entity[prop.name][pk()];
-    const noPkProp = prop.primary && !entity[prop.name];
+    // tslint:disable-next-line:triple-equals Really want the double equals here to allow for keys of numeric 0 but not allow for null nor undefined
+    const noPkProp = prop.primary && entity[prop.name] == null;
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly

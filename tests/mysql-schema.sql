@@ -8,6 +8,8 @@ drop table if exists `publisher2`;
 drop table if exists `test2`;
 drop table if exists `foo_bar2`;
 drop table if exists `foo_baz2`;
+drop table if exists `foo_bar_pk0`;
+drop table if exists `foo_baz_pk0`;
 drop table if exists `author_to_friend`;
 drop table if exists `author2_to_author2`;
 drop table if exists `book2_to_book_tag2`;
@@ -44,7 +46,13 @@ alter table `foo_bar2` add index `foo_bar2_baz_id_index`(`baz_id`);
 alter table `foo_bar2` add unique `foo_bar2_foo_bar_id_unique`(`foo_bar_id`);
 alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 
+create table `foo_bar_pk0` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `baz_id` int(11) unsigned null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
+alter table `foo_bar_pk0` add unique `foo_bar_pk0_baz_id_unique`(`baz_id`);
+alter table `foo_bar_pk0` add index `foo_bar_pk0_baz_id_index`(`baz_id`);
+
 create table `foo_baz2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
+
+create table `foo_baz_pk0` (`id` int unsigned not null primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8 engine = InnoDB;
 
 create table `author_to_friend` (`author2_1_id` int(11) unsigned not null, `author2_2_id` int(11) unsigned not null) default character set utf8 engine = InnoDB;
 alter table `author_to_friend` add index `author_to_friend_author2_1_id_index`(`author2_1_id`);
@@ -80,6 +88,8 @@ alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo__
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;
+
+alter table `foo_bar_pk0` add constraint `foo_bar_pk0_baz_id_foreign` foreign key (`baz_id`) references `foo_baz_pk0` (`id`) on update cascade on delete set null;
 
 alter table `author_to_friend` add constraint `author_to_friend_author2_1_id_foreign` foreign key (`author2_1_id`) references `author2` (`id`) on update cascade on delete cascade;
 alter table `author_to_friend` add constraint `author_to_friend_author2_2_id_foreign` foreign key (`author2_2_id`) references `author2` (`id`) on update cascade on delete cascade;

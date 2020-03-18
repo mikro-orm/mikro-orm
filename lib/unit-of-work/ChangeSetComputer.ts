@@ -72,7 +72,8 @@ export class ChangeSetComputer {
     const pk = this.metadata.get(prop.type).primaryKey;
     const entity = changeSet.entity[prop.name] as unknown as T;
 
-    if (!entity[pk]) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (entity[pk] == null) {
       changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
     }
   }

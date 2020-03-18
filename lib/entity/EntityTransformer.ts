@@ -13,9 +13,11 @@ export class EntityTransformer {
     const pk = platform.getSerializedPrimaryKeyField(wrapped.__meta.primaryKey);
     const meta = wrapped.__meta;
     const pkProp = meta.properties[meta.primaryKey];
-    const ret = (wrapped.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(wrapped.__primaryKey as IPrimaryKey) } : {}) as EntityData<T>;
+    // tslint:disable-next-line:triple-equals Really want the double not equals here to allow for keys of numeric 0 but not allow for null nor undefined
+    const ret = (wrapped.__primaryKey != null && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(wrapped.__primaryKey as IPrimaryKey) } : {}) as EntityData<T>;
 
-    if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.includes(wrap(entity).__uuid)) {
+    // tslint:disable-next-line:triple-equals Really want the double not equals here to allow for keys of numeric 0 but not allow for null nor undefined
+    if ((!wrapped.isInitialized() && wrapped.__primaryKey != null) || visited.includes(wrap(entity).__uuid)) {
       return ret;
     }
 

@@ -185,10 +185,46 @@ export class FooBar2 {
 
 }
 ",
+  "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
+import { FooBazPk0 } from './FooBazPk0';
+
+@Entity()
+export class FooBarPk0 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => FooBazPk0, nullable: true })
+  baz?: FooBazPk0;
+
+  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
   "import { Entity, PrimaryKey, Property } from 'mikro-orm';
 
 @Entity()
 export class FooBaz2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class FooBazPk0 {
 
   @PrimaryKey()
   id!: number;

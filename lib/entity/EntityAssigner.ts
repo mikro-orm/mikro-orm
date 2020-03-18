@@ -31,7 +31,8 @@ export class EntityAssigner {
         value = props[prop].customType.convertToJSValue(value, platform);
       }
 
-      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value && EntityAssigner.validateEM(em)) {
+      // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value != null && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);
       }
 

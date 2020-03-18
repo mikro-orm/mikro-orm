@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import chalk from 'chalk';
 
 import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, FooBarPk0, FooBazPk0, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
@@ -180,6 +180,36 @@ describe('EntityManagerMySql', () => {
     const a = await repo.findOne(bar.id, ['baz']);
     expect(wrap(a!.baz).isInitialized()).toBe(true);
     expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
+  });
+
+  test(`Entities with a primary key of 0 should be created and found`, async () => {
+    // Set up static data with id of 0
+    const repo = orm.em.getRepository(FooBazPk0);
+    const fooBaz = FooBazPk0.create(0, 'test');
+    await orm.em.persistAndFlush(fooBaz);
+    orm.em.clear();
+    const b = await repo.findOne({ id: 0 });
+    expect(b).not.toBeNull();
+    expect(wrap(b).toObject().id).toBe(0);
+  });
+
+  test(`1:1 relationships with an inverse side primary key of 0 should link`, async () => {
+    // Set up static data with id of 0
+    const driver = orm.em.getDriver();
+    await expect(driver.getConnection().execute('insert into foo_baz_pk0 (id, name) values (?, ?)', [0, 'test'], 'run')).resolves.toEqual({
+      affectedRows: 1,
+      insertId: 0,
+    });
+    const bazRef = orm.em.getReference<FooBazPk0>(FooBazPk0, 0);
+    const bar = FooBarPk0.create('fb');
+    bar.baz = Reference.create(bazRef);
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+    const repo = orm.em.getRepository(FooBarPk0);
+    const a = await repo.findOne(bar.id, ['baz']);
+    expect(wrap(a!.baz).isInitialized()).toBe(true);
+    expect(wrap(a!.baz).id).toBe(0);
+    expect(wrap(a!.baz).name).toBe('test');
   });
 
   test('inverse side of 1:1 is ignored in change set', async () => {

@@ -5,4 +5,6 @@ export * from './Publisher2';
 export * from './Test2';
 export * from './FooBar2';
 export * from './FooBaz2';
+export * from './FooBarPk0';
+export * from './FooBazPk0';
 export * from './Label2';

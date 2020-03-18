@@ -35,7 +35,8 @@ export class UnitOfWork {
     const wrapped = wrap(entity);
     Object.defineProperty(wrapped, '__em', { value: this.em, writable: true });
 
-    if (!wrapped.__primaryKey) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (wrapped.__primaryKey == null) {
       return;
     }
 
@@ -76,7 +77,8 @@ export class UnitOfWork {
       return;
     }
 
-    if (!wrap(entity).__primaryKey) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (wrap(entity).__primaryKey == null) {
       this.identifierMap[wrap(entity).__uuid] = new EntityIdentifier();
     }
 
@@ -186,7 +188,8 @@ export class UnitOfWork {
       return;
     }
 
-    if (!wrapped.__primaryKey && !this.identifierMap[wrapped.__uuid]) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (wrapped.__primaryKey == null && !this.identifierMap[wrapped.__uuid]) {
       this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
     }
 

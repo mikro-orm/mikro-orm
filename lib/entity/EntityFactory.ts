@@ -55,7 +55,8 @@ export class EntityFactory {
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     const Entity = this.metadata.get<T>(meta.name).class;
 
-    if (!data[meta.primaryKey]) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (data[meta.primaryKey] == null) {
       const params = this.extractConstructorParams<T>(meta, data);
       meta.constructorParams.forEach(prop => delete data[prop]);
 
@@ -80,7 +81,8 @@ export class EntityFactory {
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
 
-    if (data[pk] || data[meta.primaryKey]) {
+    // tslint:disable-next-line:triple-equals - Really want the double equals here to pass for both null and undefined and allow for keys of numeric 0
+    if (data[pk] != null || data[meta.primaryKey] != null) {
       const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
       delete data[pk];
       data[meta.primaryKey as keyof T] = id as Primary<T> & T[keyof T];

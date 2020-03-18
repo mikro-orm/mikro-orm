@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '../lib';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, FooBarPk0, FooBazPk0, Publisher2, Test2, Label2 } from './entities-sql';
 import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
@@ -52,7 +52,7 @@ export async function initORMMongo() {
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
   let orm = await MikroORM.init<D>({
-    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22],
+    entities: [Author2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooBarPk0, FooBazPk0, BaseEntity2, BaseEntity22],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
     port: 3307,
@@ -163,6 +163,8 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   await em.createQueryBuilder(BookTag2).truncate().execute();
   await em.createQueryBuilder(Publisher2).truncate().execute();
   await em.createQueryBuilder(Test2).truncate().execute();
+  await em.createQueryBuilder(FooBazPk0).truncate().execute();
+  await em.createQueryBuilder(FooBarPk0).truncate().execute();
   await em.createQueryBuilder('author2_to_author2').truncate().execute();
   await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();

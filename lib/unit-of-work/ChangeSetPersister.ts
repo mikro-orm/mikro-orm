@@ -32,14 +32,16 @@ export class ChangeSetPersister {
     } else if (changeSet.type === ChangeSetType.UPDATE) {
       res = await this.updateEntity(meta, changeSet, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-    } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
+      // tslint:disable-next-line:triple-equals Really want the double not equals here to allow for keys of numeric 0 but not allow for null nor undefined
+    } else if (changeSet.entity.__primaryKey != null) { // ChangeSetType.CREATE with primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
       delete changeSet.entity.__initialized;
     } else { // ChangeSetType.CREATE without primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-      wrap(changeSet.entity).__primaryKey = changeSet.entity.__primaryKey || res.insertId as any;
+      // tslint:disable-next-line:triple-equals Really want the double not equals here to allow for keys of numeric 0 but not allow for null nor undefined
+      wrap(changeSet.entity).__primaryKey = changeSet.entity.__primaryKey != null ? changeSet.entity.__primaryKey : res.insertId as any;
       this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey as IPrimaryKey);
       delete changeSet.entity.__initialized;
     }
