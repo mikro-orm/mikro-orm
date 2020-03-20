@@ -36,7 +36,7 @@ export class Book {
   @Property({ type: 'string' })
   title!: string;
 
-  @Enum(() => BookStatus })
+  @Enum(() => BookStatus)
   status?: BookStatus;
 
   @ManyToOne(() => Author) // or `@ManyToOne({ type: 'Author' })` or `@ManyToOne({ entity: () => Author })`
