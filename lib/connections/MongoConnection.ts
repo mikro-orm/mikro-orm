@@ -180,7 +180,7 @@ export class MongoConnection extends Connection {
     this.logQuery(query!, Date.now() - now);
 
     if (method === 'countDocuments') {
-      return res! as U;
+      return res! as unknown as U;
     }
 
     return this.transformResult(res!) as U;

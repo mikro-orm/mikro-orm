@@ -40,7 +40,7 @@ export class FileCacheAdapter implements CacheAdapter {
     ]);
 
     const opts = this.pretty ? { spaces: 2 } : {};
-    await writeJSON(path, { data, origin, hash }, opts);
+    await writeJSON(path!, { data, origin, hash }, opts);
   }
 
   /**
