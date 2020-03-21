@@ -80,6 +80,7 @@ describe('check typings', () => {
     assert<Has<FilterValue<string>, number>>(false);
     assert<IsExact<FilterValue<Date>, Date | null | never[] | OperatorMap<Date>>>(true);
     assert<IsExact<FilterValue<RegExp>, RegExp | null | never[] | OperatorMap<RegExp>>>(true);
+    assert<Has<FilterValue<string>, number>>(false);
 
     // require specific type
     assert<Has<FilterValue<number>, string>>(false);
