@@ -115,7 +115,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     if (tsDirs.length > 0) {
       const dirs = await this.validateDirectories(tsDirs);
-      this.sources = this.project.addExistingSourceFiles(dirs);
+      this.sources = this.project.addSourceFilesAtPaths(dirs);
     } else {
       this.sources = this.project.addSourceFilesFromTsConfig(this.config.get('discovery').tsConfigPath!);
     }
