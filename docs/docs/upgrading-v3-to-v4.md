@@ -9,3 +9,7 @@ the interface being changed.
 ## Node 10.13.0+ required
 
 Support for older node versions was dropped. 
+
+## TypeScript 3.7+ required
+
+Support for older TypeScript versions was dropped. 
