@@ -510,7 +510,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.enum && prop.type && path) {
+    if (prop.enum && !prop.items && prop.type && path) {
       return this.initEnumValues(prop, path);
     }
 
