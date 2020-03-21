@@ -1,4 +1,4 @@
-import { AnyEntity, Constructor, EntityMetadata, EntityName, EntityProperty } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty } from '../typings';
 import {
   EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
@@ -118,11 +118,11 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addIndex(options: Required<Omit<IndexOptions, 'name' | 'type'>> & { name?: string; type?: string }): void {
+  addIndex(options: Required<Omit<IndexOptions, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
     this._meta.indexes.push(options as Required<IndexOptions>);
   }
 
-  addUnique(options: Required<Omit<UniqueOptions, 'name'>> & { name?: string }): void {
+  addUnique(options: Required<Omit<UniqueOptions, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
     this._meta.uniques.push(options as Required<UniqueOptions>);
   }
 
