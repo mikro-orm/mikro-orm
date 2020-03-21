@@ -4,7 +4,7 @@ import {
   CollectionItem, DeepPartialEntity, EntityOrPrimary, FilterQuery, FilterValue, OneOrArray, OperatorMap, PartialEntity,
   Primary, PrimaryKeyType, Query, StringProp,
 } from '../lib/typings';
-import { Author2, Book2, BookTag2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooParam2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection } from '../lib/entity';
 
@@ -237,6 +237,9 @@ describe('check typings', () => {
     let ok02: FilterQuery<Book2>;
     ok02 = { publisher: { $ne: undefined } };
     ok02 = { publisher: { name: 'test' } };
+
+    let ok03: FilterQuery<FooParam2>;
+    ok03 = { bar: 1, baz: 2 };
   });
 
   // there is no way to test this currently, uncomment to check they all fail
@@ -254,7 +257,7 @@ describe('check typings', () => {
   //   fail01 = { favouriteBook: [1, '2'] };
   //   fail01 = { favouriteBook: [1, 2] };
   //   fail01 = { books: { tags: { name: 1 } } };
-  //   fail01 = { books: { tags: '1' } };
+  //   fail01 = { books: { tags: true } };
   //   fail01 = { books: { tags: { books: { title: 123 } } } };
   //
   //   let fail02: FilterQuery<Book2>;

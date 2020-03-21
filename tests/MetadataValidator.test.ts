@@ -13,7 +13,7 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError('Author entity is missing @PrimaryKey()');
 
     // many to one
-    meta.Author.primaryKey = '_id';
+    meta.Author.primaryKeys = ['_id'];
     meta.Author.properties.test = { name: 'test', reference: ReferenceType.MANY_TO_ONE };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError('Author.test is missing type definition');
 
@@ -59,7 +59,7 @@ describe('MetadataValidator', () => {
     meta.Book.properties.authors = { name: 'authors', reference: ReferenceType.MANY_TO_MANY, type: 'Author', inversedBy: 'books' };
 
     // one to one
-    meta.Foo = { name: 'Foo', className: 'Foo', properties: {}, primaryKey: '_id' };
+    meta.Foo = { name: 'Foo', className: 'Foo', properties: {}, primaryKeys: ['_id'] };
     meta.Foo.properties.bar = { name: 'bar', reference: ReferenceType.ONE_TO_ONE, type: 'Bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo')).toThrowError('Foo.bar has unknown type: Bar');
 

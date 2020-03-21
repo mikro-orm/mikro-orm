@@ -83,7 +83,7 @@ export abstract class Platform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return prop.columnType === 'bigint';
+    return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }
 
   getBigIntTypeDeclarationSQL(): string {

@@ -1,5 +1,5 @@
-import { EntityManager, wrap } from '..';
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
+import { EntityManager } from '..';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
 
 export abstract class Hydrator {
@@ -8,15 +8,9 @@ export abstract class Hydrator {
               protected readonly em: EntityManager) { }
 
   hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity: boolean): void {
-    if (data[meta.primaryKey]) {
-      wrap(entity).__primaryKey = data[meta.primaryKey];
+    for (const prop of Object.values<EntityProperty>(meta.properties)) {
+      this.hydrateProperty(entity, prop, data[prop.name], newEntity);
     }
-
-    // then process user defined properties (ignore not defined keys in `data`)
-    Object.values<EntityProperty>(meta.properties).forEach(prop => {
-      const value = data[prop.name];
-      this.hydrateProperty(entity, prop, value, newEntity);
-    });
   }
 
   protected abstract hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: EntityData<T>[any], newEntity: boolean): void;

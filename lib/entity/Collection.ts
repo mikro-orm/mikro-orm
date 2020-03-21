@@ -120,8 +120,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     }
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner).__primaryKey], options.where, options.orderBy);
-      this.hydrate(map[wrap(this.owner).__primaryKey as string].map(item => em.merge<T>(this.property.type, item)));
+      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner).__primaryKeys], options.where, options.orderBy);
+      this.hydrate(map[wrap(this.owner).__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item)));
 
       return this;
     }
@@ -182,7 +182,11 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private createOrderBy(orderBy: QueryOrderMap = {}): QueryOrderMap {
     if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
-      orderBy = this.property.orderBy || { [this.property.referenceColumnName]: QueryOrder.ASC };
+      const defaultOrder = this.property.referencedColumnNames.reduce((o, name) => {
+        o[name] = QueryOrder.ASC;
+        return o;
+      }, {} as QueryOrderMap);
+      orderBy = this.property.orderBy || defaultOrder;
     }
 
     return orderBy;
@@ -190,7 +194,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || wrap(this.owner).__internal.platform.usesPivotTable()) {
-      const pk = wrap(this.items[0]).__meta.primaryKey; // we know there is at least one item as it was checked in load method
+      const pk = wrap(this.items[0]).__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
       cond[pk] = { $in: this.items.map(item => wrap(item).__primaryKey) };
     } else {
       cond[this.property.mappedBy] = wrap(this.owner).__primaryKey;

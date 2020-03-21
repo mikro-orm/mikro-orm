@@ -53,8 +53,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return super.getTypeFromDefinition(type, defaultType, PostgreSqlSchemaHelper.TYPES);
   }
 
-  isSame(prop: EntityProperty, column: Column): IsSame {
-    return super.isSame(prop, column, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_VALUES);
+  isSame(prop: EntityProperty, column: Column, idx?: number): IsSame {
+    return super.isSame(prop, column, idx, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 
   indexForeignKeys() {

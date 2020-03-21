@@ -10,10 +10,13 @@ export class EntityTransformer {
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
     const wrapped = wrap(entity);
     const platform = wrapped.__internal.platform;
-    const pk = platform.getSerializedPrimaryKeyField(wrapped.__meta.primaryKey);
     const meta = wrapped.__meta;
-    const pkProp = meta.properties[meta.primaryKey];
-    const ret = (wrapped.__primaryKey && !pkProp.hidden ? { [pk]: platform.normalizePrimaryKey(wrapped.__primaryKey as IPrimaryKey) } : {}) as EntityData<T>;
+    const ret = {} as EntityData<T>;
+
+    meta.primaryKeys
+      .filter(pk => !entity[pk] || !meta.properties[pk].hidden)
+      .map(pk => [pk, Utils.getPrimaryKeyValue<T>(entity, [pk])] as [string, string])
+      .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = platform.normalizePrimaryKey(value));
 
     if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.includes(wrap(entity).__uuid)) {
       return ret;
@@ -42,8 +45,8 @@ export class EntityTransformer {
   }
 
   private static isVisible<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, ignoreFields: string[]): boolean {
-    const hidden = meta.properties[prop] && !meta.properties[prop].hidden;
-    return hidden && prop !== meta.primaryKey && !prop.startsWith('_') && !ignoreFields.includes(prop);
+    const visible = meta.properties[prop] && !meta.properties[prop].hidden;
+    return visible && !meta.primaryKeys.includes(prop) && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {

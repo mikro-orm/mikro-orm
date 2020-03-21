@@ -1815,16 +1815,16 @@ describe('EntityManagerMongo', () => {
   test('transactions with embedded transaction', async () => {
     try {
       await orm.em.transactional(async em => {
-        // this transaction should not be commit
+        // this transaction should not be committed
         await em.transactional(async subEm => {
-          const god1 = new Author('test202003121545', 'test202003121545@heaven1.god');
+          const god1 = new Author('test', 'test@example.com');
           await subEm.persistAndFlush(god1);
         });
         throw new Error(); // rollback the transaction
       });
     } catch { }
 
-    const res1 = await orm.em.findOne(Author, { name: 'test202003121545' });
+    const res1 = await orm.em.findOne(Author, { name: 'test' });
     expect(res1).toBeNull();
   });
 

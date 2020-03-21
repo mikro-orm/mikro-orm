@@ -1,7 +1,8 @@
 import { MikroORM, Reference } from '../lib';
 import { initORMMySql } from './bootstrap';
 import { SmartQueryHelper } from '../lib/query';
-import { Author2, Book2, Test2 } from './entities-sql';
+import { Author2, Book2, FooBar2, FooBaz2, Test2 } from './entities-sql';
+import { FooParam2 } from './entities-sql/FooParam2';
 
 describe('SmartQueryHelper', () => {
 
@@ -82,6 +83,19 @@ describe('SmartQueryHelper', () => {
     expect(SmartQueryHelper.processParams({ book })).toEqual({ book: book.uuid });
     const field = undefined;
     expect(SmartQueryHelper.processParams({ field })).toEqual({ field: null });
+  });
+
+  test('test entity conversion to composite PK', async () => {
+    const bar = FooBar2.create('bar');
+    bar.id = 3;
+    const baz = new FooBaz2('baz');
+    baz.id = 7;
+    expect(SmartQueryHelper.processParams({ field: new FooParam2(bar, baz, 'val') })).toEqual({
+      field: {
+        bar: 3,
+        baz: 7,
+      },
+    });
   });
 
   test('test array conversion to $in query', async () => {

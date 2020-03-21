@@ -5,7 +5,7 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
 import { Utils, ValidationError } from '../utils';
-import { CommitOrderCalculator, IPrimaryKey, LockMode, Transaction } from '..';
+import { CommitOrderCalculator, LockMode, Transaction } from '..';
 
 export class UnitOfWork {
 
@@ -48,8 +48,13 @@ export class UnitOfWork {
     this.cascade(entity, Cascade.MERGE, visited);
   }
 
-  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T>): T {
-    const token = `${entityName}-${this.platform.normalizePrimaryKey(id as IPrimaryKey)}`;
+  /**
+   * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
+   */
+  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
+    const hash = Utils.getPrimaryKeyHash(Utils.asArray(id) as string[]);
+    const token = `${entityName}-${hash}`;
+
     return this.identityMap[token] as T;
   }
 
@@ -120,7 +125,7 @@ export class UnitOfWork {
   }
 
   async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
-    if (!this.getById(entity.constructor.name, wrap(entity).__primaryKey as Primary<T>)) {
+    if (!this.getById(entity.constructor.name, wrap(entity).__primaryKeys)) {
       throw ValidationError.entityNotManaged(entity);
     }
 
@@ -160,7 +165,7 @@ export class UnitOfWork {
       this.remove(entity);
     }
 
-    for (const entity of Object.values(this.removeStack)) {
+    for (const entity of this.removeStack) {
       const meta = this.metadata.get(entity.constructor.name);
       this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<AnyEntity>);
     }
@@ -359,7 +364,9 @@ export class UnitOfWork {
     }
 
     const qb = this.em.createQueryBuilder(entity.constructor.name);
-    await qb.select('1').where({ [wrap(entity).__meta.primaryKey]: wrap(entity).__primaryKey }).setLockMode(mode).execute();
+    const meta = wrap(entity).__meta;
+    const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
+    await qb.select('1').where(cond).setLockMode(mode).execute();
   }
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
@@ -433,7 +440,8 @@ export class UnitOfWork {
    * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
    */
   private reorderChangeSets() {
-    const order = this.getCommitOrder();
+    const commitOrder = this.getCommitOrder();
+    const commitOrderReversed = [...commitOrder].reverse();
     const typeOrder = [ChangeSetType.CREATE, ChangeSetType.UPDATE, ChangeSetType.DELETE];
     const compare = <T, K extends keyof T>(base: T[], arr: T[K][], a: T, b: T, key: K) => {
       if (arr.indexOf(a[key]) === arr.indexOf(b[key])) {
@@ -443,13 +451,18 @@ export class UnitOfWork {
       return arr.indexOf(a[key]) - arr.indexOf(b[key]);
     };
 
-    const copy = this.changeSets.slice(); // make copy to maintain order
+    const copy = this.changeSets.slice(); // make copy to maintain commitOrder
     this.changeSets.sort((a, b) => {
       if (a.type !== b.type) {
         return compare(copy, typeOrder, a, b, 'type');
       }
 
-      return compare(copy, order, a, b, 'name');
+      // Entity deletions come last and need to be in reverse commit order
+      if (a.type === ChangeSetType.DELETE) {
+        return compare(copy, commitOrderReversed, a, b, 'name');
+      }
+
+      return compare(copy, commitOrder, a, b, 'name');
     });
   }
 

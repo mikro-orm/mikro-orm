@@ -28,6 +28,7 @@ export function Property(options: PropertyOptions = {}): Function {
 export type PropertyOptions = {
   name?: string;
   fieldName?: string;
+  fieldNames?: string[];
   columnType?: string;
   type?: any;
   length?: any;

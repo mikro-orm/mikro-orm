@@ -1,6 +1,6 @@
 import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { AnyEntity, Dictionary, EntityMetadata, FilterQuery } from '../typings';
-import { Reference } from '../entity';
+import { Reference, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class SmartQueryHelper {
@@ -34,10 +34,10 @@ export class SmartQueryHelper {
   }
 
   static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, meta?: EntityMetadata<T>): FilterQuery<T> {
-    where = SmartQueryHelper.processParams(where) || {};
-    const rootPrimaryKey = meta ? meta.primaryKey : entityName;
+    where = SmartQueryHelper.processParams(where, true) || {};
 
     if (Array.isArray(where)) {
+      const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
       return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => SmartQueryHelper.processWhere(sub, entityName, meta)) } } as FilterQuery<T>;
     }
 
@@ -47,6 +47,7 @@ export class SmartQueryHelper {
 
     return Object.keys(where).reduce((o, key) => {
       const value = where[key];
+      const composite = meta && meta.properties[key] && meta.properties[key].joinColumns && meta.properties[key].joinColumns.length > 1;
 
       if (key in QueryBuilderHelper.GROUP_OPERATORS) {
         o[key] = value.map((sub: any) => SmartQueryHelper.processWhere(sub, entityName, meta));
@@ -54,7 +55,9 @@ export class SmartQueryHelper {
       }
 
       if (Array.isArray(value) && !SmartQueryHelper.isSupported(key) && !key.includes('?')) {
-        o[key] = { $in: value };
+        // comparing single composite key - use $eq instead of $in
+        const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
+        o[key] = { [op]: value };
         return o;
       }
 
@@ -73,11 +76,11 @@ export class SmartQueryHelper {
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
-    if (root) {
+    if (root || wrap(entity).__meta.compositePK) {
       return entity.__primaryKey;
     }
 
-    return { [entity.__primaryKeyField]: entity.__primaryKey };
+    return Utils.getPrimaryKeyCond(entity, wrap(entity).__meta.primaryKeys);
   }
 
   private static processExpression<T>(expr: string, value: T): Dictionary<T> {

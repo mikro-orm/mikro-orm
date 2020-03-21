@@ -41,6 +41,12 @@ export class QueryBuilderHelper {
   mapper(field: string, type?: QueryType): string; // tslint:disable-next-line:lines-between-class-members
   mapper(field: string, type?: QueryType, value?: any, alias?: string): string; // tslint:disable-next-line:lines-between-class-members
   mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Raw {
+    const fields = Utils.splitPrimaryKeys(field);
+
+    if (fields.length > 1) {
+      return this.knex.raw('(' + fields.map(f => this.knex.ref(this.mapper(f, type, value, alias))).join(', ') + ')');
+    }
+
     let ret = field;
     const customExpression = QueryBuilderHelper.isCustomExpression(field);
 
@@ -72,12 +78,20 @@ export class QueryBuilderHelper {
       if (meta && meta.properties[k]) {
         const prop = meta.properties[k];
 
+        if (prop.joinColumns && Array.isArray(data[k])) {
+          const copy = data[k];
+          delete data[k];
+          prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
+
+          return;
+        }
+
         if (!prop.customType && (Array.isArray(data[k]) || Utils.isObject(data[k], [Date]))) {
           data[k] = JSON.stringify(data[k]);
         }
 
-        if (prop.fieldName) {
-          Utils.renameKey(data, k, prop.fieldName);
+        if (prop.fieldNames) {
+          Utils.renameKey(data, k, prop.fieldNames[0]);
         }
       }
     });
@@ -92,9 +106,9 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      joinColumn: prop.owner ? meta.primaryKey : prop2.fieldName,
-      inverseJoinColumn: prop.owner ? meta.primaryKey : prop.referenceColumnName,
-      primaryKey: prop.owner ? prop.joinColumn : prop2.referenceColumnName,
+      joinColumns: prop.owner ? meta.primaryKeys : prop2.joinColumns,
+      inverseJoinColumns: prop.owner ? meta.primaryKeys : prop.referencedColumnNames,
+      primaryKeys: prop.owner ? prop.joinColumns : prop2.referencedColumnNames,
     };
   }
 
@@ -102,8 +116,8 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
-      joinColumn: prop.referenceColumnName,
-      primaryKey: prop.fieldName,
+      joinColumns: prop.referencedColumnNames,
+      primaryKeys: prop.fieldNames,
     };
   }
 
@@ -112,9 +126,9 @@ export class QueryBuilderHelper {
       prop, type, cond, ownerAlias,
       alias: pivotAlias,
       inverseAlias: alias,
-      joinColumn: prop.joinColumn,
-      inverseJoinColumn: prop.inverseJoinColumn,
-      primaryKey: prop.referenceColumnName,
+      joinColumns: prop.joinColumns,
+      inverseJoinColumns: prop.inverseJoinColumns,
+      primaryKeys: prop.referencedColumnNames,
     } as JoinOptions;
     const name = `${ownerAlias}.${prop.name}`;
     const ret: Dictionary<JoinOptions> = {};
@@ -143,21 +157,23 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.metadata.get(field).collection,
-      joinColumn: prop.joinColumn,
-      inverseJoinColumn: prop2.joinColumn,
-      primaryKey: prop.referenceColumnName,
+      joinColumns: prop.joinColumns,
+      inverseJoinColumns: prop2.joinColumns,
+      primaryKeys: prop.referencedColumnNames,
     };
   }
 
   processJoins(qb: KnexQueryBuilder, joins: Dictionary<JoinOptions>): void {
     Object.values(joins).forEach(join => {
       const table = `${join.table} as ${join.alias}`;
-      const left = `${join.ownerAlias}.${join.primaryKey!}`;
-      const right = `${join.alias}.${join.joinColumn!}`;
-
       const method = join.type === 'pivotJoin' ? 'leftJoin' : join.type;
+
       return qb[method](table, inner => {
-        inner.on(left, right);
+        join.primaryKeys!.forEach((primaryKey, idx) => {
+          const left = `${join.ownerAlias}.${primaryKey}`;
+          const right = `${join.alias}.${join.joinColumns![idx]}`;
+          inner.on(left, right);
+        });
         this.appendJoinClause(inner, join.cond);
       });
     });
@@ -165,12 +181,14 @@ export class QueryBuilderHelper {
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Raw)[] {
     if (join.prop && join.prop.reference === ReferenceType.ONE_TO_ONE && !join.prop.owner) {
-      return [this.mapper(`${join.alias}.${join.inverseJoinColumn}`, type, undefined, join.prop.fieldName)];
+      return join.prop.fieldNames.map((fieldName, idx) => {
+        return this.mapper(`${join.alias}.${join.inverseJoinColumns![idx]}`, type, undefined, fieldName);
+      });
     }
 
     return [
-      this.mapper(`${join.alias}.${join.joinColumn}`, type),
-      this.mapper(`${join.alias}.${join.inverseJoinColumn}`, type),
+      ...join.joinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type)),
+      ...join.inverseJoinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type)),
     ];
   }
 
@@ -296,10 +314,15 @@ export class QueryBuilderHelper {
     }
 
     const replacement = this.getOperatorReplacement(op, value);
+    const fields = Utils.splitPrimaryKeys(key);
 
     if (key === op) { // substitute top level operators with PK
       const meta = this.metadata.get(this.entityName);
-      key = meta.properties[meta.primaryKey].fieldName;
+      key = meta.properties[meta.primaryKeys[0]].fieldNames[0];
+    }
+
+    if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
+      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
     qb[m](this.mapper(key, type), replacement, value[op]);
@@ -376,15 +399,21 @@ export class QueryBuilderHelper {
   }
 
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): { column: string; order: string }[] {
-    return Object.keys(orderBy).map(k => {
+    const ret: { column: string; order: string }[] = [];
+
+    Object.keys(orderBy).forEach(k => {
       // tslint:disable-next-line:prefer-const
       let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
-      const direction = orderBy[k];
-      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+      Utils.splitPrimaryKeys(field).forEach(f => {
+        const direction = orderBy[k];
+        const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
-      return { column: this.mapper(`${alias}.${field}`, type), order: order.toLowerCase() };
+        ret.push({ column: this.mapper(`${alias}.${f}`, type), order: order.toLowerCase() });
+      });
     });
+
+    return ret;
   }
 
   finalize(type: QueryType, qb: KnexQueryBuilder, meta?: EntityMetadata): void {
@@ -392,7 +421,7 @@ export class QueryBuilderHelper {
 
     if (useReturningStatement) {
       const returningProps = Object.values(meta!.properties).filter(prop => prop.primary || prop.default);
-      qb.returning(returningProps.map(prop => prop.fieldName));
+      qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
     }
   }
 
@@ -428,13 +457,13 @@ export class QueryBuilderHelper {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    let sql = versionProperty.fieldName + ' + 1';
+    let sql = versionProperty.fieldNames[0] + ' + 1';
 
     if (versionProperty.type.toLowerCase() === 'date') {
       sql = this.platform.getCurrentTimestampSQL(versionProperty.length);
     }
 
-    qb.update(versionProperty.fieldName, this.knex.raw(sql));
+    qb.update(versionProperty.fieldNames[0], this.knex.raw(sql));
   }
 
   static isOperator(key: string, includeGroupOperators = true): boolean {
@@ -486,7 +515,7 @@ export class QueryBuilderHelper {
     const meta = this.metadata.get(entityName, false, false);
     const prop = meta ? meta.properties[field] : false;
 
-    return prop ? prop.fieldName : field;
+    return prop ? prop.fieldNames[0] : field;
   }
 
 }

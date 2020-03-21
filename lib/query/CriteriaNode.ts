@@ -24,11 +24,13 @@ export class CriteriaNode {
     const meta = parent && metadata.get(parent.entityName, false, false);
 
     if (meta && key) {
-      this.prop = meta.properties[key];
+      Utils.splitPrimaryKeys(key).forEach(k => {
+        this.prop = meta.properties[k];
 
-      if (validate && !this.prop && !key.includes('.') && !QueryBuilderHelper.isOperator(key) && !QueryBuilderHelper.isCustomExpression(key)) {
-        throw new Error(`Trying to query by not existing property ${entityName}.${key}`);
-      }
+        if (validate && !this.prop && !k.includes('.') && !QueryBuilderHelper.isOperator(k) && !QueryBuilderHelper.isCustomExpression(k)) {
+          throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
+        }
+      });
     }
   }
 
@@ -57,9 +59,14 @@ export class CriteriaNode {
 
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.reference : null;
+    const composite = this.prop && this.prop.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => QueryBuilderHelper.isOperator(k, false));
+
+    if (composite) {
+      return true;
+    }
 
     switch (type) {
       case ReferenceType.MANY_TO_ONE: return false;
@@ -75,14 +82,18 @@ export class CriteriaNode {
       const pivotTable = this.prop!.pivotTable;
       const alias = qb.getAliasForEntity(pivotTable, this);
 
-      return `${alias}.${this.prop!.inverseJoinColumn}`;
+      return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
+    }
+
+    if (this.prop!.joinColumns.length > 1) {
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
     }
 
     const meta = this.metadata.get(this.prop!.type);
     const alias = qb.getAliasForEntity(meta.name, this);
-    const pk = meta.properties[meta.primaryKey];
+    const pks = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
 
-    return `${alias}.${pk.fieldName}`;
+    return Utils.getPrimaryKeyHash(pks.map(col => `${alias}.${col}`));
   }
 
   getPath(): string {
@@ -240,9 +251,10 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }
 
     const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
+    const composite = this.prop.joinColumns && this.prop.joinColumns.length > 1;
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => QueryBuilderHelper.isOperator(key, false));
 
-    return !nestedAlias && !operatorKeys;
+    return !nestedAlias && !operatorKeys && !composite;
   }
 
   private autoJoin(qb: QueryBuilder, alias: string): string {

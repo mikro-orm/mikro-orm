@@ -23,7 +23,7 @@ export class EntityFactory {
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    this.denormalizePrimaryKey(data, meta);
+    meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk));
     const entity = this.createEntity(data, meta);
 
     if (initialized && !Utils.isEntity(data)) {
@@ -41,34 +41,55 @@ export class EntityFactory {
     return entity;
   }
 
-  createReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>): T {
+  createReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
-    if (this.unitOfWork.getById(entityName, id)) {
-      return this.unitOfWork.getById<T>(entityName, id);
+    if (Array.isArray(id)) {
+      id = Utils.getPrimaryKeyCondFromArray(id, meta.primaryKeys);
     }
 
-    return this.create<T>(entityName, { [meta.primaryKey]: id } as EntityData<T>, false);
+    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta);
+
+    if (Utils.isPrimaryKey(id)) {
+      id = { [meta.primaryKeys[0]]: id as Primary<T> };
+    }
+
+    if (this.unitOfWork.getById(entityName, pks)) {
+      return this.unitOfWork.getById<T>(entityName, pks);
+    }
+
+    return this.create<T>(entityName, id as EntityData<T>, false);
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     const Entity = this.metadata.get<T>(meta.name).class;
+    const pks = Utils.getOrderedPrimaryKeys<T>(data, meta);
 
-    if (!data[meta.primaryKey]) {
+    if (meta.primaryKeys.some(pk => !data[pk as keyof T])) {
       const params = this.extractConstructorParams<T>(meta, data);
       meta.constructorParams.forEach(prop => delete data[prop]);
 
+      // creates new instance via constructor as this is the new entity
       return new Entity(...params);
     }
 
-    if (this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey])) {
-      return this.unitOfWork.getById<T>(meta.name, data[meta.primaryKey]);
+    if (this.unitOfWork.getById<T>(meta.name, pks)) {
+      return this.unitOfWork.getById<T>(meta.name, pks);
     }
 
-    // creates new entity instance, with possibility to bypass constructor call when instancing already persisted entity
+    // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(Entity.prototype);
-    entity[meta.primaryKey] = data[meta.primaryKey];
+
+    meta.primaryKeys.forEach(pk => {
+      const prop = meta.properties[pk];
+
+      if (prop.reference === ReferenceType.SCALAR) {
+        entity[pk] = data[pk];
+      } else {
+        entity[pk] = this.createReference(prop.type, data[pk]);
+      }
+    });
 
     return entity;
   }
@@ -76,14 +97,14 @@ export class EntityFactory {
   /**
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
-  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): void {
+  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string): void {
     const platform = this.driver.getPlatform();
-    const pk = platform.getSerializedPrimaryKeyField(meta.primaryKey);
+    const pk = platform.getSerializedPrimaryKeyField(primaryKey);
 
-    if (data[pk] || data[meta.primaryKey]) {
-      const id = platform.denormalizePrimaryKey(data[pk] || data[meta.primaryKey]);
+    if (data[pk] || data[primaryKey]) {
+      const id = platform.denormalizePrimaryKey(data[pk] || data[primaryKey]);
       delete data[pk];
-      data[meta.primaryKey as keyof T] = id as Primary<T> & T[keyof T];
+      data[primaryKey as keyof T] = id as Primary<T> & T[keyof T];
     }
   }
 

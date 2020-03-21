@@ -31,7 +31,7 @@ export abstract class Type {
    * Gets the SQL declaration snippet for a field of this type.
    */
   getColumnType(prop: EntityProperty, platform: Platform): string {
-    return prop.columnType;
+    return prop.columnTypes[0];
   }
 
   static getType(cls: Constructor<Type>): Type {

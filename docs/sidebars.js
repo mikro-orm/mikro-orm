@@ -15,6 +15,7 @@ module.exports = {
       'unit-of-work',
       'transactions',
       'cascading',
+      'composite-keys',
       'deployment',
       'decorators',
     ],

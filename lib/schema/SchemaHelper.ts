@@ -36,8 +36,8 @@ export abstract class SchemaHelper {
     return type;
   }
 
-  isSame(prop: EntityProperty, column: Column, types: Dictionary<string[]> = {}, defaultValues: Dictionary<string[]> = {}): IsSame {
-    const sameTypes = this.hasSameType(prop, column.type, types);
+  isSame(prop: EntityProperty, column: Column, idx = 0, types: Dictionary<string[]> = {}, defaultValues: Dictionary<string[]> = {}): IsSame {
+    const sameTypes = this.hasSameType(prop.columnTypes[idx], column.type, types);
     const sameNullable = column.nullable === !!prop.nullable;
     const sameDefault = this.hasSameDefaultValue(column, prop, defaultValues);
     const sameIndex = this.hasSameIndex(prop, column);
@@ -84,8 +84,8 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, quote = '"'): string {
-    return `alter table ${quote}${tableName}${quote} rename column ${quote}${from.name}${quote} to ${quote}${to.fieldName}${quote}`;
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0, quote = '"'): string {
+    return `alter table ${quote}${tableName}${quote} rename column ${quote}${from.name}${quote} to ${quote}${to.fieldNames[0]}${quote}`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
@@ -175,8 +175,8 @@ export abstract class SchemaHelper {
     }
   }
 
-  private hasSameType(prop: EntityProperty, infoType: string, types: Dictionary<string[]>): boolean {
-    const columnType = prop.columnType && prop.columnType.replace(/\([?\d]+\)/, '').toLowerCase();
+  private hasSameType(columnType: string, infoType: string, types: Dictionary<string[]>): boolean {
+    columnType = columnType.replace(/\([?\d]+\)/, '').toLowerCase();
     infoType = infoType.replace(/\([?\d]+\)/, '').toLowerCase();
 
     if (columnType === infoType) {
@@ -222,7 +222,9 @@ export abstract class SchemaHelper {
       return true;
     }
 
-    return !!column.fk && prop.referenceColumnName === column.fk.referencedColumnName && prop.referencedTableName === column.fk.referencedTableName;
+    return prop.referencedColumnNames.some(referencedColumnName => {
+      return !!column.fk && referencedColumnName === column.fk.referencedColumnName && prop.referencedTableName === column.fk.referencedTableName;
+    });
   }
 
 }

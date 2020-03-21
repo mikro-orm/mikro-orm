@@ -116,8 +116,8 @@ describe('SchemaGenerator', () => {
           primary: true,
           name: 'id',
           type: 'number',
-          fieldName: 'id',
-          columnType: 'int(11)',
+          fieldNames: ['id'],
+          columnTypes: ['int(11)'],
         },
         createdAt: {
           reference: ReferenceType.SCALAR,
@@ -125,8 +125,8 @@ describe('SchemaGenerator', () => {
           default: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
-          fieldName: 'created_at',
-          columnType: 'datetime(3)',
+          fieldNames: ['created_at'],
+          columnTypes: ['datetime(3)'],
         },
         updatedAt: {
           reference: ReferenceType.SCALAR,
@@ -134,15 +134,15 @@ describe('SchemaGenerator', () => {
           default: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
-          fieldName: 'updated_at',
-          columnType: 'datetime(3)',
+          fieldNames: ['updated_at'],
+          columnTypes: ['datetime(3)'],
         },
         name: {
           reference: ReferenceType.SCALAR,
           name: 'name',
           type: 'string',
-          fieldName: 'name',
-          columnType: 'varchar(255)',
+          fieldNames: ['name'],
+          columnTypes: ['varchar(255)'],
         },
       },
       name: 'NewTable',
@@ -159,7 +159,7 @@ describe('SchemaGenerator', () => {
     const authorMeta = meta.get('Author2');
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.born.type = 'number';
-    authorMeta.properties.born.columnType = 'int';
+    authorMeta.properties.born.columnTypes = ['int'];
     authorMeta.properties.born.nullable = false;
     authorMeta.properties.born.default = 42;
     authorMeta.properties.age.default = 42;
@@ -178,10 +178,11 @@ describe('SchemaGenerator', () => {
 
     const ageProp = authorMeta.properties.age;
     ageProp.name = 'ageInYears';
-    ageProp.fieldName = 'age_in_years';
+    ageProp.fieldNames = ['age_in_years'];
     const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
     favouriteAuthorProp.name = 'favouriteWriter';
-    favouriteAuthorProp.fieldName = 'favourite_writer_id';
+    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
+    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     delete authorMeta.properties.favouriteAuthor;
     authorMeta.properties.favouriteWriter = favouriteAuthorProp;
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
@@ -318,8 +319,8 @@ describe('SchemaGenerator', () => {
           primary: true,
           name: 'id',
           type: 'number',
-          fieldName: 'id',
-          columnType: 'int4',
+          fieldNames: ['id'],
+          columnTypes: ['int4'],
         },
         createdAt: {
           reference: ReferenceType.SCALAR,
@@ -327,8 +328,8 @@ describe('SchemaGenerator', () => {
           default: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
-          fieldName: 'created_at',
-          columnType: 'timestamp(3)',
+          fieldNames: ['created_at'],
+          columnTypes: ['timestamp(3)'],
         },
         updatedAt: {
           reference: ReferenceType.SCALAR,
@@ -336,15 +337,15 @@ describe('SchemaGenerator', () => {
           default: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
-          fieldName: 'updated_at',
-          columnType: 'timestamp(3)',
+          fieldNames: ['updated_at'],
+          columnTypes: ['timestamp(3)'],
         },
         name: {
           reference: ReferenceType.SCALAR,
           name: 'name',
           type: 'string',
-          fieldName: 'name',
-          columnType: 'varchar(255)',
+          fieldNames: ['name'],
+          columnTypes: ['varchar(255)'],
         },
       },
       name: 'NewTable',
@@ -364,7 +365,7 @@ describe('SchemaGenerator', () => {
 
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.name.type = 'number';
-    authorMeta.properties.name.columnType = 'int4';
+    authorMeta.properties.name.columnTypes = ['int4'];
     authorMeta.properties.name.nullable = false;
     authorMeta.properties.name.default = 42;
     authorMeta.properties.age.default = 42;
@@ -383,10 +384,11 @@ describe('SchemaGenerator', () => {
 
     const ageProp = authorMeta.properties.age;
     ageProp.name = 'ageInYears';
-    ageProp.fieldName = 'age_in_years';
+    ageProp.fieldNames = ['age_in_years'];
     const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
     favouriteAuthorProp.name = 'favouriteWriter';
-    favouriteAuthorProp.fieldName = 'favourite_writer_id';
+    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
+    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     delete authorMeta.properties.favouriteAuthor;
     authorMeta.properties.favouriteWriter = favouriteAuthorProp;
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-rename-column');
@@ -408,6 +410,7 @@ describe('SchemaGenerator', () => {
 
   test('update empty schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
+    orm.em.getConnection().execute('drop table if exists new_table');
     const generator = orm.getSchemaGenerator();
     await generator.dropSchema();
 

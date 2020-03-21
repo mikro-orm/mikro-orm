@@ -2,6 +2,20 @@
 
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 Array [
+  "import { Cascade, Entity, OneToOne, Property } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Address2 {
+
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
+  author!: Author2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Book2 } from './Book2';
 
@@ -162,6 +176,56 @@ export class BookToTagUnordered {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class Car2 {
+
+  @PrimaryKey({ length: 255 })
+  name!: string;
+
+  @PrimaryKey()
+  year!: number;
+
+  @Property()
+  price!: number;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Car2 } from './Car2';
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @ManyToOne({ entity: () => Car2 })
+  car!: Car2;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FooBaz2 } from './FooBaz2';
 
@@ -180,7 +244,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ default: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
 }
@@ -198,6 +262,24 @@ export class FooBaz2 {
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
   version!: Date;
+
+}
+",
+  "import { Entity, ManyToOne, Property } from 'mikro-orm';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  @ManyToOne({ entity: () => FooBar2, primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
 
 }
 ",
@@ -277,11 +359,56 @@ export class Test2 {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class User2 {
+
+  @PrimaryKey({ length: 100 })
+  firstName!: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName!: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Car2 } from './Car2';
+import { User2 } from './User2';
+
+@Entity()
+export class User2ToCar2 {
+
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
+  user2!: User2;
+
+  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true })
+  car2!: Car2;
+
+}
+",
 ]
 `;
 
 exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
 Array [
+  "import { Cascade, Entity, OneToOne, Property } from 'mikro-orm';
+import { Author2 } from './Author2';
+
+@Entity()
+export class Address2 {
+
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
+  author!: Author2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Book2 } from './Book2';
 
@@ -442,6 +569,23 @@ export class BookToTagUnordered {
 
 }
 ",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FooBaz2 } from './FooBaz2';
 
@@ -460,7 +604,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ default: \`current_timestamp(0)\` })
   version!: Date;
 
 }
@@ -478,6 +622,24 @@ export class FooBaz2 {
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
   version!: Date;
+
+}
+",
+  "import { Entity, ManyToOne, Property } from 'mikro-orm';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  @ManyToOne({ entity: () => FooBar2, primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
 
 }
 ",

@@ -793,7 +793,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test.config']))!;
     expect(b1.uuid).not.toBeNull();
     expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
   });
@@ -1449,7 +1449,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[4][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[6][0]).toMatch('commit');
-    expect(mock.mock.calls[7][0]).toMatch('select `e0`.* from `author2` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[7][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
   });
 
   test('self referencing 1:1 (1 step)', async () => {
@@ -1635,7 +1635,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const [authors1, count1] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 10 });
+    const [authors1, count1] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 10, orderBy: { id: QueryOrder.ASC } });
     expect(authors1).toHaveLength(10);
     expect(count1).toBe(30);
     expect(authors1[0]).toBeInstanceOf(Author2);
@@ -1643,7 +1643,7 @@ describe('EntityManagerMySql', () => {
     expect(authors1[9].name).toBe('God 20');
     orm.em.clear();
 
-    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'] });
+    const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'], orderBy: { id: QueryOrder.ASC } });
     expect(authors2).toHaveLength(5);
     expect(authors2[0].email).toBeUndefined();
     expect(count2).toBe(30);
@@ -1689,9 +1689,9 @@ describe('EntityManagerMySql', () => {
     author = (await orm.em.findOne(Author2, author))!;
     await orm.em.findOne(Author2, author, { refresh: true });
     await orm.em.findOne(Author2, author, { refresh: true });
-    expect(mock.mock.calls[4][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[5][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[6][0]).toMatch(/select `e0`.* from `author2` as `e0` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[4][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[5][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[6][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
 
     author.name = 'Jon Blow';
     await orm.em.flush();

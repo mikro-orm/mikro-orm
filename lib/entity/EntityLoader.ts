@@ -1,4 +1,4 @@
-import { AnyEntity, EntityProperty, FilterQuery, Primary } from '../typings';
+import { AnyEntity, EntityProperty, FilterQuery } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -98,7 +98,7 @@ export class EntityLoader {
   private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, refresh: boolean, where: FilterQuery<T> = {}, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop, refresh);
     const meta = this.metadata.get(prop.type);
-    let fk = meta.primaryKey;
+    let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -114,7 +114,7 @@ export class EntityLoader {
       return [];
     }
 
-    const ids = Utils.unique(children.map(e => e.__primaryKey));
+    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, wrap(e).__meta.primaryKeys, true)));
     where = { [fk]: { $in: ids }, ...where };
     orderBy = orderBy || prop.orderBy || { [fk]: QueryOrder.ASC };
 
@@ -147,11 +147,11 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e).__primaryKey) as Primary<T>[], where, orderBy, this.em.getTransactionContext());
+    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e).__primaryKeys), where, orderBy, this.em.getTransactionContext());
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[wrap(entity).__primaryKey as number].map(item => this.em.merge(prop.type, item, refresh));
+      const items = map[wrap(entity).__serializedPrimaryKey].map(item => this.em.merge(prop.type, item, refresh));
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }

@@ -661,7 +661,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test.config']))!;
     expect(b1.uuid).not.toBeNull();
     expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
   });

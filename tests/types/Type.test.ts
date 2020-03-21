@@ -21,7 +21,7 @@ describe('Type', () => {
   });
 
   test('getColumnType', () => {
-    expect(type.getColumnType({ columnType: 'asd' } as any, platform)).toBe('asd');
+    expect(type.getColumnType({ columnTypes: ['asd'] } as any, platform)).toBe('asd');
   });
 
 });

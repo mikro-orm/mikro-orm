@@ -59,9 +59,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
-  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty): string {
-    const type = `${to.columnType}${to.unsigned ? ' unsigned' : ''} ${to.nullable ? 'null' : 'not null'}${to.default ? ' default ' + to.default : ''}`;
-    return `alter table \`${tableName}\` change \`${from.name}\` \`${to.fieldName}\` ${type}`;
+  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0): string {
+    const type = `${to.columnTypes[idx]}${to.unsigned ? ' unsigned' : ''} ${to.nullable ? 'null' : 'not null'}${to.default ? ' default ' + to.default : ''}`;
+    return `alter table \`${tableName}\` change \`${from.name}\` \`${to.fieldNames[idx]}\` ${type}`;
   }
 
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
@@ -104,8 +104,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }, {});
   }
 
-  isSame(prop: EntityProperty, column: Column): IsSame {
-    return super.isSame(prop, column, MySqlSchemaHelper.TYPES, MySqlSchemaHelper.DEFAULT_VALUES);
+  isSame(prop: EntityProperty, column: Column, idx?: number): IsSame {
+    return super.isSame(prop, column, idx, MySqlSchemaHelper.TYPES, MySqlSchemaHelper.DEFAULT_VALUES);
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {
