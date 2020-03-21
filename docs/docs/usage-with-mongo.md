@@ -117,6 +117,10 @@ Alternatively you can call `ensureIndexes()` method on the `MongoDriver`:
 await orm.em.getDriver().ensureIndexes();
 ```
 
+> You can pass additional index/unique options via `options` parameter:
+> 
+> `@Unique({ options: { partialFilterExpression: { name: { $exists: true } } }})`
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your

@@ -169,8 +169,8 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
-  indexes: { properties: string | string[]; name?: string; type?: string }[];
-  uniques: { properties: string | string[]; name?: string }[];
+  indexes: { properties: string | string[]; name?: string; type?: string; options?: Dictionary }[];
+  uniques: { properties: string | string[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<HookType, (string & keyof T)[]>>;
   prototype: T;

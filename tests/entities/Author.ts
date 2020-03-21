@@ -22,6 +22,7 @@ export class Author extends BaseEntity {
   email: string;
 
   @Property()
+  @Unique({ name: 'age_uniq', options: { partialFilterExpression: { age: { $exists: true } } }})
   age?: number;
 
   @Property()

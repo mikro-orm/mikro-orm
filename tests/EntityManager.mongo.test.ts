@@ -489,18 +489,20 @@ describe('EntityManagerMongo', () => {
   test('ensure indexes', async () => {
     await orm.em.getDriver().ensureIndexes();
     const conn = orm.em.getDriver().getConnection('write');
-    const authorInfo = await conn.getCollection('author').indexInformation();
-    const bookInfo = await conn.getCollection('books-table').indexInformation();
-    expect(authorInfo).toEqual({
-      _id_: [['_id', 1]],
-      born_1: [['born', 1]],
-      email_1: [['email', 1]],
-      custom_idx_1: [['name', 1], ['email', 1]],
+
+    const authorInfo = await conn.getCollection('author').indexInformation({ full: true, session: undefined as any });
+    const bookInfo = await conn.getCollection('books-table').indexInformation({ full: true, session: undefined as any });
+    expect(authorInfo.reduce((o: any, i: any) => { o[i.name] = i; return o; }, {} as any)).toMatchObject({
+      _id_: { key: { _id: 1 }, name: '_id_' },
+      born_1: { key: { born: 1 }, name: 'born_1' },
+      custom_idx_1: { key: { email: 1, name: 1 }, name: 'custom_idx_1' },
+      age_uniq: { key: { age: 1 }, name: 'age_uniq', unique: true, partialFilterExpression: { age: { $exists: true } } },
+      email_1: { key: { email: 1 }, name: 'email_1', unique: true },
     });
-    expect(bookInfo).toEqual({
-      _id_: [['_id', 1]],
-      publisher_idx: [['publisher', 1]],
-      title_1_author_1: [['title', 1], ['author', 1]],
+    expect(bookInfo.reduce((o: any, i: any) => { o[i.name] = i; return o; }, {} as any)).toMatchObject({
+      _id_: { key: { _id: 1 }, name: '_id_' },
+      publisher_idx: { key: { publisher: 1 }, name: 'publisher_idx' },
+      title_1_author_1: { key: { title: 1, author: 1 }, name: 'title_1_author_1', unique: true },
     });
   });
 

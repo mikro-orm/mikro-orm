@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity } from '../typings';
+import { AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils';
 
 function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean): Function {
@@ -24,6 +24,7 @@ export function Unique(options: UniqueOptions = {}): Function {
 export interface UniqueOptions {
   name?: string;
   properties?: string | string[];
+  options?: Dictionary;
 }
 
 export interface IndexOptions extends UniqueOptions {

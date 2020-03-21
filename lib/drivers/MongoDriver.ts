@@ -97,6 +97,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
           name: index.name,
           unique: type === 'uniques',
+          ...(index.options || {}),
         }));
       });
     };
