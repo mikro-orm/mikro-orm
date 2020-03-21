@@ -1,7 +1,7 @@
 
 {
   "name": "mikro-orm",
-  "version": "3.4.1",
+  "version": "3.5.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -40,7 +40,7 @@
     "pretest": "node tests/pre-test",
     "test": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
     "posttest": "node tests/post-test",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 2",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "run-rs": "run-rs -v 4.2.3 -l ubuntu1804",
