@@ -49,11 +49,7 @@ describe('check typings', () => {
   test('OneOrArray', async () => {
     assert<IsExact<OneOrArray<string>, string | string[]>>(true);
     assert<IsExact<OneOrArray<number>, number | number[]>>(true);
-    assert<IsExact<OneOrArray<EntityOrPrimary<Author2>>, number | number[] | DeepPartialEntity<Author2> | DeepPartialEntity<Author2>[] | PartialEntity<Author2> | PartialEntity<Author2>[]>>(true);
     assert<IsExact<OneOrArray<Author2>, Author2 | Author2[]>>(true);
-    assert<IsExact<OneOrArray<string | number>, string | number | string[] | number[]>>(true);
-    assert<IsExact<OneOrArray<EntityOrPrimary<Author2>>, Author2 | Author2[] | number | number[] | DeepPartialEntity<Author2> | PartialEntity<Author2> | DeepPartialEntity<Author2>[] | PartialEntity<Author2>[]>>(true);
-    assert<Has<OneOrArray<EntityOrPrimary<Author2>>, number[]>>(true);
   });
 
   test('StringProp', async () => {
@@ -79,11 +75,11 @@ describe('check typings', () => {
   });
 
   test('FilterValue', async () => {
-    assert<IsExact<FilterValue<string>, RegExp | string | null | OperatorMap<string>>>(true); // strings allow regexps
-    assert<IsExact<FilterValue<number>, number | null | OperatorMap<number>>>(true);
+    assert<IsExact<FilterValue<string>, RegExp | string | null | never[] | OperatorMap<string>>>(true); // strings allow regexps
+    assert<IsExact<FilterValue<number>, number | null | never[] | OperatorMap<number>>>(true);
     assert<Has<FilterValue<string>, number>>(false);
-    assert<IsExact<FilterValue<Date>, Date | null | OperatorMap<Date>>>(true);
-    assert<IsExact<FilterValue<RegExp>, RegExp | null | OperatorMap<RegExp>>>(true);
+    assert<IsExact<FilterValue<Date>, Date | null | never[] | OperatorMap<Date>>>(true);
+    assert<IsExact<FilterValue<RegExp>, RegExp | null | never[] | OperatorMap<RegExp>>>(true);
 
     // require specific type
     assert<Has<FilterValue<number>, string>>(false);
@@ -96,17 +92,12 @@ describe('check typings', () => {
     assert<Has<FilterValue<Collection<Author2>>, string>>(false);
     assert<Has<FilterValue<Collection<Author2>>, Author2>>(true);
     assert<Has<FilterValue<Collection<Author2>>, string[]>>(false);
-    assert<Has<OneOrArray<EntityOrPrimary<Author2>>, number[]>>(true);
-    assert<Has<FilterValue<Collection<Author2>>, number[]>>(true);
-    assert<Has<FilterValue<Collection<Author2>>, Author2[]>>(true);
     assert<Has<FilterValue<Collection<Author2>>, Book2[]>>(false);
     assert<Has<FilterValue<Author['books']>, ObjectId>>(true);
     assert<Has<FilterValue<Collection<Book2>>, string>>(true);
     assert<Has<FilterValue<Collection<Book>>, ObjectId>>(true);
 
     // allows entity/pk and arrays of entity/pk
-    assert<Has<FilterValue<Author2>, Author2[]>>(true);
-    assert<Has<FilterValue<Author2>, number[]>>(true);
     assert<Has<FilterValue<Author2>, Author2>>(true);
     assert<Has<FilterValue<Author2>, number>>(true);
 
@@ -132,7 +123,6 @@ describe('check typings', () => {
     assert<Has<Query<Author2>, Author2>>(true);
     assert<Has<Query<Author2>, number>>(true);
     assert<Has<Query<Author2>, string>>(false);
-    assert<Has<Query<Author2>, Author2[]>>(true);
     assert<Has<Query<Author2>, { books: { author: { born?: string } }; favouriteBook: null }>>(false);
     assert<Has<Query<Author2>, { books: { author: { born?: number } }; favouriteBook: null }>>(false);
     assert<Has<Query<Book2>, { author: { born?: Date } }>>(true);
@@ -174,9 +164,7 @@ describe('check typings', () => {
 
   test('FilterQuery', async () => {
     assert<Has<FilterQuery<Author2>, number>>(true);
-    assert<Has<FilterQuery<Author2>, number[]>>(true);
     assert<Has<FilterQuery<Author2>, string>>(false);
-    assert<Has<FilterQuery<Author2>, number[]>>(true);
 
     assert<IsAssignable<FilterQuery<Book2>, { author: 123 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { favouriteBook: null }>>(true);

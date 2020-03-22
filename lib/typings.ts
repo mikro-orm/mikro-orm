@@ -16,8 +16,8 @@ export type PartialEntity<T> = T extends Reference<infer U> ? { [P in keyof U]?:
 export type DeepPartialEntity<T> = {
   [P in keyof T]?: null | (T[P] extends (infer U)[]
     ? DeepPartialEntity<U>[]
-    : T[P] extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartialEntity<U>>
+    : T[P] extends readonly (infer U)[]
+      ? readonly DeepPartialEntity<U>[]
       : T extends Date | RegExp
         ? T
         : DeepPartialEntity<T[P]> | PartialEntity<T[P]> | Primary<T[P]>)
@@ -36,19 +36,7 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 export type IsScalar<T> = T extends number | string | bigint | Date | RegExp ? true : never;
 export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string | bigint } ? true : never;
 
-export type UnionOfArrays<T> = T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9 | infer T10
-  ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] | T8[] | T9[] | T10[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8 | infer T9
-  ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] | T8[] | T9[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7 | infer T8
-  ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] | T8[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6 | infer T7
-  ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] | T7[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5 | infer T6
-  ? T1[] | T2[] | T3[] | T4[] | T5[] | T6[] : T extends infer T1 | infer T2 | infer T3 | infer T4 | infer T5
-  ? T1[] | T2[] | T3[] | T4[] | T5[] : T extends infer T1 | infer T2 | infer T3 | infer T4
-  ? T1[] | T2[] | T3[] | T4[] : T extends infer T1 | infer T2 | infer T3
-  ? T1[] | T2[] | T3[] : T extends infer T1 | infer T2
-  ? T1[] | T2[] : T extends infer T1
-  ? T1[] : never;
-export type OneOrArray<T> = T | UnionOfArrays<T>;
-export type GroupOperatorMap<T> = { $and?: UnionOfArrays<Query<T>>; $or?: UnionOfArrays<Query<T>> };
+export type OneOrArray<T> = T | T[];
 export type OperatorMap<T> = {
   $and?: Query<T>[];
   $or?: Query<T>[];
@@ -73,7 +61,7 @@ export type Query<T> = true extends IsEntity<T>
   : T extends Collection<infer K>
     ? { [KK in keyof K]?: Query<K[KK]> | FilterValue<K[KK]> | null } | FilterValue<K>
     : FilterValue<T>;
-export type FilterQuery<T> = GroupOperatorMap<Query<T>> | Query<T> | { [PrimaryKeyType]?: any };
+export type FilterQuery<T> = Query<T> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary;
 
 export interface IWrappedEntity<T, PK extends keyof T> {
