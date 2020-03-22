@@ -12,6 +12,13 @@ import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
 
+/**
+ * wraps entity type with AnyEntity internal properties and helpers like init/isInitialized/populated/toJSON
+ */
+export function wrap<T>(entity: T): T & WrappedEntity<T, keyof T> {
+  return entity as T & WrappedEntity<T, keyof T>;
+}
+
 export class EntityHelper {
 
   static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
@@ -104,7 +111,7 @@ export class EntityHelper {
       return this.__initialized !== false;
     };
 
-    prototype.populated = function (this: T, populated: boolean = true) {
+    prototype.populated = function (this: T, populated = true) {
       Object.defineProperty(this, '__populated', { value: populated, writable: true });
     };
 
@@ -116,7 +123,7 @@ export class EntityHelper {
       return EntityTransformer.toObject(this, ignoreFields);
     };
 
-    prototype.init = function (this: T, populated: boolean = true): Promise<IWrappedEntity<T, keyof T> & T> {
+    prototype.init = function (this: T, populated = true): Promise<IWrappedEntity<T, keyof T> & T> {
       return EntityHelper.init<T>(this as T, populated) as Promise<IWrappedEntity<T, keyof T> & T>;
     };
   }
@@ -218,11 +225,4 @@ export class EntityHelper {
     }
   }
 
-}
-
-/**
- * wraps entity type with AnyEntity internal properties and helpers like init/isInitialized/populated/toJSON
- */
-export function wrap<T>(entity: T): T & WrappedEntity<T, keyof T> {
-  return entity as T & WrappedEntity<T, keyof T>;
 }
