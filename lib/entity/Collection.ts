@@ -1,8 +1,9 @@
-import { Dictionary, FilterQuery, Primary, QueryOrder, QueryOrderMap, Utils, wrap } from '..';
-import { EntityData, AnyEntity } from '../typings';
+import { EntityData, AnyEntity, FilterQuery, Dictionary, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { ReferenceType } from './enums';
-import { ValidationError } from '../utils';
+import { Utils, ValidationError } from '../utils';
+import { QueryOrder, QueryOrderMap } from '../query';
+import { wrap } from './EntityHelper';
 
 export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
 
@@ -112,8 +113,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     this.dirty = dirty && !!this.property.owner; // set dirty flag only to owning side
   }
 
-  async init(options?: InitOptions<T>): Promise<this>; // tslint:disable-next-line:lines-between-class-members
-  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>; // tslint:disable-next-line:lines-between-class-members
+  async init(options?: InitOptions<T>): Promise<this>;
+  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>;
   async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
     const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
     const em = wrap(this.owner).__em;

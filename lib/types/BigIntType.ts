@@ -7,11 +7,11 @@ import { EntityProperty } from '../typings';
  */
 export class BigIntType extends Type {
 
-  convertToDatabaseValue(value: any, platform: Platform): any {
+  convertToDatabaseValue(value: any): any {
     return '' + value;
   }
 
-  convertToJSValue(value: any, platform: Platform): any {
+  convertToJSValue(value: any): any {
     return '' + value;
   }
 
