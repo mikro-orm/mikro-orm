@@ -1,10 +1,10 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
 import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { FilterQuery, IDatabaseDriver, Transaction, Utils } from '..';
-import { QueryResult } from '../connections';
-import { ValidationError } from '../utils';
+import { QueryResult, Transaction } from '../connections';
+import { Utils, ValidationError } from '../utils';
+import { IDatabaseDriver } from '../drivers';
 
 export class ChangeSetPersister {
 
