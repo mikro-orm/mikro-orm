@@ -12,8 +12,8 @@ export class MetadataStorage {
     this.metadata = Utils.copy(metadata);
   }
 
-  static getMetadata(): Dictionary<EntityMetadata>; // tslint:disable-next-line:lines-between-class-members
-  static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>; // tslint:disable-next-line:lines-between-class-members
+  static getMetadata(): Dictionary<EntityMetadata>;
+  static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>;
   static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
     if (entity && !MetadataStorage.metadata[entity]) {
       MetadataStorage.metadata[entity] = { className: entity, properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
