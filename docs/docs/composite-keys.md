@@ -58,6 +58,13 @@ const audi1 = await em.findOneOrFail(Car, { name: 'Audi A8', year: 2010 });
 const audi2 = await em.findOneOrFail(Car, ['Audi A8', 2010]);
 ```
 
+> If we want to use the second approach with primary key tuple, we will need to specify 
+> the type of entity's primary key via `PrimaryKeyType` symbol as shown in the `Car` entity.
+
+> `PrimaryKeyType` is not needed when your entity has single scalar primary key under 
+> one of following property names: `id: number | string | bigint`, `_id: any` or 
+> `uuid: string`.
+
 You can also use this entity in associations. MikroORM will then generate two foreign 
 keys one for name and to year to the related entities.
 
@@ -109,7 +116,7 @@ export class ArticleAttribute {
   @Property()
   value!: string;
 
-  [PrimaryKeyType]: [number, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]: [number, string]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(name: string, value: string, article: Article) {
     this.attribute = name;
@@ -131,16 +138,18 @@ export class User {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Address2, address => address.author, { cascade: [Cascade.ALL] })
-  address?: Address2;
+  @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL] })
+  address?: Address;
 
 }
 
 @Entity()
 export class Address {
 
-  @OneToOne()
+  @OneToOne({ primary: true })
   user!: User;
+
+  [PrimaryKeyType]: number; // this is needed for proper type checks in `FilterQuery`
 
 }
 ```
@@ -207,6 +216,8 @@ export class OrderItem {
 
   @Property()
   offeredPrice: number;
+
+  [PrimaryKeyType]: [number, number]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;
