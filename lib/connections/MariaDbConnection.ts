@@ -1,6 +1,9 @@
 import { Connection } from 'mariadb';
 import { MySqlConnection } from './MySqlConnection';
 
+// @ts-ignore
+import Dialect from 'knex/lib/dialects/mysql/index.js';
+
 export class MariaDbConnection extends MySqlConnection {
 
   async connect(): Promise<void> {
@@ -8,12 +11,11 @@ export class MariaDbConnection extends MySqlConnection {
   }
 
   private getPatchedDialect() {
-    const dialect = require('knex/lib/dialects/mysql/index.js');
-    dialect.prototype.driverName = 'mariadb';
-    dialect.prototype._driver = () => require('mariadb/callback');
-    dialect.prototype.validateConnection = (connection: Connection) => connection.isValid();
+    Dialect.prototype.driverName = 'mariadb';
+    Dialect.prototype._driver = () => require('mariadb/callback');
+    Dialect.prototype.validateConnection = (connection: Connection) => connection.isValid();
 
-    return dialect;
+    return Dialect;
   }
 
 }

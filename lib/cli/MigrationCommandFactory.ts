@@ -155,7 +155,7 @@ export class MigrationCommandFactory {
     }
 
     if (options.to === 0) {
-      const v = { down: 'first', up: 'latest'}[method];
+      const v = { down: 'first', up: 'latest' }[method];
       return `${msg} to the ${v} version`;
     }
 

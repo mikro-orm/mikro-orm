@@ -78,7 +78,7 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 - All features or bug fixes **must be tested**, ideally by both unit tests and integration tests.
 - If you are implementing new feature or extending public API, you should **document it**.
-- Follow defined rules in [tslint.json](tslint.json). All these will be checked by GitHub Actions 
+- Follow defined rules in [.eslintrc.js](.eslintrc.js). All these will be checked by GitHub Actions 
   when you submit your PR.
 
 Some highlights:

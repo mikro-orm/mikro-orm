@@ -5,7 +5,9 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { EntityManager } from '../EntityManager';
 import { Utils, ValidationError } from '../utils';
-import { CommitOrderCalculator, LockMode, Transaction } from '..';
+import { LockMode } from './enums';
+import { Transaction } from '../connections';
+import { CommitOrderCalculator } from './CommitOrderCalculator';
 
 export class UnitOfWork {
 

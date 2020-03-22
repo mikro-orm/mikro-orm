@@ -1,6 +1,18 @@
 import { MetadataStorage } from '../metadata';
 import { HookType } from '../typings';
 
+function hook(type: HookType) {
+  return function (target: any, method: string) {
+    const meta = MetadataStorage.getMetadata(target.constructor.name);
+
+    if (!meta.hooks[type]) {
+      meta.hooks[type] = [];
+    }
+
+    meta.hooks[type]!.push(method);
+  };
+}
+
 export function BeforeCreate() {
   return hook('beforeCreate');
 }
@@ -33,16 +45,4 @@ export function BeforeDelete() {
  */
 export function AfterDelete() {
   return hook('afterDelete');
-}
-
-function hook(type: HookType) {
-  return function (target: any, method: string) {
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
-
-    if (!meta.hooks[type]) {
-      meta.hooks[type] = [];
-    }
-
-    meta.hooks[type]!.push(method);
-  };
 }
