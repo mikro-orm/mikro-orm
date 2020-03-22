@@ -38,8 +38,8 @@ export class QueryBuilderHelper {
               private readonly knex: Knex,
               private readonly platform: Platform) { }
 
-  mapper(field: string, type?: QueryType): string; // tslint:disable-next-line:lines-between-class-members
-  mapper(field: string, type?: QueryType, value?: any, alias?: string): string; // tslint:disable-next-line:lines-between-class-members
+  mapper(field: string, type?: QueryType): string;
+  mapper(field: string, type?: QueryType, value?: any, alias?: string): string;
   mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Raw {
     const fields = Utils.splitPrimaryKeys(field);
 
@@ -215,7 +215,7 @@ export class QueryBuilderHelper {
     }
 
     // when including the opening bracket/paren we consider it complex
-    return !re.source.match(/[{\[(]/);
+    return !re.source.match(/[{[(]/);
   }
 
   getRegExpParam(re: RegExp): string {
@@ -404,7 +404,7 @@ export class QueryBuilderHelper {
     const ret: { column: string; order: string }[] = [];
 
     Object.keys(orderBy).forEach(k => {
-      // tslint:disable-next-line:prefer-const
+      // eslint-disable-next-line prefer-const
       let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
       Utils.splitPrimaryKeys(field).forEach(f => {

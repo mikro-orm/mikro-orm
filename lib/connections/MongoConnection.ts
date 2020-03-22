@@ -167,11 +167,12 @@ export class MongoConnection extends Connection {
         query = `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`;
         res = await this.getCollection(collection).insertOne(data, options);
         break;
-      case 'updateMany':
+      case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
         query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`;
         res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload!, options);
         break;
+      }
       case 'deleteMany':
       case 'countDocuments':
         query = `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`;

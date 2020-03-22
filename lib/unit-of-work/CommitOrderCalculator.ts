@@ -1,5 +1,23 @@
 import { Dictionary } from '../typings';
 
+export const enum NodeState {
+  NOT_VISITED = 0,
+  IN_PROGRESS = 1,
+  VISITED = 2,
+}
+
+export interface Node {
+  hash: string;
+  state: NodeState;
+  dependencies: Dictionary<Edge>;
+}
+
+export interface Edge {
+  from: string;
+  to: string;
+  weight: number;
+}
+
 /**
  * CommitOrderCalculator implements topological sorting, which is an ordering
  * algorithm for directed graphs (DG) and/or directed acyclic graphs (DAG) by
@@ -104,22 +122,4 @@ export class CommitOrderCalculator {
     this.sortedNodeList.push(target.hash);
   }
 
-}
-
-export const enum NodeState {
-  NOT_VISITED = 0,
-  IN_PROGRESS = 1,
-  VISITED = 2,
-}
-
-export interface Node {
-  hash: string;
-  state: NodeState;
-  dependencies: Dictionary<Edge>;
-}
-
-export interface Edge {
-  from: string;
-  to: string;
-  weight: number;
 }

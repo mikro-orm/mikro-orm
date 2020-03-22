@@ -5,14 +5,6 @@ import { EntityValidator, ReferenceType } from '../entity';
 import { QueryOrder } from '../query';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
-export function OneToMany<T extends AnyEntity<T>>(
-  entity: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
-  mappedBy?: (string & keyof T) | ((e: T) => any),
-  options: Partial<OneToManyOptions<T>> = {},
-) {
-  return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
-}
-
 export function createOneToDecorator<T extends AnyEntity<T>>(
   entity?: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
@@ -35,6 +27,14 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
     Object.assign(prop, options);
     meta.properties[propertyName] = prop;
   };
+}
+
+export function OneToMany<T extends AnyEntity<T>>(
+  entity: OneToManyOptions<T> | string | ((e?: any) => EntityName<T>),
+  mappedBy?: (string & keyof T) | ((e: T) => any),
+  options: Partial<OneToManyOptions<T>> = {},
+) {
+  return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
 }
 
 export type OneToManyOptions<T extends AnyEntity<T>> = ReferenceOptions<T> & {
