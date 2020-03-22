@@ -8,7 +8,7 @@ import { FlatQueryOrderMap, QueryFlag, QueryOrderMap, QueryType } from './enums'
 import { LockMode } from '../unit-of-work';
 import { AbstractSqlDriver } from '../drivers';
 import { MetadataStorage } from '../metadata';
-import { CriteriaNode } from './CriteriaNode';
+import { CriteriaNode } from './internal';
 import { EntityManager } from '../EntityManager';
 
 /**
@@ -98,8 +98,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  where(cond: QBFilterQuery<T>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
-  where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this; // tslint:disable-next-line:lines-between-class-members
+  where(cond: QBFilterQuery<T>, operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
+  where(cond: string, params?: any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS | any[], operator?: keyof typeof QueryBuilderHelper.GROUP_OPERATORS): this {
     cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false))!;
 
@@ -123,14 +123,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  andWhere(cond: QBFilterQuery<T>): this; // tslint:disable-next-line:lines-between-class-members
-  andWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
+  andWhere(cond: QBFilterQuery<T>): this;
+  andWhere(cond: string, params?: any[]): this;
   andWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
     return this.where(cond as string, params, '$and');
   }
 
-  orWhere(cond: QBFilterQuery<T>): this; // tslint:disable-next-line:lines-between-class-members
-  orWhere(cond: string, params?: any[]): this; // tslint:disable-next-line:lines-between-class-members
+  orWhere(cond: QBFilterQuery<T>): this;
+  orWhere(cond: string, params?: any[]): this;
   orWhere(cond: QBFilterQuery<T> | string, params?: any[]): this {
     return this.where(cond as string, params, '$or');
   }
@@ -380,11 +380,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
         this.helper.processJoins(qb, this._joins);
         break;
-      case QueryType.COUNT:
+      case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
         qb[m](this.helper.mapper(this._fields![0], this.type, undefined, 'count'));
         this.helper.processJoins(qb, this._joins);
         break;
+      }
       case QueryType.INSERT:
         qb.insert(this._data);
         break;
