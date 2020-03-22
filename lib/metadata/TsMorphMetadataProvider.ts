@@ -19,7 +19,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   async getExistingSourceFile(meta: EntityMetadata): Promise<SourceFile> {
-    const path = meta.path.match(/\/[^\/]+$/)![0].replace(/\.js$/, '.ts');
+    const path = meta.path.match(/\/[^/]+$/)![0].replace(/\.js$/, '.ts');
     return this.getSourceFile(path)!;
   }
 

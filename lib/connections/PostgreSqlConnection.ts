@@ -1,10 +1,12 @@
-import { PgConnectionConfig } from 'knex';
 import { types, defaults } from 'pg';
+import { PgConnectionConfig } from 'knex';
+// @ts-ignore
+import TableCompiler_PG from 'knex/lib/dialects/postgres/schema/tablecompiler.js';
+// @ts-ignore
+import TableCompiler from 'knex/lib/schema/tablecompiler.js';
+
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 import { Dictionary } from '../typings';
-
-const TableCompiler_PG = require('knex/lib/dialects/postgres/schema/tablecompiler.js');
-const TableCompiler = require('knex/lib/schema/tablecompiler.js');
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
@@ -49,6 +51,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
    * monkey patch knex' postgres dialect so it correctly handles column updates (especially enums)
    */
   private patchKnex(): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
 
     TableCompiler_PG.prototype.addColumns = function (this: typeof TableCompiler_PG, columns: Dictionary[], prefix: string, colCompilers: Dictionary[]) {
@@ -108,7 +111,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     if (defaultTo[0] === null) {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
     } else {
-      const modifier = col.defaultTo.apply(col, defaultTo);
+      const modifier = col.defaultTo(...defaultTo);
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`, bindings: [] });
     }
   }
