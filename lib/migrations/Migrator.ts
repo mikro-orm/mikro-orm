@@ -64,6 +64,18 @@ export class Migrator {
     return this.runMigrations('down', options);
   }
 
+  protected resolve(file: string) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const migration = require(file);
+    const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+    const instance = new MigrationClass(this.driver.getConnection(), this.config);
+
+    return {
+      up: () => this.runner.run(instance, 'up'),
+      down: () => this.runner.run(instance, 'down'),
+    };
+  }
+
   private async getSchemaDiff(): Promise<string[]> {
     const dump = await this.schemaGenerator.getUpdateSchemaSQL(false, this.options.safe, this.options.dropTables);
     const lines = dump.split('\n');
@@ -77,17 +89,6 @@ export class Migrator {
     }
 
     return lines;
-  }
-
-  private resolve(file: string) {
-    const migration = require(file);
-    const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
-    const instance = new MigrationClass(this.driver.getConnection(), this.config);
-
-    return {
-      up: () => this.runner.run(instance, 'up'),
-      down: () => this.runner.run(instance, 'down'),
-    };
   }
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[] }>(options?: T): T {
