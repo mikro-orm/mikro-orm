@@ -81,7 +81,7 @@ export class SchemaGenerator {
     return this.wrapSchema(ret + '\n', wrap);
   }
 
-  async updateSchema(wrap: boolean = true, safe = false, dropTables = true): Promise<void> {
+  async updateSchema(wrap = true, safe = false, dropTables = true): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(wrap, safe, dropTables);
     await this.execute(sql);
   }
