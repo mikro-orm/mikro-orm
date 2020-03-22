@@ -29,7 +29,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     autoFlush: false,
     strict: false,
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
     baseDir: process.cwd(),

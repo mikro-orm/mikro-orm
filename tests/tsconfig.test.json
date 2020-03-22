@@ -9,9 +9,5 @@
     "strictPropertyInitialization": false,
     "experimentalDecorators": true
   },
-  "include": [
-    "entities",
-    "entities-sql",
-    "repositories"
-  ]
+  "include": ["**/*.ts"]
 }

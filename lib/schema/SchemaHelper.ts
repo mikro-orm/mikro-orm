@@ -226,7 +226,7 @@ export abstract class SchemaHelper {
       return info.defaultValue.toString() === '' || info.defaultValue.toString() === this.getDefaultEmptyString();
     }
 
-    // tslint:disable-next-line:triple-equals
+    // eslint-disable-next-line eqeqeq
     return info.defaultValue == prop.default; // == intentionally
   }
 

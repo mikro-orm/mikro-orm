@@ -1,6 +1,6 @@
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
-import CliTable3, { HorizontalTable } from 'cli-table3';
+import CliTable3, { Table } from 'cli-table3';
 import highlight from 'cli-highlight';
 import chalk from 'chalk';
 
@@ -26,7 +26,9 @@ export class CLIHelper {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const config = require(path);
+
         return new Configuration({ ...(config.default || config), ...options }, validate);
       }
     }
@@ -119,7 +121,7 @@ export class CLIHelper {
       text = highlight(text, { language, ignoreIllegals: true, theme: config.getHighlightTheme() });
     }
 
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line no-console
     console.log(text);
   }
 
@@ -165,6 +167,7 @@ export class CLIHelper {
     const path = process.cwd() + '/node_modules/' + name + '/package.json';
 
     if (await pathExists(path)) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const pkg = require(path);
       return chalk.green(pkg.version);
     }
@@ -177,7 +180,7 @@ export class CLIHelper {
       return CLIHelper.dump(options.empty);
     }
 
-    const table = new CliTable3({ head: options.columns, style: { compact: true } }) as HorizontalTable;
+    const table = new CliTable3({ head: options.columns, style: { compact: true } }) as Table;
     table.push(...options.rows);
     CLIHelper.dump(table.toString());
   }

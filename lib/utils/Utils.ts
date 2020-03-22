@@ -453,6 +453,7 @@ export class Utils {
       return false;
     }
 
+    // eslint-disable-next-line no-prototype-builtins
     if (!value.constructor.prototype.hasOwnProperty('isPrototypeOf')) {
       return false;
     }
