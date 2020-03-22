@@ -5303,10 +5303,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mariadb@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.2.0.tgz#077e8c44ded718f2ecebef321c3703fe8d524504"
-  integrity sha512-YXPF11u4NVgm3FLetJoAbq9Fb0a/RSwNrDHdmAqpqgYErWAOes/IVbOfvWPWZQ0hI88j/81f15AGJZAVuR3bGg==
+mariadb@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.3.1.tgz#bbc05c82aa4bf3fe58e54b1735e94a3a43fa4bff"
+  integrity sha512-suv+ygoiS+tQSKmxgzJsGV9R+USN8g6Ql+GuMo9k7alD6FxOT/lwebLHy63/7yPZfVtlyAitK1tPd7ZoFhN/Sg==
   dependencies:
     "@types/geojson" "^7946.0.7"
     "@types/node" ">=8.0.0"

@@ -85,7 +85,7 @@ import { MySqlDriver } from 'mikro-orm/dist/drivers/MySqlDriver';
 
 MikroORM.init({
   driver: MySqlDriver,
-  driverOptions: { timezone: '+02:00' },
+  driverOptions: { connection: { timezone: '+02:00' } },
 });
 ```
 

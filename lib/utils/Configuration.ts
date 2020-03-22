@@ -286,6 +286,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   forceUtcTimezone: boolean;
+  timezone?: string;
   ensureIndexes: boolean;
   hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
   entityRepository: { new (em: EntityManager, entityName: EntityName<AnyEntity>): EntityRepository<AnyEntity> };

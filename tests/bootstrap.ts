@@ -59,7 +59,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     baseDir: BASE_DIR,
     debug: ['query'],
     highlight: false,
-    forceUtcTimezone: type === 'mysql',
+    timezone: 'Z',
     logger: i => i,
     multipleStatements: true,
     type,

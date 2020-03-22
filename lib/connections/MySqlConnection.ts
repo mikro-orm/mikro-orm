@@ -22,6 +22,10 @@ export class MySqlConnection extends AbstractSqlConnection {
       ret.timezone = 'Z';
     }
 
+    if (this.config.get('timezone')) {
+      ret.timezone = this.config.get('timezone');
+    }
+
     ret.supportBigNumbers = true;
 
     return ret;
