@@ -47,6 +47,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     rename(options, 'joinColumn', 'joinColumns');
     rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
     rename(options, 'referenceColumnName', 'referencedColumnNames');
+    rename(options, 'columnType', 'columnTypes');
 
     const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
 
