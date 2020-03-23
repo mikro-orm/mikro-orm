@@ -27,18 +27,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
-    let ret: any; // knex doesn't return value from the transaction even TS type says the opposite though
-    await (ctx || this.client).transaction(async trx => {
-      try {
-        ret = await cb(trx);
-        await trx.commit();
-      } catch (e) {
-        await trx.rollback(e);
-        throw e;
-      }
-    });
-
-    return ret;
+    return (ctx || this.client).transaction(cb);
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
