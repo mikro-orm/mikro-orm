@@ -68,22 +68,26 @@ const audi2 = await em.findOneOrFail(Car, ['Audi A8', 2010]);
 You can also use this entity in associations. MikroORM will then generate two foreign 
 keys one for name and to year to the related entities.
 
-This example shows how you can nicely solve the requirement for existing values before em.persist(): By adding them as mandatory values for the constructor.
+This example shows how you can nicely solve the requirement for existing values before 
+`em.persist()`: By adding them as mandatory values for the constructor.
 
 ## Identity through foreign Entities
 
 There are tons of use-cases where the identity of an Entity should be determined by 
 the entity of one or many parent entities.
 
-- Dynamic Attributes of an Entity (for example Article). Each Article has many attributes with primary key 'article_id' and 'attribute_name'.
-- Address object of a Person, the primary key of the address is 'user_id'. This is not a case of a composite primary key, but the identity is derived through a foreign entity and a foreign key.
-- Join Tables with metadata can be modelled as Entity, for example connections between two articles with a little description and a score.
+- Dynamic Attributes of an Entity (for example `Article`). Each Article has many 
+  attributes with primary key `article_id` and `attribute_name`.
+- `Address` object of a `Person`, the primary key of the address is `user_id`. This 
+  is not a case of a composite primary key, but the identity is derived through a 
+  foreign entity and a foreign key.
+- Pivot Tables with metadata can be modelled as Entity, for example connections between 
+  two articles with a little description and a score.
 
 The semantics of mapping identity through foreign entities are easy:
 
-- Only allowed on Many-To-One or One-To-One associations.
-- Plug an @Id annotation onto every association.
-- Set an attribute association-key with the field name of the association in XML.
+- Only allowed on `@ManyToOnes` or `@OneToOne` associations.
+- Use `primary: true` in the decorator.
 
 ## Use-Case 1: Dynamic Attributes
 
@@ -107,7 +111,7 @@ export class Article {
 @Entity()
 export class ArticleAttribute {
 
-  @ManyToOne()
+  @ManyToOne({ primary: true })
   article: Article;
 
   @PrimaryKey()
@@ -129,7 +133,9 @@ export class ArticleAttribute {
 
 ## Use-Case 2: Simple Derived Identity
 
-Sometimes you have the requirement that two objects are related by a One-To-One association and that the dependent class should re-use the primary key of the class it depends on. One good example for this is a user-address relationship:
+Sometimes you have the requirement that two objects are related by a `@OneToOne` 
+association and that the dependent class should re-use the primary key of the class 
+it depends on. One good example for this is a user-address relationship:
 
 ```typescript
 @Entity()
@@ -139,7 +145,7 @@ export class User {
   id!: number;
 
   @OneToOne(() => Address, address => address.user, { cascade: [Cascade.ALL] })
-  address?: Address;
+  address?: Address; // virtual property (inverse side) to allow querying the relation
 
 }
 
