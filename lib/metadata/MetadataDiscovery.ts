@@ -65,7 +65,7 @@ export class MetadataDiscovery {
 
     if (this.config.get('entities').length > 0) {
       await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (preferTsNode && (this.config.get('tsNode') || Utils.detectTsNode())) {
+    } else if (preferTsNode && this.config.get('tsNode', Utils.detectTsNode())) {
       await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
     } else {
       await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));

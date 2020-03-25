@@ -26,12 +26,9 @@ export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
 
 export async function initORMMongo() {
-  // simulate ts-node to raise coverage
-  process.argv[0] = process.argv[0].replace(/node$/, 'ts-node');
-
   const orm = await MikroORM.init<MongoDriver>({
-    entitiesDirs: ['dist/entities'], // will be ignored as we simulate ts-node
-    entitiesDirsTs: ['entities'],
+    entitiesDirs: ['entities'],
+    tsNode: false,
     clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
     baseDir: BASE_DIR,
     debug: true,

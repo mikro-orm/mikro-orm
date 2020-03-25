@@ -39,7 +39,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     propagateToOneOwner: true,
     forceUtcTimezone: false,
     ensureIndexes: false,
-    tsNode: false,
     debug: false,
     verbose: false,
     driverOptions: {},
@@ -297,7 +296,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   debug: boolean | LoggerNamespace[];
   highlight: boolean;
   highlightTheme?: Dictionary<string | string[]>;
-  tsNode: boolean;
+  tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;
   cache: {

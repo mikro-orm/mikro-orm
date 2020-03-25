@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration } from '../../lib/utils';
+import { Configuration, Utils } from '../../lib/utils';
 
 jest.mock(('../../tests/mikro-orm.config.js').replace(/\\/g, '/'), () => ({ dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
 jest.mock(('../../tests/mikro-orm.config.ts').replace(/\\/g, '/'), () => ({ dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
@@ -95,7 +95,8 @@ describe('CLIHelper', () => {
     delete pkg['mikro-orm'].useTsNode;
     const orm = await CLIHelper.getORM(false);
     expect(orm).toBeInstanceOf(MikroORM);
-    expect(orm.config.get('tsNode')).toBe(false);
+    expect(orm.config.get('tsNode')).toBe(undefined);
+    expect(orm.config.get('tsNode', Utils.detectTsNode())).toBe(true);
     await orm.close(true);
     pathExistsMock.mockRestore();
   });
