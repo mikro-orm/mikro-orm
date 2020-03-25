@@ -63,7 +63,7 @@ instead, you should use `entities` array and use `globby` manually:
 import globby from 'globby';
 
 const orm = await MikroORM.init({
-  entities: await globby('./dist/app/**/entities/*.js').map(require),
+  entities: await (globby('./dist/app/**/entities/*.js')).map(require),
   // ...
 });
 ```
