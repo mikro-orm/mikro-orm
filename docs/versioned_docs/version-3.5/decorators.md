@@ -11,7 +11,8 @@ abstract base classes.
 
 | Parameter | Type | Optional | Description |
 |-----------|------|----------|-------------|
-| `collection` | `string` | yes | Override default collection/table name. |
+| `tableName` | `string` | yes | Override default collection/table name. |
+| `collection` | `string` | yes | Alias for `tableName`. |
 | `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
 
 > You can also use `@Repository()` decorator instead of `customRepository` parameter.
@@ -66,6 +67,9 @@ registered = false;
 
 `@PrimaryKey()` decorator is used to define entity's unique primary key identifier. 
 
+> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
+
 > Every entity needs to have exactly one primary key.
 
 ```typescript
@@ -80,6 +84,9 @@ _id!: ObjectId; // ObjectId PK in mongodb driver
 ```
 
 ### @SerializedPrimaryKey()
+
+> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted 
+> into the database.
 
 For MongoDB you can define serialized primary key, which will be then used in entity 
 serialization via `JSON.stringify()` (through method `entity.toJSON()`).
@@ -97,6 +104,9 @@ id!: string;
 
 ### @Enum()
 
+> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its 
+> parameters.
+
 `@Enum()` decorator can be used for both numeric and string enums. By default enums are 
 considered numeric, and will be represented in the database schema as `tinyint/smallint`. 
 For string enums, if you define the enum in same file, its values will be automatically 
@@ -109,7 +119,10 @@ See [Defining Entities](defining-entities.md#enums).
 | `items` | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes | Specify enum items explicitly. |
 
 ```typescript
-@Enum(() => MyEnum1)
+@Enum() // with ts-morph metadata provider we do not need to specify anything
+enum0 = MyEnum1.VALUE_1;
+
+@Enum(() => MyEnum1) // or @Enum({ items: () => MyEnum1 })
 enum1 = MyEnum1.VALUE_1;
 
 @Enum({ type: 'MyEnum2', nullable: true })
@@ -176,6 +189,9 @@ with refactoring features in IDEs like WebStorm.
 
 ### @ManyToOne()
 
+> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
+
 Many instances of the current Entity refer to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
@@ -202,6 +218,9 @@ author3?: Author;
 ```
 
 ### @OneToOne()
+
+> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
 
 One instance of the current Entity refers to One instance of the referred Entity.
 
@@ -237,6 +256,9 @@ bestFriend3!: User;
 
 ### @OneToMany()
 
+> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
+
 One instance of the current Entity has Many instances (references) to the referred Entity.
 
 See [Defining Entities](relationships.md#onetomany) for more examples, including bi-directional 1:m.
@@ -263,6 +285,9 @@ books2 = new Collection<Book>(this); // target entity type can be read via `TsMo
 ```
 
 ### @ManyToMany()
+
+> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
 
 Many instances of the current Entity refers to Many instances of the referred Entity.
 

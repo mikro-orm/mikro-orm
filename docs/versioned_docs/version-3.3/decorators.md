@@ -19,7 +19,7 @@ abstract base classes.
 
 ```typescript
 @Entity({ tableName: 'authors' })
-export class Author implements IdEntity<Author> { ... }
+export class Author { ... }
 ```
 
 ## Entity Properties
@@ -67,6 +67,9 @@ registered = false;
 
 `@PrimaryKey()` decorator is used to define entity's unique primary key identifier. 
 
+> `@PrimaryKey()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
+
 > Every entity needs to have exactly one primary key.
 
 ```typescript
@@ -81,6 +84,9 @@ _id!: ObjectId; // ObjectId PK in mongodb driver
 ```
 
 ### @SerializedPrimaryKey()
+
+> Property marked with `@SerializedPrimaryKey()` is virtual, it will not be persisted 
+> into the database.
 
 For MongoDB you can define serialized primary key, which will be then used in entity 
 serialization via `JSON.stringify()` (through method `entity.toJSON()`).
@@ -98,6 +104,9 @@ id!: string;
 
 ### @Enum()
 
+> `@Enum()` decorator extend the `@Property()` decorator, so you can use all its 
+> parameters.
+
 `@Enum()` decorator can be used for both numeric and string enums. By default enums are 
 considered numeric, and will be represented in the database schema as `tinyint/smallint`. 
 For string enums, if you define the enum in same file, its values will be automatically 
@@ -110,7 +119,10 @@ See [Defining Entities](defining-entities.md#enums).
 | `items` | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes | Specify enum items explicitly. |
 
 ```typescript
-@Enum(() => MyEnum1)
+@Enum() // with ts-morph metadata provider we do not need to specify anything
+enum0 = MyEnum1.VALUE_1;
+
+@Enum(() => MyEnum1) // or @Enum({ items: () => MyEnum1 })
 enum1 = MyEnum1.VALUE_1;
 
 @Enum({ type: 'MyEnum2', nullable: true })
@@ -144,7 +156,7 @@ See [Defining Entities](defining-entities.md#indexes).
 @Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
 @Unique({ properties: ['name', 'email'] })
 export class Author implements IdEntity<Author> {
-k
+
   @Property()
   @Unique()
   email!: string;
@@ -177,6 +189,9 @@ with refactoring features in IDEs like WebStorm.
 
 ### @ManyToOne()
 
+> `@ManyToOne()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
+
 Many instances of the current Entity refer to One instance of the referred Entity.
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
@@ -188,6 +203,8 @@ See [Defining Entities](relationships.md#manytoone) for more examples.
 | `eager` | `boolean` | yes | Always load the relationship. |
 | `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
 | `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](entity-references.md). |
+| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
 ```typescript
 @ManyToOne()
@@ -201,6 +218,9 @@ author3?: Author;
 ```
 
 ### @OneToOne()
+
+> `@OneToOne()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
 
 One instance of the current Entity refers to One instance of the referred Entity.
 
@@ -217,6 +237,8 @@ See [Defining Entities](relationships.md#onetoone) for more examples, including 
 | `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](entity-references.md). |
 | `orphanRemoval` | `boolean` | yes | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)). |
 | `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
+| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
 ```typescript
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
@@ -233,6 +255,9 @@ bestFriend3!: User;
 ```
 
 ### @OneToMany()
+
+> `@OneToMany()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
 
 One instance of the current Entity has Many instances (references) to the referred Entity.
 
@@ -260,6 +285,9 @@ books2 = new Collection<Book>(this); // target entity type can be read via `TsMo
 ```
 
 ### @ManyToMany()
+
+> `@ManyToMany()` decorator extend the `@Property()` decorator, so you can use all 
+> its parameters.
 
 Many instances of the current Entity refers to Many instances of the referred Entity.
 
