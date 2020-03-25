@@ -453,7 +453,7 @@ export class MetadataDiscovery {
   }
 
   private defineBaseEntityProperties(meta: EntityMetadata): void {
-    const base = this.metadata.get(meta.extends);
+    const base = meta.extends && this.metadata.get(meta.extends);
 
     if (!meta.extends || !base) {
       return;
