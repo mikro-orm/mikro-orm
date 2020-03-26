@@ -4,7 +4,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, primary: true })
+  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id' })
   author: Author2;
 
   @Property()

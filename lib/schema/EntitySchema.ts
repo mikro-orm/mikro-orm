@@ -40,6 +40,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     const rename = <U> (data: U, from: string, to: string): void => {
       if (options[from] && !options[to]) {
         options[to] = [options[from]];
+        delete options[from];
       }
     };
 
