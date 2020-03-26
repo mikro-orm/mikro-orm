@@ -43,6 +43,19 @@ export class SchemaCommandFactory {
       desc: 'Do not skip foreign key checks',
     });
 
+    if (command === 'update') {
+      args.option('safe', {
+        type: 'boolean',
+        desc: 'Allows to disable table and column dropping',
+        default: false,
+      });
+      args.option('drop-tables', {
+        type: 'boolean',
+        desc: 'Allows to disable table dropping',
+        default: true,
+      });
+    }
+
     if (command === 'drop') {
       args.option('drop-migrations-table', {
         type: 'boolean',
@@ -65,20 +78,39 @@ export class SchemaCommandFactory {
 
     const orm = await CLIHelper.getORM();
     const generator = orm.getSchemaGenerator();
+    const params = SchemaCommandFactory.getOrderedParams(args, method);
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
-      const dump = await generator[m](!args.fkChecks, args.dropMigrationsTable);
+      const dump = await generator[m](...params);
       CLIHelper.dump(dump, orm.config, 'sql');
     } else {
       const m = method + 'Schema';
-      await generator[m](!args.fkChecks, args.dropMigrationsTable, args.dropDb);
+      await generator[m](...params);
       CLIHelper.dump(chalk.green(successMessage));
     }
 
     await orm.close(true);
   }
 
+  private static getOrderedParams(args: Arguments<Options>, method: 'create' | 'update' | 'drop'): any[] {
+    const ret: any[] = [!args.fkChecks];
+
+    if (method === 'update') {
+      ret.push(args.safe, args.dropTables);
+    }
+
+    if (method === 'drop') {
+      ret.push(args.dropMigrationsTable);
+
+      if (!args.dump) {
+        ret.push(args.dropDb);
+      }
+    }
+
+    return ret;
+  }
+
 }
 
-export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean };
+export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean; dropTables: boolean; safe: boolean };

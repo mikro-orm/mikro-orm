@@ -81,21 +81,25 @@ export class SchemaGenerator {
     return this.wrapSchema(ret + '\n', wrap);
   }
 
-  async updateSchema(wrap = true): Promise<void> {
-    const sql = await this.getUpdateSchemaSQL(wrap);
+  async updateSchema(wrap: boolean = true, safe = false, dropTables = true): Promise<void> {
+    const sql = await this.getUpdateSchemaSQL(wrap, safe, dropTables);
     await this.execute(sql);
   }
 
-  async getUpdateSchemaSQL(wrap = true): Promise<string> {
+  async getUpdateSchemaSQL(wrap = true, safe = false, dropTables = true): Promise<string> {
     const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
     let ret = '';
 
     for (const meta of Object.values(this.metadata.getAll())) {
-      ret += this.getUpdateTableSQL(meta, schema);
+      ret += this.getUpdateTableSQL(meta, schema, safe);
     }
 
     for (const meta of Object.values(this.metadata.getAll())) {
       ret += this.getUpdateTableFKsSQL(meta, schema);
+    }
+
+    if (!dropTables || safe) {
+      return this.wrapSchema(ret, wrap);
     }
 
     const definedTables = Object.values(this.metadata.getAll()).map(meta => meta.collection);
@@ -131,14 +135,14 @@ export class SchemaGenerator {
     }
   }
 
-  private getUpdateTableSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
+  private getUpdateTableSQL(meta: EntityMetadata, schema: DatabaseSchema, safe: boolean): string {
     const table = schema.getTable(meta.collection);
 
     if (!table) {
       return this.dump(this.createTable(meta));
     }
 
-    return this.updateTable(meta, table).map(builder => this.dump(builder)).join('\n');
+    return this.updateTable(meta, table, safe).map(builder => this.dump(builder)).join('\n');
   }
 
   private getUpdateTableFKsSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
@@ -186,8 +190,8 @@ export class SchemaGenerator {
     });
   }
 
-  private updateTable(meta: EntityMetadata, table: DatabaseTable): SchemaBuilder[] {
-    const { create, update, remove } = this.computeTableDifference(meta, table);
+  private updateTable(meta: EntityMetadata, table: DatabaseTable, safe: boolean): SchemaBuilder[] {
+    const { create, update, remove } = this.computeTableDifference(meta, table, safe);
 
     if (create.length + update.length + remove.length === 0) {
       return [];
@@ -217,7 +221,7 @@ export class SchemaGenerator {
     return ret;
   }
 
-  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; remove: Column[] } {
+  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; remove: Column[] } {
     const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(meta, prop, true));
     const columns = table.getColumns();
     const create: EntityProperty[] = [];
@@ -226,6 +230,10 @@ export class SchemaGenerator {
 
     for (const prop of props) {
       this.computeColumnDifference(table, prop, create, update);
+    }
+
+    if (safe) {
+      return { create, update, remove: [] };
     }
 
     return { create, update, remove };

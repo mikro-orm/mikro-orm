@@ -65,7 +65,7 @@ export class Migrator {
   }
 
   private async getSchemaDiff(): Promise<string[]> {
-    const dump = await this.schemaGenerator.getUpdateSchemaSQL(false);
+    const dump = await this.schemaGenerator.getUpdateSchemaSQL(false, this.options.safe, this.options.dropTables);
     const lines = dump.split('\n');
 
     for (let i = lines.length - 1; i > 0; i--) {

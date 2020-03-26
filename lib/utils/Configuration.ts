@@ -49,6 +49,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
+      dropTables: true,
+      safe: false,
       emit: 'ts',
     },
     cache: {
@@ -262,6 +264,8 @@ export type MigrationsOptions = {
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;
+  dropTables?: boolean;
+  safe?: boolean;
   emit?: 'js' | 'ts';
 };
 

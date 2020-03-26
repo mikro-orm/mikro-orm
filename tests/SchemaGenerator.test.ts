@@ -196,6 +196,8 @@ describe('SchemaGenerator', () => {
 
     meta.reset('Author2');
     meta.reset('NewTable');
+    await expect(generator.getUpdateSchemaSQL(false, true)).resolves.toMatchSnapshot('mysql-update-schema-drop-table-safe');
+    await expect(generator.getUpdateSchemaSQL(false, false, false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table-disabled');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table');
     await generator.updateSchema();
 

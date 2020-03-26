@@ -1178,6 +1178,10 @@ drop table if exists \`new_table\`;
 "
 `;
 
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-disabled 1`] = `""`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-safe 1`] = `""`;
+
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-rename-column 1`] = `
 "alter table \`author2\` change \`age\` \`age_in_years\` int(11) null default 42;
 
