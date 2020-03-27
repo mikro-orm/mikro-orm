@@ -71,6 +71,36 @@ const orm = await MikroORM.init({
 > You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
 > The object will be deeply merged, overriding all internally used options.
 
+## Possible issues with circular dependencies
+
+Your entities will most probably contain circular dependencies (e.g. if you use bi-directional 
+relationship). While this is fine, there might be issues caused by wrong order of entities 
+during discovery, especially when you are using the folder based way (via `entitiesDirs`).
+
+The errors caused by circular dependencies are usually similar to this one:
+
+```
+TypeError: Cannot read property 'name' of undefined
+    at Function.className (/path/to/project/node_modules/mikro-orm/dist/utils/Utils.js:253:28)
+    at TsMorphMetadataProvider.extractType (/path/to/project/node_modules/mikro-orm/dist/metadata/TsMorphMetadataProvider.js:37:34)
+    at TsMorphMetadataProvider.initProperties (/path/to/project/node_modules/mikro-orm/dist/metadata/TsMorphMetadataProvider.js:25:31)
+    at TsMorphMetadataProvider.loadEntityMetadata (/path/to/project/node_modules/mikro-orm/dist/metadata/TsMorphMetadataProvider.js:16:9)
+    at MetadataDiscovery.discoverEntity (/path/to/project/node_modules/mikro-orm/dist/metadata/MetadataDiscovery.js:109:9)
+    at MetadataDiscovery.discoverDirectory (/path/to/project/node_modules/mikro-orm/dist/metadata/MetadataDiscovery.js:80:13)
+    at Function.runSerial (/path/to/project/node_modules/mikro-orm/dist/utils/Utils.js:303:22)
+    at MetadataDiscovery.findEntities (/path/to/project/node_modules/mikro-orm/dist/metadata/MetadataDiscovery.js:56:13)
+    at MetadataDiscovery.discover (/path/to/project/node_modules/mikro-orm/dist/metadata/MetadataDiscovery.js:30:9)
+    at Function.init (/path/to/project/node_modules/mikro-orm/dist/MikroORM.js:45:24)
+    at Function.handleSchemaCommand (/path/to/project/node_modules/mikro-orm/dist/cli/SchemaCommandFactory.js:51:21)
+```
+
+If you encounter this, you have basically two options:
+
+- Use `entities` array to have control over the order of discovery. You might need to play with the actual 
+  order you provide here, or possibly with the order of import statements.
+- Use strings instead of references (e.g. `@OneToMany('Book', 'author)`). The downside here is that you 
+  will loose the typechecking capabilities of the decorators. 
+
 ## Entity Discovery in TypeScript
 
 Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files 
