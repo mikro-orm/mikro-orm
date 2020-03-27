@@ -35,7 +35,7 @@ export class UnitOfWork {
     const wrapped = wrap(entity);
     Object.defineProperty(wrapped, '__em', { value: this.em, writable: true });
 
-    if (!wrapped.__primaryKey) {
+    if (!Utils.isDefined(wrapped.__primaryKey, true)) {
       return;
     }
 
@@ -81,7 +81,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (!wrap(entity).__primaryKey) {
+    if (!Utils.isDefined(wrap(entity).__primaryKey, true)) {
       this.identifierMap[wrap(entity).__uuid] = new EntityIdentifier();
     }
 
@@ -191,7 +191,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (!wrapped.__primaryKey && !this.identifierMap[wrapped.__uuid]) {
+    if (!Utils.isDefined(wrapped.__primaryKey, true) && !this.identifierMap[wrapped.__uuid]) {
       this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
     }
 

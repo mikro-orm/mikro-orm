@@ -19,8 +19,8 @@ export class Utils {
   /**
    * Checks if the argument is not undefined
    */
-  static isDefined<T = object>(data: any): data is T {
-    return typeof data !== 'undefined';
+  static isDefined<T = object>(data: any, considerNullUndefined = false): data is T {
+    return typeof data !== 'undefined' && !(considerNullUndefined && data === null);
   }
 
   /**
@@ -155,7 +155,7 @@ export class Utils {
 
     const collection = entity[prop.name] as unknown instanceof ArrayCollection;
     const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name]).__primaryKeys.every(pk => pk);
-    const noPkProp = prop.primary && !entity[prop.name];
+    const noPkProp = prop.primary && !Utils.isDefined(entity[prop.name], true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly

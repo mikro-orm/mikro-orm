@@ -13,6 +13,17 @@ describe('Utils', () => {
   beforeAll(async () => orm = await initORMMongo());
   beforeEach(async () => wipeDatabase(orm.em));
 
+  test('isDefined', () => {
+    let data;
+    expect(Utils.isDefined(data)).toBe(false);
+    data = null;
+    expect(Utils.isDefined(data)).toBe(true);
+    expect(Utils.isDefined(data, true)).toBe(false);
+    data = 0;
+    expect(Utils.isDefined(data)).toBe(true);
+    expect(Utils.isDefined(data, true)).toBe(true);
+  });
+
   test('isObject', () => {
     expect(Utils.isObject(undefined)).toBe(false);
     expect(Utils.isObject('a')).toBe(false);

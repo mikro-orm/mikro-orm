@@ -72,7 +72,7 @@ export class ChangeSetComputer {
     const pks = this.metadata.get(prop.type).primaryKeys;
     const entity = changeSet.entity[prop.name] as unknown as T;
 
-    if (pks.length === 1 && !entity[pks[0]]) {
+    if (pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
       changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
     }
   }

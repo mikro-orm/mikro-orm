@@ -66,7 +66,7 @@ export class EntityFactory {
     const Entity = this.metadata.get<T>(meta.name).class;
     const pks = Utils.getOrderedPrimaryKeys<T>(data, meta);
 
-    if (meta.primaryKeys.some(pk => !data[pk as keyof T])) {
+    if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       const params = this.extractConstructorParams<T>(meta, data);
       meta.constructorParams.forEach(prop => delete data[prop]);
 
@@ -101,7 +101,7 @@ export class EntityFactory {
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(primaryKey);
 
-    if (data[pk] || data[primaryKey]) {
+    if (Utils.isDefined(data[pk], true) || Utils.isDefined(data[primaryKey], true)) {
       const id = platform.denormalizePrimaryKey(data[pk] || data[primaryKey]);
       delete data[pk];
       data[primaryKey as keyof T] = id as Primary<T> & T[keyof T];

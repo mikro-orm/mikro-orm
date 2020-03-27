@@ -182,6 +182,40 @@ describe('EntityManagerMySql', () => {
     expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
   });
 
+  test('factory should support a primary key value of 0', async () => {
+    const factory = orm.em.getEntityFactory();
+    const p1 = new Publisher2(); // calls constructor, so uses default name
+    expect(p1.name).toBe('asd');
+    expect(p1).toBeInstanceOf(Publisher2);
+    expect(p1.books).toBeInstanceOf(Collection);
+    expect(p1.tests).toBeInstanceOf(Collection);
+    const p2 = factory.create(Publisher2, { id: 0 }); // shouldn't call constructor
+    expect(p2).toBeInstanceOf(Publisher2);
+    expect(p2.name).toBeUndefined();
+    expect(p2.books).toBeInstanceOf(Collection);
+    expect(p2.tests).toBeInstanceOf(Collection);
+  });
+
+  test(`1:1 relationships with an inverse side primary key of 0 should link`, async () => {
+    // Set up static data with id of 0
+    const driver = orm.em.getDriver();
+    const response = await driver.getConnection().execute('SET sql_mode = \'NO_AUTO_VALUE_ON_ZERO\';insert into foo_baz2 (id, name) values (?, ?)', [0, 'testBaz'], 'run');
+    expect(response[1]).toMatchObject({
+      affectedRows: 1,
+      insertId: 0,
+    });
+    const fooBazRef = orm.em.getReference<FooBaz2>(FooBaz2, 0);
+    const fooBar = FooBar2.create('testBar');
+    fooBar.baz = Reference.create(fooBazRef);
+    await orm.em.persistAndFlush(fooBar);
+    orm.em.clear();
+    const repo = orm.em.getRepository(FooBar2);
+    const a = await repo.findOne(fooBar.id, ['baz']);
+    expect(wrap(a!.baz).isInitialized()).toBe(true);
+    expect(wrap(a!.baz).id).toBe(0);
+    expect(wrap(a!.baz).name).toBe('testBaz');
+  });
+
   test('inverse side of 1:1 is ignored in change set', async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz 1');

@@ -31,7 +31,7 @@ export class EntityAssigner {
         value = props[prop].customType.convertToJSValue(value, platform);
       }
 
-      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && value && EntityAssigner.validateEM(em)) {
+      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);
       }
 
