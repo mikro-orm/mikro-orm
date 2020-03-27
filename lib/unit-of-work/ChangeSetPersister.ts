@@ -32,14 +32,14 @@ export class ChangeSetPersister {
     } else if (changeSet.type === ChangeSetType.UPDATE) {
       res = await this.updateEntity(meta, changeSet, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-    } else if (changeSet.entity.__primaryKey) { // ChangeSetType.CREATE with primary key
+    } else if (Utils.isDefined(changeSet.entity.__primaryKey, true)) { // ChangeSetType.CREATE with primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
       delete changeSet.entity.__initialized;
     } else { // ChangeSetType.CREATE without primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-      wrap(changeSet.entity).__primaryKey = changeSet.entity.__primaryKey || res.insertId as any;
+      wrap(changeSet.entity).__primaryKey = Utils.isDefined(changeSet.entity.__primaryKey, true) ? changeSet.entity.__primaryKey : res.insertId as any;
       this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey as IPrimaryKey);
       delete changeSet.entity.__initialized;
     }

@@ -14,11 +14,11 @@ export class EntityTransformer {
     const ret = {} as EntityData<T>;
 
     meta.primaryKeys
-      .filter(pk => !entity[pk] || !meta.properties[pk].hidden)
+      .filter(pk => !Utils.isDefined(entity[pk], true) || !meta.properties[pk].hidden)
       .map(pk => [pk, Utils.getPrimaryKeyValue<T>(entity, [pk])] as [string, string])
       .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = platform.normalizePrimaryKey(value));
 
-    if ((!wrapped.isInitialized() && wrapped.__primaryKey) || visited.includes(wrap(entity).__uuid)) {
+    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(wrap(entity).__uuid)) {
       return ret;
     }
 
