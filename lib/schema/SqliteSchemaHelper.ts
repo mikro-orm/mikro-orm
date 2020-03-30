@@ -1,7 +1,7 @@
 import { IsSame, SchemaHelper } from './SchemaHelper';
 import { Dictionary, EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
-import { Column } from './DatabaseTable';
+import { Column, Index } from './DatabaseTable';
 import { Connection } from '../connections';
 
 export class SqliteSchemaHelper extends SchemaHelper {
@@ -68,7 +68,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
 
     for (const index of indexes) {
@@ -76,16 +76,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
       index.column_name = res[0].name;
     }
 
-    return indexes.reduce((ret, index) => {
-      ret[index.column_name] = ret[index.column_name] || [];
-      ret[index.column_name].push({
-        columnName: index.column_name,
-        keyName: index.name,
-        unique: !!index.unique,
-      });
-
-      return ret;
-    }, {});
+    return indexes.map(index => ({
+      columnName: index.column_name,
+      keyName: index.name,
+      unique: !!index.unique,
+      primary: false,
+    }));
   }
 
   getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0): string {

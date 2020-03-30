@@ -1,10 +1,10 @@
-import { Entity, Property, OneToOne } from '../../lib';
+import { Entity, Property, OneToOne, Index } from '../../lib';
 import { Author2 } from './Author2';
 
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id' })
+  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique' })
   author: Author2;
 
   @Property()

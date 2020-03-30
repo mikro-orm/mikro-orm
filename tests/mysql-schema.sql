@@ -77,8 +77,7 @@ alter table `car2` add index `car2_year_index`(`year`);
 alter table `car2` add primary key `car2_pkey`(`name`, `year`);
 
 create table `car_owner2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `car_name` varchar(255) not null, `car_year` int(11) unsigned not null) default character set utf8 engine = InnoDB;
-alter table `car_owner2` add index `car_owner2_car_name_index`(`car_name`);
-alter table `car_owner2` add index `car_owner2_car_year_index`(`car_year`);
+alter table `car_owner2` add index `car_owner2_car_name_car_year_idx`(`car_name`, `car_year`);
 
 create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null) default character set utf8 engine = InnoDB;
 alter table `user2` add index `user2_first_name_index`(`first_name`);
@@ -109,11 +108,9 @@ alter table `publisher2_to_test2` add index `publisher2_to_test2_publisher2_id_i
 alter table `publisher2_to_test2` add index `publisher2_to_test2_test2_id_index`(`test2_id`);
 
 create table `user2_to_car2` (`user2_first_name` varchar(100) not null, `user2_last_name` varchar(100) not null, `car2_name` varchar(100) not null, `car2_year` int(11) unsigned not null) default character set utf8 engine = InnoDB;
-alter table `user2_to_car2` add index `user2_to_car2_user2_first_name_index`(`user2_first_name`);
-alter table `user2_to_car2` add index `user2_to_car2_user2_last_name_index`(`user2_last_name`);
-alter table `user2_to_car2` add index `user2_to_car2_car2_name_index`(`car2_name`);
-alter table `user2_to_car2` add index `user2_to_car2_car2_year_index`(`car2_year`);
 alter table `user2_to_car2` add primary key `user2_to_car2_pkey`(`user2_first_name`, `user2_last_name`, `car2_name`, `car2_year`);
+alter table `user2_to_car2` add index `user2_to_car2_user2_first_name_user2_last_name_index`(`user2_first_name`, `user2_last_name`);
+alter table `user2_to_car2` add index `user2_to_car2_car2_name_car2_year_index`(`car2_name`, `car2_year`);
 
 alter table `author2` add constraint `author2_favourite_book_uuid_pk_foreign` foreign key (`favourite_book_uuid_pk`) references `book2` (`uuid_pk`) on update no action on delete cascade;
 alter table `author2` add constraint `author2_favourite_author_id_foreign` foreign key (`favourite_author_id`) references `author2` (`id`) on update cascade on delete set null;

@@ -1,7 +1,7 @@
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { Dictionary, EntityProperty } from '../typings';
+import { EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
-import { Column } from './DatabaseTable';
+import { Column, Index } from './DatabaseTable';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 
@@ -81,21 +81,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }));
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Index[]> {
     const sql = this.getIndexesSQL(tableName, schemaName);
     const indexes = await connection.execute<any[]>(sql);
 
-    return indexes.reduce((ret, index: any) => {
-      ret[index.column_name] = ret[index.column_name] || [];
-      ret[index.column_name].push({
-        columnName: index.column_name,
-        keyName: index.constraint_name,
-        unique: index.unique,
-        primary: index.primary,
-      });
-
-      return ret;
-    }, {});
+    return indexes.map(index => ({
+      columnName: index.column_name,
+      keyName: index.constraint_name,
+      unique: index.unique,
+      primary: index.primary,
+    }));
   }
 
   getForeignKeysSQL(tableName: string, schemaName: string): string {
@@ -147,13 +142,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tableName: string, schemaName: string): string {
-    return `select i.indexname as constraint_name, k.column_name, c.contype = 'u' as unique, c.contype = 'p' as primary
-      from pg_catalog.pg_indexes i
-      join pg_catalog.pg_constraint c on c.conname = i.indexname
-      join pg_catalog.pg_class rel on rel.oid = c.conrelid
-      join pg_catalog.pg_namespace nsp on nsp.oid = c.connamespace
-      join information_schema.key_column_usage k on k.constraint_name = c.conname and k.table_schema = 'public' and k.table_name = '${tableName}'
-      where nsp.nspname = '${schemaName}' and rel.relname = '${tableName}'`;
+    return `select relname as constraint_name, attname as column_name, idx.indisunique as unique, idx.indisprimary as primary
+      from pg_index idx
+      left join pg_class AS i on i.oid = idx.indexrelid
+      left join pg_attribute a on a.attrelid = idx.indrelid and a.attnum = ANY(idx.indkey) and a.attnum > 0
+      where indrelid = '${schemaName}.${tableName}'::regclass`;
   }
 
 }

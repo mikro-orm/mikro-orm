@@ -64,15 +64,8 @@ export abstract class SchemaHelper {
     return found || defaultType;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Dictionary<Index[]>, tableName: string, schemaName?: string): Promise<string[]> {
-    const ret = [];
-
-    for (const idx of Object.values(indexes)) {
-      const pks = idx.filter(i => i.primary).map(i => i.columnName);
-      ret.push(...pks);
-    }
-
-    return ret;
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[], tableName: string, schemaName?: string): Promise<string[]> {
+    return indexes.filter(i => i.primary).map(i => i.columnName);
   }
 
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
@@ -92,12 +85,20 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
     throw new Error('Not supported by given driver');
   }
 
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
     throw new Error('Not supported by given driver');
+  }
+
+  /**
+   * Returns the default name of index for the given columns
+   */
+  getIndexName(tableName: string, columns: string[], unique: boolean): string {
+    const type = unique ? 'unique' : 'index';
+    return `${tableName}_${columns.join('_')}_${type}`;
   }
 
   mapForeignKeys(fks: any[]): Dictionary {

@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, AnyEntity, FilterQuery, EntityMetadata } from '../typings';
+import { EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty } from '../typings';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { FindOneOptions, FindOptions } from './IDatabaseDriver';
@@ -91,23 +91,43 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     await this.createCollections();
     const promises: Promise<string>[] = [];
 
-    const createIndexes = (meta: EntityMetadata, type: 'indexes' | 'uniques') => {
-      meta[type].forEach(index => {
-        const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
-          name: index.name,
-          unique: type === 'uniques',
-          ...(index.options || {}),
-        }));
-      });
-    };
-
     for (const meta of Object.values(this.metadata.getAll())) {
-      createIndexes(meta, 'indexes');
-      createIndexes(meta, 'uniques');
+      promises.push(...this.createIndexes(meta, 'indexes'));
+      promises.push(...this.createIndexes(meta, 'uniques'));
+
+      for (const prop of Object.values(meta.properties)) {
+        promises.push(...this.createPropertyIndexes(meta, prop, 'index'));
+        promises.push(...this.createPropertyIndexes(meta, prop, 'unique'));
+      }
     }
 
     await Promise.all(promises);
+  }
+
+  private createIndexes(meta: EntityMetadata, type: 'indexes' | 'uniques') {
+    const promises: Promise<string>[] = [];
+
+    meta[type].forEach(index => {
+      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
+        name: index.name,
+        unique: type === 'uniques',
+        ...(index.options || {}),
+      }));
+    });
+
+    return promises;
+  }
+
+  private createPropertyIndexes(meta: EntityMetadata, prop: EntityProperty, type: 'index' | 'unique') {
+    if (!prop[type]) {
+      return [];
+    }
+
+    return [this.getConnection('write').getCollection(meta.name).createIndex(prop.fieldNames, {
+      name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
+      unique: type === 'unique',
+    })];
   }
 
   private renameFields<T>(entityName: string, data: T): T {

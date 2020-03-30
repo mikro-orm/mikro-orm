@@ -43,6 +43,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
+    this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(meta, prop)));
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished after ${chalk.green(`${diff} ms`)}`);
@@ -548,6 +549,29 @@ export class MetadataDiscovery {
     }
 
     prop.unsigned = (prop.primary || prop.unsigned) && (prop.type === 'number' || this.platform.isBigIntProperty(prop));
+  }
+
+  private initIndexes<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
+    const simpleIndex = meta.indexes.find(index => index.properties === prop.name && !index.options && !index.type);
+    const simpleUnique = meta.uniques.find(index => index.properties === prop.name && !index.options);
+    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+
+    if (!prop.index && simpleIndex) {
+      Utils.defaultValue(simpleIndex, 'name', true);
+      prop.index = simpleIndex.name;
+      meta.indexes.splice(meta.indexes.indexOf(simpleIndex), 1);
+    }
+
+    if (!prop.unique && simpleUnique) {
+      Utils.defaultValue(simpleUnique, 'name', true);
+      prop.unique = simpleUnique.name;
+      meta.uniques.splice(meta.uniques.indexOf(simpleUnique), 1);
+    }
+
+    if (owner && this.metadata.get(prop.type).compositePK) {
+      meta.indexes.push({ properties: prop.name });
+      prop.index = false;
+    }
   }
 
   private getEntityClassOrSchema(path: string, name: string) {

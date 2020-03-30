@@ -3,6 +3,7 @@ import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 import { EntityGenerator } from '../lib/schema/EntityGenerator';
 import { MongoDriver } from '../lib/drivers/MongoDriver';
 import { Configuration, MikroORM } from '../lib';
+import { DatabaseTable } from '../lib/schema/DatabaseTable';
 
 describe('EntityGenerator', () => {
 
@@ -34,10 +35,37 @@ describe('EntityGenerator', () => {
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
-    const writer = { writeLine: jest.fn(), blankLineIfLastNot: jest.fn(), blankLine: jest.fn(), block: jest.fn(), write: jest.fn() };
-    generator.createProperty(writer as any, { name: 'test', type: 'varchar(50)', defaultValue: 'null::character varying', nullable: true } as any, []);
-    expect(writer.writeLine.mock.calls.length).toBe(2);
-    expect(writer.writeLine.mock.calls[0][0]).toBe(`@Property({ type: 'varchar(50)', nullable: true })`);
+    const table = new DatabaseTable('test_entity', 'public');
+    Object.assign(table, {
+      indexes: [],
+      columns: {
+        name: {
+          name: 'name',
+          type: 'varchar(50)',
+          maxLength: 50,
+          nullable: true,
+          defaultValue: 'null::character varying',
+          indexes: [],
+        },
+        test: {
+          name: 'test',
+          type: 'varchar(50)',
+          maxLength: 50,
+          nullable: true,
+          defaultValue: 'foo',
+          indexes: [],
+        },
+      },
+    });
+
+    const helper = orm.em.getDriver().getPlatform().getSchemaHelper()!;
+    const meta = table.getEntityDeclaration(orm.config.getNamingStrategy(), helper);
+    expect(meta.properties.name.default).toBeUndefined();
+    expect(meta.properties.name.nullable).toBe(true);
+    expect(meta.properties.name.columnTypes[0]).toBe('varchar(50)');
+    expect(meta.properties.test.default).toBe('foo');
+    expect(meta.properties.test.nullable).toBe(true);
+    expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
 
     await orm.close(true);
   });
