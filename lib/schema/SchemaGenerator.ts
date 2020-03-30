@@ -178,12 +178,14 @@ export class SchemaGenerator {
 
       meta.indexes.forEach(index => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        table.index(properties, index.name, index.type);
+        const indexName = index.name || this.helper.getIndexName(meta.collection, properties, false);
+        table.index(properties, indexName, index.type);
       });
 
       meta.uniques.forEach(index => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        table.unique(properties, index.name);
+        const indexName = index.name || this.helper.getIndexName(meta.collection, properties, true);
+        table.unique(properties, indexName);
       });
 
       this.helper.finalizeTable(table);
@@ -296,7 +298,7 @@ export class SchemaGenerator {
 
     return meta2.primaryKeys.map((pk, idx) => {
       const col = table.specificType(prop.joinColumns[idx], meta2.properties[pk].columnTypes[0]);
-      return this.configureColumn(meta, prop, col, meta2.properties[pk], alter);
+      return this.configureColumn(meta, prop, col, prop.joinColumns[idx], meta2.properties[pk], alter);
     });
   }
 
@@ -311,11 +313,11 @@ export class SchemaGenerator {
 
     if (prop.enum && prop.items && prop.items.every(item => Utils.isString(item))) {
       const col = table.enum(prop.fieldNames[0], prop.items!);
-      return this.configureColumn(meta, prop, col, undefined, alter);
+      return this.configureColumn(meta, prop, col, prop.fieldNames[0], undefined, alter);
     }
 
     const col = table.specificType(prop.fieldNames[0], prop.columnTypes[0]);
-    return this.configureColumn(meta, prop, col, undefined, alter);
+    return this.configureColumn(meta, prop, col, prop.fieldNames[0], undefined, alter);
   }
 
   private updateTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, column: Column, diff: IsSame): void {
@@ -334,7 +336,6 @@ export class SchemaGenerator {
     }
 
     this.createTableColumn(table, meta, prop, diff).map(col => col.alter());
-    // this.createSimpleTableColumn(table, meta, prop, diff).alter();
   }
 
   private dropTableColumn(table: TableBuilder, column: Column): void {
@@ -346,12 +347,12 @@ export class SchemaGenerator {
     table.dropColumn(column.name);
   }
 
-  private configureColumn(meta: EntityMetadata, prop: EntityProperty, col: ColumnBuilder, pkProp = prop, alter?: IsSame) {
+  private configureColumn<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, col: ColumnBuilder, columnName: string, pkProp = prop, alter?: IsSame) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
     const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
     const index = (indexed || (prop.primary && meta.compositePK)) && !(alter && alter.sameIndex);
-    const indexName = Utils.isString(prop.index) ? prop.index : undefined;
-    const uniqueName = Utils.isString(prop.unique) ? prop.unique : undefined;
+    const indexName = this.getIndexName(meta, prop, false, columnName);
+    const uniqueName = this.getIndexName(meta, prop, true, columnName);
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
 
     Utils.runIfNotEmpty(() => col.nullable(), nullable);
@@ -363,6 +364,17 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
 
     return col;
+  }
+
+  private getIndexName<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, unique: boolean, columnName: string): string {
+    const type = unique ? 'unique' : 'index';
+    const value = prop[type];
+
+    if (Utils.isString(value)) {
+      return value;
+    }
+
+    return this.helper.getIndexName(meta.collection, [columnName], unique);
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {

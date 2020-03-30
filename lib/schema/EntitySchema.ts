@@ -110,8 +110,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K>): void {
     const prop = { reference: ReferenceType.ONE_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options };
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
-    prop.owner = prop.owner || !!prop.inversedBy || !prop.mappedBy;
-    prop.unique = prop.owner;
+    Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
+    Utils.defaultValue(prop, 'unique', prop.owner);
 
     if (prop.owner && options.mappedBy) {
       Utils.renameKey(prop, 'mappedBy', 'inversedBy');

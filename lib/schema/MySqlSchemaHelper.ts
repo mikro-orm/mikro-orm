@@ -1,8 +1,8 @@
 import { CreateTableBuilder } from 'knex';
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { Dictionary, EntityProperty } from '../typings';
+import { EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
-import { Column } from './DatabaseTable';
+import { Column, Index } from './DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -87,21 +87,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }));
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary<any[]>> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
     const sql = `show index from \`${tableName}\``;
     const indexes = await connection.execute<any[]>(sql);
 
-    return indexes.reduce((ret, index: any) => {
-      ret[index.Column_name] = ret[index.Column_name] || [];
-      ret[index.Column_name].push({
-        columnName: index.Column_name,
-        keyName: index.Key_name,
-        unique: !index.Non_unique,
-        primary: index.Key_name === 'PRIMARY',
-      });
-
-      return ret;
-    }, {});
+    return indexes.map(index => ({
+      columnName: index.Column_name,
+      keyName: index.Key_name,
+      unique: !index.Non_unique,
+      primary: index.Key_name === 'PRIMARY',
+    }));
   }
 
   isSame(prop: EntityProperty, column: Column, idx?: number): IsSame {

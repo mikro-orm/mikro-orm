@@ -10,8 +10,8 @@ export class CarOwner2 {
   @Property()
   name: string;
 
-  @ManyToOne(() => Car2)
-  car?: Car2;
+  @ManyToOne(() => Car2, { index: 'car_owner2_car_name_car_year_idx' })
+  car!: Car2;
 
   constructor(name: string) {
     this.name = name;

@@ -96,7 +96,7 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, ['car']);
-    expect(o1.car!.price).toBe(200_000);
+    expect(o1.car.price).toBe(200_000);
     expect(wrap(o1).toJSON()).toEqual({
       id: 1,
       name: 'John Doe',
@@ -107,7 +107,7 @@ describe('composite keys in mysql', () => {
       },
     });
 
-    o1.car!.price = 150_000;
+    o1.car.price = 150_000;
     await orm.em.flush();
     orm.em.clear();
 
@@ -118,9 +118,9 @@ describe('composite keys in mysql', () => {
       car: { name: 'Audi A8', year: 2010 },
     });
     expect(wrap(o2.car).isInitialized()).toBe(false);
-    expect(o2.car!.price).toBeUndefined();
+    expect(o2.car.price).toBeUndefined();
     await wrap(o2.car).init();
-    expect(o2.car!.price).toBe(150_000);
+    expect(o2.car.price).toBe(150_000);
 
     const c1 = await orm.em.findOneOrFail(Car2, { name: car.name, year: car.year });
     expect(c1).toBe(o2.car);
