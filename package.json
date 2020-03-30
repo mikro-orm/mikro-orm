@@ -108,7 +108,7 @@
     "mariadb": "^2.1.0",
     "mongodb": "^3.3.4",
     "mysql2": "^2.0.0",
-    "pg": "^7.10.0",
+    "pg": "^8.0.0",
     "sqlite3": "^4.0.0"
   },
   "peerDependenciesMeta": {
@@ -151,7 +151,7 @@
     "mariadb": "^2.3.1",
     "mongodb": "3.5.5",
     "mysql2": "^2.1.0",
-    "pg": "^7.18.2",
+    "pg": "^8.0.0",
     "rimraf": "^3.0.2",
     "run-rs": "^0.6.2",
     "semantic-release": "^17.0.4",
