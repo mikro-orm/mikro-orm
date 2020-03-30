@@ -1,3 +1,20 @@
+# [3.6.0](https://github.com/mikro-orm/mikro-orm/compare/v3.5.2...v3.6.0) (2020-03-30)
+
+
+### Bug Fixes
+
+* **core:** fix explicit usage of `joinColumn` option ([bcf2546](https://github.com/mikro-orm/mikro-orm/commit/bcf2546662805d2104acf06c29f91810bc9efc7a)), closes [#425](https://github.com/mikro-orm/mikro-orm/issues/425)
+
+
+### Features
+
+* **core:** allow for the number zero as a primary key ([#426](https://github.com/mikro-orm/mikro-orm/issues/426)) ([88b979a](https://github.com/mikro-orm/mikro-orm/commit/88b979a22ac991df0a3d9401a153415ff928204f))
+* **core:** improve ts-node detection ([f1afaa6](https://github.com/mikro-orm/mikro-orm/commit/f1afaa679a52ab3fb7689dd5603e2264b1aed6e7))
+* **core:** support indexes in entity generator ([#437](https://github.com/mikro-orm/mikro-orm/issues/437)) ([90c0162](https://github.com/mikro-orm/mikro-orm/commit/90c0162af0e49574e1fdfa87504634716d1dba46)), closes [#421](https://github.com/mikro-orm/mikro-orm/issues/421)
+* **schema:** add `safe` and `dropTables` options to schema generator ([2d2c73d](https://github.com/mikro-orm/mikro-orm/commit/2d2c73d550cc5afcc72af9cf687da0746dbe76ef)), closes [#416](https://github.com/mikro-orm/mikro-orm/issues/416)
+
+
+
 ## [3.5.2](https://github.com/mikro-orm/mikro-orm/compare/v3.5.1...v3.5.2) (2020-03-23)
 
 
