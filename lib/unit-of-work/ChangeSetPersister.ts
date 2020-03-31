@@ -39,13 +39,19 @@ export class ChangeSetPersister {
     } else { // ChangeSetType.CREATE without primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-      wrap(changeSet.entity).__primaryKey = Utils.isDefined(changeSet.entity.__primaryKey, true) ? changeSet.entity.__primaryKey : res.insertId as any;
-      this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity.__primaryKey as IPrimaryKey);
+      this.mapPrimaryKey(meta, res, changeSet);
       delete changeSet.entity.__initialized;
     }
 
     await this.processOptimisticLock(meta, changeSet, res, ctx);
     changeSet.persisted = true;
+  }
+
+  private mapPrimaryKey<T>(meta: EntityMetadata<T>, res: QueryResult, changeSet: ChangeSet<T>): void {
+    const prop = meta.properties[meta.primaryKeys[0]];
+    const insertId = prop.customType ? prop.customType.convertToJSValue(res.insertId, this.driver.getPlatform()) : res.insertId;
+    wrap(changeSet.entity).__primaryKey = Utils.isDefined(changeSet.entity.__primaryKey, true) ? changeSet.entity.__primaryKey : insertId;
+    this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
