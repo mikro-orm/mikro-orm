@@ -27,7 +27,7 @@ export class EntityAssigner {
 
       let value = data[prop as keyof EntityData<T>];
 
-      if (props[prop] && props[prop].customType) {
+      if (props[prop] && props[prop].customType && !Utils.isEntity(data)) {
         value = props[prop].customType.convertToJSValue(value, platform);
       }
 
