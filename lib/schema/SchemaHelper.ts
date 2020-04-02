@@ -38,12 +38,13 @@ export abstract class SchemaHelper {
 
   isSame(prop: EntityProperty, column: Column, idx = 0, types: Dictionary<string[]> = {}, defaultValues: Dictionary<string[]> = {}): IsSame {
     const sameTypes = this.hasSameType(prop.columnTypes[idx], column.type, types);
+    const sameEnums = this.hasSameEnumDefinition(prop, column);
     const sameNullable = column.nullable === !!prop.nullable;
     const sameDefault = this.hasSameDefaultValue(column, prop, defaultValues);
     const sameIndex = this.hasSameIndex(prop, column);
-    const all = sameTypes && sameNullable && sameDefault && sameIndex;
+    const all = sameTypes && sameNullable && sameDefault && sameIndex && sameEnums;
 
-    return { all, sameTypes, sameNullable, sameDefault, sameIndex };
+    return { all, sameTypes, sameEnums, sameNullable, sameDefault, sameIndex };
   }
 
   supportsSchemaConstraints(): boolean {
@@ -71,6 +72,10 @@ export abstract class SchemaHelper {
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
     return this.mapForeignKeys(fks);
+  }
+
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+    return {};
   }
 
   getListTablesSQL(): string {
@@ -228,6 +233,18 @@ export abstract class SchemaHelper {
     });
   }
 
+  private hasSameEnumDefinition(prop: EntityProperty, column: Column): boolean {
+    if (!prop.enum || !prop.items) {
+      return true;
+    }
+
+    if (prop.items.every(item => typeof item === 'number')) {
+      return true;
+    }
+
+    return Utils.equals(prop.items, column.enumItems);
+  }
+
 }
 
 export interface IsSame {
@@ -236,4 +253,5 @@ export interface IsSame {
   sameNullable?: boolean;
   sameDefault?: boolean;
   sameIndex?: boolean;
+  sameEnums?: boolean;
 }

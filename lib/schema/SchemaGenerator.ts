@@ -349,19 +349,21 @@ export class SchemaGenerator {
 
   private configureColumn<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, col: ColumnBuilder, columnName: string, pkProp = prop, alter?: IsSame) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
+    const sameNullable = alter && 'sameNullable' in alter && alter.sameNullable;
     const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
     const index = (indexed || (prop.primary && meta.compositePK)) && !(alter && alter.sameIndex);
     const indexName = this.getIndexName(meta, prop, false, columnName);
     const uniqueName = this.getIndexName(meta, prop, true, columnName);
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
+    const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !hasDefault;
 
-    Utils.runIfNotEmpty(() => col.nullable(), nullable);
-    Utils.runIfNotEmpty(() => col.notNullable(), !nullable);
+    Utils.runIfNotEmpty(() => col.nullable(), !sameNullable && nullable);
+    Utils.runIfNotEmpty(() => col.notNullable(), !sameNullable && !nullable);
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), pkProp.unsigned);
     Utils.runIfNotEmpty(() => col.index(indexName), index);
     Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
-    Utils.runIfNotEmpty(() => col.defaultTo(this.knex.raw('' + prop.default)), hasDefault);
+    Utils.runIfNotEmpty(() => col.defaultTo(hasDefault ? this.knex.raw('' + prop.default) : null), !sameDefault);
 
     return col;
   }

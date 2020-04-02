@@ -2,8 +2,6 @@ import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
 import { Config } from 'knex';
 
-const Bluebird = require('bluebird');
-
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 
 export class SqliteConnection extends AbstractSqlConnection {
@@ -71,7 +69,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     dialect.prototype._query = (connection: any, obj: any) => {
       const callMethod = this.getCallMethod(obj);
 
-      return new Bluebird((resolve: any, reject: any) => {
+      return new Promise((resolve: any, reject: any) => {
         /* istanbul ignore if */
         if (!connection || !connection[callMethod]) {
           return reject(new Error(`Error calling ${callMethod} on connection.`));

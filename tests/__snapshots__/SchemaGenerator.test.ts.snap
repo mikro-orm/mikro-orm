@@ -1128,7 +1128,7 @@ alter table \`new_table\` add \`id\` int unsigned not null auto_increment primar
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column 1`] = `
-"alter table \`author2\` modify \`age\` int(11) null default 42, modify \`born\` int not null default 42;
+"alter table \`author2\` modify \`age\` int(11) default 42, modify \`born\` int not null default 42;
 alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` add constraint \`author2_favourite_author_id_foreign\` foreign key (\`favourite_author_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -1192,13 +1192,11 @@ alter table \\"new_table\\" add column \\"id\\" serial primary key, add column \
 `;
 
 exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-alter-column 1`] = `
-"alter table \\"author2\\" alter column \\"name\\" drop default;
-alter table \\"author2\\" alter column \\"name\\" drop not null;
+"alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
 alter table \\"author2\\" alter column \\"name\\" type int4 using (\\"name\\"::int4);
 alter table \\"author2\\" alter column \\"name\\" set default 42;
-alter table \\"author2\\" alter column \\"name\\" set not null;
-alter table \\"author2\\" alter column \\"age\\" drop default;
-alter table \\"author2\\" alter column \\"age\\" drop not null;
+alter table \\"author2\\" alter column \\"name\\" drop not null;
+alter table \\"author2\\" drop constraint if exists \\"author2_age_check\\";
 alter table \\"author2\\" alter column \\"age\\" type int4 using (\\"age\\"::int4);
 alter table \\"author2\\" alter column \\"age\\" set default 42;
 alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
@@ -1218,7 +1216,11 @@ create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" time
 `;
 
 exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-drop-column 1`] = `
-"alter table \\"author2\\" drop constraint \\"author2_favourite_book_uuid_pk_foreign\\";
+"alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
+alter table \\"author2\\" alter column \\"name\\" type int4 using (\\"name\\"::int4);
+alter table \\"author2\\" alter column \\"name\\" drop default;
+alter table \\"author2\\" alter column \\"name\\" set not null;
+alter table \\"author2\\" drop constraint \\"author2_favourite_book_uuid_pk_foreign\\";
 alter table \\"author2\\" drop column \\"favourite_book_uuid_pk\\";
 
 alter table \\"new_table\\" drop column \\"id\\";
@@ -1241,6 +1243,71 @@ exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-rename
 
 alter table \\"author2\\" rename column \\"favourite_author_id\\" to \\"favourite_writer_id\\";
 
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-1 1`] = `
+"alter table \`book2\` drop \`foo\`;
+
+alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_foo___bar_index\`;
+alter table \`test2\` drop \`foo___bar\`;
+alter table \`test2\` drop \`foo___baz\`;
+
+create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`enum_test\` varchar(255) not null) default character set utf8 engine = InnoDB;
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-2 1`] = `
+"alter table \`new_table\` modify \`enum_test\` enum('a', 'b');
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-3 1`] = `
+"alter table \`new_table\` modify \`enum_test\` enum('a', 'b', 'c') not null;
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-4 1`] = `
+"alter table \`new_table\` modify \`enum_test\` int;
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [postgres]: postgres-update-schema-enums-1 1`] = `
+"alter table \\"book2\\" drop column \\"foo\\";
+
+alter table \\"test2\\" drop column \\"path\\";
+
+create table \\"new_table\\" (\\"id\\" serial primary key, \\"enum_test\\" varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b'));
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [postgres]: postgres-update-schema-enums-3 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b', 'c'));
+
+"
+`;
+
+exports[`SchemaGenerator update schema enums [postgres]: postgres-update-schema-enums-4 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type int4 using (\\"enum_test\\"::int4);
 
 "
 `;
