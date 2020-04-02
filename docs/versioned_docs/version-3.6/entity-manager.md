@@ -194,6 +194,10 @@ console.log(author.books[0].tags.isInitialized()); // true, because it was popul
 console.log(author.books[0].tags[0].isInitialized()); // true, because it was populated
 ```
 
+> This feature is fully available only for SQL drivers. In MongoDB always you need to 
+> query from the owning side - so in the example above, first load book tag by name,
+> then associated book, then the author. Another option is to denormalize the schema.  
+
 ### Fetching Partial Entities
 
 When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
