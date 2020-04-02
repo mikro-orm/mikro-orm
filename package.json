@@ -89,7 +89,7 @@
   "dependencies": {
     "acorn-loose": "^7.0.0",
     "acorn-walk": "^7.1.1",
-    "chalk": "^3.0.0",
+    "chalk": "^4.0.0",
     "cli-highlight": "^2.1.4",
     "cli-table3": "^0.5.1",
     "clone": "^2.1.2",
