@@ -8,7 +8,7 @@ import { Test2 } from './Test2';
 @Entity()
 export class Book2 {
 
-  @PrimaryKey({ fieldName: 'uuid_pk', length: 36 })
+  @PrimaryKey({ name: 'uuid_pk', length: 36 })
   uuid: string = v4();
 
   @Property({ default: 'current_timestamp(3)', length: 3 })

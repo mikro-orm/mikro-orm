@@ -44,6 +44,10 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       }
     };
 
+    if (name !== options.name) {
+      Utils.renameKey(options, 'name', 'fieldName');
+    }
+
     rename(options, 'fieldName', 'fieldNames');
     rename(options, 'joinColumn', 'joinColumns');
     rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
