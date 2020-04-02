@@ -36,7 +36,8 @@ export class DatabaseSchema {
       const indexes = await helper.getIndexes(connection, t.table_name, t.schema_name);
       const pks = await helper.getPrimaryKeys(connection, indexes, t.table_name, t.schema_name);
       const fks = await helper.getForeignKeys(connection, t.table_name, t.schema_name);
-      table.init(cols, indexes, pks, fks);
+      const enums = await helper.getEnumDefinitions(connection, t.table_name, t.schema_name);
+      table.init(cols, indexes, pks, fks, enums);
     }
 
     return schema;

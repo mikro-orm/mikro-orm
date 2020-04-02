@@ -1,6 +1,6 @@
 import { CreateTableBuilder } from 'knex';
 import { IsSame, SchemaHelper } from './SchemaHelper';
-import { EntityProperty } from '../typings';
+import { Dictionary, EntityProperty } from '../typings';
 import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column, Index } from './DatabaseTable';
 
@@ -13,9 +13,9 @@ export class MySqlSchemaHelper extends SchemaHelper {
     double: ['double'],
     tinyint: ['tinyint'],
     smallint: ['smallint'],
-    string: ['varchar(?)', 'varchar', 'text', 'enum', 'bigint'],
     Date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
     date: ['datetime(?)', 'timestamp(?)', 'datetime', 'timestamp'],
+    string: ['varchar(?)', 'varchar', 'text', 'bigint', 'enum'],
     text: ['text'],
     object: ['json'],
     json: ['json'],
@@ -69,6 +69,17 @@ export class MySqlSchemaHelper extends SchemaHelper {
       + `from information_schema.key_column_usage k `
       + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
       + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
+  }
+
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+    const sql =  `select column_name as column_name, column_type as column_type from information_schema.columns
+      where data_type = 'enum' and table_name = '${tableName}'`;
+    const enums = await connection.execute<any[]>(sql);
+
+    return enums.reduce((o, item) => {
+      o[item.column_name] = item.column_type.match(/enum\((.*)\)/)[1].split(',').map((item: string) => item.match(/'(.*)'/)![1]);
+      return o;
+    }, {} as Dictionary<string>);
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {

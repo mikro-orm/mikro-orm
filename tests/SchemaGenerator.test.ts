@@ -1,5 +1,5 @@
 import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
-import { SchemaGenerator } from '../lib/schema';
+import { EntitySchema, SchemaGenerator } from '../lib/schema';
 import { ReferenceType } from '../lib/entity';
 import { Configuration, Utils } from '../lib/utils';
 import { MikroORM } from '../lib';
@@ -85,7 +85,6 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
-    orm.em.getConnection().execute('drop table if exists new_table');
     const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     const dump = await generator.generate();
@@ -105,7 +104,6 @@ describe('SchemaGenerator', () => {
 
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql();
-    orm.em.getConnection().execute('drop table if exists new_table');
     const meta = orm.getMetadata();
     const generator = orm.getSchemaGenerator();
 
@@ -199,6 +197,114 @@ describe('SchemaGenerator', () => {
     await expect(generator.getUpdateSchemaSQL(false, true)).resolves.toMatchSnapshot('mysql-update-schema-drop-table-safe');
     await expect(generator.getUpdateSchemaSQL(false, false, false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table-disabled');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update schema enums [mysql]', async () => {
+    const orm = await initORMMySql();
+    const meta = orm.getMetadata();
+    const generator = orm.getSchemaGenerator();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int(11)',
+        },
+        enumTest: {
+          type: 'string',
+          name: 'enumTest',
+          fieldName: 'enum_test',
+          columnType: 'varchar(255)',
+        },
+      },
+      name: 'NewTable',
+      tableName: 'new_table',
+    }).init().meta;
+    meta.set('NewTable', newTableMeta);
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-enums-1');
+    await generator.updateSchema();
+
+    newTableMeta.properties.enumTest.items = ['a', 'b'];
+    newTableMeta.properties.enumTest.columnTypes[0] = 'enum';
+    newTableMeta.properties.enumTest.enum = true;
+    newTableMeta.properties.enumTest.type = 'object';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-enums-2');
+    await generator.updateSchema();
+
+    newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-enums-3');
+    await generator.updateSchema();
+
+    // check that we do not produce anything as the schema should be up to date
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+
+    // change the type from enum to int
+    delete newTableMeta.properties.enumTest.items;
+    newTableMeta.properties.enumTest.columnTypes[0] = 'int';
+    newTableMeta.properties.enumTest.enum = false;
+    newTableMeta.properties.enumTest.type = 'number';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-enums-4');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update schema enums [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    const generator = orm.getSchemaGenerator();
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int(11)',
+        },
+        enumTest: {
+          type: 'string',
+          name: 'enumTest',
+          fieldName: 'enum_test',
+          columnType: 'varchar(255)',
+        },
+      },
+      name: 'NewTable',
+      tableName: 'new_table',
+    }).init().meta;
+    meta.set('NewTable', newTableMeta);
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-enums-1');
+    await generator.updateSchema();
+
+    // change type to enum
+    newTableMeta.properties.enumTest.items = ['a', 'b'];
+    newTableMeta.properties.enumTest.columnTypes[0] = 'enum';
+    newTableMeta.properties.enumTest.enum = true;
+    newTableMeta.properties.enumTest.type = 'object';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-enums-2');
+    await generator.updateSchema();
+
+    // change enum items
+    newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-enums-3');
+    await generator.updateSchema();
+
+    // check that we do not produce anything as the schema should be up to date
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+
+    // change the type from enum to int
+    delete newTableMeta.properties.enumTest.items;
+    newTableMeta.properties.enumTest.columnTypes[0] = 'int4';
+    newTableMeta.properties.enumTest.enum = false;
+    newTableMeta.properties.enumTest.type = 'number';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-enums-4');
     await generator.updateSchema();
 
     await orm.close(true);
@@ -368,7 +474,7 @@ describe('SchemaGenerator', () => {
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.name.type = 'number';
     authorMeta.properties.name.columnTypes = ['int4'];
-    authorMeta.properties.name.nullable = false;
+    authorMeta.properties.name.nullable = true;
     authorMeta.properties.name.default = 42;
     authorMeta.properties.age.default = 42;
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
@@ -376,6 +482,8 @@ describe('SchemaGenerator', () => {
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-column');
     await generator.updateSchema();
 
+    delete authorMeta.properties.name.default;
+    authorMeta.properties.name.nullable = false;
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
     delete newTableMeta.properties.id;
@@ -412,7 +520,6 @@ describe('SchemaGenerator', () => {
 
   test('update empty schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
-    orm.em.getConnection().execute('drop table if exists new_table');
     const generator = orm.getSchemaGenerator();
     await generator.dropSchema();
 

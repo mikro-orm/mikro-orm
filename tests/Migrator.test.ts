@@ -48,7 +48,6 @@ describe('Migrator', () => {
   });
 
   test('generate schema migration', async () => {
-    orm.em.getConnection().execute('drop table if exists new_table');
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = orm.getMigrator();

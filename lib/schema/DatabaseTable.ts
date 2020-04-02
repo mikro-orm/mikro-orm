@@ -35,7 +35,7 @@ export class DatabaseTable {
     }, {} as Dictionary<Index[]>);
   }
 
-  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>): void {
+  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
     this.indexes = indexes;
     this.foreignKeys = fks;
 
@@ -51,10 +51,11 @@ export class DatabaseTable {
       v.fk = fks[v.name];
       v.indexes = index.filter(i => !i.primary && !i.composite);
       v.defaultValue = v.defaultValue && v.defaultValue.toString().startsWith('nextval(') ? null : v.defaultValue;
+      v.enumItems = enums[v.name] || [];
       o[v.name] = v;
 
       return o;
-    }, {} as any);
+    }, {} as Dictionary<Column>);
   }
 
   getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
@@ -180,6 +181,7 @@ export interface Column {
   nullable: boolean;
   maxLength: number;
   defaultValue: string | null;
+  enumItems: string[];
 }
 
 export interface ForeignKey {
