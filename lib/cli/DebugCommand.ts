@@ -34,16 +34,16 @@ export class DebugCommand implements CommandModule {
         CLIHelper.dump(` - will use \`entities\` array (contains ${length} items)`);
       } else if (config.get('entitiesDirs', []).length > 0) {
         CLIHelper.dump(' - will use `entitiesDirs` paths:');
-        await DebugCommand.checkPaths(config.get('entitiesDirs'), 'red', true);
+        await DebugCommand.checkPaths(config.get('entitiesDirs'), 'red', config.get('baseDir'), true);
       }
     } catch (e) {
       CLIHelper.dump(`- configuration ${chalk.red('not found')} ${chalk.red(`(${e.message})`)}`);
     }
   }
 
-  private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', onlyDirectories = false): Promise<void> {
+  private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', baseDir?: string, onlyDirectories = false): Promise<void> {
     for (let path of paths) {
-      path = Utils.absolutePath(path);
+      path = Utils.absolutePath(path, baseDir);
       path = Utils.normalizePath(path);
       const found = await Utils.pathExists(path, { onlyDirectories });
 
