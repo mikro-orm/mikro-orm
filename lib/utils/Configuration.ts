@@ -44,7 +44,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     driverOptions: {},
     migrations: {
       tableName: 'mikro_orm_migrations',
-      path: process.cwd() + '/migrations',
+      path: './migrations',
       pattern: /^[\w-]+\d+\.ts$/,
       transactional: true,
       disableForeignKeys: true,

@@ -23,7 +23,7 @@ export class Migrator {
       storage: this.storage,
       logging: this.config.get('logger'),
       migrations: {
-        path: this.options.path,
+        path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
         pattern: this.options.pattern,
         customResolver: file => this.resolve(file),
       },
