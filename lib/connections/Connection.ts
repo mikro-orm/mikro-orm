@@ -44,7 +44,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract async execute(query: string, params?: any[], method?: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]>;
+  abstract async execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};

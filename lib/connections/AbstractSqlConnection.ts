@@ -1,7 +1,7 @@
-import Knex, { Config, QueryBuilder, Raw, Transaction } from 'knex';
+import Knex, { Config, QueryBuilder, Raw } from 'knex';
 import { readFile } from 'fs-extra';
 
-import { Connection, QueryResult } from './Connection';
+import { Connection, QueryResult, Transaction } from './Connection';
 import { Utils } from '../utils';
 import { EntityData, AnyEntity } from '../typings';
 
@@ -30,13 +30,26 @@ export abstract class AbstractSqlConnection extends Connection {
     return (ctx || this.client).transaction(cb);
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
+      if (ctx) {
+        queryOrKnex.transacting(ctx);
+      }
+
       return await this.executeKnex(queryOrKnex, method);
     }
 
     const sql = this.getSql(this.client.raw(queryOrKnex, params));
-    const res = await this.executeQuery<any>(sql, () => this.client.raw(queryOrKnex, params) as unknown as Promise<QueryResult>);
+    const res = await this.executeQuery<any>(sql, () => {
+      const query = this.client.raw(queryOrKnex, params);
+
+      if (ctx) {
+        query.transacting(ctx);
+      }
+
+      return query;
+    });
+
     return this.transformRawResult<T>(res, method);
   }
 

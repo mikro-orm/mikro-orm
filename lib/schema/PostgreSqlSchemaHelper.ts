@@ -123,7 +123,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = any/i);
       const m2 = item.enum_def.match(/\(array\[(.*)]\)/i);
-      o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^'(.*)'/)![1]);
+
+      if (m1 && m2) {
+        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^'(.*)'/)![1]);
+      }
 
       return o;
     }, {} as Dictionary<string>);

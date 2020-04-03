@@ -18,7 +18,7 @@ import { IDatabaseDriver } from '../drivers';
 
 export class CLIHelper {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Configuration> = {}): Promise<Configuration<D>> {
     const paths = await CLIHelper.getConfigPaths();
 
     for (let path of paths) {
@@ -27,15 +27,15 @@ export class CLIHelper {
 
       if (await pathExists(path)) {
         const config = require(path);
-        return new Configuration(config.default || config, validate);
+        return new Configuration({ ...(config.default || config), ...options }, validate);
       }
     }
 
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
   }
 
-  static async getORM(warnWhenNoEntities?: boolean): Promise<MikroORM> {
-    const options = await CLIHelper.getConfiguration(warnWhenNoEntities);
+  static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Configuration> = {}): Promise<MikroORM> {
+    const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
     const settings = await CLIHelper.getSettings();
     options.getLogger().setDebugMode(false);
 
@@ -59,6 +59,7 @@ export class CLIHelper {
       });
     }
 
+    // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
       .version(CLIHelper.getORMVersion())

@@ -29,7 +29,7 @@ create index "custom_idx_name_123" on "author2" ("name");
 create index "author2_name_age_index" on "author2" ("name", "age");
 alter table "author2" add constraint "author2_name_email_unique" unique ("name", "email");
 
-create table "address2" ("author_id" int4 not null, "value" varchar(255) not null);
+create table "address2" ("author_id" int4 not null check ("author_id" > 0), "value" varchar(255) not null);
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 alter table "address2" add constraint "address2_author_id_unique" unique ("author_id");
 

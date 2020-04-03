@@ -117,8 +117,10 @@ export class Migrator {
 
     return this.driver.getConnection().transactional(async trx => {
       this.runner.setMasterMigration(trx);
+      this.storage.setMasterMigration(trx);
       const ret = await this.umzug[method](this.prefix(options as string[]));
       this.runner.unsetMasterMigration();
+      this.storage.unsetMasterMigration();
 
       return ret;
     });

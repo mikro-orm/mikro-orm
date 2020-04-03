@@ -72,7 +72,8 @@ export class MigrationCommandFactory {
   }
 
   static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
-    const orm = await CLIHelper.getORM();
+    const options = { pool: { min: 1, max: 1 } } as Partial<Configuration>;
+    const orm = await CLIHelper.getORM(undefined, options);
     const migrator = orm.getMigrator();
 
     switch (method) {

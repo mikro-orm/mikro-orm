@@ -1,12 +1,14 @@
 import { AbstractSqlDriver } from '../drivers';
 import { MigrationsOptions } from '../utils';
 import { Table } from '../schema';
+import { Transaction } from '../connections';
 
 export class MigrationStorage {
 
   private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
+  private masterTransaction?: Transaction;
 
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly options: MigrationsOptions) { }
@@ -17,22 +19,25 @@ export class MigrationStorage {
   }
 
   async logMigration(name: string): Promise<void> {
-    await this.driver.nativeInsert(this.options.tableName!, { name });
+    await this.driver.nativeInsert(this.options.tableName!, { name }, this.masterTransaction);
   }
 
   async unlogMigration(name: string): Promise<void> {
-    await this.driver.nativeDelete(this.options.tableName!, { name });
+    await this.driver.nativeDelete(this.options.tableName!, { name }, this.masterTransaction);
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const knex = this.connection.getKnex();
-    const qb = knex.select('*').from(this.options.tableName!).orderBy('id', 'asc');
+    const qb = this.knex.select('*').from(this.options.tableName!).orderBy('id', 'asc');
+
+    if (this.masterTransaction) {
+      qb.transacting(this.masterTransaction);
+    }
 
     return this.connection.execute<MigrationRow[]>(qb);
   }
 
   async ensureTable(): Promise<void> {
-    const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL());
+    const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
 
     if (tables.find(t => t.table_name === this.options.tableName!)) {
       return;
@@ -43,6 +48,14 @@ export class MigrationStorage {
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());
     });
+  }
+
+  setMasterMigration(trx: Transaction) {
+    this.masterTransaction = trx;
+  }
+
+  unsetMasterMigration() {
+    delete this.masterTransaction;
   }
 
 }
