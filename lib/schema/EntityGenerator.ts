@@ -1,10 +1,13 @@
 import { IndentationText, Project, QuoteKind, SourceFile } from 'ts-morph';
 import { ensureDir, writeFile } from 'fs-extra';
 
-import { AbstractSqlDriver, Configuration, DatabaseSchema, Dictionary, ReferenceType, Utils } from '..';
 import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import { Dictionary, EntityProperty } from '../typings';
 import { DatabaseTable } from './DatabaseTable';
+import { AbstractSqlDriver } from '../drivers';
+import { Configuration, Utils } from '../utils';
+import { DatabaseSchema } from './DatabaseSchema';
+import { ReferenceType } from '../entity';
 
 export class EntityGenerator {
 
