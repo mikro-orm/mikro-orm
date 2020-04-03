@@ -6,11 +6,17 @@ import { EntityName, EntityProperty, AnyEntity } from '../typings';
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     EntityValidator.validateSingleDecorator(meta, propertyName);
     Utils.lookupPathFromDecorator(meta);
-    options.name = options.name || propertyName;
+    const name = options.name || propertyName;
+
+    if (propertyName !== name && !(desc.value instanceof Function)) {
+      Utils.renameKey(options, 'name', 'fieldName');
+    }
+
+    options.name = propertyName;
     const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
-    const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
 
@@ -19,6 +25,7 @@ export function Property(options: PropertyOptions = {}): Function {
       prop.persist = false;
       prop.type = 'method';
       prop.getterName = propertyName;
+      prop.name = name;
     }
 
     meta.properties[prop.name] = prop;
