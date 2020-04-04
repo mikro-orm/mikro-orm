@@ -247,12 +247,14 @@ export class MetadataDiscovery {
     }
 
     if (!prop.joinColumns) {
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.collection, referencedColumnName));
+      const tableName = meta.collection.split('.').pop()!;
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(tableName, referencedColumnName));
     }
 
     if (!prop.inverseJoinColumns) {
       const meta2 = this.metadata.get(prop.type);
-      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.collection);
+      const tableName = meta2.collection.split('.').pop()!;
+      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, tableName);
     }
   }
 

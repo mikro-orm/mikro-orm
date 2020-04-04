@@ -173,7 +173,8 @@ export class SchemaGenerator {
         .forEach(prop => this.createTableColumn(table, meta, prop));
 
       if (meta.compositePK) {
-        table.primary(Utils.flatten(meta.primaryKeys.map(prop => meta.properties[prop].fieldNames)));
+        const constraintName = meta.collection.includes('.') ? meta.collection.split('.').pop()! + '_pkey' : undefined;
+        table.primary(Utils.flatten(meta.primaryKeys.map(prop => meta.properties[prop].fieldNames)), constraintName);
       }
 
       meta.indexes.forEach(index => {
