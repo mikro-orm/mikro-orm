@@ -515,13 +515,14 @@ export class MetadataDiscovery {
     meta.primaryKeys.forEach(primaryKey => {
       const pk = meta.properties[primaryKey];
       this.initCustomType(pk);
+      this.initColumnType(pk);
 
       if (pk.customType) {
         prop.columnTypes.push(pk.customType.getColumnType(pk, this.platform));
         return;
       }
 
-      prop.columnTypes.push(this.schemaHelper!.getTypeDefinition(pk));
+      prop.columnTypes.push(...pk.columnTypes);
     });
   }
 
