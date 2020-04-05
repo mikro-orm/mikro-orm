@@ -53,7 +53,7 @@ describe('GH issue 435', () => {
     unlinkSync(orm.config.get('dbName')!);
   });
 
-  test(`schema updates respect default values`, async () => {
+  test(`custom type methods are called with correct values`, async () => {
     const convertToDatabaseValueSpy = jest.spyOn(MyType.prototype, 'convertToDatabaseValue');
     const convertToJSValueSpy = jest.spyOn(MyType.prototype, 'convertToJSValue');
 

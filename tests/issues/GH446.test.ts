@@ -51,7 +51,7 @@ describe('GH issue 446', () => {
     await orm.close(true);
   });
 
-  test(`schema updates respect default values`, async () => {
+  test(`chaining primary key column type`, async () => {
     const a = new A();
     const b = new B();
     b.a = a;

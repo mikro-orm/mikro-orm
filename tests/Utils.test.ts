@@ -230,6 +230,13 @@ describe('Utils', () => {
     await expect(Utils.pathExists('**/tests', { onlyDirectories: true })).resolves.toEqual(true);
   });
 
+  test('isPlainObject', async () => {
+    expect(Utils.isPlainObject({ foo: 'bar' })).toBe(true);
+    class Foo { }
+    expect(Utils.isPlainObject(new Foo())).toBe(false);
+    expect(Utils.isPlainObject(Object.create(null))).toBe(false);
+  });
+
   test('extractEnumKeys', async () => {
     enum PublisherType {
       LOCAL = 'local',

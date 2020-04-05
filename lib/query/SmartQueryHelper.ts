@@ -24,7 +24,7 @@ export class SmartQueryHelper {
       return params.map(item => SmartQueryHelper.processParams(item, true));
     }
 
-    if (Utils.isObject(params)) {
+    if (Utils.isPlainObject(params)) {
       Object.keys(params).forEach(k => {
         params[k] = SmartQueryHelper.processParams(params[k], !!k);
       });
@@ -41,11 +41,11 @@ export class SmartQueryHelper {
       return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => SmartQueryHelper.processWhere(sub, entityName, meta)) } } as FilterQuery<T>;
     }
 
-    if (!Utils.isObject(where) || Utils.isPrimaryKey(where)) {
+    if (!Utils.isPlainObject(where) || Utils.isPrimaryKey(where)) {
       return where as FilterQuery<T>;
     }
 
-    return Object.keys(where).reduce((o, key) => {
+    return Object.keys(where as Dictionary).reduce((o, key) => {
       const value = where[key];
       const composite = meta && meta.properties[key] && meta.properties[key].joinColumns && meta.properties[key].joinColumns.length > 1;
 

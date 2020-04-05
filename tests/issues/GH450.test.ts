@@ -69,7 +69,7 @@ describe('GH issue 450', () => {
     await orm.close(true);
   });
 
-  test(`schema updates respect default values`, async () => {
+  test(`multiple schemas and m:n collections`, async () => {
     const t = new Task();
     t.assignees.add(new TaskAssignee('avatar', 'first', 'last'));
     await orm.em.persistAndFlush(t);

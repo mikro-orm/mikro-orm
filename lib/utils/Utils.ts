@@ -436,6 +436,26 @@ export class Utils {
   }
 
   /**
+   * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
+   */
+  static isPlainObject(value: any): boolean {
+    if (!Utils.isObject(value)) {
+      return false;
+    }
+
+    if (typeof value.constructor !== 'function') {
+      return false;
+    }
+
+    if (!value.constructor.prototype.hasOwnProperty('isPrototypeOf')) {
+      return false;
+    }
+
+    // most likely plain object
+    return true;
+  }
+
+  /**
    * Wraps the entity in a `Reference` wrapper if the property is defined as `wrappedReference`.
    */
   static wrapReference<T extends AnyEntity<T>>(entity: T | Reference<T>, prop: EntityProperty<T>): Reference<T> | T {
