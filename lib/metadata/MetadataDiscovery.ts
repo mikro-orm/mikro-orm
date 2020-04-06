@@ -450,6 +450,7 @@ export class MetadataDiscovery {
       return;
     }
 
+    this.defineBaseEntityProperties(base);
     meta.properties = { ...base.properties, ...meta.properties };
     const pks = Object.values(meta.properties).filter(p => p.primary).map(p => p.name);
 
