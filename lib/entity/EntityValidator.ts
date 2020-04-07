@@ -106,7 +106,14 @@ export class EntityValidator {
   }
 
   private fixDateType(givenValue: string): Date | string {
-    const date = new Date(parseFloat(givenValue) || givenValue);
+    let date: Date;
+
+    if (Utils.isString(givenValue) && givenValue.match(/^-?\d+(\.\d+)?$/)) {
+      date = new Date(+givenValue);
+    } else {
+      date = new Date(givenValue);
+    }
+
     return date.toString() !== 'Invalid Date' ? date : givenValue;
   }
 

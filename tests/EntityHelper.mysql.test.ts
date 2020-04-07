@@ -32,6 +32,28 @@ describe('EntityHelperMySql', () => {
     expect(book.author).toBe(jon);
   });
 
+  test('assign() should fix property types [mysql]', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    wrap(god).assign({ createdAt: '2018-01-01', termsAccepted: 1 });
+    expect(god.createdAt).toEqual(new Date('2018-01-01'));
+    expect(god.termsAccepted).toBe(true);
+
+    const d1 = +new Date('2018-01-01');
+    wrap(god).assign({ createdAt: '' + d1, termsAccepted: 0 });
+    expect(god.createdAt).toEqual(new Date('2018-01-01'));
+    expect(god.termsAccepted).toBe(false);
+
+    wrap(god).assign({ createdAt: d1, termsAccepted: 0 });
+    expect(god.createdAt).toEqual(new Date('2018-01-01'));
+
+    const d2 = +new Date('2018-01-01 00:00:00.123');
+    wrap(god).assign({ createdAt: '' + d2 });
+    expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
+
+    wrap(god).assign({ createdAt: d2 });
+    expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
+  });
+
   test('assign() should update entity collection [mysql]', async () => {
     const other = new BookTag2('other');
     await orm.em.persistAndFlush(other);
