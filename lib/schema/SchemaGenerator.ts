@@ -177,18 +177,19 @@ export class SchemaGenerator {
         table.primary(Utils.flatten(meta.primaryKeys.map(prop => meta.properties[prop].fieldNames)), constraintName);
       }
 
-      meta.indexes.forEach(index => {
+      const createIndex = (index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean) => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        const indexName = index.name || this.helper.getIndexName(meta.collection, properties, false);
-        table.index(properties, indexName, index.type);
-      });
+        const name = Utils.isString(index.name) ? index.name : this.helper.getIndexName(meta.collection, properties, unique);
 
-      meta.uniques.forEach(index => {
-        const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        const indexName = index.name || this.helper.getIndexName(meta.collection, properties, true);
-        table.unique(properties, indexName);
-      });
+        if (unique) {
+          table.unique(properties, name);
+        } else {
+          table.index(properties, name, index.type);
+        }
+      };
 
+      meta.indexes.forEach(index => createIndex(index, false));
+      meta.uniques.forEach(index => createIndex(index, true));
       this.helper.finalizeTable(table);
     });
   }
