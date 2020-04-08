@@ -29,6 +29,6 @@ export interface ManyToOneOptions<T extends AnyEntity<T>> extends ReferenceOptio
   primary?: boolean;
   joinColumn?: string;
   joinColumns?: string[];
-  onDelete?: string;
-  onUpdateIntegrity?: string;
+  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
 }

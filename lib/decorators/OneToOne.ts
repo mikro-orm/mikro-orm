@@ -15,6 +15,6 @@ export interface OneToOneOptions<T extends AnyEntity<T>> extends Partial<Omit<On
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
   primary?: boolean;
-  onDelete?: string;
-  onUpdateIntegrity?: string;
+  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
 }
