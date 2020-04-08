@@ -54,14 +54,17 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   /**
    * @internal
    */
-  hydrate(items: T[], validate = false): void {
+  hydrate(items: T[], validate = false, takeSnapshot = true): void {
     if (validate) {
       this.validateModification(items);
     }
 
     this.initialized = true;
     super.hydrate(items);
-    this.takeSnapshot();
+
+    if (takeSnapshot) {
+      this.takeSnapshot();
+    }
   }
 
   remove(...items: T[]): void {
