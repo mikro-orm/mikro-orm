@@ -12,7 +12,7 @@ export class A {
   @OneToOne(() => B)
   b!: any;
 
-  @Property({ type: 'string' })
+  @Property({ type: String })
   prop!: string;
 
 }
@@ -20,7 +20,7 @@ export class A {
 @Entity()
 export class C {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey({ type: Number })
   id!: number;
 
   @OneToOne(() => A)
@@ -34,7 +34,7 @@ export class C {
 @Entity()
 export class B {
 
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey({ type: Number })
   id!: number;
 
   @OneToOne(() => A, a => a.b, { eager: true })
@@ -43,7 +43,7 @@ export class B {
   @ManyToOne(() => C)
   c!: C;
 
-  @Property({ type: 'string' })
+  @Property({ type: String })
   prop!: string;
 
 }

@@ -184,32 +184,32 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
   private initProperties(): void {
     Object.entries<Property<T[keyof T]>>(this._meta.properties).forEach(([name, options]) => {
-      options.type = 'customType' in options ? options.customType.constructor.name : options.type;
+      options.type = 'customType' in options ? options.customType!.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
-          this.addOneToOne(name as keyof T & string, options.type, options);
+          this.addOneToOne(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.ONE_TO_MANY:
-          this.addOneToMany(name as keyof T & string, options.type, options);
+          this.addOneToMany(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.MANY_TO_ONE:
-          this.addManyToOne(name as keyof T & string, options.type, options);
+          this.addManyToOne(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.MANY_TO_MANY:
-          this.addManyToMany(name as keyof T & string, options.type, options);
+          this.addManyToMany(name as keyof T & string, options.type as string, options);
           break;
         default:
           if ((options as EntityProperty).enum) {
-            this.addEnum(name as keyof T & string, options.type, options);
+            this.addEnum(name as keyof T & string, options.type as string, options);
           } else if (options.primary) {
-            this.addPrimaryKey(name as keyof T & string, options.type, options);
+            this.addPrimaryKey(name as keyof T & string, options.type as string, options);
           } else if (options.serializedPrimaryKey) {
-            this.addSerializedPrimaryKey(name as keyof T & string, options.type, options);
+            this.addSerializedPrimaryKey(name as keyof T & string, options.type as string, options);
           } else if (options.version) {
-            this.addVersion(name as keyof T & string, options.type, options);
+            this.addVersion(name as keyof T & string, options.type as string, options);
           } else {
-            this.addProperty(name as keyof T & string, options.type, options);
+            this.addProperty(name as keyof T & string, options.type as string, options);
           }
       }
     });

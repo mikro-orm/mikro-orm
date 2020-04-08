@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, EntityValidator, ReferenceType } from '../entity';
-import { EntityName, EntityProperty, AnyEntity } from '../typings';
+import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
 export function Property(options: PropertyOptions = {}): Function {
@@ -39,7 +39,7 @@ export type PropertyOptions = {
   fieldNames?: string[];
   customType?: Type;
   columnType?: string;
-  type?: any;
+  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | object | String | Number | Boolean | Date | Constructor<Type>;
   length?: any;
   onCreate?: () => any;
   onUpdate?: () => any;
