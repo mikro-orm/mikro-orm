@@ -2,6 +2,7 @@ import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
 import { Cascade, EntityValidator, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
+import { Type } from '../types';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
@@ -36,6 +37,7 @@ export type PropertyOptions = {
   name?: string;
   fieldName?: string;
   fieldNames?: string[];
+  customType?: Type;
   columnType?: string;
   type?: any;
   length?: any;
