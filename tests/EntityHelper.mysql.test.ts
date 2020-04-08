@@ -72,6 +72,12 @@ describe('EntityHelperMySql', () => {
     expect(book.tags.getIdentifiers()).toMatchObject([tag1.id, tag3.id]);
     wrap(book).assign({ tags: [tag2] });
     expect(book.tags.getIdentifiers()).toMatchObject([tag2.id]);
+
+    const uuid = book.uuid;
+    orm.em.clear();
+    const book2 = await orm.em.findOneOrFail(Book2, { uuid });
+    await book2.tags.init();
+    expect(book2.tags.getIdentifiers()).toMatchObject([tag2.id]);
   });
 
   test('assign() allows deep merging of object properties [mysql]', async () => {
