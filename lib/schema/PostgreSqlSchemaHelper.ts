@@ -114,7 +114,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const sql = `select conrelid::regclass as table_from, conname, pg_get_constraintdef(c.oid) as enum_def
       from pg_constraint c join pg_namespace n on n.oid = c.connamespace
-      where contype = 'c' and conrelid = '${schemaName}.${tableName}'::regclass order by contype`;
+      where contype = 'c' and conrelid = '"${schemaName}"."${tableName}"'::regclass order by contype`;
     const enums = await connection.execute<any[]>(sql);
 
     return enums.reduce((o, item) => {
@@ -167,7 +167,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from pg_index idx
       left join pg_class AS i on i.oid = idx.indexrelid
       left join pg_attribute a on a.attrelid = idx.indrelid and a.attnum = ANY(idx.indkey) and a.attnum > 0
-      where indrelid = '${schemaName}.${tableName}'::regclass`;
+      where indrelid = '"${schemaName}"."${tableName}"'::regclass`;
   }
 
 }
