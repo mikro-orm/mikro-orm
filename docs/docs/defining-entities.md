@@ -217,9 +217,14 @@ For schema generator to work properly in case of string enums, you need to defin
 is same file as where it is used, so its values can be automatically discovered. If you want 
 to define the enum in another file, you should reexport it also in place where you use it. 
 
+Another possibility is to provide the reference to the enum implementation in the decorator
+via `@Enum(() => UserRole)`. 
+
 > You can also set enum items manually via `items: string[]` attribute.  
 
 ```typescript
+import { OutsideEnum } from './OutsideEnum.ts';
+
 @Entity()
 export class User {
 
@@ -228,6 +233,9 @@ export class User {
 
   @Enum()
   status!: UserStatus; // numeric enum
+
+  @Enum(() => OutsideEnum)
+  outside!: OutsideEnum; // string enum defined outside of this file
 
 }
 
@@ -241,6 +249,9 @@ export const enum UserStatus {
   DISABLED,
   ACTIVE,
 }
+
+// or we could reexport OutsideEnum
+// export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
 
 ## Indexes

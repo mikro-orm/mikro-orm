@@ -98,6 +98,12 @@ export class MetadataDiscovery {
       const name = this.namingStrategy.getClassName(filename);
       const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
       const target = this.getEntityClassOrSchema(path, name);
+
+      if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
+        this.logger.log('discovery', `- ignoring file ${filename}`);
+        continue;
+      }
+
       this.metadata.set(name, MetadataStorage.getMetadata(name));
       await this.discoverEntity(target, path);
     }

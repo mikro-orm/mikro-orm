@@ -1,8 +1,9 @@
 import { ObjectId } from 'mongodb';
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, BeforeCreate, Enum } from '../../lib';
+import { BeforeCreate, Collection, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property } from '../../lib';
 import { Book } from './Book';
 import { Test } from './test.model';
 import { SerializedPrimaryKey } from '../../lib/decorators';
+import { PublisherType } from './PublisherType';
 
 @Entity()
 export class Publisher {
@@ -35,9 +36,4 @@ export class Publisher {
     // do sth
   }
 
-}
-
-export enum PublisherType {
-  LOCAL = 'local',
-  GLOBAL = 'global',
 }
