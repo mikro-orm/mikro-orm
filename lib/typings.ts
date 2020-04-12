@@ -53,11 +53,12 @@ export type OperatorMap<T> = {
   $re?: string;
 };
 export type StringProp<T> = T extends string ? string | RegExp : never;
-export type EntityOrPrimary<T> = true extends IsScalar<T> ? never : DeepPartialEntity<T> | PartialEntity<T> | Primary<T> | T;
+export type EntityOrPrimary<T> = true extends IsScalar<T> ? never : DeepPartialEntity<ReferencedEntity<T>> | PartialEntity<ReferencedEntity<T>> | Primary<ReferencedEntity<T>> | ReferencedEntity<T>;
 export type CollectionItem<T> = T extends Collection<infer K> ? EntityOrPrimary<K> : never;
-export type FilterValue<T> = T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>> | null;
+export type ReferencedEntity<T> = T extends Reference<infer K> ? K : T;
+export type FilterValue<T> =  T | OperatorMap<T> | StringProp<T> | OneOrArray<CollectionItem<T> | EntityOrPrimary<T>> | null;
 export type Query<T> = true extends IsEntity<T>
-  ? { [K in keyof T]?: Query<T[K]> | FilterValue<T[K]> | null } | FilterValue<T>
+  ? { [K in keyof T]?: Query<ReferencedEntity<T[K]>> | FilterValue<ReferencedEntity<T[K]>> | null } | FilterValue<ReferencedEntity<T>>
   : T extends Collection<infer K>
     ? { [KK in keyof K]?: Query<K[KK]> | FilterValue<K[KK]> | null } | FilterValue<K>
     : FilterValue<T>;

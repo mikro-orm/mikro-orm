@@ -228,6 +228,12 @@ describe('check typings', () => {
 
     let ok03: FilterQuery<FooParam2>;
     ok03 = { bar: 1, baz: 2 };
+
+    let ok04: FilterQuery<Book2>;
+    ok04 = { publisher: 1 };
+    ok04 = { publisher: { name: 'name' } };
+    ok04 = { publisher: { name: /name/ } };
+    ok04 = { publisher: { name: { $like: 'name' } } };
   });
 
   // there is no way to test this currently, uncomment to check they all fail
