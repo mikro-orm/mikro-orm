@@ -1,6 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 class A {
@@ -30,9 +31,9 @@ describe('GH issue 380', () => {
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).ensureDatabase();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
@@ -41,7 +42,7 @@ describe('GH issue 380', () => {
   });
 
   test(`schema updates respect default values`, async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
     const dump = await generator.getUpdateSchemaSQL(false);
     expect(dump).toBe('');
   });

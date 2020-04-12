@@ -1,7 +1,6 @@
+import { Collection, EntitySchema } from '@mikro-orm/core';
 import { BaseEntity5 } from './BaseEntity5';
-import { Collection } from '../../lib/entity';
 import { Book4 } from './Book4';
-import { EntitySchema } from '../../lib/schema';
 
 export interface BookTag4 extends BaseEntity5 {
   name: string;

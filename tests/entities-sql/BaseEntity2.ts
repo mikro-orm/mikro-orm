@@ -1,6 +1,4 @@
-import { BeforeCreate, Collection, PrimaryKey, Property } from '../../lib';
-import { MetadataStorage } from '../../lib/metadata';
-import { ReferenceType } from '../../lib/entity';
+import { BeforeCreate, Collection, PrimaryKey, Property, MetadataStorage, ReferenceType } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
 
@@ -8,7 +6,7 @@ export abstract class BaseEntity2 {
   id!: number;
 
   @Property({ persist: false })
-  hookTest: boolean = false;
+  hookTest = false;
 
   protected constructor() {
     const meta = MetadataStorage.getMetadata(this.constructor.name);

@@ -1,6 +1,4 @@
-import { Collection, AnyEntity } from '../../lib';
-import { MetadataStorage } from '../../lib/metadata';
-import { ReferenceType } from '../../lib/entity';
+import { Collection, AnyEntity, MetadataStorage, ReferenceType } from '@mikro-orm/core';
 
 export abstract class BaseEntity22 {
 

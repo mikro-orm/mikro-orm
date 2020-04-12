@@ -1,9 +1,8 @@
 import { v4 } from 'uuid';
-
-import { Collection, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '../lib';
+import { Collection, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 
 describe('EntityManagerMariaDb', () => {
 
