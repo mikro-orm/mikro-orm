@@ -49,6 +49,8 @@ export class QueryBuilderHelper {
 
     let ret = field;
     const customExpression = QueryBuilderHelper.isCustomExpression(field);
+    const prop = this.getProperty(field, this.alias);
+    const noPrefix = prop && prop.persist === false;
 
     // do not wrap custom expressions
     if (!customExpression) {
@@ -63,7 +65,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(ret, value);
     }
 
-    if (![QueryType.SELECT, QueryType.COUNT].includes(type) || this.isPrefixed(ret)) {
+    if (![QueryType.SELECT, QueryType.COUNT].includes(type) || this.isPrefixed(ret) || noPrefix) {
       return ret;
     }
 
@@ -407,9 +409,11 @@ export class QueryBuilderHelper {
       alias = populate[alias] || alias;
       Utils.splitPrimaryKeys(field).forEach(f => {
         const direction = orderBy[k];
+        const prop = this.getProperty(f, alias);
+        const noPrefix = prop && prop.persist === false;
         const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
-        ret.push({ column: this.mapper(`${alias}.${f}`, type), order: order.toLowerCase() });
+        ret.push({ column: this.mapper(noPrefix ? f : `${alias}.${f}`, type), order: order.toLowerCase() });
       });
     });
 
@@ -511,11 +515,15 @@ export class QueryBuilderHelper {
   }
 
   private fieldName(field: string, alias?: string): string {
+    const prop = this.getProperty(field, alias);
+    return prop ? prop.fieldNames[0] : field;
+  }
+
+  private getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!] || this.entityName;
     const meta = this.metadata.get(entityName, false, false);
-    const prop = meta ? meta.properties[field] : false;
 
-    return prop ? prop.fieldNames[0] : field;
+    return meta ? meta.properties[field] : undefined;
   }
 
 }

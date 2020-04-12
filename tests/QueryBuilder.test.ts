@@ -1184,6 +1184,12 @@ describe('QueryBuilder', () => {
     expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`id` in (?, ?)');
   });
 
+  test('order by virtual property', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select(['*', '"1" as code']).where({ $in: [1, 2] }).orderBy({ code: 'asc' });
+    expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc');
+  });
+
   test('CriteriaNode', async () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
