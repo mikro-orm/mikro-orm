@@ -1,6 +1,4 @@
-import { BeforeCreate, Collection, PrimaryKey, Property } from '../../lib';
-import { MetadataStorage } from '../../lib/metadata';
-import { ReferenceType } from '../../lib/entity';
+import { BeforeCreate, Collection, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
 
@@ -8,11 +6,10 @@ export abstract class BaseEntity2 {
   id!: number;
 
   @Property({ persist: false })
-  hookTest: boolean = false;
+  hookTest = false;
 
   protected constructor() {
-    const meta = MetadataStorage.getMetadata(this.constructor.name);
-    const props = meta.properties;
+    const props = wrap(this).__meta.properties;
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {

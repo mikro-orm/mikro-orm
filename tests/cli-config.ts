@@ -1,8 +1,8 @@
+import { JavaScriptMetadataProvider } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from './bootstrap';
-import { JavaScriptMetadataProvider } from '../lib';
-import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 
-const { BaseEntity4, Test3 } = require('./entities-js');
+const { BaseEntity4, Test3 } = require('./entities-js/index');
 
 export = {
   entities: [Test3, BaseEntity4],

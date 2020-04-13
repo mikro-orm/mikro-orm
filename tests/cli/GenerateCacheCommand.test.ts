@@ -1,7 +1,6 @@
-import { CLIHelper } from '../../lib/cli/CLIHelper';
-import { MetadataDiscovery, MetadataStorage } from '../../lib/metadata';
-import { Configuration } from '../../lib/utils';
-import { GenerateCacheCommand } from '../../lib/cli/GenerateCacheCommand';
+import { Configuration, MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
+import { CLIHelper } from '@mikro-orm/cli';
+import { GenerateCacheCommand } from '../../packages/cli/src/commands/GenerateCacheCommand';
 
 const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
 getConfigurationMock.mockResolvedValue(new Configuration({ getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));

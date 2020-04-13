@@ -1,5 +1,5 @@
-import { Collection, Entity, OneToMany, Property, PrimaryKey } from '../../lib';
-import { BookWp } from '.';
+import { Collection, Entity, OneToMany, Property, PrimaryKey } from '@mikro-orm/core';
+import { BookWp } from './index';
 
 @Entity({ tableName: 'author2' })
 export class AuthorWp {

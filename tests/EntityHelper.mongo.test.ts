@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb';
 import { inspect } from 'util';
 
+import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, Utils, wrap } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
-import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, Utils, wrap } from '../lib';
 import { initORMMongo, wipeDatabase } from './bootstrap';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
