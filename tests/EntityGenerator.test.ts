@@ -1,9 +1,7 @@
 import { pathExists, remove } from 'fs-extra';
+import { DatabaseTable } from '@mikro-orm/knex';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
-import { EntityGenerator } from '../lib/schema/EntityGenerator';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { Configuration, MikroORM } from '../lib';
-import { DatabaseTable } from '../lib/schema/DatabaseTable';
 
 describe('EntityGenerator', () => {
 
@@ -20,7 +18,7 @@ describe('EntityGenerator', () => {
 
   test('generate entities from schema [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = orm.getEntityGenerator();
+    const generator = new EntityGenerator(orm.em);
     const dump = await generator.generate({ save: true });
     expect(dump).toMatchSnapshot('sqlite-entity-dump');
     await expect(pathExists('./tests/generated-entities/Author3.ts')).resolves.toBe(true);
@@ -31,7 +29,7 @@ describe('EntityGenerator', () => {
 
   test('generate entities from schema [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    const generator = orm.getEntityGenerator();
+    const generator = new EntityGenerator(orm.em);
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
@@ -68,11 +66,6 @@ describe('EntityGenerator', () => {
     expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
 
     await orm.close(true);
-  });
-
-  test('not supported [mongodb]', async () => {
-    const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
-    expect(() => mongoOrm.getEntityGenerator()).toThrowError('Not supported by given driver');
   });
 
 });

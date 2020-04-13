@@ -1,4 +1,4 @@
-import { Entity, AnyEntity, PrimaryKey, Property } from '../../lib';
+import { Entity, AnyEntity, PrimaryKey, Property } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 @Entity()
