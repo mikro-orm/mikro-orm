@@ -1,9 +1,8 @@
 import { unlinkSync } from 'fs';
 import { v4 } from 'uuid';
-
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '../../lib';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 
 @Entity()
 export class A {
@@ -14,6 +13,7 @@ export class A {
   @Property()
   name!: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
   bCollection = new Collection<B>(this);
 
@@ -47,8 +47,8 @@ describe('GH issue 268', () => {
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

@@ -1,5 +1,9 @@
 {
   "name": "mikro-orm",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "version": "4.0.0-alpha.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
@@ -35,7 +39,11 @@
   },
   "homepage": "https://mikro-orm.io",
   "scripts": {
-    "build": "rimraf dist && tsc",
+    "bootstrap": "lerna bootstrap",
+    "postinstall": "yarn bootstrap",
+    "clean": "lerna run clean",
+    "build": "lerna run build",
+    "pub": "lerna publish",
     "pretest": "node tests/pre-test",
     "test": "node --expose-gc ./node_modules/.bin/jest --runInBand --logHeapUsage",
     "posttest": "node tests/post-test",
@@ -44,20 +52,20 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "run-rs": "run-rs -v 4.2.3 -l ubuntu1804",
     "run-rs-in-background": "yarn run-rs > /dev/null 2>&1 &",
-    "lint": "eslint lib/**/*.ts"
-  },
-  "bin": {
-    "mikro-orm": "./dist/cli.js"
+    "lint": "eslint packages/**/*.ts"
   },
   "jest": {
     "testTimeout": 15000,
     "preset": "ts-jest",
     "collectCoverage": false,
     "collectCoverageFrom": [
-      "lib/**/*.ts"
+      "<rootDir>/packages/*/src/**/*.ts"
     ],
+    "moduleNameMapper": {
+      "@mikro-orm/(.*)": "<rootDir>/packages/$1/src"
+    },
     "coveragePathIgnorePatterns": [
-      "lib/cli.ts"
+      "<rootDir>/packages/cli/src/cli.ts"
     ]
   },
   "commitlint": {
@@ -73,7 +81,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint lib/**/*.ts --fix",
+      "eslint packages/**/*.ts --fix",
       "git add"
     ]
   },
@@ -86,56 +94,15 @@
   "engines": {
     "node": ">= 10.13.0"
   },
-  "dependencies": {
-    "acorn-loose": "^7.0.0",
-    "acorn-walk": "^7.1.1",
-    "chalk": "^4.0.0",
-    "cli-highlight": "^2.1.4",
-    "cli-table3": "^0.6.0",
-    "clone": "^2.1.2",
-    "fast-deep-equal": "^3.1.1",
-    "fs-extra": "^9.0.0",
-    "globby": "^11.0.0",
-    "knex": "^0.20.13",
-    "reflect-metadata": "^0.1.13",
-    "ts-morph": "^7.0.0",
-    "umzug": "^2.2.0",
-    "uuid": "^8.0.0",
-    "yargonaut": "^1.1.4",
-    "yargs": "^15.3.1"
-  },
-  "peerDependencies": {
-    "mariadb": "^2.1.0",
-    "mongodb": "^3.3.4",
-    "mysql2": "^2.0.0",
-    "pg": "^7.10.0",
-    "sqlite3": "^4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "mariadb": {
-      "optional": true
-    },
-    "mongodb": {
-      "optional": true
-    },
-    "mysql2": {
-      "optional": true
-    },
-    "pg": {
-      "optional": true
-    },
-    "sqlite3": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^8.1.0",
     "@types/jest": "^25.2.1",
-    "@types/mongodb": "^3.5.4",
-    "@types/mysql2": "types/mysql2",
+    "@types/mongodb": "^3.5.8",
+    "@types/mysql": "types/mysql#41e381415afbb79452c0501ca3cf220c2cd390bc",
+    "@types/mysql2": "types/mysql2#b549352cda0b83fe8c4f4c11a1b4beb0b0cb0f5d",
     "@types/node": "^13.11.0",
     "@types/pg": "^7.14.3",
     "@types/umzug": "^2.2.3",
@@ -149,18 +116,15 @@
     "coveralls": "^3.0.11",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^22.1.0",
+    "fs-extra": "^9.0.0",
     "husky": "^4.2.3",
     "jest": "^24.9.0",
+    "lerna": "^3.20.2",
     "lint-staged": "^10.1.1",
-    "mariadb": "^2.3.1",
-    "mongodb": "^3.5.7",
-    "mysql2": "^2.1.0",
-    "pg": "^8.0.0",
     "rimraf": "^3.0.2",
     "run-rs": "^0.6.2",
     "semantic-release": "^17.0.4",
-    "sqlite3": "^4.1.1",
-    "ts-jest": "24.3.0",
+    "ts-jest": "^24.3.0",
     "ts-node": "^8.8.2",
     "typescript": "3.8.3"
   }

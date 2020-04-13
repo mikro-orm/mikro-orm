@@ -1,7 +1,7 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, ReflectMetadataProvider, Property, wrap, Reference } from '../../lib';
-import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { unlinkSync } from 'fs';
+import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, ReflectMetadataProvider, Property, wrap, Reference } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -9,6 +9,7 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
 
@@ -45,8 +46,8 @@ describe('GH issue 269', () => {
       autoJoinOneToOneOwner: false,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

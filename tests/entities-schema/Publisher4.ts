@@ -1,7 +1,6 @@
+import { Collection, EntitySchema } from '@mikro-orm/core';
 import { BaseEntity5 } from './BaseEntity5';
-import { Collection } from '../../lib/entity';
 import { Book4 } from './Book4';
-import { EntitySchema } from '../../lib/schema';
 import { Test4 } from './Test4';
 
 export interface Publisher4 extends BaseEntity5 {

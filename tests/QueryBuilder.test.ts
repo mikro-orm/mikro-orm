@@ -1,10 +1,9 @@
 import { inspect } from 'util';
+import { LockMode, MikroORM, QueryOrder } from '@mikro-orm/core';
+import { QueryFlag, CriteriaNode } from '@mikro-orm/knex';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, Car2, CarOwner2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
-import { LockMode, MikroORM, QueryFlag, QueryOrder } from '../lib';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { CriteriaNode } from '../lib/query/CriteriaNode';
 
 describe('QueryBuilder', () => {
 
@@ -370,9 +369,9 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['t.st$']);
 
     qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('*').where({ name: { $re: '^c.o.*l-te.*st\.c.m$' } });
+    qb.select('*').where({ name: { $re: '^c.o.*l-te.*st.c.m$' } });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
-    expect(qb.getParams()).toEqual(['^c.o.*l-te.*st\.c.m$']);
+    expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
   });
 
   test('select by m:1', async () => {
@@ -539,7 +538,7 @@ describe('QueryBuilder', () => {
 
   test('select with unsupported operator', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
-    expect(() => qb.select('*').where({ $test: { foo: 'bar'} })).toThrowError('Trying to query by not existing property Test2.$test');
+    expect(() => qb.select('*').where({ $test: { foo: 'bar' } })).toThrowError('Trying to query by not existing property Test2.$test');
   });
 
   test('select distinct id with left join', async () => {
@@ -1202,12 +1201,6 @@ describe('QueryBuilder', () => {
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     expect(qb.getAliasForEntity(Author2.name, node)).toBeUndefined();
-  });
-
-  test('not supported [mongodb]', async () => {
-    const em = orm.em.fork();
-    Object.assign(em, { driver: new MongoDriver(orm.em.config) });
-    expect(() => em.createQueryBuilder(Author2, 'a')).toThrowError('Not supported by given driver');
   });
 
   afterAll(async () => orm.close(true));
