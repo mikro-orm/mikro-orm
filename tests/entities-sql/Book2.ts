@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '../../lib';
+import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';

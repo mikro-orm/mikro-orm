@@ -1,11 +1,12 @@
 const close = jest.fn();
 const cacheAdapter = { clear: jest.fn() };
 const getConfiguration = () => ({ getCacheAdapter: () => cacheAdapter, close });
-jest.mock('../../lib/cli/CLIHelper', () => ({ CLIHelper: { getConfiguration, dump: jest.fn() } }));
+jest.mock('../../packages/cli/src/CLIHelper', () => ({ CLIHelper: { getConfiguration, dump: jest.fn() } }));
 
 (global as any).console.log = jest.fn();
 
-import { ClearCacheCommand } from '../../lib/cli/ClearCacheCommand';
+// noinspection ES6PreferShortImport
+import { ClearCacheCommand } from '../../packages/cli/src/commands/ClearCacheCommand';
 
 describe('ClearCacheCommand', () => {
 

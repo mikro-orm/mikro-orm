@@ -1,5 +1,7 @@
 import 'reflect-metadata';
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '../../lib';
+import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { SchemaGenerator } from '@mikro-orm/knex';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -40,7 +42,7 @@ class Task {
 
 describe('GH issue 450', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -49,23 +51,22 @@ describe('GH issue 450', () => {
       debug: false,
       highlight: false,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
+    await new SchemaGenerator(orm.em).ensureDatabase();
 
     await orm.em.getConnection().execute('create schema if not exists auth');
     await orm.em.getConnection().execute('create schema if not exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema(true, true, true);
-    await orm.getSchemaGenerator().dropDatabase('auth');
-    await orm.getSchemaGenerator().dropDatabase('operations');
+    await new SchemaGenerator(orm.em).dropSchema(true, true, true);
+    await new SchemaGenerator(orm.em).dropDatabase('auth');
+    await new SchemaGenerator(orm.em).dropDatabase('operations');
     await orm.close(true);
   });
 

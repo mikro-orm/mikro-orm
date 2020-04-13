@@ -1,6 +1,5 @@
+import { Collection, EntitySchema } from '@mikro-orm/core';
 import { BaseEntity5 } from './BaseEntity5';
-import { Collection } from '../../lib/entity';
-import { EntitySchema } from '../../lib/schema';
 import { Author4 } from './Author4';
 import { Publisher4 } from './Publisher4';
 import { BookTag4 } from './BookTag4';

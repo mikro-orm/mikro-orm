@@ -1,5 +1,5 @@
-import { EntitySchema } from '../../lib/schema';
-import { FooBar4, BaseEntity5 } from '.';
+import { EntitySchema } from '@mikro-orm/core';
+import { FooBar4, BaseEntity5 } from './index';
 
 export interface FooBaz4 extends BaseEntity5 {
   name: string;

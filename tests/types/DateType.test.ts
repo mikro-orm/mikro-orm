@@ -1,5 +1,5 @@
-import { DateType } from '../../lib/types';
-import { MongoPlatform } from '../../lib/platforms/MongoPlatform';
+import { DateType } from '@mikro-orm/core';
+import { MongoPlatform } from '@mikro-orm/mongodb';
 
 describe('DateType', () => {
 

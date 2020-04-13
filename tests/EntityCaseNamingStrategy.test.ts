@@ -1,4 +1,4 @@
-import { EntityCaseNamingStrategy } from '../lib/naming-strategy';
+import { EntityCaseNamingStrategy } from '@mikro-orm/core';
 
 describe('EntityCaseNamingStrategy', () => {
 

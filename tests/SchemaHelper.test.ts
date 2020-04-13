@@ -1,7 +1,6 @@
-import { SchemaHelper } from '../lib/schema';
-import { SqliteSchemaHelper } from '../lib/schema/SqliteSchemaHelper';
-import { MySqlSchemaHelper } from '../lib/schema/MySqlSchemaHelper';
-import { PostgreSqlSchemaHelper } from '../lib/schema/PostgreSqlSchemaHelper';
+import { SchemaHelper, SqliteSchemaHelper } from '@mikro-orm/sqlite';
+import { MySqlSchemaHelper } from '@mikro-orm/mysql';
+import { PostgreSqlSchemaHelper } from '@mikro-orm/postgresql';
 
 class SchemaHelperTest extends SchemaHelper { }
 
