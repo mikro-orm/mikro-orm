@@ -1,12 +1,10 @@
 import { v4 } from 'uuid';
 import chalk from 'chalk';
 
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
-import { Logger, ValidationError } from '../lib/utils';
-import { MySqlConnection } from '../lib/connections/MySqlConnection';
 
 describe('EntityManagerMySql', () => {
 
@@ -49,7 +47,7 @@ describe('EntityManagerMySql', () => {
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
-    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name'});
+    const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
@@ -75,7 +73,8 @@ describe('EntityManagerMySql', () => {
     const conn = driver.getConnection();
     await conn.transactional(async tx => {
       await conn.execute('select 1', [], 'all', tx);
-      await conn.execute(conn.getKnex().raw('select 1'), [], 'all', tx);
+      await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
+      await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
     });
   });
 
@@ -492,7 +491,7 @@ describe('EntityManagerMySql', () => {
     expect(authors[2].name).toBe('Author 3');
     orm.em.clear();
 
-    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le\.c.m$' } });
+    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le.c.m$' } });
     expect(authors2.length).toBe(3);
     expect(authors2[0].name).toBe('Author 1');
     expect(authors2[1].name).toBe('Author 2');
@@ -1429,8 +1428,6 @@ describe('EntityManagerMySql', () => {
 
     const res9 = await orm.em.nativeUpdate(Author2, id, {});
     expect(res9).toBe(0);
-
-    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by MySqlDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {

@@ -1,21 +1,34 @@
-import { Configuration } from '../../lib/utils';
-import { CLIHelper } from '../../lib/cli/CLIHelper';
+(global as any).process.env.FORCE_COLOR = 0;
+
+import { MikroORM } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import { CLIHelper } from '@mikro-orm/cli';
+// noinspection ES6PreferShortImport
+import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
+import { initORMSqlite } from '../bootstrap';
 
 const close = jest.fn();
-const schemaGenerator = { dropSchema: jest.fn(() => []), getDropSchemaSQL: jest.fn(() => '') };
-const config = new Configuration({} as any, false);
+jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
 showHelpMock.mockReturnValue('');
-const getORMMock = jest.spyOn(CLIHelper, 'getORM');
-getORMMock.mockResolvedValue({ getSchemaGenerator: () => schemaGenerator, config, close } as any);
+const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
+dropSchema.mockImplementation(async () => void 0);
+const getDropSchemaSQL = jest.spyOn(SchemaGenerator.prototype, 'getDropSchemaSQL');
+getDropSchemaSQL.mockImplementation(async () => '');
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => {});
-
-(global as any).console.log = jest.fn();
-
-import { SchemaCommandFactory } from '../../lib/cli/SchemaCommandFactory';
+dumpMock.mockImplementation(() => void 0);
 
 describe('DropSchemaCommand', () => {
+
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMSqlite();
+    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    getORMMock.mockResolvedValue(orm);
+  });
+
+  afterAll(async () => await orm.close(true));
 
   test('handler', async () => {
     const cmd = SchemaCommandFactory.create('drop');
@@ -24,30 +37,30 @@ describe('DropSchemaCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(showHelpMock.mock.calls.length).toBe(1);
 
-    expect(schemaGenerator.dropSchema.mock.calls.length).toBe(0);
+    expect(dropSchema.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.dropSchema.mock.calls.length).toBe(1);
+    expect(dropSchema.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
     await expect(cmd.handler({ run: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.dropSchema.mock.calls.length).toBe(2);
-    expect(schemaGenerator.dropSchema.mock.calls[1]).toEqual([true, true, undefined]);
+    expect(dropSchema.mock.calls.length).toBe(2);
+    expect(dropSchema.mock.calls[1]).toEqual([true, true, undefined]);
     expect(close.mock.calls.length).toBe(2);
 
-    expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(0);
+    expect(getDropSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(1);
+    expect(getDropSchemaSQL.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(3);
 
     await expect(cmd.handler({ dump: true, dropMigrationsTable: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.getDropSchemaSQL.mock.calls.length).toBe(2);
-    expect(schemaGenerator.getDropSchemaSQL.mock.calls[1]).toEqual([true, true]);
+    expect(getDropSchemaSQL.mock.calls.length).toBe(2);
+    expect(getDropSchemaSQL.mock.calls[1]).toEqual([true, true]);
     expect(close.mock.calls.length).toBe(4);
 
     await expect(cmd.handler({ run: true, dropDb: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.dropSchema.mock.calls.length).toBe(3);
-    expect(schemaGenerator.dropSchema.mock.calls[2]).toEqual([true, undefined, true]);
+    expect(dropSchema.mock.calls.length).toBe(3);
+    expect(dropSchema.mock.calls[2]).toEqual([true, undefined, true]);
     expect(close.mock.calls.length).toBe(5);
   });
 

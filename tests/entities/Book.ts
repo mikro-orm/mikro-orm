@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Cascade, Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap } from '../../lib';
+import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -16,14 +16,14 @@ export class Book extends BaseEntity3 {
   @Property()
   title: string;
 
-  @ManyToOne()
+  @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToOne(() => Publisher, { cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   @Index({ name: 'publisher_idx' })
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
-  @ManyToMany()
+  @ManyToMany(() => BookTag)
   tags: Collection<BookTag> = new Collection<BookTag>(this);
 
   @Property()

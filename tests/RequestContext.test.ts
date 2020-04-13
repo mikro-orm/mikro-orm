@@ -1,4 +1,4 @@
-import { RequestContext, MikroORM, wrap } from '../lib';
+import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { Author, Book } from './entities';
 

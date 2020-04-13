@@ -1,7 +1,9 @@
 (global as any).process.env.FORCE_COLOR = 0;
+
 import Knex, { Raw } from 'knex';
-import { Entity, Logger, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { SchemaGenerator } from '@mikro-orm/knex';
+import { Entity, Logger, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 class PointType extends Type {
 
@@ -47,9 +49,9 @@ describe('GH issue 372', () => {
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).ensureDatabase();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

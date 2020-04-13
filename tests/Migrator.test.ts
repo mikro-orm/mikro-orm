@@ -1,12 +1,10 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-
+import { Logger, MikroORM } from '@mikro-orm/core';
+import { Migration, Migrator } from '@mikro-orm/migrations';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { unlink, writeFile } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
-import { Configuration, Logger } from '../lib/utils';
-import { Migration, Migrator, MikroORM } from '../lib';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 class MigrationTest1 extends Migration {
 
@@ -50,14 +48,14 @@ describe('Migrator', () => {
   test('generate schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
   test('migration is skipped when no diff', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce([]);
     const migration = await migrator.createMigration();
@@ -67,9 +65,9 @@ describe('Migrator', () => {
   test('run schema migration', async () => {
     const upMock = jest.spyOn(umzug.prototype, 'up');
     const downMock = jest.spyOn(umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => {});
-    downMock.mockImplementationOnce(() => {});
-    const migrator = orm.getMigrator();
+    upMock.mockImplementationOnce(() => void 0);
+    downMock.mockImplementationOnce(() => void 0);
+    const migrator = new Migrator(orm.em);
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);
     expect(downMock).toBeCalledTimes(0);
@@ -81,7 +79,7 @@ describe('Migrator', () => {
 
   test('ensureTable and list executed migrations', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
 
@@ -99,7 +97,7 @@ describe('Migrator', () => {
 
   test('runner', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();
     // @ts-ignore
@@ -138,15 +136,15 @@ describe('Migrator', () => {
 
   test('up/down params [all or nothing enabled]', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
     const path = process.cwd() + '/temp/migrations';
 
     const migration = await migrator.createMigration(path, true);
-    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'../../lib/migrations'`));
+    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'@mikro-orm/migrations'`));
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
-    migratorMock.mockImplementation(async () => {});
+    migratorMock.mockImplementation(async () => void 0);
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
@@ -172,7 +170,7 @@ describe('Migrator', () => {
 
   test('up/down params [all or nothing disabled]', async () => {
     await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
-    const migrator = orm.getMigrator();
+    const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
@@ -180,9 +178,9 @@ describe('Migrator', () => {
     const path = process.cwd() + '/temp/migrations';
 
     const migration = await migrator.createMigration(path, true);
-    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'../../lib/migrations'`));
+    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'@mikro-orm/migrations'`));
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
-    migratorMock.mockImplementation(async () => {});
+    migratorMock.mockImplementation(async () => void 0);
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
@@ -204,11 +202,6 @@ describe('Migrator', () => {
         .replace(/ trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
-  });
-
-  test('not supported [mongodb]', async () => {
-    const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
-    expect(() => mongoOrm.getMigrator()).toThrowError('Not supported by given driver');
   });
 
 });

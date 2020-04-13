@@ -1,7 +1,7 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType,
-  Cascade, Collection, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap, Index, Unique,
-} from '../../lib';
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection,
+  Cascade, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap, Index, Unique,
+} from '@mikro-orm/core';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
@@ -21,33 +21,33 @@ export class Author extends BaseEntity {
   @Property()
   email: string;
 
-  @Property()
-  @Unique({ name: 'age_uniq', options: { partialFilterExpression: { age: { $exists: true } } }})
+  @Property({ nullable: true })
+  @Unique({ name: 'age_uniq', options: { partialFilterExpression: { age: { $exists: true } } } })
   age?: number;
 
   @Property()
-  termsAccepted = false;
+  termsAccepted: boolean = false;
 
-  @Property()
+  @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ fieldName: 'identitiesArray' })
+  @Property({ nullable: true, name: 'identitiesArray' })
   identities?: string[];
 
-  @Property({ type: DateType })
+  @Property({ nullable: true, type: DateType })
   @Index()
   born?: Date;
 
   @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
   books = new Collection<Book>(this);
 
-  @ManyToMany()
+  @ManyToMany(() => Author)
   friends: Collection<Author> = new Collection<Author>(this);
 
-  @ManyToOne()
+  @ManyToOne(() => Book)
   favouriteBook!: Book;
 
-  @ManyToOne()
+  @ManyToOne(() => Author)
   favouriteAuthor!: Author;
 
   @Property({ persist: false })

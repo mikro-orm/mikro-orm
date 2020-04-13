@@ -13,3 +13,11 @@ Support for older node versions was dropped.
 ## TypeScript 3.7+ required
 
 Support for older TypeScript versions was dropped. 
+
+## Monorepo
+
+TODO multiple packages
+
+## SqlEntityManager and MongoEntityManager
+
+TODO QB getter, knex getter, aggregate...

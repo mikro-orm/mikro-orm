@@ -1,14 +1,13 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
-import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
-import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { Logger, ValidationError } from '../lib/utils';
+import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
-const { Author3 } = require('./entities-js').Author3;
-const { Book3 } = require('./entities-js').Book3;
-const { BookTag3 } = require('./entities-js').BookTag3;
-const { Publisher3 } = require('./entities-js').Publisher3;
-const { Test3 } = require('./entities-js').Test3;
+import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
+const { Author3 } = require('./entities-js/index').Author3;
+const { Book3 } = require('./entities-js/index').Book3;
+const { BookTag3 } = require('./entities-js/index').BookTag3;
+const { Publisher3 } = require('./entities-js/index').Publisher3;
+const { Test3 } = require('./entities-js/index').Test3;
 
 describe('EntityManagerSqlite', () => {
 
@@ -801,8 +800,6 @@ describe('EntityManagerSqlite', () => {
 
     const res5 = await orm.em.nativeUpdate(Author3, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
-
-    await expect(orm.em.aggregate(Author3, [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {

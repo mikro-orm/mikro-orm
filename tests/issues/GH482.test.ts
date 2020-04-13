@@ -1,5 +1,10 @@
-import { Entity, PrimaryKey, MikroORM, ReflectMetadataProvider, BigIntType, OneToMany, Collection, Enum, ManyToOne, Logger } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, MikroORM, ReflectMetadataProvider, BigIntType, OneToMany, Collection, Enum, ManyToOne, Logger } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+
+export enum LevelType {
+  A = 'A',
+  B = 'B',
+}
 
 @Entity()
 class Job {
@@ -7,7 +12,7 @@ class Job {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  @OneToMany(() => Level, 'job', { orphanRemoval: true })
+  @OneToMany('Level', 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
 
 }
@@ -25,11 +30,6 @@ class Level {
     this.type = type;
   }
 
-}
-
-export enum LevelType {
-  A = 'A',
-  B = 'B',
 }
 
 describe('GH issue 482', () => {
