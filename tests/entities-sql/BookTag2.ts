@@ -1,4 +1,4 @@
-import { BigIntType, Collection, Entity, ManyToMany, PrimaryKey, Property, ReferenceType, wrap } from '../../lib';
+import { BigIntType, Collection, Entity, ManyToMany, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()

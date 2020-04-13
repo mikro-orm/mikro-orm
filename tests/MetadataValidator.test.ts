@@ -1,6 +1,4 @@
-import { ReferenceType } from '../lib/entity';
-import { MetadataStorage, MetadataValidator, ReflectMetadataProvider } from '../lib/metadata';
-import { MikroORM } from '../lib';
+import { ReferenceType, MikroORM, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from '@mikro-orm/core';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BASE_DIR } from './bootstrap';
 

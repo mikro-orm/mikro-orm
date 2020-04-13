@@ -1,13 +1,11 @@
 import { ObjectId } from 'mongodb';
 import chalk from 'chalk';
 
-import { Collection, Configuration, EntityManager, EntityProperty, MikroORM, QueryOrder, Reference, wrap } from '../lib';
+import { Collection, Configuration, EntityManager, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger } from '@mikro-orm/core';
+import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { MongoConnection } from '../lib/connections/MongoConnection';
-import { Logger } from '../lib/utils';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
@@ -643,7 +641,7 @@ describe('EntityManagerMongo', () => {
 
     // test M:N lazy load
     orm.em.clear();
-    let book = (await orm.em.findOne(Book, { tags: tag1._id }))!;
+    let book = await orm.em.findOneOrFail(Book, { tags: tag1._id });
     expect(book.tags.isInitialized()).toBe(true); // owning side is always initialized
     expect(book.tags.count()).toBe(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag);

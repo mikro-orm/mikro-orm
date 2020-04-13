@@ -1,4 +1,4 @@
-import { EntityRepository } from '../../lib';
+import { EntityRepository } from '@mikro-orm/core';
 import { Author } from '../entities';
 
 export class AuthorRepository extends EntityRepository<Author> {

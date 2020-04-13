@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, OneToOne, PrimaryKey, SerializedPrimaryKey } from '@mikro-orm/core';
 import { Dup1 } from './dup1.model';
-import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
 export class Dup2 {

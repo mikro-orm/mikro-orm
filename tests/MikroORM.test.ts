@@ -1,6 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '../lib';
+import fs from 'fs-extra';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '@mikro-orm/core';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { Author2, Car2, CarOwner2, FooBaz2, User2 } from './entities-sql';
@@ -24,9 +26,9 @@ describe('MikroORM', () => {
 
   test('should throw when TS entity directory does not exist', async () => {
     let error = /Path .*\/entities-invalid does not exist/;
-    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities-invalid'] })).rejects.toThrowError(error);
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, metadataProvider: TsMorphMetadataProvider, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities-invalid'] })).rejects.toThrowError(error);
     error = /Source file for entity .* not found, check your 'entitiesDirsTs' option\. If you are using webpack, see https:\/\/bit\.ly\/35pPDNn/;
-    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, metadataProvider: TsMorphMetadataProvider, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
   });
 
   test('should throw when no entity discovered', async () => {
@@ -34,7 +36,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
-    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+    await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, metadataProvider: TsMorphMetadataProvider, cache: { enabled: false }, entitiesDirs: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
   test('should report connection failure', async () => {
@@ -63,7 +65,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when a relation is pointing to not discovered entity', async () => {
-    const err = 'Entity \'Book2\' entity was not discovered, please make sure to provide it in \'entities\' array when initializing the ORM';
+    const err = 'Entity \'Book2\' was not discovered, please make sure to provide it in \'entities\' array when initializing the ORM';
     await expect(MikroORM.init({ dbName: 'test', cache: { enabled: false }, entities: [Author2, BaseEntity2], metadataProvider: ReflectMetadataProvider })).rejects.toThrowError(err);
   });
 
@@ -76,10 +78,11 @@ describe('MikroORM', () => {
     const options = {
       entities: [Test],
       dbName: 'mikro-orm-test',
+      metadataProvider: ReflectMetadataProvider,
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
       cache: { enabled: false },
     };
-    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;

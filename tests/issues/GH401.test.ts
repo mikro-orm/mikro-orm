@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, Dictionary } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, Dictionary } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Entity401 {

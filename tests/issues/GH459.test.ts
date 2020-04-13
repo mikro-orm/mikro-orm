@@ -1,6 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 abstract class A {
 
@@ -45,8 +46,8 @@ describe('GH issue 459', () => {
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
@@ -56,7 +57,7 @@ describe('GH issue 459', () => {
 
   test(`multiple inheritance`, async () => {
     const sql = 'create table `d` (`id` integer not null primary key autoincrement, `foo` varchar not null, `bar` varchar not null, `name` varchar not null);\n\n';
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL(false)).toBe(sql);
+    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL(false)).toBe(sql);
 
     const d = new D();
     d.name = 'name';

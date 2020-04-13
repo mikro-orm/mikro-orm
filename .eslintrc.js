@@ -10,7 +10,7 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
   ],
-  ignorePatterns: ['node_modules', 'dist', 'coverage', 'tests', '**/*.js'],
+  ignorePatterns: ['node_modules', 'dist', 'coverage', '**/*.js'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     'project': 'tsconfig.json',
@@ -21,6 +21,7 @@ module.exports = {
     'jsdoc',
   ],
   rules: {
+    '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',

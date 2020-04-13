@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 

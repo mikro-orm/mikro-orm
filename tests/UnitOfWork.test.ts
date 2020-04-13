@@ -1,6 +1,5 @@
 import { Author } from './entities';
-import { EntityValidator, MikroORM } from '../lib';
-import { UnitOfWork, ChangeSetComputer } from '../lib/unit-of-work';
+import { EntityValidator, MikroORM, UnitOfWork, ChangeSetComputer } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 
 describe('UnitOfWork', () => {

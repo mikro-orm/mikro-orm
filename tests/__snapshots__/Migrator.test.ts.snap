@@ -4,7 +4,7 @@ exports[`Migrator generate js schema migration: migration-js-dump 1`] = `
 Object {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-const Migration = require('mikro-orm').Migration;
+const Migration = require('@mikro-orm/migrations').Migration;
 
 class Migration20191013214813 extends Migration {
 
@@ -38,7 +38,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 
 exports[`Migrator generate schema migration: migration-dump 1`] = `
 Object {
-  "code": "import { Migration } from 'mikro-orm';
+  "code": "import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191013214813 extends Migration {
 
