@@ -1,7 +1,7 @@
-import { MikroORM, wrap } from '../lib';
+import { MikroORM, wrap } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 describe('composite keys in mysql', () => {
 

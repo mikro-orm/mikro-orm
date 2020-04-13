@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import { Entity, ManyToOne, PrimaryKey, Property } from '../../lib';
-import { AuthorWp } from '.';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { AuthorWp } from './index';
 
 @Entity({ tableName: 'book2' })
 export class BookWp {

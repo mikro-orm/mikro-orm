@@ -1,7 +1,7 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
   QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade,
-} from '../../lib';
+} from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';

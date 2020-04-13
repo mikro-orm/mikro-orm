@@ -1,7 +1,5 @@
-import { EntitySchema } from '../../lib/schema';
-import { Collection } from '../../lib/entity';
+import { EntitySchema, Collection, DateType, TimeType } from '@mikro-orm/core';
 import { BaseEntity5 } from './BaseEntity5';
-import { DateType, TimeType } from '../../lib/types';
 import { Book4 } from './Book4';
 
 export interface Author4 extends BaseEntity5 {
