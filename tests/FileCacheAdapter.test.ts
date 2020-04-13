@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import { FileCacheAdapter } from '../lib/cache';
+import { FileCacheAdapter } from '@mikro-orm/core';
 import { TEMP_DIR } from './bootstrap';
 
 describe('FileCacheAdapter', () => {

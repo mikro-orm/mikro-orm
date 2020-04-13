@@ -1,9 +1,7 @@
 import { ObjectId } from 'mongodb';
+import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
-import { MikroORM, Collection } from '../lib';
-import { EntityFactory, ReferenceType } from '../lib/entity';
 import { initORMMongo, wipeDatabase } from './bootstrap';
-import { MetadataDiscovery } from '../lib/metadata';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookRepository } from './repositories/BookRepository';
 

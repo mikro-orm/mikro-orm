@@ -1,16 +1,18 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '../lib';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2, Car2, CarOwner2, User2 } from './entities-sql';
-import { SqliteDriver } from '../lib/drivers/SqliteDriver';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 import { FooBaz } from './entities/FooBaz';
 import FooBar from './entities/FooBar';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
-import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
-import { MariaDbDriver } from '../lib/drivers/MariaDbDriver';
 import { schema as Author4 } from './entities-schema/Author4';
 import { schema as Book4 } from './entities-schema/Book4';
 import { schema as BookTag4 } from './entities-schema/BookTag4';
@@ -20,7 +22,7 @@ import { schema as FooBar4 } from './entities-schema/FooBar4';
 import { schema as FooBaz4 } from './entities-schema/FooBaz4';
 import { schema as BaseEntity5 } from './entities-schema/BaseEntity5';
 
-const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js');
+const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
@@ -37,7 +39,7 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes: true,
     implicitTransactions: true,
-    cache: { pretty: true },
+    cache: { enabled: false },
   });
 
   // create collections first so we can use transactions
@@ -48,7 +50,7 @@ export async function initORMMongo() {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
-  let orm = await MikroORM.init<D>({
+  let orm = await MikroORM.init<AbstractSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22, Car2, CarOwner2, User2],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
@@ -59,6 +61,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     timezone: 'Z',
     logger: i => i,
     multipleStatements: true,
+    entityRepository: SqlEntityRepository,
     type,
     metadataProvider: ReflectMetadataProvider,
     cache: { enabled: false },
@@ -66,19 +69,20 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
 
-  await orm.getSchemaGenerator().ensureDatabase();
+  const schemaGenerator = new SchemaGenerator(orm.em);
+  await schemaGenerator.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
   orm.config.set('dbName', 'mikro_orm_test_schema_2');
-  await orm.getSchemaGenerator().ensureDatabase();
+  await schemaGenerator.ensureDatabase();
   await orm.em.getDriver().reconnect();
-  await orm.getSchemaGenerator().dropSchema();
+  await schemaGenerator.dropSchema();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
   await orm.close(true);
   orm.config.set('dbName', 'mikro_orm_test');
-  orm = await MikroORM.init<D>(orm.config);
+  orm = await MikroORM.init(orm.config);
 
-  return orm;
+  return orm as MikroORM<D>;
 }
 
 export async function initORMPostgreSql() {
@@ -97,7 +101,8 @@ export async function initORMPostgreSql() {
     cache: { enabled: false },
   });
 
-  await orm.getSchemaGenerator().ensureDatabase();
+  const schemaGenerator = new SchemaGenerator(orm.em);
+  await schemaGenerator.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
 
@@ -136,8 +141,9 @@ export async function initORMSqlite2() {
     logger: i => i,
     cache: { pretty: true },
   });
-  await orm.getSchemaGenerator().dropSchema();
-  await orm.getSchemaGenerator().createSchema();
+  const schemaGenerator = new SchemaGenerator(orm.em);
+  await schemaGenerator.dropSchema();
+  await schemaGenerator.createSchema();
 
   return orm;
 }
@@ -153,7 +159,7 @@ export async function wipeDatabase(em: EntityManager) {
   em.clear();
 }
 
-export async function wipeDatabaseMySql(em: EntityManager) {
+export async function wipeDatabaseMySql(em: SqlEntityManager) {
   await em.getConnection().execute('set foreign_key_checks = 0');
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
@@ -174,7 +180,7 @@ export async function wipeDatabaseMySql(em: EntityManager) {
   em.clear();
 }
 
-export async function wipeDatabasePostgreSql(em: EntityManager) {
+export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   await em.getConnection().execute(`set session_replication_role = 'replica'`);
   await em.createQueryBuilder(Author2).truncate().execute();
   await em.createQueryBuilder(Book2).truncate().execute();
@@ -191,7 +197,7 @@ export async function wipeDatabasePostgreSql(em: EntityManager) {
   em.clear();
 }
 
-export async function wipeDatabaseSqlite(em: EntityManager) {
+export async function wipeDatabaseSqlite(em: SqlEntityManager) {
   await em.createQueryBuilder('Author3').delete().execute();
   await em.remove('Book3', {});
   await em.remove('BookTag3', {});
@@ -202,7 +208,7 @@ export async function wipeDatabaseSqlite(em: EntityManager) {
   em.clear();
 }
 
-export async function wipeDatabaseSqlite2(em: EntityManager) {
+export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
   await em.remove('Author4', {});
   await em.remove('Book4', {});
   await em.remove('BookTag4', {});

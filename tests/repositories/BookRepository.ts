@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from '../../lib';
+import { EntityRepository, Repository } from '@mikro-orm/core';
 import { Book } from '../entities';
 
 @Repository(Book)
