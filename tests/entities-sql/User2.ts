@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '../../lib';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 @Entity()

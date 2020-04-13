@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Collection, EntityMetadata, MikroORM, Utils } from '../lib';
+import { Collection, EntityMetadata, MikroORM, Utils } from '@mikro-orm/core';
 import { Author, Book } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
@@ -64,41 +64,41 @@ describe('Utils', () => {
     expect(Utils.equals([1, 2, 3], [1, 2, 3, 4])).toBe(false);
     expect(Utils.equals([1, 2, 3, 4], [1, 2, 3])).toBe(false);
     expect(Utils.equals([1, 2, 3], [1, 2, 3])).toBe(true);
-    expect(Utils.equals({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toBe(false);
-    expect(Utils.equals({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toBe(false);
-    expect(Utils.equals({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toBe(true);
-    expect(Utils.equals({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toBe(false);
-    expect(Utils.equals({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toBe(true);
+    expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toBe(false);
+    expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);
+    expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toBe(true);
+    expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);
+    expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(true);
   });
 
   test('merge', () => {
-    expect(Utils.merge({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toEqual({a: 'b', b: 'c'});
-    expect(Utils.merge({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}});
-    expect(Utils.merge({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toEqual({a: 'a', b: 'c'});
-    expect(Utils.merge({a: 'a', b: 'c', c: {a: 'u', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', b: 'c', c: {a: 'u', d: 'e', f: ['g', 'h']}});
-    expect(Utils.merge({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
-    expect(Utils.merge({a: 'a', b: ['c']}, {b: []})).toEqual({a: 'a', b: []});
-    expect(Utils.merge({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b', b: ['c']});
-    expect(Utils.merge({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined, b: ['c']});
+    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({ a: 'b', b: 'c' });
+    expect(Utils.merge({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } });
+    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toEqual({ a: 'a', b: 'c' });
+    expect(Utils.merge({ a: 'a', b: 'c', c: { a: 'u', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', b: 'c', c: { a: 'u', d: 'e', f: ['g', 'h'] } });
+    expect(Utils.merge({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({ a: 'b', b: ['c'] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ a: 'a', b: [] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b', b: ['c'] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined, b: ['c'] });
     expect(Utils.merge('a', 'b')).toEqual('a');
   });
 
   test('merge Buffers', () => {
     const buffer = Buffer.from('Test buffer');
-    expect(Utils.merge({}, {a: buffer})).toEqual({a: buffer});
+    expect(Utils.merge({}, { a: buffer })).toEqual({ a: buffer });
   });
 
   test('diff', () => {
-    expect(Utils.diff({a: 'a', b: 'c'}, {a: 'b', b: 'c'})).toEqual({a: 'b'});
-    expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['i', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b', c: {d: 'e', f: ['g', 'h']}});
-    expect(Utils.diff({a: 'a', b: 'c'}, {a: 'a', b: 'c'})).toEqual({});
-    expect(Utils.diff({a: 'a', b: 'c', c: {d: 'e', f: ['g', 'h']}}, {a: 'b', b: 'c', c: {d: 'e', f: ['g', 'h']}})).toEqual({a: 'b'});
-    expect(Utils.diff({a: 'a'}, {a: 'b', b: ['c']})).toEqual({a: 'b', b: ['c']});
-    expect(Utils.diff({a: 'a', b: ['c']}, {b: []})).toEqual({b: []});
-    expect(Utils.diff({a: 'a', b: ['c']}, {a: 'b'})).toEqual({a: 'b'});
-    expect(Utils.diff({a: 'a', b: ['c']}, {a: undefined})).toEqual({a: undefined});
-    expect(Utils.diff({a: new Date()}, {a: new Date('2018-01-01')})).toEqual({a: new Date('2018-01-01')});
-    expect(Utils.diff({a: new ObjectId('00000001885f0a3cc37dc9f0')}, {a: new ObjectId('00000001885f0a3cc37dc9f0')})).toEqual({});
+    expect(Utils.diff({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({ a: 'b' });
+    expect(Utils.diff({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', c: { d: 'e', f: ['g', 'h'] } });
+    expect(Utils.diff({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toEqual({});
+    expect(Utils.diff({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b' });
+    expect(Utils.diff({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({ a: 'b', b: ['c'] });
+    expect(Utils.diff({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ b: [] });
+    expect(Utils.diff({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b' });
+    expect(Utils.diff({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined });
+    expect(Utils.diff({ a: new Date() }, { a: new Date('2018-01-01') })).toEqual({ a: new Date('2018-01-01') });
+    expect(Utils.diff({ a: new ObjectId('00000001885f0a3cc37dc9f0') }, { a: new ObjectId('00000001885f0a3cc37dc9f0') })).toEqual({});
   });
 
   test('diffEntities ignores collections', () => {
@@ -138,13 +138,13 @@ describe('Utils', () => {
   });
 
   test('copy', () => {
-    const a = {a: 'a', b: 'c'};
+    const a = { a: 'a', b: 'c' };
     const b = Utils.copy(a);
     b.a = 'b';
     expect(a.a).toBe('a');
     expect(b.a).toBe('b');
 
-    const c = {a: 'a', b: 'c', inner: {foo: 'bar'}} as any;
+    const c = { a: 'a', b: 'c', inner: { foo: 'bar' } } as any;
     const d = Utils.copy(c);
     d.inner.lol = 'new';
     expect(c.inner.lol).toBeUndefined();

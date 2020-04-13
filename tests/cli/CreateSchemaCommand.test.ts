@@ -1,21 +1,34 @@
-import { Configuration } from '../../lib/utils';
-import { CLIHelper } from '../../lib/cli/CLIHelper';
+(global as any).process.env.FORCE_COLOR = 0;
+
+import { MikroORM } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import { CLIHelper } from '@mikro-orm/cli';
+// noinspection ES6PreferShortImport
+import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
+import { initORMSqlite } from '../bootstrap';
 
 const close = jest.fn();
-const schemaGenerator = { createSchema: jest.fn(() => []), getCreateSchemaSQL: jest.fn(() => '') };
-const config = new Configuration({} as any, false);
+jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
 showHelpMock.mockReturnValue('');
-const getORMMock = jest.spyOn(CLIHelper, 'getORM');
-getORMMock.mockResolvedValue({ getSchemaGenerator: () => schemaGenerator, config, close } as any);
+const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+createSchema.mockImplementation(async () => void 0);
+const getCreateSchemaSQL = jest.spyOn(SchemaGenerator.prototype, 'getCreateSchemaSQL');
+getCreateSchemaSQL.mockImplementation(async () => '');
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => {});
-
-(global as any).console.log = jest.fn();
-
-import { SchemaCommandFactory } from '../../lib/cli/SchemaCommandFactory';
+dumpMock.mockImplementation(() => void 0);
 
 describe('CreateSchemaCommand', () => {
+
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMSqlite();
+    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    getORMMock.mockResolvedValue(orm);
+  });
+
+  afterAll(async () => await orm.close(true));
 
   test('builder', async () => {
     const cmd = SchemaCommandFactory.create('create');
@@ -30,15 +43,15 @@ describe('CreateSchemaCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(showHelpMock.mock.calls.length).toBe(1);
 
-    expect(schemaGenerator.createSchema.mock.calls.length).toBe(0);
+    expect(createSchema.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.createSchema.mock.calls.length).toBe(1);
+    expect(createSchema.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
-    expect(schemaGenerator.getCreateSchemaSQL.mock.calls.length).toBe(0);
+    expect(getCreateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
-    expect(schemaGenerator.getCreateSchemaSQL.mock.calls.length).toBe(1);
+    expect(getCreateSchemaSQL.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(2);
   });
 
