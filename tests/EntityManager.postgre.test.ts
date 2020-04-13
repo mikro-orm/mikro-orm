@@ -1,10 +1,8 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
-import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
-import { Logger, ValidationError } from '../lib/utils';
-import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 describe('EntityManagerPostgre', () => {
 
@@ -360,7 +358,7 @@ describe('EntityManagerPostgre', () => {
     expect(authors[2].name).toBe('Author 3');
     orm.em.clear();
 
-    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le\.c.m$' } });
+    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le.c.m$' } });
     expect(authors2.length).toBe(3);
     expect(authors2[0].name).toBe('Author 1');
     expect(authors2[1].name).toBe('Author 2');
@@ -1009,8 +1007,6 @@ describe('EntityManagerPostgre', () => {
     await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.em.config.set('debug', ['query']);
-
-    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by PostgreSqlDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {

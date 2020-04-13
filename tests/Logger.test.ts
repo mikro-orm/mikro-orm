@@ -1,4 +1,4 @@
-import { Logger } from '../lib/utils';
+import { Logger } from '@mikro-orm/core';
 
 describe('Logger', () => {
 

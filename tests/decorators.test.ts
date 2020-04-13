@@ -1,16 +1,10 @@
-import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '../lib';
+import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType } from '@mikro-orm/core';
 import { Test } from './entities';
-import { MetadataStorage } from '../lib/metadata';
-import { ReferenceType } from '../lib/entity';
 
 class Test2 {}
-
 class Test3 {}
-
 class Test4 {}
-
 class Test5 {}
-
 class Test6 {}
 
 describe('decorators', () => {
@@ -38,8 +32,6 @@ describe('decorators', () => {
   });
 
   test('OneToMany', () => {
-    expect(() => OneToMany({ entity: () => Test, fk: 'test' } as any)(new Test(), 'test')).toThrowError(`@OneToMany({ fk })' is deprecated, use 'mappedBy' instead in 'Test.test`);
-
     const storage = MetadataStorage.getMetadata();
     OneToMany({ entity: () => Test, mappedBy: 'test' } as any)(new Test4(), 'test2');
     expect(storage.Test4.properties.test2).toMatchObject({ reference: ReferenceType.ONE_TO_MANY, name: 'test2', mappedBy: 'test' });

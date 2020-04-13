@@ -1,4 +1,4 @@
-const { Collection } = require('../../lib');
+const { Collection } = require('@mikro-orm/core');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**

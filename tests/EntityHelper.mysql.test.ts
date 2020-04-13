@@ -1,8 +1,7 @@
-import { MikroORM, wrap } from '../lib';
+import { MetadataDiscovery, MikroORM, wrap } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2 } from './entities-sql';
-import { MetadataDiscovery } from '../lib/metadata';
-import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 
 describe('EntityHelperMySql', () => {
 

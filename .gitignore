@@ -1,5 +1,5 @@
-/node_modules
-/dist
+**/node_modules
+**/dist
 /data
 /coverage
 /temp
@@ -10,3 +10,5 @@
 /.coveralls.yml
 !.gitkeep
 /mikro_orm_test.db
+*.tsbuildinfo
+.DS_Store

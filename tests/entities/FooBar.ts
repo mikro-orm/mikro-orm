@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { Entity, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
-import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
 export default class FooBar {
@@ -15,10 +14,10 @@ export default class FooBar {
   @Property()
   name!: string;
 
-  @OneToOne({ eager: true, orphanRemoval: true })
+  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true })
   baz!: FooBaz | null;
 
-  @OneToOne()
+  @OneToOne(() => FooBar)
   fooBar!: FooBar;
 
   static create(name: string) {

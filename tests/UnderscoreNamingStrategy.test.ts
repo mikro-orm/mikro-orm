@@ -1,4 +1,4 @@
-import { UnderscoreNamingStrategy } from '../lib/naming-strategy';
+import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 
 describe('UnderscoreNamingStrategy', () => {
 

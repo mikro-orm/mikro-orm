@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
-import { BeforeCreate, PrimaryKey, Property } from '../../lib';
-import { SerializedPrimaryKey } from '../../lib/decorators';
+import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 
 export abstract class BaseEntity {
 
@@ -11,10 +10,10 @@ export abstract class BaseEntity {
   id!: string;
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
   @Property()
   foo?: string;
