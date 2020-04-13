@@ -1,4 +1,4 @@
-const { Collection, ReferenceType } = require('../../lib');
+const { Collection, ReferenceType } = require('@mikro-orm/core');
 
 /**
  * @property {number} id

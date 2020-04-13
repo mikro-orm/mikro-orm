@@ -1,6 +1,6 @@
 import { BookWp, AuthorWp } from './entities-webpack';
 import { BookWpI, AuthorWpI } from './entities-webpack-invalid';
-import { MikroORM, Options } from '../lib';
+import { MikroORM, Options } from '@mikro-orm/core';
 
 describe('Webpack', () => {
 

@@ -1,4 +1,4 @@
-import { CommitOrderCalculator } from '../lib/unit-of-work';
+import { CommitOrderCalculator } from '@mikro-orm/core';
 
 describe('CommitOrderCalculator', () => {
 

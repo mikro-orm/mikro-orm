@@ -1,5 +1,4 @@
-import { Configuration } from '../../lib/utils';
-import { CLIHelper } from '../../lib/cli/CLIHelper';
+import { Configuration, CLIHelper } from '../../packages/mikro-orm/src';
 
 const close = jest.fn();
 const config = new Configuration({} as any, false);
@@ -10,11 +9,12 @@ showHelpMock.mockReturnValue('');
 const getORMMock = jest.spyOn(CLIHelper, 'getORM');
 getORMMock.mockResolvedValue({ em, config, close } as any);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => {});
+dumpMock.mockImplementation(() => void 0);
 
 (global as any).console.log = jest.fn();
 
-import { ImportCommand } from '../../lib/cli/ImportCommand';
+// noinspection ES6PreferShortImport
+import { ImportCommand } from '../../packages/cli/src/commands/ImportCommand';
 
 describe('ImportDatabaseCommand', () => {
 
