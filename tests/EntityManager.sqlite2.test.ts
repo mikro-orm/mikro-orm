@@ -1,8 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Utils, wrap } from '../lib';
+import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
-import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { Logger, ValidationError } from '../lib/utils';
 import { Author4, Book4, BookTag4, Publisher4, Test4 } from './entities-schema';
 import { PublisherType } from './entities-schema/Publisher4';
 
@@ -728,8 +727,6 @@ describe('EntityManagerSqlite2', () => {
 
     const res5 = await orm.em.nativeUpdate('Author4', { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
-
-    await expect(orm.em.aggregate('Author4', [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {

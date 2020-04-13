@@ -1,0 +1,49 @@
+{
+  "name": "@mikro-orm/mysql-base",
+  "version": "4.0.0-alpha.0",
+  "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
+  },
+  "keywords": [
+    "orm",
+    "mongo",
+    "mongodb",
+    "mysql",
+    "mariadb",
+    "postgresql",
+    "sqlite",
+    "sqlite3",
+    "ts",
+    "typescript",
+    "js",
+    "javascript",
+    "entity",
+    "ddd",
+    "mikro-orm",
+    "unit-of-work",
+    "data-mapper",
+    "identity-map"
+  ],
+  "author": "Martin Adámek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mikro-orm/mikro-orm/issues"
+  },
+  "homepage": "https://mikro-orm.io",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "scripts": {
+    "build": "yarn clean && yarn compile",
+    "clean": "rimraf ./dist",
+    "compile": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@mikro-orm/core": "^4.0.0-alpha.0",
+    "@mikro-orm/knex": "^4.0.0-alpha.0"
+  }
+}

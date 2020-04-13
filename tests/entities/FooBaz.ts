@@ -1,8 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import FooBar from './FooBar';
 import { Book } from './Book';
-import { SerializedPrimaryKey } from '../../lib/decorators';
 
 @Entity()
 export class FooBaz {

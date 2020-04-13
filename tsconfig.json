@@ -1,24 +1,9 @@
 {
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2017",
-    "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  },
-  "files": [
-    "lib/index.ts",
-    "lib/cli.ts"
-  ],
-  "include": [
-    "lib/drivers"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "baseUrl": ".",
+    "paths": {
+      "@mikro-orm/*": ["packages/*/src"]
+    }
+  }
 }
