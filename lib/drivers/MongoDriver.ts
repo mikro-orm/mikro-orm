@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty } from '../typings';
+import { EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Dictionary } from '../typings';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { FindOneOptions, FindOptions } from './IDatabaseDriver';
@@ -92,8 +92,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const promises: Promise<string>[] = [];
 
     for (const meta of Object.values(this.metadata.getAll())) {
-      promises.push(...this.createIndexes(meta, 'indexes'));
-      promises.push(...this.createIndexes(meta, 'uniques'));
+      promises.push(...this.createIndexes(meta));
+      promises.push(...this.createUniqueIndexes(meta));
 
       for (const prop of Object.values(meta.properties)) {
         promises.push(...this.createPropertyIndexes(meta, prop, 'index'));
@@ -104,14 +104,37 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     await Promise.all(promises);
   }
 
-  private createIndexes(meta: EntityMetadata, type: 'indexes' | 'uniques') {
+  private createIndexes(meta: EntityMetadata) {
     const promises: Promise<string>[] = [];
+    meta.indexes.forEach(index => {
+      let fieldOrSpec: string | any;
+      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
 
-    meta[type].forEach(index => {
+      if (index.type === 'text') {
+        const spec: Dictionary<string> = {};
+        properties.forEach(prop => spec[prop] = 'text');
+        fieldOrSpec = spec;
+      } else {
+        fieldOrSpec = properties;
+      }
+
+      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
+        name: index.name,
+        unique: false,
+        ...(index.options || {}),
+      }));
+    });
+
+    return promises;
+  }
+
+  private createUniqueIndexes(meta: EntityMetadata) {
+    const promises: Promise<string>[] = [];
+    meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
       promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
         name: index.name,
-        unique: type === 'uniques',
+        unique: true,
         ...(index.options || {}),
       }));
     });

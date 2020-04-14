@@ -121,6 +121,10 @@ await orm.em.getDriver().ensureIndexes();
 > 
 > `@Unique({ options: { partialFilterExpression: { name: { $exists: true } } }})`
 
+> You can also create text indexes by passing `type` parameter:
+> 
+> `@Index({ properties: ['name', 'caption'], type: 'text' })`
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your
