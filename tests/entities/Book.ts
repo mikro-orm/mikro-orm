@@ -7,6 +7,7 @@ import { BaseEntity3 } from './BaseEntity3';
 
 @Entity({ tableName: 'books-table' })
 @Unique({ properties: ['title', 'author'] })
+@Index({ properties: 'title', type: 'text' })
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()

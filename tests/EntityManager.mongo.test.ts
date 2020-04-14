@@ -502,6 +502,7 @@ describe('EntityManagerMongo', () => {
     expect(bookInfo.reduce((o: any, i: any) => { o[i.name] = i; return o; }, {} as any)).toMatchObject({
       _id_: { key: { _id: 1 }, name: '_id_' },
       publisher_idx: { key: { publisher: 1 }, name: 'publisher_idx' },
+      title_text: { key: { _fts: 'text', _ftsx: 1 }, weights: { title: 1 } },
       title_1_author_1: { key: { title: 1, author: 1 }, name: 'title_1_author_1', unique: true },
     });
   });
