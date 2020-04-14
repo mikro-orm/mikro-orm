@@ -3,7 +3,7 @@
 import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '../lib';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
-import { Author2, FooBaz2 } from './entities-sql';
+import { Author2, Car2, CarOwner2, FooBaz2, User2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('MikroORM', () => {
@@ -45,7 +45,7 @@ describe('MikroORM', () => {
       cache: { enabled: false },
       metadataProvider: ReflectMetadataProvider,
       type: 'mysql',
-      entitiesDirs: ['entities-sql'],
+      entities: [Car2, CarOwner2, User2],
       debug: ['info'],
       logger,
     });

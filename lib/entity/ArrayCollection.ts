@@ -143,7 +143,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
       collection[method](this.owner);
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && !(this.property.orphanRemoval && method === 'remove')) {
       item[this.property.mappedBy] = method === 'add' ? this.owner : null;
     }
   }
