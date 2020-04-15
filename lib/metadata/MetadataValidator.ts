@@ -18,15 +18,7 @@ export class MetadataValidator {
 
     for (const prop of references) {
       this.validateReference(meta, prop, metadata);
-
-      if (prop.reference === ReferenceType.ONE_TO_ONE) {
-        this.validateBidirectional(meta, prop, metadata);
-      } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-        const owner = metadata.get(prop.type).properties[prop.mappedBy];
-        this.validateOneToManyInverseSide(meta, prop, owner);
-      } else if (![ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
-        this.validateBidirectional(meta, prop, metadata);
-      }
+      this.validateBidirectional(meta, prop, metadata);
     }
   }
 
@@ -78,18 +70,6 @@ export class MetadataValidator {
     } else if (prop.mappedBy) {
       const inverse = metadata.get(prop.type).properties[prop.mappedBy];
       this.validateInverseSide(meta, prop, inverse);
-    }
-  }
-
-  private validateOneToManyInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty): void {
-    // 1:m collection has existing `mappedBy` reference
-    if (!owner) {
-      throw ValidationError.fromWrongReference(meta, prop, 'mappedBy');
-    }
-
-    // 1:m collection has correct `mappedBy` reference type
-    if (owner.type !== meta.name) {
-      throw ValidationError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
   }
 

@@ -44,12 +44,10 @@ const schema = {
     author: {
       reference: 'm:1',
       type: 'Author3',
-      mappedBy: 'id',
     },
     publisher: {
       reference: 'm:1',
       type: 'Publisher3',
-      mappedBy: 'id',
     },
     tags: {
       reference: 'm:n',

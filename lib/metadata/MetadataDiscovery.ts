@@ -443,7 +443,7 @@ export class MetadataDiscovery {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.mappedBy];
 
-        if (!prop2.inversedBy) {
+        if (prop2 && !prop2.inversedBy) {
           prop2.inversedBy = prop.name;
         }
       });

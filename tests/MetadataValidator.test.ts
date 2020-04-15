@@ -28,8 +28,12 @@ describe('MetadataValidator', () => {
     meta.Test.properties.foo = { name: 'foo', reference: ReferenceType.MANY_TO_ONE, type: 'Wrong', mappedBy: 'foo' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests has wrong 'mappedBy' reference type: Wrong instead of Author`);
 
-    // many to many
     meta.Test.properties.foo.type = 'Author';
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Both Author.tests and Test.foo are defined as inverse sides, use 'inversedBy' on one of them`);
+    delete meta.Test.properties.foo.mappedBy;
+    meta.Test.properties.foo.inversedBy = 'tests';
+
+    // many to many
     meta.Author.properties.books = { name: 'books', reference: ReferenceType.MANY_TO_MANY, type: 'Book' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError('Author.books has unknown type: Book');
 
