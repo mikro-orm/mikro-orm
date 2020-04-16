@@ -150,6 +150,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return [this.getConnection('write').getCollection(meta.name).createIndex(prop.fieldNames, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
       unique: type === 'unique',
+      sparse: prop.nullable === true,
     })];
   }
 
