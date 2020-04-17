@@ -6,10 +6,9 @@ import { Type } from '../types';
 
 export function Property(options: PropertyOptions = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     EntityValidator.validateSingleDecorator(meta, propertyName);
-    Utils.lookupPathFromDecorator(meta);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {
