@@ -2,7 +2,7 @@ import { basename, extname } from 'path';
 import globby from 'globby';
 import chalk from 'chalk';
 
-import { AnyEntity, Constructor, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
 import { Configuration, Utils, ValidationError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
@@ -104,7 +104,7 @@ export class MetadataDiscovery {
         continue;
       }
 
-      this.metadata.set(name, MetadataStorage.getMetadata(name));
+      this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
       await this.discoverEntity(target, path);
     }
   }
@@ -128,6 +128,14 @@ export class MetadataDiscovery {
   private getSchema<T extends AnyEntity<T>>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       return entity;
+    }
+
+    const path = (entity as Dictionary).__path;
+
+    if (path) {
+      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path));
+      meta.path = Utils.relativePath(path, this.config.get('baseDir'));
+      this.metadata.set(entity.name, meta);
     }
 
     const schema = new EntitySchema<T>(this.metadata.get<T>(entity.name, true), true);

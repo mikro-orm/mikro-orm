@@ -10,14 +10,8 @@ export function ManyToOne<T extends AnyEntity<T>>(
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToOneOptions<T>>(entity) ? entity : { ...options, entity };
-
-    if ((options as any).fk) {
-      throw new Error(`@ManyToOne({ fk })' is deprecated, use 'inversedBy' instead in '${target.constructor.name}.${propertyName}'`);
-    }
-
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     EntityValidator.validateSingleDecorator(meta, propertyName);
-    Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);
   };
