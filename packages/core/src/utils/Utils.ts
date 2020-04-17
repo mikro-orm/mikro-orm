@@ -404,17 +404,13 @@ export class Utils {
    * Uses some dark magic to get source path to caller where decorator is used.
    * Analyses stack trace of error created inside the function call.
    */
-  static lookupPathFromDecorator(meta: EntityMetadata, stack?: string[]): string {
-    if (meta.path) {
-      return meta.path;
-    }
-
+  static lookupPathFromDecorator(stack?: string[]): string {
     // use some dark magic to get source path to caller
     stack = stack || new Error().stack!.split('\n');
     let line = stack.findIndex(line => line.includes('__decorate'))!;
 
     if (line === -1) {
-      return meta.path;
+      throw new Error('Cannot find path to entity');
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
@@ -422,9 +418,8 @@ export class Utils {
     }
 
     const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
-    meta.path = Utils.normalizePath(stack[line].match(re)![1]);
 
-    return meta.path;
+    return Utils.normalizePath(stack[line].match(re)![1]);
   }
 
   /**

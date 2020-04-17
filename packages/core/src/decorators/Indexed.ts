@@ -1,12 +1,9 @@
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary } from '../typings';
-import { Utils } from '../utils';
 
 function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean): Function {
   return function (target: AnyEntity, propertyName?: string) {
-    const entityName = propertyName ? target.constructor.name : target.name;
-    const meta = MetadataStorage.getMetadata(entityName);
-    Utils.lookupPathFromDecorator(meta);
+    const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target as Function);
     options.properties = options.properties || propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as Required<IndexOptions | UniqueOptions>);
