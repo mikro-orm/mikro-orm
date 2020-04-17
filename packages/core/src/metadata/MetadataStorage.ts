@@ -13,17 +13,27 @@ export class MetadataStorage {
   }
 
   static getMetadata(): Dictionary<EntityMetadata>;
-  static getMetadata<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T>;
-  static getMetadata<T extends AnyEntity<T> = any>(entity?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
-    if (entity && !MetadataStorage.metadata[entity]) {
-      MetadataStorage.metadata[entity] = { className: entity, properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
+  static getMetadata<T extends AnyEntity<T> = any>(entity: string, path: string): EntityMetadata<T>;
+  static getMetadata<T extends AnyEntity<T> = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
+    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
+
+    if (key && !MetadataStorage.metadata[key]) {
+      MetadataStorage.metadata[key] = { className: entity, path, properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
     }
 
-    if (entity) {
-      return MetadataStorage.metadata[entity];
+    if (key) {
+      return MetadataStorage.metadata[key];
     }
 
     return MetadataStorage.metadata;
+  }
+
+  static getMetadataFromDecorator<T = any>(target: Function): EntityMetadata<T> {
+    const path = Utils.lookupPathFromDecorator();
+    const meta = MetadataStorage.getMetadata(target.name, path);
+    Object.defineProperty(target, '__path', { value: path, writable: true });
+
+    return meta;
   }
 
   static init(): MetadataStorage {
