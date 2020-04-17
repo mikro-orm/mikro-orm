@@ -3,7 +3,7 @@ import { HookType } from '../typings';
 
 function hook(type: HookType) {
   return function (target: any, method: string) {
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
 
     if (!meta.hooks[type]) {
       meta.hooks[type] = [];
