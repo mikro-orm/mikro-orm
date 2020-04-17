@@ -12,9 +12,8 @@ export function ManyToMany<T extends AnyEntity<T>>(
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     EntityValidator.validateSingleDecorator(meta, propertyName);
-    Utils.lookupPathFromDecorator(meta);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY } as EntityProperty<T>;
     meta.properties[propertyName] = Object.assign(property, options);
   };
