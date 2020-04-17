@@ -13,9 +13,8 @@ export function createOneToDecorator<T extends AnyEntity<T>>(
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<OneToManyOptions<T>>(entity) ? entity : { ...options, entity, mappedBy };
-    const meta = MetadataStorage.getMetadata(target.constructor.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     EntityValidator.validateSingleDecorator(meta, propertyName);
-    Utils.lookupPathFromDecorator(meta);
 
     const prop = { name: propertyName, reference } as EntityProperty<T>;
     Object.assign(prop, options);

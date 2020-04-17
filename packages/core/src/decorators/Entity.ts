@@ -5,10 +5,10 @@ import { AnyEntity, Constructor } from '../typings';
 
 export function Entity(options: EntityOptions<any> = {}): Function {
   return function <T extends { new(...args: any[]): AnyEntity<T> }>(target: T) {
-    const meta = MetadataStorage.getMetadata(target.name);
+    const meta = MetadataStorage.getMetadataFromDecorator(target);
     Utils.merge(meta, options);
     meta.class = target;
-    Utils.lookupPathFromDecorator(meta);
+    meta.name = target.name;
 
     return target;
   };
