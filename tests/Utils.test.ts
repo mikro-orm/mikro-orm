@@ -278,7 +278,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:643:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:556:12)',
     ];
-    expect(Utils.lookupPathFromDecorator({} as any, stack1)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator(stack1)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
     // no tslib, via ts-node
     const stack2 = [
@@ -293,7 +293,7 @@ describe('Utils', () => {
       '    at Module._extensions.js (internal/modules/cjs/loader.js:787:10)',
       '    at Object.require.extensions.<computed> [as .ts] (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:476:12)',
     ];
-    expect(Utils.lookupPathFromDecorator({} as any, stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
+    expect(Utils.lookupPathFromDecorator(stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
 
     // no parens
     const stack3 = [
@@ -308,7 +308,10 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:643:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:556:12)',
     ];
-    expect(Utils.lookupPathFromDecorator({} as any, stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator(stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+
+    // no decorated line found
+    expect(() => Utils.lookupPathFromDecorator()).toThrowError('Cannot find path to entity');
   });
 
   test('lookup path from decorator on windows', () => {
@@ -325,7 +328,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:790:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
-    expect(Utils.lookupPathFromDecorator({} as any, stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    expect(Utils.lookupPathFromDecorator(stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
   });
 
   afterAll(async () => orm.close(true));
