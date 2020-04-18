@@ -25,7 +25,7 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
-  config: new Configuration({ autoFlush: true } as any, false),
+  config: new Configuration({} as any, false),
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
@@ -41,7 +41,7 @@ describe('EntityRepository', () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', false]);
     const e = Object.create(Publisher.prototype);
-    await repo.persist(e, false);
+    await repo.persist(e);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);
     await repo.persistAndFlush(e);
     expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
@@ -57,7 +57,7 @@ describe('EntityRepository', () => {
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    await repo.remove('bar');
+    await repo.remove('bar', true);
     expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
     const entity = {} as AnyEntity;
     await repo.removeAndFlush(entity);
