@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, OneToMany, MikroORM, ReflectMetadataProvider, Collection, ManyToOne } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, PrimaryKey, Property, OneToMany, MikroORM, ReflectMetadataProvider, Collection, ManyToOne } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -7,7 +7,7 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => B, b => b.a)
+  @OneToMany('B', 'a')
   bs = new Collection<B>(this);
 
   @Property()
