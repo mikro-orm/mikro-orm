@@ -39,9 +39,9 @@ describe('EntityManagerMongo', () => {
     book3.publisher = publisherRef;
 
     const repo = orm.em.getRepository(Book);
-    repo.persistLater(book1);
-    repo.persistLater(book2);
-    repo.persistLater(book3);
+    repo.persist(book1);
+    repo.persist(book2);
+    repo.persist(book3);
     await repo.flush();
     orm.em.clear();
 
@@ -296,8 +296,8 @@ describe('EntityManagerMongo', () => {
     const author2 = new Author('name2', 'email2');
     const author3 = new Author('name3', 'email3');
     const repo = orm.em.getRepository(Author) as AuthorRepository;
-    repo.persistLater(author);
-    repo.persistLater(author2);
+    repo.persist(author);
+    repo.persist(author2);
     await repo.removeAndFlush(author);
     expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
@@ -1346,7 +1346,7 @@ describe('EntityManagerMongo', () => {
     const b1 = new Book('b1', author);
     const b2 = new Book('b2', author);
     const b3 = new Book('b3', author);
-    orm.em.persistLater([b1, b2, b3]);
+    orm.em.persist([b1, b2, b3]);
     await orm.em.flush();
     orm.em.clear();
 
@@ -1618,7 +1618,7 @@ describe('EntityManagerMongo', () => {
     Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
-    expect(() => orm.em.persistLater(book)).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
+    expect(() => orm.em.persist(book)).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
 
     wrap(book).assign({ tags: ['0000007b5c9c61c332380f78', tag] }, { em: orm.em });
     expect(book.tags).toBeInstanceOf(Collection);
