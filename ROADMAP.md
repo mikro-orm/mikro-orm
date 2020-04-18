@@ -39,7 +39,7 @@ discuss specifics.
 - [x] Require TS 3.7 or newer
 - [x] Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
 - [ ] Drop default value for db `type` (currently defaults to `mongodb`)
-- [ ] Remove `autoFlush` option
+- [x] Remove `autoFlush` option
 - [ ] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [ ] Rename `wrappedReference` to `reference` (keep `wrappedReference` supported)
 - [ ] Use `bigint` type natively in `BigIntType`
