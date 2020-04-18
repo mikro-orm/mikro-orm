@@ -187,7 +187,7 @@ export class UnitOfWork {
     visited.push(entity);
     const wrapped = wrap(entity);
 
-    if (!wrapped.isInitialized()) {
+    if (!wrapped.isInitialized() || this.removeStack.includes(entity) || this.orphanRemoveStack.includes(entity)) {
       return;
     }
 

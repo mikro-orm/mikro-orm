@@ -1831,8 +1831,25 @@ describe('EntityManagerMySql', () => {
     const p2 = author2.books.init();
     await Promise.all([p1, p2]);
 
-    // fails with 2 b/c the post is in the collection twice
     expect(author2.books.length).toEqual(2);
+  });
+
+  test('explicit removing of entity that is loaded as a relation already', async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(FooBar2, bar.id, ['baz']);
+    orm.em.removeEntity(a.baz!);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `foo_baz2` where `id` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   afterAll(async () => orm.close(true));
