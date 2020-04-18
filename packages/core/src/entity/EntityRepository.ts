@@ -8,14 +8,19 @@ export class EntityRepository<T extends AnyEntity<T>> {
   constructor(protected readonly em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
 
-  persist(entity: AnyEntity | AnyEntity[], flush = this.em.config.get('autoFlush')): void | Promise<void> {
-    return this.em.persist(entity, flush);
+  persist(entity: AnyEntity | AnyEntity[], flush?: false): void;
+  persist(entity: AnyEntity | AnyEntity[], flush: true): Promise<void>;
+  persist(entity: AnyEntity | AnyEntity[], flush = false): void | Promise<void> {
+    return this.em.persist(entity, flush as true);
   }
 
   async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
     await this.em.persistAndFlush(entity);
   }
 
+  /**
+   * @deprecated use `persist()`
+   */
   persistLater(entity: AnyEntity | AnyEntity[]): void {
     this.em.persistLater(entity);
   }
@@ -50,14 +55,19 @@ export class EntityRepository<T extends AnyEntity<T>> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 
-  remove(where: T | FilterQuery<T>, flush = this.em.config.get('autoFlush')): void | Promise<number> {
-    return this.em.remove(this.entityName, where, flush);
+  remove(where: T | FilterQuery<T>, flush?: false): void;
+  remove(where: T | FilterQuery<T>, flush: true): Promise<number>;
+  remove(where: T | FilterQuery<T>, flush = false): void | Promise<number> {
+    return this.em.remove(this.entityName, where, flush as true);
   }
 
   async removeAndFlush(entity: AnyEntity): Promise<void> {
     await this.em.removeAndFlush(entity);
   }
 
+  /**
+   * @deprecated use `remove()`
+   */
   removeLater(entity: AnyEntity): void {
     this.em.removeLater(entity);
   }
