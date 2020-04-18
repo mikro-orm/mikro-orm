@@ -21,3 +21,11 @@ TODO multiple packages
 ## SqlEntityManager and MongoEntityManager
 
 TODO QB getter, knex getter, aggregate...
+
+## `autoFlush` option has been removed
+
+The `flush` parameter of `persist()` and `remove()` methods is still there, but you
+should prefer to call `em.flush()` explicitly. 
+
+Also `persistLater()` and `removeLater()` methods are deprecated. Use `persist()` or
+`remove` respectively.

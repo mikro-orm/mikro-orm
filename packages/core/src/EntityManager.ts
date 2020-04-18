@@ -374,12 +374,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Tells the EntityManager to make an instance managed and persistent. You can force flushing via second parameter.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
-  persist(entity: AnyEntity | AnyEntity[], flush = this.config.get('autoFlush')): void | Promise<void> {
-    if (flush) {
-      return this.persistAndFlush(entity);
+  persist(entity: AnyEntity | AnyEntity[], flush?: false): void;
+  persist(entity: AnyEntity | AnyEntity[], flush: true): Promise<void>;
+  persist(entity: AnyEntity | AnyEntity[], flush = false): void | Promise<void> {
+    const entities = Utils.asArray(entity);
+
+    for (const ent of entities) {
+      this.getUnitOfWork().persist(ent);
     }
 
-    this.persistLater(entity);
+    if (flush) {
+      return this.flush();
+    }
   }
 
   /**
@@ -387,31 +393,31 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Equivalent to `em.persistLater(e) && em.flush()`.
    */
   async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
-    this.persistLater(entity);
+    this.persist(entity);
     await this.flush();
   }
 
   /**
    * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
+   *
+   * @deprecated use `persist()`
    */
   persistLater(entity: AnyEntity | AnyEntity[]): void {
-    const entities = Utils.asArray(entity);
-
-    for (const ent of entities) {
-      this.getUnitOfWork().persist(ent);
-    }
+    this.persist(entity);
   }
 
   /**
    * Removes an entity instance or all entities matching your `where` query. When deleting entity by instance, you
    * will need to flush your changes. You can force flushing via third parameter.
    */
-  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush = this.config.get('autoFlush')): void | Promise<number> {
+  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush?: false): void;
+  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush: true): Promise<number>;
+  remove<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush = false): void | Promise<number> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
-      const ret = this.removeEntity(where, flush);
+      const ret = this.removeEntity(where, flush as true);
       return ret ? ret.then(() => 1) : ret;
     }
 
@@ -424,12 +430,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Removes an entity instance. You can force flushing via second parameter.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    */
-  removeEntity<T extends AnyEntity<T>>(entity: T, flush = this.config.get('autoFlush')): void | Promise<void> {
-    if (flush) {
-      return this.removeAndFlush(entity);
-    }
+  removeEntity<T extends AnyEntity<T>>(entity: T, flush?: false): void;
+  removeEntity<T extends AnyEntity<T>>(entity: T, flush: true): Promise<void>;
+  removeEntity<T extends AnyEntity<T>>(entity: T, flush = false): void | Promise<void> {
+    this.getUnitOfWork().remove(entity);
 
-    this.removeLater(entity);
+    if (flush) {
+      return this.flush();
+    }
   }
 
   /**
@@ -444,6 +452,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Removes an entity instance.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
+   *
+   * @deprecated use `removeEntity()`
    */
   removeLater(entity: AnyEntity): void {
     this.getUnitOfWork().remove(entity);
