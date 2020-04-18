@@ -26,7 +26,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       disableDynamicFileAccess: false,
       tsConfigPath: process.cwd() + '/tsconfig.json',
     },
-    autoFlush: false,
     strict: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
@@ -306,7 +305,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableDynamicFileAccess?: boolean;
     tsConfigPath?: string;
   };
-  autoFlush: boolean;
   type: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
