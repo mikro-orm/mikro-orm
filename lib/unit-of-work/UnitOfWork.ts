@@ -41,11 +41,11 @@ export class UnitOfWork {
 
     this.identityMap[`${wrapped.constructor.name}-${wrapped.__serializedPrimaryKey}`] = wrapped;
 
-    if (mergeData) {
+    if (mergeData || !this.originalEntityData[wrapped.__uuid]) {
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
     }
 
-    this.cascade(entity, Cascade.MERGE, visited);
+    this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
   }
 
   /**
@@ -87,7 +87,7 @@ export class UnitOfWork {
 
     this.persistStack.push(entity);
     this.cleanUpStack(this.removeStack, entity);
-    this.cascade(entity, Cascade.PERSIST, visited, checkRemoveStack);
+    this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack });
   }
 
   remove(entity: AnyEntity, visited: AnyEntity[] = []): void {
@@ -304,7 +304,7 @@ export class UnitOfWork {
     this.extraUpdates.length = 0;
   }
 
-  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[], checkRemoveStack = false): void {
+  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[], options: { checkRemoveStack?: boolean; mergeData?: boolean } = {}): void {
     if (visited.includes(entity)) {
       return;
     }
@@ -312,19 +312,19 @@ export class UnitOfWork {
     visited.push(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist(entity, visited, checkRemoveStack); break;
-      case Cascade.MERGE: this.merge(entity, visited); break;
+      case Cascade.PERSIST: this.persist(entity, visited, options.checkRemoveStack); break;
+      case Cascade.MERGE: this.merge(entity, visited, options.mergeData); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
     const meta = this.metadata.get<T>(entity.constructor.name);
 
     for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR)) {
-      this.cascadeReference<T>(entity, prop, type, visited, checkRemoveStack);
+      this.cascadeReference<T>(entity, prop, type, visited, options);
     }
   }
 
-  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: AnyEntity[], checkRemoveStack: boolean): void {
+  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: AnyEntity[], options: { checkRemoveStack?: boolean; mergeData?: boolean }): void {
     this.fixMissingReference(entity, prop);
 
     if (!this.shouldCascade(prop, type)) {
@@ -334,14 +334,14 @@ export class UnitOfWork {
     const reference = this.unwrapReference(entity, prop);
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference) {
-      return this.cascade(reference as T, type, visited, checkRemoveStack);
+      return this.cascade(reference as T, type, visited, options);
     }
 
     const collection = reference as Collection<AnyEntity>;
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection && collection.isInitialized(requireFullyInitialized)) {
-      collection.getItems().forEach(item => this.cascade(item, type, visited, checkRemoveStack));
+      collection.getItems().forEach(item => this.cascade(item, type, visited, options));
     }
   }
 
