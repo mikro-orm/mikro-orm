@@ -541,7 +541,6 @@ describe('EntityManagerSqlite2', () => {
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
     expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
     expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book4> of entity BookTag4\[\d+] not initialized/);
