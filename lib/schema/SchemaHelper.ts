@@ -210,7 +210,7 @@ export abstract class SchemaHelper {
       return equal || Object.keys(defaultValues).map(t => t.replace(/\([?\d]+\)/, '').toLowerCase()).includes(defaultValue);
     }
 
-    if (info.defaultValue === null || info.defaultValue.toString().startsWith('nextval(')) {
+    if (info.defaultValue === null || info.defaultValue.toLowerCase() === 'null' || info.defaultValue.toString().startsWith('nextval(')) {
       return prop.default === undefined;
     }
 
