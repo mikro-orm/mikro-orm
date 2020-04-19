@@ -1124,6 +1124,8 @@ alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`fav
 
 alter table \`new_table\` add \`id\` int unsigned not null auto_increment primary key, add \`updated_at\` datetime(3) not null default current_timestamp(3);
 
+alter table \`author2\` add constraint \`author2_favourite_book_uuid_pk_foreign\` foreign key (\`favourite_book_uuid_pk\`) references \`book2\` (\`uuid_pk\`) on update no action on delete cascade;
+
 "
 `;
 
@@ -1146,6 +1148,15 @@ alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
 
 create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null) default character set utf8 engine = InnoDB;
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-1:1 1`] = `
+"alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_unique\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
+alter table \`foo_bar2\` drop \`baz_id\`;
 
 "
 `;
@@ -1188,6 +1199,8 @@ exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-add-co
 
 alter table \\"new_table\\" add column \\"id\\" serial primary key, add column \\"updated_at\\" timestamp(3) not null default current_timestamp(3);
 
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;
+
 "
 `;
 
@@ -1211,6 +1224,14 @@ exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-create
 alter table \\"test2\\" drop column \\"path\\";
 
 create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-drop-1:1 1`] = `
+"alter table \\"foo_bar2\\" drop constraint \\"foo_bar2_baz_id_foreign\\";
+alter table \\"foo_bar2\\" drop constraint \\"foo_bar2_baz_id_unique\\";
+alter table \\"foo_bar2\\" drop column \\"baz_id\\";
 
 "
 `;

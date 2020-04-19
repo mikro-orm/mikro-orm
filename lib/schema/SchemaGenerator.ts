@@ -146,11 +146,19 @@ export class SchemaGenerator {
   }
 
   private getUpdateTableFKsSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
-    if (schema.getTable(meta.collection)) {
+    const table = schema.getTable(meta.collection);
+
+    if (!table) {
+      return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
+    }
+
+    const { create } = this.computeTableDifference(meta, table, true);
+
+    if (create.length === 0) {
       return '';
     }
 
-    return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
+    return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta, create)));
   }
 
   private async wrapSchema(sql: string, wrap = true): Promise<string> {
@@ -195,13 +203,12 @@ export class SchemaGenerator {
   }
 
   private updateTable(meta: EntityMetadata, table: DatabaseTable, safe: boolean): SchemaBuilder[] {
-    const { create, update, remove } = this.computeTableDifference(meta, table, safe);
+    const { create, update, remove, rename } = this.computeTableDifference(meta, table, safe);
 
-    if (create.length + update.length + remove.length === 0) {
+    if (create.length + update.length + remove.length + rename.length === 0) {
       return [];
     }
 
-    const rename = this.findRenamedColumns(create, remove);
     const ret: SchemaBuilder[] = [];
 
     for (const prop of rename) {
@@ -225,7 +232,7 @@ export class SchemaGenerator {
     return ret;
   }
 
-  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; remove: Column[] } {
+  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; rename: { from: Column; to: EntityProperty }[]; remove: Column[] } {
     const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(meta, prop, true));
     const columns = table.getColumns();
     const create: EntityProperty[] = [];
@@ -236,11 +243,13 @@ export class SchemaGenerator {
       this.computeColumnDifference(table, prop, create, update);
     }
 
+    const rename = this.findRenamedColumns(create, remove);
+
     if (safe) {
-      return { create, update, remove: [] };
+      return { create, update, rename, remove: [] };
     }
 
-    return { create, update, remove };
+    return { create, update, rename, remove };
   }
 
   private computeColumnDifference(table: DatabaseTable, prop: EntityProperty, create: EntityProperty[], update: { prop: EntityProperty; column: Column; diff: IsSame }[], joinColumn?: string, idx = 0): void {
@@ -345,7 +354,14 @@ export class SchemaGenerator {
       table.dropForeign([column.fk.columnName], column.fk.constraintName);
     }
 
-    column.indexes.forEach(i => table.dropIndex([i.columnName], i.keyName));
+    for (const index of column.indexes) {
+      if (index.unique) {
+        table.dropUnique([index.columnName], index.keyName);
+      } else {
+        table.dropIndex([index.columnName], index.keyName);
+      }
+    }
+
     table.dropColumn(column.name);
   }
 
@@ -381,8 +397,9 @@ export class SchemaGenerator {
     return this.helper.getIndexName(meta.collection, [columnName], unique);
   }
 
-  private createForeignKeys(table: TableBuilder, meta: EntityMetadata): void {
+  private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[]): void {
     Object.values(meta.properties)
+      .filter(prop => !props || props.includes(prop))
       .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
       .forEach(prop => this.createForeignKey(table, meta, prop));
   }
