@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade,
+  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
@@ -48,7 +48,12 @@ export class Author2 extends BaseEntity2 {
   @Property({ type: TimeType, index: 'born_time_idx', nullable: true })
   bornTime?: string;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({
+    entity: () => Book2,
+    mappedBy: 'author',
+    orderBy: { title: QueryOrder.ASC },
+    strategy: LoadStrategy.JOINED,
+  })
   books!: Collection<Book2>;
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
