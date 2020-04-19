@@ -1,9 +1,9 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, Value } from 'knex';
 import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty,
-  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, wrap,
+  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, wrap, PopulateOptions, LoadStrategy,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder } from './index';
+import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder, Field } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
@@ -32,7 +32,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
     const meta = this.metadata.get(entityName);
     options = { populate: [], orderBy: {}, ...(options || {}) };
-    options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
+
+    const populate = options.populate as PopulateOptions[];
+    options.populate = this.autoJoinOneToOneOwner(meta, populate);
 
     if (options.fields) {
       options.fields.unshift(...meta.primaryKeys.filter(pk => !options!.fields!.includes(pk)));
@@ -40,7 +42,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
     qb.select(options.fields || '*')
-      .populate(options.populate)
+      .populate(populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
       .groupBy(options.groupBy!)
@@ -57,8 +59,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     options = { populate: [], orderBy: {}, ...(options || {}) };
+
     const meta = this.metadata.get(entityName);
-    options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
+    const populate = options.populate as PopulateOptions[];
+
+    options.populate = this.autoJoinOneToOneOwner(meta, populate);
     const pk = meta.primaryKeys[0];
 
     if (Utils.isPrimaryKey(where)) {
@@ -69,19 +74,66 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       options.fields.unshift(pk);
     }
 
-    const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
-      .select(options.fields || '*')
-      .populate(options.populate)
+    const joinedLoads = this.joinedLoads(meta, populate);
+    const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
+    const selects: Field[] = [];
+
+    if (joinedLoads.length > 0) {
+      selects.push(...this.getSelectForJoinedLoad(qb, meta, joinedLoads));
+    } else {
+      const defaultSelect = options.fields || ['*'];
+      selects.push(...defaultSelect);
+      qb.limit(1);
+    }
+
+    const method = joinedLoads.length > 0 ? 'all' : 'get';
+
+    const result = await qb
+      .select(selects)
+      .populate(populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
-      .groupBy(options.groupBy!)
-      .limit(1)
       .setLockMode(options.lockMode)
-      .withSchema(options.schema);
+      .withSchema(options.schema)
+      .execute(method);
 
-    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
+    if (Array.isArray(result)) {
+      return this.processJoinedLoads(result, joinedLoads) as unknown as T;
+    }
 
-    return this.rethrow(qb.execute('get'));
+    return result;
+  }
+
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = []): T | null {
+    const ret = super.mapResult(result, meta, populate);
+
+    if (!ret) {
+      return null;
+    }
+    const joinedLoads = this.joinedLoads(meta, populate);
+
+    joinedLoads.forEach((relationName, index) => {
+      const prop = meta.properties[relationName];
+      const properties = this.metadata.get(prop.type).properties;
+
+      ret[relationName] = ret[relationName] || [];
+      const relationPojo = {};
+
+      Object.values(properties)
+        .filter(({ reference }) => reference === 'scalar')
+        .forEach(prop => {
+          const aliasedProp = this.getAliasedField(prop.fieldNames[0], relationName, index).as;
+
+          if (aliasedProp in ret) {
+            relationPojo[prop.name] = ret[aliasedProp];
+            delete ret[aliasedProp];
+          }
+        });
+
+      ret[relationName].push(relationPojo);
+    });
+
+    return ret as T;
   }
 
   async count(entityName: string, where: any, ctx?: Transaction<KnexTransaction>): Promise<number> {
@@ -185,7 +237,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
-    const populate = this.autoJoinOneToOneOwner(meta, [prop.pivotTable]);
+    const populate = this.autoJoinOneToOneOwner(meta, [{
+      field: prop.pivotTable,
+    }]);
     qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy!);
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
 
@@ -208,16 +262,87 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner(meta: EntityMetadata, populate: string[]): string[] {
+  protected autoJoinOneToOneOwner(meta: EntityMetadata, populate: PopulateOptions[]): PopulateOptions[] {
     if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
 
-    const toPopulate = Object.values(meta.properties)
-      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !populate.includes(prop.name))
-      .map(prop => prop.name);
+    const relationToPopulate = populate.map(({ field }) => field);
+
+    const toPopulate: PopulateOptions[] = Object.values(meta.properties)
+      .filter(prop => {
+        return prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationToPopulate.includes(prop.name);
+      })
+      .map(prop => ({ field: prop.name, strategy: prop.strategy }));
 
     return [...populate, ...toPopulate];
+  }
+
+  protected joinedLoads(meta: EntityMetadata, populate: PopulateOptions[]): string[] {
+    return populate.filter(({ field }) => {
+      const relation = meta.properties[field];
+
+      if (!relation) {
+        return false;
+      }
+
+      return relation.strategy === LoadStrategy.JOINED;
+    }).map(({ field }) => field);
+  }
+
+  protected processJoinedLoads<T extends AnyEntity<T>>(results: object[], joinedLoads: string[]): T {
+    return results.reduce((accumulator, value) => {
+      joinedLoads.forEach(relationName => {
+        if (relationName in value) {
+          const relation = value[relationName];
+
+          if (Array.isArray(relation)) {
+            const existing = accumulator[relationName] || [];
+            accumulator[relationName] = [...existing, ...relation];
+          }
+        }
+      });
+
+      return { ...value, ...accumulator };
+    }, {}) as unknown as T;
+  }
+
+  protected getAliasedField(field: string, schema: string, index = 0){
+    const tableAlias = schema.charAt(0);
+    const as = `${tableAlias}${index}_${field}`;
+
+    return {
+      field,
+      schema,
+      as,
+    };
+  }
+
+  protected getSelectForJoinedLoad(queryBuilder: QueryBuilder, meta: EntityMetadata, joinedLoads: string[]): Field[] {
+    const selects: Field[] = [];
+
+    // alias all fields in the primary table
+    Object.values(meta.properties)
+      .filter((prop) => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
+      .forEach((prop) => {
+        selects.push(prop.fieldNames[0]);
+        queryBuilder.addSelect(prop.fieldNames[0]);
+      });
+
+    joinedLoads.forEach((relationName, index) => {
+      const prop = meta.properties[relationName];
+      const properties = this.metadata.get(prop.type).properties;
+
+      Object.values(properties)
+        .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
+        .forEach(prop => {
+          const { field, schema, as } = this.getAliasedField(prop.fieldNames[0], relationName, index);
+          selects.push(queryBuilder.getRefForField(field, schema, as));
+          queryBuilder.join(relationName, relationName);
+        });
+    });
+
+    return selects;
   }
 
   protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean): QueryBuilder<T> {

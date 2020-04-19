@@ -4,7 +4,7 @@ import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { LockMode } from '../unit-of-work';
-import { Collection } from '../entity';
+import { Collection, LoadStrategy } from '../entity';
 import { EntityManager } from '../index';
 import { DriverException } from '../exceptions';
 
@@ -46,7 +46,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null;
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate?: PopulateOptions[]): T | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
@@ -75,7 +75,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 }
 
 export interface FindOptions {
-  populate?: string[] | boolean;
+  populate?: Populate;
   orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
@@ -87,7 +87,7 @@ export interface FindOptions {
 }
 
 export interface FindOneOptions {
-  populate?: string[] | boolean;
+  populate?: Populate;
   orderBy?: QueryOrderMap;
   groupBy?: string | string[];
   lockMode?: LockMode;
@@ -97,3 +97,10 @@ export interface FindOneOptions {
   schema?: string;
   flags?: QueryFlag[];
 }
+
+export type Populate = (string | PopulateOptions)[] | boolean;
+
+export type PopulateOptions = {
+  field: string;
+  strategy?: LoadStrategy;
+};

@@ -1,11 +1,12 @@
 import { AnyEntity, EntityProperty, FilterQuery } from '../typings';
-import { EntityManager } from '../index';
-import { ReferenceType } from './enums';
+import { EntityManager, Populate } from '../index';
+import { ReferenceType, LoadStrategy } from './enums';
 import { Utils, ValidationError } from '../utils';
 import { Collection } from './Collection';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
+import { PopulateOptions } from '../drivers';
 
 export class EntityLoader {
 
@@ -14,25 +15,25 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: string | string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
-    if (entities.length === 0 || populate === false) {
+  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
+    if (entities.length === 0 || populate === false || (Array.isArray(populate) && populate.length > 0)) {
       return;
     }
 
     populate = this.normalizePopulate(entityName, populate, lookup);
 
-    const invalid = populate.find(field => !this.em.canPopulate(entityName, field));
+    const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     if (validate && invalid) {
-      throw ValidationError.invalidPropertyName(entityName, invalid);
+      throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    for (const field of populate) {
-      await this.populateField<T>(entityName, entities, field, where, orderBy, refresh);
+    for (const pop of populate) {
+      await this.populateField<T>(entityName, entities, pop.field, where, orderBy, refresh);
     }
   }
 
-  private normalizePopulate(entityName: string, populate: string | string[] | true, lookup: boolean): string[] {
+  private normalizePopulate(entityName: string, populate: PopulateOptions[] | true, lookup: boolean): PopulateOptions[] {
     if (populate === true) {
       populate = this.lookupAllRelationships(entityName);
     } else {
@@ -144,7 +145,20 @@ export class EntityLoader {
 
     const filtered = Utils.unique(children);
     const prop = this.metadata.get(entityName).properties[f];
-    await this.populate<T>(prop.type, filtered, [parts.join('.')], where[prop.name], orderBy[prop.name] as QueryOrderMap, refresh, false, false);
+
+    await this.populate<T>(
+      prop.type,
+      filtered,
+      [{
+        field: parts.join('.'),
+        strategy: LoadStrategy.SELECT_IN,
+      }],
+      where[prop.name],
+      orderBy[prop.name] as QueryOrderMap,
+      refresh,
+      false,
+      false
+    );
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
@@ -195,13 +209,13 @@ export class EntityLoader {
     return children.filter(e => !wrap(e[field], true).isInitialized()).map(e => Utils.unwrapReference(e[field]));
   }
 
-  private lookupAllRelationships(entityName: string, prefix = '', visited: string[] = []): string[] {
+  private lookupAllRelationships(entityName: string, prefix = '', visited: string[] = []): PopulateOptions[] {
     if (visited.includes(entityName)) {
       return [];
     }
 
     visited.push(entityName);
-    const ret: string[] = [];
+    const ret: PopulateOptions[] = [];
     const meta = this.metadata.get(entityName);
 
     Object.values(meta.properties)
@@ -213,14 +227,17 @@ export class EntityLoader {
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
-          ret.push(prefixed);
+          ret.push({
+            field: prefixed,
+            strategy: LoadStrategy.SELECT_IN,
+          });
         }
       });
 
     return ret;
   }
 
-  private lookupEagerLoadedRelationships(entityName: string, populate: string[], prefix = '', visited: string[] = []): string[] {
+  private lookupEagerLoadedRelationships(entityName: string, populate: PopulateOptions[], prefix = '', visited: string[] = []): PopulateOptions[] {
     if (visited.includes(entityName)) {
       return [];
     }
@@ -237,7 +254,10 @@ export class EntityLoader {
         if (nested.length > 0) {
           populate.push(...nested);
         } else {
-          populate.push(prefixed);
+          populate.push({
+            field: prefixed,
+            strategy: LoadStrategy.SELECT_IN,
+          });
         }
       });
 

@@ -1,5 +1,5 @@
 import { QueryOrder } from './enums';
-import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType } from './entity';
+import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, LoadStrategy } from './entity';
 import { EntityManager } from './EntityManager';
 import { LockMode } from './unit-of-work';
 import { Platform } from './platforms';
@@ -134,6 +134,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   onUpdate?: () => any;
   onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
   onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  strategy?: LoadStrategy;
   owner: boolean;
   inversedBy: string;
   mappedBy: string;

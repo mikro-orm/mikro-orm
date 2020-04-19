@@ -1,4 +1,4 @@
-import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
+import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, PopulateOptions } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
@@ -51,7 +51,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, wrap(coll.owner, true).__primaryKey, data, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = []): T | null {
     if (!result || !meta) {
       return null;
     }
