@@ -199,6 +199,14 @@ describe('SchemaGenerator', () => {
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-table');
     await generator.updateSchema();
 
+    // remove 1:1 relation
+    const fooBarMeta = meta.get('FooBar2');
+    const fooBazMeta = meta.get('FooBaz2');
+    delete fooBarMeta.properties.baz;
+    delete fooBazMeta.properties.bar;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-1:1');
+    await generator.updateSchema();
+
     await orm.close(true);
   });
 
@@ -508,6 +516,15 @@ describe('SchemaGenerator', () => {
     newTableMeta.properties.updatedAt = updatedAtProp;
     authorMeta.properties.favouriteBook = favouriteBookProp;
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-column');
+    await generator.updateSchema();
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+
+    // remove 1:1 relation
+    const fooBarMeta = meta.get('FooBar2');
+    const fooBazMeta = meta.get('FooBaz2');
+    delete fooBarMeta.properties.baz;
+    delete fooBazMeta.properties.bar;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-1:1');
     await generator.updateSchema();
 
     meta.reset('Author2');

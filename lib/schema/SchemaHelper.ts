@@ -1,10 +1,9 @@
 import { TableBuilder } from 'knex';
 import { Dictionary, EntityProperty } from '../typings';
-import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
 import { Column, Index } from './DatabaseTable';
 import { ReferenceType } from '../entity';
 import { Utils } from '../utils';
-import { Connection } from '../connections';
+import { AbstractSqlConnection, Connection } from '../connections';
 
 export abstract class SchemaHelper {
 
