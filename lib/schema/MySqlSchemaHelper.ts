@@ -1,7 +1,7 @@
 import { CreateTableBuilder } from 'knex';
 import { IsSame, SchemaHelper } from './SchemaHelper';
 import { Dictionary, EntityProperty } from '../typings';
-import { AbstractSqlConnection } from '../connections/AbstractSqlConnection';
+import { AbstractSqlConnection } from '../connections';
 import { Column, Index } from './DatabaseTable';
 
 export class MySqlSchemaHelper extends SchemaHelper {

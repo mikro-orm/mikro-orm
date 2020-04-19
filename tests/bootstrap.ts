@@ -52,7 +52,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22, Car2, CarOwner2, User2],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
-    port: 3307,
+    port: type === 'mysql' ? 3307 : 3309,
     baseDir: BASE_DIR,
     debug: ['query'],
     highlight: false,
