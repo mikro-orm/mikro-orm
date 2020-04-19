@@ -23,7 +23,7 @@ discuss specifics.
 - [ ] Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
 - [ ] Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
-- [ ] Allow adding items to not initialized collections
+- [x] Allow adding items to not initialized collections
 - [ ] Support multiple M:N with same properties without manually specifying `pivotTable`
 - [ ] Cache metadata only with ts-morph provider
 - [ ] Diffing entity level indexes in schema generator
@@ -38,7 +38,7 @@ discuss specifics.
 - [x] Require node 10+
 - [x] Require TS 3.7 or newer
 - [x] Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
-- [ ] Drop default value for db `type` (currently defaults to `mongodb`)
+- [ ] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `autoFlush` option
 - [ ] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [ ] Rename `wrappedReference` to `reference` (keep `wrappedReference` supported)
