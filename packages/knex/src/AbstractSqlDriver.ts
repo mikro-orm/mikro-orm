@@ -138,7 +138,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = wrap(coll.owner).__meta;
     const pks = wrap(coll.owner).__primaryKeys;
     const snapshot = coll.getSnapshot().map(item => wrap(item).__primaryKeys);
-    const current = coll.getItems().map(item => wrap(item).__primaryKeys);
+    const current = coll.getItems(false).map(item => wrap(item).__primaryKeys);
     const deleteDiff = snapshot.filter(item => !current.includes(item));
     const insertDiff = current.filter(item => !snapshot.includes(item));
     const target = snapshot.filter(item => current.includes(item)).concat(...insertDiff);
