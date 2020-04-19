@@ -8,6 +8,7 @@ import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
+import { Author2, Book2, BookTag2 } from './entities-sql';
 
 describe('EntityManagerMongo', () => {
 
@@ -626,7 +627,6 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
     expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
     expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
@@ -1827,6 +1827,49 @@ describe('EntityManagerMongo', () => {
 
     const res1 = await orm.em.findOne(Author, { name: 'test' });
     expect(res1).toBeNull();
+  });
+
+  test('adding items to not initialized collection', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const b1 = new Book('Bible 1', god);
+    await orm.em.persistAndFlush(b1);
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(Author, god.id);
+    expect(a.books.isInitialized()).toBe(false);
+    const b2 = new Book('Bible 2');
+    const b3 = new Book('Bible 3');
+    a.books.add(b2, b3);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author, god.id, ['books']);
+    expect(a2.books.count()).toBe(3);
+    expect(a2.books.getIdentifiers('id')).toEqual([b1.id, b2.id, b3.id]);
+
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    let tag5 = new BookTag('sexy');
+    a2.books[0].tags.add(tag1);
+    a2.books[1].tags.add(tag1);
+    a2.books[2].tags.add(tag5);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a3 = await orm.em.findOneOrFail(Author, god.id, ['books']);
+    tag5 = orm.em.getReference(BookTag, tag5.id);
+    a3.books[0].tags.add(tag3);
+    a3.books[1].tags.add(tag2, tag5);
+    a3.books[2].tags.add(tag4);
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a4 = await orm.em.findOneOrFail(Author, god.id, ['books.tags']);
+    expect(a4.books[0].tags.getIdentifiers()).toEqual([tag1.id, tag3.id]);
+    expect(a4.books[1].tags.getIdentifiers()).toEqual([tag1.id, tag2.id, tag5.id]);
+    expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]);
   });
 
   // this should run in ~600ms (when running single test locally)

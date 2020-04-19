@@ -33,8 +33,11 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   /**
    * Returns the items (the collection must be initialized)
    */
-  getItems(): T[] {
-    this.checkInitialized();
+  getItems(check = true): T[] {
+    if (check) {
+      this.checkInitialized();
+    }
+
     return super.getItems();
   }
 
@@ -79,8 +82,11 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     }
   }
 
-  contains(item: T): boolean {
-    this.checkInitialized();
+  contains(item: T, check = true): boolean {
+    if (check) {
+      this.checkInitialized();
+    }
+
     return super.contains(item);
   }
 
@@ -206,7 +212,10 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   private modify(method: 'add' | 'remove', items: T[]): void {
-    this.checkInitialized();
+    if (method === 'remove') {
+      this.checkInitialized();
+    }
+
     this.validateModification(items);
     super[method](...items);
     this.setDirty();
@@ -249,7 +258,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
     const manyToManyInverse = this.property.reference === ReferenceType.MANY_TO_MANY && this.property.mappedBy;
 
-    if (manyToManyInverse && items.find(item => !item[this.property.mappedBy] || !item[this.property.mappedBy].isInitialized())) {
+    if (manyToManyInverse && items.find(item => !wrap(item).isInitialized() || !item[this.property.mappedBy])) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }
