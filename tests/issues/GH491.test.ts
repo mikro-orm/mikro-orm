@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
 
 @Entity()
 export class FooEntity {
@@ -29,7 +29,7 @@ export class FooEntity {
 
 describe('GH issue 491', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
