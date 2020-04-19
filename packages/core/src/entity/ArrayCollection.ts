@@ -48,7 +48,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   add(...items: T[]): void {
     for (const item of items) {
-      if (!this.contains(item)) {
+      if (!this.contains(item, false)) {
         this.items.push(item);
         this.propagate(item, 'add');
       }
@@ -86,7 +86,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     this.remove(...this.items);
   }
 
-  contains(item: T): boolean {
+  contains(item: T, check?: boolean): boolean {
     return !!this.items.find(i => {
       const objectIdentity = i === item;
       const primaryKeyIdentity = !!wrap(i).__primaryKey && !!wrap(item).__primaryKey && wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey;
@@ -149,16 +149,16 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove'): boolean {
-    if (!collection || !collection.isInitialized()) {
+    if (!collection) {
       return false;
     }
 
     if (method === 'add') {
-      return !collection.contains(this.owner);
+      return !collection.contains(this.owner, false);
     }
 
     // remove
-    return collection.contains(this.owner);
+    return collection.contains(this.owner, false);
   }
 
 }
