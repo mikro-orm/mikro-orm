@@ -19,11 +19,12 @@ discuss specifics.
 
 ## Planned changes for v4
 
+- [x] Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
+- [x] Allow adding items to not initialized collections
+- [x] Use absolute path to entity file in static MetadataStorage keys (fix for 'Multiple property decorators' validation issues)
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
-- [ ] Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
 - [ ] Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
-- [x] Allow adding items to not initialized collections
 - [ ] Support multiple M:N with same properties without manually specifying `pivotTable`
 - [ ] Cache metadata only with ts-morph provider
 - [ ] Diffing entity level indexes in schema generator
@@ -31,15 +32,16 @@ discuss specifics.
 - [ ] Support computed properties
 - [ ] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
 - [ ] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
-- [x] Use absolute path to entity file in static MetadataStorage keys
+- [ ] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
+- [ ] Add custom types for blob, array, json
 
 ## Planned breaking changes for v4
 
 - [x] Require node 10+
 - [x] Require TS 3.7 or newer
 - [x] Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
-- [ ] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `autoFlush` option
+- [ ] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [ ] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [ ] Rename `wrappedReference` to `reference` (keep `wrappedReference` supported)
 - [ ] Use `bigint` type natively in `BigIntType`
