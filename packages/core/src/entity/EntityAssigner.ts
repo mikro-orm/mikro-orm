@@ -16,12 +16,17 @@ export class EntityAssigner {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
     const em = options.em || wrap(entity).__em;
     const meta = wrap(entity).__internal.metadata.get(entity.constructor.name);
+    const root = Utils.getRootEntity(wrap(entity).__internal.metadata, meta);
     const validator = wrap(entity).__internal.validator;
     const platform = wrap(entity).__internal.platform;
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
       if (options.onlyProperties && !(prop in props)) {
+        return;
+      }
+
+      if (props[prop]?.inherited || root.discriminatorColumn === prop) {
         return;
       }
 

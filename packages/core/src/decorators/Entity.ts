@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
 import { EntityRepository } from '../entity';
 import { Utils } from '../utils';
-import { AnyEntity, Constructor } from '../typings';
+import { AnyEntity, Constructor, Dictionary } from '../typings';
 
 export function Entity(options: EntityOptions<any> = {}): Function {
   return function <T extends { new(...args: any[]): AnyEntity<T> }>(target: T) {
@@ -17,5 +17,8 @@ export function Entity(options: EntityOptions<any> = {}): Function {
 export type EntityOptions<T extends AnyEntity<T>> = {
   tableName?: string;
   collection?: string;
+  discriminatorColumn?: string;
+  discriminatorMap?: Dictionary<string>;
+  discriminatorValue?: string;
   customRepository?: () => Constructor<EntityRepository<T>>;
 };
