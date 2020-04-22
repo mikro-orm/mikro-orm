@@ -32,6 +32,7 @@ export class MetadataDiscovery {
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
+    filtered.forEach(meta => this.initSingleTableInheritance(meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => this.metadata.set(meta.className, new EntitySchema(meta, true).init().meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
@@ -167,7 +168,9 @@ export class MetadataDiscovery {
     }
 
     if (!meta.collection && meta.name) {
-      meta.collection = this.namingStrategy.classToTableName(meta.name);
+      const root = Utils.getRootEntity(this.metadata, meta);
+      const entityName = root.discriminatorColumn ? root.name : meta.name;
+      meta.collection = this.namingStrategy.classToTableName(entityName);
     }
 
     await this.saveToCache(meta);
@@ -475,9 +478,71 @@ export class MetadataDiscovery {
     }
 
     Object.keys(base.hooks).forEach(type => {
-      meta.hooks[type] = meta.hooks[type] || [];
-      meta.hooks[type].unshift(...base.hooks[type]);
+      meta.hooks[type] = Utils.unique([...base.hooks[type], ...(meta.hooks[type] || [])]);
     });
+
+    if (meta.constructorParams.length === 0 && base.constructorParams.length > 0) {
+      meta.constructorParams = [...base.constructorParams];
+    }
+
+    if (meta.toJsonParams.length === 0 && base.toJsonParams.length > 0) {
+      meta.toJsonParams = [...base.toJsonParams];
+    }
+  }
+
+  private initSingleTableInheritance(meta: EntityMetadata): void {
+    const root = Utils.getRootEntity(this.metadata, meta);
+
+    if (!root.discriminatorColumn) {
+      return;
+    }
+
+    if (!root.discriminatorMap) {
+      root.discriminatorMap = {} as Dictionary<string>;
+      const children = Object.values(this.metadata.getAll()).filter(m => Utils.getRootEntity(this.metadata, m) === root);
+      children.forEach(m => {
+        const name = m.discriminatorValue || this.namingStrategy.classToTableName(m.className);
+        root.discriminatorMap![name] = m.className;
+      });
+    }
+
+    meta.discriminatorValue = Object.entries(root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
+
+    if (!root.properties[root.discriminatorColumn]) {
+      root.properties[root.discriminatorColumn] = this.createDiscriminatorProperty(root);
+    }
+
+    if (root === meta) {
+      return;
+    }
+
+    Object.values(meta.properties).forEach(prop => {
+      const exists = root.properties[prop.name];
+      root.properties[prop.name] = Utils.copy(prop);
+      root.properties[prop.name].nullable = true;
+
+      if (!exists) {
+        root.properties[prop.name].inherited = true;
+      }
+    });
+
+    root.indexes = Utils.unique([...root.indexes, ...meta.indexes]);
+    root.uniques = Utils.unique([...root.uniques, ...meta.uniques]);
+  }
+
+  private createDiscriminatorProperty(meta: EntityMetadata): EntityProperty {
+    const prop = {
+      name: meta.discriminatorColumn!,
+      type: 'string',
+      enum: true,
+      index: true,
+      reference: ReferenceType.SCALAR,
+      items: Object.keys(meta.discriminatorMap!),
+    } as EntityProperty;
+    this.initFieldName(prop);
+    this.initColumnType(prop);
+
+    return prop;
   }
 
   private getDefaultVersionValue(prop: EntityProperty): any {

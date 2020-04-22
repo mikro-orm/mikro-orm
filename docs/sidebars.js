@@ -31,6 +31,7 @@ module.exports = {
       'naming-strategy',
       'custom-types',
       'entity-schema',
+      'inheritance-mapping',
       'metadata-providers',
       'metadata-cache',
       'debugging',
