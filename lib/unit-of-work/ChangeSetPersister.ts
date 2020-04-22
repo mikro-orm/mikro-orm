@@ -101,7 +101,7 @@ export class ChangeSetPersister {
   private mapReturnedValues<T extends AnyEntity<T>>(entity: T, res: QueryResult, meta: EntityMetadata<T>): void {
     if (res.row && Object.keys(res.row).length > 0) {
       Object.values<EntityProperty>(meta.properties).forEach(prop => {
-        if (prop.fieldNames && res.row![prop.fieldNames[0]]) {
+        if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(entity[prop.name], true)) {
           entity[prop.name] = res.row![prop.fieldNames[0]];
         }
       });

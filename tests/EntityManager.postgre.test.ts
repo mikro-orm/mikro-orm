@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
@@ -1176,6 +1176,36 @@ describe('EntityManagerPostgre', () => {
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+  });
+
+  test('simple derived entity', async () => {
+    const author = new Author2('n', 'e');
+    author.id = 5;
+    author.address = new Address2(author, 'v1');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    expect(a1.address!.value).toBe('v1');
+    expect(a1.address!.author).toBe(a1);
+
+    a1.address!.value = 'v2';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    expect(a2.address!.value).toBe('v2');
+    expect(a2.address!.author).toBe(a2);
+
+    const address = await orm.em.findOneOrFail(Address2, author.id as any);
+    expect(address.author).toBe(a2);
+    expect(address.author.address).toBe(address);
+
+    await orm.em.removeEntity(a2, true);
+    const a3 = await orm.em.findOne(Author2, author.id);
+    expect(a3).toBeNull();
+    const address2 = await orm.em.findOne(Address2, author.id as any);
+    expect(address2).toBeNull();
   });
 
   afterAll(async () => orm.close(true));
