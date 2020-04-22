@@ -39,7 +39,8 @@ export class UnitOfWork {
       return;
     }
 
-    this.identityMap[`${wrapped.constructor.name}-${wrapped.__serializedPrimaryKey}`] = wrapped;
+    const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
+    this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`] = wrapped;
 
     if (mergeData || !this.originalEntityData[wrapped.__uuid]) {
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
@@ -52,8 +53,9 @@ export class UnitOfWork {
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
   getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
+    const root = Utils.getRootEntity(this.metadata, this.metadata.get(entityName));
     const hash = Utils.getPrimaryKeyHash(Utils.asArray(id) as string[]);
-    const token = `${entityName}-${hash}`;
+    const token = `${root.name}-${hash}`;
 
     return this.identityMap[token] as T;
   }
@@ -145,7 +147,8 @@ export class UnitOfWork {
   }
 
   unsetIdentity(entity: AnyEntity): void {
-    delete this.identityMap[`${entity.constructor.name}-${wrap(entity).__serializedPrimaryKey}`];
+    const root = Utils.getRootEntity(this.metadata, wrap(entity).__meta);
+    delete this.identityMap[`${root.name}-${wrap(entity).__serializedPrimaryKey}`];
     delete this.identifierMap[wrap(entity).__uuid];
     delete this.originalEntityData[wrap(entity).__uuid];
   }

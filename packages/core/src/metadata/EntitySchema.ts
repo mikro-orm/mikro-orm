@@ -32,8 +32,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
   constructor(meta: Metadata<T, U> | EntityMetadata<T>, internal = false) {
     meta.name = meta.class ? meta.class.name : meta.name;
-    Utils.renameKey(meta, 'tableName', 'collection');
-    meta.tableName = meta.collection;
+
+    if (meta.tableName || meta.collection) {
+      Utils.renameKey(meta, 'tableName', 'collection');
+      meta.tableName = meta.collection;
+    }
+
     Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, indexes: [], uniques: [] }, meta);
     this.internal = internal;
   }

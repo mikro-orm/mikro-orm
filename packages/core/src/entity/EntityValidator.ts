@@ -28,7 +28,11 @@ export class EntityValidator {
         return;
       }
 
-      payload[prop] = entity[prop as keyof T] = this.validateProperty(property, payload[prop], entity);
+      payload[prop] = this.validateProperty(property, payload[prop], entity);
+
+      if (entity[prop]) {
+        entity[prop] = payload[prop];
+      }
     });
   }
 
