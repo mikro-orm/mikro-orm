@@ -99,6 +99,41 @@ export class AuthorToFriend {
 
 }
 ",
+  "import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class BaseUser2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100 })
+  firstName!: string;
+
+  @Property({ length: 100 })
+  lastName!: string;
+
+  @Index({ name: 'base_user2_type_index' })
+  @Property({ columnType: 'enum' })
+  type!: string;
+
+  @Property({ nullable: true })
+  employeeProp?: number;
+
+  @Property({ length: 255, nullable: true })
+  managerProp?: string;
+
+  @Property({ length: 255, nullable: true })
+  ownerProp?: string;
+
+  @ManyToOne({ entity: () => BaseUser2, nullable: true, index: 'base_user2_favourite_employee_id_index' })
+  favouriteEmployee?: BaseUser2;
+
+  @OneToOne({ entity: () => BaseUser2, nullable: true, index: 'base_user2_favourite_manager_id_index', unique: 'base_user2_favourite_manager_id_unique' })
+  favouriteManager?: BaseUser2;
+
+}
+",
   "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Author2 } from './Author2';
 import { Publisher2 } from './Publisher2';
