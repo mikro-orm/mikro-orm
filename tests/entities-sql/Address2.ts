@@ -1,4 +1,4 @@
-import { Entity, Property, OneToOne, Index } from '@mikro-orm/core';
+import { Entity, Property, OneToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()

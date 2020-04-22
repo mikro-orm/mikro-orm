@@ -86,6 +86,22 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
+  static getRootEntity(metadata: MetadataStorage, meta: EntityMetadata): EntityMetadata {
+    const base = meta.extends && metadata.get(meta.extends, false, false);
+
+    if (!base || base === meta) { // make sure we do not fall into infinite loop
+      return meta;
+    }
+
+    const root = Utils.getRootEntity(metadata, base);
+
+    if (root.discriminatorColumn) {
+      return root;
+    }
+
+    return meta;
+  }
+
   /**
    * Computes difference between two objects, ignoring items missing in `b`.
    */
@@ -120,11 +136,16 @@ export class Utils {
     }
 
     const meta = metadata.get<T>(entity.constructor.name);
+    const root = Utils.getRootEntity(metadata, meta);
     const ret = {} as EntityData<T>;
+
+    if (meta.discriminatorValue) {
+      ret[root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as T[keyof T];
+    }
 
     // copy all props, ignore collections and references, process custom types
     Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
-      if (Utils.shouldIgnoreProperty(entity, prop)) {
+      if (Utils.shouldIgnoreProperty(entity, prop, root)) {
         return;
       }
 
@@ -148,7 +169,7 @@ export class Utils {
     return ret;
   }
 
-  private static shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>) {
+  private static shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>, root: EntityMetadata) {
     if (!(prop.name in entity)) {
       return true;
     }
@@ -157,12 +178,13 @@ export class Utils {
     const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name]).__primaryKeys.every(pk => pk);
     const noPkProp = prop.primary && !Utils.isDefined(entity[prop.name], true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+    const discriminator = prop.name === root.discriminatorColumn;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
     const emptyRef = isSetter && entity[prop.name] === undefined;
 
-    return collection || noPkProp || noPkRef || inverse || emptyRef || prop.persist === false;
+    return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef || prop.persist === false;
   }
 
   /**
