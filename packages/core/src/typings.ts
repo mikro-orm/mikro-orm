@@ -103,6 +103,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   customType: Type;
   primary: boolean;
   serializedPrimaryKey: boolean;
+  discriminator?: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
@@ -111,6 +112,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   index?: boolean | string;
   unique?: boolean | string;
   nullable?: boolean;
+  inherited?: boolean;
   unsigned: boolean;
   persist?: boolean;
   hidden?: boolean;
@@ -147,6 +149,9 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   className: string;
   tableName: string;
   pivotTable: boolean;
+  discriminatorColumn?: string;
+  discriminatorValue?: string;
+  discriminatorMap?: Dictionary<string>;
   constructorParams: string[];
   toJsonParams: string[];
   extends: string;
