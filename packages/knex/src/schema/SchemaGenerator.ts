@@ -42,13 +42,14 @@ export class SchemaGenerator {
   }
 
   async getCreateSchemaSQL(wrap = true): Promise<string> {
+    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue);
     let ret = '';
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of metadata) {
       ret += this.dump(this.createTable(meta));
     }
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of metadata) {
       ret += this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
     }
 
@@ -68,7 +69,7 @@ export class SchemaGenerator {
   async getDropSchemaSQL(wrap = true, dropMigrationsTable = false): Promise<string> {
     let ret = '';
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue)) {
       ret += this.dump(this.dropTable(meta.collection), '\n');
     }
 
@@ -85,14 +86,15 @@ export class SchemaGenerator {
   }
 
   async getUpdateSchemaSQL(wrap = true, safe = false, dropTables = true): Promise<string> {
+    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue);
     const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
     let ret = '';
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of metadata) {
       ret += this.getUpdateTableSQL(meta, schema, safe);
     }
 
-    for (const meta of Object.values(this.metadata.getAll())) {
+    for (const meta of metadata) {
       ret += this.getUpdateTableFKsSQL(meta, schema);
     }
 
@@ -100,7 +102,7 @@ export class SchemaGenerator {
       return this.wrapSchema(ret, wrap);
     }
 
-    const definedTables = Object.values(this.metadata.getAll()).map(meta => meta.collection);
+    const definedTables = metadata.map(meta => meta.collection);
     const remove = schema.getTables().filter(table => !definedTables.includes(table.name));
 
     for (const table of remove) {

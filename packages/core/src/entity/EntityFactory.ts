@@ -63,7 +63,16 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
-    const Entity = this.metadata.get<T>(meta.name).class;
+    const root = Utils.getRootEntity(this.metadata, meta);
+
+    if (root.discriminatorColumn) {
+      const value = data[root.discriminatorColumn];
+      delete data[root.discriminatorColumn];
+      const type = root.discriminatorMap![value];
+      meta = type ? this.metadata.get(type) : meta;
+    }
+
+    const Entity = meta.class;
     const pks = Utils.getOrderedPrimaryKeys<T>(data, meta);
 
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
