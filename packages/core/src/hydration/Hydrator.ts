@@ -1,4 +1,4 @@
-import { EntityManager } from '..';
+import { EntityManager, Utils } from '..';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
 
@@ -8,7 +8,14 @@ export abstract class Hydrator {
               protected readonly em: EntityManager) { }
 
   hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity: boolean): void {
-    for (const prop of Object.values<EntityProperty>(meta.properties)) {
+    const metadata = this.em.getMetadata();
+    const root = Utils.getRootEntity(metadata, meta);
+
+    if (root.discriminatorColumn) {
+      meta = metadata.get(entity.constructor.name);
+    }
+
+    for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => !prop.inherited && root.discriminatorColumn !== prop.name)) {
       this.hydrateProperty(entity, prop, data[prop.name], newEntity);
     }
   }

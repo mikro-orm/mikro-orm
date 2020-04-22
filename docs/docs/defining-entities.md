@@ -363,7 +363,9 @@ add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 ## Using BaseEntity
 
 You can define your own base entity with properties that you require on all entities, like
-primary key and created/updated time. 
+primary key and created/updated time. Single table inheritance is also supported.
+
+Read more about this topic in [Inheritance Mapping](inheritance-mapping.md) section.
 
 > If you are initializing the ORM via `entities` option, you need to specify all your
 > base entities as well.
