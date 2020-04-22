@@ -89,7 +89,7 @@ export class ChangeSetPersister {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate();
     }
 
-    if (prop.onUpdate) {
+    if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate();
     }
   }
