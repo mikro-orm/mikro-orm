@@ -1903,6 +1903,11 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
   });
 
+  test('em.remove() with null or undefined in where parameter throws', async () => {
+    expect(() => orm.em.remove(Book2, undefined as any)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
+    expect(() => orm.em.remove(Book2, null)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
