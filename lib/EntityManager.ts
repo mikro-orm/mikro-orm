@@ -437,6 +437,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return ret ? ret.then(() => 1) : ret;
     }
 
+    this.validator.validateRemoveEmptyWhere(entityName, where);
+
     return this.nativeDelete(entityName, where);
   }
 

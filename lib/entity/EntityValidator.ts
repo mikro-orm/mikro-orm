@@ -83,6 +83,12 @@ export class EntityValidator {
     }
   }
 
+  validateRemoveEmptyWhere<T extends AnyEntity<T>>(className: string, where: FilterQuery<T>): void {
+    if (!Utils.isDefined(where, true)) {
+      throw new Error(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(${className}, {})'.`);
+    }
+  }
+
   private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
     if (wrap(entity).isInitialized() && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
