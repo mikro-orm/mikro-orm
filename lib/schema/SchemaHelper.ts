@@ -210,7 +210,7 @@ export abstract class SchemaHelper {
     }
 
     if (info.defaultValue === null || info.defaultValue.toLowerCase() === 'null' || info.defaultValue.toString().startsWith('nextval(')) {
-      return prop.default === undefined;
+      return !Utils.isDefined(prop.default, true);
     }
 
     if (prop.type === 'boolean') {

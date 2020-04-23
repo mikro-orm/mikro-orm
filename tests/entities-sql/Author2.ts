@@ -29,7 +29,7 @@ export class Author2 extends BaseEntity2 {
   @Index({ name: 'custom_email_index_name' })
   email: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, default: null })
   age?: number;
 
   @Index()
