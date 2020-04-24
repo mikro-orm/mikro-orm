@@ -134,7 +134,7 @@ await orm.em.transactional(async (em: EntityManager) => {
 
 ## LIKE Queries
 
-SQL do support LIKE queries via native JS regular expressions:
+SQL supports LIKE queries via native JS regular expressions:
 
 ```typescript
 const author1 = new Author2('Author 1', 'a1@example.com');
