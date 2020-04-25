@@ -17,10 +17,12 @@ type Property<T> =
   | ({ reference: ReferenceType.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T>)
   | ({ enum: true } & EnumOptions)
   | (TypeDef<T> & PropertyOptions);
+type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
+type PropertyKey<T, U> = NonFunctionPropertyNames<Omit<T, keyof U>>;
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in keyof Omit<T, keyof U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>> } };
+  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>> } };
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined> {
 
