@@ -2,7 +2,7 @@ import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { inspect } from 'util';
 import {
   Utils, ValidationError, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, QueryOrderNumeric,
-  Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator, GroupOperator,
+  Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { JoinOptions } from './QueryBuilder';
@@ -441,14 +441,6 @@ export class QueryBuilderHelper {
     }
 
     qb.update(versionProperty.fieldNames[0], this.knex.raw(sql));
-  }
-
-  static isOperator(key: string, includeGroupOperators = true): boolean {
-    if (!includeGroupOperators) {
-      return !!QueryOperator[key];
-    }
-
-    return !!GroupOperator[key] || !!QueryOperator[key];
   }
 
   static isCustomExpression(field: string): boolean {
