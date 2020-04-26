@@ -15,11 +15,15 @@ export abstract class Hydrator {
       meta = metadata.get(entity.constructor.name);
     }
 
-    for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => !prop.inherited && root.discriminatorColumn !== prop.name)) {
-      this.hydrateProperty(entity, prop, data[prop.name], newEntity);
+    const props = Object.values<EntityProperty>(meta.properties).filter(prop => {
+      return !prop.inherited && root.discriminatorColumn !== prop.name && !prop.embedded;
+    });
+
+    for (const prop of props) {
+      this.hydrateProperty(entity, prop, data, newEntity);
     }
   }
 
-  protected abstract hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: EntityData<T>[any], newEntity: boolean): void;
+  protected abstract hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: EntityData<T>, newEntity: boolean): void;
 
 }
