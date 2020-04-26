@@ -22,7 +22,7 @@ discuss specifics.
 - [x] Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
 - [x] Allow adding items to not initialized collections
 - [x] Use absolute path to entity file in static MetadataStorage keys (fix for 'Multiple property decorators' validation issues)
-- [ ] Embedded entities (allow in-lining child entity into parent one with prefixed keys, or maybe as serialized JSON)
+- [x] Embedded entities (allow in-lining child entity into parent one with prefixed keys)
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
 - [ ] Support multiple M:N with same properties without manually specifying `pivotTable`

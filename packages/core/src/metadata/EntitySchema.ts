@@ -1,6 +1,6 @@
 import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty } from '../typings';
 import {
-  EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
+  EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
 import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
@@ -15,6 +15,7 @@ type Property<T> =
   | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T>)
   | ({ reference: ReferenceType.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T>)
   | ({ reference: ReferenceType.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T>)
+  | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions)
   | ({ enum: true } & EnumOptions)
   | (TypeDef<T> & PropertyOptions);
 type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
@@ -38,7 +39,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       meta.tableName = meta.collection;
     }
 
-    Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, indexes: [], uniques: [] }, meta);
+    Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
     this.internal = internal;
   }
 
@@ -89,6 +90,16 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   addSerializedPrimaryKey(name: string & keyof T, type: TypeType, options: SerializedPrimaryKeyOptions = {}): void {
     this._meta.serializedPrimaryKey = name;
     this.addProperty(name, type, options);
+  }
+
+  addEmbedded<K = object>(name: string & keyof T, options: EmbeddedOptions): void {
+    Utils.defaultValue(options, 'prefix', true);
+    this._meta.properties[name] = {
+      name,
+      type: this.normalizeType(options),
+      reference: ReferenceType.EMBEDDED,
+      ...options,
+    } as EntityProperty<T>;
   }
 
   addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K>): void {
@@ -197,13 +208,16 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
           this.addOneToOne(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.ONE_TO_MANY:
-          this.addOneToMany(name as keyof T & string, options.type as string, options);
+          this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T>);
           break;
         case ReferenceType.MANY_TO_ONE:
           this.addManyToOne(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.MANY_TO_MANY:
           this.addManyToMany(name as keyof T & string, options.type as string, options);
+          break;
+        case ReferenceType.EMBEDDED:
+          this.addEmbedded(name as keyof T & string, options as EmbeddedOptions);
           break;
         default:
           if ((options as EntityProperty).enum) {
@@ -241,7 +255,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
   }
 
-  private normalizeType(options: PropertyOptions | EntityProperty, type: string | any | Constructor<Type>) {
+  private normalizeType(options: PropertyOptions | EntityProperty, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
       if (Utils.isString(options.entity)) {
         type = options.type = options.entity;

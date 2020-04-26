@@ -8,4 +8,6 @@ export * from './Property';
 export * from './Enum';
 export * from './Indexed';
 export * from './Repository';
+export * from './Embeddable';
+export * from './Embedded';
 export * from './hooks';

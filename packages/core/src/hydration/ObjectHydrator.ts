@@ -1,19 +1,21 @@
-import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 
-  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-      this.hydrateManyToOne(value, entity, prop);
+      this.hydrateManyToOne(data[prop.name], entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this.hydrateOneToMany(entity, prop, value, newEntity);
+      this.hydrateOneToMany(entity, prop, data[prop.name], newEntity);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      this.hydrateManyToMany(entity, prop, value, newEntity);
+      this.hydrateManyToMany(entity, prop, data[prop.name], newEntity);
+    } else if (prop.reference === ReferenceType.EMBEDDED) {
+      this.hydrateEmbeddable(entity, prop, data);
     } else { // ReferenceType.SCALAR
-      this.hydrateScalar(entity, prop, value);
+      this.hydrateScalar(entity, prop, data[prop.name]);
     }
   }
 
@@ -31,6 +33,17 @@ export class ObjectHydrator extends Hydrator {
     }
 
     entity[prop.name as keyof T] = value;
+  }
+
+  private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
+    const value: Dictionary = {};
+
+    Object.values<EntityProperty>(wrap(entity).__meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+      value[childProp.embedded![1]] = data[childProp.name];
+    });
+
+    entity[prop.name] = Object.create(prop.embeddable.prototype);
+    Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
   }
 
   private hydrateManyToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
