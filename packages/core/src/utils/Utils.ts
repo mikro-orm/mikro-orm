@@ -13,6 +13,7 @@ import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Primary } from '../typings';
 import { ArrayCollection, Collection, Reference, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
+import { GroupOperator, QueryOperator } from '../enums';
 
 export class Utils {
 
@@ -147,6 +148,12 @@ export class Utils {
     Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
       if (Utils.shouldIgnoreProperty(entity, prop, root)) {
         return;
+      }
+
+      if (prop.reference === ReferenceType.EMBEDDED) {
+        return Object.values<EntityProperty>(meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+          ret[childProp.name as keyof T] = entity[prop.name][childProp.embedded![1]];
+        });
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
@@ -596,6 +603,14 @@ export class Utils {
 
   static flatten<T>(arrays: T[][]): T[] {
     return ([] as T[]).concat.apply([], arrays);
+  }
+
+  static isOperator(key: string, includeGroupOperators = true): boolean {
+    if (!includeGroupOperators) {
+      return !!QueryOperator[key];
+    }
+
+    return !!GroupOperator[key] || !!QueryOperator[key];
   }
 
 }
