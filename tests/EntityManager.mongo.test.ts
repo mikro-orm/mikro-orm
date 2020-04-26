@@ -8,7 +8,6 @@ import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
-import { Author2, Book2, BookTag2 } from './entities-sql';
 
 describe('EntityManagerMongo', () => {
 
