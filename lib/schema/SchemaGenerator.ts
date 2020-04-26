@@ -166,7 +166,7 @@ export class SchemaGenerator {
       return sql;
     }
 
-    let ret = this.helper.getSchemaBeginning();
+    let ret = this.helper.getSchemaBeginning(this.config.get('charset'));
     ret += sql;
     ret += this.helper.getSchemaEnd();
 
@@ -198,7 +198,7 @@ export class SchemaGenerator {
 
       meta.indexes.forEach(index => createIndex(index, false));
       meta.uniques.forEach(index => createIndex(index, true));
-      this.helper.finalizeTable(table);
+      this.helper.finalizeTable(table, this.config.get('charset'));
     });
   }
 

@@ -57,6 +57,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     debug: ['query'],
     highlight: false,
     timezone: 'Z',
+    charset: 'utf8mb4',
     logger: i => i,
     multipleStatements: true,
     type,

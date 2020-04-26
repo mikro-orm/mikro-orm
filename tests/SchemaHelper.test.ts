@@ -9,7 +9,7 @@ describe('SchemaHelper', () => {
 
   test('default schema helpers', async () => {
     const helper = new SchemaHelperTest();
-    expect(helper.getSchemaBeginning()).toBe('');
+    expect(helper.getSchemaBeginning('utf8')).toBe('');
     expect(helper.getSchemaEnd()).toBe('');
     expect(helper.getTypeDefinition({ type: 'test' } as any)).toBe('test');
     expect(helper.isSame({ reference: 'scalar', type: 'number', nullable: false, columnTypes: ['integer'], default: 42 } as any, { type: 'integer', nullable: false, defaultValue: '42' } as any).all).toBe(true);

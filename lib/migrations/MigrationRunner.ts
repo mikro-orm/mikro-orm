@@ -1,5 +1,5 @@
 import { AbstractSqlDriver } from '../drivers';
-import { MigrationsOptions, Utils } from '../utils';
+import { Configuration, MigrationsOptions, Utils } from '../utils';
 import { Migration } from './Migration';
 import { Transaction } from '../connections';
 
@@ -10,7 +10,8 @@ export class MigrationRunner {
   private masterTransaction?: Transaction;
 
   constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) { }
+              protected readonly options: MigrationsOptions,
+              protected readonly config: Configuration) { }
 
   async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
     migration.reset();
@@ -18,7 +19,8 @@ export class MigrationRunner {
     let queries = migration.getQueries();
 
     if (this.options.disableForeignKeys) {
-      queries.unshift(...this.helper.getSchemaBeginning().split('\n'));
+      const charset = this.config.get('charset')!;
+      queries.unshift(...this.helper.getSchemaBeginning(charset).split('\n'));
       queries.push(...this.helper.getSchemaEnd().split('\n'));
     }
 

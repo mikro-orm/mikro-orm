@@ -112,6 +112,7 @@ export interface ConnectionOptions {
   port?: number;
   user?: string;
   password?: string;
+  charset?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig; // provided by `knex`
 }

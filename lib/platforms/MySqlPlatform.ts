@@ -5,4 +5,8 @@ export class MySqlPlatform extends Platform {
 
   protected readonly schemaHelper = new MySqlSchemaHelper();
 
+  getDefaultCharset(): string {
+    return 'utf8mb4';
+  }
+
 }

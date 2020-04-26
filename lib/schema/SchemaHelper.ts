@@ -7,7 +7,7 @@ import { AbstractSqlConnection, Connection } from '../connections';
 
 export abstract class SchemaHelper {
 
-  getSchemaBeginning(): string {
+  getSchemaBeginning(charset: string): string {
     return '';
   }
 
@@ -15,7 +15,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  finalizeTable(table: TableBuilder): void {
+  finalizeTable(table: TableBuilder, charset: string): void {
     //
   }
 

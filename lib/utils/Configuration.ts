@@ -207,6 +207,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.options.entitiesDirsTs.length === 0) {
       this.options.entitiesDirsTs = this.options.entitiesDirs;
     }
+
+    if (!this.options.charset) {
+      this.options.charset = this.platform.getDefaultCharset();
+    }
   }
 
   private validateOptions(): void {
@@ -253,6 +257,7 @@ export interface ConnectionOptions {
   port?: number;
   user?: string;
   password?: string;
+  charset?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
 }

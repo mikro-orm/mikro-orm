@@ -19,7 +19,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     text: ['text'],
   };
 
-  getSchemaBeginning(): string {
+  getSchemaBeginning(charset: string): string {
     return 'pragma foreign_keys = off;\n\n';
   }
 

@@ -34,17 +34,17 @@ export class MySqlSchemaHelper extends SchemaHelper {
     '0': ['0', 'false'],
   };
 
-  getSchemaBeginning(): string {
-    return 'set names utf8;\nset foreign_key_checks = 0;\n\n';
+  getSchemaBeginning(charset: string): string {
+    return `set names ${charset};\nset foreign_key_checks = 0;\n\n`;
   }
 
   getSchemaEnd(): string {
     return 'set foreign_key_checks = 1;\n';
   }
 
-  finalizeTable(table: CreateTableBuilder): void {
+  finalizeTable(table: CreateTableBuilder, charset: string): void {
     table.engine('InnoDB');
-    table.charset('utf8');
+    table.charset(charset);
   }
 
   getTypeDefinition(prop: EntityProperty): string {

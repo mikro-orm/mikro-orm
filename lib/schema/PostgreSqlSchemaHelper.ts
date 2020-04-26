@@ -37,8 +37,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     'null::timestamp without time zone': ['null'],
   };
 
-  getSchemaBeginning(): string {
-    return `set names 'utf8';\nset session_replication_role = 'replica';\n\n`;
+  getSchemaBeginning(charset: string): string {
+    return `set names '${charset}';\nset session_replication_role = 'replica';\n\n`;
   }
 
   getSchemaEnd(): string {

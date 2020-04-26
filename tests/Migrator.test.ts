@@ -116,7 +116,7 @@ describe('Migrator', () => {
     expect(spy1).toBeCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('set names utf8;');
+    expect(mock.mock.calls[1][0]).toMatch('set names utf8mb4;');
     expect(mock.mock.calls[2][0]).toMatch('set foreign_key_checks = 0;');
     expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
     expect(mock.mock.calls[4][0]).toMatch('set foreign_key_checks = 1;');

@@ -90,4 +90,8 @@ export abstract class Platform {
     return 'bigint';
   }
 
+  getDefaultCharset(): string {
+    return 'utf8';
+  }
+
 }
