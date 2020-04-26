@@ -1,11 +1,12 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import { DatabaseDriver } from './DatabaseDriver';
 import { MongoConnection } from '../connections/MongoConnection';
-import { EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Dictionary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import { Configuration, Utils } from '../utils';
 import { MongoPlatform } from '../platforms/MongoPlatform';
 import { FindOneOptions, FindOptions } from './IDatabaseDriver';
 import { QueryResult, Transaction } from '../connections';
+import { ReferenceType } from '../entity';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -166,8 +167,44 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         if (prop.fieldNames) {
           Utils.renameKey(data, k, prop.fieldNames[0]);
         }
+
+        let isObjectId: boolean;
+
+        if (prop.reference === ReferenceType.SCALAR) {
+          isObjectId = prop.type.toLowerCase() === 'objectid';
+        } else {
+          const meta2 = this.metadata.get(prop.type);
+          const pk = meta2.properties[meta2.primaryKeys[0]];
+          isObjectId = pk.type.toLowerCase() === 'objectid';
+        }
+
+        if (isObjectId) {
+          data[k] = this.convertObjectIds(data[k]);
+        }
       }
     });
+
+    return data;
+  }
+
+  private convertObjectIds<T extends ObjectId | Dictionary | any[]>(data: T): T {
+    if (data instanceof ObjectId) {
+      return data;
+    }
+
+    if (Utils.isString(data) && data.match(/^[0-9a-f]{24}$/i)) {
+      return new ObjectId(data) as T;
+    }
+
+    if (Array.isArray(data)) {
+      return data.map((item: any) => this.convertObjectIds(item)) as T;
+    }
+
+    if (Utils.isObject(data)) {
+      Object.keys(data).forEach(k => {
+        data[k] = this.convertObjectIds(data[k]);
+      });
+    }
 
     return data;
   }

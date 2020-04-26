@@ -70,7 +70,6 @@ export class MongoConnection extends Connection {
 
   async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where as Dictionary);
     const options: Dictionary = { session: ctx };
 
     if (fields) {
@@ -156,7 +155,6 @@ export class MongoConnection extends Connection {
 
   private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
-    where = this.convertObjectIds(where as Dictionary);
     const options: Dictionary = { session: ctx };
     const now = Date.now();
     let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
@@ -186,28 +184,6 @@ export class MongoConnection extends Connection {
     }
 
     return this.transformResult(res!) as U;
-  }
-
-  private convertObjectIds<T extends ObjectId | Dictionary | any[]>(payload: T): T {
-    if (payload instanceof ObjectId) {
-      return payload;
-    }
-
-    if (Utils.isString(payload) && payload.match(/^[0-9a-f]{24}$/i)) {
-      return new ObjectId(payload) as T;
-    }
-
-    if (Array.isArray(payload)) {
-      return payload.map((item: any) => this.convertObjectIds(item)) as T;
-    }
-
-    if (Utils.isObject(payload)) {
-      Object.keys(payload).forEach(k => {
-        payload[k] = this.convertObjectIds(payload[k]);
-      });
-    }
-
-    return payload;
   }
 
   private transformResult(res: any): QueryResult {
