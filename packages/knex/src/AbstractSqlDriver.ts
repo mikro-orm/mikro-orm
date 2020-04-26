@@ -4,7 +4,7 @@ import {
   Configuration, Utils, Collection, FindOneOptions, FindOptions, ReferenceType, wrap, DatabaseDriver, QueryResult,
   Transaction, EntityManager, IDatabaseDriver, EntityManagerType, LockMode,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder, QueryBuilderHelper } from './index';
+import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
@@ -160,7 +160,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const targetMeta = this.metadata.get(prop.type);
     const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
-    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => QueryBuilderHelper.isOperator(k, false))) {
+    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
       where = cond;
     } else {
       where = { ...where, ...cond };

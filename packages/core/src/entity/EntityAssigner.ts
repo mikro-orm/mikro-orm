@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import { Collection } from './Collection';
 import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';
@@ -26,17 +26,17 @@ export class EntityAssigner {
         return;
       }
 
-      if (props[prop]?.inherited || root.discriminatorColumn === prop) {
+      if (props[prop]?.inherited || root.discriminatorColumn === prop || props[prop]?.embedded) {
         return;
       }
 
       let value = data[prop as keyof EntityData<T>];
 
-      if (props[prop] && props[prop].customType && !Utils.isEntity(data)) {
+      if (props[prop]?.customType && !Utils.isEntity(data)) {
         value = props[prop].customType.convertToJSValue(value, platform);
       }
 
-      if (props[prop] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop].reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);
       }
 
@@ -44,8 +44,15 @@ export class EntityAssigner {
         return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!);
       }
 
-      if (props[prop] && props[prop].reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
+      if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
         return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
+      }
+
+      if (props[prop]?.reference === ReferenceType.EMBEDDED) {
+        const Embeddable = props[prop].embeddable;
+        entity[props[prop].name] = Object.create(Embeddable.prototype);
+        Utils.merge(entity[prop as keyof T], value);
+        return;
       }
 
       if (options.mergeObjects && Utils.isObject(value)) {

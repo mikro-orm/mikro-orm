@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
   DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType,
-  FindOneOptions, FindOptions, QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary,
+  FindOneOptions, FindOptions, QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, ValidationError,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -160,10 +160,39 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     })];
   }
 
+  private inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T): void {
+    Object.keys(data).forEach(k => {
+      if (Utils.isOperator(k)) {
+        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload));
+      }
+    });
+
+    Object.values<EntityProperty>(meta.properties).forEach(prop => {
+      if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
+        const props = prop.embeddedProps;
+
+        Object.keys(data[prop.name]).forEach(kk => {
+          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
+
+          if (operator) {
+            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name, prop.name, data);
+          }
+
+          data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+        });
+        delete data[prop.name];
+      }
+    });
+  }
+
   private renameFields<T>(entityName: string, data: T): T {
     data = Object.assign({}, data); // copy first
     Utils.renameKey(data, 'id', '_id');
     const meta = this.metadata.get(entityName, false, false);
+
+    if (meta) {
+      this.inlineEmbeddables(meta, data);
+    }
 
     Object.keys(data).forEach(k => {
       if (meta?.properties[k]) {

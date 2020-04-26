@@ -9,7 +9,7 @@ export class MetadataValidator {
     const meta = metadata.get(name);
 
     // entities have PK
-    if (!meta.primaryKeys || meta.primaryKeys.length === 0) {
+    if (!meta.embeddable && (!meta.primaryKeys || meta.primaryKeys.length === 0)) {
       throw ValidationError.fromMissingPrimaryKey(meta);
     }
 
