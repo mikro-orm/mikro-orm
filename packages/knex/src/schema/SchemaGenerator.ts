@@ -42,7 +42,7 @@ export class SchemaGenerator {
   }
 
   async getCreateSchemaSQL(wrap = true): Promise<string> {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue);
+    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable);
     let ret = '';
 
     for (const meta of metadata) {

@@ -23,7 +23,7 @@ export class CriteriaNode {
       Utils.splitPrimaryKeys(key).forEach(k => {
         this.prop = meta.properties[k];
 
-        if (validate && !this.prop && !k.includes('.') && !QueryBuilderHelper.isOperator(k) && !QueryBuilderHelper.isCustomExpression(k)) {
+        if (validate && !this.prop && !k.includes('.') && !Utils.isOperator(k) && !QueryBuilderHelper.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
@@ -58,7 +58,7 @@ export class CriteriaNode {
     const composite = this.prop && this.prop.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
-    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => QueryBuilderHelper.isOperator(k, false));
+    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
     if (composite) {
       return true;

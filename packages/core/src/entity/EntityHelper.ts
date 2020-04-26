@@ -36,6 +36,10 @@ export class EntityHelper {
   }
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
+    if (meta.embeddable) {
+      return;
+    }
+
     const pk = meta.properties[meta.primaryKeys[0]];
 
     if (pk.name === '_id') {

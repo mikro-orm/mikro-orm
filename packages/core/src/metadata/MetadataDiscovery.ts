@@ -32,6 +32,7 @@ export class MetadataDiscovery {
 
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
     filtered.forEach(meta => this.initSingleTableInheritance(meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => this.metadata.set(meta.className, new EntitySchema(meta, true).init().meta));
@@ -473,7 +474,7 @@ export class MetadataDiscovery {
     meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
     const pks = Object.values(meta.properties).filter(p => p.primary).map(p => p.name);
 
-    if (pks.length > 0 && !meta.primaryKeys) {
+    if (pks.length > 0 && meta.primaryKeys.length === 0) {
       meta.primaryKeys = pks;
     }
 
@@ -487,6 +488,29 @@ export class MetadataDiscovery {
 
     if (meta.toJsonParams.length === 0 && base.toJsonParams.length > 0) {
       meta.toJsonParams = [...base.toJsonParams];
+    }
+  }
+
+  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty): void {
+    if (embeddedProp.reference !== ReferenceType.EMBEDDED) {
+      return;
+    }
+
+    const embeddable = this.discovered.find(m => m.name === embeddedProp.type);
+    embeddedProp.embeddable = embeddable!.class;
+    embeddedProp.embeddedProps = {};
+
+    for (const prop of Object.values(embeddable!.properties)) {
+      const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
+      const name = prefix + prop.name;
+      meta.properties[name] = Utils.copy(prop);
+      meta.properties[name].name = name;
+      meta.properties[name].embedded = [embeddedProp.name, prop.name];
+      embeddedProp.embeddedProps[prop.name] = meta.properties[name];
+
+      if (embeddedProp.nullable) {
+        meta.properties[name].nullable = true;
+      }
     }
   }
 
