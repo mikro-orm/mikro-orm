@@ -171,6 +171,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError('You cannot call em.flush() from inside lifecycle hook handlers');
   }
 
+  static cannotUseOperatorsInsideEmbeddables(className: string, propName: string, payload: Dictionary): ValidationError {
+    return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.className}.${prop.name} ${message}`);
   }
