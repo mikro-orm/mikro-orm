@@ -19,7 +19,7 @@ drop table if exists "publisher2_to_test2" cascade;
 drop table if exists "label2" cascade;
 drop table if exists "new_table" cascade;
 
-create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "optional" bool null, "identities" json null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "optional" bool null, "identities" jsonb null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_born_index" on "author2" ("born");
 create index "born_time_idx" on "author2" ("born_time");
@@ -33,7 +33,7 @@ create table "address2" ("author_id" int4 not null check ("author_id" > 0), "val
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 alter table "address2" add constraint "address2_author_id_unique" unique ("author_id");
 
-create table "book2" ("uuid_pk" varchar(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" float null, "double" numeric null, "meta" json null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
+create table "book2" ("uuid_pk" varchar(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" float null, "double" numeric null, "meta" jsonb null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null);
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
