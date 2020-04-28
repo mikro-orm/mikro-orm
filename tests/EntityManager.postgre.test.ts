@@ -21,6 +21,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
+      type: 'postgresql',
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -83,6 +84,7 @@ describe('EntityManagerPostgre', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new PostgreSqlConnection(new Configuration({
+      type: 'postgresql',
       clientUrl: 'postgre://example.host.com',
       port: 1234,
       user: 'usr',
