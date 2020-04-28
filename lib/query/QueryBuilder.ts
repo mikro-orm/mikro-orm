@@ -382,7 +382,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         break;
       case QueryType.COUNT:
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m](this.helper.mapper(this._fields![0], this.type, undefined, 'count'));
+        qb[m]({ count: this._fields!.map(f => this.helper.mapper(f, this.type)) });
         this.helper.processJoins(qb, this._joins);
         break;
       case QueryType.INSERT:
