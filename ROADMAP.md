@@ -16,6 +16,7 @@ discuss specifics.
 - Slow query log
 - Leverage async iterators for collections (node 10+)
 - Multi tenant support ([schema per tenant](https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation))
+- Use `bigint` type natively in `BigIntType` (node 12+)
 
 ## Planned changes for v4
 
@@ -45,9 +46,7 @@ discuss specifics.
 - [x] Remove `autoFlush` option
 - [x] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
-- [ ] Rename `wrappedReference` to `reference` (keep `wrappedReference` supported)
-- [ ] Use `bigint` type natively in `BigIntType`
-- [ ] Use `jsonb` as default for object columns in postgres
+- [x] Use `jsonb` as default for object columns in postgres
 
 ## Docs
 
