@@ -44,7 +44,7 @@ discuss specifics.
 - [x] Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
 - [x] Remove `autoFlush` option
 - [ ] Drop default value for platform `type` (currently defaults to `mongodb`)
-- [ ] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
+- [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [ ] Rename `wrappedReference` to `reference` (keep `wrappedReference` supported)
 - [ ] Use `bigint` type natively in `BigIntType`
 - [ ] Use `jsonb` as default for object columns in postgres
