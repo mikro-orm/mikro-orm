@@ -87,9 +87,6 @@ export interface IWrappedEntity<T, PK extends keyof T> {
 
 export type AnyEntity<T = any, PK extends keyof T = keyof T> = { [K in PK]?: T[K] } & { [PrimaryKeyType]?: T[PK] };
 export type WrappedEntity<T, PK extends keyof T> = IWrappedEntity<T, PK> & AnyEntity<T, PK>;
-export type IdEntity<T extends { id: number | string | bigint }> = AnyEntity<T, 'id'>;
-export type UuidEntity<T extends { uuid: string }> = AnyEntity<T, 'uuid'>;
-export type MongoEntity<T extends { _id: IPrimaryKey; id: string }> = AnyEntity<T, 'id' | '_id'>;
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T>;
