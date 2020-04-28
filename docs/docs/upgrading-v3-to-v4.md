@@ -29,3 +29,7 @@ should prefer to call `em.flush()` explicitly.
 
 Also `persistLater()` and `removeLater()` methods are deprecated. Use `persist()` or
 `remove` respectively.
+
+## `IdEntity`, `UuidEntity` and `MongoEntity` interfaces are removed
+
+They were actually never needed. 
