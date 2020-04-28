@@ -14,8 +14,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     text: ['text'],
     Date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
     date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
-    object: ['json'],
-    json: ['json'],
+    object: ['jsonb', 'json'],
+    json: ['jsonb', 'json'],
     uuid: ['uuid'],
     enum: ['text'], // enums are implemented as text columns with check constraints
   };
