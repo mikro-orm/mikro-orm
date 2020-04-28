@@ -3,7 +3,7 @@ import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateCacheCommand } from '../../packages/cli/src/commands/GenerateCacheCommand';
 
 const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
-getConfigurationMock.mockResolvedValue(new Configuration({ getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
+getConfigurationMock.mockResolvedValue(new Configuration({ type: 'mysql', getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
 const discoverMock = jest.spyOn(MetadataDiscovery.prototype, 'discover');
 discoverMock.mockResolvedValue({} as MetadataStorage);
 (global as any).console.log = jest.fn();

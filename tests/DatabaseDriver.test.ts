@@ -36,7 +36,7 @@ class Driver extends DatabaseDriver<Connection> {
 describe('DatabaseDriver', () => {
 
   test('should load entities', async () => {
-    const config = new Configuration({} as any, false);
+    const config = new Configuration({ type: 'mongo' } as any, false);
     const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     await expect(driver.aggregate('', [])).rejects.toThrowError('Aggregations are not supported by Driver driver');
