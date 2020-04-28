@@ -1,7 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-jest.mock('../../tests/mikro-orm.config.js', () => ({ dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
-jest.mock('../../tests/mikro-orm.config.ts', () => ({ dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
+jest.mock('../../tests/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
+jest.mock('../../tests/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock('../../tests/package.json', () => pkg, { virtual: true });
 const cwd = process.cwd;
@@ -147,7 +147,7 @@ describe('CLIHelper', () => {
   test('dump', async () => {
     log.mock.calls.length = 0;
     CLIHelper.dump('test');
-    CLIHelper.dump('select 1 + 1', new Configuration({} as any, false), 'sql');
+    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'mongo' } as any, false), 'sql');
     expect(log.mock.calls.length).toBe(2);
     expect(log.mock.calls[0][0]).toBe('test');
 

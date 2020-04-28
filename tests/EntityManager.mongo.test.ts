@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
 import chalk from 'chalk';
 
-import { Collection, Configuration, EntityManager, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger } from '@mikro-orm/core';
-import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger } from '@mikro-orm/core';
+import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -506,7 +506,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should use user and password as connection options', async () => {
-    const config = new Configuration({ user: 'usr', password: 'pw' } as any, false);
+    const config = new Configuration({ type: 'mongo', user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);
     await expect(connection.getConnectionOptions()).toEqual({
       useNewUrlParser: true,
@@ -517,6 +517,7 @@ describe('EntityManagerMongo', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new MongoConnection(new Configuration({
+      type: 'mongo',
       clientUrl: 'mongodb://example.host.com:34500',
       dbName: 'test-db-name',
       user: 'usr',
