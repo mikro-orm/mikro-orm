@@ -33,3 +33,10 @@ Also `persistLater()` and `removeLater()` methods are deprecated. Use `persist()
 ## `IdEntity`, `UuidEntity` and `MongoEntity` interfaces are removed
 
 They were actually never needed. 
+
+## MongoDB driver is no longer the default
+
+You need to specify the platform type either via `type` option or provide the driver
+implementation via `driver` option. 
+
+Available platforms types: `[ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite' ]`
