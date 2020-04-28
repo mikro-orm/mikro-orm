@@ -24,7 +24,7 @@ describe('DebugCommand', () => {
     const globbyMock = jest.spyOn(Utils, 'pathExists');
     globbyMock.mockResolvedValue(true);
     getSettings.mockResolvedValue({});
-    getConfiguration.mockResolvedValue(new Configuration({} as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo' } as any, false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(1);
@@ -37,7 +37,7 @@ describe('DebugCommand', () => {
 
     getSettings.mockResolvedValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration({ entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(2);
@@ -52,7 +52,7 @@ describe('DebugCommand', () => {
       [`   - ${Utils.normalizePath(process.cwd() + '/entities-2') } (not found)`],
     ]);
 
-    getConfiguration.mockResolvedValue(new Configuration({ entities: [FooBar, FooBaz] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(3);

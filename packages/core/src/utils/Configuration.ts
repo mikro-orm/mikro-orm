@@ -1,4 +1,5 @@
 import { fromJson, Theme } from 'cli-highlight';
+import { inspect } from 'util';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
@@ -14,7 +15,6 @@ import { MetadataProvider, ReflectMetadataProvider } from '../metadata';
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   static readonly DEFAULTS = {
-    type: 'mongo',
     pool: {},
     entities: [],
     entitiesDirs: [],
@@ -215,6 +215,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private validateOptions(): void {
+    if (!this.options.type && !this.options.driver) {
+      throw new Error('No platform type specified, please fill in `type` or provide custom driver class in `driver` option. Available platforms types: ' + inspect(Object.keys(Configuration.PLATFORMS)));
+    }
+
     if (!this.options.dbName && !this.options.clientUrl) {
       throw new Error('No database specified, please fill in `dbName` or `clientUrl` option');
     }
@@ -232,7 +236,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private initDriver(): D {
     if (!this.options.driver) {
-      const driver = Configuration.PLATFORMS[this.options.type];
+      const driver = Configuration.PLATFORMS[this.options.type!];
       this.options.driver = require(driver[1])[driver[0]];
     }
 
@@ -310,7 +314,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableDynamicFileAccess?: boolean;
     tsConfigPath?: string;
   };
-  type: keyof typeof Configuration.PLATFORMS;
+  type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new (): NamingStrategy };
