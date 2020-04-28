@@ -1,7 +1,7 @@
 import { Configuration, CLIHelper } from '../../packages/mikro-orm/src';
 
 const close = jest.fn();
-const config = new Configuration({} as any, false);
+const config = new Configuration({ type: 'mongo' } as any, false);
 const connection = { loadFile: jest.fn() };
 const em = { getConnection: () => connection };
 const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
