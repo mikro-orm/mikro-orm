@@ -23,6 +23,7 @@ describe('EntityManagerMySql', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
+      type: 'mysql',
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -88,6 +89,7 @@ describe('EntityManagerMySql', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new MySqlConnection(new Configuration({
+      type: 'mysql',
       clientUrl: 'mysql://example.host.com',
       port: 1234,
       user: 'usr',
