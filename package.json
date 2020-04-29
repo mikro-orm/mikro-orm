@@ -100,7 +100,7 @@
     "reflect-metadata": "^0.1.13",
     "ts-morph": "^4.3.3",
     "umzug": "^2.2.0",
-    "uuid": "^7.0.2",
+    "uuid": "^8.0.0",
     "yargonaut": "^1.1.4",
     "yargs": "^15.1.0"
   },
