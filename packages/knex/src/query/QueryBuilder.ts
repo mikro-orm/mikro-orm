@@ -14,7 +14,7 @@ import { SqlEntityManager } from '../SqlEntityManager';
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   type!: QueryType;
-  _fields?: string[];
+  _fields?: (string | KnexQueryBuilder)[];
   _populate: string[] = [];
   _populateMap: Dictionary<string> = {};
 
@@ -32,9 +32,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _limit?: number;
   private _offset?: number;
   private lockMode?: LockMode;
+  private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.metadata, this.knex, this.platform);
+  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
 
   constructor(private readonly entityName: string,
               private readonly metadata: MetadataStorage,
@@ -44,7 +45,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) { }
 
-  select(fields: string | string[], distinct = false): this {
+  select(fields: string | KnexQueryBuilder | (string | KnexQueryBuilder)[], distinct = false): this {
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
@@ -93,6 +94,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   leftJoin(field: string, alias: string, cond: QBFilterQuery = {}): this {
     return this.join(field, alias, cond, 'leftJoin');
+  }
+
+  withSubQuery(subQuery: KnexQueryBuilder, alias: string): this {
+    this.subQueries[alias] = subQuery.toString();
+    return this;
   }
 
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
@@ -268,12 +274,29 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return res[0] || null;
   }
 
+  /**
+   * Returns knex instance with sub-query aliased with given alias.
+   * You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
+   */
+  as(alias: string): KnexQueryBuilder {
+    const qb = this.getKnexQuery();
+
+    if (alias.includes('.')) {
+      const [a, f] = alias.split('.');
+      const meta = this.metadata.get(a, false, false);
+      /* istanbul ignore next */
+      alias = meta?.properties[f]?.fieldNames[0] || alias;
+    }
+
+    return qb.as(alias);
+  }
+
   clone(): QueryBuilder<T> {
     const qb = new QueryBuilder<T>(this.entityName, this.metadata, this.driver, this.context, this.alias, this.connectionType, this.em);
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema'];
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', 'subQueries'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
     qb.finalized = false;
 
@@ -319,10 +342,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return ret;
   }
 
-  private prepareFields<T extends string | Raw = string | Raw>(fields: string[], type: 'where' | 'groupBy' = 'where'): T[] {
-    const ret: string[] = [];
+  private prepareFields<T extends string | Raw = string | Raw>(fields: (string | KnexQueryBuilder)[], type: 'where' | 'groupBy' = 'where'): T[] {
+    const ret: (string | KnexQueryBuilder)[] = [];
 
     fields.forEach(f => {
+      if (!Utils.isString(f)) {
+        return ret.push(f);
+      }
+
       if (this._joins[f] && type === 'where') {
         return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
       }
@@ -379,7 +406,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         break;
       case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m]({ count: this._fields!.map(f => this.helper.mapper(f, this.type)) });
+        qb[m]({ count: this._fields!.map(f => this.helper.mapper(f as string, this.type)) });
         this.helper.processJoins(qb, this._joins);
         break;
       }
