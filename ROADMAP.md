@@ -24,12 +24,13 @@ discuss specifics.
 - [x] Allow adding items to not initialized collections
 - [x] Use absolute path to entity file in static MetadataStorage keys (fix for 'Multiple property decorators' validation issues)
 - [x] Embedded entities (allow in-lining child entity into parent one with prefixed keys)
+- [x] Use `jsonb` as default for object columns in postgres
+- [x] Support subqueries in QB
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
 - [ ] Support multiple M:N with same properties without manually specifying `pivotTable`
 - [ ] Cache metadata only with ts-morph provider
 - [ ] Diffing entity level indexes in schema generator
-- [ ] Support subqueries in QB
 - [ ] Support computed properties
 - [ ] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
 - [ ] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
@@ -46,7 +47,6 @@ discuss specifics.
 - [x] Remove `autoFlush` option
 - [x] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
-- [x] Use `jsonb` as default for object columns in postgres
 
 ## Docs
 
