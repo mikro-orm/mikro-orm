@@ -228,6 +228,58 @@ console.log(qb.getQuery());
 // select `e0`.* from `test` as `e0` where (`e0`.`id` not in (?, ?) and `e0`.`id` > ?)
 ```
 
+## Using sub-queries
+
+You can use sub-queries in selects or in where conditions. To select subquery, use
+`qb.as(alias)` method: 
+
+> The dynamic property (`booksTotal`) needs to be defined at the entity level (as `persist: false`).
+
+```typescript
+const knex = orm.em.getKnex();
+const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('Author2.booksTotal');
+const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+qb2.select(['*', qb1]).orderBy({ booksTotal: 'desc' });
+
+console.log(qb2.getQuery());
+// select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc
+```
+
+```typescript
+const knex = orm.em.getKnex();
+const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('books_total');
+const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+qb4.select(['*', qb3]).orderBy({ booksTotal: 'desc' });
+
+console.log(qb4.getQuery());
+// select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc
+```
+
+When you want to filter by sub-query, you will need to register it first via `qb.withSubquery()`:
+
+> The dynamic property (`booksTotal`) needs to be defined at the entity level (as `persist: false`).
+> You always need to use prefix in the `qb.withSchema()` (so `a.booksTotal`). 
+
+```typescript
+const knex = orm.em.getKnex();
+const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
+
+console.log(qb2.getQuery());
+// select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) in (?, ?, ?)
+```
+
+```typescript
+const knex = orm.em.getKnex();
+const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+qb4.select('*').withSubQuery(qb3, 'a.booksTotal').where({ 'a.booksTotal': 1 });
+
+console.log(qb4.getQuery());
+// select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?
+```
+
 ## Locking support
 
 ```typescript
@@ -259,6 +311,7 @@ qb.having(cond: Record<string, any>): QueryBuilder;
 qb.limit(limit: number, offset?: number): QueryBuilder;
 qb.offset(offset: number): QueryBuilder;
 qb.withSchema(schema?: string): QueryBuilder;
+qb.withSubQuery(subQuery: KnexQueryBuilder, alias: string): QueryBuilder;
 qb.execute<T>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): T;
 qb.getResult<T>(): T[];
 qb.getSingleResult<T>(): T;
