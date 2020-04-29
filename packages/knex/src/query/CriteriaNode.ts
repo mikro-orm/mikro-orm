@@ -38,7 +38,7 @@ export class CriteriaNode {
       return ArrayCriteriaNode.create(metadata, entityName, payload, parent, key);
     }
 
-    if (Utils.isObject(payload) && !scalar) {
+    if (Utils.isPlainObject(payload) && !scalar) {
       return ObjectCriteriaNode.create(metadata, entityName, payload, parent, key);
     }
 
