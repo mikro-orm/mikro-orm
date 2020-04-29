@@ -12,6 +12,7 @@ export class QueryBuilderHelper {
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly aliasMap: Dictionary<string>,
+              private readonly subQueries: Dictionary<string>,
               private readonly metadata: MetadataStorage,
               private readonly knex: Knex,
               private readonly platform: Platform) { }
@@ -240,7 +241,7 @@ export class QueryBuilderHelper {
       return void qb[m](this.mapper(key, type), 'like', this.getRegExpParam(cond[key]));
     }
 
-    if (Utils.isObject(cond[key]) && !(cond[key] instanceof Date)) {
+    if (Utils.isPlainObject(cond[key]) || cond[key] instanceof RegExp) {
       return this.processObjectSubCondition(cond, key, qb, method, m, type);
     }
 
@@ -249,6 +250,10 @@ export class QueryBuilderHelper {
     }
 
     const op = cond[key] === null ? 'is' : '=';
+
+    if (this.subQueries[key]) {
+      return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), op, cond[key]);
+    }
 
     qb[m](this.mapper(key, type, cond[key]), op, cond[key]);
   }
@@ -300,6 +305,10 @@ export class QueryBuilderHelper {
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
+    if (this.subQueries[key]) {
+      return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
+    }
+
     qb[m](this.mapper(key, type), replacement, value[op]);
   }
 
@@ -335,14 +344,14 @@ export class QueryBuilderHelper {
     });
   }
 
-  private appendJoinSubClause(clause: JoinClause, cond: any, key: string, operator?: '$and' | '$or'): void {
+  private appendJoinSubClause(clause: JoinClause, cond: Dictionary, key: string, operator?: '$and' | '$or'): void {
     const m = operator === '$or' ? 'orOn' : 'andOn';
 
     if (cond[key] instanceof RegExp) {
       return void clause[m](this.mapper(key), 'like', this.knex.raw('?', this.getRegExpParam(cond[key])));
     }
 
-    if (Utils.isObject(cond[key]) && !(cond[key] instanceof Date)) {
+    if (Utils.isPlainObject(cond[key])) {
       return this.processObjectSubClause(cond, key, clause, m);
     }
 
