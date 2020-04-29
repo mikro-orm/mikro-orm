@@ -78,6 +78,9 @@ export class Author2 extends BaseEntity2 {
   @Property({ persist: false })
   code!: string;
 
+  @Property({ persist: false })
+  booksTotal!: number;
+
   constructor(name: string, email: string) {
     super();
     this.name = name;
