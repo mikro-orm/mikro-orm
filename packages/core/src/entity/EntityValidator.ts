@@ -2,7 +2,7 @@ import { SCALAR_TYPES } from './EntityFactory';
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
-import { wrap } from './EntityHelper';
+import { wrap } from './wrap';
 
 export class EntityValidator {
 

@@ -1,9 +1,9 @@
-import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty, NonFunctionPropertyNames } from '../typings';
 import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import { Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
+import { BaseEntity, Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
 import { Type } from '../types';
 import { Utils } from '../utils';
 
@@ -18,7 +18,6 @@ type Property<T> =
   | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions)
   | ({ enum: true } & EnumOptions)
   | (TypeDef<T> & PropertyOptions);
-type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
 type PropertyKey<T, U> = NonFunctionPropertyNames<Omit<T, keyof U>>;
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
@@ -163,7 +162,10 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.className = proto.name;
     this._meta.constructorParams = Utils.getParamNames(proto, 'constructor');
     this._meta.toJsonParams = Utils.getParamNames(proto, 'toJSON').filter(p => p !== '...args');
-    this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
+
+    if (Object.getPrototypeOf(proto) !== BaseEntity) {
+      this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
+    }
   }
 
   get meta() {

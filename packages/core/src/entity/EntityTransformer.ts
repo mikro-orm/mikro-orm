@@ -3,12 +3,12 @@ import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { Reference } from './Reference';
-import { wrap } from './EntityHelper';
+import { wrap } from './wrap';
 
 export class EntityTransformer {
 
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
-    const wrapped = wrap(entity);
+    const wrapped = wrap(entity, true);
     const platform = wrapped.__internal.platform;
     const meta = wrapped.__meta;
     const ret = {} as EntityData<T>;
@@ -18,11 +18,11 @@ export class EntityTransformer {
       .map(pk => [pk, Utils.getPrimaryKeyValue<T>(entity, [pk])] as [string, string])
       .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = platform.normalizePrimaryKey(value));
 
-    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(wrap(entity).__uuid)) {
+    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(wrapped.__uuid)) {
       return ret;
     }
 
-    visited.push(wrap(entity).__uuid);
+    visited.push(wrapped.__uuid);
 
     // normal properties
     Object.keys(entity)
@@ -50,8 +50,9 @@ export class EntityTransformer {
   }
 
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
-    const property = wrap(entity).__meta.properties[prop];
-    const platform = wrap(entity).__internal.platform;
+    const wrapped = wrap(entity, true);
+    const property = wrapped.__meta.properties[prop];
+    const platform = wrapped.__internal.platform;
 
     /* istanbul ignore next */
     if (property?.customType) {
@@ -70,14 +71,15 @@ export class EntityTransformer {
   }
 
   private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
-    const child = wrap(entity[prop] as unknown as T | Reference<T>);
+    const child = entity[prop] as unknown as T | Reference<T>;
+    const wrapped = wrap(child, true);
 
-    if (child.isInitialized() && child.__populated && child !== entity && !child.__lazyInitialized) {
-      const args = [...child.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];
-      return child.toJSON(...args) as T[keyof T];
+    if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
+      const args = [...wrapped.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];
+      return wrap(child).toJSON(...args) as T[keyof T];
     }
 
-    return child.__internal.platform.normalizePrimaryKey(child.__primaryKey as IPrimaryKey) as unknown as T[keyof T];
+    return wrapped.__internal.platform.normalizePrimaryKey(wrapped.__primaryKey as unknown as IPrimaryKey) as unknown as T[keyof T];
   }
 
   private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {

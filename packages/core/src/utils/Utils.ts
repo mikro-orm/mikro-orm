@@ -182,7 +182,7 @@ export class Utils {
     }
 
     const collection = entity[prop.name] as unknown instanceof ArrayCollection;
-    const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name]).__primaryKeys.every(pk => pk);
+    const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name], true).__primaryKeys.every(pk => pk);
     const noPkProp = prop.primary && !Utils.isDefined(entity[prop.name], true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
@@ -278,7 +278,7 @@ export class Utils {
     }
 
     if (Utils.isEntity(data) && !meta) {
-      meta = wrap(data).__meta;
+      meta = wrap(data, true).__meta;
     }
 
     if (Utils.isObject(data) && meta) {
@@ -295,7 +295,7 @@ export class Utils {
   static getCompositeKeyHash<T>(entity: T, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk], true)) {
-        return wrap(entity[pk]).__serializedPrimaryKey;
+        return wrap(entity[pk], true).__serializedPrimaryKey;
       }
 
       return entity[pk];
@@ -318,7 +318,7 @@ export class Utils {
     }
 
     if (Utils.isEntity(entity[primaryKeys[0]])) {
-      return wrap(entity[primaryKeys[0]]).__primaryKey;
+      return wrap(entity[primaryKeys[0]], true).__primaryKey;
     }
 
     return entity[primaryKeys[0]];
@@ -327,7 +327,7 @@ export class Utils {
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]])) {
-        return wrap(entity[primaryKeys[0]]).__primaryKey;
+        return wrap(entity[primaryKeys[0]], true).__primaryKey;
       }
 
       return entity[primaryKeys[0]];
@@ -335,7 +335,7 @@ export class Utils {
 
     return primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk])) {
-        return wrap(entity[pk]).__primaryKey;
+        return wrap(entity[pk], true).__primaryKey;
       }
 
       return entity[pk];

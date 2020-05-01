@@ -20,7 +20,7 @@ export class ChangeSetComputer {
     const meta = this.metadata.get(entity.constructor.name);
 
     changeSet.name = meta.name;
-    changeSet.type = this.originalEntityData[wrap(entity).__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    changeSet.type = this.originalEntityData[wrap(entity, true).__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
@@ -38,7 +38,7 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    const wrapped = wrap(entity);
+    const wrapped = wrap(entity, true);
 
     if (this.originalEntityData[wrapped.__uuid]) {
       return Utils.diffEntities<T>(this.originalEntityData[wrapped.__uuid] as T, entity, this.metadata, this.platform);
@@ -73,14 +73,15 @@ export class ChangeSetComputer {
     const entity = changeSet.entity[prop.name] as unknown as T;
 
     if (pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
-      changeSet.payload[prop.name] = this.identifierMap[wrap(entity).__uuid];
+      changeSet.payload[prop.name] = this.identifierMap[wrap(entity, true).__uuid];
     }
   }
 
   private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal)
-    const data = this.originalEntityData[changeSet.entity.__uuid] as EntityData<T>;
-    const em = changeSet.entity.__em;
+    // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
+    const wrapped = wrap(changeSet.entity, true);
+    const data = this.originalEntityData[wrapped.__uuid] as EntityData<T>;
+    const em = wrapped.__em;
 
     if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {
       const orphan = em.getReference(prop.type, data[prop.name] as Primary<T>);

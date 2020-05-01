@@ -6,7 +6,7 @@ import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typing
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';
-import { wrap } from './EntityHelper';
+import { wrap } from './wrap';
 
 export class EntityAssigner {
 
@@ -14,11 +14,12 @@ export class EntityAssigner {
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
-    const em = options.em || wrap(entity).__em;
-    const meta = wrap(entity).__internal.metadata.get(entity.constructor.name);
-    const root = Utils.getRootEntity(wrap(entity).__internal.metadata, meta);
-    const validator = wrap(entity).__internal.validator;
-    const platform = wrap(entity).__internal.platform;
+    const wrapped = wrap(entity, true);
+    const em = options.em || wrapped.__em;
+    const meta = wrapped.__internal.metadata.get(entity.constructor.name);
+    const root = Utils.getRootEntity(wrapped.__internal.metadata, meta);
+    const validator = wrapped.__internal.validator;
+    const platform = wrapped.__internal.platform;
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
@@ -75,7 +76,7 @@ export class EntityAssigner {
       return;
     }
 
-    const meta2 = entity[prop.name].__meta as EntityMetadata;
+    const meta2 = wrap(entity[prop.name], true).__meta as EntityMetadata;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
     if (prop2 && !entity[prop.name][prop2.name]) {
