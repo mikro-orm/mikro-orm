@@ -1094,6 +1094,33 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123, 'book']);
   });
 
+  test('delete query with auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.delete({ books: { author: 123 } });
+    expect(qb.getQuery()).toEqual('delete from `publisher2` where `id` in (select `e0`.`id` from (' +
+      'select distinct `e0`.`id` from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`author_id` = ?' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('delete query with composite keys and auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(FooParam2);
+    qb.delete({ bar: { baz: 123 } });
+    expect(qb.getQuery()).toEqual('delete from `foo_param2` where (`bar_id`, `baz_id`) in (select `e0`.`bar_id`, `e0`.`baz_id` from (' +
+      'select distinct `e0`.`bar_id`, `e0`.`baz_id` from `foo_param2` as `e0` left join `foo_bar2` as `e1` on `e0`.`bar_id` = `e1`.`id` where `e1`.`baz_id` = ?' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual([123]);
+  });
+
+  test('delete query with or condition and auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.delete({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
+    expect(qb.getQuery()).toEqual('delete from `publisher2` where `id` in (select `e0`.`id` from (' +
+      'select distinct `e0`.`id` from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where (`e1`.`author_id` = ? or `e1`.`title` = ?)' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual([123, 'book']);
+  });
+
   test('update query with entity in data', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.withSchema('test123');
