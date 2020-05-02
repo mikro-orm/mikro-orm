@@ -80,3 +80,15 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 ```sh
 $ ts-node create-schema
 ```
+
+## Limitations of SQLite
+
+There are limitations of SQLite database because of which it behaves differently 
+than other SQL drivers. Namely, it is not possible to:
+
+- create foreign key constraints when altering columns
+- create empty tables without columns
+- alter column requires nullability
+
+Because of this, you can end up with different schema with SQLite, so it is not
+suggested to use SQLite for integration tests of your application.
