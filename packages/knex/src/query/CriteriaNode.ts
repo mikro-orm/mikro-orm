@@ -53,6 +53,10 @@ export class CriteriaNode {
     return false;
   }
 
+  willAutoJoin(qb: QueryBuilder, alias?: string) {
+    return false;
+  }
+
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.reference : null;
     const composite = this.prop && this.prop.joinColumns ? this.prop.joinColumns.length > 1 : false;
