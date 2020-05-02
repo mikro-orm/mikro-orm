@@ -9,4 +9,5 @@ export enum QueryType {
 
 export enum QueryFlag {
   DISTINCT = 'DISTINCT',
+  UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
 }
