@@ -113,13 +113,20 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     const op = operator || params as keyof typeof GroupOperator;
     const topLevel = !op || Object.keys(this._cond).length === 0;
+    const criteriaNode = CriteriaNode.create(this.metadata, this.entityName, cond);
+
+    if (this.type === QueryType.UPDATE && criteriaNode.willAutoJoin(this)) {
+      // use sub-query to support joining
+      this.select(this.metadata.get(this.entityName).primaryKeys, true);
+      this.setFlag(QueryFlag.UPDATE_SUB_QUERY);
+    }
 
     if (topLevel) {
-      this._cond = CriteriaNode.create(this.metadata, this.entityName, cond).process(this);
+      this._cond = criteriaNode.process(this);
     } else if (Array.isArray(this._cond[op])) {
-      this._cond[op].push(CriteriaNode.create(this.metadata, this.entityName, cond).process(this));
+      this._cond[op].push(criteriaNode.process(this));
     } else {
-      const cond1 = [this._cond, CriteriaNode.create(this.metadata, this.entityName, cond).process(this)];
+      const cond1 = [this._cond, criteriaNode.process(this)];
       this._cond = { [op]: cond1 };
     }
 
@@ -433,6 +440,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return;
     }
 
+    const meta = this.metadata.get(this.entityName, false, false);
     this._populate.forEach(field => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
@@ -444,7 +452,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       if (this.metadata.has(field)) { // pivot table entity
         this.autoJoinPivotTable(field);
       } else if (this.helper.isOneToOneInverse(field)) {
-        const prop = this.metadata.get(this.entityName).properties[field];
+        const prop = meta.properties[field];
         this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
         this._populateMap[field] = this._joins[field].alias;
       }
@@ -452,6 +460,19 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
+
+    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY)) {
+      const subQuery = this.clone();
+      subQuery.finalized = true;
+
+      // wrap one more time to get around MySQL limitations
+      // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
+      const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
+
+      this.update(this._data).where({
+        [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
+      });
+    }
   }
 
   private autoJoinPivotTable(field: string): void {
