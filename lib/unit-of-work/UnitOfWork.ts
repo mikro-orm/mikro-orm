@@ -366,7 +366,7 @@ export class UnitOfWork {
     const qb = this.em.createQueryBuilder(entity.constructor.name);
     const meta = wrap(entity).__meta;
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
-    await qb.select('1').where(cond).setLockMode(mode).execute();
+    await qb.select('1').where(cond!).setLockMode(mode).execute();
   }
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
