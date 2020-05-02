@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
-import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey, BaseEntity as MikroBaseEntity } from '@mikro-orm/core';
 
-export abstract class BaseEntity {
+export abstract class BaseEntity<T extends BaseEntity<T>> extends MikroBaseEntity<T, 'id' | '_id'> {
 
   @PrimaryKey()
   _id!: ObjectId;

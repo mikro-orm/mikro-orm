@@ -219,8 +219,8 @@ describe('EntityManagerMySql', () => {
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(fooBar.id, ['baz']);
     expect(wrap(a!.baz).isInitialized()).toBe(true);
-    expect(wrap(a!.baz).id).toBe(0);
-    expect(wrap(a!.baz).name).toBe('testBaz');
+    expect(a!.baz!.id).toBe(0);
+    expect(a!.baz!.name).toBe('testBaz');
   });
 
   test('inverse side of 1:1 is ignored in change set', async () => {

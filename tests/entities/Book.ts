@@ -38,7 +38,7 @@ export class Book extends BaseEntity3 {
   constructor(title: string, author?: Author) {
     super();
     this.title = title;
-    this.author = author as Author;
+    this.author = author!;
   }
 
   toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): { [p: string]: any } {

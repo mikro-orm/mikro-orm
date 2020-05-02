@@ -1,5 +1,5 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError } from '@mikro-orm/core';
+import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
@@ -666,7 +666,7 @@ describe('EntityManagerSqlite', () => {
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
-    expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('populating many to many relation on inverse side', async () => {

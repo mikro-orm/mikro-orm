@@ -38,7 +38,7 @@ export class ObjectHydrator extends Hydrator {
   private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
     const value: Dictionary = {};
 
-    Object.values<EntityProperty>(wrap(entity).__meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+    Object.values<EntityProperty>(wrap(entity, true).__meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
       value[childProp.embedded![1]] = data[childProp.name];
     });
 
@@ -95,7 +95,7 @@ export class ObjectHydrator extends Hydrator {
 
     const child = this.factory.create(prop.type, value as EntityData<T>);
 
-    if (wrap(child).__primaryKey) {
+    if (wrap(child, true).__primaryKey) {
       this.em.merge(child);
     }
 
