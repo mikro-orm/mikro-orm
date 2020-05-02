@@ -20,6 +20,7 @@ describe('EntityAssignerMongo', () => {
     author.born = new Date();
     expect(author).toBeInstanceOf(Author);
     expect(wrap(author).toObject()).toBeInstanceOf(Object);
+    expect(author.toObject()).toBeInstanceOf(Object);
   });
 
   test('#toObject() should ignore properties marked with hidden flag', async () => {
@@ -67,10 +68,21 @@ describe('EntityAssignerMongo', () => {
     const json = wrap(author).toObject();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
-    expect(json.books[0]).toMatchObject({
+    expect(json.books![0]).toMatchObject({
       author: { name: bible.author.name },
       publisher: { name: (await bible.publisher.load()).name },
     });
+  });
+
+  test('BaseEntity methods', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    expect(wrap(god, true).__populated).toBe(false);
+    god.populated();
+    expect(wrap(god, true).__populated).toBe(true);
+
+    const ref = god.toReference();
+    expect(ref).toBeInstanceOf(Reference);
+    expect(ref.getEntity()).toBe(god);
   });
 
   test('#load() should populate the entity', async () => {
@@ -103,13 +115,13 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    EntityAssigner.assign(book, { title: 'Better Book2 1', author: god, notExisting: true });
+    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
-    EntityAssigner.assign(book, { title: 'Better Book2 2', author: god.id });
+    wrap(book, true).assign({ title: 'Better Book2 2', author: god.id });
     expect(book.author).toBe(god);
-    EntityAssigner.assign(book, { title: 'Better Book2 3', author: jon._id });
+    book.assign({ title: 'Better Book2 3', author: jon._id });
     expect(book.title).toBe('Better Book2 3');
     expect(book.author).toBe(jon);
   });

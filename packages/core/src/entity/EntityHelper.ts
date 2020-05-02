@@ -1,36 +1,30 @@
-import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IWrappedEntity, Primary, WrappedEntity } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
-import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
 import { Platform } from '../platforms';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
-
-/**
- * wraps entity type with AnyEntity internal properties and helpers like init/isInitialized/populated/toJSON
- */
-export function wrap<T>(entity: T): T & WrappedEntity<T, keyof T> {
-  return entity as T & WrappedEntity<T, keyof T>;
-}
+import { wrap } from './wrap';
+import { WrappedEntity } from './WrappedEntity';
 
 export class EntityHelper {
 
   static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
-    const em = wrap(entity).__em;
+    const wrapped = wrap(entity, true);
+    const em = wrapped.__em;
 
     if (!em) {
       throw ValidationError.entityNotManaged(entity);
     }
 
     await em.findOne(entity.constructor.name, entity, { refresh: true, lockMode });
-    wrap(entity).populated(populated);
-    Object.defineProperty(entity, '__lazyInitialized', { value: true, writable: true });
+    wrapped.populated(populated);
+    wrapped.__lazyInitialized = true;
 
     return entity;
   }
@@ -46,19 +40,11 @@ export class EntityHelper {
       EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
     }
 
-    EntityHelper.defineBaseProperties(meta, em);
-    EntityHelper.defineBaseHelperMethods(meta);
-    EntityHelper.definePrimaryKeyProperties(meta);
-    const prototype = meta.prototype as IWrappedEntity<T, keyof T> & T;
+    EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+    const prototype = meta.prototype as Dictionary;
 
     if (em.config.get('propagateToOneOwner')) {
       EntityHelper.defineReferenceProperties(meta);
-    }
-
-    if (!prototype.assign) { // assign can be overridden
-      prototype.assign = function (this: T, data: EntityData<T>, options?: AssignOptions): IWrappedEntity<T, keyof T> & T {
-        return EntityAssigner.assign<T>(this, data, options) as IWrappedEntity<T, keyof T> & T;
-      };
     }
 
     if (!prototype.toJSON) { // toJSON can be overridden
@@ -82,82 +68,17 @@ export class EntityHelper {
     });
   }
 
-  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager) {
-    const internal = {
-      platform: em.getDriver().getPlatform(),
-      metadata: em.getMetadata(),
-      validator: em.getValidator(),
-    };
-
-    Object.defineProperties(meta.prototype, {
-      __populated: { value: false, writable: true },
-      __lazyInitialized: { value: false, writable: true },
+  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
+    Object.defineProperties(prototype, {
       __entity: { value: true },
-      __em: { value: undefined, writable: true },
-      __meta: { value: meta },
-      __internal: { value: internal },
-      __uuid: {
+      __helper: {
         get(): string {
-          if (!this.___uuid) {
-            Object.defineProperty(this, '___uuid', { value: uuid() });
+          if (!this.___helper) {
+            const helper = new WrappedEntity(this, meta, em);
+            Object.defineProperty(this, '___helper', { value: helper });
           }
 
-          return this.___uuid;
-        },
-      },
-    });
-  }
-
-  private static defineBaseHelperMethods<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
-    const prototype = meta.prototype as IWrappedEntity<T, keyof T> & T;
-
-    prototype.isInitialized = function (this: IWrappedEntity<T, keyof T>) {
-      return this.__initialized !== false;
-    };
-
-    prototype.populated = function (this: T, populated = true) {
-      Object.defineProperty(this, '__populated', { value: populated, writable: true });
-    };
-
-    prototype.toReference = function (this: T) {
-      return Reference.create(this);
-    };
-
-    prototype.toObject = function (this: T, ignoreFields: string[] = []) {
-      return EntityTransformer.toObject(this, ignoreFields);
-    };
-
-    prototype.init = function (this: T, populated = true): Promise<IWrappedEntity<T, keyof T> & T> {
-      return EntityHelper.init<T>(this as T, populated) as Promise<IWrappedEntity<T, keyof T> & T>;
-    };
-  }
-
-  private static definePrimaryKeyProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
-    Object.defineProperties(meta.prototype, {
-      __primaryKey: {
-        get(): Primary<T> {
-          return Utils.getPrimaryKeyValue(this, meta.primaryKeys);
-        },
-        set(id: Primary<T>): void {
-          this[meta.primaryKeys[0]] = id;
-        },
-      },
-      __primaryKeys: {
-        get(): Primary<T>[] {
-          return Utils.getPrimaryKeyValues(this, meta.primaryKeys);
-        },
-      },
-      __serializedPrimaryKey: {
-        get(): Primary<T> | string {
-          if (meta.compositePK) {
-            return Utils.getCompositeKeyHash(this, meta);
-          }
-
-          if (Utils.isEntity(this[meta.serializedPrimaryKey])) {
-            return wrap(this[meta.serializedPrimaryKey]).__serializedPrimaryKey;
-          }
-
-          return this[meta.serializedPrimaryKey];
+          return this.___helper;
         },
       },
     });
@@ -207,14 +128,14 @@ export class EntityHelper {
     ref[prop.name] = val as T[string & keyof T];
   }
 
-  private static propagate<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
+  private static propagate<T extends object>(entity: T, owner: T, prop: EntityProperty<T>): void {
     const inverse = entity && entity[prop.inversedBy || prop.mappedBy];
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE && inverse && wrap(inverse).isInitialized()) {
+    if (prop.reference === ReferenceType.MANY_TO_ONE && inverse && wrap(inverse, true).isInitialized()) {
       (inverse as Collection<T>).add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity).isInitialized() && Utils.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity, true).isInitialized() && Utils.unwrapReference(inverse) !== owner) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
     }
   }
