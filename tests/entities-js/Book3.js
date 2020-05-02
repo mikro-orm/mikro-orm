@@ -40,7 +40,10 @@ const schema = {
       nullable: true,
       onUpdate: () => new Date(),
     },
-    title: 'string',
+    title: {
+      type: 'string',
+      default: '',
+    },
     author: {
       reference: 'm:1',
       type: 'Author3',

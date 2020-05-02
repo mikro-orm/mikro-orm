@@ -39,7 +39,7 @@ alter table `address2` add primary key `address2_pkey`(`author_id`);
 alter table `address2` add index `address2_author_id_index`(`author_id`);
 alter table `address2` add unique `address2_author_id_unique`(`author_id`);
 
-create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) not null default current_timestamp(3), `title` varchar(255) null, `perex` text null, `price` float null, `double` double null, `meta` json null, `author_id` int(11) unsigned not null, `publisher_id` int(11) unsigned null, `foo` varchar(255) null) default character set utf8mb4 engine = InnoDB;
+create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) not null default current_timestamp(3), `title` varchar(255) null default '', `perex` text null, `price` float null, `double` double null, `meta` json null, `author_id` int(11) unsigned not null, `publisher_id` int(11) unsigned null, `foo` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);

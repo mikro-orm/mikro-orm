@@ -518,7 +518,7 @@ export class Book2 {
   @Property({ length: 3, default: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ length: 255, nullable: true, default: \`''\` })
   title?: string;
 
   @Property({ columnType: 'text', nullable: true })
@@ -813,7 +813,7 @@ export class Book3 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property()
+  @Property({ default: \`''\` })
   title!: string;
 
   @Property({ nullable: true })

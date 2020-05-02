@@ -1,4 +1,4 @@
-import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
+import { ColumnBuilder, Raw, SchemaBuilder, TableBuilder } from 'knex';
 import { AbstractSqlDriver, Cascade, Configuration, DatabaseSchema, IsSame, ReferenceType } from '..';
 import { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
@@ -374,6 +374,7 @@ export class SchemaGenerator {
     const uniqueName = this.getIndexName(meta, prop, true, columnName);
     const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
     const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !hasDefault;
+    const defaultValue = this.getDefaultValue(prop, hasDefault);
 
     Utils.runIfNotEmpty(() => col.nullable(), !sameNullable && nullable);
     Utils.runIfNotEmpty(() => col.notNullable(), !sameNullable && !nullable);
@@ -381,7 +382,7 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.unsigned(), pkProp.unsigned);
     Utils.runIfNotEmpty(() => col.index(indexName), index);
     Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
-    Utils.runIfNotEmpty(() => col.defaultTo(hasDefault ? this.knex.raw('' + prop.default) : null), !sameDefault);
+    Utils.runIfNotEmpty(() => col.defaultTo(defaultValue), !sameDefault);
 
     return col;
   }
@@ -395,6 +396,14 @@ export class SchemaGenerator {
     }
 
     return this.helper.getIndexName(meta.collection, [columnName], unique);
+  }
+
+  private getDefaultValue<T>(prop: EntityProperty<T>, hasDefault: boolean): Raw | null {
+    if (!hasDefault) {
+      return null;
+    }
+
+    return this.knex.raw(prop.default === '' ? this.helper.getDefaultEmptyString() : '' + prop.default);
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[]): void {

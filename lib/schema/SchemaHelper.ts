@@ -167,6 +167,10 @@ export abstract class SchemaHelper {
     return 'information_schema';
   }
 
+  getDefaultEmptyString(): string {
+    return "''";
+  }
+
   async databaseExists(connection: Connection, name: string): Promise<boolean> {
     try {
       const res = await connection.execute(this.getDatabaseExistsSQL(name));
@@ -216,6 +220,10 @@ export abstract class SchemaHelper {
     if (prop.type === 'boolean') {
       const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(info.defaultValue);
       return defaultValue === !!prop.default;
+    }
+
+    if (['', this.getDefaultEmptyString()].includes(prop.default)) {
+      return info.defaultValue.toString() === '' || info.defaultValue.toString() === this.getDefaultEmptyString();
     }
 
     // tslint:disable-next-line:triple-equals

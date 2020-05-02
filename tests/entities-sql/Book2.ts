@@ -14,7 +14,7 @@ export class Book2 {
   @Property({ default: 'current_timestamp(3)', length: 3 })
   createdAt: Date = new Date();
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, default: '' })
   title?: string;
 
   @Property({ type: 'text', nullable: true })

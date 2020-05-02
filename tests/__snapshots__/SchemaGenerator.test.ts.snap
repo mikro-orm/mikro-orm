@@ -21,7 +21,7 @@ alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);
 
-create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
@@ -207,7 +207,7 @@ alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);
 
-create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
@@ -358,7 +358,7 @@ create table \\"address2\\" (\\"author_id\\" int4 not null, \\"value\\" varchar(
 alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
 alter table \\"address2\\" add constraint \\"address2_author_id_unique\\" unique (\\"author_id\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
@@ -497,7 +497,7 @@ create table \\"address2\\" (\\"author_id\\" int4 not null, \\"value\\" varchar(
 alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
 alter table \\"address2\\" add constraint \\"address2_author_id_unique\\" unique (\\"author_id\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
@@ -594,7 +594,7 @@ exports[`SchemaGenerator generate schema from metadata [sqlite]: sqlite-create-s
 create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
 create unique index \`author3_email_unique\` on \`author3\` (\`email\`);
 
-create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null default '');
 
 create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
@@ -664,7 +664,7 @@ drop table if exists \`publisher3_to_test3\`;
 create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
 create unique index \`author3_email_unique\` on \`author3\` (\`email\`);
 
-create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null default '');
 
 create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
@@ -870,7 +870,7 @@ alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);
 
-create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null, \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
@@ -1005,7 +1005,7 @@ create table \\"address2\\" (\\"author_id\\" int4 not null, \\"value\\" varchar(
 alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
 alter table \\"address2\\" add constraint \\"address2_author_id_unique\\" unique (\\"author_id\\");
 
-create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null, \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
+create table \\"book2\\" (\\"uuid_pk\\" varchar(36) not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" float null, \\"double\\" double precision null, \\"meta\\" json null, \\"author_id\\" int4 not null, \\"publisher_id\\" int4 null);
 alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
 
 create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
@@ -1090,7 +1090,7 @@ exports[`SchemaGenerator update empty schema from metadata [sqlite]: sqlite-upda
 create table \`author3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` varchar null, \`born\` date(3) null, \`born_time\` time(3) null);
 create unique index \`author3_email_unique\` on \`author3\` (\`email\`);
 
-create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+create table \`book3\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null default '');
 
 create table \`book_tag3\` (\`id\` integer not null primary key autoincrement, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
