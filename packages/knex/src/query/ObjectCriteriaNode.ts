@@ -64,6 +64,24 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }, {});
   }
 
+  willAutoJoin(qb: QueryBuilder, alias?: string): boolean {
+    const nestedAlias = qb.getAliasForEntity(this.entityName, this);
+    const ownerAlias = alias || qb.alias;
+
+    if (nestedAlias) {
+      alias = nestedAlias;
+    }
+
+    if (this.shouldAutoJoin(nestedAlias)) {
+      return true;
+    }
+
+    return Object.keys(this.payload).some(field => {
+      const childNode = this.payload[field] as CriteriaNode;
+      return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
+    });
+  }
+
   shouldInline(payload: any): boolean {
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
