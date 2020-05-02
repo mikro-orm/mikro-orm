@@ -16,6 +16,12 @@ export class ArrayCriteriaNode extends CriteriaNode {
     });
   }
 
+  willAutoJoin(qb: QueryBuilder, alias?: string) {
+    return this.payload.some((node: CriteriaNode) => {
+      return node.willAutoJoin(qb, alias);
+    });
+  }
+
   getPath(): string {
     if (this.parent && this.parent.parent) {
       return this.parent.parent.getPath();
