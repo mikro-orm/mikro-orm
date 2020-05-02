@@ -1,7 +1,7 @@
 import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
-import { wrap } from './EntityHelper';
+import { wrap } from './wrap';
 
 export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
@@ -27,7 +27,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   toArray(): Dictionary[] {
     return this.getItems().map(item => {
-      const meta = wrap(this.owner).__internal.metadata.get(item.constructor.name);
+      const meta = wrap(item, true).__meta;
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return wrap(item).toJSON(...args);
@@ -41,7 +41,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
       return [];
     }
 
-    field = field || wrap(this.items[0]).__meta.serializedPrimaryKey;
+    field = field || wrap(this.items[0], true).__meta.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -70,7 +70,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   remove(...items: T[]): void {
     for (const item of items) {
-      const idx = this.items.findIndex(i => wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey);
+      const idx = this.items.findIndex(i => wrap(i, true).__serializedPrimaryKey === wrap(item, true).__serializedPrimaryKey);
 
       if (idx !== -1) {
         delete this[this.items.length - 1]; // remove last item
@@ -89,7 +89,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   contains(item: T, check?: boolean): boolean {
     return !!this.items.find(i => {
       const objectIdentity = i === item;
-      const primaryKeyIdentity = !!wrap(i).__primaryKey && !!wrap(item).__primaryKey && wrap(i).__serializedPrimaryKey === wrap(item).__serializedPrimaryKey;
+      const primaryKeyIdentity = !!wrap(i, true).__primaryKey && !!wrap(item, true).__primaryKey && wrap(i, true).__serializedPrimaryKey === wrap(item, true).__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
@@ -114,7 +114,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
    */
   get property(): EntityProperty {
     if (!this._property) {
-      const meta = wrap(this.owner).__meta;
+      const meta = wrap(this.owner, true).__meta;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

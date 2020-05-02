@@ -135,10 +135,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
-    const meta = wrap(coll.owner).__meta;
-    const pks = wrap(coll.owner).__primaryKeys;
-    const snapshot = coll.getSnapshot().map(item => wrap(item).__primaryKeys);
-    const current = coll.getItems(false).map(item => wrap(item).__primaryKeys);
+    const wrapped = wrap(coll.owner, true);
+    const meta = wrapped.__meta;
+    const pks = wrapped.__primaryKeys;
+    const snapshot = coll.getSnapshot().map(item => wrap(item, true).__primaryKeys);
+    const current = coll.getItems(false).map(item => wrap(item, true).__primaryKeys);
     const deleteDiff = snapshot.filter(item => !current.includes(item));
     const insertDiff = current.filter(item => !snapshot.includes(item));
     const target = snapshot.filter(item => current.includes(item)).concat(...insertDiff);
@@ -272,7 +273,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
     const qb = this.createQueryBuilder(entity.constructor.name, ctx);
-    const meta = wrap(entity).__meta;
+    const meta = wrap(entity, true).__meta;
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     await qb.select('1').where(cond!).setLockMode(mode).execute();
   }
