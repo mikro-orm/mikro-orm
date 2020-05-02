@@ -27,7 +27,7 @@ discuss specifics.
 - [x] Use `jsonb` as default for object columns in postgres
 - [x] Support subqueries in QB
 - [x] Nested conditions in `qb.update()` queries via subqueries (#319)
-- [ ] Nested conditions in `em.remove()` via subqueries (#492)
+- [x] Nested conditions in `em.remove()` via subqueries (#492)
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
 - [ ] Cache metadata only with ts-morph provider
