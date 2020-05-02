@@ -1,8 +1,8 @@
 import { inspect } from 'util';
 import { LockMode, MikroORM, QueryOrder } from '@mikro-orm/core';
-import { QueryFlag, CriteriaNode } from '@mikro-orm/knex';
+import { QueryFlag, CriteriaNode, ArrayCriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2, Car2, CarOwner2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
+import { Author2, Book2, BookTag2, Car2, CarOwner2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 
 describe('QueryBuilder', () => {
@@ -1062,6 +1062,36 @@ describe('QueryBuilder', () => {
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
     expect(qb.getQuery()).toEqual('update `publisher2` set `name` = ?, `type` = ? where `id` = ? and `type` = ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]);
+  });
+
+  test('update query with auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ books: { author: 123 } });
+    expect(qb.getQuery()).toEqual('update `publisher2` set `name` = ?, `type` = ? ' +
+      'where `id` in (select `e0`.`id` from (' +
+      'select distinct `e0`.`id` from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`author_id` = ?' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123]);
+  });
+
+  test('update query with composite keys and auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(FooParam2);
+    qb.update({ value: 'test 123' }).where({ bar: { baz: 123 } });
+    expect(qb.getQuery()).toEqual('update `foo_param2` set `value` = ? ' +
+      'where (`bar_id`, `baz_id`) in (select `e0`.`bar_id`, `e0`.`baz_id` from (' +
+      'select distinct `e0`.`bar_id`, `e0`.`baz_id` from `foo_param2` as `e0` left join `foo_bar2` as `e1` on `e0`.`bar_id` = `e1`.`id` where `e1`.`baz_id` = ?' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual(['test 123', 123]);
+  });
+
+  test('update query with or condition and auto-joining', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
+    expect(qb.getQuery()).toEqual('update `publisher2` set `name` = ?, `type` = ? ' +
+      'where `id` in (select `e0`.`id` from (' +
+      'select distinct `e0`.`id` from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where (`e1`.`author_id` = ? or `e1`.`title` = ?)' +
+      ') as `e0`)');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123, 'book']);
   });
 
   test('update query with entity in data', async () => {
