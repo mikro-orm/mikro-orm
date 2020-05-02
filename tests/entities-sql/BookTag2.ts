@@ -17,7 +17,7 @@ export class BookTag2 {
   booksUnordered!: Collection<Book2>;
 
   constructor(name: string) {
-    const props = wrap(this).__meta.properties;
+    const props = wrap(this, true).__meta.properties;
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {

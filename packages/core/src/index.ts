@@ -1,6 +1,6 @@
 export {
   Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData,
-  AnyEntity, WrappedEntity, EntityProperty, EntityMetadata, QBFilterQuery,
+  AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery,
 } from './typings';
 export * from './enums';
 export * from './MikroORM';

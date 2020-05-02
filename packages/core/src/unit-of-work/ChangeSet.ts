@@ -1,10 +1,10 @@
-import { EntityData, AnyEntity, WrappedEntity, Primary } from '../typings';
+import { EntityData, AnyEntity } from '../typings';
 
 export interface ChangeSet<T extends AnyEntity<T>> {
   name: string;
   collection: string;
   type: ChangeSetType;
-  entity: T & WrappedEntity<T, Primary<T> & keyof T>;
+  entity: T;
   payload: EntityData<T>;
   persisted: boolean;
 }
