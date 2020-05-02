@@ -28,7 +28,7 @@ export interface NamingStrategy {
   /**
    * Return a join table name
    */
-  joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string;
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string;
 
   /**
    * Return the foreign key column name for the given parameters
