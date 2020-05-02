@@ -14,8 +14,8 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
     return this.classToTableName(entityName) + '_' + (referencedColumnName || this.referenceColumnName());
   }
 
-  joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string {
-    return this.classToTableName(sourceEntity) + '_to_' + this.classToTableName(targetEntity);
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
+    return this.classToTableName(sourceEntity) + '_' + this.classToTableName(propertyName);
   }
 
   propertyToColumnName(propertyName: string): string {

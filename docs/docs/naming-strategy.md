@@ -85,9 +85,9 @@ Return a join column name for a property.
 
 ---
 
-#### `NamingStrategy.joinTableName(sourceEntity: string, targetEntity: string, propertyName?: string): string`
+#### `NamingStrategy.joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string`
 
-Return a join table name.
+Return a join table name. This is used as default value for `pivotTable`. 
 
 ---
 
