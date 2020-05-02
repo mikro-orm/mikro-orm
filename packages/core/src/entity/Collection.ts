@@ -3,7 +3,7 @@ import { ArrayCollection } from './index';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
-import { wrap } from './EntityHelper';
+import { wrap } from './wrap';
 
 export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
 
@@ -73,7 +73,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   remove(...items: T[]): void {
     this.modify('remove', items);
-    const em = wrap(this.owner).__em;
+    const em = wrap(this.owner, true).__em;
 
     if (this.property.orphanRemoval && em) {
       for (const item of items) {
@@ -97,7 +97,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every(item => wrap(item).isInitialized());
+      return this.initialized && this.items.every(item => wrap(item, true).isInitialized());
     }
 
     return this.initialized;
@@ -123,15 +123,15 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>;
   async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
     const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
-    const em = wrap(this.owner).__em;
+    const em = wrap(this.owner, true).__em;
 
     if (!em) {
       throw ValidationError.entityNotManaged(this.owner);
     }
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner).__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[wrap(this.owner).__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item)));
+      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner, true).__primaryKeys], options.where, options.orderBy);
+      this.hydrate(map[wrap(this.owner, true).__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item)));
 
       return this;
     }
@@ -182,7 +182,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy as string] = wrap(this.owner).__primaryKey;
+      cond[this.property.mappedBy as string] = wrap(this.owner, true).__primaryKey;
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond as Dictionary);
     }
@@ -203,11 +203,11 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   private createManyToManyCondition(cond: Dictionary) {
-    if (this.property.owner || wrap(this.owner).__internal.platform.usesPivotTable()) {
-      const pk = wrap(this.items[0]).__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
-      cond[pk] = { $in: this.items.map(item => wrap(item).__primaryKey) };
+    if (this.property.owner || wrap(this.owner, true).__internal.platform.usesPivotTable()) {
+      const pk = wrap(this.items[0], true).__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
+      cond[pk] = { $in: this.items.map(item => wrap(item, true).__primaryKey) };
     } else {
-      cond[this.property.mappedBy] = wrap(this.owner).__primaryKey;
+      cond[this.property.mappedBy] = wrap(this.owner, true).__primaryKey;
     }
   }
 
@@ -223,7 +223,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${wrap(this.owner).__primaryKey}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${wrap(this.owner, true).__primaryKey}] not initialized`);
     }
   }
 
@@ -237,7 +237,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   private cancelOrphanRemoval(items: T[]): void {
-    const em = wrap(this.owner).__em;
+    const em = wrap(this.owner, true).__em;
 
     if (!em) {
       return;
@@ -258,7 +258,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
     const manyToManyInverse = this.property.reference === ReferenceType.MANY_TO_MANY && this.property.mappedBy;
 
-    if (manyToManyInverse && items.find(item => !wrap(item).isInitialized() || !item[this.property.mappedBy])) {
+    if (manyToManyInverse && items.find(item => !wrap(item, true).isInitialized() || !item[this.property.mappedBy])) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }

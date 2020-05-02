@@ -1499,13 +1499,13 @@ describe('EntityManagerMongo', () => {
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
     // @ts-ignore
-    expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz1._id);
+    expect(orm.em.getUnitOfWork().originalEntityData[wrap(bar, true).__uuid].baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persistAndFlush(bar);
     // @ts-ignore
-    expect(orm.em.getUnitOfWork().originalEntityData[bar.__uuid].baz).toEqual(baz2._id);
+    expect(orm.em.getUnitOfWork().originalEntityData[wrap(bar, true).__uuid].baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
@@ -1708,6 +1708,22 @@ describe('EntityManagerMongo', () => {
     expect(ref4.isInitialized()).toBe(true);
     expect(ref4.getProperty('name')).toBe('God');
     await expect(ref4.get('email')).resolves.toBe('hello@heaven.god');
+    expect(ref4.__populated).toBe(true);
+    ref4.populated(false);
+    expect(ref4.__populated).toBe(false);
+    ref4.populated();
+    expect(ref4.__populated).toBe(true);
+    expect(ref4.__lazyInitialized).toBe(true);
+    expect(ref4.__internal).toBeDefined();
+    expect(ref4.__em).toBeDefined();
+    expect(ref4.__uuid).toBeDefined();
+    expect(ref4.toJSON()).toMatchObject({
+      name: 'God',
+    });
+
+    // const wrapped = wrap(ref4);
+    // console.log(wrapped);
+    // expect(wrapped).toBe(ref4);
   });
 
   test('find and count', async () => {

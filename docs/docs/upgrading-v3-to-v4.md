@@ -22,6 +22,21 @@ TODO multiple packages
 
 TODO QB getter, knex getter, aggregate...
 
+## Changes in `wrap()` helper and `WrappedEntity` interface
+
+Previously all the methods and properties of `WrappedEntity` interface were
+added to the entity prototype during discovery. In v4 there is only one property
+added: `__helper: WrappedEntity`. `WrappedEntity` has been converted to actual class.
+
+`wrap(entity)` no longer returns the entity, now the `WrappedEntity` instance is 
+being returned. It contains only public methods (`init`, `assign`, `isInitialized`, ...),
+if you want to access internal properties like `__meta` or `__em`, you need to explicitly
+ask for the helper via `wrap(entity, true)`.
+
+Instead of interface merging with `WrappedEntity`, one can now use classic inheritance,
+by extending `BaseEntity` exported from `@mikro-orm/core`. If you do so, `wrap(entity)` 
+will return your entity. 
+
 ## `autoFlush` option has been removed
 
 The `flush` parameter of `persist()` and `remove()` methods is still there, but you

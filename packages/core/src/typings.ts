@@ -8,6 +8,7 @@ import { Type } from './types';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
+export type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T];
 
 export type PartialEntityProperty<T, P extends keyof T> = null | (T extends Date | RegExp ? T : T[P] | (true extends IsEntity<T[P]> ? PartialEntity<T[P]> | Primary<T[P]> : never));
 export type PartialEntity<T> = T extends Reference<infer U> ? { [P in keyof U]?: PartialEntityProperty<U, P> } : { [P in keyof T]?: PartialEntityProperty<T, P> };
@@ -67,11 +68,14 @@ export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary;
 export interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?: boolean, lockMode?: LockMode): Promise<this>;
+  init(populated?: boolean, lockMode?: LockMode): Promise<T>;
   toReference(): IdentifiedReference<T, PK>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
-  assign(data: any, options?: AssignOptions | boolean): this;
+  assign(data: any, options?: AssignOptions | boolean): T;
+}
+
+export interface IWrappedEntityInternal<T, PK extends keyof T> extends IWrappedEntity<T, PK> {
   __uuid: string;
   __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
@@ -86,7 +90,6 @@ export interface IWrappedEntity<T, PK extends keyof T> {
 }
 
 export type AnyEntity<T = any, PK extends keyof T = keyof T> = { [K in PK]?: T[K] } & { [PrimaryKeyType]?: T[PK] };
-export type WrappedEntity<T, PK extends keyof T> = IWrappedEntity<T, PK> & AnyEntity<T, PK>;
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T>;

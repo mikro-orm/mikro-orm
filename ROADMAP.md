@@ -36,7 +36,6 @@ discuss specifics.
 - [ ] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
 - [ ] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
 - [ ] Add custom types for blob, array, json
-- [ ] Do not define internal methods like `init` directly on the entity prototype ([#506](https://github.com/mikro-orm/mikro-orm/issues/506))
 - [ ] Lazy scalar properties (allow having props that won't be loaded by default, but can be populated)
 
 ## Planned breaking changes for v4
@@ -47,6 +46,7 @@ discuss specifics.
 - [x] Remove `autoFlush` option
 - [x] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
+- [x] Do not define internal methods like `init` directly on the entity prototype ([#506](https://github.com/mikro-orm/mikro-orm/issues/506))
 
 ## Docs
 

@@ -1,9 +1,9 @@
 import { Dictionary, EntityMetadata, AnyEntity, Primary } from '../typings';
 import { EntityManager } from '../EntityManager';
-import { wrap } from './EntityHelper';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { EntityValidator } from './EntityValidator';
+import { wrap } from './wrap';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
@@ -11,7 +11,7 @@ export class Reference<T extends AnyEntity<T>> {
 
   constructor(private entity: T) {
     this.set(entity);
-    const wrapped = wrap(this.entity);
+    const wrapped = wrap(this.entity, true);
 
     wrapped.__meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -24,7 +24,7 @@ export class Reference<T extends AnyEntity<T>> {
     if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKeys[0] !== wrapped.__meta.serializedPrimaryKey) {
       Object.defineProperty(this, wrapped.__meta.serializedPrimaryKey, {
         get() {
-          return wrap(this.entity).__serializedPrimaryKey;
+          return wrap(this.entity, true).__serializedPrimaryKey;
         },
       });
     }
@@ -43,7 +43,7 @@ export class Reference<T extends AnyEntity<T>> {
       return this.entity;
     }
 
-    return wrap(this.entity).init();
+    return wrap(this.entity, true).init();
   }
 
   async get<K extends keyof T>(prop: K): Promise<T[K]> {
@@ -76,11 +76,11 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   isInitialized(): boolean {
-    return wrap(this.entity).isInitialized();
+    return wrap(this.entity, true).isInitialized();
   }
 
   populated(populated?: boolean): void {
-    wrap(this.entity).populated!(populated);
+    wrap(this.entity, true).populated!(populated);
   }
 
   toJSON(...args: any[]): Dictionary {
@@ -88,35 +88,35 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   get __primaryKey(): Primary<T> {
-    return wrap(this.entity).__primaryKey as Primary<T>;
+    return wrap(this.entity, true).__primaryKey as Primary<T>;
   }
 
   get __primaryKeys(): Primary<T>[] {
-    return wrap(this.entity).__primaryKeys;
+    return wrap(this.entity, true).__primaryKeys;
   }
 
   get __uuid(): string {
-    return wrap(this.entity).__uuid;
+    return wrap(this.entity, true).__uuid;
   }
 
   get __em(): EntityManager | undefined {
-    return wrap(this.entity).__em;
+    return wrap(this.entity, true).__em;
   }
 
   get __internal(): { platform: Platform; metadata: MetadataStorage; validator: EntityValidator } {
-    return wrap(this.entity).__internal;
+    return wrap(this.entity, true).__internal;
   }
 
   get __meta(): EntityMetadata {
-    return wrap(this.entity).__meta;
+    return wrap(this.entity, true).__meta;
   }
 
   get __populated(): boolean {
-    return wrap(this.entity).__populated;
+    return wrap(this.entity, true).__populated;
   }
 
   get __lazyInitialized(): boolean {
-    return wrap(this.entity).__lazyInitialized;
+    return wrap(this.entity, true).__lazyInitialized;
   }
 
 }
