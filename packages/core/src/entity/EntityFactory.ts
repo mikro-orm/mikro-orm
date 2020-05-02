@@ -2,7 +2,7 @@ import { Utils } from '../utils';
 import { AnyEntity, EntityData, EntityMetadata, EntityName, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
-import { EntityManager } from '..';
+import { EntityManager, wrap } from '..';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -25,16 +25,13 @@ export class EntityFactory {
     const meta = this.metadata.get(entityName);
     meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk));
     const entity = this.createEntity(data, meta);
+    const wrapped = wrap(entity, true);
 
     if (initialized && !Utils.isEntity(data)) {
       this.hydrator.hydrate(entity, meta, data, newEntity);
     }
 
-    if (initialized) {
-      delete entity.__initialized;
-    } else {
-      entity.__initialized = initialized;
-    }
+    wrapped.__initialized = !!initialized;
 
     this.runHooks(entity, meta);
 

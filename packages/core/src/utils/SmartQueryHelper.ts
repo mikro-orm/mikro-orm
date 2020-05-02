@@ -76,11 +76,13 @@ export class SmartQueryHelper {
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
-    if (root || wrap(entity).__meta.compositePK) {
-      return entity.__primaryKey;
+    const wrapped = wrap(entity, true);
+
+    if (root || wrapped.__meta.compositePK) {
+      return wrapped.__primaryKey;
     }
 
-    return Utils.getPrimaryKeyCond(entity, wrap(entity).__meta.primaryKeys);
+    return Utils.getPrimaryKeyCond(entity, wrapped.__meta.primaryKeys);
   }
 
   private static processExpression<T>(expr: string, value: T): Dictionary<T> {

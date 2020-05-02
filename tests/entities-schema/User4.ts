@@ -1,4 +1,4 @@
-import { EntitySchema } from '../../lib/schema';
+import { EntitySchema } from '@mikro-orm/core';
 
 export class User4 {
 
