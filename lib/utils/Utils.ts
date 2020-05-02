@@ -149,7 +149,7 @@ export class Utils {
   }
 
   private static shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>) {
-    if (!(prop.name in entity)) {
+    if (!(prop.name in entity) || prop.persist === false) {
       return true;
     }
 
@@ -162,7 +162,7 @@ export class Utils {
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
     const emptyRef = isSetter && entity[prop.name] === undefined;
 
-    return collection || noPkProp || noPkRef || inverse || emptyRef || prop.persist === false;
+    return collection || noPkProp || noPkRef || inverse || emptyRef;
   }
 
   /**
