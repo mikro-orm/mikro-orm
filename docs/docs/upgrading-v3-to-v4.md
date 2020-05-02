@@ -22,6 +22,21 @@ TODO multiple packages
 
 TODO QB getter, knex getter, aggregate...
 
+## Different default `pivotTable`
+
+Implementation of `UnderscoreNamingStrategy` and `EntityCaseNamingStrategy` 
+`joinTableName()` method has changed. You can use `pivotTable` on the owning side
+of M:N relation to specify the table name manually. 
+
+Previously the table name did not respect property name, if one defined multiple
+M:N relations between same entities, there were conflicts and one would have to 
+specify `pivotTable` name manually at least on one of them. With the new way, 
+we can be sure that the table name won't conflict with other pivot tables. 
+
+Previously the name was constructed from 2 entity names as `entity_a_to_entity_b`,
+ignoring the actual property name. In v4 the name will be `entity_a_coll_name` in 
+case of the collection property on the owning side being named `collName`. 
+
 ## Changes in `wrap()` helper and `WrappedEntity` interface
 
 Previously all the methods and properties of `WrappedEntity` interface were
