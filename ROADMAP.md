@@ -28,7 +28,6 @@ discuss specifics.
 - [x] Support subqueries in QB
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
-- [ ] Support multiple M:N with same properties without manually specifying `pivotTable`
 - [ ] Cache metadata only with ts-morph provider
 - [ ] Diffing entity level indexes in schema generator
 - [ ] Support computed properties
@@ -47,6 +46,7 @@ discuss specifics.
 - [x] Drop default value for platform `type` (currently defaults to `mongodb`)
 - [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [x] Do not define internal methods like `init` directly on the entity prototype ([#506](https://github.com/mikro-orm/mikro-orm/issues/506))
+- [x] Support multiple M:N with same properties without manually specifying `pivotTable`
 
 ## Docs
 
