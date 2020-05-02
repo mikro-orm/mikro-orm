@@ -25,7 +25,7 @@ export class CriteriaNode {
 
     if (meta && key) {
       Utils.splitPrimaryKeys(key).forEach(k => {
-        this.prop = meta.properties[k];
+        this.prop = Object.values(meta.properties).find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
 
         if (validate && !this.prop && !k.includes('.') && !QueryBuilderHelper.isOperator(k) && !QueryBuilderHelper.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);

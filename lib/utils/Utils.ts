@@ -313,11 +313,17 @@ export class Utils {
     });
   }
 
-  static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> {
-    return primaryKeys.reduce((o, pk) => {
+  static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
+    const cond = primaryKeys.reduce((o, pk) => {
       o[pk] = Utils.extractPK(entity[pk]);
       return o;
     }, {} as any);
+
+    if (Object.values(cond).some(v => v === null)) {
+      return null;
+    }
+
+    return cond;
   }
 
   static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], primaryKeys: string[]): Record<string, Primary<T>> {
