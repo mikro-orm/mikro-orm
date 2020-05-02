@@ -468,11 +468,18 @@ export class Book {
 }
 ```
 
-### Using WrappedEntity interface
+### Using BaseEntity (previously WrappedEntity)
+
+From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign`
+and other methods that are otherwise available via the `wrap()` helper.
+
+> Usage of `BaseEntity` is optional.
 
 ```typescript
+import { BaseEntity } from '@mikro-orm/core';
+
 @Entity()
-export class Book {
+export class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -485,7 +492,8 @@ export class Book {
 
 }
 
-export interface Book extends WrappedEntity<Book, 'id'> { };
+const book = new Book();
+console.log(book.isInitialized()); // true
 ```
 
 With your entities set up, you can start [using entity manager](entity-manager.md) and 

@@ -61,40 +61,40 @@ console.log(book.meta); // { foo: 4 }
 
 ## `WrappedEntity` and `wrap()` helper
 
-`IWrappedEntity` is interface that defines helper methods as well as some internal 
-properties provided by the ORM:
+`IWrappedEntity` is an interface that defines public helper methods provided 
+by the ORM:
 
 ```typescript
 interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?: boolean, lockMode?: LockMode): Promise<this>;
+  init(populated?: boolean, lockMode?: LockMode): Promise<T>;
   toReference(): IdentifiedReference<T, PK>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
-  assign(data: any, options?: AssignOptions | boolean): this;
-  __uuid: string;
-  __meta: EntityMetadata;
-  __em: EntityManager;
-  __initialized?: boolean;
-  __populated: boolean;
-  __lazyInitialized: boolean;
-  __primaryKey: T[PK] & Primary<T>;
-  __serializedPrimaryKey: string & keyof T;
+  assign(data: any, options?: AssignOptions | boolean): T;
 }
 ```
 
+There are two ways to access those methods. You can either extend `BaseEntity` 
+(exported from `@mikro-orm/core`), that defines those methods, or use the 
+`wrap()` helper to access `WrappedEntity` instance, where those methods
+exist.
+
 Users can choose whether they are fine with polluting the entity interface with 
-those additional methods and properties, or they want to keep the interface clean 
+those additional methods, or they want to keep the interface clean 
 and use the `wrap(entity)` helper method instead to access them. 
 
-To keep all methods available on the entity, you can use interface merging with 
-`WrappedEntity<T, PK>` that both extends `AnyEntity<T, PK>` and defines all those methods.
+> Since v4 `wrap(entity)` no longer returns the entity, now the `WrappedEntity` instance is 
+> being returned. It contains only public methods (`init`, `assign`, `isInitialized`, ...),
+> if you want to access internal properties like `__meta` or `__em`, you need to explicitly
+> ask for the helper via `wrap(entity, true)`.
 
 ```typescript
+import { BaseEntity } from '@mikro-orm/core';
+
 @Entity()
-export class Book { ... }
-export interface Book extends WrappedEntity<Book, 'id'> { }
+export class Book extends BaseEntity<Book, 'id'> { ... }
 ```
 
 Then you can work with those methods directly:
@@ -103,4 +103,17 @@ Then you can work with those methods directly:
 book.meta = { foo: 1, bar: 2 };
 book.assign({ meta: { foo: 3 } }, { mergeObjects: true });
 console.log(book.meta); // { foo: 3, bar: 2 }
+```
+
+### Accessing internal prefixed properties
+
+Previously it was possible to access internal properties like `__meta` or `__em` 
+from the `wrap()` helper. Now to access them, you need to use second parameter of
+wrap:
+
+```typescript
+@Entity()
+export class Author { ... }
+
+console.log(wrap(author, true).__meta);
 ```

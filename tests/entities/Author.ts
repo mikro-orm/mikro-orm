@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection,
-  Cascade, Entity, EntityAssigner, ManyToMany, ManyToOne, OneToMany, Property, wrap, Index, Unique,
+  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner,
 } from '@mikro-orm/core';
 
 import { Book } from './Book';
@@ -9,7 +9,7 @@ import { BaseEntity } from './BaseEntity';
 
 @Entity({ customRepository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
-export class Author extends BaseEntity {
+export class Author extends BaseEntity<Author> {
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
@@ -113,7 +113,7 @@ export class Author extends BaseEntity {
   }
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
-    const o = wrap(this).toObject(...args);
+    const o = this.toObject(...args);
     o.fooBar = 123;
 
     if (strict) {

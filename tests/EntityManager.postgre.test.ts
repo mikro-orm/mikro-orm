@@ -601,10 +601,10 @@ describe('EntityManagerPostgre', () => {
 
     const em2 = orm.em.fork();
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
-    expect(wrap(bible2).__em!.id).toBe(em2.id);
-    expect(wrap(bible2.publisher).__em!.id).toBe(em2.id);
+    expect(wrap(bible2, true).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher, true).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
-    expect(wrap(publisher2).__em!.id).toBe(em2.id);
+    expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
 
   test('populate OneToOne relation', async () => {
