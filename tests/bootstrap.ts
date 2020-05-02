@@ -180,10 +180,10 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   await em.createQueryBuilder(Car2).truncate().execute();
   await em.createQueryBuilder(CarOwner2).truncate().execute();
   await em.createQueryBuilder(BaseUser2).truncate().execute();
-  await em.createQueryBuilder('author2_to_author2').truncate().execute();
-  await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('author2_following').truncate().execute();
+  await em.createQueryBuilder('book2_tags').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
-  await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
+  await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
 }
@@ -198,9 +198,9 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   await em.createQueryBuilder(FooBar2).truncate().execute();
   await em.createQueryBuilder(FooBaz2).truncate().execute();
   await em.createQueryBuilder(FooParam2).truncate().execute();
-  await em.createQueryBuilder('book2_to_book_tag2').truncate().execute();
+  await em.createQueryBuilder('book2_tags').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
-  await em.createQueryBuilder('publisher2_to_test2').truncate().execute();
+  await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();
 }
@@ -211,8 +211,8 @@ export async function wipeDatabaseSqlite(em: SqlEntityManager) {
   await em.remove('BookTag3', {});
   await em.remove('Publisher3', {});
   await em.remove('Test3', {});
-  await em.remove('book3_to_book_tag3', {});
-  await em.remove('publisher3_to_test3', {});
+  await em.remove('book3_tags', {});
+  await em.remove('publisher3_tests', {});
   em.clear();
 }
 
@@ -224,6 +224,6 @@ export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
   await em.remove('Test4', {});
   await em.remove('tags_ordered', {});
   await em.remove('tags_unordered', {});
-  await em.remove('publisher4_to_test4', {});
+  await em.remove('publisher4_tests', {});
   em.clear();
 }
