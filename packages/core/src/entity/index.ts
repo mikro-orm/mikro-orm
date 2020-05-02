@@ -10,3 +10,6 @@ export * from './ArrayCollection';
 export * from './Collection';
 export * from './EntityLoader';
 export * from './Reference';
+export * from './wrap';
+export * from './BaseEntity';
+export * from './WrappedEntity';

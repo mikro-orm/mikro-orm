@@ -32,15 +32,15 @@ export class UnitOfWork {
   constructor(private readonly em: EntityManager) { }
 
   merge<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], mergeData = true): void {
-    const wrapped = wrap(entity);
-    Object.defineProperty(wrapped, '__em', { value: this.em, writable: true });
+    const wrapped = wrap(entity, true);
+    wrapped.__em = this.em;
 
     if (!Utils.isDefined(wrapped.__primaryKey, true)) {
       return;
     }
 
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
-    this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`] = wrapped;
+    this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`] = entity;
 
     if (mergeData || !this.originalEntityData[wrapped.__uuid]) {
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
@@ -83,8 +83,8 @@ export class UnitOfWork {
       return;
     }
 
-    if (!Utils.isDefined(wrap(entity).__primaryKey, true)) {
-      this.identifierMap[wrap(entity).__uuid] = new EntityIdentifier();
+    if (!Utils.isDefined(wrap(entity, true).__primaryKey, true)) {
+      this.identifierMap[wrap(entity, true).__uuid] = new EntityIdentifier();
     }
 
     this.persistStack.push(entity);
@@ -97,7 +97,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (wrap(entity).__primaryKey) {
+    if (wrap(entity, true).__primaryKey) {
       this.removeStack.push(entity);
     }
 
@@ -127,7 +127,7 @@ export class UnitOfWork {
   }
 
   async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
-    if (!this.getById(entity.constructor.name, wrap(entity).__primaryKeys)) {
+    if (!this.getById(entity.constructor.name, wrap(entity, true).__primaryKeys)) {
       throw ValidationError.entityNotManaged(entity);
     }
 
@@ -147,10 +147,11 @@ export class UnitOfWork {
   }
 
   unsetIdentity(entity: AnyEntity): void {
-    const root = Utils.getRootEntity(this.metadata, wrap(entity).__meta);
-    delete this.identityMap[`${root.name}-${wrap(entity).__serializedPrimaryKey}`];
-    delete this.identifierMap[wrap(entity).__uuid];
-    delete this.originalEntityData[wrap(entity).__uuid];
+    const wrapped = wrap(entity, true);
+    const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
+    delete this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`];
+    delete this.identifierMap[wrapped.__uuid];
+    delete this.originalEntityData[wrapped.__uuid];
   }
 
   computeChangeSets(): void {
@@ -188,7 +189,7 @@ export class UnitOfWork {
     }
 
     visited.push(entity);
-    const wrapped = wrap(entity);
+    const wrapped = wrap(entity, true);
 
     if (!wrapped.isInitialized() || this.removeStack.includes(entity) || this.orphanRemoveStack.includes(entity)) {
       return;
@@ -203,11 +204,11 @@ export class UnitOfWork {
       this.processReference(entity, prop, reference, visited);
     }
 
-    const changeSet = this.changeSetComputer.computeChangeSet<AnyEntity>(wrapped);
+    const changeSet = this.changeSetComputer.computeChangeSet<AnyEntity>(entity);
 
     if (changeSet) {
       this.changeSets.push(changeSet);
-      this.cleanUpStack(this.persistStack, wrapped);
+      this.cleanUpStack(this.persistStack, entity);
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
     }
   }
@@ -225,7 +226,7 @@ export class UnitOfWork {
   }
 
   private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: AnyEntity[]): void {
-    if (!this.originalEntityData[reference.__uuid]) {
+    if (!this.originalEntityData[wrap(reference, true).__uuid]) {
       this.findNewEntities(reference, visited);
     }
   }
@@ -239,13 +240,13 @@ export class UnitOfWork {
     }
 
     reference.getItems(false)
-      .filter(item => !this.originalEntityData[wrap(item).__uuid])
+      .filter(item => !this.originalEntityData[wrap(item, true).__uuid])
       .forEach(item => this.findNewEntities(item, visited));
   }
 
   private async commitChangeSet<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     if (changeSet.type === ChangeSetType.CREATE) {
-      Object.values<EntityProperty>(changeSet.entity.__meta.properties)
+      Object.values<EntityProperty>(wrap(changeSet.entity, true).__meta.properties)
         .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
         .filter(prop => changeSet.entity[prop.name])
         .forEach(prop => {
@@ -349,13 +350,13 @@ export class UnitOfWork {
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
       collection
         .getItems(false)
-        .filter(item => !requireFullyInitialized || wrap(item).isInitialized())
+        .filter(item => !requireFullyInitialized || wrap(item, true).isInitialized())
         .forEach(item => this.cascade(item, type, visited, options));
     }
   }
 
   private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: AnyEntity[]): boolean {
-    const filtered = collection.getItems(false).filter(item => !this.originalEntityData[wrap(item).__uuid]);
+    const filtered = collection.getItems(false).filter(item => !this.originalEntityData[wrap(item, true).__uuid]);
     return filtered.some(items => visited.includes(items));
   }
 
@@ -384,8 +385,8 @@ export class UnitOfWork {
       return;
     }
 
-    if (!wrap(entity).isInitialized()) {
-      await wrap(entity).init();
+    if (!wrap(entity, true).isInitialized()) {
+      await wrap(entity, true).init();
     }
 
     const previousVersion = entity[meta.versionProperty] as unknown as Date | number;

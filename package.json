@@ -45,6 +45,7 @@
     "build": "lerna run build",
     "pub": "lerna publish",
     "test": "jest --runInBand",
+    "tsc-check-tests": " tsc --noEmit --project tests/tsconfig.json",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
