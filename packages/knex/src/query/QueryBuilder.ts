@@ -115,10 +115,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const topLevel = !op || Object.keys(this._cond).length === 0;
     const criteriaNode = CriteriaNode.create(this.metadata, this.entityName, cond);
 
-    if (this.type === QueryType.UPDATE && criteriaNode.willAutoJoin(this)) {
+    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {
       // use sub-query to support joining
+      this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.metadata.get(this.entityName).primaryKeys, true);
-      this.setFlag(QueryFlag.UPDATE_SUB_QUERY);
     }
 
     if (topLevel) {
@@ -388,7 +388,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (cond) {
-      this._cond = CriteriaNode.create(this.metadata, this.entityName, cond).process(this);
+      this.where(cond);
     }
 
     return this;
@@ -461,15 +461,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
 
-    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY)) {
+    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
       const subQuery = this.clone();
       subQuery.finalized = true;
 
       // wrap one more time to get around MySQL limitations
       // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
       const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
+      const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
 
-      this.update(this._data).where({
+      this[method](this._data).where({
         [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
       });
     }
