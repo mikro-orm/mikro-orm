@@ -1,5 +1,9 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import {
+  Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap,
+  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
+  NonUniqueFieldNameException, InvalidFieldNameException,
+} from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
@@ -847,6 +851,18 @@ describe('EntityManagerSqlite', () => {
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail<any>(Author3, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+  });
+
+  test('exceptions', async () => {
+    const driver = orm.em.getDriver();
+    await driver.nativeInsert(Author3.name, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author3.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author3.name, {})).rejects.toThrow(NotNullConstraintViolationException);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(driver.execute('create table author3 (foo text not null)')).rejects.toThrow(TableExistsException);
+    await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+    await expect(driver.execute('select id from author3, book_tag3')).rejects.toThrow(NonUniqueFieldNameException);
+    await expect(driver.execute('select uuid from author3')).rejects.toThrow(InvalidFieldNameException);
   });
 
   afterAll(async () => {

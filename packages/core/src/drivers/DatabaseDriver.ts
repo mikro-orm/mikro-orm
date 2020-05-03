@@ -6,7 +6,7 @@ import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Platform } from '../platforms';
 import { Collection, wrap } from '../entity';
-import { EntityManager, LockMode } from '../index';
+import { DriverException, EntityManager, LockMode } from '../index';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -174,6 +174,19 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  convertException(exception: Error): DriverException {
+    return this.platform.getExceptionConverter().convertException(exception);
+  }
+
+  protected rethrow<T>(promise: Promise<T>): Promise<T> {
+    return promise.catch(e => {
+      throw this.convertException(e);
+    });
   }
 
 }

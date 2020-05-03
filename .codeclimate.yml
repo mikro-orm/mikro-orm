@@ -17,7 +17,7 @@ checks:
     config:
       threshold: 7
 
-engines:
+plugins:
   duplication:
     enabled: true
     config:
@@ -26,3 +26,12 @@ engines:
         typescript:
           # make it higher so it does not report bullshit like similarity of abstract method and its implementation
           mass_threshold: 80
+
+exclude_patterns:
+  - '**/*ExceptionConverter.ts'
+  - 'docs/'
+  - 'temp/'
+  - '**/dist/'
+  - '**/node_modules/'
+  - '**/tests/'
+  - '**/*.d.ts'

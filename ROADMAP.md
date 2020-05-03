@@ -28,6 +28,7 @@ discuss specifics.
 - [x] Support subqueries in QB
 - [x] Nested conditions in `qb.update()` queries via subqueries (#319)
 - [x] Nested conditions in `em.remove()` via subqueries (#492)
+- [x] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
 - [ ] Cache metadata only with ts-morph provider
@@ -35,7 +36,6 @@ discuss specifics.
 - [ ] Support computed properties
 - [ ] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
 - [ ] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
-- [ ] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
 - [ ] Add custom types for blob, array, json
 - [ ] Lazy scalar properties (allow having props that won't be loaded by default, but can be populated)
 - [ ] Seeds (#251)
