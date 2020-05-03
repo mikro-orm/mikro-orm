@@ -62,7 +62,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
     const source = await this.getExistingSourceFile(meta);
-    const properties = source.getClass(meta.className)!.getInstanceProperties();
+    const cls = source.getClass(meta.className);
+
+    /* istanbul ignore next */
+    if (!cls) {
+      throw new Error(`Source class for entity ${meta.className} not found. If you are using webpack, see https://bit.ly/35pPDNn`);
+    }
+
+    const properties = cls.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
 
     if (!property) {
@@ -83,7 +90,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const source = this.sources.find(s => s.getFilePath().endsWith(file));
 
     if (!source) {
-      throw new Error(`Source file for entity ${file} not found, check your 'entitiesDirsTs' option`);
+      throw new Error(`Source file for entity ${file} not found, check your 'entitiesDirsTs' option. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
     return source;

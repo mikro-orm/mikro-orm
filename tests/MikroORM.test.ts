@@ -25,7 +25,7 @@ describe('MikroORM', () => {
   test('should throw when TS entity directory does not exist', async () => {
     let error = /Path .*\/entities-invalid does not exist/;
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities-invalid'] })).rejects.toThrowError(error);
-    error = /Source file for entity .* not found, check your 'entitiesDirsTs' option/;
+    error = /Source file for entity .* not found, check your 'entitiesDirsTs' option\. If you are using webpack, see https:\/\/bit\.ly\/35pPDNn/;
     await expect(MikroORM.init({ dbName: 'test', baseDir: BASE_DIR, entities: [FooBaz2], cache: { enabled: false }, entitiesDirsTs: ['entities'] })).rejects.toThrowError(error);
   });
 
