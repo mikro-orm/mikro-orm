@@ -65,7 +65,8 @@ export class EntityLoader {
       return this.findChildrenFromPivotTable<T>(filtered, prop, field, refresh, where[prop.name], innerOrderBy as QueryOrderMap);
     }
 
-    const data = await this.findChildren<T>(entities, prop, refresh, where[prop.name], innerOrderBy as QueryOrderMap);
+    const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
+    const data = await this.findChildren<T>(entities, prop, refresh, subCond, innerOrderBy as QueryOrderMap);
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;
@@ -95,7 +96,7 @@ export class EntityLoader {
     }
   }
 
-  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, refresh: boolean, where: FilterQuery<T> = {}, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
+  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, refresh: boolean, where: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop, refresh);
     const meta = this.metadata.get(prop.type);
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
