@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, wrap, ManyToOne } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, wrap, ManyToOne } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
