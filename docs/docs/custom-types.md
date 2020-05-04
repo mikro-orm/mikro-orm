@@ -29,23 +29,23 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 ```typescript
 import { Type, Platform, EntityProperty, ValidationError } from 'mikro-orm';
 
-export class DateType extends Type {
+export class DateType extends Type<Date, string> {
 
-  convertToDatabaseValue(value: any, platform: Platform): any {
+  convertToDatabaseValue(value: Date | string | undefined, platform: Platform): string {
     if (value instanceof Date) {
       return value.toISOString().substr(0, 10);
     }
 
     if (!value || value.toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return value;
+      return value as string;
     }
 
     throw ValidationError.invalidType(DateType, value, 'JS');
   }
 
-  convertToJSValue(value: any, platform: Platform): any {
+  convertToJSValue(value: Date | string | undefined, platform: Platform): Date {
     if (!value || value instanceof Date) {
-      return value;
+      return value as Date;
     }
 
     const date = new Date(value);
