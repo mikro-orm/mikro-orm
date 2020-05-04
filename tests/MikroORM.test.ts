@@ -91,11 +91,14 @@ describe('MikroORM', () => {
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;
     jest.mock('../package.json', () => pkg, { virtual: true });
 
-    const orm = await MikroORM.init();
+    const orm = await MikroORM.init(undefined, false);
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test']);
+    expect(await orm.isConnected()).toBe(false);
+
+    await orm.connect();
     expect(await orm.isConnected()).toBe(true);
 
     await orm.close();
