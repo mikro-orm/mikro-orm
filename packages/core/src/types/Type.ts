@@ -1,29 +1,29 @@
 import { Platform } from '../platforms';
 import { Constructor, EntityProperty } from '../typings';
 
-export abstract class Type {
+export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();
 
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: any, platform: Platform): any {
-    return value;
+  convertToDatabaseValue(value: JSType | DBType, platform: Platform): DBType {
+    return value as DBType;
   }
 
   /**
    * Converts a value from its database representation to its JS representation of this type.
    */
-  convertToJSValue(value: any, platform: Platform): any {
-    return value;
+  convertToJSValue(value: JSType | DBType, platform: Platform): JSType {
+    return value as JSType;
   }
 
   /**
    * Converts a value from its JS representation to its serialized JSON form of this type.
    * By default converts to the database value.
    */
-  toJSON(value: any, platform: Platform): any {
+  toJSON(value: JSType, platform: Platform): JSType | DBType {
     return this.convertToDatabaseValue(value, platform);
   }
 
@@ -34,7 +34,7 @@ export abstract class Type {
     return prop.columnTypes[0];
   }
 
-  static getType(cls: Constructor<Type>): Type {
+  static getType<JSType, DBType>(cls: Constructor<Type<JSType, DBType>>): Type<JSType, DBType> {
     const key = cls.name;
 
     if (!Type.types.has(key)) {

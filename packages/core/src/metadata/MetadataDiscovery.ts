@@ -593,7 +593,7 @@ export class MetadataDiscovery {
 
   private initCustomType(prop: EntityProperty): void {
     if (Object.getPrototypeOf(prop.type) === Type) {
-      prop.customType = Type.getType(prop.type as any);
+      prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
     }
 
     if (prop.customType) {
