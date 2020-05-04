@@ -26,12 +26,12 @@ export class MigrationRunner {
     queries = queries.filter(sql => sql.trim().length > 0);
 
     if (!this.options.transactional || !migration.isTransactional()) {
-      await Utils.runSerial(queries, sql => this.connection.execute(sql));
+      await Utils.runSerial(queries, sql => this.driver.execute(sql));
       return;
     }
 
     await this.connection.transactional(async tx => {
-      await Utils.runSerial(queries, sql => this.connection.execute(tx.raw(sql)));
+      await Utils.runSerial(queries, sql => this.driver.execute(tx.raw(sql)));
     }, this.masterTransaction);
   }
 

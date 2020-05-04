@@ -3,6 +3,7 @@ export {
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery,
 } from './typings';
 export * from './enums';
+export * from './exceptions';
 export * from './MikroORM';
 export * from './entity';
 export * from './EntityManager';

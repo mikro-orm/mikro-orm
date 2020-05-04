@@ -1,8 +1,11 @@
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import { ExceptionConverter } from './ExceptionConverter';
 
 export abstract class Platform {
+
+  protected readonly exceptionConverter = new ExceptionConverter();
 
   usesPivotTable(): boolean {
     return false;
@@ -94,6 +97,10 @@ export abstract class Platform {
 
   getDefaultCharset(): string {
     return 'utf8';
+  }
+
+  getExceptionConverter(): ExceptionConverter {
+    return this.exceptionConverter;
   }
 
 }

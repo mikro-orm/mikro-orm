@@ -1,7 +1,10 @@
 import { ObjectId } from 'mongodb';
 import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy } from '@mikro-orm/core';
+import { MongoExceptionConverter } from './MongoExceptionConverter';
 
 export class MongoPlatform extends Platform {
+
+  protected readonly exceptionConverter = new MongoExceptionConverter();
 
   getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
