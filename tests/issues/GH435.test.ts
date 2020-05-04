@@ -3,7 +3,7 @@ import { Entity, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type }
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/knex';
 
-class MyType extends Type {
+class MyType extends Type<string, number> {
 
   convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);

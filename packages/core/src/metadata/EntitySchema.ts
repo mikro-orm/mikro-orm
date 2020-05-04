@@ -8,7 +8,7 @@ import { Type } from '../types';
 import { Utils } from '../utils';
 
 type CollectionItem<T> = T extends Collection<infer K> ? K : T;
-type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type>;
+type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type } | { entity: string | (() => string | EntityName<T>) };
 type Property<T> =
   | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T>)
