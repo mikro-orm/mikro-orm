@@ -3,3 +3,4 @@ export * from './PostgreSqlConnection';
 export * from './PostgreSqlDriver';
 export * from './PostgreSqlPlatform';
 export * from './PostgreSqlSchemaHelper';
+export * from './PostgreSqlExceptionConverter';
