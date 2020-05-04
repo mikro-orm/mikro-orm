@@ -1976,6 +1976,13 @@ describe('EntityManagerMySql', () => {
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
+  test('em.execute()', async () => {
+    const res1 = await orm.em.execute('insert into author2 (name, email) values (?, ?)', ['name', 'email']);
+    expect(res1).toMatchObject({ affectedRows: 1, insertId: 1 });
+    const res2 = await orm.em.execute('select 1 as count');
+    expect(res2).toMatchObject([{ count: 1 }]);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
