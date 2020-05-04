@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
 import chalk from 'chalk';
-
-import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger } from '@mikro-orm/core';
+import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -1899,6 +1899,12 @@ describe('EntityManagerMongo', () => {
 
     await orm.em.flush();
     expect(author.books.getItems().every(b => b.id)).toBe(true);
+  });
+
+  test('exceptions', async () => {
+    const driver = orm.em.getDriver();
+    await driver.nativeInsert(Author.name, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
   });
 
   afterAll(async () => orm.close(true));
