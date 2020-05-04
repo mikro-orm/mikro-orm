@@ -116,7 +116,7 @@ export class SchemaGenerator {
    * creates new database and connects to it
    */
   async createDatabase(name: string): Promise<void> {
-    await this.connection.execute(this.helper.getCreateDatabaseSQL('' + this.knex.ref(name)));
+    await this.driver.execute(this.helper.getCreateDatabaseSQL('' + this.knex.ref(name)));
     this.config.set('dbName', name);
     await this.driver.reconnect();
   }
@@ -124,14 +124,14 @@ export class SchemaGenerator {
   async dropDatabase(name: string): Promise<void> {
     this.config.set('dbName', this.helper.getManagementDbName());
     await this.driver.reconnect();
-    await this.connection.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
+    await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
   }
 
   async execute(sql: string) {
     const lines = sql.split('\n').filter(i => i.trim());
 
     for (const line of lines) {
-      await this.connection.execute(line);
+      await this.driver.execute(line);
     }
   }
 

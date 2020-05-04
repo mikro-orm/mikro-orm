@@ -1,10 +1,12 @@
 import { EntityProperty } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
+import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   protected readonly schemaHelper = new PostgreSqlSchemaHelper();
+  protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
   usesReturningStatement(): boolean {
     return true;
