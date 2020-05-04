@@ -20,7 +20,8 @@ export class MongoConnection extends Connection {
   }
 
   async isConnected(): Promise<boolean> {
-    return this.client.isConnected();
+    const ret = this.client?.isConnected();
+    return !!ret;
   }
 
   getCollection(name: EntityName<AnyEntity>): Collection {
