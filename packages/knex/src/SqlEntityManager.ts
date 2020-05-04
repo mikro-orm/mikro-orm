@@ -1,5 +1,5 @@
-import Knex from 'knex';
-import { AnyEntity, EntityManager, EntityName, EntityRepository, Utils } from '@mikro-orm/core';
+import Knex, { QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
+import { AnyEntity, EntityData, EntityManager, EntityName, EntityRepository, QueryResult, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
 import { SqlEntityRepository } from './SqlEntityRepository';
@@ -19,6 +19,10 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
 
   getKnex(type?: 'read' | 'write'): Knex {
     return this.getConnection(type).getKnex();
+  }
+
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | KnexQueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
+    return this.getDriver().execute(queryOrKnex, params, method, this.getTransactionContext());
   }
 
   getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): U {
