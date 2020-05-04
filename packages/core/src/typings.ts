@@ -100,7 +100,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   entity: () => EntityName<T>;
   type: string;
   columnTypes: string[];
-  customType: Type;
+  customType: Type<any>;
   primary: boolean;
   serializedPrimaryKey: boolean;
   discriminator?: boolean;
