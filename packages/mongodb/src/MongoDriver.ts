@@ -24,7 +24,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions, ctx?: Transaction<ClientSession>): Promise<T[]> {
     where = this.renameFields(entityName, where);
-    const res = await this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, options.fields, ctx);
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, options.fields, ctx));
 
     return res.map((r: T) => this.mapResult<T>(r, this.metadata.get(entityName))!);
   }
@@ -35,19 +35,19 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     where = this.renameFields(entityName, where);
-    const res = await this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, options.fields, ctx);
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, options.fields, ctx));
 
     return this.mapResult<T>(res[0], this.metadata.get(entityName));
   }
 
   async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
     where = this.renameFields(entityName, where);
-    return this.getConnection('read').countDocuments(entityName, where, ctx);
+    return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     data = this.renameFields(entityName, data);
-    return this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx);
+    return this.rethrow(this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx));
   }
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
@@ -58,7 +58,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where);
     data = this.renameFields(entityName, data);
 
-    return this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx);
+    return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx));
   }
 
   async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
@@ -68,33 +68,33 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     where = this.renameFields(entityName, where);
 
-    return this.getConnection('write').deleteMany(entityName, where, ctx);
+    return this.rethrow(this.getConnection('write').deleteMany(entityName, where, ctx));
   }
 
   async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
-    return this.getConnection('read').aggregate(entityName, pipeline, ctx);
+    return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
   }
 
   async createCollections(): Promise<void> {
     const promises = Object.values(this.metadata.getAll())
       .map(meta => this.getConnection('write').createCollection(meta.collection));
 
-    await Promise.all(promises);
+    await this.rethrow(Promise.all(promises));
   }
 
   async dropCollections(): Promise<void> {
     const db = this.getConnection('write').getDb();
-    const collections = await db.listCollections().toArray();
+    const collections = await this.rethrow(db.listCollections().toArray());
     const existing = collections.map(c => c.name);
     const promises = Object.values(this.metadata.getAll())
       .filter(meta => existing.includes(meta.collection))
       .map(meta => this.getConnection('write').dropCollection(meta.collection));
 
-    await Promise.all(promises);
+    await this.rethrow(Promise.all(promises));
   }
 
   async ensureIndexes(): Promise<void> {
-    await this.createCollections();
+    await this.rethrow(this.createCollections());
     const promises: Promise<string>[] = [];
 
     for (const meta of Object.values(this.metadata.getAll())) {
@@ -107,7 +107,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
     }
 
-    await Promise.all(promises);
+    await this.rethrow(Promise.all(promises));
   }
 
   private createIndexes(meta: EntityMetadata) {

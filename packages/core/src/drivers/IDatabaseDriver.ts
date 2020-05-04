@@ -6,6 +6,7 @@ import { MetadataStorage } from '../metadata';
 import { LockMode } from '../unit-of-work';
 import { Collection } from '../entity';
 import { EntityManager } from '../index';
+import { DriverException } from '../exceptions';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -65,6 +66,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getDependencies(): string[];
 
   lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void>;
+
+  /**
+   * Converts native db errors to standardized driver exceptions
+   */
+  convertException(exception: Error): DriverException;
 
 }
 
