@@ -481,7 +481,7 @@ describe('EntityManagerMongo', () => {
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
-    expect(driver.getConnection().getCollection(BookTag.name).collectionName).toBe('book-tag');
+    expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
   });
 
   test('ensure indexes', async () => {
