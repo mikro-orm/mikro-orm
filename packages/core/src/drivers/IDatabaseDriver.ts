@@ -1,6 +1,6 @@
 import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { QueryOrderMap } from '../enums';
+import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { LockMode } from '../unit-of-work';
@@ -82,6 +82,7 @@ export interface FindOptions {
   refresh?: boolean;
   fields?: string[];
   schema?: string;
+  flags?: QueryFlag[];
 }
 
 export interface FindOneOptions {
@@ -92,4 +93,5 @@ export interface FindOneOptions {
   refresh?: boolean;
   fields?: string[];
   schema?: string;
+  flags?: QueryFlag[];
 }
