@@ -1,7 +1,7 @@
 import { Type } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
-class TestType extends Type { }
+class TestType extends Type<any> { }
 
 describe('Type', () => {
 

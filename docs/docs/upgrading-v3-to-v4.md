@@ -52,6 +52,13 @@ Instead of interface merging with `WrappedEntity`, one can now use classic inher
 by extending `BaseEntity` exported from `@mikro-orm/core`. If you do so, `wrap(entity)` 
 will return your entity. 
 
+## Custom types are now type safe
+
+Generic `Type` class has now two type arguments - the input and output types. 
+Input type defaults to `string`, output type defaults to the input type. 
+
+You might need to explicitly provide the types if your methods are strictly typed.
+
 ## `autoFlush` option has been removed
 
 The `flush` parameter of `persist()` and `remove()` methods is still there, but you

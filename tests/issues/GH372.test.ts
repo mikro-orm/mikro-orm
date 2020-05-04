@@ -5,13 +5,15 @@ import { SchemaGenerator } from '@mikro-orm/knex';
 import { Entity, Logger, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-class PointType extends Type {
+type Point = { x: number; y: number };
 
-  convertToDatabaseValue(value: { x: number; y: number }): Raw {
+class PointType extends Type<Point, Raw> {
+
+  convertToDatabaseValue(value: Point): Raw {
     return Knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
   }
 
-  convertToJSValue(value: any): { x: number; y: number } {
+  convertToJSValue(value: any): Point {
     if (typeof value === 'object') {
       return value; // pg connector is automatically converting point to { x, y }
     }
@@ -33,7 +35,7 @@ class A {
   id!: number;
 
   @Property({ type: PointType })
-  prop!: { x: number; y: number };
+  prop!: Point;
 
 }
 
