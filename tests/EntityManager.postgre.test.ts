@@ -1,5 +1,8 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import {
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, Logger, ValidationError, wrap, UniqueConstraintViolationException,
+  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
@@ -1203,6 +1206,18 @@ describe('EntityManagerPostgre', () => {
     expect(a3).toBeNull();
     const address2 = await orm.em.findOne(Address2, author.id as any);
     expect(address2).toBeNull();
+  });
+
+  test('exceptions', async () => {
+    const driver = orm.em.getDriver();
+    await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(driver.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
+    await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+    await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
+    await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
   afterAll(async () => orm.close(true));

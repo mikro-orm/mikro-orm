@@ -1,6 +1,5 @@
 import { Configuration } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
-
 import { SqliteConnection } from './SqliteConnection';
 import { SqlitePlatform } from './SqlitePlatform';
 
