@@ -22,7 +22,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
    * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>): Promise<MikroORM<D>> {
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
     if (!options) {
       options = await ConfigurationLoader.getConfiguration<D>();
     }
@@ -34,10 +34,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.em = orm.driver.createEntityManager<D>();
     orm.metadata.decorate(orm.em);
     orm.driver.setMetadata(orm.metadata);
-    await orm.connect();
 
-    if (orm.config.get('ensureIndexes')) {
-      await orm.driver.ensureIndexes();
+    if (connect) {
+      await orm.connect();
+
+      if (orm.config.get('ensureIndexes')) {
+        await orm.driver.ensureIndexes();
+      }
     }
 
     return orm;
