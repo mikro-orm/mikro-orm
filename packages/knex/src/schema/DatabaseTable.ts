@@ -102,6 +102,7 @@ export class DatabaseTable {
       reference,
       columnType: column.type,
       default: this.getPropertyDefaultValue(schemaHelper, column, type),
+      defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
       nullable: column.nullable,
       primary: column.primary,
       fieldName: column.name,
@@ -142,15 +143,17 @@ export class DatabaseTable {
     return schemaHelper.getTypeFromDefinition(column.type, defaultType);
   }
 
-  private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string): any {
+  private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string, raw = false): any {
+    const empty = raw ? 'null' : undefined;
+
     if (!column.defaultValue) {
-      return;
+      return empty;
     }
 
     const val = schemaHelper.normalizeDefaultValue(column.defaultValue, column.maxLength);
 
     if (column.nullable && val === 'null') {
-      return;
+      return empty;
     }
 
     if (propType === 'boolean') {
