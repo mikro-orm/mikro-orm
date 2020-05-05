@@ -108,7 +108,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   reference: ReferenceType;
   wrappedReference?: boolean;
   fieldNames: string[];
-  default?: any;
+  default?: string | number | boolean | null;
+  defaultRaw?: string;
   prefix?: string | boolean;
   embedded?: [string, string];
   embeddable: Constructor<T>;

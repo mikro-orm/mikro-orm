@@ -729,11 +729,11 @@ create table \`book4\` (\`id\` integer not null primary key autoincrement, \`cre
 
 create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
-create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`type\` text check (\`type\` in ('local', 'global')) not null default local);
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local');
 
 create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar null, \`version\` integer not null default 1);
 
-create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`version\` datetime not null default current_timestamp);
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default 'asd', \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
@@ -823,11 +823,11 @@ create table \`book4\` (\`id\` integer not null primary key autoincrement, \`cre
 
 create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 
-create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`type\` text check (\`type\` in ('local', 'global')) not null default local);
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local');
 
 create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar null, \`version\` integer not null default 1);
 
-create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default asd, \`version\` datetime not null default current_timestamp);
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null default 'asd', \`version\` datetime not null default current_timestamp);
 
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`version\` datetime not null default current_timestamp);
 

@@ -24,7 +24,7 @@ drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
 drop table if exists "publisher2_to_test2" cascade;
 
-create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null, "terms_accepted" bool not null default false, "optional" bool null, "identities" jsonb null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" jsonb null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_born_index" on "author2" ("born");
 create index "born_time_idx" on "author2" ("born_time");
