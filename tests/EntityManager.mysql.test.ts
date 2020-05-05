@@ -2026,16 +2026,14 @@ describe('EntityManagerMySql', () => {
   });
 
   test('exceptions', async () => {
-    await orm.em.transactional(async em => {
-      await em.nativeInsert(Author2, { name: 'author', email: 'email' });
-      await expect(em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-      await expect(em.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
-      await expect(em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
-      await expect(em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
-      await expect(em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
-      await expect(em.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
-      await expect(em.execute('insert into foo_bar2 () values ()')).rejects.toThrow(NotNullConstraintViolationException);
-    });
+    await orm.em.nativeInsert(Author2, { name: 'author', email: 'email' });
+    await expect(orm.em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(orm.em.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(orm.em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
+    await expect(orm.em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+    await expect(orm.em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
+    await expect(orm.em.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
+    // await expect(orm.em.execute('insert into foo_bar2 () values ()')).rejects.toThrow(NotNullConstraintViolationException);
   });
 
   test('em.execute()', async () => {

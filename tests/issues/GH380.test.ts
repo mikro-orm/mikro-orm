@@ -12,7 +12,7 @@ class A {
   @Property({ default: -1 })
   foo!: number;
 
-  @Property({ default: "'baz'" })
+  @Property({ default: 'baz' })
   bar!: string;
 
 }
