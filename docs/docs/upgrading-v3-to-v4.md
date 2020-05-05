@@ -59,6 +59,16 @@ Input type defaults to `string`, output type defaults to the input type.
 
 You might need to explicitly provide the types if your methods are strictly typed.
 
+## Property `default` and `defaultRaw`
+
+Previously the `default` option of properties was used as is, so we had to wrap 
+strings in quotes (e.g. `@Property({ default: "'foo bar'" })`). 
+
+In v4 the `default` is typed as `string | number | boolean | null` and when used
+with string value, it will be automatically quoted. 
+
+To use SQL functions we now need to use `defaultRaw`: `@Property({ defaultRaw: 'now()' })`.
+
 ## `autoFlush` option has been removed
 
 The `flush` parameter of `persist()` and `remove()` methods is still there, but you
