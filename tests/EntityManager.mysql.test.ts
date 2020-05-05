@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import chalk from 'chalk';
 
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
@@ -188,7 +188,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
-    const a = await repo.findOne(bar.id, ['baz']);
+    const a = await repo.findOne(bar.id, { populate: ['baz'], flags: [QueryFlag.DISTINCT] });
     expect(wrap(a!.baz).isInitialized()).toBe(true);
     expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
   });
@@ -1964,16 +1964,78 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
   });
 
+  test('pagination', async () => {
+    for (let i = 1; i <= 10; i++) {
+      const num = `${i}`.padStart(2, '0');
+      const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
+      new Book2(`Bible ${num}.1`, god);
+      new Book2(`Bible ${num}.2`, god);
+      new Book2(`Bible ${num}.3`, god);
+      orm.em.persist(god);
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // without paginate flag it fails to get 5 records
+    const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      limit: 5,
+    });
+
+    expect(res1).toHaveLength(2);
+    expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    // with paginate flag (and a bit of dark sql magic) we get what we want
+    const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      offset: 3,
+      limit: 5,
+      flags: [QueryFlag.PAGINATE],
+    });
+
+    expect(res2).toHaveLength(5);
+    expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` where `e0`.`id` in (select `e0`.`id` ' +
+      'from (select `e0`.`id` ' +
+      'from (select `e0`.`id` ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
+      'where `e1`.`title` like ? order by `e0`.`name` asc, `e1`.`title` asc' +
+      ') as `e0` group by `e0`.`id` limit ? offset ?' +
+      ') as `e0`' +
+      ') order by `e0`.`name` asc, `e1`.`title` asc');
+
+    // with paginate flag without offset
+    const res3 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      limit: 5,
+      flags: [QueryFlag.PAGINATE],
+    });
+
+    expect(res3).toHaveLength(5);
+    expect(res3.map(a => a.name)).toEqual(['God 01', 'God 02', 'God 03', 'God 04', 'God 05']);
+  });
+
   test('exceptions', async () => {
-    const driver = orm.em.getDriver();
-    await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
-    await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
-    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
-    await expect(driver.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
-    await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
-    await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
-    await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
+    await orm.em.transactional(async em => {
+      await em.nativeInsert(Author2, { name: 'author', email: 'email' });
+      await expect(em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+      await expect(em.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+      await expect(em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
+      await expect(em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+      await expect(em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
+      await expect(em.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
+      await expect(em.execute('insert into foo_bar2 () values ()')).rejects.toThrow(NotNullConstraintViolationException);
+    });
   });
 
   test('em.execute()', async () => {

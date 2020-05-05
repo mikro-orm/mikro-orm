@@ -39,3 +39,10 @@ export interface QueryOrderMap {
 export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;
 }
+
+export enum QueryFlag {
+  DISTINCT = 'DISTINCT',
+  PAGINATE = 'PAGINATE',
+  UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
+  DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
+}
