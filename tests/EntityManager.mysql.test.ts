@@ -3,7 +3,7 @@ import chalk from 'chalk';
 
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
-  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
+  UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
@@ -1977,18 +1977,26 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
     // without paginate flag it fails to get 5 records
     const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
+      groupBy: ['id', 'name', 'e1.title'],
     });
 
     expect(res1).toHaveLength(2);
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
-
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
+      'where `e1`.`title` like ? ' +
+      'group by `e0`.`id`, `e0`.`name`, `e1`.`title` ' +
+      'order by `e0`.`name` asc, `e1`.`title` asc limit ?');
 
     // with paginate flag (and a bit of dark sql magic) we get what we want
     const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
@@ -2000,7 +2008,7 @@ describe('EntityManagerMySql', () => {
 
     expect(res2).toHaveLength(5);
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
       'from `author2` as `e0` ' +
       'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` where `e0`.`id` in (select `e0`.`id` ' +
