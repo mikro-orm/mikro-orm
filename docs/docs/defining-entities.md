@@ -195,17 +195,19 @@ database (e.g. when you instantiate new entity via `new Author()` or `em.create(
 
 2. Use `default` parameter of `@Property` decorator. This way the actual default value 
 will be provided by the database, and automatically mapped to the entity property after
-it is being persisted (after flush). Also note that with this approach, you need to wrap
-string default values in quotes as without quoting the value is considered a function.
+it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
+
+    > Since v4 you use `defaultRaw` for SQL functions, as `default` with string values
+    > will be automatically quoted. 
 
     ```typescript
     @Property({ default: 1 })
     foo!: number;
 
-    @Property({ default: "'abc'" })
+    @Property({ default: 'abc' })
     bar!: string;
 
-    @Property({ default: 'now' })
+    @Property({ defaultRaw: 'now' })
     baz!: Date;
     ``` 
 
