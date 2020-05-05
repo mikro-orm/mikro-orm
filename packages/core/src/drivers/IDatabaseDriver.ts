@@ -83,11 +83,13 @@ export interface FindOptions {
   fields?: string[];
   schema?: string;
   flags?: QueryFlag[];
+  groupBy?: string | string[];
 }
 
 export interface FindOneOptions {
   populate?: string[] | boolean;
   orderBy?: QueryOrderMap;
+  groupBy?: string | string[];
   lockMode?: LockMode;
   lockVersion?: number | Date;
   refresh?: boolean;
