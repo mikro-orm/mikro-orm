@@ -1,8 +1,7 @@
-import { Raw, Transaction as KnexTransaction, QueryBuilder as KnexQueryBuilder, Value } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, Value } from 'knex';
 import {
-  AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, QueryOrderMap,
-  Configuration, Utils, Collection, FindOneOptions, FindOptions, ReferenceType, wrap, DatabaseDriver, QueryResult,
-  Transaction, EntityManager, IDatabaseDriver, EntityManagerType, LockMode,
+  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty,
+  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, wrap,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
@@ -46,6 +45,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       qb.limit(options.limit, options.offset);
     }
 
+    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
+
     return this.rethrow(qb.execute('all'));
   }
 
@@ -71,6 +72,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .limit(1)
       .setLockMode(options.lockMode)
       .withSchema(options.schema);
+
+    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
     return this.rethrow(qb.execute('get'));
   }
