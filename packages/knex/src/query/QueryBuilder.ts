@@ -1,9 +1,9 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
-  QBFilterQuery, QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError,
+  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
+  QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError,
 } from '@mikro-orm/core';
-import { QueryFlag, QueryType } from './enums';
+import { QueryType } from './enums';
 import { AbstractSqlDriver, QueryBuilderHelper } from '../index';
 import { CriteriaNode } from './internal';
 import { SqlEntityManager } from '../SqlEntityManager';
@@ -172,7 +172,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  limit(limit: number, offset = 0): this {
+  limit(limit?: number, offset = 0): this {
     this._limit = limit;
 
     if (offset) {
@@ -182,7 +182,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  offset(offset: number): this {
+  offset(offset?: number): this {
     this._offset = offset;
     return this;
   }
@@ -349,7 +349,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return ret;
   }
 
-  private prepareFields<T extends string | Raw = string | Raw>(fields: (string | KnexQueryBuilder)[], type: 'where' | 'groupBy' = 'where'): T[] {
+  private prepareFields<T extends string | Raw = string | Raw>(fields: (string | KnexQueryBuilder)[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): T[] {
     const ret: (string | KnexQueryBuilder)[] = [];
 
     fields.forEach(f => {
@@ -461,19 +461,49 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
 
-    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
-      const subQuery = this.clone();
-      subQuery.finalized = true;
-
-      // wrap one more time to get around MySQL limitations
-      // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
-      const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
-      const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
-
-      this[method](this._data).where({
-        [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
-      });
+    if (this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {
+      this.wrapPaginateSubQuery(meta);
     }
+
+    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
+      this.wrapModifySubQuery(meta);
+    }
+  }
+
+  private wrapPaginateSubQuery(meta: EntityMetadata): void {
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query');
+    const subQuery = this.clone().limit(undefined).offset(undefined);
+    subQuery.finalized = true;
+    const knexQuery = subQuery.as(this.alias).clearSelect().select(pks);
+
+    // 3 sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
+    // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
+    const subSubQuery = this.getKnex().select(pks).from(knexQuery).groupBy(pks).limit(this._limit!);
+
+    if (this._offset) {
+      subSubQuery.offset(this._offset);
+    }
+
+    const subSubSubQuery = this.getKnex().select(pks).from(subSubQuery.as(this.alias));
+    this._limit = undefined;
+    this._offset = undefined;
+    this.select(this._fields!).where({
+      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubSubQuery },
+    });
+  }
+
+  private wrapModifySubQuery(meta: EntityMetadata): void {
+    const subQuery = this.clone();
+    subQuery.finalized = true;
+
+    // wrap one more time to get around MySQL limitations
+    // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
+    const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
+    const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
+
+    this[method](this._data).where({
+      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
+    });
   }
 
   private autoJoinPivotTable(field: string): void {
