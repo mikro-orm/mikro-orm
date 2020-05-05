@@ -6,9 +6,3 @@ export enum QueryType {
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
 }
-
-export enum QueryFlag {
-  DISTINCT = 'DISTINCT',
-  UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
-  DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
-}
