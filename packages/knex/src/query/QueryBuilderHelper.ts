@@ -406,7 +406,7 @@ export class QueryBuilderHelper {
     const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
 
     if (useReturningStatement) {
-      const returningProps = Object.values(meta!.properties).filter(prop => prop.primary || prop.default);
+      const returningProps = Object.values(meta!.properties).filter(prop => prop.primary || prop.defaultRaw);
       qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
     }
   }

@@ -117,7 +117,7 @@ describe('SchemaGenerator', () => {
         createdAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
           fieldNames: ['created_at'],
@@ -126,7 +126,7 @@ describe('SchemaGenerator', () => {
         updatedAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
           fieldNames: ['updated_at'],
@@ -148,6 +148,7 @@ describe('SchemaGenerator', () => {
       primaryKey: 'id',
     } as any;
     meta.set('NewTable', newTableMeta);
+    await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
     await generator.updateSchema();
 
@@ -156,8 +157,8 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.born.type = 'number';
     authorMeta.properties.born.columnTypes = ['int'];
     authorMeta.properties.born.nullable = false;
-    authorMeta.properties.born.default = 42;
-    authorMeta.properties.age.default = 42;
+    authorMeta.properties.born.defaultRaw = '42';
+    authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-alter-column');
@@ -438,7 +439,7 @@ describe('SchemaGenerator', () => {
         createdAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
           fieldNames: ['created_at'],
@@ -447,7 +448,7 @@ describe('SchemaGenerator', () => {
         updatedAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
           fieldNames: ['updated_at'],
@@ -470,7 +471,7 @@ describe('SchemaGenerator', () => {
     } as any;
     meta.set('NewTable', newTableMeta);
     const authorMeta = meta.get('Author2');
-    authorMeta.properties.termsAccepted.default = false;
+    authorMeta.properties.termsAccepted.defaultRaw = 'false';
 
     await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-create-table');
@@ -480,14 +481,14 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.name.type = 'number';
     authorMeta.properties.name.columnTypes = ['int4'];
     authorMeta.properties.name.nullable = true;
-    authorMeta.properties.name.default = 42;
-    authorMeta.properties.age.default = 42;
+    authorMeta.properties.name.defaultRaw = '42';
+    authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-column');
     await generator.updateSchema();
 
-    delete authorMeta.properties.name.default;
+    delete authorMeta.properties.name.defaultRaw;
     authorMeta.properties.name.nullable = false;
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;

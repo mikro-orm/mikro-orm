@@ -53,6 +53,7 @@ discuss specifics.
 - [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
 - [x] Do not define internal methods like `init` directly on the entity prototype ([#506](https://github.com/mikro-orm/mikro-orm/issues/506))
 - [x] Support multiple M:N with same properties without manually specifying `pivotTable`
+- [x] Change behaviour of property `default`, add `defaultRaw`
 
 ## Docs
 
