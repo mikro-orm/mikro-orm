@@ -30,13 +30,13 @@ discuss specifics.
 - [x] Nested conditions in `em.remove()` via subqueries (#492)
 - [x] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
 - [x] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
+- [x] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
 - [ ] Lazy scalar properties (allow having props that won't be loaded by default, but can be populated)
 - [ ] Support computed properties
 - [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
 - [ ] Support external hooks when using EntitySchema (hooks outside of entity)
 - [ ] Cache metadata only with ts-morph provider
 - [ ] Diffing entity level indexes in schema generator
-- [ ] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
 - [ ] Add custom types for blob, array, json
 - [ ] Seeds (#251)
 - [ ] Static checking of population (#214)

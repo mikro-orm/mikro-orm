@@ -39,7 +39,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    qb.select(options.fields || '*').populate(options.populate).where(where as Dictionary).orderBy(options.orderBy!).withSchema(options.schema);
+    qb.select(options.fields || '*')
+      .populate(options.populate)
+      .where(where as Dictionary)
+      .orderBy(options.orderBy!)
+      .groupBy(options.groupBy!)
+      .withSchema(options.schema);
 
     if (options.limit !== undefined) {
       qb.limit(options.limit, options.offset);
@@ -69,6 +74,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .populate(options.populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
+      .groupBy(options.groupBy!)
       .limit(1)
       .setLockMode(options.lockMode)
       .withSchema(options.schema);
