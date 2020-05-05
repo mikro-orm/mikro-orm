@@ -311,6 +311,7 @@ export class MetadataDiscovery {
 
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
+      this.initDefaultValue(prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(prop);
       this.initColumnType(prop, meta.path);
@@ -569,9 +570,9 @@ export class MetadataDiscovery {
     return prop;
   }
 
-  private getDefaultVersionValue(prop: EntityProperty): any {
-    if (typeof prop.default !== 'undefined') {
-      return prop.default;
+  private getDefaultVersionValue(prop: EntityProperty): string {
+    if (typeof prop.defaultRaw !== 'undefined') {
+      return prop.defaultRaw;
     }
 
     if (prop.type.toLowerCase() === 'date') {
@@ -579,7 +580,15 @@ export class MetadataDiscovery {
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
 
-    return 1;
+    return '1';
+  }
+
+  private initDefaultValue(prop: EntityProperty): void {
+    if (prop.defaultRaw || !('default' in prop)) {
+      return;
+    }
+
+    prop.defaultRaw = typeof prop.default === 'string' ? `'${prop.default}'` : '' + prop.default;
   }
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
@@ -588,7 +597,7 @@ export class MetadataDiscovery {
     }
 
     meta.versionProperty = prop.name;
-    prop.default = this.getDefaultVersionValue(prop);
+    prop.defaultRaw = this.getDefaultVersionValue(prop);
   }
 
   private initCustomType(prop: EntityProperty): void {

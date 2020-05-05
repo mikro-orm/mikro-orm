@@ -42,7 +42,8 @@ export type PropertyOptions = {
   length?: any;
   onCreate?: () => any;
   onUpdate?: () => any;
-  default?: any;
+  default?: string | number | boolean | null;
+  defaultRaw?: string;
   nullable?: boolean;
   unsigned?: boolean;
   persist?: boolean;

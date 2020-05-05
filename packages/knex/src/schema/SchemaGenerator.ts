@@ -1,6 +1,6 @@
-import { ColumnBuilder, Raw, SchemaBuilder, TableBuilder } from 'knex';
-import { Cascade, ReferenceType, EntityMetadata, EntityProperty, Utils } from '@mikro-orm/core';
-import { IsSame, DatabaseSchema, Column, DatabaseTable } from '../index';
+import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
+import { Cascade, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
+import { Column, DatabaseSchema, DatabaseTable, IsSame } from '../index';
 import { SqlEntityManager } from '../SqlEntityManager';
 
 export class SchemaGenerator {
@@ -372,9 +372,7 @@ export class SchemaGenerator {
     const index = (indexed || (prop.primary && meta.compositePK)) && !(alter?.sameIndex);
     const indexName = this.getIndexName(meta, prop, false, columnName);
     const uniqueName = this.getIndexName(meta, prop, true, columnName);
-    const hasDefault = typeof prop.default !== 'undefined'; // support falsy default values like `0`, `false` or empty string
-    const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !hasDefault;
-    const defaultValue = this.getDefaultValue(prop, hasDefault);
+    const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !prop.defaultRaw;
 
     Utils.runIfNotEmpty(() => col.nullable(), !sameNullable && nullable);
     Utils.runIfNotEmpty(() => col.notNullable(), !sameNullable && !nullable);
@@ -382,7 +380,7 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.unsigned(), pkProp.unsigned);
     Utils.runIfNotEmpty(() => col.index(indexName), index);
     Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
-    Utils.runIfNotEmpty(() => col.defaultTo(defaultValue), !sameDefault);
+    Utils.runIfNotEmpty(() => col.defaultTo(prop.defaultRaw ? this.knex.raw(prop.defaultRaw) : null), !sameDefault);
 
     return col;
   }
@@ -396,14 +394,6 @@ export class SchemaGenerator {
     }
 
     return this.helper.getIndexName(meta.collection, [columnName], unique);
-  }
-
-  private getDefaultValue<T>(prop: EntityProperty<T>, hasDefault: boolean): Raw | null {
-    if (!hasDefault) {
-      return null;
-    }
-
-    return this.knex.raw(prop.default === '' ? this.helper.getDefaultEmptyString() : '' + prop.default);
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[]): void {

@@ -58,7 +58,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0): string {
-    const type = `${to.columnTypes[idx]}${to.unsigned ? ' unsigned' : ''} ${to.nullable ? 'null' : 'not null'}${to.default ? ' default ' + to.default : ''}`;
+    const type = `${to.columnTypes[idx]}${to.unsigned ? ' unsigned' : ''} ${to.nullable ? 'null' : 'not null'}${to.defaultRaw ? ' default ' + to.defaultRaw : ''}`;
     return `alter table \`${tableName}\` change \`${from.name}\` \`${to.fieldNames[idx]}\` ${type}`;
   }
 

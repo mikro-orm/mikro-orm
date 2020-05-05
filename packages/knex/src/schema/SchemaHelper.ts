@@ -202,30 +202,30 @@ export abstract class SchemaHelper {
   }
 
   private hasSameDefaultValue(info: Column, prop: EntityProperty, defaultValues: Dictionary<string[]>): boolean {
-    if (info.defaultValue && prop.default) {
+    if (info.defaultValue === null || info.defaultValue.toString().toLowerCase() === 'null' || info.defaultValue.toString().startsWith('nextval(')) {
+      return !Utils.isDefined(prop.defaultRaw, true) || prop.defaultRaw!.toLowerCase() === 'null';
+    }
+
+    if (prop.type === 'boolean') {
+      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(info.defaultValue);
+      return '' + defaultValue === prop.defaultRaw;
+    }
+
+    if (info.defaultValue && prop.defaultRaw) {
       const defaultValue = info.defaultValue.toString().replace(/\([?\d]+\)/, '').toLowerCase();
-      const propDefault = prop.default.toString().toLowerCase();
+      const propDefault = prop.defaultRaw.toString().toLowerCase();
       const same = propDefault === info.defaultValue.toString().toLowerCase();
       const equal = same || propDefault === defaultValue;
 
       return equal || Object.keys(defaultValues).map(t => t.replace(/\([?\d]+\)/, '').toLowerCase()).includes(defaultValue);
     }
 
-    if (info.defaultValue === null || info.defaultValue.toLowerCase() === 'null' || info.defaultValue.toString().startsWith('nextval(')) {
-      return !Utils.isDefined(prop.default, true);
-    }
-
-    if (prop.type === 'boolean') {
-      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(info.defaultValue);
-      return defaultValue === !!prop.default;
-    }
-
-    if (['', this.getDefaultEmptyString()].includes(prop.default)) {
-      return info.defaultValue.toString() === '' || info.defaultValue.toString() === this.getDefaultEmptyString();
+    if (['', this.getDefaultEmptyString()].includes(prop.defaultRaw!)) {
+      return ['', this.getDefaultEmptyString()].includes(info.defaultValue.toString());
     }
 
     // eslint-disable-next-line eqeqeq
-    return info.defaultValue == prop.default; // == intentionally
+    return info.defaultValue == prop.defaultRaw; // == intentionally
   }
 
   private hasSameIndex(prop: EntityProperty, column: Column): boolean {
