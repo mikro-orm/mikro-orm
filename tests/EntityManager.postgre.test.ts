@@ -642,7 +642,7 @@ describe('EntityManagerPostgre', () => {
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, ['bar']);
     expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e0"."id" = $1 limit $2');
-    expect(mock.mock.calls[2][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(mock.mock.calls[2][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -650,7 +650,7 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, ['bar']);
     expect(mock.mock.calls[3][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e1"."id" = $1 limit $2');
-    expect(mock.mock.calls[4][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(mock.mock.calls[4][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -1126,7 +1126,7 @@ describe('EntityManagerPostgre', () => {
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'where "e1"."name" = $1');
@@ -1136,7 +1136,7 @@ describe('EntityManagerPostgre', () => {
     const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
     expect(res2).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
@@ -1148,7 +1148,7 @@ describe('EntityManagerPostgre', () => {
     const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } });
     expect(res3).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'where "e1"."favourite_book_uuid_pk" = $1');
@@ -1158,7 +1158,7 @@ describe('EntityManagerPostgre', () => {
     const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +

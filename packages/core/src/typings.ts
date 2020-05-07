@@ -110,6 +110,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   fieldNames: string[];
   default?: string | number | boolean | null;
   defaultRaw?: string;
+  formula?: (alias: string) => string;
   prefix?: string | boolean;
   embedded?: [string, string];
   embeddable: Constructor<T>;
