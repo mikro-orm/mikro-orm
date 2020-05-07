@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Formula, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 
@@ -19,6 +19,9 @@ export class FooBar2 extends BaseEntity22 {
 
   @Property({ version: true, length: 0 })
   version!: Date;
+
+  @Formula(`(select 123)`)
+  random?: number;
 
   static create(name: string) {
     const bar = new FooBar2();
