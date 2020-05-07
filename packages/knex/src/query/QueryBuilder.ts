@@ -324,10 +324,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  getRefForField(field: string, schema: string, as: string) {
-    return this.knex.ref(field).withSchema(schema).as(as);
-  }
-
   private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): string[] {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];

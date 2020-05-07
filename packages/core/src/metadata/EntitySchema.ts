@@ -113,10 +113,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
-    const prop = {
-      ...this.defaultRelationshipConfig(ReferenceType.MANY_TO_ONE),
-      ...options,
-    };
+    const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     this.addProperty(name, type, prop);
   }
@@ -132,26 +129,17 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
     }
 
-    const prop = {
-      ...this.defaultRelationshipConfig(ReferenceType.MANY_TO_MANY),
-      ...options,
-    };
+    const prop = this.createProperty(ReferenceType.MANY_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToMany<K = object>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
-    const prop = {
-      ...this.defaultRelationshipConfig(ReferenceType.ONE_TO_MANY),
-      ...options,
-    };
+    const prop = this.createProperty<T>(ReferenceType.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
-    const prop = {
-      ...this.defaultRelationshipConfig(ReferenceType.ONE_TO_ONE),
-      ...options,
-    };
+    const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
@@ -300,11 +288,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     return type;
   }
 
-  private defaultRelationshipConfig(reference: ReferenceType) {
+  private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty = {}) {
     return {
       reference,
       cascade: [Cascade.PERSIST, Cascade.MERGE],
       strategy: LoadStrategy.SELECT_IN,
+      ...options,
     };
   }
 

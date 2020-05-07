@@ -33,8 +33,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.get(entityName);
     options = { populate: [], orderBy: {}, ...(options || {}) };
 
-    const populate = options.populate as PopulateOptions[];
-    options.populate = this.autoJoinOneToOneOwner(meta, populate);
+    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions[]);
 
     if (options.fields) {
       options.fields.unshift(...meta.primaryKeys.filter(pk => !options!.fields!.includes(pk)));
@@ -62,9 +61,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options = { populate: [], orderBy: {}, ...(options || {}) };
 
     const meta = this.metadata.get(entityName);
-    const populate = options.populate as PopulateOptions[];
 
-    options.populate = this.autoJoinOneToOneOwner(meta, populate);
+    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions[]);
     const pk = meta.primaryKeys[0];
 
     if (Utils.isPrimaryKey(where)) {
@@ -89,16 +87,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const method = joinedLoads.length > 0 ? 'all' : 'get';
 
-    const result = await qb
-      .select(selects)
+    qb.select(selects)
       .populate(populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .setLockMode(options.lockMode)
-      .withSchema(options.schema)
-      .execute(method);
+      .withSchema(options.schema);
+
+    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
+
+    const result = await this.rethrow(qb.execute('all'));
 
     if (Array.isArray(result)) {
       return this.processJoinedLoads(result, joinedLoads) as unknown as T;
@@ -123,7 +123,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const relationPojo = {};
 
       Object.values(properties)
-        .filter(({ reference }) => reference === 'scalar')
+        .filter(({ reference }) => reference === ReferenceType.SCALAR)
         .forEach(prop => {
           const aliasedProp = this.getAliasedField(prop.fieldNames[0], relationName, index).as;
 
@@ -282,15 +282,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected joinedLoads(meta: EntityMetadata, populate: PopulateOptions[]): string[] {
-    return populate.filter(({ field }) => {
-      const relation = meta.properties[field];
-
-      if (!relation) {
-        return false;
-      }
-
-      return relation.strategy === LoadStrategy.JOINED;
-    }).map(({ field }) => field);
+    return populate
+      .filter(({ field }) => meta.properties[field]?.strategy === LoadStrategy.JOINED)
+      .map(({ field }) => field);
   }
 
   protected processJoinedLoads<T extends AnyEntity<T>>(results: object[], joinedLoads: string[]): T {
@@ -321,6 +315,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     };
   }
 
+  getRefForField(field: string, schema: string, alias: string) {
+    return this.connection.getKnex().ref(field).withSchema(schema).as(alias);
+  }
+
   protected getSelectForJoinedLoad(queryBuilder: QueryBuilder, meta: EntityMetadata, joinedLoads: string[]): Field[] {
     const selects: Field[] = [];
 
@@ -340,7 +338,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
         .forEach(prop => {
           const { field, schema, as } = this.getAliasedField(prop.fieldNames[0], relationName, index);
-          selects.push(queryBuilder.getRefForField(field, schema, as));
+          selects.push(this.getRefForField(field, schema, as));
           queryBuilder.join(relationName, relationName);
         });
     });
