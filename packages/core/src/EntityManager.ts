@@ -598,20 +598,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (Array.isArray(populate)) {
       return populate.map(field => {
         if (Utils.isString(field)) {
-          const relation = meta.properties[field];
-
-          // If no relation is found, we assume that the relation is invalid and don't attempt to get the strategy.
-          // By returning a field/relation that doesn't exist, validation code will handle that error upstream.
-          if (!relation) {
-            return {
-              field,
-            };
-          }
-
-          return {
-            field,
-            strategy: relation.strategy,
-          };
+          const strategy = meta.properties[field]?.strategy;
+          return { field, strategy };
         }
 
         return field;
