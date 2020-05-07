@@ -98,7 +98,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
 
-    const result = await this.rethrow(qb.execute('all'));
+    const result = await this.rethrow(qb.execute(method));
 
     if (Array.isArray(result)) {
       return this.processJoinedLoads(result, joinedLoads) as unknown as T;
@@ -287,8 +287,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .map(({ field }) => field);
   }
 
-  protected processJoinedLoads<T extends AnyEntity<T>>(results: object[], joinedLoads: string[]): T {
-    return results.reduce((accumulator, value) => {
+  protected processJoinedLoads<T extends AnyEntity<T>>(result: object[], joinedLoads: string[]): T | null {
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result.reduce((accumulator, value) => {
       joinedLoads.forEach(relationName => {
         if (relationName in value) {
           const relation = value[relationName];
