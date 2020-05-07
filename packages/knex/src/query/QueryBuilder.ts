@@ -458,6 +458,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       }
     });
 
+    if (this.metadata.has(this.entityName) && (this._fields?.includes('*') || this._fields?.includes(`${this.alias}.*`))) {
+      Object.values(meta.properties)
+        .filter(prop => prop.formula)
+        .forEach(prop => {
+          const formula = this.knex.ref(this.alias).toString();
+          const alias = this.knex.ref(prop.fieldNames[0]).toString();
+          this.addSelect(`${prop.formula!(formula)} as ${alias}`);
+        });
+    }
+
     SmartQueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
 
