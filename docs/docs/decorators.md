@@ -137,6 +137,22 @@ enum3 = 3;
 enum4 = 'a';
 ```
 
+### @Formula()
+
+`@Formula()` decorator can be used to map some SQL snippet to your entity. 
+The SQL fragment can be as complex as you want and even include subselects.
+
+See [Defining Entities](defining-entities.md#formulas).
+
+| Parameter | Type | Optional | Description |
+|-----------|------|----------|-------------|
+| `formula` | `string` &#124; `() => string` | no | SQL fragment that will be part of the select clause.  |
+
+```typescript
+@Formula('obj_length * obj_height * obj_width')
+objectVolume?: number;
+```
+
 ### @Index() and @Unique()
 
 Use `@Index()` to create an index, or `@Unique()` to create unique constraint. You can 
