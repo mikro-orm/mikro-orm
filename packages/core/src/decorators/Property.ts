@@ -44,6 +44,7 @@ export type PropertyOptions = {
   onUpdate?: () => any;
   default?: string | number | boolean | null;
   defaultRaw?: string;
+  formula?: string | ((alias: string) => string);
   nullable?: boolean;
   unsigned?: boolean;
   persist?: boolean;

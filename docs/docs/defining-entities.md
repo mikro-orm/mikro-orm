@@ -256,6 +256,25 @@ export const enum UserStatus {
 // export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
 
+## Formulas
+
+`@Formula()` decorator can be used to map some SQL snippet to your entity. 
+The SQL fragment can be as complex as you want and even include subselects.
+
+```typescript
+@Formula('obj_length * obj_height * obj_width')
+objectVolume?: number;
+```
+
+Formulas will be added to the select clause automatically. In case you are facing 
+problems with `NonUniqueFieldNameException`, you can define the formula as a 
+callback that will receive the entity alias in the parameter:
+
+```typescript
+@Formula(alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`)
+objectVolume?: number;
+```
+
 ## Indexes
 
 You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator. 

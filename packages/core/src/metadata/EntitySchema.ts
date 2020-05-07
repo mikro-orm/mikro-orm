@@ -66,6 +66,11 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       prop.type = type as string;
     }
 
+    if (Utils.isString(prop.formula)) {
+      const formula = prop.formula as string; // tmp var is needed here
+      prop.formula = () => formula;
+    }
+
     this._meta.properties[name] = prop;
   }
 
