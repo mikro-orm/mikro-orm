@@ -48,12 +48,7 @@ export class Author2 extends BaseEntity2 {
   @Property({ type: TimeType, index: 'born_time_idx', nullable: true })
   bornTime?: string;
 
-  @OneToMany({
-    entity: () => Book2,
-    mappedBy: 'author',
-    orderBy: { title: QueryOrder.ASC },
-    strategy: LoadStrategy.JOINED,
-  })
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;
 
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
