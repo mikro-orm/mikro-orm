@@ -3,7 +3,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { Author2, Book2 } from './entities-sql';
 
-describe('Joined loading', () => {
+describe.skip('Joined loading', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
