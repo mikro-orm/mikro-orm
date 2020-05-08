@@ -108,11 +108,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = []): T | null {
-    const ret = super.mapResult(result, meta, populate);
+    const ret = super.mapResult(result, meta);
 
     if (!ret) {
       return null;
     }
+
     const joinedLoads = this.joinedLoads(meta, populate);
 
     joinedLoads.forEach((relationName, index) => {
@@ -125,7 +126,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       Object.values(properties)
         .filter(({ reference }) => reference === ReferenceType.SCALAR)
         .forEach(prop => {
-          const aliasedProp = this.getAliasedField(prop.fieldNames[0], relationName, index).as;
+          const aliasedProp = this.getAliasedField(prop.fieldNames[0], relationName, index).alias;
 
           if (aliasedProp in ret) {
             relationPojo[prop.name] = ret[aliasedProp];
@@ -270,11 +271,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return populate;
     }
 
-    const relationToPopulate = populate.map(({ field }) => field);
+    const relationsToPopulate = populate.map(({ field }) => field);
 
     const toPopulate: PopulateOptions[] = Object.values(meta.properties)
       .filter(prop => {
-        return prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationToPopulate.includes(prop.name);
+        return prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name);
       })
       .map(prop => ({ field: prop.name, strategy: prop.strategy }));
 
@@ -310,12 +311,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   protected getAliasedField(field: string, schema: string, index = 0){
     const tableAlias = schema.charAt(0);
-    const as = `${tableAlias}${index}_${field}`;
+    const alias = `${tableAlias}${index}_${field}`;
 
     return {
       field,
       schema,
-      as,
+      alias,
     };
   }
 
@@ -328,8 +329,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     // alias all fields in the primary table
     Object.values(meta.properties)
-      .filter((prop) => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
-      .forEach((prop) => {
+      .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
+      .forEach(prop => {
         selects.push(prop.fieldNames[0]);
         queryBuilder.addSelect(prop.fieldNames[0]);
       });
@@ -341,8 +342,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       Object.values(properties)
         .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
         .forEach(prop => {
-          const { field, schema, as } = this.getAliasedField(prop.fieldNames[0], relationName, index);
-          selects.push(this.getRefForField(field, schema, as));
+          const { field, schema, alias } = this.getAliasedField(prop.fieldNames[0], relationName, index);
+          selects.push(this.getRefForField(field, schema, alias));
           queryBuilder.join(relationName, relationName);
         });
     });
