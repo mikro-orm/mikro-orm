@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Configuration, RequestContext, Utils, ValidationError, SmartQueryHelper } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { IDatabaseDriver, FindOneOptions, FindOptions, EntityManagerType, PopulateOptions, Populate } from './drivers';
+import { IDatabaseDriver, FindOneOptions, FindOptions, EntityManagerType, Populate, PopulateOptions } from './drivers';
 import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQuery, Primary, Dictionary } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';

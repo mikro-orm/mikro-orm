@@ -16,7 +16,7 @@ export class EntityLoader {
   constructor(private readonly em: EntityManager) { }
 
   async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
-    if (entities.length === 0 || populate === false || (Array.isArray(populate) && populate.length > 0)) {
+    if (entities.length === 0 || populate === false) {
       return;
     }
 
