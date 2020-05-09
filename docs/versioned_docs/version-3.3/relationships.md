@@ -170,3 +170,18 @@ export class BookTag implements IdEntity<BookTag> {
 ```
 
 Again, more information about how collections work can be found on [collections page](collections.md). 
+
+> Note: if you are using multiple M:N relations between the same entities, you will need to manually specify the pivot table's name just on the **owning** sides. Here is an example:
+
+```typescript
+@Entity()
+export class Publisher {
+  // just on owning side (no mapped by provided)
+  @ManyToMany({ entity: () => Customer, pivotTable: "customer_publisher" })
+  costumers = new Collection<Customer>(this);
+
+  // just on owning side (no mapped by provided)
+  @ManyToMany({ entity: () => Author, pivotTable: "publisher_author" })
+  authors = new Collection<Author>(this);
+}
+```
