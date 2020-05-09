@@ -56,6 +56,27 @@ export class ConfigurationLoader {
     return paths;
   }
 
+  static async registerTsNode(tsConfigPath = process.cwd() + '/tsconfig.json') {
+    require('ts-node').register({
+      project: tsConfigPath,
+    });
+
+    if (await pathExists(tsConfigPath)) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const tsConfig = require(tsConfigPath);
+
+      /* istanbul ignore next */
+      const paths = tsConfig?.compilerOptions?.paths;
+
+      if (paths) {
+        require('tsconfig-paths').register({
+          baseUrl: tsConfig.compilerOptions.baseUrl,
+          paths: tsConfig.compilerOptions.paths,
+        });
+      }
+    }
+  }
+
 }
 
 export interface Settings {

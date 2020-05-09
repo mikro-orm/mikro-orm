@@ -39,9 +39,7 @@ export class CLIHelper {
     const settings = await ConfigurationLoader.getSettings();
 
     if (settings.useTsNode) {
-      require('ts-node').register({
-        project: settings.tsConfigPath,
-      });
+      await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
     }
 
     // noinspection HtmlDeprecatedTag
