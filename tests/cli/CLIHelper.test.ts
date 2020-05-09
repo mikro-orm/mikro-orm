@@ -4,6 +4,8 @@ jest.mock('../../tests/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'fo
 jest.mock('../../tests/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock('../../tests/package.json', () => pkg, { virtual: true });
+const tsc = { compilerOptions: {} } as any;
+jest.mock('../../tests/tsconfig.json', () => tsc, { virtual: true });
 const cwd = process.cwd;
 (global as any).process.cwd = () => '../../../../tests';
 const log = jest.fn();
@@ -39,27 +41,45 @@ describe('CLIHelper', () => {
 
   test('configures yargs instance [ts-node]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockResolvedValue(true);
+    pathExistsMock.mockImplementation(path => path === '../../../../tests/package.json');
     pkg['mikro-orm'].useTsNode = true;
     const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
+    tsNodeMock.mockImplementation(i => i);
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(tsNodeMock).toHaveBeenCalled();
-    expect(cli.getCommandInstance().getCommands()).toEqual([
-      'cache:clear',
-      'cache:generate',
-      'generate-entities',
-      'database:import',
-      'schema:create',
-      'schema:drop',
-      'schema:update',
-      'migration:create',
-      'migration:up',
-      'migration:down',
-      'migration:list',
-      'migration:pending',
-      'debug',
-    ]);
+    pathExistsMock.mockRestore();
+  });
+
+  test('configures yargs instance [ts-node] without paths', async () => {
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'].useTsNode = true;
+    delete tsc.compilerOptions.paths;
+    const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
+    tsNodeMock.mockImplementation(i => i);
+    const tsPathsMock = jest.spyOn(require('tsconfig-paths'), 'register');
+    tsPathsMock.mockImplementation(i => i);
+    const cli = await CLIHelper.configure() as any;
+    expect(cli.$0).toBe('mikro-orm');
+    expect(tsNodeMock).toHaveBeenCalled();
+    expect(tsPathsMock).not.toHaveBeenCalled();
+    pathExistsMock.mockRestore();
+  });
+
+  test('configures yargs instance [ts-node and ts-paths]', async () => {
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'].useTsNode = true;
+    tsc.compilerOptions.paths = { alternativePath: ['alternativePath'] };
+    const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
+    tsNodeMock.mockImplementation(i => i);
+    const tsPathsMock = jest.spyOn(require('tsconfig-paths'), 'register');
+    tsPathsMock.mockImplementation(i => i);
+    const cli = await CLIHelper.configure() as any;
+    expect(cli.$0).toBe('mikro-orm');
+    expect(tsNodeMock).toHaveBeenCalled();
+    expect(tsPathsMock).toHaveBeenCalled();
     pathExistsMock.mockRestore();
   });
 
