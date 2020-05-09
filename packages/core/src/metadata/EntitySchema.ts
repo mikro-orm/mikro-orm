@@ -9,7 +9,7 @@ import { Utils } from '../utils';
 
 type CollectionItem<T> = T extends Collection<infer K> ? K : T;
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
-type TypeDef<T> = { type: TypeType } | { customType: Type } | { entity: string | (() => string | EntityName<T>) };
+type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
 type Property<T> =
   | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T>)
   | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T>)
@@ -27,10 +27,10 @@ type Metadata<T, U> =
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined> {
 
   private readonly _meta: EntityMetadata<T> = {} as EntityMetadata<T>;
-  private readonly internal: boolean;
+  private internal = false;
   private initialized = false;
 
-  constructor(meta: Metadata<T, U> | EntityMetadata<T>, internal = false) {
+  constructor(meta: Metadata<T, U>) {
     meta.name = meta.class ? meta.class.name : meta.name;
 
     if (meta.tableName || meta.collection) {
@@ -39,7 +39,13 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
 
     Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
-    this.internal = internal;
+  }
+
+  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined>(meta: EntityMetadata<T>): EntitySchema<T, U> {
+    const schema = new EntitySchema(meta as Metadata<T, U>);
+    schema.internal = true;
+
+    return schema;
   }
 
   addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions | EntityProperty = {}): void {
