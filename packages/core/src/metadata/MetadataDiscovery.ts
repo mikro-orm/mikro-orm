@@ -35,7 +35,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
     filtered.forEach(meta => this.initSingleTableInheritance(meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
-    filtered.forEach(meta => this.metadata.set(meta.className, new EntitySchema(meta, true).init().meta));
+    filtered.forEach(meta => this.metadata.set(meta.className, EntitySchema.fromMetadata(meta).init().meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
@@ -140,7 +140,7 @@ export class MetadataDiscovery {
       this.metadata.set(entity.name, meta);
     }
 
-    const schema = new EntitySchema<T>(this.metadata.get<T>(entity.name, true), true);
+    const schema = EntitySchema.fromMetadata<T>(this.metadata.get<T>(entity.name, true));
     schema.setClass(entity);
     schema.meta.useCache = true;
 
