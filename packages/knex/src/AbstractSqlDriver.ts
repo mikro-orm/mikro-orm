@@ -126,11 +126,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       Object.values(properties)
         .filter(({ reference }) => reference === ReferenceType.SCALAR)
         .forEach(prop => {
-          const aliasedProp = this.getAliasedField(prop.fieldNames[0], relationName, index).alias;
+          const tableAlias = `${relationName.charAt(0)}${index}`;
+          const alias = this.getAliasedField(tableAlias, prop.fieldNames[0]);
 
-          if (aliasedProp in ret) {
-            relationPojo[prop.name] = ret[aliasedProp];
-            delete ret[aliasedProp];
+          if (alias in ret) {
+            relationPojo[prop.name] = ret[alias];
+            delete ret[alias];
           }
         });
 
@@ -309,15 +310,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }, {}) as unknown as T;
   }
 
-  protected getAliasedField(field: string, schema: string, index = 0){
-    const tableAlias = schema.charAt(0);
-    const alias = `${tableAlias}${index}_${field}`;
+  protected getAliasedField(tableAlias: string, field: string): string {
+    const alias = `${tableAlias}_${field}`;
 
-    return {
-      field,
-      schema,
-      alias,
-    };
+    return alias;
   }
 
   getRefForField(field: string, schema: string, alias: string) {
@@ -342,9 +338,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       Object.values(properties)
         .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
         .forEach(prop => {
-          const { field, schema, alias } = this.getAliasedField(prop.fieldNames[0], relationName, index);
-          selects.push(this.getRefForField(field, schema, alias));
-          queryBuilder.join(relationName, relationName);
+          const tableAlias = `${relationName.charAt(0)}${index}`;
+          const alias = this.getAliasedField(tableAlias, prop.fieldNames[0]);
+          selects.push(this.getRefForField(prop.fieldNames[0], tableAlias, alias));
+          queryBuilder.join(relationName, tableAlias);
         });
     });
 
