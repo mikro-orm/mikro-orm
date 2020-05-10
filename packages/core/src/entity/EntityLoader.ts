@@ -34,7 +34,7 @@ export class EntityLoader {
   }
 
   private normalizePopulate(entityName: string, populate: PopulateOptions[] | true, lookup: boolean): PopulateOptions[] {
-    if (populate === true) {
+    if (populate === true || populate.some(p => p.all)) {
       populate = this.lookupAllRelationships(entityName);
     } else {
       populate = Utils.asArray(populate);

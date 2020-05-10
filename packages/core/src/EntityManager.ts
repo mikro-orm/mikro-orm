@@ -593,6 +593,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private preparePopulate(entityName: string, populate?: string | Populate): PopulateOptions[] {
+    if (populate === true) {
+      return [{ field: '*', all: true }];
+    }
+
     const meta = this.metadata.get(entityName);
 
     if (Array.isArray(populate)) {

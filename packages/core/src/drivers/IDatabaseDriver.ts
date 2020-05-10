@@ -105,4 +105,5 @@ export type Populate = (string | PopulateOptions)[] | boolean;
 export type PopulateOptions = {
   field: string;
   strategy?: LoadStrategy;
+  all?: boolean;
 };
