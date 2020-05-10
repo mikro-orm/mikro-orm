@@ -1,4 +1,4 @@
-import Knex, { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value, Ref } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value, Ref } from 'knex';
 import {
   AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
   QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError, PopulateOptions,

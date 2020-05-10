@@ -1,5 +1,5 @@
 import { AnyEntity, EntityProperty, FilterQuery } from '../typings';
-import { EntityManager, Populate } from '../index';
+import { EntityManager } from '../index';
 import { ReferenceType, LoadStrategy } from './enums';
 import { Utils, ValidationError } from '../utils';
 import { Collection } from './Collection';
