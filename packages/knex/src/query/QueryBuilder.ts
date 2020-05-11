@@ -43,7 +43,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly context?: Transaction,
               readonly alias = `e0`,
               private readonly connectionType?: 'read' | 'write',
-              private readonly em?: SqlEntityManager) { }
+              private readonly em?: SqlEntityManager) {
+    this.select('*');
+  }
 
   select(fields: string | KnexQueryBuilder | (string | KnexQueryBuilder)[], distinct = false): this {
     this._fields = Utils.asArray(fields);
@@ -311,7 +313,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   getKnex(): KnexQueryBuilder {
-    const tableName = this.helper.getTableName(this.entityName) + ([QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
+    const tableName = this.helper.getTableName(this.entityName) + (this.finalized && [QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
     const qb = this.knex(tableName);
 
     if (this.context) {
@@ -382,6 +384,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private init(type: QueryType, data?: any, cond?: any): this {
     this.type = type;
     this._aliasMap[this.alias] = this.entityName;
+
+    if (![QueryType.SELECT, QueryType.COUNT].includes(type)) {
+      delete this._fields;
+    }
 
     if (data) {
       this._data = this.helper.processData(data);
