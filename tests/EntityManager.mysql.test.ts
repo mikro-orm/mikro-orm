@@ -1986,6 +1986,7 @@ describe('EntityManagerMySql', () => {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
       groupBy: ['id', 'name', 'e1.title'],
+      having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
     });
 
     expect(res1).toHaveLength(2);
@@ -1996,6 +1997,7 @@ describe('EntityManagerMySql', () => {
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
       'where `e1`.`title` like ? ' +
       'group by `e0`.`id`, `e0`.`name`, `e1`.`title` ' +
+      'having (`e0`.`age` > ? or `e0`.`age` <= ? or `e0`.`age` is null) ' +
       'order by `e0`.`name` asc, `e1`.`title` asc limit ?');
 
     // with paginate flag (and a bit of dark sql magic) we get what we want
