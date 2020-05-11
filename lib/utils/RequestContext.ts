@@ -1,12 +1,9 @@
-import domain from 'domain';
+import domain, { Domain } from 'domain';
 import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
+import { Dictionary } from '../typings';
 
-declare module 'domain' {
-  export type ORMDomain = Domain & { __mikro_orm_context?: RequestContext };
-  const active: ORMDomain;
-  function create(): ORMDomain;
-}
+export type ORMDomain = Domain & { __mikro_orm_context?: RequestContext };
 
 export class RequestContext {
 
@@ -19,7 +16,7 @@ export class RequestContext {
    */
   static create(em: EntityManager, next: (...args: any[]) => void) {
     const context = new RequestContext(em.fork(true, true));
-    const d = domain.create();
+    const d = domain.create() as ORMDomain;
     d.__mikro_orm_context = context;
     d.run(next);
   }
@@ -28,7 +25,8 @@ export class RequestContext {
    * Returns current RequestContext (if available).
    */
   static currentRequestContext(): RequestContext | undefined {
-    return domain.active ? domain.active.__mikro_orm_context : undefined;
+    const active = (domain as Dictionary).active as ORMDomain;
+    return active ? active.__mikro_orm_context : undefined;
   }
 
   /**
