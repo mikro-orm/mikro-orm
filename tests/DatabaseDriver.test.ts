@@ -11,11 +11,11 @@ class Driver extends DatabaseDriver<Connection> {
     return Promise.resolve(0);
   }
 
-  async find<T>(entityName: string, where: FilterQuery<T>, options: FindOptions | undefined, ctx: Transaction | undefined): Promise<T[]> {
+  async find<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> | undefined, ctx: Transaction | undefined): Promise<T[]> {
     return Promise.resolve([]);
   }
 
-  async findOne<T>(entityName: string, where: FilterQuery<T>, options: FindOneOptions | undefined, ctx: Transaction | undefined): Promise<T | null> {
+  async findOne<T>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> | undefined, ctx: Transaction | undefined): Promise<T | null> {
     return null;
   }
 
