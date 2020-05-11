@@ -39,7 +39,7 @@ export class ChangeSetPersister {
     } else { // ChangeSetType.CREATE without primary key
       res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
-      this.mapPrimaryKey(meta, res, changeSet);
+      this.mapPrimaryKey(meta, res.insertId, changeSet);
       delete changeSet.entity.__initialized;
     }
 
@@ -47,9 +47,9 @@ export class ChangeSetPersister {
     changeSet.persisted = true;
   }
 
-  private mapPrimaryKey<T>(meta: EntityMetadata<T>, res: QueryResult, changeSet: ChangeSet<T>): void {
+  private mapPrimaryKey<T>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
     const prop = meta.properties[meta.primaryKeys[0]];
-    const insertId = prop.customType ? prop.customType.convertToJSValue(res.insertId, this.driver.getPlatform()) : res.insertId;
+    const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.driver.getPlatform()) : value;
     wrap(changeSet.entity).__primaryKey = Utils.isDefined(changeSet.entity.__primaryKey, true) ? changeSet.entity.__primaryKey : insertId;
     this.identifierMap[changeSet.entity.__uuid].setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
@@ -87,6 +87,10 @@ export class ChangeSetPersister {
 
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate();
+
+      if (prop.primary) {
+        this.mapPrimaryKey(changeSet.entity.__meta, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
+      }
     }
 
     if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
