@@ -10,19 +10,19 @@ import { Utils } from '../utils';
 type CollectionItem<T> = T extends Collection<infer K> ? K : T;
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
-type Property<T> =
-  | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T>)
-  | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T>)
-  | ({ reference: ReferenceType.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T>)
-  | ({ reference: ReferenceType.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T>)
-  | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions)
-  | ({ enum: true } & EnumOptions)
-  | (TypeDef<T> & PropertyOptions);
+type Property<T, O> =
+  | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T, O>)
+  | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T, O>)
+  | ({ reference: ReferenceType.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T, O>)
+  | ({ reference: ReferenceType.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T, O>)
+  | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
+  | ({ enum: true } & EnumOptions<O>)
+  | (TypeDef<T> & PropertyOptions<O>);
 type PropertyKey<T, U> = NonFunctionPropertyNames<Omit<T, keyof U>>;
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>> } };
+  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>, T> } };
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined> {
 
@@ -48,7 +48,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     return schema;
   }
 
-  addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions | EntityProperty = {}): void {
+  addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions<T> | EntityProperty = {}): void {
     const rename = <U> (data: U, from: string, to: string): void => {
       if (options[from] && !options[to]) {
         options[to] = [options[from]];
@@ -80,7 +80,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.properties[name] = prop;
   }
 
-  addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions = {}): void {
+  addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions<T> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
     }
@@ -89,15 +89,15 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 
-  addVersion(name: string & keyof T, type: TypeType, options: PropertyOptions = {}): void {
+  addVersion(name: string & keyof T, type: TypeType, options: PropertyOptions<T> = {}): void {
     this.addProperty(name, type, { version: true, ...options });
   }
 
-  addPrimaryKey(name: string & keyof T, type: TypeType, options: PrimaryKeyOptions = {}): void {
+  addPrimaryKey(name: string & keyof T, type: TypeType, options: PrimaryKeyOptions<T> = {}): void {
     this.addProperty(name, type, { primary: true, ...options });
   }
 
-  addSerializedPrimaryKey(name: string & keyof T, type: TypeType, options: SerializedPrimaryKeyOptions = {}): void {
+  addSerializedPrimaryKey(name: string & keyof T, type: TypeType, options: SerializedPrimaryKeyOptions<T> = {}): void {
     this._meta.serializedPrimaryKey = name;
     this.addProperty(name, type, options);
   }
@@ -112,8 +112,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     } as EntityProperty<T>;
   }
 
-  addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K>): void {
-    const prop = { reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options };
+  addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
+    const prop = { reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as unknown as EntityProperty<T>;
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
 
     if (prop.joinColumns && !prop.fieldNames) {
@@ -127,7 +127,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addManyToMany<K = object>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K>): void {
+  addManyToMany<K = object>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K, T>): void {
     options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
 
     if (!options.owner && !options.mappedBy) {
@@ -138,17 +138,17 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
     }
 
-    const prop = { reference: ReferenceType.MANY_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options };
+    const prop = { reference: ReferenceType.MANY_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as PropertyOptions<T>;
     this.addProperty(name, type, prop);
   }
 
-  addOneToMany<K = object>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K>): void {
-    const prop = { reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options };
+  addOneToMany<K = object>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
+    const prop = { reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as PropertyOptions<T>;
     this.addProperty(name, type, prop);
   }
 
-  addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K>): void {
-    const prop = { reference: ReferenceType.ONE_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options };
+  addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
+    const prop = { reference: ReferenceType.ONE_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as unknown as EntityProperty<T>;
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
@@ -230,7 +230,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   private initProperties(): void {
-    Object.entries<Property<T[keyof T]>>(this._meta.properties).forEach(([name, options]) => {
+    Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
       options.type = 'customType' in options ? options.customType!.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
@@ -238,7 +238,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
           this.addOneToOne(name as keyof T & string, options.type as string, options);
           break;
         case ReferenceType.ONE_TO_MANY:
-          this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T>);
+          this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T, AnyEntity>);
           break;
         case ReferenceType.MANY_TO_ONE:
           this.addManyToOne(name as keyof T & string, options.type as string, options);
@@ -285,7 +285,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
   }
 
-  private normalizeType(options: PropertyOptions | EntityProperty, type?: string | any | Constructor<Type>) {
+  private normalizeType(options: PropertyOptions<T> | EntityProperty, type?: string | any | Constructor<Type>) {
     if ('entity' in options) {
       if (Utils.isString(options.entity)) {
         type = options.type = options.entity;
