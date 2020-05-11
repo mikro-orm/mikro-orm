@@ -157,7 +157,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  having(cond: QBFilterQuery | string, params?: any[]): this {
+  having(cond: QBFilterQuery | string = {}, params?: any[]): this {
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
     }
