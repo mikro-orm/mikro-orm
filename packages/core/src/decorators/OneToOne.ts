@@ -2,15 +2,15 @@ import { ReferenceType } from '../entity';
 import { createOneToDecorator, OneToManyOptions } from './OneToMany';
 import { EntityName, AnyEntity } from '../typings';
 
-export function OneToOne<T extends AnyEntity<T>>(
-  entity?: OneToOneOptions<T> | string | ((e?: any) => EntityName<T>),
+export function OneToOne<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+  entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
-  options: Partial<OneToOneOptions<T>> = {},
+  options: Partial<OneToOneOptions<T, O>> = {},
 ) {
-  return createOneToDecorator<T>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);
+  return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);
 }
 
-export interface OneToOneOptions<T extends AnyEntity<T>> extends Partial<Omit<OneToManyOptions<T>, 'orderBy'>> {
+export interface OneToOneOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> extends Partial<Omit<OneToManyOptions<T, O>, 'orderBy'>> {
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
