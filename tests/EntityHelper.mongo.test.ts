@@ -194,6 +194,8 @@ describe('EntityAssignerMongo', () => {
       _id: b._id,
       name: b.name,
       baz: b.baz!._id,
+      onCreateTest: true,
+      onUpdateTest: true,
     });
   });
 
@@ -205,8 +207,12 @@ describe('EntityAssignerMongo', () => {
     // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
     if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
       expect(actual).toBe('FooBar {\n' +
+        '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
         "  name: 'bar',\n" +
-        "  baz: FooBaz { name: 'baz', bar: FooBar { name: 'bar', baz: [FooBaz] } }\n" +
+        '  baz: FooBaz {\n' +
+        "    name: 'baz',\n" +
+        "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
+        '  }\n' +
         '}');
     }
 
