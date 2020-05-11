@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
@@ -27,12 +27,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction): Promise<T[]>;
+  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<T[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction): Promise<T | null>;
+  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<T | null>;
 
   nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
@@ -74,7 +74,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export interface FindOptions {
+export interface FindOptions<T> {
   populate?: string[] | boolean;
   orderBy?: QueryOrderMap;
   limit?: number;
@@ -84,12 +84,14 @@ export interface FindOptions {
   schema?: string;
   flags?: QueryFlag[];
   groupBy?: string | string[];
+  having?: QBFilterQuery<T>;
 }
 
-export interface FindOneOptions {
+export interface FindOneOptions<T> {
   populate?: string[] | boolean;
   orderBy?: QueryOrderMap;
   groupBy?: string | string[];
+  having?: QBFilterQuery<T>;
   lockMode?: LockMode;
   lockVersion?: number | Date;
   refresh?: boolean;
