@@ -35,7 +35,7 @@ describe('EntityManagerSqlite', () => {
     const meta = {} as EntityMetadata;
     provider.loadFromCache(meta, cache);
     expect(meta.properties.updatedAt.onUpdate).toBeDefined();
-    expect(meta.properties.updatedAt.onUpdate!()).toBeInstanceOf(Date);
+    expect(meta.properties.updatedAt.onUpdate!({})).toBeInstanceOf(Date);
   });
 
   test('should return sqlite driver', async () => {
