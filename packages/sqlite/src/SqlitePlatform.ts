@@ -19,4 +19,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return super.getCurrentTimestampSQL(0);
   }
 
+  convertsJsonAutomatically(): boolean {
+    return false;
+  }
+
 }

@@ -91,6 +91,30 @@ export abstract class Platform {
     return 'bigint';
   }
 
+  getArrayDeclarationSQL(): string {
+    return 'text';
+  }
+
+  marshallArray(values: string[]): string {
+    return values.join(',');
+  }
+
+  unmarshallArray(value: string): string[] {
+    return value.split(',') as string[];
+  }
+
+  getBlobDeclarationSQL(): string {
+    return 'blob';
+  }
+
+  getJsonDeclarationSQL(): string {
+    return 'json';
+  }
+
+  convertsJsonAutomatically(marshall = false): boolean {
+    return !marshall;
+  }
+
   getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
     return EntityRepository;
   }

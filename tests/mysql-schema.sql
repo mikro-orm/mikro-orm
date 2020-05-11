@@ -28,14 +28,14 @@ drop table if exists `book2_to_book_tag2`;
 drop table if exists `publisher2_to_test2`;
 drop table if exists `user2_to_car2`;
 
-create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null default null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` json null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null default null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` text null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+alter table `author2` add index `custom_email_index_name`(`email`);
 alter table `author2` add unique `custom_email_unique_name`(`email`);
+alter table `author2` add index `author2_terms_accepted_index`(`terms_accepted`);
 alter table `author2` add index `author2_born_index`(`born`);
 alter table `author2` add index `born_time_idx`(`born_time`);
 alter table `author2` add index `author2_favourite_book_uuid_pk_index`(`favourite_book_uuid_pk`);
 alter table `author2` add index `author2_favourite_author_id_index`(`favourite_author_id`);
-alter table `author2` add index `custom_email_index_name`(`email`);
-alter table `author2` add index `author2_terms_accepted_index`(`terms_accepted`);
 alter table `author2` add index `custom_idx_name_123`(`name`);
 alter table `author2` add index `author2_name_age_index`(`name`, `age`);
 alter table `author2` add unique `author2_name_email_unique`(`name`, `email`);
@@ -60,7 +60,7 @@ alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
 alter table `test2` add index `test2_foo___bar_index`(`foo___bar`);
 alter table `test2` add unique `test2_foo___bar_unique`(`foo___bar`);
 
-create table `foo_bar2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `baz_id` int(11) unsigned null, `foo_bar_id` int(11) unsigned null, `version` datetime not null default current_timestamp) default character set utf8mb4 engine = InnoDB;
+create table `foo_bar2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `baz_id` int(11) unsigned null, `foo_bar_id` int(11) unsigned null, `version` datetime not null default current_timestamp, `blob` blob null, `array` text null, `object` json null) default character set utf8mb4 engine = InnoDB;
 alter table `foo_bar2` add index `foo_bar2_baz_id_index`(`baz_id`);
 alter table `foo_bar2` add unique `foo_bar2_baz_id_unique`(`baz_id`);
 alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
@@ -78,19 +78,18 @@ alter table `configuration2` add index `configuration2_property_index`(`property
 alter table `configuration2` add index `configuration2_test_id_index`(`test_id`);
 alter table `configuration2` add primary key `configuration2_pkey`(`property`, `test_id`);
 
-create table `car2` (`name` varchar(255) not null, `year` int(11) unsigned not null, `price` int(11) not null) default character set utf8mb4 engine = InnoDB;
+create table `car2` (`name` varchar(100) not null, `year` int(11) unsigned not null, `price` int(11) not null) default character set utf8mb4 engine = InnoDB;
 alter table `car2` add index `car2_name_index`(`name`);
 alter table `car2` add index `car2_year_index`(`year`);
 alter table `car2` add primary key `car2_pkey`(`name`, `year`);
 
-create table `car_owner2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `car_name` varchar(255) not null, `car_year` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
-alter table `car_owner2` add index `car_owner2_car_name_car_year_idx`(`car_name`, `car_year`);
+create table `car_owner2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `car_name` varchar(100) not null, `car_year` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table `car_owner2` add index `car_owner2_car_name_car_year_index`(`car_name`, `car_year`);
 
 create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null) default character set utf8mb4 engine = InnoDB;
 alter table `user2` add index `user2_first_name_index`(`first_name`);
 alter table `user2` add index `user2_last_name_index`(`last_name`);
 alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
-
 
 create table `base_user2` (`id` int unsigned not null auto_increment primary key, `first_name` varchar(100) not null, `last_name` varchar(100) not null, `type` enum('employee', 'manager', 'owner') not null, `employee_prop` int(11) null, `manager_prop` varchar(255) null, `owner_prop` varchar(255) null, `favourite_employee_id` int(11) unsigned null, `favourite_manager_id` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `base_user2` add index `base_user2_type_index`(`type`);
