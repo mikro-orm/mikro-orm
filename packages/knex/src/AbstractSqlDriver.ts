@@ -29,7 +29,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return new SqlEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
     const meta = this.metadata.get(entityName);
     options = { populate: [], orderBy: {}, ...(options || {}) };
     options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
@@ -44,6 +44,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
       .groupBy(options.groupBy!)
+      .having(options.having!)
       .withSchema(options.schema);
 
     if (options.limit !== undefined) {
@@ -55,7 +56,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(qb.execute('all'));
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     options = { populate: [], orderBy: {}, ...(options || {}) };
     const meta = this.metadata.get(entityName);
     options.populate = this.autoJoinOneToOneOwner(meta, options.populate as string[]);
@@ -75,6 +76,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
       .groupBy(options.groupBy!)
+      .having(options.having!)
       .limit(1)
       .setLockMode(options.lockMode)
       .withSchema(options.schema);
