@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { ArrayType, BlobType, Entity, JsonType, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { ArrayType, Entity, JsonType, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
 @Entity()
@@ -28,6 +28,14 @@ export default class FooBar {
 
   @Property({ type: JsonType, nullable: true })
   object?: { foo: string; bar: number } | any;
+
+  @Property({ onCreate: (bar: FooBar) => bar.meta.onCreateCalled = true })
+  onCreateTest?: boolean;
+
+  @Property({ onCreate: (bar: FooBar) => bar.meta.onUpdateCalled = true })
+  onUpdateTest?: boolean;
+
+  readonly meta = { onCreateCalled: false, onUpdateCalled: false };
 
   static create(name: string) {
     const bar = new FooBar();

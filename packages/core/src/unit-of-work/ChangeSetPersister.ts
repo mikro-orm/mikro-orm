@@ -88,7 +88,7 @@ export class ChangeSetPersister {
     }
 
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
-      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate();
+      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
 
       if (prop.primary) {
         this.mapPrimaryKey(changeSet.entity.__meta, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
@@ -96,7 +96,7 @@ export class ChangeSetPersister {
     }
 
     if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate();
+      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate(changeSet.entity);
     }
   }
 

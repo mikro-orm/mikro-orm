@@ -3,7 +3,7 @@ import { ReferenceType } from '../entity';
 import { PropertyOptions } from '.';
 import { AnyEntity, EntityProperty } from '../typings';
 
-function createDecorator(options: PrimaryKeyOptions | SerializedPrimaryKeyOptions, serialized: boolean): Function {
+function createDecorator<T extends AnyEntity<T>>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean): Function {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;
@@ -12,16 +12,16 @@ function createDecorator(options: PrimaryKeyOptions | SerializedPrimaryKeyOption
   };
 }
 
-export function PrimaryKey(options: PrimaryKeyOptions = {}): Function {
+export function PrimaryKey<T extends AnyEntity<T>>(options: PrimaryKeyOptions<T> = {}): Function {
   return createDecorator(options, false);
 }
 
-export function SerializedPrimaryKey(options: SerializedPrimaryKeyOptions = {}): Function {
+export function SerializedPrimaryKey<T extends AnyEntity<T>>(options: SerializedPrimaryKeyOptions<T> = {}): Function {
   return createDecorator(options, true);
 }
 
-export interface PrimaryKeyOptions extends PropertyOptions { }
+export interface PrimaryKeyOptions<T> extends PropertyOptions<T> { }
 
-export interface SerializedPrimaryKeyOptions extends PropertyOptions {
+export interface SerializedPrimaryKeyOptions<T> extends PropertyOptions<T> {
   type?: any;
 }
