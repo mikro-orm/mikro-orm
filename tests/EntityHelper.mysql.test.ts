@@ -116,6 +116,9 @@ describe('EntityHelperMySql', () => {
       name: 'fb',
       random: 123,
       version: a.version,
+      array: null,
+      object: null,
+      blob: null,
     });
   });
 
