@@ -1888,6 +1888,20 @@ describe('EntityManagerMongo', () => {
     expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]);
   });
 
+  test('property onCreate and onUpdate have reference to entity', async () => {
+    const bar = FooBar.create('b1');
+    expect(bar.onCreateTest).toBeUndefined();
+    expect(bar.onUpdateTest).toBeUndefined();
+    expect(bar.meta.onCreateCalled).toBe(false);
+    expect(bar.meta.onUpdateCalled).toBe(false);
+    await orm.em.persistAndFlush(bar);
+
+    expect(bar.onCreateTest).toBe(true);
+    expect(bar.onUpdateTest).toBe(true);
+    expect(bar.meta.onCreateCalled).toBe(true);
+    expect(bar.meta.onUpdateCalled).toBe(true);
+  });
+
   test('custom types', async () => {
     const bar = FooBar.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
