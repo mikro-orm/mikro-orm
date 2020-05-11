@@ -32,4 +32,20 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.isBigIntProperty(prop) || (prop.columnTypes && prop.columnTypes[0] === 'bigserial');
   }
 
+  getArrayDeclarationSQL(): string {
+    return 'text[]';
+  }
+
+  marshallArray(values: string[]): string {
+    return `{${values.join(',')}}`;
+  }
+
+  getBlobDeclarationSQL(): string {
+    return 'bytea';
+  }
+
+  getJsonDeclarationSQL(): string {
+    return 'jsonb';
+  }
+
 }

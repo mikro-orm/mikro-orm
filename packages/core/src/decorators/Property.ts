@@ -38,7 +38,7 @@ export type PropertyOptions = {
   fieldNames?: string[];
   customType?: Type<any>;
   columnType?: string;
-  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | object | bigint | Date | Constructor<Type>;
+  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | object | bigint | Date | Constructor<Type<any>> | Type<any>;
   length?: any;
   onCreate?: () => any;
   onUpdate?: () => any;

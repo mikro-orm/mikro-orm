@@ -17,6 +17,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     object: ['jsonb', 'json'],
     json: ['jsonb', 'json'],
     uuid: ['uuid'],
+    Buffer: ['bytea'],
+    buffer: ['bytea'],
     enum: ['text'], // enums are implemented as text columns with check constraints
   };
 
@@ -66,13 +68,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<any[]> {
-    const sql = `select column_name, column_default, is_nullable, udt_name, coalesce(datetime_precision, character_maximum_length) length
+    const sql = `select column_name, column_default, is_nullable, udt_name, coalesce(datetime_precision, character_maximum_length) length, data_type
       from information_schema.columns where table_schema = '${schemaName}' and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
 
     return columns.map(col => ({
       name: col.column_name,
-      type: col.udt_name,
+      type: col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name,
       maxLength: col.length,
       nullable: col.is_nullable === 'YES',
       defaultValue: this.normalizeDefaultValue(col.column_default, col.length),
@@ -122,6 +124,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = any/i);
       const m2 = item.enum_def.match(/\(array\[(.*)]\)/i);
 
+      /* istanbul ignore else  */
       if (m1 && m2) {
         o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^'(.*)'/)![1]);
       }
