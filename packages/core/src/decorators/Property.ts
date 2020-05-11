@@ -4,7 +4,7 @@ import { Cascade, EntityValidator, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
-export function Property(options: PropertyOptions = {}): Function {
+export function Property<T extends AnyEntity<T>>(options: PropertyOptions<T> = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
@@ -32,16 +32,16 @@ export function Property(options: PropertyOptions = {}): Function {
   };
 }
 
-export type PropertyOptions = {
+export type PropertyOptions<T extends AnyEntity<T>> = {
   name?: string;
   fieldName?: string;
   fieldNames?: string[];
   customType?: Type<any>;
   columnType?: string;
   type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | object | bigint | Date | Constructor<Type<any>> | Type<any>;
-  length?: any;
-  onCreate?: () => any;
-  onUpdate?: () => any;
+  length?: number;
+  onCreate?: (entity: T) => any;
+  onUpdate?: (entity: T) => any;
   default?: string | number | boolean | null;
   defaultRaw?: string;
   formula?: string | ((alias: string) => string);
@@ -56,7 +56,7 @@ export type PropertyOptions = {
   serializedPrimaryKey?: boolean;
 };
 
-export interface ReferenceOptions<T extends AnyEntity<T>> extends PropertyOptions {
+export interface ReferenceOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> extends PropertyOptions<O> {
   entity?: string | (() => EntityName<T>);
   cascade?: Cascade[];
   eager?: boolean;

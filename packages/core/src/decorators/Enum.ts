@@ -3,7 +3,7 @@ import { ReferenceType } from '../entity';
 import { PropertyOptions } from '.';
 import { EntityProperty, AnyEntity, Dictionary } from '../typings';
 
-export function Enum(options: EnumOptions | (() => Dictionary) = {}): Function {
+export function Enum(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}): Function {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     options = options instanceof Function ? { items: options } : options;
@@ -11,6 +11,6 @@ export function Enum(options: EnumOptions | (() => Dictionary) = {}): Function {
   };
 }
 
-export interface EnumOptions extends PropertyOptions {
+export interface EnumOptions<T> extends PropertyOptions<T> {
   items?: (number | string)[] | (() => Dictionary);
 }
