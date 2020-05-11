@@ -2,7 +2,7 @@ import { unlinkSync } from 'fs';
 import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
-import { Author4, Book4, BookTag4, Publisher4, Test4 } from './entities-schema';
+import { Author4, Book4, BookTag4, FooBar4, Publisher4, Test4 } from './entities-schema';
 import { PublisherType } from './entities-schema/Publisher4';
 
 describe('EntityManagerSqlite2', () => {
@@ -774,6 +774,48 @@ describe('EntityManagerSqlite2', () => {
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail<Author4>('Author4', author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+  });
+
+  test('custom types', async () => {
+    const bar = orm.em.create<FooBar4>('FooBar4', { name: 'b1' });
+    bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.array = [1, 2, 3, 4, 5];
+    bar.object = { foo: 'bar', bar: 3 };
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail<FooBar4>('FooBar4', bar.id);
+    expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
+    expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.array).toEqual([1, 2, 3, 4, 5]);
+    expect(b1.array![2]).toBe(3);
+    expect(b1.array).toBeInstanceOf(Array);
+    expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
+    expect(b1.object).toBeInstanceOf(Object);
+    expect(b1.object!.bar).toBe(3);
+
+    b1.object = 'foo';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail<FooBar4>('FooBar4', bar.id);
+    expect(b2.object).toBe('foo');
+
+    b2.object = [1, 2, '3'];
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b3 = await orm.em.findOneOrFail<FooBar4>('FooBar4', bar.id);
+    expect(b3.object[0]).toBe(1);
+    expect(b3.object[1]).toBe(2);
+    expect(b3.object[2]).toBe('3');
+
+    b3.object = 123;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b4 = await orm.em.findOneOrFail<FooBar4>('FooBar4', bar.id);
+    expect(b4.object).toBe(123);
   });
 
   afterAll(async () => {
