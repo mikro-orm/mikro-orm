@@ -52,8 +52,8 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ nullable: true })
-  identities?: object;
+  @Property({ columnType: 'text', length: 65535, nullable: true })
+  identities?: string;
 
   @Index({ name: 'author2_born_index' })
   @Property({ columnType: 'date', nullable: true })
@@ -225,7 +225,7 @@ export class BookToTagUnordered {
 export class Car2 {
 
   @Index({ name: 'car2_name_index' })
-  @PrimaryKey({ length: 255 })
+  @PrimaryKey({ length: 100 })
   name!: string;
 
   @Index({ name: 'car2_year_index' })
@@ -249,7 +249,7 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
-  @ManyToOne({ entity: () => Car2, index: 'car_owner2_car_name_car_year_idx' })
+  @ManyToOne({ entity: () => Car2, index: 'car_owner2_car_name_car_year_index' })
   car!: Car2;
 
 }
@@ -292,6 +292,15 @@ export class FooBar2 {
 
   @Property({ default: \`CURRENT_TIMESTAMP\` })
   version!: Date;
+
+  @Property({ length: 65535, columnType: 'blob', nullable: true })
+  blob?: string;
+
+  @Property({ columnType: 'text', length: 65535, nullable: true })
+  array?: string;
+
+  @Property({ nullable: true })
+  object?: object;
 
 }
 ",
@@ -493,8 +502,8 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ nullable: true })
-  identities?: object;
+  @Property({ columnType: 'text[]', nullable: true })
+  identities?: string[];
 
   @Index({ name: 'author2_born_index' })
   @Property({ columnType: 'date', nullable: true })
@@ -663,6 +672,15 @@ export class FooBar2 {
 
   @Property({ default: \`current_timestamp(0)\` })
   version!: Date;
+
+  @Property({ nullable: true })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text[]', nullable: true })
+  array?: string[];
+
+  @Property({ nullable: true })
+  object?: object;
 
 }
 ",

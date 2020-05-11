@@ -30,4 +30,12 @@ export class MongoPlatform extends Platform {
     return false;
   }
 
+  convertsJsonAutomatically(marshall = false): boolean {
+    return true;
+  }
+
+  marshallArray(values: string[]): string {
+    return values as unknown as string;
+  }
+
 }

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { ArrayType, BlobType, Entity, JsonType, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
 @Entity()
@@ -19,6 +19,15 @@ export default class FooBar {
 
   @OneToOne(() => FooBar)
   fooBar!: FooBar;
+
+  @Property({ nullable: true })
+  blob?: Buffer;
+
+  @Property({ type: new ArrayType(i => +i), nullable: true })
+  array?: number[];
+
+  @Property({ type: JsonType, nullable: true })
+  object?: { foo: string; bar: number } | any;
 
   static create(name: string) {
     const bar = new FooBar();
