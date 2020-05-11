@@ -134,8 +134,7 @@ describe('QueryBuilder', () => {
 
   test('select multiple orWhere', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('*')
-      .where({ name: 'test 123' })
+    qb.where({ name: 'test 123' })
       .orWhere({ type: PublisherType.GLOBAL })
       .orWhere({ name: 'test 321' })
       .orWhere({ name: 'lol 321' })
@@ -146,8 +145,7 @@ describe('QueryBuilder', () => {
 
   test('select complex where', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.select('*')
-      .where({ name: 'test 123', $or: [{ name: 'test 321' }, { type: PublisherType.GLOBAL }] })
+    qb.where({ name: 'test 123', $or: [{ name: 'test 321' }, { type: PublisherType.GLOBAL }] })
       .limit(2, 1);
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and (`e0`.`name` = ? or `e0`.`type` = ?) limit ? offset ?');
     expect(qb.getParams()).toEqual(['test 123', 'test 321', PublisherType.GLOBAL, 2, 1]);
@@ -1287,7 +1285,8 @@ describe('QueryBuilder', () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
-    expect(qb.getAliasForEntity(Author2.name, node)).toBeUndefined();
+    expect(qb.getAliasForEntity(Author2.name, node)).toBe('a');
+    expect(qb.getAliasForEntity(Book2.name, node)).toBeUndefined();
   });
 
   afterAll(async () => orm.close(true));
