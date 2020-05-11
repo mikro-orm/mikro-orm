@@ -140,7 +140,13 @@ export class DatabaseTable {
       return namingStrategy.getClassName(column.fk.referencedTableName, '_');
     }
 
-    return schemaHelper.getTypeFromDefinition(column.type, defaultType);
+    const type = schemaHelper.getTypeFromDefinition(column.type, defaultType);
+
+    if (column.type.endsWith('[]')) {
+      return type + '[]';
+    }
+
+    return type;
   }
 
   private getPropertyDefaultValue(schemaHelper: SchemaHelper, column: Column, propType: string, raw = false): any {

@@ -24,17 +24,17 @@ drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
 drop table if exists "publisher2_to_test2" cascade;
 
-create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" jsonb null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create index "custom_email_index_name" on "author2" ("email");
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
+create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 create index "author2_born_index" on "author2" ("born");
 create index "born_time_idx" on "author2" ("born_time");
-create index "custom_email_index_name" on "author2" ("email");
-create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
 create index "custom_idx_name_123" on "author2" ("name");
 create index "author2_name_age_index" on "author2" ("name", "age");
 alter table "author2" add constraint "author2_name_email_unique" unique ("name", "email");
 
-create table "address2" ("author_id" int4 not null check ("author_id" > 0), "value" varchar(255) not null);
+create table "address2" ("author_id" int4 not null, "value" varchar(255) not null);
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 alter table "address2" add constraint "address2_author_id_unique" unique ("author_id");
 
@@ -48,7 +48,7 @@ create table "publisher2" ("id" serial primary key, "name" varchar(255) not null
 create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");
 
-create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "baz_id" int4 null, "foo_bar_id" int4 null, "version" timestamptz(0) not null default current_timestamp(0));
+create table "foo_bar2" ("id" serial primary key, "name" varchar(255) not null, "baz_id" int4 null, "foo_bar_id" int4 null, "version" timestamptz(0) not null default current_timestamp(0), "blob" bytea null, "array" text[] null, "object" jsonb null);
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_unique" unique ("baz_id");
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_bar_id");
 
@@ -112,3 +112,5 @@ alter table "book_to_tag_unordered" add constraint "book_to_tag_unordered_book_t
 
 alter table "publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "publisher2" ("id") on update cascade on delete cascade;
 alter table "publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
+
+set session_replication_role = 'origin';

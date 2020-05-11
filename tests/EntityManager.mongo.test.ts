@@ -1888,6 +1888,48 @@ describe('EntityManagerMongo', () => {
     expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]);
   });
 
+  test('custom types', async () => {
+    const bar = FooBar.create('b1');
+    bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.array = [1, 2, 3, 4, 5];
+    bar.object = { foo: 'bar', bar: 3 };
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(FooBar, bar.id);
+    expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
+    expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.array).toEqual([1, 2, 3, 4, 5]);
+    expect(b1.array![2]).toBe(3);
+    expect(b1.array).toBeInstanceOf(Array);
+    expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
+    expect(b1.object).toBeInstanceOf(Object);
+    expect(b1.object!.bar).toBe(3);
+
+    b1.object = 'foo';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail(FooBar, bar.id);
+    expect(b2.object).toBe('foo');
+
+    b2.object = [1, 2, '3'];
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b3 = await orm.em.findOneOrFail(FooBar, bar.id);
+    expect(b3.object[0]).toBe(1);
+    expect(b3.object[1]).toBe(2);
+    expect(b3.object[2]).toBe('3');
+
+    b3.object = 123;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b4 = await orm.em.findOneOrFail(FooBar, bar.id);
+    expect(b4.object).toBe(123);
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');

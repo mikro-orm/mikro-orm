@@ -8,7 +8,7 @@ import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
-import { Type } from '../types';
+import { ArrayType, BlobType, Type } from '../types';
 import { EntitySchema } from '../metadata';
 
 export class MetadataDiscovery {
@@ -601,13 +601,32 @@ export class MetadataDiscovery {
   }
 
   private initCustomType(prop: EntityProperty): void {
-    if (Object.getPrototypeOf(prop.type) === Type) {
+    // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
+    if (!prop.customType && ['string[]', 'array'].includes(prop.type)) {
+      prop.customType = new ArrayType();
+    }
+
+    // for number arrays we make sure to convert the items to numbers
+    if (!prop.customType && prop.type === 'number[]') {
+      prop.customType = new ArrayType(i => +i);
+    }
+
+    if (!prop.customType && prop.type === 'Buffer') {
+      prop.customType = new BlobType();
+    }
+
+    if (prop.type as unknown instanceof Type) {
+      prop.customType = prop.type as unknown as Type<any>;
+      prop.type = prop.customType.constructor.name;
+    }
+
+    if (Object.getPrototypeOf(prop.type) === Type && !prop.customType) {
       prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
     }
 
     if (prop.customType) {
       prop.type = prop.customType.constructor.name;
-      prop.columnTypes = [prop.customType.getColumnType(prop, this.platform)];
+      prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
     }
   }
 
