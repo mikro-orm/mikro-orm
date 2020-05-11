@@ -131,8 +131,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   getterName?: keyof T;
   cascade: Cascade[];
   orphanRemoval?: boolean;
-  onCreate?: () => any;
-  onUpdate?: () => any;
+  onCreate?: (entity: T) => any;
+  onUpdate?: (entity: T) => any;
   onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
   onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
   owner: boolean;
