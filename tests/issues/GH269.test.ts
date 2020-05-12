@@ -42,9 +42,7 @@ describe('GH issue 269', () => {
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh269.db',
       debug: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
       autoJoinOneToOneOwner: false,
-      cache: { enabled: false },
     });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();

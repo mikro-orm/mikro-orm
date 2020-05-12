@@ -51,7 +51,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       emit: 'ts',
     },
     cache: {
-      enabled: true,
       pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
@@ -187,7 +186,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private init(): void {
-    if (!this.options.cache.enabled) {
+    if (!this.getMetadataProvider().useCache()) {
       this.options.cache.adapter = NullCacheAdapter;
     }
 
