@@ -7,6 +7,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   private readonly project = new Project();
   private sources!: SourceFile[];
 
+  useCache(): boolean {
+    return this.config.get('cache').enabled ?? true;
+  }
+
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     if (!meta.path) {
       return;

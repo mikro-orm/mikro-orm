@@ -51,8 +51,6 @@ describe('GH issue 533', () => {
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

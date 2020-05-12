@@ -14,10 +14,10 @@ export class Book extends BaseEntity3 {
   @ManyToOne()
   author: Author;
 
-  @ManyToOne('Publisher', { cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
-  @ManyToMany(() => BookTag)
+  @ManyToMany()
   tags: Collection<BookTag> = new Collection<BookTag>(this);
 
   @Property()
