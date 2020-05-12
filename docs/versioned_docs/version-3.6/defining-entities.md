@@ -182,32 +182,32 @@ as you are not using any native database function like `now()`. With this approa
 entities will have the default value set even before it is actually persisted into the 
 database (e.g. when you instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
 
-    ```typescript
-    @Property()
-    foo!: number = 1;
+```typescript
+@Property()
+foo!: number = 1;
 
-    @Property()
-    bar!: string = 'abc';
+@Property()
+bar!: string = 'abc';
 
-    @Property()
-    baz!: Date = new Date();
-    ``` 
+@Property()
+baz!: Date = new Date();
+``` 
 
 2. Use `default` parameter of `@Property` decorator. This way the actual default value 
 will be provided by the database, and automatically mapped to the entity property after
 it is being persisted (after flush). Also note that with this approach, you need to wrap
 string default values in quotes as without quoting the value is considered a function.
 
-    ```typescript
-    @Property({ default: 1 })
-    foo!: number;
+```typescript
+@Property({ default: 1 })
+foo!: number;
 
-    @Property({ default: "'abc'" })
-    bar!: string;
+@Property({ default: "'abc'" })
+bar!: string;
 
-    @Property({ default: 'now' })
-    baz!: Date;
-    ``` 
+@Property({ default: 'now' })
+baz!: Date;
+``` 
 
 ### Enums
 
