@@ -113,7 +113,7 @@ describe('MetadataValidator', () => {
       entities: [FooBar2, FooBaz2],
       dbName: `mikro_orm_test`,
       port: 3307,
-      metadataProvider: ReflectMetadataProvider,
+      cache: { enabled: true },
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,

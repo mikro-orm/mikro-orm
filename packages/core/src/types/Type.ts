@@ -31,7 +31,8 @@ export abstract class Type<JSType = string, DBType = JSType> {
    * Gets the SQL declaration snippet for a field of this type.
    */
   getColumnType(prop: EntityProperty, platform: Platform): string {
-    return prop.columnTypes[0];
+    /* istanbul ignore next */
+    return prop.columnTypes?.[0];
   }
 
   static getType<JSType, DBType>(cls: Constructor<Type<JSType, DBType>>): Type<JSType, DBType> {

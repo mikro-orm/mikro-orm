@@ -78,7 +78,6 @@ describe('embedded entities in mongo', () => {
       entities: [Address1, Address2, User],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs0',
       type: 'mongo',
-      cache: { enabled: false },
     });
   });
 
