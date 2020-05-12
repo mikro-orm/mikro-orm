@@ -28,8 +28,6 @@ describe('GH issue 380', () => {
       debug: false,
       highlight: false,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await new SchemaGenerator(orm.em).ensureDatabase();
     await new SchemaGenerator(orm.em).dropSchema();

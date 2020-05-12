@@ -76,7 +76,6 @@ describe('embedded entities in mysql', () => {
       dbName: `mikro_orm_test_embeddables`,
       type: 'mysql',
       port: 3307,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().createSchema();

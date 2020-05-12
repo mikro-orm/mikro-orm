@@ -29,8 +29,6 @@ describe('GH issue 401', () => {
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.em.remove(Entity401, {});
   });

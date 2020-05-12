@@ -42,7 +42,6 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes: true,
     implicitTransactions: true,
-    cache: { enabled: false },
   });
 
   // create collections first so we can use transactions
@@ -70,8 +69,6 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     multipleStatements: true,
     entityRepository: SqlEntityRepository,
     type,
-    metadataProvider: ReflectMetadataProvider,
-    cache: { enabled: false },
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations' },
   });
@@ -104,8 +101,7 @@ export async function initORMPostgreSql() {
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    metadataProvider: ReflectMetadataProvider,
-    cache: { enabled: false },
+    cache: { enabled: true },
   });
 
   const schemaGenerator = new SchemaGenerator(orm.em);
@@ -127,7 +123,7 @@ export async function initORMSqlite() {
     forceUtcTimezone: true,
     logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
-    cache: { pretty: true },
+    cache: { enabled: true, pretty: true },
   });
 
   const connection = orm.em.getConnection();
