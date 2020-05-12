@@ -31,7 +31,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }, ctx?: Transaction<ClientSession>): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      try {
+        where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      } catch (e) {
+        where = { _id: where as string } as FilterQuery<T>;
+      }
     }
 
     where = this.renameFields(entityName, where);
@@ -52,7 +56,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      try {
+        where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      } catch (e) {
+        where = { _id: where as string } as FilterQuery<T>;
+      }
     }
 
     where = this.renameFields(entityName, where);
@@ -63,7 +71,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      try {
+        where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      } catch (e) {
+        where = { _id: where as string } as FilterQuery<T>;
+      }
     }
 
     where = this.renameFields(entityName, where);
