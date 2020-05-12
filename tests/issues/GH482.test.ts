@@ -41,8 +41,6 @@ describe('GH issue 482', () => {
       entities: [Job, Level],
       dbName: 'mikro_orm_test_gh482',
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

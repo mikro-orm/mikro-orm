@@ -11,6 +11,10 @@ export abstract class MetadataProvider {
     Utils.merge(meta, cache);
   }
 
+  useCache(): boolean {
+    return this.config.get('cache').enabled ?? false;
+  }
+
   protected async initProperties(meta: EntityMetadata, fallback: (prop: EntityProperty) => void | Promise<void>): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
