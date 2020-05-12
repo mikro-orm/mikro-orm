@@ -37,8 +37,6 @@ describe('GH issue 491', () => {
       dbName: `mikro_orm_test_gh_491`,
       type: 'mariadb',
       port: 3309,
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

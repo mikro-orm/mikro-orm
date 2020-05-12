@@ -2,7 +2,7 @@
 
 import fs from 'fs-extra';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import { MikroORM, EntityManager, Configuration, ReflectMetadataProvider } from '@mikro-orm/core';
+import { MikroORM, EntityManager, Configuration } from '@mikro-orm/core';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
 import { Author2, Car2, CarOwner2, FooBaz2, User2 } from './entities-sql';
@@ -46,8 +46,6 @@ describe('MikroORM', () => {
     await MikroORM.init({
       dbName: 'not-found',
       baseDir: BASE_DIR,
-      cache: { enabled: false },
-      metadataProvider: ReflectMetadataProvider,
       type: 'mysql',
       entities: [Car2, CarOwner2, User2],
       debug: ['info'],
@@ -58,22 +56,22 @@ describe('MikroORM', () => {
 
   test('should throw when multiple entities with same class name discovered', async () => {
     const err = `Entity 'BadName' not found in ./entities-3/bad-name.model.ts`;
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-3'] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['entities-3'] })).rejects.toThrowError(err);
   });
 
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entities: [BaseEntity2], entitiesDirsTs: ['entities-sql'] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2], entitiesDirsTs: ['entities-sql'] })).rejects.toThrowError(err);
   });
 
   test('should throw when a relation is pointing to not discovered entity', async () => {
     const err = 'Entity \'Book2\' was not discovered, please make sure to provide it in \'entities\' array when initializing the ORM';
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', cache: { enabled: false }, entities: [Author2, BaseEntity2], metadataProvider: ReflectMetadataProvider })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', entities: [Author2, BaseEntity2] })).rejects.toThrowError(err);
   });
 
   test('should throw when only multiple property decorators are used', async () => {
     const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, cache: { enabled: false }, entitiesDirs: ['entities-4'] })).rejects.toThrowError(err);
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entitiesDirs: ['entities-4'] })).rejects.toThrowError(err);
   });
 
   test('should use CLI config', async () => {
@@ -81,9 +79,7 @@ describe('MikroORM', () => {
       entities: [Test],
       type: 'mongo',
       dbName: 'mikro-orm-test',
-      metadataProvider: ReflectMetadataProvider,
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
-      cache: { enabled: false },
     };
     const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
     pathExistsMock.mockResolvedValue(true);
