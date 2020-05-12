@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { AnyEntity, EntityData, EntityMetadata, EntityName, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, wrap } from '..';
@@ -23,7 +23,7 @@ export class EntityFactory {
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk));
+    meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
     const entity = this.createEntity(data, meta);
     const wrapped = wrap(entity, true);
 
@@ -103,12 +103,15 @@ export class EntityFactory {
   /**
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
-  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string): void {
+  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string, metadata: EntityProperty ): void {
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(primaryKey);
 
     if (Utils.isDefined(data[pk], true) || Utils.isDefined(data[primaryKey], true)) {
-      const id = platform.denormalizePrimaryKey(data[pk] || data[primaryKey]);
+      let id = data[pk] || data[primaryKey];
+      if(metadata.type.toLowerCase() === 'objectid') {
+        id = platform.denormalizePrimaryKey(id);
+      }
       delete data[pk];
       data[primaryKey as keyof T] = id as Primary<T> & T[keyof T];
     }

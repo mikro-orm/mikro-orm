@@ -19,11 +19,7 @@ export class MongoPlatform extends Platform {
   }
 
   denormalizePrimaryKey(data: number | string): IPrimaryKey {
-    try {
-      return new ObjectId(data);
-    } catch (e) {
-      return data;
-    }
+    return new ObjectId(data);
   }
 
   getSerializedPrimaryKeyField(field: string): string {
