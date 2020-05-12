@@ -21,9 +21,7 @@ describe('GH issue 472', () => {
       entities: [A],
       dbName: 'mikro_orm_test_gh472',
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
       namingStrategy: EntityCaseNamingStrategy,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();
