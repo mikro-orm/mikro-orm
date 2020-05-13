@@ -2,7 +2,7 @@
 
 import Knex, { Raw } from 'knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
-import { Entity, Logger, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '@mikro-orm/core';
+import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
