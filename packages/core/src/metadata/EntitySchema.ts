@@ -24,7 +24,7 @@ type Metadata<T, U> =
   & ({ name: string } | { class: Constructor<T>; name?: string })
   & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>, T> } };
 
-export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined> {
+export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
 
   private readonly _meta: EntityMetadata<T> = {} as EntityMetadata<T>;
   private internal = false;
@@ -41,8 +41,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
   }
 
-  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<T> | undefined = undefined>(meta: EntityMetadata<T>): EntitySchema<T, U> {
-    const schema = new EntitySchema(meta as Metadata<T, U>);
+  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T>): EntitySchema<T, U> {
+    const schema = new EntitySchema<T, U>(meta as Metadata<T, U>);
     schema.internal = true;
 
     return schema;
@@ -235,16 +235,16 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
-          this.addOneToOne(name as keyof T & string, options.type as string, options);
+          this.addOneToOne(name as keyof T & string, options.type as string, options as OneToOneOptions<T, AnyEntity>);
           break;
         case ReferenceType.ONE_TO_MANY:
           this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T, AnyEntity>);
           break;
         case ReferenceType.MANY_TO_ONE:
-          this.addManyToOne(name as keyof T & string, options.type as string, options);
+          this.addManyToOne(name as keyof T & string, options.type as string, options as ManyToOneOptions<T, AnyEntity>);
           break;
         case ReferenceType.MANY_TO_MANY:
-          this.addManyToMany(name as keyof T & string, options.type as string, options);
+          this.addManyToMany(name as keyof T & string, options.type as string, options as ManyToManyOptions<T, AnyEntity>);
           break;
         case ReferenceType.EMBEDDED:
           this.addEmbedded(name as keyof T & string, options as EmbeddedOptions);
