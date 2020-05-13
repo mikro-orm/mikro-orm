@@ -417,7 +417,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
 
     if (Utils.isEntity(where)) {
-      const ret = this.removeEntity(where, flush as true);
+      const ret = this.removeEntity(where as T, flush as true);
       return ret ? ret.then(() => 1) : ret;
     }
 

@@ -106,7 +106,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let pk: any;
 
     if (pks.length > 1) { // owner has composite pk
-      pk = Utils.getPrimaryKeyCond(data, pks);
+      pk = Utils.getPrimaryKeyCond(data as T, pks);
     } else {
       res.insertId = data[pks[0]] || res.insertId || res.row[pks[0]];
       pk = [res.insertId];
