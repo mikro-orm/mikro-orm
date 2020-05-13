@@ -1,7 +1,23 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
-  DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType,
-  FindOneOptions, FindOptions, QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, ValidationError,
+  DatabaseDriver,
+  EntityData,
+  AnyEntity,
+  FilterQuery,
+  EntityMetadata,
+  EntityProperty,
+  Configuration,
+  Utils,
+  ReferenceType,
+  FindOneOptions,
+  FindOptions,
+  QueryResult,
+  Transaction,
+  IDatabaseDriver,
+  EntityManager,
+  EntityManagerType,
+  Dictionary,
+  ValidationError,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -31,7 +47,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }, ctx?: Transaction<ClientSession>): Promise<T | null> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where);
@@ -52,7 +68,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where);
@@ -63,7 +79,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
-      where = { _id: new ObjectId(where as string) } as FilterQuery<T>;
+      where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where);
@@ -241,6 +257,18 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     return data;
+  }
+
+  private buildFilterById<T extends AnyEntity<T>>(entityName: string, id: string): FilterQuery<T> {
+    const meta = this.metadata.get(entityName);
+
+
+    if (meta.properties[meta.primaryKeys[0]].type.toLowerCase() === 'objectid') {
+      return { _id: new ObjectId(id) } as FilterQuery<T>;
+    }
+
+
+    return { _id: id } as FilterQuery<T>;
   }
 
 }
