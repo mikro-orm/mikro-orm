@@ -1,5 +1,5 @@
 import { unlinkSync } from 'fs';
-import { Entity, IdentifiedReference, MikroORM, PrimaryKey, ReflectMetadataProvider, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
+import { Entity, IdentifiedReference, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
 
