@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export {
   Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData,
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery,
