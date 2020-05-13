@@ -292,7 +292,7 @@ export class UnitOfWork {
     await Utils.runSerial(hooks[type]!, hook => (entity[hook] as unknown as () => Promise<any>)());
 
     if (payload) {
-      Object.assign(payload, Utils.diffEntities(copy, entity, this.metadata, this.platform));
+      Object.assign(payload, Utils.diffEntities<T>(copy as T, entity, this.metadata, this.platform));
     }
   }
 
