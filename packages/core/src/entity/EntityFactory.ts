@@ -103,16 +103,17 @@ export class EntityFactory {
   /**
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
-  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T> ): void {
+  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T>): void {
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(primaryKey);
 
     if (Utils.isDefined(data[pk], true) || Utils.isDefined(data[primaryKey], true)) {
       let id = data[pk] || data[primaryKey];
 
-      if(prop.type.toLowerCase() === 'objectid') {
+      if (prop.type.toLowerCase() === 'objectid') {
         id = platform.denormalizePrimaryKey(id);
       }
+
       delete data[pk];
       data[primaryKey as keyof T] = id as Primary<T> & T[keyof T];
     }
