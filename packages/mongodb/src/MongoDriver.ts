@@ -261,9 +261,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   private buildFilterById<T extends AnyEntity<T>>(entityName: string, id: string): FilterQuery<T> {
     const meta = this.metadata.get(entityName);
+
     if (meta.properties[meta.primaryKeys[0]].type.toLowerCase() === 'objectid') {
       return { _id: new ObjectId(id) } as FilterQuery<T>;
     }
+
     return { _id: id } as FilterQuery<T>;
   }
 
