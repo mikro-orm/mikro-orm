@@ -45,13 +45,32 @@ class B {
 
 }
 
+@Entity()
+class C {
+
+  @PrimaryKey()
+  _id!: number;
+
+  @SerializedPrimaryKey()
+  id!: string;
+
+  @Property()
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
+
 describe('GH issue 349', () => {
 
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [A, B],
+      entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
       metadataProvider: ReflectMetadataProvider,
@@ -121,6 +140,20 @@ describe('GH issue 349', () => {
     orm.em.clear();
     const getB = await orm.em.findOneOrFail(B, b._id);
     expect(getB._id).toBeInstanceOf(ObjectId);
+    orm.em.clear();
+  });
+
+  test(`should work with number id`, async () => {
+    const c = new C('test1');
+    const nrId = 234123412458902579342356;
+    c._id = nrId;
+    await orm.em.persistAndFlush(c);
+    expect(c._id).not.toBeInstanceOf(ObjectId);
+    expect(c._id).toStrictEqual(nrId);
+    orm.em.clear();
+    const getC = await orm.em.findOneOrFail(C, c._id);
+    expect(getC._id).not.toBeInstanceOf(ObjectId);
+    expect(getC._id).toStrictEqual(nrId);
     orm.em.clear();
   });
 
