@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export * from './AbstractSqlConnection';
 export * from './AbstractSqlDriver';
 export * from './AbstractSqlPlatform';
