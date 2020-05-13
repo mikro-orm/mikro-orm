@@ -3,4 +3,4 @@ export * from './Book';
 export * from './book-tag';
 export * from './Publisher';
 export * from './test.model';
-export { PublisherType } from './PublisherType';
+export * from './PublisherType';

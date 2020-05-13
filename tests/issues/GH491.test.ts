@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 
 @Entity()
