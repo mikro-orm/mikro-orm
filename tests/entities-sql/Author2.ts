@@ -55,13 +55,13 @@ export class Author2 extends BaseEntity2 {
   address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
-  friends = new Collection<Author2>(this);
+  friends: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToMany(() => Author2)
-  following = new Collection<Author2>(this);
+  following: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToMany(() => Author2, a => a.following)
-  followers = new Collection<Author2>(this);
+  followers: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
   favouriteBook?: Book2;
