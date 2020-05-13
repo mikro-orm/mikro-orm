@@ -499,13 +499,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  async populate<T extends AnyEntity<T>, K extends T | T[]>(entities: K, populate: string | Populate, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<K> {
+  async populate<T extends AnyEntity<T>>(entities: T, populate: string | Populate, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
+  async populate<T extends AnyEntity<T>>(entities: T[], populate: string | Populate, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
+  async populate<T extends AnyEntity<T>>(entities: T | T[], populate: string | Populate, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
     const entitiesArray = Utils.asArray(entities);
 
     if (entitiesArray.length === 0) {
       return entities;
     }
-    populate = typeof populate === 'string' ? Utils.asArray(populate) : populate;
+
+    populate = Utils.isString(populate) ? Utils.asArray(populate) : populate;
 
     const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate(entityName, populate);
