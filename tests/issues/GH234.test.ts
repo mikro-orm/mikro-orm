@@ -1,5 +1,5 @@
 import { unlinkSync } from 'fs';
-import { Collection, Entity, Logger, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '@mikro-orm/core';
+import { Collection, Entity, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver, SchemaGenerator } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
 
@@ -14,7 +14,7 @@ export class A {
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
-  bCollection = new Collection<B>(this);
+  bCollection: Collection<B> = new Collection<B>(this);
 
 }
 
@@ -28,7 +28,7 @@ export class B {
   name!: string;
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
-  aCollection = new Collection<A>(this);
+  aCollection: Collection<A> = new Collection<A>(this);
 
 }
 

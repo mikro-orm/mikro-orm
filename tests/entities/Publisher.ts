@@ -2,11 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, BeforeCreate, Enum, SerializedPrimaryKey } from '@mikro-orm/core';
 import { Book } from './Book';
 import { Test } from './test.model';
-
-export enum PublisherType {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
+import { PublisherType } from './PublisherType';
 
 @Entity()
 export class Publisher {
