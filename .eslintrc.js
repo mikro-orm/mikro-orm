@@ -134,6 +134,8 @@ module.exports = {
     'padded-blocks': ['error', { classes: 'always' }],
     'no-else-return': 'error',
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
+    'keyword-spacing': ['error', { before: true, after: true }],
+    'space-in-parens': ['error', 'never']
   },
   'settings': {}
 };
