@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, OneToMany, MikroORM, ReflectMetadataProvider, Collection, ManyToOne } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, OneToMany, MikroORM, Collection, ManyToOne } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()

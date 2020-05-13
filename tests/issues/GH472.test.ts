@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, EntityCaseNamingStrategy } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
