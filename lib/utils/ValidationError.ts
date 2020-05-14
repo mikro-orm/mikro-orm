@@ -167,6 +167,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Composite key required for entity ${meta.className}.`);
   }
 
+  static cannotCommit(): ValidationError {
+    return new ValidationError('You cannot call em.flush() from inside lifecycle hook handlers');
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
     return new ValidationError(`${meta.className}.${prop.name} ${message}`);
   }
