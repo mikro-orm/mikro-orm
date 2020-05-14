@@ -23,3 +23,14 @@ removing entity or entity reference, not when deleting records by query.
 the identity map.
 
 > `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
+
+## Limitations of lifecycle hooks
+
+Hooks are executed inside the commit action of unit of work, after all change 
+sets are computed. This means that it is not possible to create new entities as
+usual from inside the hook. Calling `em.flush()` from hooks will result in 
+validation error. Calling `em.persist()` can result in undefined behaviour like
+locking errors. 
+
+> The **internal** instance of `EntityManager` accessible under `wrap(this).__em` is 
+> not meant for public usage. 

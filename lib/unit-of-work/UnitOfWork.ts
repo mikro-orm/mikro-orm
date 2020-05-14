@@ -28,6 +28,7 @@ export class UnitOfWork {
   private readonly platform = this.em.getDriver().getPlatform();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata);
+  private working = false;
 
   constructor(private readonly em: EntityManager) { }
 
@@ -105,6 +106,11 @@ export class UnitOfWork {
   }
 
   async commit(): Promise<void> {
+    if (this.working) {
+      throw ValidationError.cannotCommit();
+    }
+
+    this.working = true;
     this.computeChangeSets();
 
     if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.length === 0) {
@@ -302,6 +308,7 @@ export class UnitOfWork {
     this.changeSets.length = 0;
     this.collectionUpdates.length = 0;
     this.extraUpdates.length = 0;
+    this.working = false;
   }
 
   private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: AnyEntity[], options: { checkRemoveStack?: boolean; mergeData?: boolean } = {}): void {
