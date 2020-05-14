@@ -52,10 +52,6 @@ describe('QueryBuilder', () => {
     qb2.select('*').where({ name: 'test 123' }).orderBy({ name: 'desc', type: -1 }).limit(2, 1);
     expect(qb2.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
     expect(qb2.getParams()).toEqual(['test 123', 2, 1]);
-
-    const qb3 = orm.em.createQueryBuilder(Author2, 'a');
-    qb3.select('*').where({ 'Book2.createdAt': new Date() }).orderBy({ 'Book2.createdAt': 'desc' });
-    expect(qb3.getQuery()).toEqual('select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`created_at` = ? order by `e1`.`created_at` desc');
   });
 
   test('select constant expression', async () => {
