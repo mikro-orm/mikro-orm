@@ -53,7 +53,6 @@ describe('GH issue 557', () => {
     orm = await MikroORM.init({
       entities: [Application, Rate],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh557.db',
-      debug: true,
       type: 'sqlite',
       metadataProvider: ReflectMetadataProvider,
       cache: { enabled: false },
