@@ -107,7 +107,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return result;
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = []): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = [], aliasMap: Dictionary<string> = {}): T | null {
     const ret = super.mapResult(result, meta);
 
     if (!ret) {
@@ -116,9 +116,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const joinedLoads = this.joinedLoads(meta, populate);
 
-    joinedLoads.forEach((relationName, index) => {
-      const prop = meta.properties[relationName];
-      const properties = this.metadata.get(prop.type).properties;
+    joinedLoads.forEach((relationName) => {
+      const relation = meta.properties[relationName];
+      const properties = this.metadata.get(relation.type).properties;
+      const found = Object.entries(aliasMap).find(([,r]) => r === relation.type);
+
+      if (!found) {
+        // TODO: Should an error be thrown? If so, what error?
+        throw new Error(`no alias found for relation ${relationName}`);
+      }
+
+      const relationAlias = found[0];
 
       ret[relationName] = ret[relationName] || [];
       const relationPojo = {};
@@ -126,8 +134,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       Object.values(properties)
         .filter(({ reference }) => reference === ReferenceType.SCALAR)
         .forEach(prop => {
-          const tableAlias = `${relationName.charAt(0)}${index}`;
-          const alias = this.getAliasedField(tableAlias, prop.fieldNames[0]);
+          const alias = `${relationAlias}_${prop.fieldNames[0]}`;
 
           if (alias in ret) {
             relationPojo[prop.name] = ret[alias];
@@ -289,31 +296,25 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .map(({ field }) => field);
   }
 
-  protected processJoinedLoads<T extends AnyEntity<T>>(result: object[], joinedLoads: string[]): T | null {
-    if (result.length === 0) {
+  protected processJoinedLoads<T extends AnyEntity<T>>(rawResults: object[], joinedLoads: string[]): T | null {
+    if (rawResults.length === 0) {
       return null;
     }
 
-    return result.reduce((accumulator, value) => {
+    return rawResults.reduce((result, value) => {
       joinedLoads.forEach(relationName => {
         if (relationName in value) {
           const relation = value[relationName];
 
           if (Array.isArray(relation)) {
-            const existing = accumulator[relationName] || [];
-            accumulator[relationName] = [...existing, ...relation];
+            const existing = result[relationName] || [];
+            result[relationName] = [...existing, ...relation];
           }
         }
       });
 
-      return { ...value, ...accumulator };
+      return { ...value, ...result };
     }, {}) as unknown as T;
-  }
-
-  protected getAliasedField(tableAlias: string, field: string): string {
-    const alias = `${tableAlias}_${field}`;
-
-    return alias;
   }
 
   getRefForField(field: string, schema: string, alias: string) {
@@ -328,19 +329,22 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
       .forEach(prop => {
         selects.push(prop.fieldNames[0]);
-        queryBuilder.addSelect(prop.fieldNames[0]);
       });
 
-    joinedLoads.forEach((relationName, index) => {
+    let previousRelationName: string;
+    joinedLoads.forEach((relationName) => {
+      previousRelationName = relationName;
+
       const prop = meta.properties[relationName];
       const properties = this.metadata.get(prop.type).properties;
 
       Object.values(properties)
         .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
         .forEach(prop => {
-          const tableAlias = `${relationName.charAt(0)}${index}`;
-          const alias = this.getAliasedField(tableAlias, prop.fieldNames[0]);
-          selects.push(this.getRefForField(prop.fieldNames[0], tableAlias, alias));
+          const tableAlias = queryBuilder.getNextAlias(relationName, previousRelationName !== relationName);
+          const fieldAlias = `${tableAlias}_${prop.fieldNames[0]}`;
+
+          selects.push(this.getRefForField(prop.fieldNames[0], tableAlias, fieldAlias));
           queryBuilder.join(relationName, tableAlias);
         });
     });

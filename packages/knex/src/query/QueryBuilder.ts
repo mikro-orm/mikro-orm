@@ -254,8 +254,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return found ? found[0] : undefined;
   }
 
-  getNextAlias(): string {
-    return `e${this.aliasCounter++}`;
+  getNextAlias(prefix = 'e', increment = true): string {
+    // Take only the first letter of the prefix to keep character counts down since some engines have character limits
+    return `${prefix.charAt(0)}${increment ? this.aliasCounter++ : this.aliasCounter}`;
   }
 
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
@@ -268,10 +269,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (method === 'all' && Array.isArray(res)) {
-      return res.map(r => this.driver.mapResult(r, meta, this._populate)) as unknown as U;
+      return res.map(r => this.driver.mapResult(r, meta, this._populate, this._aliasMap)) as unknown as U;
     }
 
-    return this.driver.mapResult(res, meta, this._populate) as unknown as U;
+    return this.driver.mapResult(res, meta, this._populate, this._aliasMap) as unknown as U;
   }
 
   async getResult(): Promise<T[]> {
