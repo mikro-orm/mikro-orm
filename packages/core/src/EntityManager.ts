@@ -505,6 +505,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (entitiesArray.length === 0) {
       return entities;
     }
+    populate = typeof populate === 'string' ? Utils.asArray(populate) : populate;
 
     const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate(entityName, populate);
@@ -592,34 +593,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
-  private preparePopulate(entityName: string, populate?: string | Populate): PopulateOptions[] {
+  private preparePopulate(entityName: string, populate?: Populate): PopulateOptions[] {
+    if (!populate) {
+      return [];
+    }
+
     if (populate === true) {
       return [{ field: '*', all: true }];
     }
 
     const meta = this.metadata.get(entityName);
 
-    if (Array.isArray(populate)) {
-      return populate.map(field => {
-        if (Utils.isString(field)) {
-          const strategy = meta.properties[field]?.strategy;
-          return { field, strategy };
-        }
+    return populate.map(field => {
+      if (Utils.isString(field)) {
+        const strategy = meta.properties[field]?.strategy;
+        return { field, strategy };
+      }
 
-        return field;
-      });
-    }
-
-    if (Utils.isString(populate)) {
-      const relation = meta.properties[populate];
-
-      return [{
-        field: populate,
-        strategy: relation.strategy,
-      }];
-    }
-
-    return [];
+      return field;
+    });
   }
 
 }

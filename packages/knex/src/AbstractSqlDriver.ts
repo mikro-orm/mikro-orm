@@ -119,13 +119,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     joinedLoads.forEach((relationName) => {
       const relation = meta.properties[relationName];
       const properties = this.metadata.get(relation.type).properties;
-      const found = Object.entries(aliasMap).find(([,r]) => r === relation.type);
-
-      if (!found) {
-        // TODO: Should an error be thrown? If so, what error?
-        throw new Error(`no alias found for relation ${relationName}`);
-      }
-
+      const found = Object.entries(aliasMap).find(([,r]) => r === relation.type)!;
       const relationAlias = found[0];
 
       ret[relationName] = ret[relationName] || [];
@@ -303,13 +297,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     return rawResults.reduce((result, value) => {
       joinedLoads.forEach(relationName => {
-        if (relationName in value) {
-          const relation = value[relationName];
+        const relation = value[relationName];
 
-          if (Array.isArray(relation)) {
-            const existing = result[relationName] || [];
-            result[relationName] = [...existing, ...relation];
-          }
+        if (Array.isArray(relation)) {
+          const existing = result[relationName] || [];
+          result[relationName] = [...existing, ...relation];
         }
       });
 

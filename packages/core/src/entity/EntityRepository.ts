@@ -1,7 +1,7 @@
 import { EntityManager, FindOneOrFailOptions } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary } from '../typings';
 import { QueryOrderMap } from '../enums';
-import { FilterQuery, FindOneOptions, FindOptions, IdentifiedReference, Reference } from '..';
+import { FilterQuery, FindOneOptions, FindOptions, IdentifiedReference, Reference, Utils } from '..';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 
