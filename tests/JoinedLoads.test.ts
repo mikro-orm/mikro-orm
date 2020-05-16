@@ -48,4 +48,8 @@ describe('Joined loading', () => {
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "b1"."uuid_pk" as "b1_uuid_pk", "b1"."created_at" as "b1_created_at", "b1"."title" as "b1_title", "b1"."perex" as "b1_perex", "b1"."price" as "b1_price", "b1"."double" as "b1_double", "b1"."meta" as "b1_meta" from "author2" as "e0" inner join "book2" as "b1" on "e0"."id" = "b1"."author_id" where "e0"."id" = $1');
   });
+
+  test.todo('populate OneToOne with joined strategy');
+  test.todo('populate ManyToMany with joined strategy');
+  test.todo('handles nested joinedLoads that map to the same entity, eg book.author.favouriteAuthor');
 });
