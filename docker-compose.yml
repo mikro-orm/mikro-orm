@@ -25,7 +25,7 @@ services:
 
   postgre:
     container_name: postgre
-    image: postgres:11.7
+    image: postgres:11.8
     ports:
       - 5432:5432
     volumes:
