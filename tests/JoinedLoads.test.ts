@@ -83,6 +83,22 @@ describe('Joined loading', () => {
     expect(a2).toBeNull();
   });
 
+  test('when populating only a single relation via em.populate', async () => {
+    const author2 = new Author2('Albert Camus', 'albert.camus@email.com');
+    const stranger = new Book2('The Stranger', author2);
+    const fall = new Book2('The Fall', author2);
+
+    author2.books2.add(stranger, fall);
+
+    await orm.em.persistAndFlush(author2);
+    orm.em.clear();
+
+    const a2 = await orm.em.findOneOrFail(Author2, { id: 1 });
+    await orm.em.populate(a2, 'books2');
+
+    expect(a2.books2).toHaveLength(2);
+  });
+
   test.todo('populate OneToOne with joined strategy');
   test.todo('populate ManyToMany with joined strategy');
   test.todo('handles nested joinedLoads that map to the same entity, eg book.author.favouriteAuthor');

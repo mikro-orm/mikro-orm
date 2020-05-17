@@ -308,11 +308,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return rawResults.reduce((result, value) => {
       joinedLoads.forEach(relationName => {
         const relation = value[relationName];
+        const existing = result[relationName] || [];
 
-        if (Array.isArray(relation)) {
-          const existing = result[relationName] || [];
-          result[relationName] = [...existing, ...relation];
-        }
+        result[relationName] = [...existing, ...relation];
       });
 
       return { ...value, ...result };
