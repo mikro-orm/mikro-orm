@@ -125,10 +125,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       ret[relationName] = ret[relationName] || [];
       const relationPojo = {};
 
+      let relationExists = true;
       Object.values(properties)
         .filter(({ reference }) => reference === ReferenceType.SCALAR)
         .forEach(prop => {
           const alias = `${relationAlias}_${prop.fieldNames[0]}`;
+          const value = ret[alias];
+
+          // If the primary key value for the relation is null, we know we haven't joined to anything
+          // and therefore we don't return any record (since all values would be null)
+          if (prop.primary && value === null) {
+            relationExists = false;
+          }
 
           if (alias in ret) {
             relationPojo[prop.name] = ret[alias];
@@ -136,7 +144,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           }
         });
 
-      ret[relationName].push(relationPojo);
+      if (relationExists) {
+        ret[relationName].push(relationPojo);
+      }
     });
 
     return ret as T;
@@ -337,7 +347,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           const fieldAlias = `${tableAlias}_${prop.fieldNames[0]}`;
 
           selects.push(this.getRefForField(prop.fieldNames[0], tableAlias, fieldAlias));
-          queryBuilder.join(relationName, tableAlias);
+          queryBuilder.join(relationName, tableAlias, {}, 'leftJoin');
         });
     });
 
