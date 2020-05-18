@@ -1,7 +1,7 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value, Ref } from 'knex';
 import {
   AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
-  QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError,
+  QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError, PopulateOptions,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver, QueryBuilderHelper } from '../index';
@@ -14,8 +14,8 @@ import { SqlEntityManager } from '../SqlEntityManager';
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   type!: QueryType;
-  _fields?: (string | KnexQueryBuilder)[];
-  _populate: string[] = [];
+  _fields?: Field[];
+  _populate: PopulateOptions[] = [];
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 1;
@@ -47,7 +47,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.select('*');
   }
 
-  select(fields: string | KnexQueryBuilder | (string | KnexQueryBuilder)[], distinct = false): this {
+  select(fields: Field | Field[], distinct = false): this {
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
@@ -169,8 +169,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * @internal
    */
-  populate(populate: string[]): this {
+  populate(populate: PopulateOptions[]): this {
     this._populate = populate;
+
     return this;
   }
 
@@ -253,8 +254,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return found ? found[0] : undefined;
   }
 
-  getNextAlias(): string {
-    return `e${this.aliasCounter++}`;
+  getNextAlias(prefix = 'e', increment = true): string {
+    // Take only the first letter of the prefix to keep character counts down since some engines have character limits
+    return `${prefix.charAt(0)}${increment ? this.aliasCounter++ : this.aliasCounter}`;
   }
 
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
@@ -267,10 +269,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (method === 'all' && Array.isArray(res)) {
-      return res.map(r => this.driver.mapResult(r, meta)) as unknown as U;
+      return res.map(r => this.driver.mapResult(r, meta, this._populate, this._aliasMap)) as unknown as U;
     }
 
-    return this.driver.mapResult(res, meta) as unknown as U;
+    return this.driver.mapResult(res, meta, this._populate, this._aliasMap) as unknown as U;
   }
 
   async getResult(): Promise<T[]> {
@@ -351,8 +353,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return ret;
   }
 
-  private prepareFields<T extends string | Raw = string | Raw>(fields: (string | KnexQueryBuilder)[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): T[] {
-    const ret: (string | KnexQueryBuilder)[] = [];
+  private prepareFields<T extends string | Raw = string | Raw>(fields: Field[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): T[] {
+    const ret: Field[] = [];
 
     fields.forEach(f => {
       if (!Utils.isString(f)) {
@@ -447,7 +449,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const meta = this.metadata.get(this.entityName, false, false);
-    this._populate.forEach(field => {
+    this._populate.forEach(({ field }) => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
 
@@ -536,6 +538,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
 }
+
+type KnexStringRef = Ref<string, {
+  [alias: string]: string;
+}>;
+
+export type Field = string | KnexStringRef | KnexQueryBuilder;
 
 export interface JoinOptions {
   table: string;

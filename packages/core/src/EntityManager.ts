@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Configuration, RequestContext, Utils, ValidationError, SmartQueryHelper } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { IDatabaseDriver, FindOneOptions, FindOptions, EntityManagerType } from './drivers';
+import { IDatabaseDriver, FindOneOptions, FindOptions, EntityManagerType, Populate, PopulateOptions } from './drivers';
 import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQuery, Primary, Dictionary } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
@@ -83,7 +83,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions<T>>(populate) ? populate : { populate, orderBy, limit, offset };
     options.orderBy = options.orderBy || {};
-    const results = await this.driver.find<T>(entityName, where, { ...options, populate: this.preparePopulate(options.populate) }, this.transactionContext);
+    const preparedPopulate = this.preparePopulate(entityName, options.populate);
+    const opts = { ...options, populate: preparedPopulate };
+    const results = await this.driver.find<T>(entityName, where, opts, this.transactionContext);
 
     if (results.length === 0) {
       return [];
@@ -97,7 +99,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T>(entityName, unique, options.populate || [], where, options.orderBy, options.refresh);
+    await this.entityLoader.populate<T>(entityName, unique, preparedPopulate, where, options.orderBy, options.refresh);
 
     return unique;
   }
@@ -155,7 +157,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     this.validator.validateParams(where);
-    const data = await this.driver.findOne(entityName, where, { ...options, populate: this.preparePopulate(options.populate) }, this.transactionContext);
+    const preparedPopulate = this.preparePopulate(entityName, options.populate);
+    options.populate = preparedPopulate;
+
+    const data = await this.driver.findOne(entityName, where, { ...options, populate: preparedPopulate }, this.transactionContext);
 
     if (!data) {
       return null;
@@ -494,15 +499,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  async populate<T extends AnyEntity<T>, K extends T | T[]>(entities: K, populate: string | string[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<K> {
+  async populate<T extends AnyEntity<T>, K extends T | T[]>(entities: K, populate: string | Populate, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<K> {
     const entitiesArray = Utils.asArray(entities);
 
     if (entitiesArray.length === 0) {
       return entities;
     }
+    populate = typeof populate === 'string' ? Utils.asArray(populate) : populate;
 
     const entityName = entitiesArray[0].constructor.name;
-    await this.entityLoader.populate(entityName, entitiesArray, populate, where, orderBy, refresh, validate);
+    const preparedPopulate = this.preparePopulate(entityName, populate);
+    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, where, orderBy, refresh, validate);
 
     return entities;
   }
@@ -579,13 +586,32 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       await this.lock(entity, options.lockMode, options.lockVersion);
     }
 
-    await this.entityLoader.populate(entityName, [entity], options.populate || [], where, options.orderBy || {}, options.refresh);
+    const preparedPopulate = this.preparePopulate(entityName, options.populate);
+
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, where, options.orderBy || {}, options.refresh);
 
     return entity;
   }
 
-  private preparePopulate(populate?: string[] | boolean) {
-    return Array.isArray(populate) ? populate : [];
+  private preparePopulate(entityName: string, populate?: Populate): PopulateOptions[] {
+    if (!populate) {
+      return [];
+    }
+
+    if (populate === true) {
+      return [{ field: '*', all: true }];
+    }
+
+    const meta = this.metadata.get(entityName);
+
+    return populate.map(field => {
+      if (Utils.isString(field)) {
+        const strategy = meta.properties[field]?.strategy;
+        return { field, strategy };
+      }
+
+      return field;
+    });
   }
 
 }

@@ -1,6 +1,6 @@
 import { MetadataStorage } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, EntityValidator, ReferenceType } from '../entity';
+import { Cascade, EntityValidator, ReferenceType, LoadStrategy } from '../entity';
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
@@ -60,4 +60,5 @@ export interface ReferenceOptions<T extends AnyEntity<T>, O extends AnyEntity<O>
   entity?: string | (() => EntityName<T>);
   cascade?: Cascade[];
   eager?: boolean;
+  strategy?: LoadStrategy;
 }
