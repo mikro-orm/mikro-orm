@@ -3,7 +3,7 @@ import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import { BaseEntity, Cascade, Collection, EntityRepository, ReferenceType } from '../entity';
+import { BaseEntity, Cascade, Collection, EntityRepository, ReferenceType, LoadStrategy } from '../entity';
 import { Type } from '../types';
 import { Utils } from '../utils';
 
@@ -113,7 +113,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
-    const prop = { reference: ReferenceType.MANY_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as unknown as EntityProperty<T>;
+    const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     this.addProperty(name, type, prop);
   }
@@ -129,17 +129,17 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
     }
 
-    const prop = { reference: ReferenceType.MANY_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as PropertyOptions<T>;
+    const prop = this.createProperty(ReferenceType.MANY_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToMany<K = object>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
-    const prop = { reference: ReferenceType.ONE_TO_MANY, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as PropertyOptions<T>;
+    const prop = this.createProperty<T>(ReferenceType.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
-    const prop = { reference: ReferenceType.ONE_TO_ONE, cascade: [Cascade.PERSIST, Cascade.MERGE], ...options } as unknown as EntityProperty<T>;
+    const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
@@ -286,6 +286,15 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
 
     return type;
+  }
+
+  private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty) {
+    return {
+      reference,
+      cascade: [Cascade.PERSIST, Cascade.MERGE],
+      strategy: LoadStrategy.SELECT_IN,
+      ...options,
+    };
   }
 
 }
