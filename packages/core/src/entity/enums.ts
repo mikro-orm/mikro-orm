@@ -13,3 +13,8 @@ export enum Cascade {
   REMOVE = 'remove',
   ALL = 'all',
 }
+
+export enum LoadStrategy {
+  SELECT_IN = 'select-in',
+  JOINED = 'joined'
+}
