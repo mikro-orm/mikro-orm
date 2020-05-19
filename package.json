@@ -139,7 +139,7 @@
     "@types/node": "^13.9.0",
     "@types/pg": "^7.14.1",
     "@types/umzug": "^2.2.3",
-    "@types/uuid": "^7.0.0",
+    "@types/uuid": "^8.0.0",
     "@types/webpack-env": "^1.15.1",
     "conditional-type-checks": "^1.0.5",
     "conventional-changelog-angular": "^5.0.6",
