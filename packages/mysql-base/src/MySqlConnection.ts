@@ -27,6 +27,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     }
 
     ret.supportBigNumbers = true;
+    ret.bigNumberStrings = true;
 
     return ret;
   }
