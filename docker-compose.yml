@@ -4,7 +4,6 @@ services:
   # mongodb is managed via `run-rs`
 
   mysql:
-    container_name: mysql
     image: mysql:5.7
     restart: unless-stopped
     ports:
@@ -24,7 +23,6 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    container_name: postgre
     image: postgres:11.8
     ports:
       - 5432:5432
