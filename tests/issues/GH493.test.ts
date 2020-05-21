@@ -1,6 +1,6 @@
 import { unlinkSync } from 'fs';
-import { BeforeDelete, BeforeUpdate, Entity, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { BeforeDelete, BeforeUpdate, Entity, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR } from '../bootstrap';
 
 @Entity()
@@ -14,12 +14,12 @@ export class A {
 
   @BeforeUpdate()
   async beforeUpdate() {
-    await wrap(this).__em!.flush();
+    await wrap(this, true).__em!.flush();
   }
 
   @BeforeDelete()
   async beforeDelete() {
-    await wrap(this).__em!.flush();
+    await wrap(this, true).__em!.flush();
   }
 
 }
