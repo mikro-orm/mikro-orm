@@ -80,6 +80,8 @@ describe('GH issue 349', () => {
 
   afterEach(async () => {
     await orm.em.remove(A, {});
+    await orm.em.remove(B, {});
+    await orm.em.remove(C, {});
   });
 
   afterAll(async () => {
