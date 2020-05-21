@@ -50,7 +50,7 @@
     "mikro-orm": "./dist/cli.js"
   },
   "jest": {
-    "testTimeout": 10000,
+    "testTimeout": 15000,
     "preset": "ts-jest",
     "collectCoverage": false,
     "collectCoverageFrom": [
