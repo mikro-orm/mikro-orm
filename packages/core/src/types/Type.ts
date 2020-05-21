@@ -21,10 +21,10 @@ export abstract class Type<JSType = string, DBType = JSType> {
 
   /**
    * Converts a value from its JS representation to its serialized JSON form of this type.
-   * By default converts to the database value.
+   * By default uses the runtime value.
    */
   toJSON(value: JSType, platform: Platform): JSType | DBType {
-    return this.convertToDatabaseValue(value, platform);
+    return value;
   }
 
   /**
