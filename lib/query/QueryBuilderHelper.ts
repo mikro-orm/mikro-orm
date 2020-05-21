@@ -124,24 +124,17 @@ export class QueryBuilderHelper {
   }
 
   joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Dictionary<JoinOptions> {
-    const join = {
-      prop, type, cond, ownerAlias,
-      alias: pivotAlias,
-      inverseAlias: alias,
-      joinColumns: prop.joinColumns,
-      inverseJoinColumns: prop.inverseJoinColumns,
-      primaryKeys: prop.referencedColumnNames,
-    } as JoinOptions;
-    const name = `${ownerAlias}.${prop.name}`;
-    const ret: Dictionary<JoinOptions> = {};
-
-    if (prop.owner) {
-      ret[name] = Object.assign(join, { table: prop.pivotTable });
-    } else {
-      const meta = this.metadata.get(prop.type);
-      const prop2 = meta.properties[prop.mappedBy];
-      ret[name] = Object.assign(join, { table: prop2.pivotTable });
-    }
+    const ret = {
+      [`${ownerAlias}.${prop.name}`]: {
+        prop, type, cond, ownerAlias,
+        alias: pivotAlias,
+        inverseAlias: alias,
+        joinColumns: prop.joinColumns,
+        inverseJoinColumns: prop.inverseJoinColumns,
+        primaryKeys: prop.referencedColumnNames,
+        table: prop.pivotTable,
+      } as JoinOptions,
+    };
 
     if (type === 'pivotJoin') {
       return ret;
