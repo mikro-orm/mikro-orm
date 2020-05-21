@@ -43,7 +43,7 @@
     "compile": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "mongodb": "^3.5.6",
-    "@mikro-orm/core": "^4.0.0-alpha.0"
+    "@mikro-orm/core": "^4.0.0-alpha.0",
+    "mongodb": "^3.5.7"
   }
 }
