@@ -80,8 +80,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint packages/**/*.ts --fix",
-      "git add"
+      "eslint packages/**/*.ts --fix"
     ]
   },
   "renovate": {
