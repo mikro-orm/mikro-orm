@@ -46,7 +46,7 @@
     "@mikro-orm/core": "^4.0.0-alpha.0",
     "@mikro-orm/knex": "^4.0.0-alpha.0",
     "fs-extra": "^9.0.0",
-    "ts-morph": "^7.0.1",
+    "ts-morph": "^7.1.0",
     "umzug": "^2.3.0"
   }
 }
