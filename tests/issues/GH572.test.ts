@@ -1,6 +1,6 @@
 import { unlinkSync } from 'fs';
-import { Entity, IdentifiedReference, Logger, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder, ReflectMetadataProvider } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, IdentifiedReference, Logger, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder, ReflectMetadataProvider } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR } from '../bootstrap';
 
 @Entity()
