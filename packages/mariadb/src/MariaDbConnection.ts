@@ -1,4 +1,5 @@
 import { Connection } from 'mariadb';
+import { MySqlConnectionConfig } from 'knex';
 import { MySqlConnection } from '@mikro-orm/mysql-base';
 
 // @ts-ignore
@@ -8,6 +9,13 @@ export class MariaDbConnection extends MySqlConnection {
 
   async connect(): Promise<void> {
     this.client = this.createKnexClient(this.getPatchedDialect());
+  }
+
+  getConnectionOptions(): MySqlConnectionConfig {
+    const ret = super.getConnectionOptions();
+    ret.bigNumberStrings = true;
+
+    return ret;
   }
 
   private getPatchedDialect() {
