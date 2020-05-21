@@ -33,6 +33,6 @@ export interface NamingStrategy {
   /**
    * Return the foreign key column name for the given parameters
    */
-  joinKeyColumnName(entityName: string, referencedColumnName?: string): string;
+  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean): string;
 
 }

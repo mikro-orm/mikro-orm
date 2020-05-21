@@ -232,7 +232,7 @@ export class MetadataDiscovery {
       this.initFieldName(meta2.properties[primaryKey]);
 
       for (const fieldName of meta2.properties[primaryKey].fieldNames) {
-        ret.push(this.namingStrategy.joinKeyColumnName(name, fieldName));
+        ret.push(this.namingStrategy.joinKeyColumnName(name, fieldName, meta2.compositePK));
       }
     }
 
@@ -266,7 +266,7 @@ export class MetadataDiscovery {
 
     if (!prop.joinColumns) {
       const tableName = meta.collection.split('.').pop()!;
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(tableName, referencedColumnName));
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(tableName, referencedColumnName, meta.compositePK));
     }
 
     if (!prop.inverseJoinColumns) {
@@ -282,7 +282,7 @@ export class MetadataDiscovery {
     Utils.defaultValue(prop, 'referencedTableName', meta2.collection);
 
     if (!prop.joinColumns) {
-      prop.joinColumns = fieldNames.map(fieldName => this.namingStrategy.joinKeyColumnName(prop.name, fieldName));
+      prop.joinColumns = fieldNames.map(fieldName => this.namingStrategy.joinKeyColumnName(prop.name, fieldName, fieldNames.length > 1));
     }
 
     if (!prop.referencedColumnNames) {
@@ -369,8 +369,8 @@ export class MetadataDiscovery {
 
     // handle self-referenced m:n with same default field names
     if (meta.name === prop.type && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_1', name));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_2', name));
+      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_1', name, meta.compositePK));
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
         const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
