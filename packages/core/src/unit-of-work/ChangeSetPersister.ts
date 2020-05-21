@@ -95,7 +95,7 @@ export class ChangeSetPersister {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
 
       if (prop.primary) {
-        this.mapPrimaryKey(changeSet.entity.__meta, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
+        this.mapPrimaryKey(wrap(changeSet.entity, true).__meta, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
       }
     }
 

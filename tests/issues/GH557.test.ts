@@ -1,8 +1,7 @@
 import { unlinkSync } from 'fs';
 import { BASE_DIR } from '../bootstrap';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '../../lib/decorators';
-import { MikroORM, ReflectMetadataProvider } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { MikroORM, ReflectMetadataProvider, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Rate {
