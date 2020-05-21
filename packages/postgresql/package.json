@@ -43,8 +43,8 @@
     "compile": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "pg": "^8.0.3",
     "@mikro-orm/core": "^4.0.0-alpha.0",
-    "@mikro-orm/knex": "^4.0.0-alpha.0"
+    "@mikro-orm/knex": "^4.0.0-alpha.0",
+    "pg": "^8.2.1"
   }
 }

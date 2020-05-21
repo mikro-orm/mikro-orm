@@ -45,6 +45,6 @@
   "dependencies": {
     "@mikro-orm/core": "^4.0.0-alpha.0",
     "globby": "^11.0.0",
-    "ts-morph": "^7.0.3"
+    "ts-morph": "^7.1.0"
   }
 }

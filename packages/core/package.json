@@ -52,6 +52,6 @@
     "fs-extra": "^9.0.0",
     "globby": "^11.0.0",
     "reflect-metadata": "^0.1.13",
-    "uuid": "^7.0.3"
+    "uuid": "^8.1.0"
   }
 }
