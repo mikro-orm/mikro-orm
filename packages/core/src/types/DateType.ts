@@ -35,4 +35,8 @@ export class DateType extends Type<Date, string> {
     return platform.getDateTypeDeclarationSQL(prop.length);
   }
 
+  toJSON(value: Date, platform: Platform): Date | string {
+    return this.convertToDatabaseValue(value, platform);
+  }
+
 }
