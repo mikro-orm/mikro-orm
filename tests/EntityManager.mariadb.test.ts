@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Collection, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -17,6 +17,29 @@ describe('EntityManagerMariaDb', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+  });
+
+  test('getConnectionOptions()', async () => {
+    const config = new Configuration({
+      type: 'mysql',
+      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      logger: jest.fn(),
+      forceUtcTimezone: true,
+    } as any, false);
+    const driver = new MariaDbDriver(config);
+    expect(driver.getConnection().getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      port: 3308,
+      user: 'user',
+      timezone: 'Z',
+      supportBigNumbers: true,
+      bigNumberStrings: true,
+    });
   });
 
   test('should return mariadb driver', async () => {
