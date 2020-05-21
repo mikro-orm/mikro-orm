@@ -17,7 +17,7 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 - `toJSON(value: any, platform: Platform): any`
 
   Converts a value from its JS representation to its serialized JSON form of this type.
-  By default converts to the database value.
+  By default uses the runtime value.
   
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 

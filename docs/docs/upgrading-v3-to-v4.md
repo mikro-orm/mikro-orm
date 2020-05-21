@@ -59,6 +59,12 @@ Input type defaults to `string`, output type defaults to the input type.
 
 You might need to explicitly provide the types if your methods are strictly typed.
 
+## Custom type serialization
+
+Custom types used to be serialized to the database value. In v4, the runtime 
+value is used by default. Implement custom `toJSON()` method if you need to 
+customize this.
+
 ## Property `default` and `defaultRaw`
 
 Previously the `default` option of properties was used as is, so we had to wrap 
