@@ -13,8 +13,14 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
     return propertyName;
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
-    return entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
+  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite = false): string {
+    const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
+
+    if (composite) {
+      return name + '_' + (referencedColumnName || this.referenceColumnName());
+    }
+
+    return name;
   }
 
   joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
