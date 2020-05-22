@@ -8,6 +8,7 @@ import { BaseEntity3 } from './BaseEntity3';
 @Entity({ tableName: 'books-table' })
 @Unique({ properties: ['title', 'author'] })
 @Index({ properties: 'title', type: 'text' })
+@Index({ options: { point: '2dsphere', title: -1 } })
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
@@ -34,6 +35,10 @@ export class Book extends BaseEntity3 {
 
   @Property()
   metaArrayOfStrings?: string[];
+
+  @Property()
+  @Index({ type: '2dsphere' })
+  point?: [number, number];
 
   constructor(title: string, author?: Author) {
     super();
