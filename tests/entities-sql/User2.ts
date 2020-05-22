@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
+import { Sandwich } from './sandwich';
 
 @Entity()
 export class User2 {
@@ -15,6 +16,9 @@ export class User2 {
 
   @ManyToMany(() => Car2)
   cars = new Collection<Car2>(this);
+
+  @ManyToMany(() => Sandwich)
+  sandwiches = new Collection<Sandwich>(this);
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;

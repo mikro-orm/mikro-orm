@@ -1,6 +1,18 @@
 import { MikroORM, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2 } from './entities-sql';
+import {
+  Author2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  FooParam2,
+  Test2,
+  Address2,
+  Car2,
+  CarOwner2,
+  User2,
+  Sandwich,
+} from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
 describe('composite keys in mysql', () => {
@@ -135,7 +147,7 @@ describe('composite keys in mysql', () => {
     expect(c3).toBeNull();
   });
 
-  test('composite entity in m:n relationship', async () => {
+  test('composite entity in m:n relationship, both entities are composite', async () => {
     const car1 = new Car2('Audi A8', 2011, 100_000);
     const car2 = new Car2('Audi A8', 2012, 150_000);
     const car3 = new Car2('Audi A8', 2013, 200_000);
@@ -181,6 +193,55 @@ describe('composite keys in mysql', () => {
     expect(c2).toBe(u2.cars[0]);
     await orm.em.removeEntity(c2, true);
     const c3 = await orm.em.findOne(Car2, car1);
+    expect(c3).toBeNull();
+  });
+
+  test('composite entity in m:n relationship, one of entity is composite', async () => {
+    const sandwich1 = new Sandwich('Fish Sandwich', 100);
+    const sandwich2 = new Sandwich('Fried Egg Sandwich', 200);
+    const sandwich3 = new Sandwich('Grilled Cheese Sandwich', 300);
+    const user1 = new User2('Henry', 'Doe 1');
+    const user2 = new User2('Henry', 'Doe 2');
+    const user3 = new User2('Henry', 'Doe 3');
+    user1.sandwiches.add(sandwich1, sandwich3);
+    user2.sandwiches.add(sandwich3);
+    user2.sandwiches.add(sandwich2, sandwich3);
+    await orm.em.persistAndFlush([user1, user2, user3]);
+    orm.em.clear();
+
+    const u1 = await orm.em.findOneOrFail(User2, user1, ['sandwiches']);
+    expect(u1.sandwiches.getItems()).toMatchObject([
+      { name: 'Fish Sandwich', price: 100 },
+      { name: 'Grilled Cheese Sandwich', price: 300 },
+    ]);
+    expect(wrap(u1).toJSON()).toMatchObject({
+      firstName: 'Henry',
+      lastName: 'Doe 1',
+      foo: null,
+      sandwiches: [
+        { name: 'Fish Sandwich', price: 100 },
+        { name: 'Grilled Cheese Sandwich', price: 300 },
+      ],
+    });
+
+    u1.foo = 321;
+    u1.sandwiches[0].price = 200;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const u2 = await orm.em.findOneOrFail(User2, u1, ['sandwiches']);
+    expect(u2.sandwiches[0].price).toBe(200);
+
+    const c1 = await orm.em.findOneOrFail(Sandwich, { id: sandwich1.id });
+    expect(c1).toBe(u2.sandwiches[0]);
+
+    await orm.em.removeEntity(u2, true);
+    const o3 = await orm.em.findOne(User2, u1);
+    expect(o3).toBeNull();
+    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1,['users']);
+    expect(c2).toBe(u2.sandwiches[0]);
+    await orm.em.removeEntity(c2, true);
+    const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();
   });
 
