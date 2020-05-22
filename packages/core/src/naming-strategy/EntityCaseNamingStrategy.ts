@@ -16,8 +16,8 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
   joinKeyColumnName(entityName: string, referencedColumnName?: string, composite = false): string {
     const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
 
-    if (composite) {
-      return name + '_' + (referencedColumnName || this.referenceColumnName());
+    if (composite && referencedColumnName) {
+      return name + '_' + referencedColumnName;
     }
 
     return name;
