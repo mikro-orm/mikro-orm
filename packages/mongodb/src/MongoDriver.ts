@@ -129,18 +129,23 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private createIndexes(meta: EntityMetadata) {
     const promises: Promise<string>[] = [];
     meta.indexes.forEach(index => {
-      let fieldOrSpec: string | any;
+      let fieldOrSpec: string | Dictionary;
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+      const collection = this.getConnection('write').getCollection(meta.name);
 
-      if (index.type === 'text') {
+      if (index.options && properties.length === 0) {
+        return promises.push(collection.createIndex(index.options));
+      }
+
+      if (index.type) {
         const spec: Dictionary<string> = {};
-        properties.forEach(prop => spec[prop] = 'text');
+        properties.forEach(prop => spec[prop] = index.type!);
         fieldOrSpec = spec;
       } else {
         fieldOrSpec = properties;
       }
 
-      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
+      promises.push(collection.createIndex(fieldOrSpec, {
         name: index.name,
         unique: false,
         ...(index.options || {}),
