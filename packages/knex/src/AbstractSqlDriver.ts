@@ -242,8 +242,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
-    const meta = this.metadata.get(prop.type);
-    const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: meta.compositePK ? owners : owners.map(o => o[0]) } };
+    const ownerMeta = this.metadata.get(pivotProp2.type);
+    const targetMeta = this.metadata.get(prop.type);
+    const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
       where = cond;
@@ -253,7 +254,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
-    const populate = this.autoJoinOneToOneOwner(meta, [{
+    const populate = this.autoJoinOneToOneOwner(targetMeta, [{
       field: prop.pivotTable,
     }]);
     qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy!);
