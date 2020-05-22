@@ -5,7 +5,7 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { MikroORM, EntityManager, Configuration } from '@mikro-orm/core';
 import { Author, Test } from './entities';
 import { BASE_DIR } from './bootstrap';
-import { Author2, Car2, CarOwner2, FooBaz2, User2 } from './entities-sql';
+import { Author2, Car2, CarOwner2, FooBaz2, Sandwich, User2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('MikroORM', () => {
@@ -47,7 +47,7 @@ describe('MikroORM', () => {
       dbName: 'not-found',
       baseDir: BASE_DIR,
       type: 'mysql',
-      entities: [Car2, CarOwner2, User2],
+      entities: [Car2, CarOwner2, User2, Sandwich],
       debug: ['info'],
       logger,
     });
