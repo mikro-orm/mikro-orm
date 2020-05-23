@@ -58,6 +58,7 @@ module.exports = {
       named: 'never',
       asyncArrow: 'always',
     }],
+    'arrow-parens': ['error', 'as-needed'],
     'no-var': 'error',
     'prefer-const': 'error',
     'prefer-rest-params': 'error',
