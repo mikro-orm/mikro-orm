@@ -116,7 +116,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const joinedLoads = this.joinedLoads(meta, populate);
 
-    joinedLoads.forEach((relationName) => {
+    joinedLoads.forEach(relationName => {
       const relation = meta.properties[relationName];
       const properties = this.metadata.get(relation.type).properties;
       const found = Object.entries(aliasMap).find(([,r]) => r === relation.type)!;
@@ -333,7 +333,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       });
 
     let previousRelationName: string;
-    joinedLoads.forEach((relationName) => {
+    joinedLoads.forEach(relationName => {
       previousRelationName = relationName;
 
       const prop = meta.properties[relationName];
