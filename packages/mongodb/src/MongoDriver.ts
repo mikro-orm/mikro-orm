@@ -1,23 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
-  DatabaseDriver,
-  EntityData,
-  AnyEntity,
-  FilterQuery,
-  EntityMetadata,
-  EntityProperty,
-  Configuration,
-  Utils,
-  ReferenceType,
-  FindOneOptions,
-  FindOptions,
-  QueryResult,
-  Transaction,
-  IDatabaseDriver,
-  EntityManager,
-  EntityManagerType,
-  Dictionary,
-  ValidationError,
+  DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, ValidationError, PopulateOptions,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -39,8 +23,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, ctx?: Transaction<ClientSession>): Promise<T[]> {
+    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where);
-    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, options.fields, ctx));
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
 
     return res.map((r: T) => this.mapResult<T>(r, this.metadata.get(entityName))!);
   }
@@ -50,8 +35,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
+    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where);
-    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, options.fields, ctx));
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, ctx));
 
     return this.mapResult<T>(res[0], this.metadata.get(entityName));
   }
@@ -274,6 +260,28 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
 
     return { _id: id } as FilterQuery<T>;
+  }
+
+  private buildFields<T>(entityName: string, populate: PopulateOptions<T>[], fields?: string[]): string[] | undefined {
+    const meta = this.metadata.get(entityName);
+    const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
+    const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name));
+
+    if (fields) {
+      fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
+    } else if (lazyProps.length > 0) {
+      fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
+    }
+
+    return fields;
+  }
+
+  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+    if (super.shouldHaveColumn(prop, populate)) {
+      return true;
+    }
+
+    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
   }
 
 }

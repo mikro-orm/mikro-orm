@@ -1,10 +1,10 @@
 import { v4 as uuid } from 'uuid';
 
-import { Configuration, RequestContext, Utils, ValidationError, SmartQueryHelper } from './utils';
+import { Configuration, RequestContext, SmartQueryHelper, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { IDatabaseDriver, FindOneOptions, FindOptions, EntityManagerType, Populate, PopulateOptions } from './drivers';
-import { EntityData, EntityMetadata, EntityName, AnyEntity, IPrimaryKey, FilterQuery, Primary, Dictionary } from './typings';
+import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, Populate, PopulateMap, PopulateOptions } from './drivers';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterQuery, IPrimaryKey, Primary } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -72,18 +72,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Finds all entities matching your `where` query.
    */
-  async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
+  async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]>;
 
   /**
    * Finds all entities matching your `where` query.
    */
-  async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
     where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions<T>>(populate) ? populate : { populate, orderBy, limit, offset };
     options.orderBy = options.orderBy || {};
-    const preparedPopulate = this.preparePopulate(entityName, options.populate);
+    const preparedPopulate = this.preparePopulate<T>(entityName, options.populate);
     const opts = { ...options, populate: preparedPopulate };
     const results = await this.driver.find<T>(entityName, where, opts, this.transactionContext);
 
@@ -114,13 +114,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]>;
+  async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]>;
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]> {
+  async findAndCount<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[T[], number]> {
     const [entities, count] = await Promise.all([
       this.find(entityName, where, populate as string[], orderBy, limit, offset),
       this.count(entityName, where),
@@ -137,12 +137,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T | null>;
+  async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T>, orderBy?: QueryOrderMap): Promise<T | null>;
 
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOneOptions<T>, orderBy?: QueryOrderMap): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOneOptions<T>, orderBy?: QueryOrderMap): Promise<T | null> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T>>(populate) ? populate : { populate, orderBy };
     const meta = this.metadata.get<T>(entityName);
@@ -157,7 +157,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     this.validator.validateParams(where);
-    const preparedPopulate = this.preparePopulate(entityName, options.populate);
+    const preparedPopulate = this.preparePopulate<T>(entityName, options.populate);
     options.populate = preparedPopulate;
 
     const data = await this.driver.findOne(entityName, where, { ...options, populate: preparedPopulate }, this.transactionContext);
@@ -184,14 +184,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap): Promise<T>;
+  async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T>, orderBy?: QueryOrderMap): Promise<T>;
 
   /**
    * Finds first entity matching your `where` query. If nothing found, it will throw an error.
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: string[] | boolean | FindOneOrFailOptions<T>, orderBy?: QueryOrderMap): Promise<T> {
+  async findOneOrFail<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOneOrFailOptions<T>, orderBy?: QueryOrderMap): Promise<T> {
     const entity = await this.findOne(entityName, where, populate as string[], orderBy);
 
     if (!entity) {
@@ -482,11 +482,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Checks whether given property can be populated on the entity.
    */
-  canPopulate(entityName: string | Function, property: string): boolean {
+  canPopulate<T>(entityName: EntityName<T>, property: string): boolean {
     entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
     const props = this.metadata.get(entityName).properties;
-    const ret = p in props && props[p].reference !== ReferenceType.SCALAR;
+    const ret = p in props && (props[p].reference !== ReferenceType.SCALAR || props[p].lazy);
 
     if (!ret) {
       return false;
@@ -499,9 +499,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  async populate<T extends AnyEntity<T>>(entities: T, populate: string | Populate, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
-  async populate<T extends AnyEntity<T>>(entities: T[], populate: string | Populate, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
-  async populate<T extends AnyEntity<T>>(entities: T | T[], populate: string | Populate, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
+  async populate<T extends AnyEntity<T>>(entities: T, populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
+  async populate<T extends AnyEntity<T>>(entities: T[], populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
+  async populate<T extends AnyEntity<T>>(entities: T | T[], populate: string | Populate<T>, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
     const entitiesArray = Utils.asArray(entities);
 
     if (entitiesArray.length === 0) {
@@ -511,7 +511,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     populate = Utils.isString(populate) ? Utils.asArray(populate) : populate;
 
     const entityName = entitiesArray[0].constructor.name;
-    const preparedPopulate = this.preparePopulate(entityName, populate);
+    const preparedPopulate = this.preparePopulate<T>(entityName, populate);
     await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, where, orderBy, refresh, validate);
 
     return entities;
@@ -596,7 +596,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity;
   }
 
-  private preparePopulate(entityName: string, populate?: Populate): PopulateOptions[] {
+  private preparePopulate<T>(entityName: string, populate?: Populate<T>): PopulateOptions<T>[] {
     if (!populate) {
       return [];
     }
@@ -607,13 +607,40 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const meta = this.metadata.get(entityName);
 
-    return populate.map(field => {
+    if (Utils.isPlainObject(populate)) {
+      return this.preparePopulateObject(meta, populate as PopulateMap<T>);
+    }
+
+    return (populate as string[]).map(field => {
       if (Utils.isString(field)) {
         const strategy = meta.properties[field]?.strategy;
         return { field, strategy };
       }
 
       return field;
+    });
+  }
+
+  private preparePopulateObject<T>(meta: EntityMetadata<T>, populate: PopulateMap<T>): PopulateOptions<T>[] {
+    return Object.keys(populate).map(field => {
+      const prop = meta.properties[field];
+      const strategy = Utils.isString(populate[field]) ? populate[field] : prop!.strategy;
+
+      if (populate[field] === true) {
+        return { field, strategy };
+      }
+
+      if (Array.isArray(populate[field])) {
+        const meta2 = this.metadata.get(prop!.type);
+        return { field, strategy: populate[field][0], children: this.preparePopulateObject(meta2, populate[field][1]) };
+      }
+
+      if (Utils.isPlainObject(populate[field])) {
+        const meta2 = this.metadata.get(prop!.type);
+        return { field, strategy, children: this.preparePopulateObject(meta2, populate[field]) };
+      }
+
+      return { field, strategy };
     });
   }
 
