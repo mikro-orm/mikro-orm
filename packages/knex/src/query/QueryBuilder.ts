@@ -15,7 +15,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   type!: QueryType;
   _fields?: Field[];
-  _populate: PopulateOptions[] = [];
+  _populate: PopulateOptions<T>[] = [];
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 1;
@@ -169,10 +169,17 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * @internal
    */
-  populate(populate: PopulateOptions[]): this {
+  populate<T>(populate: PopulateOptions<T>[]): this {
     this._populate = populate;
 
     return this;
+  }
+
+  /**
+   * @internal
+   */
+  ref(field: string): Ref<string, string> {
+    return this.knex.ref(field);
   }
 
   limit(limit?: number, offset = 0): this {
@@ -272,7 +279,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return res.map(r => this.driver.mapResult(r, meta, this._populate, this._aliasMap)) as unknown as U;
     }
 
-    return this.driver.mapResult(res, meta, this._populate, this._aliasMap) as unknown as U;
+    return this.driver.mapResult(res as unknown as T, meta, this._populate, this._aliasMap) as unknown as U;
   }
 
   async getResult(): Promise<T[]> {
@@ -470,9 +477,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       Object.values(meta.properties)
         .filter(prop => prop.formula)
         .forEach(prop => {
-          const formula = this.knex.ref(this.alias).toString();
-          const alias = this.knex.ref(prop.fieldNames[0]).toString();
-          this.addSelect(`${prop.formula!(formula)} as ${alias}`);
+          const alias = this.knex.ref(this.alias).toString();
+          const aliased = this.knex.ref(prop.fieldNames[0]).toString();
+          this.addSelect(`${prop.formula!(alias)} as ${aliased}`);
         });
     }
 

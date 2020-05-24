@@ -5,7 +5,7 @@ import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Platform } from '../platforms';
-import { Collection, wrap } from '../entity';
+import { Collection, ReferenceType, wrap } from '../entity';
 import { DriverException, EntityManager, LockMode } from '../index';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
@@ -51,7 +51,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, wrap(coll.owner, true).__primaryKey, data, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = []): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): T | null {
     if (!result || !meta) {
       return null;
     }
@@ -174,6 +174,18 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
+  }
+
+  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+    if (prop.persist === false) {
+      return false;
+    }
+
+    if (prop.lazy && !populate.some(p => p.field === prop.name)) {
+      return false;
+    }
+
+    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
   /**

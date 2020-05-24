@@ -17,6 +17,9 @@ export class Book extends BaseEntity3 {
   @Property()
   title: string;
 
+  @Property({ lazy: true })
+  perex?: string;
+
   @ManyToOne(() => Author)
   author: Author;
 
