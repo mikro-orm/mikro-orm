@@ -939,7 +939,7 @@ describe('EntityManagerPostgre', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
-    const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, ['books']);
+    const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, ['books.perex']);
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select "e0".* from "author2" as "e0" left join "book2" as "e1" on "e0"."id" = "e1"."author_id" where "e1"."title" in ($1, $2)');
@@ -1140,7 +1140,7 @@ describe('EntityManagerPostgre', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, ['perex']);
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
@@ -1151,7 +1151,7 @@ describe('EntityManagerPostgre', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, ['perex']);
     expect(res2).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
@@ -1163,7 +1163,7 @@ describe('EntityManagerPostgre', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } });
+    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } }, ['perex']);
     expect(res3).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
@@ -1173,7 +1173,7 @@ describe('EntityManagerPostgre', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, ['perex']);
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
