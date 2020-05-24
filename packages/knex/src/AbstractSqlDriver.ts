@@ -3,7 +3,7 @@ import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty,
   FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, wrap, PopulateOptions, LoadStrategy,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, AbstractSqlPlatform, QueryBuilder, Field } from './index';
+import { AbstractSqlConnection, AbstractSqlPlatform, Field, QueryBuilder } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
@@ -30,17 +30,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
-    const meta = this.metadata.get(entityName);
     options = { populate: [], orderBy: {}, ...(options || {}) };
-
-    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions[]);
-
-    if (options.fields) {
-      options.fields.unshift(...meta.primaryKeys.filter(pk => !options!.fields!.includes(pk)));
-    }
-
+    const meta = this.metadata.get(entityName);
+    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
+    const joinedLoads = this.joinedLoads(meta, populate);
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    qb.select(options.fields || '*')
+    const fields = this.buildFields(meta, populate, joinedLoads, qb, options.fields);
+
+    qb.select(fields)
       .populate(populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
@@ -53,41 +50,38 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
+    const result = await this.rethrow(qb.execute('all'));
 
-    return this.rethrow(qb.execute('all'));
+    // if (joinedLoads.length > 0) {
+    //   // TODO
+    //   return this.processJoinedLoads(result, joinedLoads) as unknown as T;
+    // }
+
+    return result;
   }
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     options = { populate: [], orderBy: {}, ...(options || {}) };
-
     const meta = this.metadata.get(entityName);
 
-    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions[]);
+    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
     const pk = meta.primaryKeys[0];
 
     if (Utils.isPrimaryKey(where)) {
       where = { [pk]: where } as FilterQuery<T>;
     }
 
-    if (options.fields && !options.fields.includes(pk)) {
-      options.fields.unshift(pk);
-    }
-
     const joinedLoads = this.joinedLoads(meta, populate);
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    const selects: Field[] = [];
+    const fields = this.buildFields(meta, populate, joinedLoads, qb, options.fields);
 
-    if (joinedLoads.length > 0) {
-      selects.push(...this.getSelectForJoinedLoad(qb, meta, joinedLoads));
-    } else {
-      const defaultSelect = options.fields || ['*'];
-      selects.push(...defaultSelect);
+    if (joinedLoads.length === 0) {
       qb.limit(1);
     }
 
     const method = joinedLoads.length > 0 ? 'all' : 'get';
 
-    qb.select(selects)
+    qb.select(fields)
       .populate(populate)
       .where(where as Dictionary)
       .orderBy(options.orderBy!)
@@ -97,7 +91,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .withSchema(options.schema);
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
-
     const result = await this.rethrow(qb.execute(method));
 
     if (Array.isArray(result)) {
@@ -107,7 +100,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return result;
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions[] = [], aliasMap: Dictionary<string> = {}): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = [], aliasMap: Dictionary<string> = {}): T | null {
     const ret = super.mapResult(result, meta);
 
     if (!ret) {
@@ -279,25 +272,23 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner(meta: EntityMetadata, populate: PopulateOptions[]): PopulateOptions[] {
+  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
 
     const relationsToPopulate = populate.map(({ field }) => field);
 
-    const toPopulate: PopulateOptions[] = Object.values(meta.properties)
-      .filter(prop => {
-        return prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name);
-      })
+    const toPopulate: PopulateOptions<T>[] = Object.values(meta.properties)
+      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
       .map(prop => ({ field: prop.name, strategy: prop.strategy }));
 
     return [...populate, ...toPopulate];
   }
 
-  protected joinedLoads(meta: EntityMetadata, populate: PopulateOptions[]): string[] {
+  protected joinedLoads<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): string[] {
     return populate
-      .filter(({ field }) => meta.properties[field]?.strategy === LoadStrategy.JOINED)
+      .filter(({ field, strategy }) => (strategy || meta.properties[field]?.strategy) === LoadStrategy.JOINED)
       .map(({ field }) => field);
   }
 
@@ -322,32 +313,29 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.connection.getKnex().ref(field).withSchema(schema).as(alias);
   }
 
-  protected getSelectForJoinedLoad(queryBuilder: QueryBuilder, meta: EntityMetadata, joinedLoads: string[]): Field[] {
+  protected getSelectForJoinedLoad<T>(qb: QueryBuilder, meta: EntityMetadata, joinedLoads: string[], populate: PopulateOptions<T>[]): Field[] {
     const selects: Field[] = [];
 
     // alias all fields in the primary table
     Object.values(meta.properties)
-      .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
-      .forEach(prop => {
-        selects.push(prop.fieldNames[0]);
-      });
+      .filter(prop => this.shouldHaveColumn(prop, populate))
+      .forEach(prop => selects.push(...prop.fieldNames));
 
     let previousRelationName: string;
     joinedLoads.forEach(relationName => {
       previousRelationName = relationName;
-
       const prop = meta.properties[relationName];
-      const properties = this.metadata.get(prop.type).properties;
+      const meta2 = this.metadata.get(prop.type);
+      const properties = Object.values(meta2.properties).filter(prop => {
+        /* istanbul ignore next */
+        return this.shouldHaveColumn(prop, populate.find(p => p.field === relationName)?.children || []);
+      });
 
-      Object.values(properties)
-        .filter(prop => prop.reference === ReferenceType.SCALAR && prop.persist !== false)
-        .forEach(prop => {
-          const tableAlias = queryBuilder.getNextAlias(relationName, previousRelationName !== relationName);
-          const fieldAlias = `${tableAlias}_${prop.fieldNames[0]}`;
-
-          selects.push(this.getRefForField(prop.fieldNames[0], tableAlias, fieldAlias));
-          queryBuilder.join(relationName, tableAlias, {}, 'leftJoin');
-        });
+      for (const prop of properties) {
+        const tableAlias = qb.getNextAlias(relationName, previousRelationName !== relationName);
+        selects.push(...prop.fieldNames.map(fieldName => this.getRefForField(fieldName, tableAlias, `${tableAlias}_${fieldName}`)));
+        qb.join(relationName, tableAlias, {}, 'leftJoin');
+      }
     });
 
     return selects;
@@ -430,6 +418,33 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(mode);
     await this.rethrow(qb.execute());
+  }
+
+  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedLoads: string[], qb: QueryBuilder, fields?: Field[]): Field[] {
+    const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
+    const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const hasExplicitFields = !!fields;
+
+    if (fields) {
+      fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
+    } else if (joinedLoads.length > 0) {
+      fields = this.getSelectForJoinedLoad(qb, meta, joinedLoads, populate);
+    } else if (lazyProps.length > 0) {
+      fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
+    }
+
+    if (fields && !hasExplicitFields) {
+      // TODO joined loads will need different aliasing here, this works only for the root entity
+      Object.values<EntityProperty<T>>(meta.properties)
+        .filter(prop => prop.formula)
+        .forEach(prop => {
+          const alias = qb.ref(qb.alias).toString();
+          const aliased = qb.ref(prop.fieldNames[0]).toString();
+          fields!.push(`${prop.formula!(alias)} as ${aliased}`);
+        });
+    }
+
+    return fields || ['*'];
   }
 
 }

@@ -474,7 +474,9 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
+    expect(await driver.find(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toEqual([]);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
+    expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
     expect(driver.getPlatform().requiresNullableForAlteringColumn()).toBe(false); // test default Platform value (not used by mongo)
@@ -1207,7 +1209,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Author);
     expect(repo.canPopulate('test')).toBe(false);
     expect(repo.canPopulate('name')).toBe(false);
-    expect(repo.canPopulate('favouriteBook')).toBe(true);
+    expect(repo.canPopulate('favouriteBook.author')).toBe(true);
     expect(repo.canPopulate('books')).toBe(true);
   });
 
@@ -1766,6 +1768,8 @@ describe('EntityManagerMongo', () => {
     if (chalk.level > 0) {
       expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mfoo\[39m: \[33m'bar'\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mtermsAccepted\[39m: \[36mfalse\[39m }, { \[36msession\[39m: \[33m'\[ClientSession]'\[39m }\)/);
     }
+
+    orm.em.config.set('highlight', false);
   });
 
   test('findOneOrFail', async () => {
@@ -1944,6 +1948,47 @@ describe('EntityManagerMongo', () => {
 
     const b4 = await orm.em.findOneOrFail(FooBar, bar.id);
     expect(b4.object).toBe(123);
+  });
+
+  test('lazy scalar properties', async () => {
+    const book = new Book('b', new Author('n', 'e'));
+    book.perex = '123';
+    await orm.em.persistAndFlush(book);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    const r1 = await orm.em.find(Author, {}, { populate: { books: true } });
+    expect(r1[0].books[0].perex).not.toBe('123');
+    expect(mock.mock.calls.length).toBe(2);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1 } }\)/);
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r2 = await orm.em.find(Author, {}, { populate: { books: { perex: true } } });
+    expect(r2[0].books[0].perex).toBe('123');
+    expect(mock.mock.calls.length).toBe(2);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r3 = await orm.em.findOne(Author, book.author, { populate: { books: true } });
+    expect(r3!.books[0].perex).not.toBe('123');
+    expect(mock.mock.calls.length).toBe(2);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1 } }\)/);
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const r4 = await orm.em.findOne(Author, book.author, { populate: { books: { perex: true } } });
+    expect(r4!.books[0].perex).toBe('123');
+    expect(mock.mock.calls.length).toBe(2);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
   });
 
   // this should run in ~600ms (when running single test locally)
