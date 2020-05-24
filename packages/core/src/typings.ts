@@ -103,6 +103,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   customType: Type<any>;
   primary: boolean;
   serializedPrimaryKey: boolean;
+  lazy?: boolean;
   discriminator?: boolean;
   length?: any;
   reference: ReferenceType;

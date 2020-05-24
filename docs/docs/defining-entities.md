@@ -325,6 +325,32 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 
 More information can be found in [Custom Types](custom-types.md) section.
 
+## Lazy scalar properties
+
+You can mark any property as `lazy: true` to omit it from the select clause. 
+This can be handy for properties that are too large and you want to have them 
+available only some times, like a full text of an article.
+
+```typescript
+@Entity()
+export class Book {
+
+  @Property({ columnType: 'text', lazy: true })
+  text: string;
+
+}
+``` 
+
+You can use `populate` parameter to load them.
+
+```typescript
+const b1 = await em.find(Book, 1); // this will omit the `text` property
+const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the `text` property
+```
+
+> If the entity is already loaded and you need to populate a lazy scalar property, 
+> you might need to pass `refresh: true` in the `FindOptions`.
+
 ## Virtual Properties
 
 You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
