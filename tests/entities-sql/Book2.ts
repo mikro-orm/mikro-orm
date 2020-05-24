@@ -17,7 +17,7 @@ export class Book2 {
   @Property({ nullable: true, default: '' })
   title?: string;
 
-  @Property({ type: 'text', nullable: true })
+  @Property({ type: 'text', nullable: true, lazy: true })
   perex?: string;
 
   @Property({ type: 'float', nullable: true })

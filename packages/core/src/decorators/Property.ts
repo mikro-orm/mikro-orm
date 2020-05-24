@@ -52,6 +52,7 @@ export type PropertyOptions<T extends AnyEntity<T>> = {
   version?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
+  lazy?: boolean;
   primary?: boolean;
   serializedPrimaryKey?: boolean;
 };
