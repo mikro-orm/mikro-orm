@@ -63,7 +63,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     options = { populate: [], orderBy: {}, ...(options || {}) };
     const meta = this.metadata.get(entityName);
-
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
     const pk = meta.primaryKeys[0];
 
@@ -242,7 +241,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
       where = cond;
     } else {
-      where = { ...where, ...cond };
+      where = { ...(where as Dictionary), ...cond };
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
