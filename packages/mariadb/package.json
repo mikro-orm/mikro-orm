@@ -41,10 +41,15 @@
     "node": ">= 10.13.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile",
+    "build": "yarn clean && yarn compile && yarn copy",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
+    "copy": "copyfiles ../../README.md ../../package.json ./dist",
     "prepublishOnly": "yarn build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.com"
   },
   "dependencies": {
     "@mikro-orm/mysql-base": "^4.0.0-alpha.0",
