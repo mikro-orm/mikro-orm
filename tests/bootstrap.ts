@@ -10,7 +10,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
-  Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2,
+  Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2, Sandwich,
 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
@@ -55,7 +55,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   let orm = await MikroORM.init<AbstractSqlDriver>({
     entities: [
       Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22,
-      Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2,
+      Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2, Sandwich,
     ],
     discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,

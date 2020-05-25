@@ -387,6 +387,22 @@ export class Publisher2Tests {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from 'mikro-orm';
+
+@Entity()
+export class Sandwich {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property()
+  price!: number;
+
+}
+",
   "import { Cascade, Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
@@ -444,6 +460,21 @@ export class User2Cars {
 
   @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true, index: 'user2_cars_car2_name_car2_year_index' })
   car2!: Car2;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne } from 'mikro-orm';
+import { Sandwich } from './Sandwich';
+import { User2 } from './User2';
+
+@Entity()
+export class User2Sandwiches {
+
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_user2_first_name_user2_last_name_index' })
+  user2!: User2;
+
+  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_sandwich_id_index' })
+  sandwich!: Sandwich;
 
 }
 ",
