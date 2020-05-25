@@ -13,7 +13,6 @@ export class DriverException extends Error {
     super(previous.message);
     Object.assign(this, previous);
     this.name = this.constructor.name;
-    this.stack = (new Error()).stack!.split('\n').join('\n');
   }
 
 }
