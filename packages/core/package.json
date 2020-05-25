@@ -40,7 +40,8 @@
   "scripts": {
     "build": "yarn clean && yarn compile",
     "clean": "rimraf ./dist",
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "acorn-loose": "^7.0.0",
