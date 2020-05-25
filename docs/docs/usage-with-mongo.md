@@ -125,6 +125,11 @@ await orm.em.getDriver().ensureIndexes();
 > 
 > `@Index({ properties: ['name', 'caption'], type: 'text' })`
 
+> If you provide only `options` in the index definition, it will be used as is, 
+> this allows to define any kind of index:
+>
+> `@Index({ options: { point: '2dsphere', title: -1 } })` 
+
 ## Native collection methods
 
 Sometimes you need to perform some bulk operation, or you just want to populate your

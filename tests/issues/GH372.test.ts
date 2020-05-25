@@ -1,15 +1,19 @@
 (global as any).process.env.FORCE_COLOR = 0;
+
 import Knex, { Raw } from 'knex';
-import { Entity, Logger, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { SchemaGenerator } from '@mikro-orm/knex';
+import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-class PointType extends Type {
+type Point = { x: number; y: number };
 
-  convertToDatabaseValue(value: { x: number; y: number }): Raw {
+class PointType extends Type<Point, Raw> {
+
+  convertToDatabaseValue(value: Point): Raw {
     return Knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
   }
 
-  convertToJSValue(value: any): { x: number; y: number } {
+  convertToJSValue(value: any): Point {
     if (typeof value === 'object') {
       return value; // pg connector is automatically converting point to { x, y }
     }
@@ -31,7 +35,7 @@ class A {
   id!: number;
 
   @Property({ type: PointType })
-  prop!: { x: number; y: number };
+  prop!: Point;
 
 }
 
@@ -44,12 +48,10 @@ describe('GH issue 372', () => {
       entities: [A],
       dbName: `mikro_orm_test_gh_372`,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).ensureDatabase();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

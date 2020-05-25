@@ -1,7 +1,6 @@
 import { unlinkSync } from 'fs';
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM, ReflectMetadataProvider } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
-import { Logger } from '../../lib/utils';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM, Logger } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -9,6 +8,7 @@ class A {
   @PrimaryKey()
   id!: number;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
 
@@ -24,7 +24,7 @@ class B {
   a!: A;
 
   @Property()
-  foo: string = 'bar';
+  foo = 'bar';
 
 }
 
@@ -39,11 +39,9 @@ describe('GH issue 369', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

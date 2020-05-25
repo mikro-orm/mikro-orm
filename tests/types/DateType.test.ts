@@ -1,5 +1,5 @@
-import { DateType } from '../../lib/types';
-import { MongoPlatform } from '../../lib/platforms/MongoPlatform';
+import { DateType } from '@mikro-orm/core';
+import { MongoPlatform } from '@mikro-orm/mongodb';
 
 describe('DateType', () => {
 
@@ -11,7 +11,7 @@ describe('DateType', () => {
     expect(type.convertToDatabaseValue(new Date('2000-01-01'), platform)).toBe('2000-01-01');
     expect(type.convertToDatabaseValue(null, platform)).toBe(null);
     expect(type.convertToDatabaseValue(undefined, platform)).toBe(undefined);
-    expect(() => type.convertToDatabaseValue(1, platform)).toThrowError(`Could not convert JS value '1' of type 'number' to type DateType`);
+    expect(() => type.convertToDatabaseValue(1 as any, platform)).toThrowError(`Could not convert JS value '1' of type 'number' to type DateType`);
   });
 
   test('convertToJSValue', () => {

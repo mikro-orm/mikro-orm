@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, Dictionary } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, Dictionary } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Entity401 {
@@ -29,8 +29,6 @@ describe('GH issue 401', () => {
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.em.remove(Entity401, {});
   });

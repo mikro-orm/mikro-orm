@@ -195,17 +195,19 @@ database (e.g. when you instantiate new entity via `new Author()` or `em.create(
 
 2. Use `default` parameter of `@Property` decorator. This way the actual default value 
 will be provided by the database, and automatically mapped to the entity property after
-it is being persisted (after flush). Also note that with this approach, you need to wrap
-string default values in quotes as without quoting the value is considered a function.
+it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
+
+    > Since v4 you use `defaultRaw` for SQL functions, as `default` with string values
+    > will be automatically quoted. 
 
     ```typescript
     @Property({ default: 1 })
     foo!: number;
 
-    @Property({ default: "'abc'" })
+    @Property({ default: 'abc' })
     bar!: string;
 
-    @Property({ default: 'now' })
+    @Property({ defaultRaw: 'now' })
     baz!: Date;
     ``` 
 
@@ -253,6 +255,25 @@ export const enum UserStatus {
 // or we could reexport OutsideEnum
 // export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
+
+## Formulas
+
+`@Formula()` decorator can be used to map some SQL snippet to your entity. 
+The SQL fragment can be as complex as you want and even include subselects.
+
+```typescript
+@Formula('obj_length * obj_height * obj_width')
+objectVolume?: number;
+```
+
+Formulas will be added to the select clause automatically. In case you are facing 
+problems with `NonUniqueFieldNameException`, you can define the formula as a 
+callback that will receive the entity alias in the parameter:
+
+```typescript
+@Formula(alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`)
+objectVolume?: number;
+```
 
 ## Indexes
 
@@ -303,6 +324,32 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
   Gets the SQL declaration snippet for a field of this type.
 
 More information can be found in [Custom Types](custom-types.md) section.
+
+## Lazy scalar properties
+
+You can mark any property as `lazy: true` to omit it from the select clause. 
+This can be handy for properties that are too large and you want to have them 
+available only some times, like a full text of an article.
+
+```typescript
+@Entity()
+export class Book {
+
+  @Property({ columnType: 'text', lazy: true })
+  text: string;
+
+}
+``` 
+
+You can use `populate` parameter to load them.
+
+```typescript
+const b1 = await em.find(Book, 1); // this will omit the `text` property
+const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the `text` property
+```
+
+> If the entity is already loaded and you need to populate a lazy scalar property, 
+> you might need to pass `refresh: true` in the `FindOptions`.
 
 ## Virtual Properties
 
@@ -363,7 +410,9 @@ add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 ## Using BaseEntity
 
 You can define your own base entity with properties that you require on all entities, like
-primary key and created/updated time. 
+primary key and created/updated time. Single table inheritance is also supported.
+
+Read more about this topic in [Inheritance Mapping](inheritance-mapping.md) section.
 
 > If you are initializing the ORM via `entities` option, you need to specify all your
 > base entities as well.
@@ -466,11 +515,18 @@ export class Book {
 }
 ```
 
-### Using WrappedEntity interface
+### Using BaseEntity (previously WrappedEntity)
+
+From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign`
+and other methods that are otherwise available via the `wrap()` helper.
+
+> Usage of `BaseEntity` is optional.
 
 ```typescript
+import { BaseEntity } from '@mikro-orm/core';
+
 @Entity()
-export class Book {
+export class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -483,7 +539,8 @@ export class Book {
 
 }
 
-export interface Book extends WrappedEntity<Book, 'id'> { };
+const book = new Book();
+console.log(book.isInitialized()); // true
 ```
 
 With your entities set up, you can start [using entity manager](entity-manager.md) and 

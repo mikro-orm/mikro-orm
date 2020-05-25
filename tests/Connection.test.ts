@@ -1,4 +1,4 @@
-import { Configuration, Connection, QueryResult } from '../lib';
+import { Configuration, Connection, QueryResult } from '@mikro-orm/core';
 
 class CustomConnection extends Connection {
 
@@ -29,8 +29,8 @@ class CustomConnection extends Connection {
 describe('Connection', () => {
 
   test('by default it throws when trying to use transactions', async () => {
-    const conn = new CustomConnection(new Configuration({}, false));
-    await expect(conn.transactional(async () => {})).rejects.toThrowError('Transactions are not supported by current driver');
+    const conn = new CustomConnection(new Configuration({ type: 'mongo' }, false));
+    await expect(conn.transactional(async () => void 0)).rejects.toThrowError('Transactions are not supported by current driver');
   });
 
 });

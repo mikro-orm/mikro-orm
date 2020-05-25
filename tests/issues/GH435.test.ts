@@ -1,8 +1,9 @@
 import { unlinkSync } from 'fs';
-import { Entity, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, Type } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
-class MyType extends Type {
+class MyType extends Type<string, number> {
 
   convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);
@@ -40,12 +41,10 @@ describe('GH issue 435', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).ensureDatabase();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

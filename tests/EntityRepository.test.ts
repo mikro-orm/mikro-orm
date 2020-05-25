@@ -1,5 +1,7 @@
-import { EntityRepository, EntityManager, Configuration, QueryOrder, AnyEntity } from '../lib';
+import { Configuration, QueryOrder, AnyEntity } from '@mikro-orm/core';
+import { EntityManager, EntityRepository } from '@mikro-orm/knex';
 import { Publisher } from './entities';
+import { MongoEntityManager, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),
@@ -23,11 +25,15 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
-  config: new Configuration({ autoFlush: true } as any, false),
+  config: new Configuration({ type: 'mongo' } as any, false),
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
 const repo = new EntityRepository(em, Publisher);
+
+const MongoMock = jest.fn<MongoEntityManager, any>(() => methods as any);
+const emMongo = new MongoMock();
+const repoMongo = new MongoEntityRepository(emMongo, Publisher);
 
 describe('EntityRepository', () => {
 
@@ -35,7 +41,7 @@ describe('EntityRepository', () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', false]);
     const e = Object.create(Publisher.prototype);
-    await repo.persist(e, false);
+    await repo.persist(e);
     expect(methods.persist.mock.calls[0]).toEqual([e, false]);
     await repo.persistAndFlush(e);
     expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
@@ -51,7 +57,7 @@ describe('EntityRepository', () => {
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    await repo.remove('bar');
+    await repo.remove('bar', true);
     expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
     const entity = {} as AnyEntity;
     await repo.removeAndFlush(entity);
@@ -69,7 +75,7 @@ describe('EntityRepository', () => {
     expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }]);
     await repo.nativeDelete({ name: 'bar' });
     expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
-    await repo.aggregate([{ name: 'bar' }]);
+    await repoMongo.aggregate([{ name: 'bar' }]);
     expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ name: 'bar' }]]);
   });
 

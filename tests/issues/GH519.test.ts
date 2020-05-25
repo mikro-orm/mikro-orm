@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, MikroORM, ReflectMetadataProvider, ManyToOne, Collection, OneToMany, Logger } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany, Logger } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Competition {
@@ -7,9 +7,7 @@ class Competition {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => Registration, (registration) => registration.competition, {
-    orphanRemoval: true,
-  })
+  @OneToMany('Registration', 'competition', { orphanRemoval: true })
   registrations: Collection<Registration> = new Collection<Registration>(this);
 
 }
@@ -20,9 +18,7 @@ class User {
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => Registration, (registration) => registration.user, {
-    orphanRemoval: true,
-  })
+  @OneToMany('Registration', 'user', { orphanRemoval: true })
   registrations: Collection<Registration> = new Collection<Registration>(this);
 
 }
@@ -52,8 +48,6 @@ describe('GH issue 519', () => {
       entities: [Competition, User, Registration],
       dbName: `mikro_orm_test_gh_519`,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

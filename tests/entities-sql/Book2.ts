@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '../../lib';
+import { Cascade, Collection, Entity, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -11,17 +11,20 @@ export class Book2 {
   @PrimaryKey({ name: 'uuid_pk', length: 36 })
   uuid: string = v4();
 
-  @Property({ default: 'current_timestamp(3)', length: 3 })
+  @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
   createdAt: Date = new Date();
 
   @Property({ nullable: true, default: '' })
   title?: string;
 
-  @Property({ type: 'text', nullable: true })
+  @Property({ type: 'text', nullable: true, lazy: true })
   perex?: string;
 
   @Property({ type: 'float', nullable: true })
   price?: number;
+
+  @Formula(alias => `${alias}.price * 1.19`)
+  priceTaxed?: number;
 
   @Property({ type: 'double', nullable: true })
   double?: number;

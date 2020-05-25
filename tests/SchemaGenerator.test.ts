@@ -1,9 +1,6 @@
 import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
-import { EntitySchema, SchemaGenerator } from '../lib/schema';
-import { ReferenceType } from '../lib/entity';
-import { Configuration, Utils } from '../lib/utils';
-import { MikroORM } from '../lib';
-import { MongoDriver } from '../lib/drivers/MongoDriver';
+import { EntitySchema, ReferenceType, Utils, MikroORM } from '@mikro-orm/core';
+import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { FooBar2, FooBaz2 } from './entities-sql';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
@@ -20,7 +17,7 @@ describe('SchemaGenerator', () => {
       type: 'mysql',
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -38,7 +35,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.createSchema();
     await generator.dropSchema(false, false, true);
     await orm.close(true);
@@ -57,7 +54,7 @@ describe('SchemaGenerator', () => {
       type: 'mariadb',
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -76,7 +73,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.createSchema();
     await generator.dropSchema(false, false, true);
     await orm.close(true);
@@ -85,7 +82,7 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
     await generator.ensureDatabase();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
@@ -105,7 +102,7 @@ describe('SchemaGenerator', () => {
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql();
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
 
     const newTableMeta = {
       properties: {
@@ -120,7 +117,7 @@ describe('SchemaGenerator', () => {
         createdAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
           fieldNames: ['created_at'],
@@ -129,7 +126,7 @@ describe('SchemaGenerator', () => {
         updatedAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
           fieldNames: ['updated_at'],
@@ -151,6 +148,7 @@ describe('SchemaGenerator', () => {
       primaryKey: 'id',
     } as any;
     meta.set('NewTable', newTableMeta);
+    await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
     await generator.updateSchema();
 
@@ -159,8 +157,8 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.born.type = 'number';
     authorMeta.properties.born.columnTypes = ['int'];
     authorMeta.properties.born.nullable = false;
-    authorMeta.properties.born.default = 42;
-    authorMeta.properties.age.default = 42;
+    authorMeta.properties.born.defaultRaw = '42';
+    authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-alter-column');
@@ -213,7 +211,7 @@ describe('SchemaGenerator', () => {
   test('update schema enums [mysql]', async () => {
     const orm = await initORMMySql();
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -266,7 +264,7 @@ describe('SchemaGenerator', () => {
   test('update schema enums [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -320,7 +318,7 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
@@ -345,7 +343,7 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [sqlite2]', async () => {
     const orm = await initORMSqlite2();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em);
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite2-schema-dump');
 
@@ -378,7 +376,7 @@ describe('SchemaGenerator', () => {
       type: 'postgresql',
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -395,7 +393,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.createSchema();
     await generator.dropSchema(false, false, true);
     await orm.close(true);
@@ -406,7 +404,7 @@ describe('SchemaGenerator', () => {
   test('generate schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-schema-dump');
 
@@ -426,7 +424,7 @@ describe('SchemaGenerator', () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
 
     const newTableMeta = {
       properties: {
@@ -441,7 +439,7 @@ describe('SchemaGenerator', () => {
         createdAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
           type: 'Date',
           fieldNames: ['created_at'],
@@ -450,7 +448,7 @@ describe('SchemaGenerator', () => {
         updatedAt: {
           reference: ReferenceType.SCALAR,
           length: 3,
-          default: 'current_timestamp(3)',
+          defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
           type: 'Date',
           fieldNames: ['updated_at'],
@@ -473,7 +471,7 @@ describe('SchemaGenerator', () => {
     } as any;
     meta.set('NewTable', newTableMeta);
     const authorMeta = meta.get('Author2');
-    authorMeta.properties.termsAccepted.default = false;
+    authorMeta.properties.termsAccepted.defaultRaw = 'false';
 
     await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-create-table');
@@ -483,14 +481,14 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.name.type = 'number';
     authorMeta.properties.name.columnTypes = ['int4'];
     authorMeta.properties.name.nullable = true;
-    authorMeta.properties.name.default = 42;
-    authorMeta.properties.age.default = 42;
+    authorMeta.properties.name.defaultRaw = '42';
+    authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-column');
     await generator.updateSchema();
 
-    delete authorMeta.properties.name.default;
+    delete authorMeta.properties.name.defaultRaw;
     authorMeta.properties.name.nullable = false;
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
@@ -537,7 +535,7 @@ describe('SchemaGenerator', () => {
 
   test('update empty schema from metadata [mysql]', async () => {
     const orm = await initORMMySql();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
@@ -549,7 +547,7 @@ describe('SchemaGenerator', () => {
 
   test('update empty schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
@@ -561,7 +559,7 @@ describe('SchemaGenerator', () => {
 
   test('update empty schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = orm.getSchemaGenerator();
+    const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
@@ -569,11 +567,6 @@ describe('SchemaGenerator', () => {
     await generator.updateSchema();
 
     await orm.close(true);
-  });
-
-  test('not supported [mongodb]', async () => {
-    const mongoOrm = Object.create(MikroORM.prototype, { driver: new MongoDriver(new Configuration({} as any, false)) } as any);
-    expect(() => mongoOrm.getSchemaGenerator()).toThrowError('Not supported by given driver');
   });
 
 });

@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, wrap, ManyToOne } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -51,8 +51,6 @@ describe('GH issue 533', () => {
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

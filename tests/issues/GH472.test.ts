@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, EntityCaseNamingStrategy } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -21,9 +21,7 @@ describe('GH issue 472', () => {
       entities: [A],
       dbName: 'mikro_orm_test_gh472',
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
       namingStrategy: EntityCaseNamingStrategy,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

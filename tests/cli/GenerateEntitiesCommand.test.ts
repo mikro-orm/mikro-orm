@@ -1,19 +1,31 @@
-import { Configuration } from '../../lib/utils';
-import { CLIHelper } from '../../lib/cli/CLIHelper';
+import { MikroORM } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { CLIHelper } from '@mikro-orm/cli';
+// noinspection ES6PreferShortImport
+import { GenerateEntitiesCommand } from '../../packages/cli/src/commands/GenerateEntitiesCommand';
+import { initORMSqlite } from '../bootstrap';
 
 const close = jest.fn();
-const config = new Configuration({} as any, false);
-const entityGenerator = { generate: jest.fn(() => []) };
+jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
 showHelpMock.mockReturnValue('');
-const getORMMock = jest.spyOn(CLIHelper, 'getORM');
-getORMMock.mockResolvedValue({ getEntityGenerator: () => entityGenerator, config, close } as any);
+const generate = jest.spyOn(EntityGenerator.prototype, 'generate');
+generate.mockImplementation(async () => []);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
-dumpMock.mockImplementation(() => {});
-
-import { GenerateEntitiesCommand } from '../../lib/cli/GenerateEntitiesCommand';
+dumpMock.mockImplementation(() => void 0);
 
 describe('GenerateEntitiesCommand', () => {
+
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await initORMSqlite();
+    const getORMMock = jest.spyOn(CLIHelper, 'getORM');
+    getORMMock.mockResolvedValue(orm);
+  });
+
+  afterAll(async () => await orm.close(true));
 
   test('builder', async () => {
     const cmd = new GenerateEntitiesCommand();
@@ -36,14 +48,14 @@ describe('GenerateEntitiesCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(showHelpMock.mock.calls.length).toBe(1);
 
-    expect(entityGenerator.generate.mock.calls.length).toBe(0);
+    expect(generate.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);
     await expect(cmd.handler({ save: true } as any)).resolves.toBeUndefined();
-    expect(entityGenerator.generate.mock.calls.length).toBe(1);
+    expect(generate.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
-    expect(entityGenerator.generate.mock.calls.length).toBe(2);
+    expect(generate.mock.calls.length).toBe(2);
     expect(close.mock.calls.length).toBe(2);
   });
 

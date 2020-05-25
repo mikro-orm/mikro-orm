@@ -1,7 +1,7 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '../../lib';
-import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { unlinkSync } from 'fs';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -9,6 +9,7 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => B)
   b!: any;
 
@@ -26,6 +27,7 @@ export class C {
   @OneToOne(() => A)
   a!: A;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.c, { eager: true })
   bCollection = new Collection<B>(this);
 
@@ -58,11 +60,9 @@ describe('GH issue 222', () => {
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
       debug: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

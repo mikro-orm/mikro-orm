@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
-import { Entity, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, ReflectMetadataProvider, wrap } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, wrap } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 class A {
@@ -39,12 +40,10 @@ describe('GH issue 446', () => {
       debug: false,
       highlight: false,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).ensureDatabase();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

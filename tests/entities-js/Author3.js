@@ -1,4 +1,4 @@
-const { Collection, DateType, TimeType, ReferenceType, EntitySchema } = require('../../lib');
+const { Collection, DateType, TimeType, ReferenceType, EntitySchema } = require('@mikro-orm/core');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**

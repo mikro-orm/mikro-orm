@@ -1,8 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '../../lib';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Logger } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
-import { Logger } from '../../lib/utils';
 
 @Entity()
 export class B {
@@ -40,11 +39,9 @@ describe('GH issue 228', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

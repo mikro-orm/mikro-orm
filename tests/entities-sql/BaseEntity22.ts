@@ -1,14 +1,11 @@
-import { Collection, AnyEntity } from '../../lib';
-import { MetadataStorage } from '../../lib/metadata';
-import { ReferenceType } from '../../lib/entity';
+import { AnyEntity, Collection, ReferenceType, wrap } from '@mikro-orm/core';
 
 export abstract class BaseEntity22 {
 
   abstract id: number;
 
   constructor() {
-    const meta = MetadataStorage.getMetadata(this.constructor.name);
-    const props = meta.properties;
+    const props = wrap(this, true).__meta.properties;
 
     Object.keys(props).forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {

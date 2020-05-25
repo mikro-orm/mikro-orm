@@ -1,10 +1,11 @@
 import { v4 } from 'uuid';
-import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
+import {
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap, UniqueConstraintViolationException,
+  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
+} from '@mikro-orm/core';
+import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
-import { PostgreSqlDriver } from '../lib/drivers/PostgreSqlDriver';
-import { Logger, ValidationError } from '../lib/utils';
-import { PostgreSqlConnection } from '../lib/connections/PostgreSqlConnection';
 
 describe('EntityManagerPostgre', () => {
 
@@ -23,6 +24,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
+      type: 'postgresql',
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -85,6 +87,7 @@ describe('EntityManagerPostgre', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new PostgreSqlConnection(new Configuration({
+      type: 'postgresql',
       clientUrl: 'postgre://example.host.com',
       port: 1234,
       user: 'usr',
@@ -360,7 +363,7 @@ describe('EntityManagerPostgre', () => {
     expect(authors[2].name).toBe('Author 3');
     orm.em.clear();
 
-    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le\.c.m$' } });
+    const authors2 = await orm.em.find(Author2, { email: { $re: 'exa.*le.c.m$' } });
     expect(authors2.length).toBe(3);
     expect(authors2[0].name).toBe('Author 1');
     expect(authors2[1].name).toBe('Author 2');
@@ -601,10 +604,10 @@ describe('EntityManagerPostgre', () => {
 
     const em2 = orm.em.fork();
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
-    expect(wrap(bible2).__em!.id).toBe(em2.id);
-    expect(wrap(bible2.publisher).__em!.id).toBe(em2.id);
+    expect(wrap(bible2, true).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher, true).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
-    expect(wrap(publisher2).__em!.id).toBe(em2.id);
+    expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
 
   test('populate OneToOne relation', async () => {
@@ -639,7 +642,7 @@ describe('EntityManagerPostgre', () => {
 
     const b1 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id }, ['bar']);
     expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e0"."id" = $1 limit $2');
-    expect(mock.mock.calls[2][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(mock.mock.calls[2][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -647,7 +650,7 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, ['bar']);
     expect(mock.mock.calls[3][0]).toMatch('select "e0".*, "e1"."id" as "bar_id" from "foo_baz2" as "e0" left join "foo_bar2" as "e1" on "e0"."id" = "e1"."baz_id" where "e1"."id" = $1 limit $2');
-    expect(mock.mock.calls[4][0]).toMatch('select "e0".* from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
+    expect(mock.mock.calls[4][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
@@ -708,7 +711,6 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
@@ -926,6 +928,24 @@ describe('EntityManagerPostgre', () => {
     expect(Author2.afterDestroyCalled).toBe(2);
   });
 
+  test('populate queries respect the root condition (query condition propagation)', async () => {
+    const author = new Author2('name', 'email');
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    await orm.em.persistAndFlush([b1, b2, b3]);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+    const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, ['books.perex']);
+    expect(res).toHaveLength(1);
+    expect(res[0].books.length).toBe(2);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* from "author2" as "e0" left join "book2" as "e1" on "e0"."id" = "e1"."author_id" where "e1"."title" in ($1, $2)');
+    expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" in ($1) and "e0"."title" in ($2, $3) order by "e0"."title" asc');
+  });
+
   test('trying to populate non-existing or non-reference property will throw', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = new Author2('Johny Cash', 'johny@cash.com');
@@ -1009,8 +1029,6 @@ describe('EntityManagerPostgre', () => {
     await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.em.config.set('debug', ['query']);
-
-    await expect(orm.em.aggregate(Author2, [])).rejects.toThrowError('Aggregations are not supported by PostgreSqlDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {
@@ -1122,21 +1140,21 @@ describe('EntityManagerPostgre', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, ['perex']);
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'where "e1"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } });
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, ['perex']);
     expect(res2).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
@@ -1145,20 +1163,20 @@ describe('EntityManagerPostgre', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } });
+    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } }, ['perex']);
     expect(res3).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'where "e1"."favourite_book_uuid_pk" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } });
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, ['perex']);
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
@@ -1206,6 +1224,110 @@ describe('EntityManagerPostgre', () => {
     expect(a3).toBeNull();
     const address2 = await orm.em.findOne(Address2, author.id as any);
     expect(address2).toBeNull();
+  });
+
+  test('pagination', async () => {
+    for (let i = 1; i <= 10; i++) {
+      const num = `${i}`.padStart(2, '0');
+      const god = new Author2(`God ${num}`, `hello${num}@heaven.god`);
+      new Book2(`Bible ${num}.1`, god);
+      new Book2(`Bible ${num}.2`, god);
+      new Book2(`Bible ${num}.3`, god);
+      orm.em.persist(god);
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    // without paginate flag it fails to get 5 records
+    const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      offset: 3,
+      limit: 5,
+    });
+
+    expect(res1).toHaveLength(2);
+    expect(res1.map(a => a.name)).toEqual(['God 02', 'God 03']);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    // with paginate flag (and a bit of dark sql magic) we get what we want
+    const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
+      orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
+      offset: 3,
+      limit: 5,
+      flags: [QueryFlag.PAGINATE],
+    });
+
+    expect(res2).toHaveLength(5);
+    expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "author2" as "e0" ' +
+      'left join "book2" as "e1" on "e0"."id" = "e1"."author_id" where "e0"."id" in (select "e0"."id" ' +
+      'from (select "e0"."id" ' +
+      'from (select "e0"."id" ' +
+      'from "author2" as "e0" ' +
+      'left join "book2" as "e1" on "e0"."id" = "e1"."author_id" ' +
+      'where "e1"."title" like $1 order by "e0"."name" asc, "e1"."title" asc' +
+      ') as "e0" group by "e0"."id" limit $2 offset $3' +
+      ') as "e0"' +
+      ') order by "e0"."name" asc, "e1"."title" asc');
+  });
+
+  test('custom types', async () => {
+    const bar = FooBar2.create('b1');
+    bar.blob = Buffer.from([1, 2, 3, 4, 5]);
+    bar.array = [1, 2, 3, 4, 5];
+    bar.object = { foo: 'bar', bar: 3 };
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
+    expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
+    expect(b1.blob).toBeInstanceOf(Buffer);
+    expect(b1.array).toEqual([1, 2, 3, 4, 5]);
+    expect(b1.array![2]).toBe(3);
+    expect(b1.array).toBeInstanceOf(Array);
+    expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
+    expect(b1.object).toBeInstanceOf(Object);
+    expect(b1.object!.bar).toBe(3);
+
+    b1.object = 'foo';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail(FooBar2, bar.id);
+    expect(b2.object).toBe('foo');
+
+    b2.object = [1, 2, '3'];
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b3 = await orm.em.findOneOrFail(FooBar2, bar.id);
+    expect(b3.object[0]).toBe(1);
+    expect(b3.object[1]).toBe(2);
+    expect(b3.object[2]).toBe('3');
+
+    b3.object = 123;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b4 = await orm.em.findOneOrFail(FooBar2, bar.id);
+    expect(b4.object).toBe(123);
+  });
+
+  test('exceptions', async () => {
+    const driver = orm.em.getDriver();
+    await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author2.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author2.name, {})).rejects.toThrow(NotNullConstraintViolationException);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(driver.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
+    await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+    await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
+    await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
   afterAll(async () => orm.close(true));

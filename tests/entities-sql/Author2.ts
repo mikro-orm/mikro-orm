@@ -1,7 +1,7 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade,
-} from '../../lib';
+  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy,
+} from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
@@ -16,10 +16,10 @@ export class Author2 extends BaseEntity2 {
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
 
-  @Property({ length: 3, default: 'current_timestamp(3)' })
+  @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
   createdAt: Date = new Date();
 
-  @Property({ onUpdate: () => new Date(), length: 3, default: 'current_timestamp(3)' })
+  @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
   updatedAt: Date = new Date();
 
   @Property()
@@ -51,17 +51,20 @@ export class Author2 extends BaseEntity2 {
   @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
   books!: Collection<Book2>;
 
+  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
+  books2!: Collection<Book2>;
+
   @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
   address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
-  friends = new Collection<Author2>(this);
+  friends: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToMany(() => Author2)
-  following = new Collection<Author2>(this);
+  following: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToMany(() => Author2, a => a.following)
-  followers = new Collection<Author2>(this);
+  followers: Collection<Author2> = new Collection<Author2>(this);
 
   @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
   favouriteBook?: Book2;
@@ -77,6 +80,9 @@ export class Author2 extends BaseEntity2 {
 
   @Property({ persist: false })
   code!: string;
+
+  @Property({ persist: false })
+  booksTotal!: number;
 
   constructor(name: string, email: string) {
     super();

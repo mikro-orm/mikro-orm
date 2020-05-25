@@ -1,8 +1,7 @@
-import { ObjectId } from 'bson';
-import { PrimaryKey } from '../../lib';
-import { SerializedPrimaryKey } from '../../lib/decorators';
+import { ObjectId } from '@mikro-orm/mongodb';
+import { BaseEntity, PrimaryKey, SerializedPrimaryKey } from '@mikro-orm/core';
 
-export abstract class BaseEntity3 {
+export abstract class BaseEntity3 extends BaseEntity<BaseEntity3, 'id' | '_id'>{
 
   @PrimaryKey()
   _id!: ObjectId;

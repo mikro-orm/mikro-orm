@@ -1,8 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '../../lib';
+import { Collection, Entity, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver, SchemaGenerator } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
-import { Logger } from '../../lib/utils';
 
 @Entity()
 export class A {
@@ -13,8 +12,9 @@ export class A {
   @Property()
   name!: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
-  bCollection = new Collection<B>(this);
+  bCollection: Collection<B> = new Collection<B>(this);
 
 }
 
@@ -28,7 +28,7 @@ export class B {
   name!: string;
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
-  aCollection = new Collection<A>(this);
+  aCollection: Collection<A> = new Collection<A>(this);
 
 }
 
@@ -43,11 +43,9 @@ describe('GH issue 234', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
@@ -73,15 +71,15 @@ describe('GH issue 234', () => {
     Object.assign(orm.config, { logger });
     orm.config.set('highlight', false);
     const res1 = await orm.em.find<B>(B, { aCollection: [1, 2, 3] }, ['aCollection']);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`b_id`, `e1`.`a_id` from `b` as `e0` left join `b_to_a` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`a_id`, `e1`.`b_id` from `a` as `e0` left join `b_to_a` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?) order by `e1`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`b_id`, `e1`.`a_id` from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`a_id`, `e1`.`b_id` from `a` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?) order by `e1`.`id` asc');
     expect(res1.map(b => b.id)).toEqual([b.id]);
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const res2 = await orm.em.find<A>(A, { bCollection: [1, 2, 3] }, ['bCollection']);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`a_id`, `e1`.`b_id` from `a` as `e0` left join `b_to_a` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?, ?, ?)');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`b_id`, `e1`.`a_id` from `b` as `e0` left join `b_to_a` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?) order by `e1`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`a_id`, `e1`.`b_id` from `a` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`b_id`, `e1`.`a_id` from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?) order by `e1`.`id` asc');
     expect(res2.map(a => a.id)).toEqual([a1.id, a2.id, a3.id]);
   });
 

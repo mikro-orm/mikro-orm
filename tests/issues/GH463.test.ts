@@ -1,6 +1,7 @@
 import { unlinkSync } from 'fs';
-import { Entity, PrimaryKey, Property, MikroORM, ReflectMetadataProvider, Index, Unique } from '../../lib';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
+import { Entity, PrimaryKey, Property, MikroORM, Index, Unique } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 abstract class A {
 
@@ -36,11 +37,9 @@ describe('GH issue 463', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
@@ -52,7 +51,7 @@ describe('GH issue 463', () => {
     const sql = 'create table `b` (`id` integer not null primary key autoincrement, `foo` varchar not null, `bar` varchar not null, `name` varchar not null);\n' +
       'create index `b_foo_index` on `b` (`foo`);\n' +
       'create unique index `b_bar_unique` on `b` (`bar`);\n\n';
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL(false)).toBe(sql);
+    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL(false)).toBe(sql);
   });
 
 });

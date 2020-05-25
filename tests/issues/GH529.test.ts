@@ -1,5 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, ReflectMetadataProvider } from '../../lib';
-import { PostgreSqlDriver } from '../../lib/drivers/PostgreSqlDriver';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {
@@ -18,7 +18,7 @@ export class Order {
   @ManyToOne()
   customer: Customer;
 
-  @OneToMany(() => OrderItem, item => item.order)
+  @OneToMany('OrderItem', 'order')
   items = new Collection<OrderItem>(this);
 
   @Property()
@@ -90,8 +90,6 @@ describe('GH issue 529', () => {
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
       type: 'postgresql',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

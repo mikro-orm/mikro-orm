@@ -1,14 +1,17 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils } from '../lib';
-import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
-import { SqliteDriver } from '../lib/drivers/SqliteDriver';
-import { Logger, ValidationError } from '../lib/utils';
+import {
+  Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap,
+  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
+  NonUniqueFieldNameException, InvalidFieldNameException,
+} from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
-const { Author3 } = require('./entities-js').Author3;
-const { Book3 } = require('./entities-js').Book3;
-const { BookTag3 } = require('./entities-js').BookTag3;
-const { Publisher3 } = require('./entities-js').Publisher3;
-const { Test3 } = require('./entities-js').Test3;
+import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
+const { Author3 } = require('./entities-js/index').Author3;
+const { Book3 } = require('./entities-js/index').Book3;
+const { BookTag3 } = require('./entities-js/index').BookTag3;
+const { Publisher3 } = require('./entities-js/index').Publisher3;
+const { Test3 } = require('./entities-js/index').Test3;
 
 describe('EntityManagerSqlite', () => {
 
@@ -32,7 +35,7 @@ describe('EntityManagerSqlite', () => {
     const meta = {} as EntityMetadata;
     provider.loadFromCache(meta, cache);
     expect(meta.properties.updatedAt.onUpdate).toBeDefined();
-    expect(meta.properties.updatedAt.onUpdate!()).toBeInstanceOf(Date);
+    expect(meta.properties.updatedAt.onUpdate!({})).toBeInstanceOf(Date);
   });
 
   test('should return sqlite driver', async () => {
@@ -583,7 +586,6 @@ describe('EntityManagerSqlite', () => {
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
-    expect(() => tags[0].books.add(book1)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
     expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
     expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book3> of entity BookTag3\[\d+] not initialized/);
@@ -668,7 +670,7 @@ describe('EntityManagerSqlite', () => {
     expect(publishers[0].tests.isDirty()).toBe(false);
     expect(publishers[0].tests.count()).toBe(0);
     await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
-    expect(publishers[1].tests.getItems()[0].isInitialized()).toBe(true);
+    expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
   });
 
   test('populating many to many relation on inverse side', async () => {
@@ -801,8 +803,6 @@ describe('EntityManagerSqlite', () => {
 
     const res5 = await orm.em.nativeUpdate(Author3, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
-
-    await expect(orm.em.aggregate(Author3, [])).rejects.toThrowError('Aggregations are not supported by SqliteDriver driver');
   });
 
   test('Utils.prepareEntity changes entity to number id', async () => {
@@ -851,6 +851,18 @@ describe('EntityManagerSqlite', () => {
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail<any>(Author3, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+  });
+
+  test('exceptions', async () => {
+    const driver = orm.em.getDriver();
+    await driver.nativeInsert(Author3.name, { name: 'author', email: 'email' });
+    await expect(driver.nativeInsert(Author3.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(driver.nativeInsert(Author3.name, {})).rejects.toThrow(NotNullConstraintViolationException);
+    await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(driver.execute('create table author3 (foo text not null)')).rejects.toThrow(TableExistsException);
+    await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
+    await expect(driver.execute('select id from author3, book_tag3')).rejects.toThrow(NonUniqueFieldNameException);
+    await expect(driver.execute('select uuid from author3')).rejects.toThrow(InvalidFieldNameException);
   });
 
   afterAll(async () => {

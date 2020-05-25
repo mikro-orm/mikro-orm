@@ -1,7 +1,7 @@
-import { Entity, IdentifiedReference, MikroORM, PrimaryKey, ReflectMetadataProvider, Property, Reference, ManyToOne, OneToMany, Collection } from '../../lib';
-import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 import { unlinkSync } from 'fs';
+import { Entity, IdentifiedReference, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -12,6 +12,7 @@ export class A {
   @Property()
   name: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
 
@@ -46,11 +47,9 @@ describe('GH issue 302', () => {
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh302.db',
       debug: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {

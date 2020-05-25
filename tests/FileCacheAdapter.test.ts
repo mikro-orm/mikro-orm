@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import { FileCacheAdapter } from '../lib/cache';
+import { FileCacheAdapter } from '@mikro-orm/core';
 import { TEMP_DIR } from './bootstrap';
 
 describe('FileCacheAdapter', () => {
@@ -7,7 +7,7 @@ describe('FileCacheAdapter', () => {
   test('should ignore old cache', async () => {
     const origin = TEMP_DIR + '/.origin';
     const cache = new FileCacheAdapter({ cacheDir: TEMP_DIR }, TEMP_DIR);
-    writeFileSync(origin, 123);
+    writeFileSync(origin, '123');
     await cache.set('cache-test-handle-1', 123, origin);
     await expect(cache.get('cache-test-handle-1')).resolves.toBe(123);
 

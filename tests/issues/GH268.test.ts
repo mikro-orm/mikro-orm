@@ -1,9 +1,8 @@
 import { unlinkSync } from 'fs';
 import { v4 } from 'uuid';
-
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, ReflectMetadataProvider } from '../../lib';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from '../bootstrap';
-import { SqliteDriver } from '../../lib/drivers/SqliteDriver';
 
 @Entity()
 export class A {
@@ -14,8 +13,9 @@ export class A {
   @Property()
   name!: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
-  bCollection = new Collection<B>(this);
+  bCollection: Collection<B> = new Collection<B>(this);
 
 }
 
@@ -29,7 +29,7 @@ export class B {
   name!: string;
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
-  aCollection = new Collection<A>(this);
+  aCollection: Collection<A> = new Collection<A>(this);
 
 }
 
@@ -44,11 +44,9 @@ describe('GH issue 268', () => {
       debug: false,
       highlight: false,
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await new SchemaGenerator(orm.em).dropSchema();
+    await new SchemaGenerator(orm.em).createSchema();
   });
 
   afterAll(async () => {
@@ -68,7 +66,7 @@ describe('GH issue 268', () => {
     b.aCollection.add(a1, a2, a3);
     await orm.em.persistAndFlush(b);
 
-    const res = await orm.em.getConnection().execute('select * from b_to_a');
+    const res = await orm.em.getConnection().execute('select * from b_a_collection');
     expect(res[0]).toEqual({ id: 1, a_uuid: a1.uuid, b_uuid: b.uuid });
   });
 
