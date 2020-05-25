@@ -48,6 +48,7 @@
   "dependencies": {
     "@mikro-orm/core": "^4.0.0-alpha.0",
     "@mikro-orm/knex": "^4.0.0-alpha.0",
+    "@mikro-orm/migrations": "^4.0.0-alpha.0",
     "@mikro-orm/entity-generator": "^4.0.0-alpha.0",
     "chalk": "^4.0.0",
     "cli-highlight": "^2.1.4",
