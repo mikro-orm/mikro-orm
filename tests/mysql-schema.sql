@@ -27,6 +27,8 @@ drop table if exists `author2_to_author2`;
 drop table if exists `book2_to_book_tag2`;
 drop table if exists `publisher2_to_test2`;
 drop table if exists `user2_to_car2`;
+drop table if exists `sandwich`;
+drop table if exists `user2_sandwiches`;
 
 create table `author2` (`id` int unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null default null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` text null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `author2` add index `custom_email_index_name`(`email`);
@@ -169,5 +171,16 @@ alter table `user2_cars` add constraint `user2_cars_user2_first_name_foreign` fo
 alter table `user2_cars` add constraint `user2_cars_user2_last_name_foreign` foreign key (`user2_last_name`) references `user2` (`last_name`) on update cascade on delete cascade;
 alter table `user2_cars` add constraint `user2_cars_car2_name_foreign` foreign key (`car2_name`) references `car2` (`name`) on update cascade on delete cascade;
 alter table `user2_cars` add constraint `user2_cars_car2_year_foreign` foreign key (`car2_year`) references `car2` (`year`) on update cascade on delete cascade;
+
+create table `sandwich` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `price` int(11) not null) default character set utf8mb4 engine = InnoDB;
+
+create table `user2_sandwiches` (`user2_first_name` varchar(100) not null, `user2_last_name` varchar(100) not null, `sandwich_id` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table `user2_sandwiches` add index `user2_sandwiches_sandwich_id_index`(`sandwich_id`);
+alter table `user2_sandwiches` add primary key `user2_sandwiches_pkey`(`user2_first_name`, `user2_last_name`, `sandwich_id`);
+alter table `user2_sandwiches` add index `user2_sandwiches_user2_first_name_user2_last_name_index`(`user2_first_name`, `user2_last_name`);
+
+alter table `user2_sandwiches` add constraint `user2_sandwiches_user2_first_name_foreign` foreign key (`user2_first_name`) references `user2` (`first_name`) on update cascade on delete cascade;
+alter table `user2_sandwiches` add constraint `user2_sandwiches_user2_last_name_foreign` foreign key (`user2_last_name`) references `user2` (`last_name`) on update cascade on delete cascade;
+alter table `user2_sandwiches` add constraint `user2_sandwiches_sandwich_id_foreign` foreign key (`sandwich_id`) references `sandwich` (`id`) on update cascade on delete cascade;
 
 set foreign_key_checks = 1;
