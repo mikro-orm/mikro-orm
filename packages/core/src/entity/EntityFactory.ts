@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { AnyEntity, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
+import { EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, wrap } from '..';
@@ -16,7 +16,7 @@ export class EntityFactory {
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
+  create<T>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
     if (Utils.isEntity<T>(data)) {
       return data;
     }
@@ -31,14 +31,14 @@ export class EntityFactory {
       this.hydrator.hydrate(entity, meta, data, newEntity);
     }
 
-    wrapped.__initialized = !!initialized;
+    wrapped.__initialized = initialized;
 
     this.runHooks(entity, meta);
 
     return entity;
   }
 
-  createReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>): T {
+  createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
@@ -59,7 +59,7 @@ export class EntityFactory {
     return this.create<T>(entityName, id as EntityData<T>, false);
   }
 
-  private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): T {
+  private createEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>): T {
     const root = Utils.getRootEntity(this.metadata, meta);
 
     if (root.discriminatorColumn) {
@@ -103,7 +103,7 @@ export class EntityFactory {
   /**
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
-  private denormalizePrimaryKey<T extends AnyEntity<T>>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T>): void {
+  private denormalizePrimaryKey<T>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T>): void {
     const platform = this.driver.getPlatform();
     const pk = platform.getSerializedPrimaryKeyField(primaryKey);
 
@@ -122,7 +122,7 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T extends AnyEntity<T>>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
+  private extractConstructorParams<T>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(meta.properties[k].reference) && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
@@ -142,7 +142,7 @@ export class EntityFactory {
     });
   }
 
-  private runHooks<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): void {
+  private runHooks<T>(entity: T, meta: EntityMetadata<T>): void {
     if (meta.hooks && meta.hooks.onInit && meta.hooks.onInit.length > 0) {
       meta.hooks.onInit.forEach(hook => (entity[hook] as unknown as () => void)());
     }
