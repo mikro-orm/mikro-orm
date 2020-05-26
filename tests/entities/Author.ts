@@ -108,8 +108,8 @@ export class Author extends BaseEntity<Author> {
     Author.afterDestroyCalled += 1;
   }
 
-  assign(data: any): this {
-    return EntityAssigner.assign(this, data);
+  assign(data: any): Author {
+    return EntityAssigner.assign<Author>(this, data);
   }
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
