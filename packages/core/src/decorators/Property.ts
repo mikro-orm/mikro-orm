@@ -4,7 +4,7 @@ import { Cascade, EntityValidator, ReferenceType, LoadStrategy } from '../entity
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
-export function Property<T extends AnyEntity<T>>(options: PropertyOptions<T> = {}): Function {
+export function Property<T extends AnyEntity<T>>(options: PropertyOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
@@ -38,7 +38,7 @@ export type PropertyOptions<T extends AnyEntity<T>> = {
   fieldNames?: string[];
   customType?: Type<any>;
   columnType?: string;
-  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | object | bigint | Date | Constructor<Type<any>> | Type<any>;
+  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | unknown | bigint | Date | Constructor<Type<any>> | Type<any>;
   length?: number;
   onCreate?: (entity: T) => any;
   onUpdate?: (entity: T) => any;

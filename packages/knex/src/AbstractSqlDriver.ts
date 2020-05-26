@@ -291,7 +291,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .map(({ field }) => field);
   }
 
-  protected processJoinedLoads<T extends AnyEntity<T>>(rawResults: object[], joinedLoads: string[]): T | null {
+  protected processJoinedLoads<T extends AnyEntity<T>>(rawResults: Dictionary[], joinedLoads: string[]): T | null {
     if (rawResults.length === 0) {
       return null;
     }

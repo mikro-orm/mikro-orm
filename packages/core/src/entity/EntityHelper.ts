@@ -128,7 +128,7 @@ export class EntityHelper {
     ref[prop.name] = val as T[string & keyof T];
   }
 
-  private static propagate<T extends object>(entity: T, owner: T, prop: EntityProperty<T>): void {
+  private static propagate<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
     const inverse = entity && entity[prop.inversedBy || prop.mappedBy];
 
     if (prop.reference === ReferenceType.MANY_TO_ONE && inverse && wrap(inverse, true).isInitialized()) {

@@ -29,7 +29,7 @@ export class ChangeSetPersister {
     const wrapped = wrap(changeSet.entity, true);
 
     if (changeSet.type === ChangeSetType.DELETE) {
-      await this.driver.nativeDelete(changeSet.name, wrapped.__primaryKey as {}, ctx);
+      await this.driver.nativeDelete(changeSet.name, wrapped.__primaryKey as Dictionary, ctx);
     } else if (changeSet.type === ChangeSetType.UPDATE) {
       res = await this.updateEntity(meta, changeSet, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
@@ -58,7 +58,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, wrap(changeSet.entity, true).__primaryKey as {}, changeSet.payload, ctx);
+      return this.driver.nativeUpdate(changeSet.name, wrap(changeSet.entity, true).__primaryKey as Dictionary, changeSet.payload, ctx);
     }
 
     const cond = {

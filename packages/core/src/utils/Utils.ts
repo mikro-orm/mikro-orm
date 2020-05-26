@@ -20,7 +20,7 @@ export class Utils {
   /**
    * Checks if the argument is not undefined
    */
-  static isDefined<T = object>(data: any, considerNullUndefined = false): data is T {
+  static isDefined<T = Record<string, unknown>>(data: any, considerNullUndefined = false): data is T {
     return typeof data !== 'undefined' && !(considerNullUndefined && data === null);
   }
 
@@ -28,7 +28,7 @@ export class Utils {
    * Checks if the argument is instance of `Object`. Returns false for arrays.
    * `not` argument allows to blacklist classes that should be considered as not object.
    */
-  static isObject<T = Dictionary>(o: any, not: Function[] = []): o is T {
+  static isObject<T = Dictionary>(o: any, not: any[] = []): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
   }
 
@@ -228,7 +228,7 @@ export class Utils {
   /**
    * Returns array of functions argument names. Uses `acorn` for source code analysis.
    */
-  static getParamNames(func: Function | string, methodName?: string): string[] {
+  static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
     const parsed = parse(func.toString());
 
@@ -417,7 +417,7 @@ export class Utils {
   /**
    * Gets string name of given class.
    */
-  static className(classOrName: string | Function): string {
+  static className(classOrName: string | { name: string }): string {
     if (Utils.isString(classOrName)) {
       return classOrName;
     }
