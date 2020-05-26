@@ -1,18 +1,6 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
+import { EntityFactory, Logger, MikroORM, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import {
-  Author2,
-  Configuration2,
-  FooBar2,
-  FooBaz2,
-  FooParam2,
-  Test2,
-  Address2,
-  Car2,
-  CarOwner2,
-  User2,
-  Sandwich,
-} from './entities-sql';
+import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
 describe('composite keys in mysql', () => {
@@ -238,7 +226,7 @@ describe('composite keys in mysql', () => {
     await orm.em.removeEntity(u2, true);
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
-    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1,['users']);
+    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, ['users']);
     expect(c2).toBe(u2.sandwiches[0]);
     await orm.em.removeEntity(c2, true);
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
@@ -251,6 +239,34 @@ describe('composite keys in mysql', () => {
     expect(ref.__primaryKeys).toEqual(['n', 1]);
     expect(() => orm.em.getReference(Car2, 1 as any)).toThrowError('Composite key required for entity Car2.');
     expect(wrap(ref).toJSON()).toEqual({ name: 'n', year: 1 });
+  });
+
+  test('composite key in em.create()', async () => {
+    await orm.em.nativeInsert(Car2, { name: 'n4', year: 2000, price: 456 });
+
+    const factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em);
+    const c1 = new Car2('n1', 2000, 1);
+    const c2 = { name: 'n3', year: 2000, price: 123 };
+    const c3 = ['n4', 2000]; // composite PK
+
+    // managed entity have an internal __em reference, so that is what we are testing here
+    expect(wrap(c1, true).__em).toBeUndefined();
+    const u1 = factory.create(User2, { firstName: 'f', lastName: 'l', cars: [c1, c2, c3] });
+    expect(wrap(u1, true).__em).toBeUndefined();
+    expect(wrap(u1.cars[0], true).__em).toBeUndefined();
+    expect(wrap(u1.cars[1], true).__em).toBeUndefined();
+    expect(wrap(u1.cars[2], true).__em).not.toBeUndefined(); // PK only, so will be merged automatically
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+    await orm.em.persistAndFlush(u1);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
+    expect(mock.mock.calls[2][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c1
+    expect(mock.mock.calls[3][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c2
+    expect(mock.mock.calls[4][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
   });
 
   afterAll(async () => orm.close(true));
