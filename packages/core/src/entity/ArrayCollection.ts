@@ -1,7 +1,9 @@
 import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
+import { Reference } from './Reference';
 import { wrap } from './wrap';
+import { Utils } from '../utils';
 
 export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
@@ -46,31 +48,37 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
 
-  add(...items: T[]): void {
+  add(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
-      if (!this.contains(item, false)) {
-        this.items.push(item);
-        this.propagate(item, 'add');
+      const entity = Utils.unwrapReference(item);
+
+      if (!this.contains(entity, false)) {
+        this.items.push(entity);
+        this.propagate(entity, 'add');
       }
     }
 
     Object.assign(this, this.items);
   }
 
-  set(items: T[]): void {
+  set(items: (T | Reference<T>)[]): void {
     this.removeAll();
     this.add(...items);
   }
 
+  /**
+   * @internal
+   */
   hydrate(items: T[]): void {
     this.items.length = 0;
     this.items.push(...items);
     Object.assign(this, this.items);
   }
 
-  remove(...items: T[]): void {
+  remove(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
-      const idx = this.items.findIndex(i => wrap(i, true).__serializedPrimaryKey === wrap(item, true).__serializedPrimaryKey);
+      const entity = Utils.unwrapReference(item);
+      const idx = this.items.findIndex(i => wrap(i, true).__serializedPrimaryKey === wrap(entity, true).__serializedPrimaryKey);
 
       if (idx !== -1) {
         delete this[this.items.length - 1]; // remove last item
@@ -78,7 +86,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
         Object.assign(this, this.items); // reassign array access
       }
 
-      this.propagate(item, 'remove');
+      this.propagate(entity, 'remove');
     }
   }
 
@@ -86,10 +94,12 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     this.remove(...this.items);
   }
 
-  contains(item: T, check?: boolean): boolean {
+  contains(item: T | Reference<T>, check?: boolean): boolean {
+    const entity = Utils.unwrapReference(item);
+
     return !!this.items.find(i => {
-      const objectIdentity = i === item;
-      const primaryKeyIdentity = !!wrap(i, true).__primaryKey && !!wrap(item, true).__primaryKey && wrap(i, true).__serializedPrimaryKey === wrap(item, true).__serializedPrimaryKey;
+      const objectIdentity = i === entity;
+      const primaryKeyIdentity = !!wrap(i, true).__primaryKey && !!wrap(entity, true).__primaryKey && wrap(i, true).__serializedPrimaryKey === wrap(entity, true).__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
