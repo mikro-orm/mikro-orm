@@ -4,7 +4,7 @@
     "target": "es2017",
     "moduleResolution": "node",
     "declaration": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
