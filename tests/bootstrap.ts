@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, MikroORM, ReflectMetadataProvider } from '@mikro-orm/core';
+import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';

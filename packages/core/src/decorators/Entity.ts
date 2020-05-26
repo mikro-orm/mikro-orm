@@ -3,11 +3,11 @@ import { EntityRepository } from '../entity';
 import { Utils } from '../utils';
 import { AnyEntity, Constructor, Dictionary } from '../typings';
 
-export function Entity(options: EntityOptions<any> = {}): Function {
-  return function <T extends { new(...args: any[]): AnyEntity<T> }>(target: T) {
+export function Entity(options: EntityOptions<any> = {}) {
+  return function <T>(target: T & Dictionary) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
     Utils.merge(meta, options);
-    meta.class = target;
+    meta.class = target as unknown as Constructor<T>;
     meta.name = target.name;
 
     return target;

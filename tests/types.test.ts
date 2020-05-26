@@ -153,14 +153,17 @@ describe('check typings', () => {
     assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: null }>>(true);
     assert<IsAssignable<Query<Author2>, { books: { author: { born: Date } }; favouriteBook: { title: null } }>>(true);
 
-    // hard to test this before support to test assign-ability is exposed TS compiler api
-    // @see https://github.com/microsoft/TypeScript/pull/33263/files#diff-c3ed224e4daa84352f7f1abcd23e8ccaR525-R527
-    // assert<IsAssignable<Query<Book2>, { author: { books: { publisher: string } } }>>(false); // should pass
-    // const t1: Query<Book2> = { author: { books: { publisher: 1 } } }; // ok
-    // const t2: Query<Book2> = { author: { books: { publisher: '1' } } }; // ok, should fail
-    // assert<Has<Query<Author2>, { age: { $gte: number } }>>(true); // should pass
-    // assert<IsAssignable<Query<Author2>, { books: { author: { born: number } }; favouriteBook: null }>>(false); // hard to test failures
-    // assert<IsAssignable<Query<Author2>, { books: { author: { born: string } }; favouriteBook: null }>>(false); // hard to test failures
+    let t1: Query<Book2>;
+    t1 = { author: { books: { publisher: 1 } } }; // ok
+    // @ts-expect-error
+    t1 = { author: { books: { publisher: '1' } } }; // should fail
+    let t2: Query<Author2>;
+    t2 = { age: { $gte: 1 } };
+    t2 = { books: { author: { born: new Date() } }, favouriteBook: null };
+    // @ts-expect-error
+    t2 = { books: { author: { born: 1 } }, favouriteBook: null };
+    // @ts-expect-error
+    t2 = { books: { author: { born: '1' } }, favouriteBook: null };
   });
 
   test('FilterQuery', async () => {
@@ -238,28 +241,44 @@ describe('check typings', () => {
     ok04 = { publisher: { name: { $like: 'name' } } };
   });
 
-  // there is no way to test this currently, uncomment to check they all fail
-  // test('FilterQuery bad assignments', async () => {
-  //   let fail01: FilterQuery<Author2>;
-  //   fail01 = { books: { author: { born: 123 } }, favouriteBook: null };
-  //   fail01 = { born: 123 };
-  //   fail01 = { books: { author: { born: 123 } }, favouriteBook: null };
-  //   fail01 = { books: { author: { born: '123' } }, favouriteBook: null };
-  //   fail01 = { age: { $gta: 1 } };
-  //   fail01 = { ago: { $gte: 1 } };
-  //   fail01 = { ago: { $gta: 1 } };
-  //   fail01 = { favouriteBook: 1 };
-  //   fail01 = { favouriteBook: 1 };
-  //   fail01 = { favouriteBook: [1, '2'] };
-  //   fail01 = { favouriteBook: [1, 2] };
-  //   fail01 = { books: { tags: { name: 1 } } };
-  //   fail01 = { books: { tags: true } };
-  //   fail01 = { books: { tags: { books: { title: 123 } } } };
-  //
-  //   let fail02: FilterQuery<Book2>;
-  //   fail02 = { author: { born: 123 } };
-  //   fail02 = { author: { born: '123' } };
-  //   fail02 = { author: { born: { $or: ['123'] } } };
-  // });
+  test('FilterQuery bad assignments', async () => {
+    let fail01: FilterQuery<Author2>;
+    // @ts-expect-error
+    fail01 = { books: { author: { born: 123 } }, favouriteBook: null };
+    // @ts-expect-error
+    fail01 = { born: 123 };
+    // @ts-expect-error
+    fail01 = { books: { author: { born: 123 } }, favouriteBook: null };
+    // @ts-expect-error
+    fail01 = { books: { author: { born: '123' } }, favouriteBook: null };
+    // @ts-expect-error
+    fail01 = { age: { $gta: 1 } };
+    // @ts-expect-error
+    fail01 = { ago: { $gte: 1 } };
+    // @ts-expect-error
+    fail01 = { ago: { $gta: 1 } };
+    // @ts-expect-error
+    fail01 = { favouriteBook: 1 };
+    // @ts-expect-error
+    fail01 = { favouriteBook: 1 };
+    // @ts-expect-error
+    fail01 = { favouriteBook: [1, '2'] };
+    // @ts-expect-error
+    fail01 = { favouriteBook: [1, 2] };
+    // @ts-expect-error
+    fail01 = { books: { tags: { name: 1 } } };
+    // @ts-expect-error
+    fail01 = { books: { tags: true } };
+    // @ts-expect-error
+    fail01 = { books: { tags: { books: { title: 123 } } } };
+
+    let fail02: FilterQuery<Book2>;
+    // @ts-expect-error
+    fail02 = { author: { born: 123 } };
+    // @ts-expect-error
+    fail02 = { author: { born: '123' } };
+    // @ts-expect-error
+    fail02 = { author: { born: { $or: ['123'] } } };
+  });
 
 });

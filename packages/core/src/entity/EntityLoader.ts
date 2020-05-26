@@ -1,4 +1,4 @@
-import { AnyEntity, EntityProperty, FilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, FilterQuery } from '../typings';
 import { EntityManager } from '../index';
 import { LoadStrategy, ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -118,14 +118,14 @@ export class EntityLoader {
 
   private initializeOneToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
-      const items = children.filter(child => Utils.unwrapReference(child[prop.mappedBy]) as object === entity);
+      const items = children.filter(child => Utils.unwrapReference(child[prop.mappedBy]) as unknown === entity);
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
 
   private initializeManyToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
-      const items = children.filter(child => (child[prop.mappedBy] as object as Collection<AnyEntity>).contains(entity));
+      const items = children.filter(child => (child[prop.mappedBy] as unknown as Collection<AnyEntity>).contains(entity));
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
@@ -150,7 +150,7 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, wrap(e, true).__meta.primaryKeys, true)));
-    where = { [fk]: { $in: ids }, ...where };
+    where = { [fk]: { $in: ids }, ...(where as Dictionary) };
     orderBy = orderBy || prop.orderBy || { [fk]: QueryOrder.ASC };
 
     return this.em.find<T>(prop.type, where, { orderBy, refresh, populate: populate.children });
@@ -169,7 +169,7 @@ export class EntityLoader {
         children.push(entity[populate.field]);
       } else if (entity[populate.field] instanceof Reference) {
         children.push(entity[populate.field].unwrap());
-      } else if (entity[populate.field] as object instanceof Collection) {
+      } else if (entity[populate.field] as unknown instanceof Collection) {
         children.push(...entity[populate.field].getItems());
       }
     }
