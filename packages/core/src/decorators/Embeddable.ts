@@ -1,10 +1,10 @@
-import { AnyEntity } from '../typings';
+import { Constructor, Dictionary } from '../typings';
 import { MetadataStorage } from '../metadata';
 
-export function Embeddable(): Function {
-  return function <T extends { new(...args: any[]): AnyEntity<T> }>(target: T) {
+export function Embeddable() {
+  return function <T>(target: T & Dictionary) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
-    meta.class = target;
+    meta.class = target as unknown as Constructor<T>;
     meta.name = target.name;
     meta.embeddable = true;
 

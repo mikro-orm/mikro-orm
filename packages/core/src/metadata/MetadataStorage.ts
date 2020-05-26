@@ -28,7 +28,7 @@ export class MetadataStorage {
     return MetadataStorage.metadata;
   }
 
-  static getMetadataFromDecorator<T = any>(target: Function): EntityMetadata<T> {
+  static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
     const path = Utils.lookupPathFromDecorator();
     const meta = MetadataStorage.getMetadata(target.name, path);
     Object.defineProperty(target, '__path', { value: path, writable: true });
