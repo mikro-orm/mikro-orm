@@ -111,7 +111,6 @@
     "conditional-type-checks": "^1.0.5",
     "conventional-changelog-angular": "^5.0.10",
     "conventional-changelog-cli": "^2.0.34",
-    "copyfiles": "^2.2.0",
     "coveralls": "^3.1.0",
     "eslint": "^7.0.0",
     "eslint-plugin-jsdoc": "^25.4.2",
