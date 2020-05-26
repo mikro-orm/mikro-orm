@@ -336,9 +336,9 @@ export class MetadataDiscovery {
     return ret;
   }
 
-  private initFactoryField(prop: EntityProperty): void {
+  private initFactoryField<T>(prop: EntityProperty<T>): void {
     ['mappedBy', 'inversedBy'].forEach(type => {
-      const value = prop[type] as string | Function;
+      const value = prop[type];
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);

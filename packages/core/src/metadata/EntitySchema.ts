@@ -102,7 +102,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, options);
   }
 
-  addEmbedded<K = object>(name: string & keyof T, options: EmbeddedOptions): void {
+  addEmbedded<K = unknown>(name: string & keyof T, options: EmbeddedOptions): void {
     Utils.defaultValue(options, 'prefix', true);
     this._meta.properties[name] = {
       name,
@@ -112,7 +112,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     } as EntityProperty<T>;
   }
 
-  addManyToOne<K = object>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
+  addManyToOne<K = unknown>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
 
@@ -127,7 +127,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addManyToMany<K = object>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K, T>): void {
+  addManyToMany<K = unknown>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K, T>): void {
     options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
 
     if (!options.owner && !options.mappedBy) {
@@ -142,12 +142,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addOneToMany<K = object>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
+  addOneToMany<K = unknown>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
     const prop = this.createProperty<T>(ReferenceType.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
-  addOneToOne<K = object>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
+  addOneToOne<K = unknown>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);

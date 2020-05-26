@@ -1,20 +1,20 @@
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary } from '../typings';
 
-function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean): Function {
+function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target as Function);
+    const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties = options.properties || propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as Required<IndexOptions | UniqueOptions>);
   };
 }
 
-export function Index(options: IndexOptions = {}): Function {
+export function Index(options: IndexOptions = {}) {
   return createDecorator(options, false);
 }
 
-export function Unique(options: UniqueOptions = {}): Function {
+export function Unique(options: UniqueOptions = {}) {
   return createDecorator(options, true);
 }
 

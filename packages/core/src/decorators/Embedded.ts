@@ -3,7 +3,7 @@ import { MetadataStorage } from '../metadata';
 import { ReferenceType } from '../entity/enums';
 import { Utils } from '../utils';
 
-export function Embedded(options: EmbeddedOptions | (() => AnyEntity) = {}): Function {
+export function Embedded(options: EmbeddedOptions | (() => AnyEntity) = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     options = options instanceof Function ? { entity: options } : options;

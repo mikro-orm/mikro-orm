@@ -5,7 +5,7 @@ import { CLIHelper } from '../CLIHelper';
 
 export type Options = { dump: boolean; save: boolean; path: string };
 
-export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<{}, U> {
+export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<unknown, U> {
 
   command = 'generate-entities';
   describe = 'Generate entities based on current database schema';
