@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType } from '@mikro-orm/core';
+import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -127,6 +127,21 @@ describe('EntityFactory', () => {
     expect(p1.name).toBe('asd');
     const p2 = factory.create(Publisher, p1);
     expect(p2).toBe(p1);
+  });
+
+  test('create does not merge entity instances', async () => {
+    const a1 = new Author('n', 'e');
+    a1.id = '5b0d19b28b21c648c2c8a600';
+    const t1 = new BookTag('t1');
+    t1.id = '5b0d19b28b21c648c2c8a601';
+
+    // managed entity have an internal __em reference, so that is what we are testing here
+    expect(wrap(a1, true).__em).toBeUndefined();
+    expect(wrap(t1, true).__em).toBeUndefined();
+    const b1 = factory.create(Book, { author: a1, tags: [t1] });
+    expect(wrap(a1, true).__em).toBeUndefined();
+    expect(wrap(t1, true).__em).toBeUndefined();
+    expect(wrap(b1, true).__em).toBeUndefined();
   });
 
   test('create should ignore invalid reference values', async () => {
