@@ -3,6 +3,7 @@ import { ArrayCollection } from './index';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
+import { Reference } from './Reference';
 import { wrap } from './wrap';
 
 export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
@@ -41,18 +42,20 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     return super.getItems();
   }
 
-  add(...items: T[]): void {
-    items.map(item => this.validateItemType(item));
-    this.modify('add', items);
-    this.cancelOrphanRemoval(items);
+  add(...items: (T | Reference<T>)[]): void {
+    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    unwrapped.map(item => this.validateItemType(item));
+    this.modify('add', unwrapped);
+    this.cancelOrphanRemoval(unwrapped);
   }
 
-  set(items: T[]): void {
-    items.map(item => this.validateItemType(item));
-    this.validateModification(items);
-    super.set(items);
+  set(items: (T | Reference<T>)[]): void {
+    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    unwrapped.map(item => this.validateItemType(item));
+    this.validateModification(unwrapped);
+    super.set(unwrapped);
     this.setDirty();
-    this.cancelOrphanRemoval(items);
+    this.cancelOrphanRemoval(unwrapped);
   }
 
   /**
@@ -71,18 +74,19 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     }
   }
 
-  remove(...items: T[]): void {
-    this.modify('remove', items);
+  remove(...items: (T | Reference<T>)[]): void {
+    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    this.modify('remove', unwrapped);
     const em = wrap(this.owner, true).__em;
 
     if (this.property.orphanRemoval && em) {
-      for (const item of items) {
+      for (const item of unwrapped) {
         em.getUnitOfWork().scheduleOrphanRemoval(item);
       }
     }
   }
 
-  contains(item: T, check = true): boolean {
+  contains(item: (T | Reference<T>), check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
