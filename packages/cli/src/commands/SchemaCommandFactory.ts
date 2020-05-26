@@ -18,7 +18,7 @@ export class SchemaCommandFactory {
     drop: 'Schema successfully dropped',
   };
 
-  static create<U extends Options = Options>(command: 'create' | 'update' | 'drop'): CommandModule<{}, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: 'create' | 'update' | 'drop'): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
