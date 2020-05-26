@@ -44,7 +44,7 @@
     "build": "yarn clean && yarn compile && yarn copy",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "copyfiles ../../README.md ../../package.json ./dist",
+    "copy": "ts-node -T ../../scripts/copy.ts",
     "prepublishOnly": "yarn build"
   },
   "publishConfig": {
