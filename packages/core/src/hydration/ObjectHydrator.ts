@@ -5,7 +5,7 @@ import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 
-  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean): void {
+  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateManyToOne(data[prop.name], entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
@@ -19,11 +19,11 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private hydrateOneToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
-    entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, !!value || newEntity) as unknown as T[keyof T];
+  private hydrateOneToMany<T>(entity: T, prop: EntityProperty<T>, value: any, newEntity: boolean): void {
+    entity[prop.name as keyof T] = new Collection<AnyEntity, T>(entity, undefined, !!value || newEntity) as unknown as T[keyof T];
   }
 
-  private hydrateScalar<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateScalar<T>(entity: T, prop: EntityProperty, value: any): void {
     if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
       return;
     }
@@ -35,7 +35,7 @@ export class ObjectHydrator extends Hydrator {
     entity[prop.name as keyof T] = value;
   }
 
-  private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
+  private hydrateEmbeddable<T>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
     const value: Dictionary = {};
 
     Object.values<EntityProperty>(wrap(entity, true).__meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
@@ -46,7 +46,7 @@ export class ObjectHydrator extends Hydrator {
     Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
   }
 
-  private hydrateManyToMany<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+  private hydrateManyToMany<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (prop.owner) {
       return this.hydrateManyToManyOwner(entity, prop, value, newEntity);
     }
@@ -54,7 +54,7 @@ export class ObjectHydrator extends Hydrator {
     this.hydrateManyToManyInverse(entity, prop, newEntity);
   }
 
-  private hydrateManyToManyOwner<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+  private hydrateManyToManyOwner<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (Array.isArray(value)) {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
       const coll = new Collection<AnyEntity>(entity, items);
@@ -66,13 +66,13 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private hydrateManyToManyInverse<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, newEntity: boolean): void {
+  private hydrateManyToManyInverse<T>(entity: T, prop: EntityProperty, newEntity: boolean): void {
     if (!entity[prop.name as keyof T]) {
       entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, newEntity) as unknown as T[keyof T];
     }
   }
 
-  private hydrateManyToOne<T extends AnyEntity<T>>(value: any, entity: T, prop: EntityProperty): void {
+  private hydrateManyToOne<T>(value: any, entity: T, prop: EntityProperty): void {
     if (typeof value === 'undefined') {
       return;
     }
@@ -88,7 +88,7 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private createCollectionItem<T extends AnyEntity<T>>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T): T {
+  private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T): T {
     const meta = this.em.getMetadata().get(prop.type);
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
