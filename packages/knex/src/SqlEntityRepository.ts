@@ -1,9 +1,9 @@
 import Knex from 'knex';
-import { EntityRepository, EntityName, AnyEntity } from '@mikro-orm/core';
+import { EntityRepository, EntityName } from '@mikro-orm/core';
 import { SqlEntityManager } from './SqlEntityManager';
 import { QueryBuilder } from './query';
 
-export class SqlEntityRepository<T extends AnyEntity<T>> extends EntityRepository<T> {
+export class SqlEntityRepository<T> extends EntityRepository<T> {
 
   constructor(protected readonly em: SqlEntityManager,
               protected readonly entityName: EntityName<T>) {

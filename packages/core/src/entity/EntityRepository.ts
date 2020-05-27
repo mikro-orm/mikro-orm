@@ -3,7 +3,7 @@ import { EntityData, EntityName, AnyEntity, Primary } from '../typings';
 import { QueryOrderMap } from '../enums';
 import { FilterQuery, FindOneOptions, FindOptions, IdentifiedReference, Reference } from '..';
 
-export class EntityRepository<T extends AnyEntity<T>> {
+export class EntityRepository<T> {
 
   constructor(protected readonly em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
