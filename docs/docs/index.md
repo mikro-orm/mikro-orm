@@ -29,6 +29,7 @@ hide_title: true
   - [Updating Entity Values with `Entity.assign()`](entity-helper.md)
   - [Property Validation](property-validation.md)
   - [Lifecycle Hooks](lifecycle-hooks.md)
+  - [Loading Strategies](loading-strategies.md)
   - [Naming Strategy](naming-strategy.md)
   - [Metadata Providers](metadata-providers.md)
   - [Metadata Cache](metadata-cache.md)
