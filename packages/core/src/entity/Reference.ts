@@ -1,8 +1,4 @@
-import { Dictionary, EntityMetadata, Primary } from '../typings';
-import { EntityManager } from '../EntityManager';
-import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata';
-import { EntityValidator } from './EntityValidator';
+import { Dictionary, Primary } from '../typings';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
@@ -65,7 +61,7 @@ export class Reference<T> {
 
   getEntity(): T {
     if (!this.isInitialized()) {
-      throw new Error(`Reference<${this.__meta.name}> ${this.__primaryKey} not initialized`);
+      throw new Error(`Reference<${wrap(this, true).__meta.name}> ${(wrap(this.entity, true).__primaryKey as Primary<T>)} not initialized`);
     }
 
     return this.entity;
@@ -85,38 +81,6 @@ export class Reference<T> {
 
   toJSON(...args: any[]): Dictionary {
     return wrap(this.entity).toJSON!(...args);
-  }
-
-  get __primaryKey(): Primary<T> {
-    return wrap(this.entity, true).__primaryKey as Primary<T>;
-  }
-
-  get __primaryKeys(): Primary<T>[] {
-    return wrap(this.entity, true).__primaryKeys;
-  }
-
-  get __uuid(): string {
-    return wrap(this.entity, true).__uuid;
-  }
-
-  get __em(): EntityManager | undefined {
-    return wrap(this.entity, true).__em;
-  }
-
-  get __internal(): { platform: Platform; metadata: MetadataStorage; validator: EntityValidator } {
-    return wrap(this.entity, true).__internal;
-  }
-
-  get __meta(): EntityMetadata {
-    return wrap(this.entity, true).__meta;
-  }
-
-  get __populated(): boolean {
-    return wrap(this.entity, true).__populated;
-  }
-
-  get __lazyInitialized(): boolean {
-    return wrap(this.entity, true).__lazyInitialized;
   }
 
 }
