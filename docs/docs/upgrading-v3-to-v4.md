@@ -37,7 +37,7 @@ Previously the name was constructed from 2 entity names as `entity_a_to_entity_b
 ignoring the actual property name. In v4 the name will be `entity_a_coll_name` in 
 case of the collection property on the owning side being named `collName`. 
 
-## Changes in `wrap()` helper and `WrappedEntity` interface
+## Changes in `wrap()` helper, `WrappedEntity` interface and `Reference` wrapper
 
 Previously all the methods and properties of `WrappedEntity` interface were
 added to the entity prototype during discovery. In v4 there is only one property
@@ -47,6 +47,9 @@ added: `__helper: WrappedEntity`. `WrappedEntity` has been converted to actual c
 being returned. It contains only public methods (`init`, `assign`, `isInitialized`, ...),
 if you want to access internal properties like `__meta` or `__em`, you need to explicitly
 ask for the helper via `wrap(entity, true)`.
+
+Internal methods (with `__` prefix) were also removed from the `Reference` class, 
+use `wrap(ref, true)` to access them. 
 
 Instead of interface merging with `WrappedEntity`, one can now use classic inheritance,
 by extending `BaseEntity` exported from `@mikro-orm/core`. If you do so, `wrap(entity)` 
