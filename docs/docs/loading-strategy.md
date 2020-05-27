@@ -42,10 +42,10 @@ import { Entity, LoadStrategy, OneToMany } from 'mikro-orm';
 export class Author {
   @OneToMany({
     entity: () => Book,
-    mappedBy: 'author',
+    mappedBy: b => b.author,
     strategy: LoadStrategy.JOINED,
   })
-  books!: Collection<Book>;
+  books = new Collection<Book>(this);
 }
 ```
 
