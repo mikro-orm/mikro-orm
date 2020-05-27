@@ -28,7 +28,7 @@ module.exports = {
       'entity-helper',
       'property-validation',
       'lifecycle-hooks',
-      'loading-strategy',
+      'loading-strategies',
       'naming-strategy',
       'custom-types',
       'entity-schema',
