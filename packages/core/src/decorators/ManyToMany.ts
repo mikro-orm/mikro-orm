@@ -5,7 +5,7 @@ import { EntityValidator, ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 import { QueryOrder } from '../enums';
 
-export function ManyToMany<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+export function ManyToMany<T, O>(
   entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options: Partial<ManyToManyOptions<T, O>> = {},
@@ -19,7 +19,7 @@ export function ManyToMany<T extends AnyEntity<T>, O extends AnyEntity<O>>(
   };
 }
 
-export interface ManyToManyOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> extends ReferenceOptions<T, O> {
+export interface ManyToManyOptions<T, O> extends ReferenceOptions<T, O> {
   owner?: boolean;
   inversedBy?: (string & keyof T) | ((e: T) => any);
   mappedBy?: (string & keyof T) | ((e: T) => any);

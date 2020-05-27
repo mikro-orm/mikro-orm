@@ -1,13 +1,13 @@
-import { Dictionary, EntityMetadata, AnyEntity, Primary } from '../typings';
+import { Dictionary, EntityMetadata, Primary } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { EntityValidator } from './EntityValidator';
 import { wrap } from './wrap';
 
-export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
+export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
-export class Reference<T extends AnyEntity<T>> {
+export class Reference<T> {
 
   constructor(private entity: T) {
     this.set(entity);
@@ -30,7 +30,7 @@ export class Reference<T extends AnyEntity<T>> {
     }
   }
 
-  static create<T extends AnyEntity<T>, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+  static create<T, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
     if (entity instanceof Reference) {
       return entity;
     }

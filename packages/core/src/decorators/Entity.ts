@@ -14,7 +14,7 @@ export function Entity(options: EntityOptions<any> = {}) {
   };
 }
 
-export type EntityOptions<T extends AnyEntity<T>> = {
+export type EntityOptions<T> = {
   tableName?: string;
   collection?: string;
   discriminatorColumn?: string;
