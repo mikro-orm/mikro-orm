@@ -12,7 +12,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<T extends AnyEntity<T>>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
+  createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
     entityName = Utils.className(entityName);
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), this.getTransactionContext(), alias, type, this);
   }

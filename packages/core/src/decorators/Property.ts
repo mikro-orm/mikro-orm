@@ -4,7 +4,7 @@ import { Cascade, EntityValidator, ReferenceType, LoadStrategy } from '../entity
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
-export function Property<T extends AnyEntity<T>>(options: PropertyOptions<T> = {}) {
+export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
@@ -32,7 +32,7 @@ export function Property<T extends AnyEntity<T>>(options: PropertyOptions<T> = {
   };
 }
 
-export type PropertyOptions<T extends AnyEntity<T>> = {
+export type PropertyOptions<T> = {
   name?: string;
   fieldName?: string;
   fieldNames?: string[];
@@ -57,7 +57,7 @@ export type PropertyOptions<T extends AnyEntity<T>> = {
   serializedPrimaryKey?: boolean;
 };
 
-export interface ReferenceOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> extends PropertyOptions<O> {
+export interface ReferenceOptions<T, O> extends PropertyOptions<O> {
   entity?: string | (() => EntityName<T>);
   cascade?: Cascade[];
   eager?: boolean;
