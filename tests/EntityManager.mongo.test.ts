@@ -1712,15 +1712,12 @@ describe('EntityManagerMongo', () => {
     expect(ref4.isInitialized()).toBe(true);
     expect(ref4.getProperty('name')).toBe('God');
     await expect(ref4.get('email')).resolves.toBe('hello@heaven.god');
-    expect(ref4.__populated).toBe(true);
+    expect(wrap(ref4, true).__populated).toBe(true);
     ref4.populated(false);
-    expect(ref4.__populated).toBe(false);
+    expect(wrap(ref4, true).__populated).toBe(false);
     ref4.populated();
-    expect(ref4.__populated).toBe(true);
-    expect(ref4.__lazyInitialized).toBe(true);
-    expect(ref4.__internal).toBeDefined();
-    expect(ref4.__em).toBeDefined();
-    expect(ref4.__uuid).toBeDefined();
+    expect(wrap(ref4, true).__populated).toBe(true);
+    expect(wrap(ref4, true).__lazyInitialized).toBe(true);
     expect(ref4.toJSON()).toMatchObject({
       name: 'God',
     });
