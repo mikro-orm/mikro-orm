@@ -24,10 +24,7 @@ export class Author {
 
 @Entity()
 export class Book {
-  @ManyToOne({
-    entity: 'Author',
-    cascade: [],
-  })
+  @ManyToOne()
   author: Author;
 }
 ```
