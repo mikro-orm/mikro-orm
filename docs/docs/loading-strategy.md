@@ -15,11 +15,8 @@ import { Entity, LoadStrategy, OneToMany, ManyToOne } from 'mikro-orm';
 
 @Entity()
 export class Author {
-  @OneToMany({
-    entity: () => Book,
-    mappedBy: 'author',
-  })
-  books!: Collection<Book>;
+  @OneToMany(() => Book, b => b.author)
+  books = new Collection<Book>(this);
 }
 
 @Entity()
