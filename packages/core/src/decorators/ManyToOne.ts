@@ -4,7 +4,7 @@ import { Utils } from '../utils';
 import { EntityValidator, ReferenceType } from '../entity';
 import { AnyEntity, EntityName, EntityProperty } from '../typings';
 
-export function ManyToOne<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+export function ManyToOne<T, O>(
   entity: ManyToOneOptions<T, O> | string | ((e?: any) => EntityName<T>) = {},
   options: Partial<ManyToOneOptions<T, O>> = {},
 ) {
@@ -17,7 +17,7 @@ export function ManyToOne<T extends AnyEntity<T>, O extends AnyEntity<O>>(
   };
 }
 
-export interface ManyToOneOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> extends ReferenceOptions<T, O> {
+export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
   primary?: boolean;

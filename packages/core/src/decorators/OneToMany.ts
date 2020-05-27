@@ -5,7 +5,7 @@ import { EntityValidator, ReferenceType } from '../entity';
 import { QueryOrder } from '../enums';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
-export function createOneToDecorator<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+export function createOneToDecorator<T, O>(
   entity?: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options?: Partial<OneToManyOptions<T, O>>,
@@ -22,7 +22,7 @@ export function createOneToDecorator<T extends AnyEntity<T>, O extends AnyEntity
   };
 }
 
-export function OneToMany<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+export function OneToMany<T, O>(
   entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options: Partial<OneToManyOptions<T, O>> = {},
@@ -30,7 +30,7 @@ export function OneToMany<T extends AnyEntity<T>, O extends AnyEntity<O>>(
   return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
 }
 
-export type OneToManyOptions<T extends AnyEntity<T>, O extends AnyEntity<O>> = ReferenceOptions<T, O> & {
+export type OneToManyOptions<T, O> = ReferenceOptions<T, O> & {
   entity?: string | (() => EntityName<T>);
   orphanRemoval?: boolean;
   orderBy?: { [field: string]: QueryOrder };
