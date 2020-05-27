@@ -1,6 +1,6 @@
 ---
-title: Relationship Loading Strategy
-sidebar_label: Loading Strategy
+title: Relationship Loading Strategies
+sidebar_label: Loading Strategies
 ---
 
 > SQL only feature
