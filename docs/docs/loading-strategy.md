@@ -1,6 +1,9 @@
 ---
 title: Relationship Loading Strategy
+sidebar_label: Loading Strategy
 ---
+
+> SQL only feature
 
 Controls how relationships get loaded when querying. By default, populated relationships
 are loaded via the `select-in` strategy. This strategy issues one additional `SELECT`
@@ -55,8 +58,15 @@ The following will issue **one** SQL statement:
 const author = await orm.em.findOne(Author, 1, ['books']);
 ```
 
-You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping:
+You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping.
+This also works for nested populates:
 
 ```typescript
-const author = await orm.em.findOne(Author, 1, [{ field: 'books', strategy: LoadStrategy.JOINED }]);
+// one level
+const author = await orm.em.findOne(Author, 1, { populate: { books: LoadStrategy.JOINED } });
+
+// two levels
+const author = await orm.em.findOne(Author, 1, { populate: {
+  books: [LoadStrategy.JOINED, { publisher: LoadStrategy.JOINED }]
+} });
 ```
