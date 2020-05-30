@@ -44,12 +44,10 @@
     "build": "yarn clean && yarn compile && yarn copy",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts",
-    "prepublishOnly": "yarn build"
+    "copy": "ts-node -T ../../scripts/copy.ts"
   },
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.com"
+    "access": "public"
   },
   "dependencies": {
     "@mikro-orm/mysql-base": "^4.0.0-alpha.1",
