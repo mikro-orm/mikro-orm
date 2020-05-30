@@ -68,7 +68,12 @@ export class CLIHelper {
   }
 
   static getORMVersion(): string {
-    return require('../package.json').version;
+    /* istanbul ignore next */
+    try {
+      return require('../package.json').version;
+    } catch {
+      return require('./package.json').version;
+    }
   }
 
   static getNodeVersion(): string {
