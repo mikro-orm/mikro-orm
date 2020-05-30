@@ -602,16 +602,16 @@ export class MetadataDiscovery {
 
   private initCustomType(prop: EntityProperty): void {
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && ['string[]', 'array'].includes(prop.type)) {
+    if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
       prop.customType = new ArrayType();
     }
 
     // for number arrays we make sure to convert the items to numbers
-    if (!prop.customType && prop.type === 'number[]') {
+    if (!prop.customType && !prop.columnTypes && prop.type === 'number[]') {
       prop.customType = new ArrayType(i => +i);
     }
 
-    if (!prop.customType && prop.type === 'Buffer') {
+    if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
       prop.customType = new BlobType();
     }
 
