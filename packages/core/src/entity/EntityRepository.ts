@@ -98,7 +98,6 @@ export class EntityRepository<T> {
   getReference<PK extends keyof T>(id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;
   getReference<PK extends keyof T = keyof T>(id: Primary<T>): T;
   getReference<PK extends keyof T = keyof T>(id: Primary<T>, wrapped: false): T;
-  getReference<PK extends keyof T = keyof T>(id: Primary<T>, wrapped: true): Reference<T>;
   getReference<PK extends keyof T = keyof T>(id: Primary<T>, wrapped = false): T | Reference<T> {
     return this.em.getReference<T>(this.entityName, id, wrapped);
   }
