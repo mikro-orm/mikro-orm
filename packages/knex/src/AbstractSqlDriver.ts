@@ -52,10 +52,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
 
-    // if (joinedLoads.length > 0) {
-    //   // TODO
-    //   return this.processJoinedLoads(result, joinedLoads) as unknown as T;
-    // }
+    if (joinedLoads.length > 0) {
+      return this.mergeJoinedResult(result, meta, joinedLoads);
+    }
 
     return result;
   }
@@ -93,7 +92,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const result = await this.rethrow(qb.execute(method));
 
     if (Array.isArray(result)) {
-      return this.processJoinedLoads(result, joinedLoads) as unknown as T;
+      return this.mergeSingleJoinedResult(result, joinedLoads) as unknown as T;
     }
 
     return result;
@@ -291,7 +290,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .map(({ field }) => field);
   }
 
-  protected processJoinedLoads<T extends AnyEntity<T>>(rawResults: Dictionary[], joinedLoads: string[]): T | null {
+  protected mergeSingleJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], joinedLoads: string[]): T | null {
     if (rawResults.length === 0) {
       return null;
     }
@@ -306,6 +305,19 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
       return { ...value, ...result };
     }, {}) as unknown as T;
+  }
+
+  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>, joinedLoads: string[]): T[] {
+    // group by the root entity primary key first
+    const res = rawResults.reduce((result, item) => {
+      const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
+      result[pk] = result[pk] || [];
+      result[pk].push(item);
+
+      return result;
+    }, {}) as Dictionary<any[]>;
+
+    return Object.values(res).map((rows: Dictionary[]) => this.mergeSingleJoinedResult(rows, joinedLoads)) as T[];
   }
 
   getRefForField(field: string, schema: string, alias: string) {
