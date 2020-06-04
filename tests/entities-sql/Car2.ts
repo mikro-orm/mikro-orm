@@ -1,5 +1,6 @@
-import { Collection, Entity, Index, ManyToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Collection, Entity, Index, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
 import { User2 } from './User2';
+import { Test2 } from './Test2';
 
 @Entity()
 export class Car2 {

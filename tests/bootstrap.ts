@@ -174,10 +174,12 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   await em.createQueryBuilder(FooParam2).truncate().execute();
   await em.createQueryBuilder(Configuration2).truncate().execute();
   await em.createQueryBuilder(Car2).truncate().execute();
+  await em.createQueryBuilder(User2).truncate().execute();
   await em.createQueryBuilder(CarOwner2).truncate().execute();
   await em.createQueryBuilder(BaseUser2).truncate().execute();
   await em.createQueryBuilder('author2_following').truncate().execute();
   await em.createQueryBuilder('book2_tags').truncate().execute();
+  await em.createQueryBuilder('user2_cars').truncate().execute();
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');

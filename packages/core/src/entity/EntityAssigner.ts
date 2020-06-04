@@ -38,11 +38,11 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!);
+        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
       }
 
       if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
-        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!);
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
@@ -96,7 +96,7 @@ export class EntityAssigner {
     return true;
   }
 
-  private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager): void {
+  private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     let valid = false;
 
     if (Utils.isEntity(value, true)) {
@@ -104,6 +104,9 @@ export class EntityAssigner {
       valid = true;
     } else if (Utils.isPrimaryKey(value, true)) {
       entity[prop.name] = Utils.wrapReference(em.getReference<T>(prop.type, value), prop);
+      valid = true;
+    } else if (Utils.isObject<T[keyof T]>(value) && options.merge) {
+      entity[prop.name] = Utils.wrapReference(em.merge(prop.type, value), prop);
       valid = true;
     } else if (Utils.isObject<T[keyof T]>(value)) {
       entity[prop.name] = Utils.wrapReference(em.create(prop.type, value), prop);
@@ -118,26 +121,30 @@ export class EntityAssigner {
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager): void {
+  private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const invalid: any[] = [];
-    const items = value.map((item: any) => this.createCollectionItem<U>(item, em, prop, invalid));
+    const items = value.map((item: any) => this.createCollectionItem<U>(item, em, prop, invalid, options));
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
-    collection.hydrate(items, true, false);
+    collection.hydrate(items, true, !!options.merge);
     collection.setDirty();
   }
 
-  private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[]): T {
+  private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
     if (Utils.isEntity<T>(item)) {
       return item;
     }
 
     if (Utils.isPrimaryKey(item)) {
       return em.getReference(prop.type, item);
+    }
+
+    if (Utils.isObject<T>(item) && options.merge) {
+      return em.merge<T>(prop.type, item);
     }
 
     if (Utils.isObject<T>(item)) {
@@ -154,5 +161,6 @@ export class EntityAssigner {
 export interface AssignOptions {
   onlyProperties?: boolean;
   mergeObjects?: boolean;
+  merge?: boolean;
   em?: EntityManager;
 }
