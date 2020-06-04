@@ -1,4 +1,5 @@
 import { pathExists } from 'fs-extra';
+import path from 'path';
 import { IDatabaseDriver } from '../drivers';
 import { Configuration } from './Configuration';
 import { Utils } from './Utils';
@@ -56,7 +57,9 @@ export class ConfigurationLoader {
     return paths;
   }
 
-  static async registerTsNode(tsConfigPath = process.cwd() + '/tsconfig.json') {
+  static async registerTsNode(configPath = 'tsconfig.json') {
+    const tsConfigPath = path.join(process.cwd(), configPath);
+
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require('ts-node').register({ project: tsConfigPath });
 
