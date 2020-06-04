@@ -236,6 +236,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private initDriver(): D {
     if (!this.options.driver) {
       const driver = Configuration.PLATFORMS[this.options.type!];
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       this.options.driver = require(driver[1])[driver[0]];
     }
 
