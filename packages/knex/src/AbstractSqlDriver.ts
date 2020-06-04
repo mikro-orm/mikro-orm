@@ -33,9 +33,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options = { populate: [], orderBy: {}, ...(options || {}) };
     const meta = this.metadata.get(entityName);
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
-    const joinedLoads = this.joinedLoads(meta, populate);
+    const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    const fields = this.buildFields(meta, populate, joinedLoads, qb, options.fields);
+    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
 
     qb.select(fields)
       .populate(populate)
@@ -52,8 +52,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
 
-    if (joinedLoads.length > 0) {
-      return this.mergeJoinedResult(result, meta, joinedLoads);
+    if (joinedProps.length > 0) {
+      return this.mergeJoinedResult(result, meta, joinedProps);
     }
 
     return result;
@@ -69,15 +69,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pk]: where } as FilterQuery<T>;
     }
 
-    const joinedLoads = this.joinedLoads(meta, populate);
+    const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
-    const fields = this.buildFields(meta, populate, joinedLoads, qb, options.fields);
+    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
 
-    if (joinedLoads.length === 0) {
+    if (joinedProps.length === 0) {
       qb.limit(1);
     }
 
-    const method = joinedLoads.length > 0 ? 'all' : 'get';
+    const method = joinedProps.length > 0 ? 'all' : 'get';
 
     qb.select(fields)
       .populate(populate)
@@ -92,7 +92,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const result = await this.rethrow(qb.execute(method));
 
     if (Array.isArray(result)) {
-      return this.mergeSingleJoinedResult(result, joinedLoads) as unknown as T;
+      return this.mergeSingleJoinedResult(result, joinedProps) as unknown as T;
     }
 
     return result;
@@ -105,38 +105,43 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return null;
     }
 
-    const joinedLoads = this.joinedLoads(meta, populate);
+    const joinedProps = this.joinedProps(meta, populate);
 
-    joinedLoads.forEach(relationName => {
-      const relation = meta.properties[relationName];
-      const properties = this.metadata.get(relation.type).properties;
-      const found = Object.entries(aliasMap).find(([,r]) => r === relation.type)!;
+    joinedProps.forEach(relation => {
+      const meta2 = this.metadata.get(relation.type);
+      // FIXME we should lookup the alias from join definition, based on path (author.favouriteBook), rather than just the type (Book)
+      const found = Object.entries(aliasMap).find(([, r]) => r === relation.type)!;
       const relationAlias = found[0];
-
-      ret[relationName] = ret[relationName] || [];
+      ret[relation.name] = ret[relation.name] || [];
       const relationPojo = {};
 
-      let relationExists = true;
-      Object.values(properties)
-        .filter(({ reference }) => reference === ReferenceType.SCALAR)
+      // If the primary key value for the relation is null, we know we haven't joined to anything
+      // and therefore we don't return any record (since all values would be null)
+      const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
+        return Utils.isDefined(ret[`${relationAlias}_${name}`], true);
+      }));
+
+      if (!hasPK) {
+        return;
+      }
+
+      Object.values(meta2.properties)
+        .filter(prop => this.shouldHaveColumn(prop, populate))
         .forEach(prop => {
-          const alias = `${relationAlias}_${prop.fieldNames[0]}`;
-          const value = ret[alias];
-
-          // If the primary key value for the relation is null, we know we haven't joined to anything
-          // and therefore we don't return any record (since all values would be null)
-          if (prop.primary && value === null) {
-            relationExists = false;
-          }
-
-          if (alias in ret) {
+          if (prop.fieldNames.length > 1) { // composite keys
+            relationPojo[prop.name] = prop.fieldNames.map(name => ret[`${relationAlias}_${name}`]);
+            prop.fieldNames.map(name => delete ret[`${relationAlias}_${name}`]);
+          } else {
+            const alias = `${relationAlias}_${prop.fieldNames[0]}`;
             relationPojo[prop.name] = ret[alias];
             delete ret[alias];
           }
         });
 
-      if (relationExists) {
-        ret[relationName].push(relationPojo);
+      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
+        ret[relation.name].push(relationPojo);
+      } else {
+        ret[relation.name] = relationPojo;
       }
     });
 
@@ -284,30 +289,34 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return [...populate, ...toPopulate];
   }
 
-  protected joinedLoads<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): string[] {
+  protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): EntityProperty[] {
     return populate
       .filter(({ field, strategy }) => (strategy || meta.properties[field]?.strategy) === LoadStrategy.JOINED)
-      .map(({ field }) => field);
+      .map(({ field }) => meta.properties[field]);
   }
 
-  protected mergeSingleJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], joinedLoads: string[]): T | null {
+  protected mergeSingleJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], joinedProps: EntityProperty<T>[]): T | null {
     if (rawResults.length === 0) {
       return null;
     }
 
+    // TODO we might want to optimize this bit, as we are creating a lot of new arrays via destructing (so might be memory heavy)
     return rawResults.reduce((result, value) => {
-      joinedLoads.forEach(relationName => {
-        const relation = value[relationName];
-        const existing = result[relationName] || [];
-
-        result[relationName] = [...existing, ...relation];
+      joinedProps.forEach(prop => {
+        if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference)) {
+          const relation = value[prop.name];
+          const existing = result[prop.name] || [];
+          result[prop.name] = [...existing, ...relation];
+        } else {
+          result[prop.name] = value[prop.name];
+        }
       });
 
       return { ...value, ...result };
     }, {}) as unknown as T;
   }
 
-  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>, joinedLoads: string[]): T[] {
+  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>, joinedProps: EntityProperty<T>[]): T[] {
     // group by the root entity primary key first
     const res = rawResults.reduce((result, item) => {
       const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
@@ -317,14 +326,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return result;
     }, {}) as Dictionary<any[]>;
 
-    return Object.values(res).map((rows: Dictionary[]) => this.mergeSingleJoinedResult(rows, joinedLoads)) as T[];
+    return Object.values(res).map((rows: Dictionary[]) => this.mergeSingleJoinedResult(rows, joinedProps)) as T[];
   }
 
   getRefForField(field: string, schema: string, alias: string) {
     return this.connection.getKnex().ref(field).withSchema(schema).as(alias);
   }
 
-  protected getSelectForJoinedLoad<T>(qb: QueryBuilder, meta: EntityMetadata, joinedLoads: string[], populate: PopulateOptions<T>[]): Field[] {
+  protected getSelectForJoinedLoad<T>(qb: QueryBuilder, meta: EntityMetadata, joinedProps: EntityProperty<T>[], populate: PopulateOptions<T>[]): Field[] {
     const selects: Field[] = [];
 
     // alias all fields in the primary table
@@ -332,20 +341,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .filter(prop => this.shouldHaveColumn(prop, populate))
       .forEach(prop => selects.push(...prop.fieldNames));
 
-    let previousRelationName: string;
-    joinedLoads.forEach(relationName => {
-      previousRelationName = relationName;
-      const prop = meta.properties[relationName];
-      const meta2 = this.metadata.get(prop.type);
+    joinedProps.forEach(relation => {
+      const meta2 = this.metadata.get(relation.type);
+      const tableAlias = qb.getNextAlias(relation.name);
+      qb.join(relation.name, tableAlias, {}, 'leftJoin', `${meta.name}.${relation.name}`); // FIXME nesting in path param (recursive lookup)
+
       const properties = Object.values(meta2.properties).filter(prop => {
         /* istanbul ignore next */
-        return this.shouldHaveColumn(prop, populate.find(p => p.field === relationName)?.children || []);
+        return this.shouldHaveColumn(prop, populate.find(p => p.field === relation.name)?.children || []);
       });
 
-      for (const prop of properties) {
-        const tableAlias = qb.getNextAlias(relationName, previousRelationName !== relationName);
-        selects.push(...prop.fieldNames.map(fieldName => this.getRefForField(fieldName, tableAlias, `${tableAlias}_${fieldName}`)));
-        qb.join(relationName, tableAlias, {}, 'leftJoin');
+      for (const prop2 of properties) {
+        selects.push(...prop2.fieldNames.map(fieldName => this.getRefForField(fieldName, tableAlias, `${tableAlias}_${fieldName}`)));
       }
     });
 
@@ -431,15 +438,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     await this.rethrow(qb.execute());
   }
 
-  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedLoads: string[], qb: QueryBuilder, fields?: Field[]): Field[] {
+  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: EntityProperty<T>[], qb: QueryBuilder, fields?: Field[]): Field[] {
     const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
     const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasExplicitFields = !!fields;
 
     if (fields) {
       fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
-    } else if (joinedLoads.length > 0) {
-      fields = this.getSelectForJoinedLoad(qb, meta, joinedLoads, populate);
+    } else if (joinedProps.length > 0) {
+      fields = this.getSelectForJoinedLoad(qb, meta, joinedProps, populate);
     } else if (lazyProps.length > 0) {
       fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
     }

@@ -1,5 +1,5 @@
-import { EntityFactory, Logger, MikroORM, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { LoadStrategy, Logger, MikroORM, wrap } from '@mikro-orm/core';
+import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
@@ -133,6 +133,18 @@ describe('composite keys in mysql', () => {
     await orm.em.removeEntity(c2, true);
     const c3 = await orm.em.findOne(Car2, car);
     expect(c3).toBeNull();
+    const user1 = new User2('f', 'l');
+    const car11 = new Car2('n', 1, 1);
+    user1.cars.add(car11);
+    user1.favouriteCar = car11;
+    user1.foo = 42;
+    await orm.em.persistAndFlush(user1);
+    orm.em.clear();
+
+    const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
+    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: { users: LoadStrategy.JOINED } });
+    expect(cc.users[0].foo).toBe(42);
+    expect(connMock).toBeCalledTimes(1);
   });
 
   test('composite entity in m:n relationship, both entities are composite', async () => {
@@ -148,7 +160,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, ['cars']);
+    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: { cars: LoadStrategy.JOINED } });
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },
       { name: 'Audi A8', price: 200_000, year: 2013 },
@@ -156,6 +168,7 @@ describe('composite keys in mysql', () => {
     expect(wrap(u1).toJSON()).toEqual({
       firstName: 'John',
       lastName: 'Doe 1',
+      favouriteCar: null,
       foo: null,
       cars: [
         { name: 'Audi A8', price: 100_000, year: 2011 },
@@ -244,7 +257,7 @@ describe('composite keys in mysql', () => {
   test('composite key in em.create()', async () => {
     await orm.em.nativeInsert(Car2, { name: 'n4', year: 2000, price: 456 });
 
-    const factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em);
+    const factory = orm.em.getEntityFactory();
     const c1 = new Car2('n1', 2000, 1);
     const c2 = { name: 'n3', year: 2000, price: 123 };
     const c3 = ['n4', 2000]; // composite PK
@@ -262,9 +275,9 @@ describe('composite keys in mysql', () => {
     Object.assign(orm.config, { logger });
     await orm.em.persistAndFlush(u1);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[2][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c1
-    expect(mock.mock.calls[3][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c2
+    expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c1
+    expect(mock.mock.calls[2][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c2
+    expect(mock.mock.calls[3][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
     expect(mock.mock.calls[4][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
   });
