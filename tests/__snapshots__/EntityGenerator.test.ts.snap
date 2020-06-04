@@ -430,7 +430,8 @@ export class Test2 {
 
 }
 ",
-  "import { Entity, Index, PrimaryKey, Property } from 'mikro-orm';
+  "import { Entity, Index, OneToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Car2 } from './Car2';
 
 @Entity()
 export class User2 {
@@ -445,6 +446,9 @@ export class User2 {
 
   @Property({ nullable: true })
   foo?: number;
+
+  @OneToOne({ entity: () => Car2, nullable: true, index: 'user2_favourite_car_name_favourite_car_year_index', unique: 'user2_favourite_car_year_unique' })
+  favouriteCar?: Car2;
 
 }
 ",

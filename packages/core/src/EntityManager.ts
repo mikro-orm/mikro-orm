@@ -307,7 +307,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     // add to IM immediately - needed for self-references that can be part of `data` (and do not trigger cascade merge)
     this.getUnitOfWork().merge(entity, [entity]);
-    EntityAssigner.assign(entity, data as EntityData<T>, true);
+    EntityAssigner.assign(entity, data as EntityData<T>, { onlyProperties: true, merge: true });
     this.getUnitOfWork().merge(entity); // add to IM again so we have correct payload saved to change set computation
 
     return entity;
