@@ -261,9 +261,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return found ? found[0] : undefined;
   }
 
-  getNextAlias(prefix = 'e', increment = true): string {
+  getNextAlias(prefix = 'e'): string {
     // Take only the first letter of the prefix to keep character counts down since some engines have character limits
-    return `${prefix.charAt(0)}${increment ? this.aliasCounter++ : this.aliasCounter}`;
+    return `${prefix.charAt(0).toLowerCase()}${this.aliasCounter++}`;
   }
 
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {

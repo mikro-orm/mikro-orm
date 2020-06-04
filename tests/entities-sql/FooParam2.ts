@@ -9,7 +9,7 @@ export class FooParam2 {
   bar!: FooBar2;
 
   @ManyToOne(() => FooBaz2, { primary: true })
-  baz!: FooBar2;
+  baz!: FooBaz2;
 
   @Property()
   value: string;

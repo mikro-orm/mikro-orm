@@ -88,10 +88,13 @@ alter table `car2` add primary key `car2_pkey`(`name`, `year`);
 create table `car_owner2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `car_name` varchar(100) not null, `car_year` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table `car_owner2` add index `car_owner2_car_name_car_year_index`(`car_name`, `car_year`);
 
-create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null) default character set utf8mb4 engine = InnoDB;
+create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null, `favourite_car_name` varchar(100) null, `favourite_car_year` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `user2` add index `user2_first_name_index`(`first_name`);
 alter table `user2` add index `user2_last_name_index`(`last_name`);
+alter table `user2` add unique `user2_favourite_car_name_unique`(`favourite_car_name`);
+alter table `user2` add unique `user2_favourite_car_year_unique`(`favourite_car_year`);
 alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
+alter table `user2` add index `user2_favourite_car_name_favourite_car_year_index`(`favourite_car_name`, `favourite_car_year`);
 
 create table `base_user2` (`id` int unsigned not null auto_increment primary key, `first_name` varchar(100) not null, `last_name` varchar(100) not null, `type` enum('employee', 'manager', 'owner') not null, `employee_prop` int(11) null, `manager_prop` varchar(255) null, `owner_prop` varchar(255) null, `favourite_employee_id` int(11) unsigned null, `favourite_manager_id` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `base_user2` add index `base_user2_type_index`(`type`);
@@ -148,6 +151,9 @@ alter table `configuration2` add constraint `configuration2_test_id_foreign` for
 
 alter table `car_owner2` add constraint `car_owner2_car_name_foreign` foreign key (`car_name`) references `car2` (`name`) on update cascade;
 alter table `car_owner2` add constraint `car_owner2_car_year_foreign` foreign key (`car_year`) references `car2` (`year`) on update cascade;
+
+alter table `user2` add constraint `user2_favourite_car_name_foreign` foreign key (`favourite_car_name`) references `car2` (`name`) on update cascade on delete set null;
+alter table `user2` add constraint `user2_favourite_car_year_foreign` foreign key (`favourite_car_year`) references `car2` (`year`) on update cascade on delete set null;
 
 alter table `base_user2` add constraint `base_user2_favourite_employee_id_foreign` foreign key (`favourite_employee_id`) references `base_user2` (`id`) on update cascade on delete set null;
 alter table `base_user2` add constraint `base_user2_favourite_manager_id_foreign` foreign key (`favourite_manager_id`) references `base_user2` (`id`) on update cascade on delete set null;

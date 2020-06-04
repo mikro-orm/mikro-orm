@@ -59,7 +59,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const ret = Object.assign({}, result) as any;
 
     Object.values(meta.properties).forEach(prop => {
-      if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => joinColumn in ret)) {
+      if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => Utils.isDefined(ret[joinColumn], true))) {
         const temp: any[] = [];
         prop.fieldNames.forEach(joinColumn => {
           temp.push(ret[joinColumn]);

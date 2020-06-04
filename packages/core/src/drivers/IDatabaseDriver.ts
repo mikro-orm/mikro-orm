@@ -100,7 +100,7 @@ export interface FindOneOptions<T> {
   flags?: QueryFlag[];
 }
 
-export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T> | CollectionItem<T[K]>> };
+export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T[K]> | CollectionItem<T[K]>> };
 export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T> | [LoadStrategy, PopulateChildren<T>];
 export type Populate<T> = (string | PopulateOptions<T>)[] | boolean | PopulateMap<T>;
 
