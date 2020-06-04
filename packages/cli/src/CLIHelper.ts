@@ -70,8 +70,10 @@ export class CLIHelper {
   static getORMVersion(): string {
     /* istanbul ignore next */
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require('../package.json').version;
     } catch {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require('./package.json').version;
     }
   }
