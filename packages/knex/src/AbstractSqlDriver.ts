@@ -329,17 +329,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return Object.values(res).map((rows: Dictionary[]) => this.mergeSingleJoinedResult(rows, joinedProps)) as T[];
   }
 
-  getRefForField(field: string, schema: string, alias: string) {
-    return this.connection.getKnex().ref(field).withSchema(schema).as(alias);
-  }
-
   protected getSelectForJoinedLoad<T>(qb: QueryBuilder, meta: EntityMetadata, joinedProps: EntityProperty<T>[], populate: PopulateOptions<T>[]): Field[] {
     const selects: Field[] = [];
 
     // alias all fields in the primary table
     Object.values(meta.properties)
       .filter(prop => this.shouldHaveColumn(prop, populate))
-      .forEach(prop => selects.push(...prop.fieldNames));
+      .forEach(prop => selects.push(...this.mapPropToFieldNames(qb, prop)));
 
     joinedProps.forEach(relation => {
       const meta2 = this.metadata.get(relation.type);
@@ -352,11 +348,26 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       });
 
       for (const prop2 of properties) {
-        selects.push(...prop2.fieldNames.map(fieldName => this.getRefForField(fieldName, tableAlias, `${tableAlias}_${fieldName}`)));
+        selects.push(...this.mapPropToFieldNames(qb, prop2, tableAlias));
       }
     });
 
     return selects;
+  }
+
+  protected mapPropToFieldNames<T>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field[] {
+    if (prop.formula) {
+      const alias = qb.ref(tableAlias ?? qb.alias).toString();
+      const aliased = qb.ref(tableAlias ? `${tableAlias}_${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
+
+      return [`${prop.formula!(alias)} as ${aliased}`];
+    }
+
+    if (tableAlias) {
+      return prop.fieldNames.map(fieldName => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}_${fieldName}`));
+    }
+
+    return prop.fieldNames;
   }
 
   protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean): QueryBuilder<T> {
@@ -439,7 +450,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: EntityProperty<T>[], qb: QueryBuilder, fields?: Field[]): Field[] {
-    const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
     const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasExplicitFields = !!fields;
 
@@ -448,6 +458,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     } else if (joinedProps.length > 0) {
       fields = this.getSelectForJoinedLoad(qb, meta, joinedProps, populate);
     } else if (lazyProps.length > 0) {
+      const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate, false));
       fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
     }
 

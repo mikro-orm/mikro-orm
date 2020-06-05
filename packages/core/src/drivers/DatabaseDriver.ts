@@ -176,7 +176,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 
-  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
+    if (prop.formula) {
+      return includeFormulas;
+    }
+
     if (prop.persist === false) {
       return false;
     }
