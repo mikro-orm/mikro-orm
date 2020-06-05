@@ -300,19 +300,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return null;
     }
 
-    // TODO we might want to optimize this bit, as we are creating a lot of new arrays via destructing (so might be memory heavy)
     return rawResults.reduce((result, value) => {
       joinedProps.forEach(prop => {
         if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference)) {
-          const relation = value[prop.name];
-          const existing = result[prop.name] || [];
-          result[prop.name] = [...existing, ...relation];
+          result[prop.name] = result[prop.name] || [];
+          result[prop.name].push(...value[prop.name]);
         } else {
           result[prop.name] = value[prop.name];
         }
       });
 
-      return { ...value, ...result };
+      return Object.assign(value, result);
     }, {}) as unknown as T;
   }
 
@@ -463,7 +461,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (fields && !hasExplicitFields) {
-      // TODO joined loads will need different aliasing here, this works only for the root entity
       Object.values<EntityProperty<T>>(meta.properties)
         .filter(prop => prop.formula)
         .forEach(prop => {
