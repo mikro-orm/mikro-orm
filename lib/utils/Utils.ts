@@ -248,7 +248,7 @@ export class Utils {
       return data as Primary<T>;
     }
 
-    if (Utils.isEntity(data) && !meta) {
+    if (Utils.isEntity(data, true) && !meta) {
       meta = wrap(data).__meta;
     }
 
