@@ -47,9 +47,13 @@ export class Book2 {
   @ManyToMany(() => BookTag2, undefined, { pivotTable: 'book_to_tag_unordered', orderBy: { name: QueryOrder.ASC } })
   tagsUnordered = new Collection<BookTag2>(this);
 
-  constructor(title: string, author: Author2) {
+  constructor(title: string, author: Author2, price?: number) {
     this.title = title;
     this.author = author;
+
+    if (price) {
+      this.price = price;
+    }
   }
 
 }
