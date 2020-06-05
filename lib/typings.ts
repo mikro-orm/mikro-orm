@@ -94,7 +94,7 @@ export type MongoEntity<T extends { _id: IPrimaryKey; id: string }> = AnyEntity<
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T>;
-export type EntityData<T extends AnyEntity<T>> = { [K in keyof T]?: T[K] | Primary<T[K]> | EntityData<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
+export type EntityData<T extends AnyEntity<T>> = { [K in keyof T]?: T[K] | Primary<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
