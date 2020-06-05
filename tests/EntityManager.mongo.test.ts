@@ -789,10 +789,10 @@ describe('EntityManagerMongo', () => {
     const cachedAuthor = orm.em.merge(Author, cache);
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
     expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([
-      'BookTag-' + tag1.id,
-      'BookTag-' + tag3.id,
       'Author-' + author.id,
       'Book-' + book1.id,
+      'BookTag-' + tag1.id,
+      'BookTag-' + tag3.id,
     ]);
     expect(author).not.toBe(cachedAuthor);
     expect(author.id).toBe(cachedAuthor.id);

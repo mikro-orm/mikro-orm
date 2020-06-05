@@ -1,6 +1,6 @@
 import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
+import { Collection, EntityAssigner, ReferenceType } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
@@ -75,18 +75,21 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private createCollectionItem<T extends AnyEntity<T>>(prop: EntityProperty, value: Primary<T> | EntityData<T>): T {
-    if (Utils.isPrimaryKey(value)) {
-      return this.factory.createReference(prop.type, value);
+  private createCollectionItem<T extends AnyEntity<T>>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T): T {
+    const meta = this.em.getMetadata().get(prop.type);
+
+    if (Utils.isPrimaryKey(value, meta.compositePK)) {
+      const ref = this.factory.createReference<T>(prop.type, value);
+      this.em.merge(ref);
+
+      return ref;
     }
 
-    const child = this.factory.create(prop.type, value as EntityData<T>);
-
-    if (wrap(child).__primaryKey) {
-      this.em.merge(child);
+    if (Utils.isEntity<T>(value)) {
+      return value;
     }
 
-    return child;
+    return this.factory.create(prop.type, value as EntityData<T>);
   }
 
 }
