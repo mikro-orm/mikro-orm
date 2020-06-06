@@ -182,6 +182,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.knex.ref(field);
   }
 
+  raw(sql: string): Raw {
+    return this.knex.raw(sql);
+  }
+
   limit(limit?: number, offset = 0): this {
     this._limit = limit;
 
