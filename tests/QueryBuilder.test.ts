@@ -1062,6 +1062,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 123, PublisherType.LOCAL]);
   });
 
+  test('update query with column reference', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
+    expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
+    expect(qb.getParams()).toEqual(['123']);
+  });
+
   test('update query with auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ books: { author: 123 } });
