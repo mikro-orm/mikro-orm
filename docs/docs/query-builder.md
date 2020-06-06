@@ -280,6 +280,18 @@ console.log(qb4.getQuery());
 // select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?
 ```
 
+## Referring to column in update queries
+
+You can use `qb.raw()` to insert raw SQL snippets like this:
+
+```typescript
+const qb = orm.em.createQueryBuilder(Book);
+qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
+
+console.log(qb.getQuery());
+// update `book` set `price` = price + 1 where `uuid_pk` = ?
+```
+
 ## Locking support
 
 ```typescript
@@ -318,5 +330,6 @@ qb.getSingleResult<T>(): T;
 qb.setLockMode(mode: LockMode): QueryBuilder;
 qb.getQuery(): string;
 qb.getParams(): any[];
+qb.raw(sql): Raw;
 qb.clone(): QueryBuilder;
 ```

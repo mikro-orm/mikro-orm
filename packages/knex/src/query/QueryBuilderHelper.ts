@@ -70,7 +70,7 @@ export class QueryBuilderHelper {
         return;
       }
 
-      if (!prop.customType && (Array.isArray(data[k]) || Utils.isObject(data[k], [Date]))) {
+      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }
 
