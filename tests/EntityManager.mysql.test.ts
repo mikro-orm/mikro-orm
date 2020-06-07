@@ -1319,8 +1319,7 @@ describe('EntityManagerMySql', () => {
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
   });
 
-  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
-  test.skip('self referencing M:N (unidirectional)', async () => {
+  test('self referencing M:N (unidirectional)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');
@@ -1329,18 +1328,50 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
     const jon = await orm.em.findOneOrFail(Author2, author.id, ['friends'], { friends: { name: QueryOrder.ASC } });
     expect(jon.friends.isInitialized(true)).toBe(true);
     expect(jon.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e3`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `author_to_friend` as `e2` on `e0`.`id` = `e2`.`author2_1_id` ' +
+      'left join `author2` as `e1` on `e2`.`author2_2_id` = `e1`.`id` ' +
+      'left join `address2` as `e3` on `e0`.`id` = `e3`.`author_id` ' +
+      'where `e0`.`id` = ? ' +
+      'order by `e1`.`name` asc ' +
+      'limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author2_2_id`, `e1`.`author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
+      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
+      'where `e1`.`author2_1_id` in (?) ' +
+      'order by `e0`.`name` asc');
+    orm.em.clear();
 
     const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, ['friends'], { friends: { name: QueryOrder.ASC } });
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.*, `e3`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_1_id` ' +
+      'left join `author2` as `e2` on `e1`.`author2_2_id` = `e2`.`id` ' +
+      'left join `address2` as `e3` on `e0`.`id` = `e3`.`author_id` ' +
+      'where `e1`.`author2_2_id` = ? ' +
+      'order by `e2`.`name` asc ' +
+      'limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`author2_2_id`, `e1`.`author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `e0` ' +
+      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
+      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
+      'where `e1`.`author2_1_id` in (?) ' +
+      'order by `e0`.`name` asc');
     expect(jon2.id).toBe(author.id);
     expect(jon2.friends.isInitialized(true)).toBe(true);
     expect(jon2.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
   });
 
-  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
-  test.skip('self referencing M:N (owner)', async () => {
+  test('self referencing M:N (owner)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');
@@ -1360,8 +1391,7 @@ describe('EntityManagerMySql', () => {
     expect(jon2.following.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
   });
 
-  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
-  test.skip('self referencing M:N (inverse)', async () => {
+  test('self referencing M:N (inverse)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');

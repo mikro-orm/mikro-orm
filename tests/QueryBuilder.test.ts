@@ -1288,12 +1288,11 @@ describe('QueryBuilder', () => {
     expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', key: undefined, payload: { foo: 123 } }`);
   });
 
-  test('getAliasForEntity', async () => {
+  test('getAliasForJoinPath', async () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
     const qb = orm.em.createQueryBuilder(Author2, 'a');
-    expect(qb.getAliasForEntity(Author2.name, node)).toBe('a');
-    expect(qb.getAliasForEntity(Book2.name, node)).toBeUndefined();
+    expect(qb.getAliasForJoinPath(node.getPath())).toBe('a');
   });
 
   afterAll(async () => orm.close(true));
