@@ -104,7 +104,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
-    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata.get(this.entityName, false, false))!;
+    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata)!;
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -146,6 +146,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   orderBy(orderBy: QueryOrderMap): this {
+    orderBy = SmartQueryHelper.processWhere(orderBy as Dictionary, this.entityName, this.metadata) as QueryOrderMap;
     this._orderBy = CriteriaNode.create(this.metadata, this.entityName, orderBy).process(this);
     return this;
   }
@@ -336,7 +337,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName))!;
+    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
