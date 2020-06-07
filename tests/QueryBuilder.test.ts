@@ -239,7 +239,7 @@ describe('QueryBuilder', () => {
       .leftJoin('b.tags', 't')
       .where({ 't.name': 'test 123' })
       .limit(2, 1);
-    const sql = 'select `b`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `b`.price * 1.19 as `price_taxed` from `book2` as `b` ' +
+    const sql = 'select `b`.*, `t`.*, `b`.price * 1.19 as `price_taxed` from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id` ' +
       'where `t`.`name` = ? ' +
@@ -254,7 +254,7 @@ describe('QueryBuilder', () => {
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' })
       .limit(2, 1);
-    const sql = 'select `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select `b`.*, `t`.* from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where `b`.`title` = ? ' +
@@ -271,7 +271,7 @@ describe('QueryBuilder', () => {
       .join('b.tags', 't')
       .where({ 'p.name': 'test 123', 'b.title': /3$/ })
       .limit(2, 1);
-    const sql = 'select `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` from `publisher2` as `p` ' +
+    const sql = 'select `p`.*, `b`.*, `a`.*, `t`.* from `publisher2` as `p` ' +
       'left join `book2` as `b` on `p`.`id` = `b`.`publisher_id` ' +
       'inner join `author2` as `a` on `b`.`author_id` = `a`.`id` ' +
       'inner join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
@@ -438,7 +438,7 @@ describe('QueryBuilder', () => {
   test('select by m:n', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.select('*').where({ tags: 123 });
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` ' +
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` ' +
       'left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where `e1`.`book_tag2_id` = ?');
     expect(qb.getParams()).toEqual([123]);
@@ -447,7 +447,7 @@ describe('QueryBuilder', () => {
   test('select by m:n inversed', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2);
     qb.select('*').where({ books: 123 });
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `e0` ' +
+    expect(qb.getQuery()).toEqual('select `e0`.* from `book_tag2` as `e0` ' +
       'left join `book2_tags` as `e1` on `e0`.`id` = `e1`.`book_tag2_id` ' +
       'where `e1`.`book2_uuid_pk` = ?');
     expect(qb.getParams()).toEqual([123]);
@@ -545,7 +545,7 @@ describe('QueryBuilder', () => {
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' })
       .limit(2, 1);
-    const sql = 'select distinct b.uuid_pk, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select distinct b.uuid_pk, `b`.*, `t`.* from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where `b`.`title` = ? ' +
@@ -560,7 +560,7 @@ describe('QueryBuilder', () => {
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' })
       .limit(2, 1);
-    const sql = 'select distinct `b`.`uuid_pk`, `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select distinct `b`.`uuid_pk`, `b`.*, `t`.* from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where `b`.`title` = ? ' +
@@ -577,7 +577,7 @@ describe('QueryBuilder', () => {
       .andWhere('1 = 1')
       .orWhere('1 = 2')
       .limit(2, 1);
-    const sql = 'select `b`.*, `t`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select `b`.*, `t`.* from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (((b.title = ? or b.title = ?) and (1 = 1)) or (1 = 2)) ' +
@@ -594,7 +594,7 @@ describe('QueryBuilder', () => {
       .groupBy(['b.uuid', 't.id'])
       .having('tags > ?', [0])
       .limit(2, 1);
-    const sql = 'select `b`.*, `t`.*, count(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select `b`.*, `t`.*, count(t.id) as tags from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (b.title = ? or b.title = ?) ' +
@@ -613,7 +613,7 @@ describe('QueryBuilder', () => {
       .groupBy(['b.uuid', 't.id'])
       .having({ $or: [{ 'b.uuid': '...', 'count(t.id)': { $gt: 0 } }, { 'b.title': 'my title' }] })
       .limit(2, 1);
-    const sql = 'select `b`.*, `t`.*, count(t.id) as tags, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` from `book_tag2` as `t` ' +
+    const sql = 'select `b`.*, `t`.*, count(t.id) as tags from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where (b.title = ? or b.title = ?) ' +
@@ -781,7 +781,7 @@ describe('QueryBuilder', () => {
     // m:n owner pivot join
     const qb5 = orm.em.createQueryBuilder(Book2);
     qb5.select('*').where({ tags: [1, 2, 3] });
-    expect(qb5.getQuery()).toEqual('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e0`.price * 1.19 as `price_taxed` ' +
+    expect(qb5.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `e0` ' +
       'left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where `e1`.`book_tag2_id` in (?, ?, ?)');
@@ -800,7 +800,7 @@ describe('QueryBuilder', () => {
     // m:n inverse pivot join
     const qb7 = orm.em.createQueryBuilder(BookTag2);
     qb7.select('*').where({ books: [1, 2, 3] });
-    expect(qb7.getQuery()).toEqual('select `e0`.*, `e1`.`book_tag2_id`, `e1`.`book2_uuid_pk` ' +
+    expect(qb7.getQuery()).toEqual('select `e0`.* ' +
       'from `book_tag2` as `e0` ' +
       'left join `book2_tags` as `e1` on `e0`.`id` = `e1`.`book_tag2_id` ' +
       'where `e1`.`book2_uuid_pk` in (?, ?, ?)');
@@ -897,7 +897,7 @@ describe('QueryBuilder', () => {
   test('select with populate and join of m:n', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.select('*').populate([{ field: 'tags' }]).leftJoin('tags', 't');
-    expect(qb.getQuery()).toEqual('select `e0`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e0`.price * 1.19 as `price_taxed` ' +
+    expect(qb.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `e0` ' +
       'left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `t` on `e1`.`book_tag2_id` = `t`.`id`');
@@ -1182,7 +1182,7 @@ describe('QueryBuilder', () => {
 
     clone.orWhere({ 'p.name': 'or this name' }).orderBy({ 'p.name': QueryOrder.ASC }).limit(10, 5);
 
-    const sql = 'select `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` from `publisher2` as `p` ' +
+    const sql = 'select `p`.*, `b`.*, `a`.*, `t`.* from `publisher2` as `p` ' +
       'left join `book2` as `b` on `p`.`id` = `b`.`publisher_id` ' +
       'inner join `author2` as `a` on `b`.`author_id` = `a`.`id` ' +
       'inner join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
@@ -1193,7 +1193,7 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['test 123', '%3', 2, 1]);
 
-    const sql2 = 'select `p`.*, `b`.*, `a`.*, `t`.*, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id` from `publisher2` as `p` ' +
+    const sql2 = 'select `p`.*, `b`.*, `a`.*, `t`.* from `publisher2` as `p` ' +
       'left join `book2` as `b` on `p`.`id` = `b`.`publisher_id` ' +
       'inner join `author2` as `a` on `b`.`author_id` = `a`.`id` ' +
       'inner join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
