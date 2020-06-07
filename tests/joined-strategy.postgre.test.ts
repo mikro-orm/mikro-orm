@@ -1,7 +1,7 @@
-import { LoadStrategy, Logger, MikroORM, wrap } from '@mikro-orm/core';
+import { LoadStrategy, Logger, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 
 describe('Joined loading strategy', () => {
 
@@ -248,7 +248,7 @@ describe('Joined loading strategy', () => {
     expect(a2.books).toHaveLength(2);
   });
 
-  test('when related records exist it still returns the root entity', async () => {
+  test('when related records not exist it still returns the root entity', async () => {
     const author2 = new Author2('Albert Camus', 'albert.camus@email.com');
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
@@ -259,7 +259,7 @@ describe('Joined loading strategy', () => {
   });
 
   test('when the root entity does not exist', async () => {
-    const a2 = await orm.em.findOne(Author2, { id: 1 }, { populate: ['books2'] });
+    const a2 = await orm.em.findOne(Author2, 1, { populate: ['books2'] });
     expect(a2).toBeNull();
   });
 
@@ -271,7 +271,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Author2, { id: 1 });
+    const a2 = await orm.em.findOneOrFail(Author2, 1);
     await orm.em.populate(a2, 'books2');
     expect(a2.books2).toHaveLength(2);
   });
@@ -335,6 +335,158 @@ describe('Joined loading strategy', () => {
     expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
   });
 
-  test.todo('handles nested joinedLoads that map to the same entity, eg book.author.favouriteAuthor');
+  test('nested populating', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    book1.publisher = wrap(new Publisher2('B1 publisher')).toReference();
+    book1.publisher.unwrap().tests.add(Test2.create('t11'), Test2.create('t12'));
+    book2.publisher = wrap(new Publisher2('B2 publisher')).toReference();
+    book2.publisher.unwrap().tests.add(Test2.create('t21'), Test2.create('t22'));
+    book3.publisher = wrap(new Publisher2('B3 publisher')).toReference();
+    book3.publisher.unwrap().tests.add(Test2.create('t31'), Test2.create('t32'));
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persistAndFlush([book1, book2, book3]);
+    const repo = orm.em.getRepository(BookTag2);
+
+    orm.em.clear();
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.em.config, { logger });
+
+    // TODO add `strategy` to FindOptions
+    const tags = await repo.findAll({
+      populate: {
+        books: [LoadStrategy.JOINED, {
+          author: LoadStrategy.JOINED,
+          publisher: [LoadStrategy.JOINED, { tests: LoadStrategy.JOINED }],
+        }],
+      },
+      orderBy: { books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
+    });
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."name", ' +
+      '"b1"."uuid_pk" as "b1_uuid_pk", "b1"."created_at" as "b1_created_at", "b1"."title" as "b1_title", "b1"."price" as "b1_price", "b1".price * 1.19 as "b1_price_taxed", "b1"."double" as "b1_double", "b1"."meta" as "b1_meta", "b1"."author_id" as "b1_author_id", "b1"."publisher_id" as "b1_publisher_id", ' +
+      '"a3"."id" as "a3_id", "a3"."created_at" as "a3_created_at", "a3"."updated_at" as "a3_updated_at", "a3"."name" as "a3_name", "a3"."email" as "a3_email", "a3"."age" as "a3_age", "a3"."terms_accepted" as "a3_terms_accepted", "a3"."optional" as "a3_optional", "a3"."identities" as "a3_identities", "a3"."born" as "a3_born", "a3"."born_time" as "a3_born_time", "a3"."favourite_book_uuid_pk" as "a3_favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3_favourite_author_id", ' +
+      '"p4"."id" as "p4_id", "p4"."name" as "p4_name", "p4"."type" as "p4_type", "p4"."type2" as "p4_type2", "p4"."enum1" as "p4_enum1", "p4"."enum2" as "p4_enum2", "p4"."enum3" as "p4_enum3", "p4"."enum4" as "p4_enum4", ' +
+      '"t5"."id" as "t5_id", "t5"."name" as "t5_name", "t5"."book_uuid_pk" as "t5_book_uuid_pk", "t5"."version" as "t5_version" ' +
+      'from "book_tag2" as "e0" ' +
+      'left join "book2_tags" as "e2" on "e0"."id" = "e2"."book_tag2_id" ' +
+      'left join "book2" as "b1" on "e2"."book2_uuid_pk" = "b1"."uuid_pk" ' +
+      'left join "author2" as "a3" on "b1"."author_id" = "a3"."id" ' +
+      'left join "publisher2" as "p4" on "b1"."publisher_id" = "p4"."id" ' +
+      'left join "publisher2_tests" as "e6" on "p4"."id" = "e6"."publisher2_id" ' +
+      'left join "test2" as "t5" on "e6"."test2_id" = "t5"."id" ' +
+      'order by "t5"."name" asc');
+
+    expect(tags.length).toBe(5);
+    expect(tags[0]).toBeInstanceOf(BookTag2);
+    expect(tags[0].books.isInitialized()).toBe(true);
+    expect(tags[0].books.count()).toBe(2);
+    expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
+    expect(tags[0].books[0].author).toBeInstanceOf(Author2);
+    expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
+    expect(tags[0].books[0].author.name).toBe('Jon Snow');
+    expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
+    expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
+    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
+
+    orm.em.clear();
+    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
+    expect(books.length).toBe(3);
+    expect(books[0]).toBeInstanceOf(Book2);
+    expect(wrap(books[0]).isInitialized()).toBe(true);
+    expect(books[0].author).toBeInstanceOf(Author2);
+    expect(wrap(books[0].author).isInitialized()).toBe(true);
+    expect(books[0].author.name).toBe('Jon Snow');
+    expect(books[0].publisher).toBeInstanceOf(Reference);
+    expect(books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
+    expect(books[0].publisher!.isInitialized()).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(books[0].publisher!.unwrap().tests[1].name).toBe('t12');
+  });
+
+  test('handles nested joinedLoads that map to the same entity', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const t1 = Test2.create('t1');
+    t1.book = book1;
+    const t2 = Test2.create('t2');
+    t2.book = book2;
+    const t3 = Test2.create('t3');
+    t3.book = book3;
+    author.books.add(book1, book2, book3);
+    await orm.em.persistAndFlush([author, t1, t2, t3]);
+    author.favouriteBook = book3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: { perex: true, author: LoadStrategy.JOINED } });
+    expect(res1).toHaveLength(3);
+    expect(res1[0].test).toBeUndefined();
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."perex", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
+      '"a1"."id" as "a1_id", "a1"."created_at" as "a1_created_at", "a1"."updated_at" as "a1_updated_at", "a1"."name" as "a1_name", "a1"."email" as "a1_email", "a1"."age" as "a1_age", "a1"."terms_accepted" as "a1_terms_accepted", "a1"."optional" as "a1_optional", "a1"."identities" as "a1_identities", "a1"."born" as "a1_born", "a1"."born_time" as "a1_born_time", "a1"."favourite_book_uuid_pk" as "a1_favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1_favourite_author_id", "e0".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
+      'where "a1"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { strategy: LoadStrategy.JOINED, populate: { perex: true, author: { favouriteBook: { author: true } } } });
+    expect(res2).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."perex", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
+      '"a1"."id" as "a1_id", "a1"."created_at" as "a1_created_at", "a1"."updated_at" as "a1_updated_at", "a1"."name" as "a1_name", "a1"."email" as "a1_email", "a1"."age" as "a1_age", "a1"."terms_accepted" as "a1_terms_accepted", "a1"."optional" as "a1_optional", "a1"."identities" as "a1_identities", "a1"."born" as "a1_born", "a1"."born_time" as "a1_born_time", "a1"."favourite_book_uuid_pk" as "a1_favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1_favourite_author_id", ' +
+      '"f2"."uuid_pk" as "f2_uuid_pk", "f2"."created_at" as "f2_created_at", "f2"."title" as "f2_title", "f2"."price" as "f2_price", "f2".price * 1.19 as "f2_price_taxed", "f2"."double" as "f2_double", "f2"."meta" as "f2_meta", "f2"."author_id" as "f2_author_id", "f2"."publisher_id" as "f2_publisher_id", ' +
+      '"a3"."id" as "a3_id", "a3"."created_at" as "a3_created_at", "a3"."updated_at" as "a3_updated_at", "a3"."name" as "a3_name", "a3"."email" as "a3_email", "a3"."age" as "a3_age", "a3"."terms_accepted" as "a3_terms_accepted", "a3"."optional" as "a3_optional", "a3"."identities" as "a3_identities", "a3"."born" as "a3_born", "a3"."born_time" as "a3_born_time", "a3"."favourite_book_uuid_pk" as "a3_favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3_favourite_author_id", "e0".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
+      'where "a3"."name" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } }, { populate: ['perex'], strategy: LoadStrategy.JOINED });
+    expect(res3).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
+      'where "e1"."favourite_book_uuid_pk" = $1');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+    const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['perex', 'author.favouriteBook.author'], strategy: LoadStrategy.JOINED });
+    expect(res4).toHaveLength(3);
+    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."perex", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
+      '"a1"."id" as "a1_id", "a1"."created_at" as "a1_created_at", "a1"."updated_at" as "a1_updated_at", "a1"."name" as "a1_name", "a1"."email" as "a1_email", "a1"."age" as "a1_age", "a1"."terms_accepted" as "a1_terms_accepted", "a1"."optional" as "a1_optional", "a1"."identities" as "a1_identities", "a1"."born" as "a1_born", "a1"."born_time" as "a1_born_time", "a1"."favourite_book_uuid_pk" as "a1_favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1_favourite_author_id", "e0".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "e0" ' +
+      'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "e2" on "a1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
+      'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
+      'where "e3"."name" = $1');
+  });
 
 });

@@ -32,7 +32,7 @@ export class EntityLoader {
     }
   }
 
-  private normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, lookup: boolean): PopulateOptions<T>[] {
+  normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, lookup = true): PopulateOptions<T>[] {
     if (populate === true || populate.some(p => p.all)) {
       populate = this.lookupAllRelationships(entityName);
     } else {

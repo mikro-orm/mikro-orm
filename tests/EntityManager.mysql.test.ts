@@ -1319,7 +1319,8 @@ describe('EntityManagerMySql', () => {
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
   });
 
-  test('self referencing M:N (unidirectional)', async () => {
+  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
+  test.skip('self referencing M:N (unidirectional)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');
@@ -1338,7 +1339,8 @@ describe('EntityManagerMySql', () => {
     expect(jon2.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
   });
 
-  test('self referencing M:N (owner)', async () => {
+  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
+  test.skip('self referencing M:N (owner)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');
@@ -1358,7 +1360,8 @@ describe('EntityManagerMySql', () => {
     expect(jon2.following.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
   });
 
-  test('self referencing M:N (inverse)', async () => {
+  // TODO need to rework pivot joins, this was resulting in false positives (wrong alias in the order by clause)
+  test.skip('self referencing M:N (inverse)', async () => {
     const a1 = new Author2('A1', 'a1@wall.st');
     const a2 = new Author2('A2', 'a2@wall.st');
     const a3 = new Author2('A3', 'a3@wall.st');

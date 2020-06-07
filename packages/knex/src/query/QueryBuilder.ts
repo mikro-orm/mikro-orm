@@ -258,11 +258,19 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       if (!join) {
         return undefined;
       }
+
+      return join.inverseAlias || join.alias;
     }
 
     const found = Object.entries(this._aliasMap).find(([, e]) => e === entityName);
 
     return found ? found[0] : undefined;
+  }
+
+  getAliasForJoinPath(entityName: string, path: string): string | undefined {
+    const join = Object.values(this._joins).find(j => j.path === path);
+    /* istanbul ignore next */
+    return join?.inverseAlias || join?.alias;
   }
 
   getNextAlias(prefix = 'e'): string {
@@ -280,10 +288,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (method === 'all' && Array.isArray(res)) {
-      return res.map(r => this.driver.mapResult(r, meta, this._populate, this._aliasMap)) as unknown as U;
+      const map: Dictionary = {};
+      return res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
     }
 
-    return this.driver.mapResult(res as unknown as T, meta, this._populate, this._aliasMap) as unknown as U;
+    return this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
   }
 
   async getResult(): Promise<T[]> {
