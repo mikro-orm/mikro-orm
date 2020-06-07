@@ -362,14 +362,14 @@ describe('Joined loading strategy', () => {
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
 
-    // TODO add `strategy` to FindOptions
     const tags = await repo.findAll({
       populate: {
-        books: [LoadStrategy.JOINED, {
-          author: LoadStrategy.JOINED,
-          publisher: [LoadStrategy.JOINED, { tests: LoadStrategy.JOINED }],
-        }],
+        books: {
+          author: true,
+          publisher: { tests: LoadStrategy.JOINED },
+        },
       },
+      strategy: LoadStrategy.JOINED,
       orderBy: { books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
     });
     expect(mock.mock.calls.length).toBe(1);
