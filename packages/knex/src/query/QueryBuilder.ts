@@ -249,23 +249,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.getKnexQuery().toSQL().toNative().bindings;
   }
 
-  getAliasForEntity(entityName: string, node: CriteriaNode): string | undefined {
-    if (node.prop) {
-      const join = Object.values(this._joins).find(j => j.path === node.getPath());
-
-      if (!join) {
-        return undefined;
-      }
-
-      return join.inverseAlias || join.alias;
+  getAliasForJoinPath(path: string): string | undefined {
+    if (path === this.entityName) {
+      return this.alias;
     }
 
-    const found = Object.entries(this._aliasMap).find(([, e]) => e === entityName);
-
-    return found ? found[0] : undefined;
-  }
-
-  getAliasForJoinPath(entityName: string, path: string): string | undefined {
     const join = Object.values(this._joins).find(j => j.path === path);
     /* istanbul ignore next */
     return join?.inverseAlias || join?.alias;
@@ -354,7 +342,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      const pivotAlias = type === 'pivotJoin' ? alias : `e${this.aliasCounter++}`;
+      let pivotAlias = alias;
+
+      if (type !== 'pivotJoin') {
+        const oldPivotAlias = this.getAliasForJoinPath(path + '[pivot]');
+        pivotAlias = oldPivotAlias ?? `e${this.aliasCounter++}`;
+      }
+
       const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
       Object.assign(this._joins, joins);
       this._aliasMap[pivotAlias] = prop.pivotTable;

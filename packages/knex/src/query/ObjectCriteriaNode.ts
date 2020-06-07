@@ -33,7 +33,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
   }
 
   process(qb: QueryBuilder, alias?: string): any {
-    const nestedAlias = qb.getAliasForEntity(this.entityName, this);
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
     if (nestedAlias) {
@@ -65,7 +65,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
   }
 
   willAutoJoin(qb: QueryBuilder, alias?: string): boolean {
-    const nestedAlias = qb.getAliasForEntity(this.entityName, this);
+    const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
     if (nestedAlias) {

@@ -79,9 +79,7 @@ export class CriteriaNode {
 
   renameFieldToPK(qb: QueryBuilder): string {
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-      const pivotTable = this.prop!.pivotTable;
-      const alias = qb.getAliasForEntity(pivotTable, this);
-
+      const alias = qb.getAliasForJoinPath(this.getPath());
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
@@ -90,7 +88,7 @@ export class CriteriaNode {
     }
 
     const meta = this.metadata.get(this.prop!.type);
-    const alias = qb.getAliasForEntity(meta.name, this);
+    const alias = qb.getAliasForJoinPath(this.getPath());
     const pks = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
 
     return Utils.getPrimaryKeyHash(pks.map(col => `${alias}.${col}`));
@@ -113,7 +111,24 @@ export class CriteriaNode {
       }
     }
 
+    if (!this.key || !this.prop) {
+      return ret;
+    }
+
+    const customExpression = QueryBuilderHelper.isCustomExpression(this.key);
+    const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
+    const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
+    const pivotJoin = this.prop.reference === ReferenceType.MANY_TO_MANY && (scalar || operator);
+
+    if (pivotJoin) {
+      return this.getPivotPath(ret);
+    }
+
     return ret;
+  }
+
+  getPivotPath(path: string): string {
+    return path + '[pivot]';
   }
 
   [inspect.custom]() {
