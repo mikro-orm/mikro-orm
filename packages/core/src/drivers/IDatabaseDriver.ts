@@ -85,19 +85,12 @@ export interface FindOptions<T> {
   flags?: QueryFlag[];
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
+  strategy?: LoadStrategy;
 }
 
-export interface FindOneOptions<T> {
-  populate?: Populate<T>;
-  orderBy?: QueryOrderMap;
-  groupBy?: string | string[];
-  having?: QBFilterQuery<T>;
+export interface FindOneOptions<T> extends Omit<FindOptions<T>, 'limit' | 'offset'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
-  refresh?: boolean;
-  fields?: string[];
-  schema?: string;
-  flags?: QueryFlag[];
 }
 
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T[K]> | CollectionItem<T[K]>> };
