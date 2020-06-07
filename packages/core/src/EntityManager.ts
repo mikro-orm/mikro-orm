@@ -79,7 +79,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async find<T>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
+    where = SmartQueryHelper.processWhere(where, entityName, this.metadata);
     this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions<T>>(populate) ? populate : { populate, orderBy, limit, offset };
     options.orderBy = options.orderBy || {};
@@ -146,7 +146,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const options = Utils.isObject<FindOneOptions<T>>(populate) ? populate : { populate, orderBy };
     const meta = this.metadata.get<T>(entityName);
     this.validator.validateEmptyWhere(where);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, meta);
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
     this.checkLockRequirements(options.lockMode, meta);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
@@ -240,7 +240,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async nativeUpdate<T>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
     entityName = Utils.className(entityName);
     data = SmartQueryHelper.processParams(data);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName, false, false));
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
@@ -253,7 +253,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeDelete<T>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata.get(entityName, false, false));
+    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
@@ -366,7 +366,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async count<T>(entityName: EntityName<T>, where: FilterQuery<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where, entityName, this.metadata.get(entityName));
+    where = SmartQueryHelper.processWhere(where, entityName, this.metadata);
     this.validator.validateParams(where);
 
     return this.driver.count(entityName, where, this.transactionContext);
