@@ -100,7 +100,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const relation = meta.properties[p.field as keyof T & string];
       const meta2 = this.metadata.get(relation.type);
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
-      const relationAlias = qb.getAliasForJoinPath(relation.type, path);
+      const relationAlias = qb.getAliasForJoinPath(path);
       const relationPojo = {};
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
