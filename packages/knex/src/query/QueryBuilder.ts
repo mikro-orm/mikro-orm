@@ -88,9 +88,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   join(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
-    const extraFields = this.joinReference(field, alias, cond, type, path);
-    this._fields!.push(...extraFields);
-
+    this.joinReference(field, alias, cond, type, path);
     return this;
   }
 
@@ -345,14 +343,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): string[] {
+  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): void {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
     cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata.get(this.entityName))!;
     const aliasedName = `${fromAlias}.${prop.name}`;
-    const ret: string[] = [];
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
@@ -361,7 +358,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
       Object.assign(this._joins, joins);
       this._aliasMap[pivotAlias] = prop.pivotTable;
-      ret.push(`${fromAlias}.${prop.name}`);
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else { // MANY_TO_ONE
@@ -369,8 +365,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     this._joins[aliasedName].path = path;
-
-    return ret;
   }
 
   private prepareFields<T extends string | Raw = string | Raw>(fields: Field[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): T[] {
