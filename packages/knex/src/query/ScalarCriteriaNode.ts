@@ -12,7 +12,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
 
   process(qb: QueryBuilder, alias?: string): any {
     if (this.shouldJoin()) {
-      const nestedAlias = qb.getAliasForEntity(this.entityName, this) || qb.getNextAlias();
+      const nestedAlias = qb.getAliasForJoinPath(this.getPath()) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
 
       if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
