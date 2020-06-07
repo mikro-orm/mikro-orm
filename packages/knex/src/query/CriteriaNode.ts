@@ -61,8 +61,8 @@ export class CriteriaNode {
     const type = this.prop ? this.prop.reference : null;
     const composite = this.prop && this.prop.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
-    const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
-    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
+    const scalar = payload === null || Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
+    const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
     if (composite) {
       return true;
@@ -116,7 +116,7 @@ export class CriteriaNode {
     }
 
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key);
-    const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
+    const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
     const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const pivotJoin = this.prop.reference === ReferenceType.MANY_TO_MANY && (scalar || operator);
 
