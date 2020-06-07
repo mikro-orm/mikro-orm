@@ -97,17 +97,16 @@ export class ObjectCriteriaNode extends CriteriaNode {
 
     const embeddable = this.prop.reference === ReferenceType.EMBEDDED;
     const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
-    const composite = this.prop.joinColumns && this.prop.joinColumns.length > 1;
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
 
-    return !nestedAlias && !operatorKeys && !composite && !embeddable;
+    return !nestedAlias && !operatorKeys && !embeddable;
   }
 
   private autoJoin(qb: QueryBuilder, alias: string): string {
     const nestedAlias = qb.getNextAlias();
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
-    const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
