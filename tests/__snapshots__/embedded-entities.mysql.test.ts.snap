@@ -1,7 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`embedded entities in mysql schema: embeddables 1`] = `
+exports[`embedded entities in mysql schema: embeddables 1 1`] = `
 "create table \`user\` (\`id\` int unsigned not null auto_increment primary key, \`address1_street\` varchar(255) not null, \`address1_postal_code\` varchar(255) not null, \`address1_city\` varchar(255) not null, \`address1_country\` varchar(255) not null, \`addr_street\` varchar(255) null, \`addr_postal_code\` varchar(255) null, \`addr_city\` varchar(255) null, \`addr_country\` varchar(255) null, \`street\` varchar(255) not null, \`postal_code\` varchar(255) not null, \`city\` varchar(255) not null, \`country\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+
+"
+`;
+
+exports[`embedded entities in mysql schema: embeddables 2 1`] = `""`;
+
+exports[`embedded entities in mysql schema: embeddables 2 2`] = `
+"drop table if exists \`user\`;
 
 "
 `;
