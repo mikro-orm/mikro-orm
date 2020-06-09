@@ -58,10 +58,10 @@ class User {
   @Embedded()
   address1!: Address1;
 
-  @Embedded( { prefix: 'addr_', nullable: true })
+  @Embedded({ prefix: 'addr_', nullable: true })
   address2?: Address2;
 
-  @Embedded( { prefix: false })
+  @Embedded({ prefix: false })
   address3: Address1 = new Address1();
 
 }
@@ -128,7 +128,9 @@ describe('embedded entities in mysql', () => {
   });
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables');
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 1');
+    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 2');
   });
 
   test('persist and load', async () => {
