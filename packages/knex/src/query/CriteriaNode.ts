@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { EntityProperty, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
 import { QueryBuilder } from './QueryBuilder';
-import { ObjectCriteriaNode, ScalarCriteriaNode, ArrayCriteriaNode, QueryBuilderHelper } from './internal';
+import { ArrayCriteriaNode, ObjectCriteriaNode, QueryBuilderHelper, ScalarCriteriaNode } from './internal';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
@@ -101,30 +101,31 @@ export class CriteriaNode {
       ret = this.parent.parent.key!;
     }
 
-    if (this.parent) {
-      const parentPath = this.parent.getPath();
+    const parentPath = this.parent?.getPath();
 
-      if (parentPath) {
-        ret = this.parent.getPath() + '.' + ret;
-      } else if (this.parent.entityName && ret) {
-        ret = this.parent.entityName + '.' + ret;
-      }
+    if (parentPath) {
+      ret = this.parent!.getPath() + '.' + ret;
+    } else if (this.parent?.entityName && ret) {
+      ret = this.parent.entityName + '.' + ret;
     }
 
+    if (this.isPivotJoin()) {
+      return this.getPivotPath(ret);
+    }
+
+    return ret;
+  }
+
+  private isPivotJoin(): boolean {
     if (!this.key || !this.prop) {
-      return ret;
+      return false;
     }
 
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key);
     const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
     const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
-    const pivotJoin = this.prop.reference === ReferenceType.MANY_TO_MANY && (scalar || operator);
 
-    if (pivotJoin) {
-      return this.getPivotPath(ret);
-    }
-
-    return ret;
+    return this.prop.reference === ReferenceType.MANY_TO_MANY && (scalar || operator);
   }
 
   getPivotPath(path: string): string {
