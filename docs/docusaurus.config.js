@@ -82,8 +82,9 @@ module.exports = {
           title: 'Social',
           items: [
             { label: 'Blog', to: 'blog' },
-            { label: 'Twitter', to: 'https://twitter.com/B4nan' },
+            { label: 'Twitter', to: 'https://twitter.com/MikroOrm' },
             { label: 'GitHub Stars', to: 'https://github.com/mikro-orm/mikro-orm' },
+            { label: 'GitHub Sponsors', to: 'https://github.com/sponsors/B4nan' },
           ],
         },
       ],

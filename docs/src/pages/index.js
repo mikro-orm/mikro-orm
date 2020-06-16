@@ -101,6 +101,12 @@ function Home() {
                       height={30}
                       title="GitHub Stars"
               />
+              <iframe src="https://ghbtns.com/github-btn.html?user=B4nan&type=sponsor&size=large"
+                      frameBorder={0}
+                      scrolling={0}
+                      width={180}
+                      height={30}
+                      title="Sponsor B4nan" />
             </span>
           </div>
         </div>

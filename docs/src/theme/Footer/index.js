@@ -70,15 +70,30 @@ function Footer() {
                     {linkItem.items.map((item, key) => {
                       if (item.label === 'GitHub Stars') {
                         return (
-                          <iframe src="https://ghbtns.com/github-btn.html?user=mikro-orm&repo=mikro-orm&type=star&count=true"
-                                  style={{ marginTop: 10 }}
-                                  frameBorder={0}
-                                  scrolling={0}
-                                  width={100}
-                                  height={30}
-                                  title="GitHub Stars"
-                                  key={key}
-                          />
+                          <li key={item.href || item.to} className="footer__item">
+                            <iframe src="https://ghbtns.com/github-btn.html?user=mikro-orm&repo=mikro-orm&type=star&count=true"
+                                    style={{ marginTop: 10 }}
+                                    frameBorder={0}
+                                    scrolling={0}
+                                    width={100}
+                                    height={30}
+                                    title="GitHub Stars"
+                                    key={key}
+                            />
+                          </li>
+                        );
+                      }
+
+                      if (item.label === 'GitHub Sponsors') {
+                        return (
+                          <li key={item.href || item.to} className="footer__item">
+                            <iframe src="https://ghbtns.com/github-btn.html?user=B4nan&type=sponsor"
+                                    frameBorder={0}
+                                    scrolling={0}
+                                    width={130}
+                                    height={30}
+                                    title="Sponsor B4nan" />
+                          </li>
                         );
                       }
 
