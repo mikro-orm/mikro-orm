@@ -61,14 +61,16 @@ export class ConfigurationLoader {
     const tsConfigPath = path.join(process.cwd(), configPath);
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require('ts-node').register({ project: tsConfigPath });
+    require('ts-node').register({
+      project: tsConfigPath,
+      transpileOnly: true,
+    });
 
     if (await pathExists(tsConfigPath)) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const tsConfig = require(tsConfigPath);
-
       /* istanbul ignore next */
-      const paths = tsConfig?.compilerOptions?.paths;
+      const paths = tsConfig.compilerOptions?.paths;
 
       if (paths) {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
