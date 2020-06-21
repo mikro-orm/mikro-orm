@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
-import { MetadataStorage } from '../metadata';
+import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { EntityValidator, ReferenceType } from '../entity';
+import { ReferenceType } from '../entity';
 import { QueryOrder } from '../enums';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
@@ -14,7 +14,7 @@ export function createOneToDecorator<T, O>(
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<OneToManyOptions<T, O>>(entity) ? entity : { ...options, entity, mappedBy };
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    EntityValidator.validateSingleDecorator(meta, propertyName);
+    MetadataValidator.validateSingleDecorator(meta, propertyName);
 
     const prop = { name: propertyName, reference } as EntityProperty<T>;
     Object.assign(prop, options);

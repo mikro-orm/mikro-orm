@@ -1,5 +1,5 @@
 import { EntityMetadata, AnyEntity, Dictionary } from '../typings';
-import { Utils, ValidationError } from '../utils';
+import { MetadataError, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';
 import { EventSubscriber } from '../events';
@@ -52,7 +52,7 @@ export class MetadataStorage {
 
   get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
     if (entity && !this.metadata[entity] && validate && !init) {
-      throw ValidationError.missingMetadata(entity);
+      throw MetadataError.missingMetadata(entity);
     }
 
     if (!this.metadata[entity] && init) {

@@ -3,7 +3,7 @@ import globby from 'globby';
 import chalk from 'chalk';
 
 import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
-import { Configuration, Utils, ValidationError } from '../utils';
+import { Configuration, Utils, MetadataError } from '../utils';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { Cascade, ReferenceType } from '../entity';
@@ -723,7 +723,7 @@ export class MetadataDiscovery {
     }
 
     if (!target) {
-      throw ValidationError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
+      throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
 
     return target;
