@@ -1,6 +1,6 @@
-import { MetadataStorage } from '../metadata';
+import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, EntityValidator, ReferenceType, LoadStrategy } from '../entity';
+import { Cascade, ReferenceType, LoadStrategy } from '../entity';
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
@@ -8,7 +8,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
-    EntityValidator.validateSingleDecorator(meta, propertyName);
+    MetadataValidator.validateSingleDecorator(meta, propertyName);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {

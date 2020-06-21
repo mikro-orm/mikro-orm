@@ -34,43 +34,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(msg);
   }
 
-  static fromMissingPrimaryKey(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`${meta.className} entity is missing @PrimaryKey()`);
-  }
-
-  static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): ValidationError {
-    if (owner) {
-      return ValidationError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);
-    }
-
-    return ValidationError.fromMessage(meta, prop, `has unknown '${key}' reference: ${prop.type}.${prop[key]}`);
-  }
-
-  static fromWrongTypeDefinition(meta: EntityMetadata, prop: EntityProperty): ValidationError {
-    if (!prop.type) {
-      return ValidationError.fromMessage(meta, prop, `is missing type definition`);
-    }
-
-    return ValidationError.fromMessage(meta, prop, `has unknown type: ${prop.type}`);
-  }
-
-  static fromWrongOwnership(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty): ValidationError {
-    const type = key === 'inversedBy' ? 'owning' : 'inverse';
-    const other = key === 'inversedBy' ? 'mappedBy' : 'inversedBy';
-
-    return new ValidationError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
-  }
-
   static fromMergeWithoutPK(meta: EntityMetadata): void {
     throw new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
-  }
-
-  static fromUnknownEntity(className: string, source: string): ValidationError {
-    return new ValidationError(`Entity '${className}' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in ${source})`);
-  }
-
-  static fromUnknownBaseEntity(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`Entity '${meta.className}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
   }
 
   static transactionRequired(): ValidationError {
@@ -89,15 +54,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
   }
 
-  static multipleVersionFields(meta: EntityMetadata, fields: string[]): ValidationError {
-    return new ValidationError(`Entity ${meta.className} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
-  }
-
-  static invalidVersionFieldType(meta: EntityMetadata): ValidationError {
-    const prop = meta.properties[meta.versionProperty];
-    return new ValidationError(`Version property ${meta.className}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
-  }
-
   static lockFailed(entityOrName: AnyEntity | string): ValidationError {
     const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
     const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
@@ -112,36 +68,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
   }
 
-  static noEntityDiscovered(): ValidationError {
-    return new ValidationError('No entities were discovered');
-  }
-
-  static onlyAbstractEntitiesDiscovered(): ValidationError {
-    return new ValidationError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?');
-  }
-
-  static duplicateEntityDiscovered(paths: string[]): ValidationError {
-    return new ValidationError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
-  }
-
-  static entityNotFound(name: string, path: string): ValidationError {
-    return new ValidationError(`Entity '${name}' not found in ${path}`);
-  }
-
-  static findOneFailed(name: string, where: Dictionary | IPrimaryKey): ValidationError {
-    return new ValidationError(`${name} not found (${inspect(where)})`);
-  }
-
-  static missingMetadata(entity: string): ValidationError {
-    return new ValidationError(`Metadata for entity ${entity} not found`);
-  }
-
   static invalidPropertyName(entityName: string, invalid: string): ValidationError {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
-  }
-
-  static multipleDecorators(entityName: string, propertyName: string): ValidationError {
-    return new ValidationError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
   }
 
   static invalidType(type: Constructor<Type<any>>, value: any, mode: string): ValidationError {
@@ -175,8 +103,88 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
   }
 
-  private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): ValidationError {
-    return new ValidationError(`${meta.className}.${prop.name} ${message}`);
+}
+
+export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationError {
+
+  static fromMissingPrimaryKey(meta: EntityMetadata): MetadataError {
+    return new MetadataError(`${meta.className} entity is missing @PrimaryKey()`);
+  }
+
+  static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): MetadataError {
+    if (owner) {
+      return MetadataError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);
+    }
+
+    return MetadataError.fromMessage(meta, prop, `has unknown '${key}' reference: ${prop.type}.${prop[key]}`);
+  }
+
+  static fromWrongTypeDefinition(meta: EntityMetadata, prop: EntityProperty): MetadataError {
+    if (!prop.type) {
+      return MetadataError.fromMessage(meta, prop, `is missing type definition`);
+    }
+
+    return MetadataError.fromMessage(meta, prop, `has unknown type: ${prop.type}`);
+  }
+
+  static fromWrongOwnership(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty): MetadataError {
+    const type = key === 'inversedBy' ? 'owning' : 'inverse';
+    const other = key === 'inversedBy' ? 'mappedBy' : 'inversedBy';
+
+    return new MetadataError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
+  }
+
+  static entityNotFound(name: string, path: string): MetadataError {
+    return new MetadataError(`Entity '${name}' not found in ${path}`);
+  }
+
+  static multipleVersionFields(meta: EntityMetadata, fields: string[]): MetadataError {
+    return new MetadataError(`Entity ${meta.className} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
+  }
+
+  static invalidVersionFieldType(meta: EntityMetadata): MetadataError {
+    const prop = meta.properties[meta.versionProperty];
+    return new MetadataError(`Version property ${meta.className}.${prop.name} has unsupported type '${prop.type}'. Only 'number' and 'Date' are allowed.`);
+  }
+
+  static fromUnknownEntity(className: string, source: string): MetadataError {
+    return new MetadataError(`Entity '${className}' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in ${source})`);
+  }
+
+  static fromUnknownBaseEntity(meta: EntityMetadata): MetadataError {
+    return new MetadataError(`Entity '${meta.className}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
+  }
+
+  static noEntityDiscovered(): MetadataError {
+    return new MetadataError('No entities were discovered');
+  }
+
+  static onlyAbstractEntitiesDiscovered(): MetadataError {
+    return new MetadataError('Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?');
+  }
+
+  static duplicateEntityDiscovered(paths: string[]): MetadataError {
+    return new MetadataError(`Duplicate entity names are not allowed: ${paths.join(', ')}`);
+  }
+
+  static multipleDecorators(entityName: string, propertyName: string): MetadataError {
+    return new MetadataError(`Multiple property decorators used on '${entityName}.${propertyName}' property`);
+  }
+
+  static missingMetadata(entity: string): MetadataError {
+    return new MetadataError(`Metadata for entity ${entity} not found`);
+  }
+
+  private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
+    return new MetadataError(`${meta.className}.${prop.name} ${message}`);
+  }
+
+}
+
+export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationError {
+
+  static findOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
+    return new NotFoundError(`${name} not found (${inspect(where)})`);
   }
 
 }

@@ -6,7 +6,7 @@ import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
 import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, IPrimaryKey } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
-import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
+import { Logger, LoggerNamespace, NotFoundError, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityOptions, EntitySchema, IDatabaseDriver, MetadataStorage } from '..';
 import { Platform } from '../platforms';
@@ -31,7 +31,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     strict: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
-    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => ValidationError.findOneFailed(entityName, where),
+    findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     autoJoinOneToOneOwner: true,
