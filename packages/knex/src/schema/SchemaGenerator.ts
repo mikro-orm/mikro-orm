@@ -1,5 +1,5 @@
 import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
-import { Cascade, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
+import { Cascade, CommitOrderCalculator, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
 import { Column, DatabaseSchema, DatabaseTable, IsSame } from '../index';
 import { SqlEntityManager } from '../SqlEntityManager';
 
@@ -42,7 +42,7 @@ export class SchemaGenerator {
   }
 
   async getCreateSchemaSQL(wrap = true): Promise<string> {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable);
+    const metadata = this.getOrderedMetadata();
     let ret = '';
 
     for (const meta of metadata) {
@@ -67,9 +67,10 @@ export class SchemaGenerator {
   }
 
   async getDropSchemaSQL(wrap = true, dropMigrationsTable = false): Promise<string> {
+    const metadata = this.getOrderedMetadata().reverse();
     let ret = '';
 
-    for (const meta of Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable)) {
+    for (const meta of metadata) {
       ret += this.dump(this.dropTable(meta.collection), '\n');
     }
 
@@ -86,7 +87,7 @@ export class SchemaGenerator {
   }
 
   async getUpdateSchemaSQL(wrap = true, safe = false, dropTables = true): Promise<string> {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable);
+    const metadata = this.getOrderedMetadata();
     const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
     let ret = '';
 
@@ -464,6 +465,35 @@ export class SchemaGenerator {
     });
 
     return renamed;
+  }
+
+  private getOrderedMetadata(): EntityMetadata[] {
+    const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable);
+    const calc = new CommitOrderCalculator();
+    metadata.forEach(meta => calc.addNode(meta.name));
+    let meta = metadata.pop();
+
+    while (meta) {
+      for (const prop of Object.values(meta.properties)) {
+        if (!calc.hasNode(prop.type)) {
+          continue;
+        }
+
+        this.addCommitDependency(calc, prop, meta.name);
+      }
+
+      meta = metadata.pop();
+    }
+
+    return calc.sort().map(cls => this.metadata.get(cls));
+  }
+
+  private addCommitDependency(calc: CommitOrderCalculator, prop: EntityProperty, entityName: string): void {
+    if (!(prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) && prop.reference !== ReferenceType.MANY_TO_ONE) {
+      return;
+    }
+
+    calc.addDependency(prop.type, entityName, prop.nullable ? 0 : 1);
   }
 
   private dump(builder: SchemaBuilder, append = '\n\n'): string {
