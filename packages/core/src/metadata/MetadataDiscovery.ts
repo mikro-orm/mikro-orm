@@ -82,6 +82,7 @@ export class MetadataDiscovery {
   private async discoverDirectory(basePath: string): Promise<void> {
     const files = await globby(Utils.normalizePath(basePath, '*'), { cwd: Utils.normalizePath(this.config.get('baseDir')) });
     this.logger.log('discovery', `- processing ${chalk.cyan(files.length)} files from directory ${chalk.cyan(basePath)}`);
+    const found: [ObjectConstructor, string][] = [];
 
     for (const filepath of files) {
       const filename = basename(filepath);
@@ -107,6 +108,10 @@ export class MetadataDiscovery {
       }
 
       this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
+      found.push([target, path]);
+    }
+
+    for (const [target, path] of found) {
       await this.discoverEntity(target, path);
     }
   }

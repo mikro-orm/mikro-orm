@@ -1,6 +1,6 @@
 import globby from 'globby';
 import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
-import { EntityMetadata, EntityProperty, MetadataProvider, Utils } from '@mikro-orm/core';
+import { EntityMetadata, EntityProperty, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -19,9 +19,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     await this.initProperties(meta);
   }
 
-  async getExistingSourceFile(meta: EntityMetadata): Promise<SourceFile> {
-    const path = meta.path.match(/\/[^/]+$/)![0].replace(/\.js$/, '.ts');
-    return this.getSourceFile(path)!;
+  async getExistingSourceFile(meta: EntityMetadata, ext?: string, validate = true): Promise<SourceFile> {
+    if (!ext) {
+      return await this.getExistingSourceFile(meta, '.d.ts', false) || await this.getExistingSourceFile(meta, '.ts');
+    }
+
+    const path = meta.path.match(/\/[^/]+$/)![0].replace(/\.js$/, ext);
+
+    return (await this.getSourceFile(path, validate))!;
   }
 
   protected async initProperties(meta: EntityMetadata): Promise<void> {
@@ -84,14 +89,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return { type, optional };
   }
 
-  private async getSourceFile(file: string): Promise<SourceFile> {
+  private async getSourceFile(file: string, validate: boolean): Promise<SourceFile | undefined> {
     if (!this.sources) {
       await this.initSourceFiles();
     }
 
     const source = this.sources.find(s => s.getFilePath().endsWith(file));
 
-    if (!source) {
+    if (!source && validate) {
       throw new Error(`Source file for entity ${file} not found, check your 'entitiesDirsTs' option. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
@@ -119,7 +124,8 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       const dirs = await this.validateDirectories(tsDirs);
       this.sources = this.project.addSourceFilesAtPaths(dirs);
     } else {
-      this.sources = this.project.addSourceFilesFromTsConfig(this.config.get('discovery').tsConfigPath!);
+      const dirs = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
+      this.sources = this.project.addSourceFilesAtPaths(dirs);
     }
   }
 

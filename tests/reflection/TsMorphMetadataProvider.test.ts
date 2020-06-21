@@ -11,14 +11,30 @@ export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K i
 
 describe('TsMorphMetadataProvider', () => {
 
-  test('should load project file when no entitiesDirsTs provided', async () => {
+  test('should load TS files directly', async () => {
     const orm = await MikroORM.init({
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
       cache: { enabled: false },
-      discovery: { tsConfigPath: __dirname + '/../tsconfig.json', alwaysAnalyseProperties: false },
+      discovery: { alwaysAnalyseProperties: false },
+      metadataProvider: TsMorphMetadataProvider,
+    });
+
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    await orm.close();
+  });
+
+  test('should load entities based on .d.ts files', async () => {
+    const orm = await MikroORM.init({
+      entitiesDirs: ['./entities-compiled'],
+      tsNode: false,
+      baseDir: __dirname,
+      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
+      type: 'mongo',
+      cache: { enabled: false },
+      discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
 

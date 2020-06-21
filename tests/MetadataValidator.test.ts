@@ -1,4 +1,4 @@
-import { ReferenceType, MikroORM, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from '@mikro-orm/core';
+import { ReferenceType, MikroORM, MetadataStorage, MetadataValidator } from '@mikro-orm/core';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BASE_DIR } from './bootstrap';
 
@@ -114,7 +114,6 @@ describe('MetadataValidator', () => {
       dbName: `mikro_orm_test`,
       port: 3307,
       cache: { enabled: true },
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,
     })).rejects.toThrowError(`Entity 'FooBar2' extends unknown base entity 'BaseEntity22', please make sure to provide it in 'entities' array when initializing the ORM`);
@@ -124,7 +123,6 @@ describe('MetadataValidator', () => {
       entities: [Author2, Book2, BookTag2, Publisher2, Test2],
       dbName: `mikro_orm_test`,
       port: 3307,
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       type: 'mysql',
       baseDir: BASE_DIR,
     })).rejects.toThrowError(`Entity 'Author2' extends unknown base entity 'BaseEntity2', please make sure to provide it in 'entities' array when initializing the ORM`);
