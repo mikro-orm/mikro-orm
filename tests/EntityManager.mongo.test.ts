@@ -422,6 +422,12 @@ describe('EntityManagerMongo', () => {
     expect(authors[0].name).toBe('Author 1');
     expect(authors[1].name).toBe('Author 2');
     expect(authors[2].name).toBe('Author 3');
+
+    const authors2 = await orm.em.find(Author, { email: { $re: 'example.com$' } });
+    expect(authors2.length).toBe(3);
+    expect(authors2[0].name).toBe('Author 1');
+    expect(authors2[1].name).toBe('Author 2');
+    expect(authors2[2].name).toBe('Author 3');
   });
 
   test('stable results of serialization', async () => {
