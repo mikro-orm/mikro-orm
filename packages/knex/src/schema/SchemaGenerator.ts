@@ -422,23 +422,16 @@ export class SchemaGenerator {
   }
 
   private createForeignKeyReference(table: TableBuilder, prop: EntityProperty): void {
-    const meta2 = this.metadata.get(prop.type);
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
+    const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(prop.referencedTableName);
 
-    meta2.primaryKeys.forEach((primaryKey, idx) => {
-      const pk2 = meta2.properties[primaryKey];
-      pk2.fieldNames.forEach(fieldName => {
-        const col = table.foreign(prop.fieldNames[idx]).references(fieldName).inTable(meta2.collection);
+    if (prop.onDelete || cascade || prop.nullable) {
+      col.onDelete(prop.onDelete || (cascade ? 'cascade' : 'set null'));
+    }
 
-        if (prop.onDelete || cascade || prop.nullable) {
-          col.onDelete(prop.onDelete || (cascade ? 'cascade' : 'set null'));
-        }
-
-        if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
-          col.onUpdate(prop.onUpdateIntegrity || 'cascade');
-        }
-      });
-    });
+    if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
+      col.onUpdate(prop.onUpdateIntegrity || 'cascade');
+    }
   }
 
   private findRenamedColumns(create: EntityProperty[], remove: Column[]): { from: Column; to: EntityProperty }[] {
