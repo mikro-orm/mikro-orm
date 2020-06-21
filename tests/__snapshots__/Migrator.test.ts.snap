@@ -36,6 +36,39 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
+exports[`Migrator generate migration with custom name: migration-dump 1`] = `
+Object {
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table \`book2\` drop \`foo\`;');
+
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
+    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
+    this.addSql('alter table \`test2\` drop \`foo___bar\`;');
+    this.addSql('alter table \`test2\` drop \`foo___baz\`;');
+  }
+
+}
+",
+  "diff": Array [
+    "alter table \`book2\` drop \`foo\`;",
+    "",
+    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+    "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
+    "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
+    "alter table \`test2\` drop \`foo___bar\`;",
+    "alter table \`test2\` drop \`foo___baz\`;",
+    undefined,
+    undefined,
+  ],
+  "fileName": "migration-20191013214813.ts",
+}
+`;
+
 exports[`Migrator generate schema migration: migration-dump 1`] = `
 Object {
   "code": "import { Migration } from '@mikro-orm/migrations';

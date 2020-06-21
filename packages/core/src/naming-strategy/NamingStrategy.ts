@@ -11,6 +11,11 @@ export interface NamingStrategy {
   classToTableName(entityName: string): string;
 
   /**
+   * Return a migration name. This name should allow ordering.
+   */
+  classToMigrationName(timestamp: string): string;
+
+  /**
    * Return a column name for a property
    */
   propertyToColumnName(propertyName: string): string;

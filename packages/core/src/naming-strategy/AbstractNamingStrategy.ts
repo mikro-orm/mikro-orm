@@ -9,6 +9,10 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return ret.charAt(0).toUpperCase() + ret.slice(1);
   }
 
+  classToMigrationName(timestamp: string): string {
+    return `Migration${timestamp}`;
+  }
+
   abstract classToTableName(entityName: string): string;
 
   abstract joinColumnName(propertyName: string): string;
