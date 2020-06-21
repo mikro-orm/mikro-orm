@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
-import { MetadataStorage } from '../metadata';
+import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { EntityValidator, ReferenceType } from '../entity';
+import { ReferenceType } from '../entity';
 import { AnyEntity, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T, O>(
@@ -11,7 +11,7 @@ export function ManyToOne<T, O>(
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<ManyToOneOptions<T, O>>(entity) ? entity : { ...options, entity };
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    EntityValidator.validateSingleDecorator(meta, propertyName);
+    MetadataValidator.validateSingleDecorator(meta, propertyName);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);
   };
