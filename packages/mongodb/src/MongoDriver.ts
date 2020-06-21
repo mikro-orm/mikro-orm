@@ -223,6 +223,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           data[k] = this.convertObjectIds(data[k]);
         }
       }
+
+      if (Utils.isPlainObject(data[k]) && '$re' in data[k]) {
+        data[k] = new RegExp(data[k].$re);
+      }
     });
 
     return data;
