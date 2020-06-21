@@ -47,14 +47,14 @@
     "access": "public"
   },
   "dependencies": {
-    "acorn-loose": "^7.0.0",
-    "acorn-walk": "^7.1.1",
-    "chalk": "^4.0.0",
+    "acorn-loose": "^7.1.0",
+    "acorn-walk": "^7.2.0",
+    "chalk": "^4.1.0",
     "cli-highlight": "^2.1.4",
     "clone": "^2.1.2",
     "fast-deep-equal": "^3.1.1",
-    "fs-extra": "^9.0.0",
-    "globby": "^11.0.0",
+    "fs-extra": "^9.0.1",
+    "globby": "^11.0.1",
     "reflect-metadata": "^0.1.13",
     "uuid": "^8.1.0"
   }

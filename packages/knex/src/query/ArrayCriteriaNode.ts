@@ -23,11 +23,8 @@ export class ArrayCriteriaNode extends CriteriaNode {
   }
 
   getPath(): string {
-    if (this.parent && this.parent.parent) {
-      return this.parent.parent.getPath();
-    }
-
-    return '';
+    /* istanbul ignore next */
+    return this.parent?.parent?.getPath() || '';
   }
 
 }

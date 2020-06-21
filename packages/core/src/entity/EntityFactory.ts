@@ -143,8 +143,11 @@ export class EntityFactory {
   }
 
   private runHooks<T>(entity: T, meta: EntityMetadata<T>): void {
-    if (meta.hooks && meta.hooks.onInit && meta.hooks.onInit.length > 0) {
-      meta.hooks.onInit.forEach(hook => (entity[hook] as unknown as () => void)());
+    /* istanbul ignore next */
+    const hooks = meta.hooks?.onInit || [];
+
+    if (hooks.length > 0) {
+      hooks.forEach(hook => (entity[hook] as unknown as () => void)());
     }
 
     this.em.getEventManager().dispatchEvent(EventType.onInit, entity, this.em);
