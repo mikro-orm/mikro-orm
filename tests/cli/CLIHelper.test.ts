@@ -1,7 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-jest.mock('../../tests/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
-jest.mock('../../tests/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entitiesDirs: ['.'] }), { virtual: true });
+jest.mock('../../tests/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['.'] }), { virtual: true });
+jest.mock('../../tests/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['.'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock('../../tests/package.json', () => pkg, { virtual: true });
 const tsc = { compilerOptions: {} } as any;
@@ -93,7 +93,7 @@ describe('CLIHelper', () => {
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
-    expect(conf.get('entitiesDirs')).toEqual(['.']);
+    expect(conf.get('entities')).toEqual(['.']);
     pathExistsMock.mockRestore();
   });
 
@@ -104,7 +104,7 @@ describe('CLIHelper', () => {
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
-    expect(conf.get('entitiesDirs')).toEqual(['.']);
+    expect(conf.get('entities')).toEqual(['.']);
     pathExistsMock.mockRestore();
   });
 

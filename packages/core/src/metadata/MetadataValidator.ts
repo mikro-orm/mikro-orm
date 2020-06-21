@@ -86,7 +86,7 @@ export class MetadataValidator {
     }
 
     // has correct `inversedBy` reference type
-    if (inverse.type !== meta.name) {
+    if (inverse.type !== meta.className) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy', inverse);
     }
 
@@ -103,7 +103,7 @@ export class MetadataValidator {
     }
 
     // has correct `mappedBy` reference type
-    if (owner.type !== meta.name) {
+    if (owner.type !== meta.className) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 

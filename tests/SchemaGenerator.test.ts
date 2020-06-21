@@ -404,12 +404,15 @@ describe('SchemaGenerator', () => {
 
     const dropDump = await generator.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
+    await generator.dropSchema();
 
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('postgres-create-schema-dump');
+    await generator.createSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('postgres-update-schema-dump');
+    await generator.updateSchema();
 
     await orm.close(true);
   });
