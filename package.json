@@ -129,8 +129,8 @@
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "^8.3.5",
-    "@commitlint/config-conventional": "^8.3.4",
+    "@commitlint/cli": "^9.0.0",
+    "@commitlint/config-conventional": "^9.0.0",
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^8.1.0",
     "@types/jest": "^25.1.4",
