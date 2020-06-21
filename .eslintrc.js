@@ -10,7 +10,7 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
   ],
-  ignorePatterns: ['node_modules', 'dist', 'coverage', '**/*.js'],
+  ignorePatterns: ['node_modules', 'dist', 'coverage', '**/*.js', '**/*.d.ts'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     'project': 'tsconfig.json',

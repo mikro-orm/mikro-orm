@@ -3,7 +3,7 @@ title: Metadata Providers
 ---
 
 As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary
-type information about your entities' properties. There are 3 built in metadata providers you can 
+type information about your entities' properties. There are 3 built-in metadata providers you can 
 use:
 
 > You can also implement custom metadata provider by extending abstract `MetadataProvider` class.
@@ -14,11 +14,10 @@ By default, MikroORM uses [`ts-morph`](https://github.com/dsherret/ts-morph) to 
 TypeScript source files of all entities to be able to detect all types. Thanks to this, 
 defining the type is enough for runtime validation.
 
-This process can be a bit slow as well as memory consuming, mainly because `ts-morph` will
-scan all your source files based on your `tsconfig.json`. You can speed up this process by 
-whitelisting only the folders where your entities are via `entitiesDirsTs` option. 
-
-> You can specify the path to `tsconfig.json` manually via `discovery: { tsConfigPath: '...' }`.
+If you use folder-based discovery (via `entitiesDirs`), you should specify paths to
+the compiled entities via `entitiesDirs` as well as paths to the TS source files of
+those entities via `entitiesDirsTs`. When you run the ORM via `ts-node`, the latter
+will be used automatically, or if you explicitly pass `tsNode: true` in the config.
 
 After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, 
 `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files. 
@@ -46,7 +45,6 @@ Next step is to enable `emitDecoratorMetadata` flag in your `tsconfig.json`.
 ```typescript
 await MikroORM.init({
   metadataProvider: ReflectMetadataProvider,
-  cache: { enabled: false },
   // ...
 });
 ```
@@ -133,7 +131,6 @@ manually.
 ```typescript
 await MikroORM.init({
   metadataProvider: JavaScriptMetadataProvider,
-  cache: { enabled: false },
   // ...
 });
 ```

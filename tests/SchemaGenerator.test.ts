@@ -10,7 +10,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -27,7 +26,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -47,7 +45,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -65,7 +62,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -370,7 +366,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
@@ -386,7 +381,6 @@ describe('SchemaGenerator', () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, BaseEntity22],
-      discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json' },
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
