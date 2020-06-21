@@ -45,6 +45,18 @@ describe('Migrator', () => {
     await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate migration with custom name', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
+    const migrator = orm.getMigrator();
+    const migration = await migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
   test('generate schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');

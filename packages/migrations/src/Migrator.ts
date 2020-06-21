@@ -14,7 +14,7 @@ export class Migrator {
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
   private readonly runner = new MigrationRunner(this.driver, this.options, this.config);
-  private readonly generator = new MigrationGenerator(this.driver, this.options);
+  private readonly generator = new MigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
   private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly em: EntityManager) {
