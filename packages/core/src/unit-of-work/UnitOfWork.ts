@@ -1,8 +1,8 @@
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, HookType, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
-import { EntityManager } from '../index';
+import { EntityManager, EventType } from '../index';
 import { Utils, ValidationError } from '../utils';
 import { LockMode } from './enums';
 import { Transaction } from '../connections';
@@ -268,7 +268,7 @@ export class UnitOfWork {
     }
 
     const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
-    await this.runHooks(`before${type}` as HookType, changeSet.entity, changeSet.payload);
+    await this.runHooks(`before${type}` as EventType, changeSet.entity, changeSet.payload);
     await this.changeSetPersister.persistToDatabase(changeSet, ctx);
 
     switch (changeSet.type) {
@@ -277,15 +277,15 @@ export class UnitOfWork {
       case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity as T); break;
     }
 
-    await this.runHooks(`after${type}` as HookType, changeSet.entity as T);
+    await this.runHooks(`after${type}` as EventType, changeSet.entity as T);
   }
 
-  private async runHooks<T extends AnyEntity<T>>(type: HookType, entity: T, payload?: EntityData<T>) {
+  private async runHooks<T extends AnyEntity<T>>(type: EventType, entity: T, payload?: EntityData<T>) {
     const hooks = this.metadata.get<T>(entity.constructor.name).hooks;
 
     /* istanbul ignore next */
     if ((hooks?.[type]?.length || 0) === 0) {
-      return;
+      return await this.em.getEventManager().dispatchEvent(type, entity, this.em);
     }
 
     const copy = Utils.prepareEntity(entity, this.metadata, this.platform);
@@ -294,6 +294,8 @@ export class UnitOfWork {
     if (payload) {
       Object.assign(payload, Utils.diffEntities<T>(copy as T, entity, this.metadata, this.platform));
     }
+
+    await this.em.getEventManager().dispatchEvent(type, entity, this.em);
   }
 
   /**

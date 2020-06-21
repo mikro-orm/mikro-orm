@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
-import { HookType } from '../typings';
+import { EventType } from '../events';
 
-function hook(type: HookType) {
+function hook(type: EventType) {
   return function (target: any, method: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
 
@@ -14,35 +14,35 @@ function hook(type: HookType) {
 }
 
 export function BeforeCreate() {
-  return hook('beforeCreate');
+  return hook(EventType.beforeCreate);
 }
 
 export function AfterCreate() {
-  return hook('afterCreate');
+  return hook(EventType.afterCreate);
 }
 
 export function BeforeUpdate() {
-  return hook('beforeUpdate');
+  return hook(EventType.beforeUpdate);
 }
 
 export function AfterUpdate() {
-  return hook('afterUpdate');
+  return hook(EventType.afterUpdate);
 }
 
 export function OnInit() {
-  return hook('onInit');
+  return hook(EventType.onInit);
 }
 
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
 export function BeforeDelete() {
-  return hook('beforeDelete');
+  return hook(EventType.beforeDelete);
 }
 
 /**
  * Called after deleting entity, but only when providing initialized entity to EM#remove()
  */
 export function AfterDelete() {
-  return hook('afterDelete');
+  return hook(EventType.afterDelete);
 }
