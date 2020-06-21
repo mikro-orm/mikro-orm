@@ -26,7 +26,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       requireEntitiesArray: false,
       alwaysAnalyseProperties: true,
       disableDynamicFileAccess: false,
-      tsConfigPath: process.cwd() + '/tsconfig.json',
     },
     strict: false,
     // eslint-disable-next-line no-console
@@ -318,7 +317,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     requireEntitiesArray?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
-    tsConfigPath?: string;
   };
   type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new (config: Configuration): D };

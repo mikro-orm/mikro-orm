@@ -29,16 +29,21 @@ MikroORM.init({
 });
 ```
 
-By default, `TsMorphMetadataProvider` is used that analyses your entity source files. You can
-use `ReflectMetadataProvider` if you do not want the source file analyses to happen. 
-If you aim to use plain JavaScript instead of TypeScript, use the `JavaScriptMetadataProvider`.
+By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. 
+You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. 
+This provider will analyse your entity source files (or `.d.ts` type definition files). 
+If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema` or 
+the `JavaScriptMetadataProvider`.
 
 > You can also implement your own metadata provider and use it instead. To do so, extend the 
 > `MetadataProvider` class.
 
 ```typescript
+import { MikroORM } from '@mikro-orm/core';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+
 MikroORM.init({
-  metadataProvider: ReflectMetadataProvider,
+  metadataProvider: TsMorphMetadataProvider,
 });
 ```
 
@@ -50,9 +55,6 @@ MikroORM.init({
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
     requireEntitiesArray: true, // force usage of `entities` instead of `entitiesDirs`
     alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
-
-    // you can explicitly specify the path to your tsconfig.json (used only when `entitiesDirsTs` is not provided)
-    tsConfigPath: string,
   },
 });
 ```

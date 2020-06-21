@@ -96,3 +96,10 @@ You need to specify the platform type either via `type` option or provide the dr
 implementation via `driver` option. 
 
 Available platforms types: `[ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite' ]`
+
+## Removed configuration `discovery.tsConfigPath`
+
+Removed as it is no longer needed, it was used only for `TsMorphMetadataProvider`,
+when the `entitiesDirsTs` were not explicitly provided. In v4, this is no longer
+needed, as ts-morph discovery will use `d.ts` files instead, that should be located
+next to the compiled entities. 
