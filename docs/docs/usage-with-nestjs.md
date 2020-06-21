@@ -48,7 +48,7 @@ Then use `forFeature()` to register entity repositories at feature module level:
 
 ```typescript
 @Module({
-  imports: [MikroOrmModule.forFeature([Photo])],
+  imports: [MikroOrmModule.forFeature({ entities: [Photo] })],
   providers: [PhotoService],
   controllers: [PhotoController],
 })
