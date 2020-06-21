@@ -112,20 +112,15 @@ alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`a
 alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 
-alter table \`car_owner2\` add constraint \`car_owner2_car_name_foreign\` foreign key (\`car_name\`) references \`car2\` (\`name\`) on update cascade;
-alter table \`car_owner2\` add constraint \`car_owner2_car_year_foreign\` foreign key (\`car_year\`) references \`car2\` (\`year\`) on update cascade;
+alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
-alter table \`user2\` add constraint \`user2_favourite_car_name_foreign\` foreign key (\`favourite_car_name\`) references \`car2\` (\`name\`) on update cascade on delete set null;
-alter table \`user2\` add constraint \`user2_favourite_car_year_foreign\` foreign key (\`favourite_car_year\`) references \`car2\` (\`year\`) on update cascade on delete set null;
+alter table \`user2\` add constraint \`user2_favourite_car_name_favourite_car_year_foreign\` foreign key (\`favourite_car_name\`, \`favourite_car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete set null;
 
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
+alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_foreign\` foreign key (\`sandwich_id\`) references \`sandwich\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_name_foreign\` foreign key (\`car2_name\`) references \`car2\` (\`name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_year_foreign\` foreign key (\`car2_year\`) references \`car2\` (\`year\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_car2_name_car2_year_foreign\` foreign key (\`car2_name\`, \`car2_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete cascade;
 
 alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
 alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -330,20 +325,15 @@ alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`a
 alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 
-alter table \`car_owner2\` add constraint \`car_owner2_car_name_foreign\` foreign key (\`car_name\`) references \`car2\` (\`name\`) on update cascade;
-alter table \`car_owner2\` add constraint \`car_owner2_car_year_foreign\` foreign key (\`car_year\`) references \`car2\` (\`year\`) on update cascade;
+alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
-alter table \`user2\` add constraint \`user2_favourite_car_name_foreign\` foreign key (\`favourite_car_name\`) references \`car2\` (\`name\`) on update cascade on delete set null;
-alter table \`user2\` add constraint \`user2_favourite_car_year_foreign\` foreign key (\`favourite_car_year\`) references \`car2\` (\`year\`) on update cascade on delete set null;
+alter table \`user2\` add constraint \`user2_favourite_car_name_favourite_car_year_foreign\` foreign key (\`favourite_car_name\`, \`favourite_car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete set null;
 
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
+alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_foreign\` foreign key (\`sandwich_id\`) references \`sandwich\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_name_foreign\` foreign key (\`car2_name\`) references \`car2\` (\`name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_year_foreign\` foreign key (\`car2_year\`) references \`car2\` (\`year\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_car2_name_car2_year_foreign\` foreign key (\`car2_name\`, \`car2_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete cascade;
 
 alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
 alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -1019,20 +1009,15 @@ alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`a
 alter table \`base_user2\` add constraint \`base_user2_favourite_employee_id_foreign\` foreign key (\`favourite_employee_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 alter table \`base_user2\` add constraint \`base_user2_favourite_manager_id_foreign\` foreign key (\`favourite_manager_id\`) references \`base_user2\` (\`id\`) on update cascade on delete set null;
 
-alter table \`car_owner2\` add constraint \`car_owner2_car_name_foreign\` foreign key (\`car_name\`) references \`car2\` (\`name\`) on update cascade;
-alter table \`car_owner2\` add constraint \`car_owner2_car_year_foreign\` foreign key (\`car_year\`) references \`car2\` (\`year\`) on update cascade;
+alter table \`car_owner2\` add constraint \`car_owner2_car_name_car_year_foreign\` foreign key (\`car_name\`, \`car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade;
 
-alter table \`user2\` add constraint \`user2_favourite_car_name_foreign\` foreign key (\`favourite_car_name\`) references \`car2\` (\`name\`) on update cascade on delete set null;
-alter table \`user2\` add constraint \`user2_favourite_car_year_foreign\` foreign key (\`favourite_car_year\`) references \`car2\` (\`year\`) on update cascade on delete set null;
+alter table \`user2\` add constraint \`user2_favourite_car_name_favourite_car_year_foreign\` foreign key (\`favourite_car_name\`, \`favourite_car_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete set null;
 
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
+alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
 alter table \`user2_sandwiches\` add constraint \`user2_sandwiches_sandwich_id_foreign\` foreign key (\`sandwich_id\`) references \`sandwich\` (\`id\`) on update cascade on delete cascade;
 
-alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_foreign\` foreign key (\`user2_first_name\`) references \`user2\` (\`first_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_user2_last_name_foreign\` foreign key (\`user2_last_name\`) references \`user2\` (\`last_name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_name_foreign\` foreign key (\`car2_name\`) references \`car2\` (\`name\`) on update cascade on delete cascade;
-alter table \`user2_cars\` add constraint \`user2_cars_car2_year_foreign\` foreign key (\`car2_year\`) references \`car2\` (\`year\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_user2_first_name_user2_last_name_foreign\` foreign key (\`user2_first_name\`, \`user2_last_name\`) references \`user2\` (\`first_name\`, \`last_name\`) on update cascade on delete cascade;
+alter table \`user2_cars\` add constraint \`user2_cars_car2_name_car2_year_foreign\` foreign key (\`car2_name\`, \`car2_year\`) references \`car2\` (\`name\`, \`year\`) on update cascade on delete cascade;
 
 alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;
 alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;
@@ -1390,6 +1375,20 @@ exports[`SchemaGenerator update schema enums [postgres]: postgres-update-schema-
 alter table \\"book2\\" drop column \\"foo\\";
 
 alter table \\"test2\\" drop column \\"path\\";
+
+drop table if exists \\"base_user2\\" cascade;
+
+drop table if exists \\"car2\\" cascade;
+
+drop table if exists \\"car_owner2\\" cascade;
+
+drop table if exists \\"sandwich\\" cascade;
+
+drop table if exists \\"user2\\" cascade;
+
+drop table if exists \\"user2_cars\\" cascade;
+
+drop table if exists \\"user2_sandwiches\\" cascade;
 
 "
 `;
