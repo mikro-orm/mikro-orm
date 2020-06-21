@@ -7,6 +7,7 @@ export * from './enums';
 export * from './exceptions';
 export * from './MikroORM';
 export * from './entity';
+export * from './events';
 export * from './EntityManager';
 export * from './unit-of-work';
 export * from './utils';

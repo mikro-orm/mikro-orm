@@ -1,10 +1,11 @@
 import { QueryOrder } from './enums';
-import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference, ReferenceType, LoadStrategy } from './entity';
+import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType } from './entity';
 import { EntityManager } from './EntityManager';
 import { LockMode } from './unit-of-work';
 import { Platform } from './platforms';
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
+import { EventType } from './events';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -152,8 +153,6 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   referencedTableName: string;
 }
 
-export type HookType = 'onInit' | 'beforeCreate' | 'afterCreate' | 'beforeUpdate' | 'afterUpdate' | 'beforeDelete' | 'afterDelete';
-
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
   name: string;
   className: string;
@@ -176,7 +175,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   indexes: { properties: string | string[]; name?: string; type?: string; options?: Dictionary }[];
   uniques: { properties: string | string[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
-  hooks: Partial<Record<HookType, (string & keyof T)[]>>;
+  hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
   prototype: T;
   class: Constructor<T>;
   abstract: boolean;
