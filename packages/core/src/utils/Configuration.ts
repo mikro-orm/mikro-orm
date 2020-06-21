@@ -50,6 +50,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       dropTables: true,
       safe: false,
       emit: 'ts',
+      fileName: (timestamp: string) => `Migration${timestamp}`,
     },
     cache: {
       pretty: false,
@@ -281,6 +282,7 @@ export type MigrationsOptions = {
   dropTables?: boolean;
   safe?: boolean;
   emit?: 'js' | 'ts';
+  fileName?: (timestamp: string) => string;
 };
 
 export interface PoolConfig {

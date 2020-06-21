@@ -1,6 +1,6 @@
 import { ensureDir, writeFile } from 'fs-extra';
 import { CodeBlockWriter, IndentationText, Project, QuoteKind } from 'ts-morph';
-import { MigrationsOptions, Utils } from '@mikro-orm/core';
+import { MigrationsOptions, NamingStrategy, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 
 export class MigrationGenerator {
@@ -8,6 +8,7 @@ export class MigrationGenerator {
   private readonly project = new Project();
 
   constructor(protected readonly driver: AbstractSqlDriver,
+              protected readonly namingStrategy: NamingStrategy,
               protected readonly options: MigrationsOptions) {
     this.project.manipulationSettings.set({ quoteKind: QuoteKind.Single, indentationText: IndentationText.TwoSpaces });
   }
@@ -15,9 +16,9 @@ export class MigrationGenerator {
   async generate(diff: string[], path?: string): Promise<[string, string]> {
     path = Utils.normalizePath(path || this.options.path!);
     await ensureDir(path);
-    const time = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
-    const className = `Migration${time}`;
-    const fileName = `${className}.${this.options.emit}`;
+    const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
+    const className = this.namingStrategy.classToMigrationName(timestamp);
+    const fileName = `${this.options.fileName!(timestamp)}.${this.options.emit}`;
     const migration = this.project.createSourceFile(path + '/' + fileName, writer => {
       if (this.options.emit === 'js') {
         this.generateJSMigrationFile(writer, className, diff);
