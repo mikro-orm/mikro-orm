@@ -440,3 +440,18 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
   // your custom methods...
 }
 ```
+
+## Event Subscriber
+
+### @Subscriber()
+
+Used to register an event subscriber. Keep in mind that you need to make sure the file 
+gets loaded in order to make this decorator registration work (e.g. you import that file 
+explicitly somewhere).
+
+```typescript
+@Subscriber()
+export class AuthorSubscriber implements EventSubscriber<Author> {
+  // ...
+}
+```

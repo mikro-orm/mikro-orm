@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import { inspect } from 'util';
 
 import { Configuration, RequestContext, SmartQueryHelper, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
@@ -8,6 +9,7 @@ import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityN
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
+import { EventManager } from './events';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -21,6 +23,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
+  private readonly eventManager = new EventManager(this.config.get('subscribers'));
   private transactionContext?: Transaction;
 
   constructor(readonly config: Configuration,
@@ -546,6 +549,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return em.entityFactory;
   }
 
+  getEventManager(): EventManager {
+    return this.eventManager;
+  }
+
   /**
    * Checks whether this EntityManager is currently operating inside a database transaction.
    */
@@ -642,6 +649,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       return { field, strategy: fieldStrategy };
     });
+  }
+
+  [inspect.custom]() {
+    return `[EntityManager<${this.id}>]`;
   }
 
 }

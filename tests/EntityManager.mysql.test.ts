@@ -1,4 +1,5 @@
 import { v4 } from 'uuid';
+import { inspect } from 'util';
 import chalk from 'chalk';
 
 import {
@@ -9,6 +10,8 @@ import {
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { Author2Subscriber } from './subscribers/Author2Subscriber';
+import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 
 describe('EntityManagerMySql', () => {
 
@@ -23,6 +26,7 @@ describe('EntityManagerMySql', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+    expect(inspect(orm.em)).toBe(`[EntityManager<${orm.em.id}>]`);
   });
 
   test('getConnectionOptions()', async () => {
@@ -1145,6 +1149,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('hooks', async () => {
+    expect(Author2Subscriber.log).toEqual([]);
     Author2.beforeDestroyCalled = 0;
     Author2.afterDestroyCalled = 0;
     const repo = orm.em.getRepository(Author2);
@@ -1174,6 +1179,85 @@ describe('EntityManagerMySql', () => {
     await repo.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
+    expect(Author2Subscriber.log).toEqual([
+      ['beforeCreate', { em: orm.em, entity: author }],
+      ['afterCreate', { em: orm.em, entity: author }],
+      ['beforeUpdate', { em: orm.em, entity: author }],
+      ['afterUpdate', { em: orm.em, entity: author }],
+      ['beforeDelete', { em: orm.em, entity: author }],
+      ['afterDelete', { em: orm.em, entity: author }],
+      ['beforeCreate', { em: orm.em, entity: author2 }],
+      ['afterCreate', { em: orm.em, entity: author2 }],
+      ['beforeDelete', { em: orm.em, entity: author2 }],
+      ['afterDelete', { em: orm.em, entity: author2 }],
+    ]);
+  });
+
+  test('subscribers', async () => {
+    expect(Author2Subscriber.log).toEqual([]);
+    expect(EverythingSubscriber.log).toEqual([]);
+
+    const pub = new Publisher2('Publisher2');
+    await orm.em.persistAndFlush(pub);
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    bible.publisher = wrap(pub).toReference();
+    const bible2 = new Book2('Bible pt. 2', god);
+    bible2.publisher = wrap(pub).toReference();
+    const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
+    bible3.publisher = wrap(pub).toReference();
+    await orm.em.persistAndFlush([bible, bible2, bible3]);
+
+    god.name = 'John Snow';
+    bible2.title = '123';
+    await orm.em.flush();
+
+    orm.em.removeEntity(bible);
+    orm.em.removeEntity(bible2);
+    orm.em.removeEntity(god);
+    await orm.em.flush();
+
+    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeUpdate', 'Author2'],
+      ['afterUpdate', 'Author2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
+    ]);
+
+    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeCreate', 'Publisher2'],
+      ['afterCreate', 'Publisher2'],
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeCreate', 'Book2'],
+      ['afterCreate', 'Book2'],
+      ['beforeCreate', 'Book2'],
+      ['afterCreate', 'Book2'],
+      ['beforeCreate', 'Book2'],
+      ['afterCreate', 'Book2'],
+      ['beforeUpdate', 'Author2'],
+      ['afterUpdate', 'Author2'],
+      ['beforeUpdate', 'Book2'],
+      ['afterUpdate', 'Book2'],
+      ['beforeUpdate', 'Book2'],
+      ['afterUpdate', 'Book2'],
+      ['beforeUpdate', 'Book2'],
+      ['afterUpdate', 'Book2'],
+      ['beforeDelete', 'Book2'],
+      ['afterDelete', 'Book2'],
+      ['beforeDelete', 'Book2'],
+      ['afterDelete', 'Book2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
+      ['beforeDelete', 'Publisher2'],
+      ['afterDelete', 'Publisher2'],
+    ]);
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

@@ -2,7 +2,7 @@ import { Utils } from '../utils';
 import { EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
-import { EntityManager, wrap } from '..';
+import { EntityManager, EventType, wrap } from '..';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
@@ -146,6 +146,8 @@ export class EntityFactory {
     if (meta.hooks && meta.hooks.onInit && meta.hooks.onInit.length > 0) {
       meta.hooks.onInit.forEach(hook => (entity[hook] as unknown as () => void)());
     }
+
+    this.em.getEventManager().dispatchEvent(EventType.onInit, entity, this.em);
   }
 
 }

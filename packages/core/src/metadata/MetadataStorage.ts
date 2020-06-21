@@ -2,10 +2,12 @@ import { EntityMetadata, AnyEntity, Dictionary } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityHelper } from '../entity';
+import { EventSubscriber } from '../events';
 
 export class MetadataStorage {
 
   private static readonly metadata: Dictionary<EntityMetadata> = {};
+  private static readonly subscribers: Dictionary<EventSubscriber> = {};
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
@@ -34,6 +36,10 @@ export class MetadataStorage {
     Object.defineProperty(target, '__path', { value: path, writable: true });
 
     return meta;
+  }
+
+  static getSubscriberMetadata(): Dictionary<EventSubscriber> {
+    return MetadataStorage.subscribers;
   }
 
   static init(): MetadataStorage {

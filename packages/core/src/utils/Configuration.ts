@@ -4,13 +4,14 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
-import { Dictionary, EntityClass, EntityClassGroup, AnyEntity, IPrimaryKey, Constructor } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, IPrimaryKey } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { Logger, LoggerNamespace, Utils, ValidationError } from '../utils';
 import { EntityManager } from '../EntityManager';
-import { EntityOptions, EntitySchema, IDatabaseDriver } from '..';
+import { EntityOptions, EntitySchema, IDatabaseDriver, MetadataStorage } from '..';
 import { Platform } from '../platforms';
 import { MetadataProvider, ReflectMetadataProvider } from '../metadata';
+import { EventSubscriber } from '../events';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -19,6 +20,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entities: [],
     entitiesDirs: [],
     entitiesDirsTs: [],
+    subscribers: [],
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
@@ -211,6 +213,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.options.charset) {
       this.options.charset = this.platform.getDefaultCharset();
     }
+
+    const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
+    this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
   }
 
   private validateOptions(): void {
@@ -307,6 +312,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesDirs: string[];
   entitiesDirsTs: string[];
+  subscribers: EventSubscriber[];
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;

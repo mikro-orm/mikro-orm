@@ -24,6 +24,8 @@ import { schema as Test4 } from './entities-schema/Test4';
 import { schema as FooBar4 } from './entities-schema/FooBar4';
 import { schema as FooBaz4 } from './entities-schema/FooBaz4';
 import { schema as BaseEntity5 } from './entities-schema/BaseEntity5';
+import { Author2Subscriber } from './subscribers/Author2Subscriber';
+import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -85,6 +87,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   await orm.close(true);
   orm.config.set('dbName', 'mikro_orm_test');
   orm = await MikroORM.init(orm.config);
+  Author2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
 
   return orm as MikroORM<D>;
 }
@@ -108,6 +112,8 @@ export async function initORMPostgreSql() {
   await schemaGenerator.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
+  Author2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
 
   return orm;
 }
@@ -184,6 +190,8 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
+  Author2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
 }
 
 export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
@@ -201,6 +209,8 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();
+  Author2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
 }
 
 export async function wipeDatabaseSqlite(em: SqlEntityManager) {
