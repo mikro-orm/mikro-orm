@@ -2,9 +2,16 @@
 title: Metadata Cache
 ---
 
+> In v4 you need to explicitly install `@mikro-orm/reflection` to use `TsMorphMetadataProvider`.
+
 Under the hood, `MikroORM` uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
 TypeScript source files of all entities to be able to detect all types. Thanks to this, 
 defining the type is enough for runtime validation.
+
+If you use folder-based discovery (via `entitiesDirs`), you should specify paths to
+the compiled entities via `entitiesDirs` as well as paths to the TS source files of
+those entities via `entitiesDirsTs`. When you run the ORM via `ts-node`, the latter
+will be used automatically, or if you explicitly pass `tsNode: true` in the config.
 
 This process can be a bit slow, mainly because `ts-morph` will scan all your source files
 based on your `tsconfig.json`. You can speed up this process by whitelisting only the folders
