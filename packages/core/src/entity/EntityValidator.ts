@@ -9,7 +9,7 @@ export class EntityValidator {
   constructor(private strict: boolean) { }
 
   static validateSingleDecorator(meta: EntityMetadata, propertyName: string): void {
-    if (meta.properties[propertyName] && meta.properties[propertyName].reference) {
+    if (meta.properties[propertyName]?.reference) {
       throw ValidationError.multipleDecorators(meta.className, propertyName);
     }
   }

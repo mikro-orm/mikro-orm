@@ -59,7 +59,7 @@ export class CriteriaNode {
 
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.reference : null;
-    const composite = this.prop && this.prop.joinColumns ? this.prop.joinColumns.length > 1 : false;
+    const composite = /* istanbul ignore next */ this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
     const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
@@ -70,7 +70,7 @@ export class CriteriaNode {
 
     switch (type) {
       case ReferenceType.MANY_TO_ONE: return false;
-      case ReferenceType.ONE_TO_ONE: return !this.prop!.owner && !(this.parent && this.parent.parent);
+      case ReferenceType.ONE_TO_ONE: return /* istanbul ignore next */ !this.prop!.owner && !this.parent?.parent;
       case ReferenceType.ONE_TO_MANY: return scalar || operator;
       case ReferenceType.MANY_TO_MANY: return scalar || operator;
       default: return false;
