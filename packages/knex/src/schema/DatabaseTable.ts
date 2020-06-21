@@ -46,7 +46,7 @@ export class DatabaseTable {
       v.unique = index.some(i => i.unique && !i.primary);
       v.fk = fks[v.name];
       v.indexes = index.filter(i => !i.primary && !i.composite);
-      v.defaultValue = v.defaultValue && v.defaultValue.toString().startsWith('nextval(') ? null : v.defaultValue;
+      v.defaultValue = v.defaultValue?.toString().startsWith('nextval(') ? null : v.defaultValue;
       v.enumItems = enums[v.name] || [];
       o[v.name] = v;
 

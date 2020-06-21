@@ -21,7 +21,7 @@ export abstract class SchemaHelper {
     let t = prop.type.toLowerCase();
 
     if (prop.enum) {
-      t = prop.items && prop.items.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
+      t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
     }
 
     let type = (types[t] || types.json || types.text || [t])[0];
