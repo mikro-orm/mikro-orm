@@ -50,6 +50,7 @@ export type OperatorMap<T> = {
   $lt?: Query<T>;
   $lte?: Query<T>;
   $like?: string;
+  $fulltext?: string;
   $re?: string;
 };
 export type StringProp<T> = T extends string ? string | RegExp : never;

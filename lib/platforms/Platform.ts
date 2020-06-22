@@ -82,6 +82,10 @@ export abstract class Platform {
     return 'regexp';
   }
 
+  getFullTextWhereClause(): string {
+    return `? match '?'`;
+  }
+
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }

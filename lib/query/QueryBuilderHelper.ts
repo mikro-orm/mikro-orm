@@ -28,6 +28,7 @@ export class QueryBuilderHelper {
     $ne: '!=',
     $not: 'not',
     $like: 'like',
+    $fulltext: 'fulltext',
     $re: 'regexp',
   };
 
@@ -320,7 +321,13 @@ export class QueryBuilderHelper {
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
-    qb[m](this.mapper(key, type), replacement, value[op]);
+    // Full text queries aren't usually a simple operator, they can look like
+    // SELECT column::tsvector @@ 'something'::tsquery;
+    if (op === '$fulltext') {
+      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(), [key, value[op]]));
+    } else {
+      qb[m](this.mapper(key, type), replacement, value[op]);
+    }
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {

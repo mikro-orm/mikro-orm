@@ -17,4 +17,8 @@ export class SqlitePlatform extends Platform {
     return super.getCurrentTimestampSQL(0);
   }
 
+  getFullTextWhereClause(): string {
+    return `? match '?'`;
+  }
+
 }

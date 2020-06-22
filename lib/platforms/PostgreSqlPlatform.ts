@@ -26,6 +26,10 @@ export class PostgreSqlPlatform extends Platform {
     return '~';
   }
 
+  getFullTextWhereClause(): string {
+    return `? @@ '?'`;
+  }
+
   isBigIntProperty(prop: EntityProperty): boolean {
     return super.isBigIntProperty(prop) || (prop.columnTypes && prop.columnTypes[0] === 'bigserial');
   }

@@ -9,4 +9,8 @@ export class MySqlPlatform extends Platform {
     return 'utf8mb4';
   }
 
+  getFullTextWhereClause(): string {
+    return `match(?) against ('?' in natural language mode)`;
+  }
+
 }
