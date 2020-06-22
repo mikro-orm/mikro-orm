@@ -33,6 +33,7 @@ describe('single table inheritance in mysql', () => {
   }
 
   test('check metadata', async () => {
+    expect(orm.getMetadata().get('CompanyOwner2').collection).toBe('base_user2');
     expect(orm.getMetadata().get('BaseUser2').hooks).toEqual({
       afterCreate: ['afterCreate1'],
       afterUpdate: ['afterUpdate1'],
@@ -131,6 +132,7 @@ describe('single table inheritance in mysql', () => {
     class B {}
     class C {}
     orm.config.set('entities', [A, B, C]);
+    orm.config.set('entitiesTs', [A, B, C]);
     const discovery = new MetadataDiscovery(storage, orm.em.getDriver().getPlatform(), orm.config);
     const discovered = await discovery.discover();
     expect(discovered.get('A').discriminatorMap).toEqual({ a: 'A', b: 'B', c: 'C' });
