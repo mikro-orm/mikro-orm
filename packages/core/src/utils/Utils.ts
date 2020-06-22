@@ -522,7 +522,7 @@ export class Utils {
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
-    return path.match(/^[/.]|[a-zA-Z]:/) ? path : './' + path;
+    return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
   }
 
   static relativePath(path: string, relativeTo: string): string {

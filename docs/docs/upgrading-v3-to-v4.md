@@ -37,6 +37,23 @@ Previously the name was constructed from 2 entity names as `entity_a_to_entity_b
 ignoring the actual property name. In v4 the name will be `entity_a_coll_name` in 
 case of the collection property on the owning side being named `collName`. 
 
+## Changes in folder-based discovery (`entitiesDirs` removed)
+
+`entitiesDirs` and `entitiesDirsTs` were removed in favour of `entities` and `entitiesTs`,
+`entities` will be used as a default for `entitiesTs` (that is used when we detect `ts-node`).
+
+`entities` can now contain mixture of paths to directories, globs pointing to entities,
+or references to the entities or instances of `EntitySchema`. 
+
+This basically means that all you need to change is renaming `entitiesDirs` to `entities`.
+
+```typescript
+MikroORM.init({
+  entities: ['dist/**/entities', 'dist/**/*.entity.js', FooBar, FooBaz],
+  entitiesTs: ['src/**/entities', 'src/**/*.entity.ts', FooBar, FooBaz],
+});
+```
+
 ## Changes in `wrap()` helper, `WrappedEntity` interface and `Reference` wrapper
 
 Previously all the methods and properties of `WrappedEntity` interface were

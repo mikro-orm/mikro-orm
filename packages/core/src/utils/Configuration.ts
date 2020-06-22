@@ -18,8 +18,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   static readonly DEFAULTS = {
     pool: {},
     entities: [],
-    entitiesDirs: [],
-    entitiesDirsTs: [],
+    entitiesTs: [],
     subscribers: [],
     discovery: {
       warnWhenNoEntities: true,
@@ -206,10 +205,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.dbName = this.get('dbName', url[1]);
     }
 
-    if (this.options.entitiesDirsTs.length === 0) {
-      this.options.entitiesDirsTs = this.options.entitiesDirs;
-    }
-
     if (!this.options.charset) {
       this.options.charset = this.platform.getDefaultCharset();
     }
@@ -227,14 +222,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('No database specified, please fill in `dbName` or `clientUrl` option');
     }
 
-    if (this.options.entities.length === 0 && this.options.entitiesDirs.length === 0 && this.options.discovery.warnWhenNoEntities) {
-      throw new Error('No entities found, please use `entities` or `entitiesDirs` option');
-    }
-
-    const notDirectory = this.options.entitiesDirs.find(dir => dir.match(/\.[jt]s$/));
-
-    if (notDirectory) {
-      throw new Error(`Please provide path to directory in \`entitiesDirs\`, found: '${notDirectory}'`);
+    if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
+      throw new Error('No entities found, please use `entities` option');
     }
   }
 
@@ -310,9 +299,8 @@ export interface PoolConfig {
 }
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
-  entities: (EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
-  entitiesDirs: string[];
-  entitiesDirsTs: string[];
+  entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
+  entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   subscribers: EventSubscriber[];
   discovery: {
     warnWhenNoEntities?: boolean;
