@@ -4,7 +4,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "version": "4.0.0-alpha.3",
+  "version": "4.0.0-alpha.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -103,7 +103,6 @@
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.0",
     "@types/mongodb": "^3.5.23",
-    "@types/mysql": "types/mysql#e104ee1f9d51106774c4971693a9bd726969299b",
     "@types/mysql2": "types/mysql2#53599d045503bfe40184d78c67f90c36ddadac37",
     "@types/node": "^14.0.13",
     "@types/pg": "^7.14.3",
