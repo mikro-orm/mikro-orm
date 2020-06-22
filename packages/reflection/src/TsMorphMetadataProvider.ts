@@ -1,4 +1,3 @@
-import globby from 'globby';
 import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
 import { EntityMetadata, EntityProperty, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
@@ -19,14 +18,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     await this.initProperties(meta);
   }
 
-  async getExistingSourceFile(meta: EntityMetadata, ext?: string, validate = true): Promise<SourceFile> {
+  async getExistingSourceFile(path: string, ext?: string, validate = true): Promise<SourceFile> {
     if (!ext) {
-      return await this.getExistingSourceFile(meta, '.d.ts', false) || await this.getExistingSourceFile(meta, '.ts');
+      return await this.getExistingSourceFile(path, '.d.ts', false) || await this.getExistingSourceFile(path, '.ts');
     }
 
-    const path = meta.path.match(/\/[^/]+$/)![0].replace(/\.js$/, ext);
+    const tsPath = path.match(/\/[^/]+$/)![0].replace(/\.js$/, ext);
 
-    return (await this.getSourceFile(path, validate))!;
+    return (await this.getSourceFile(tsPath, path, validate))!;
   }
 
   protected async initProperties(meta: EntityMetadata): Promise<void> {
@@ -67,7 +66,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
-    const source = await this.getExistingSourceFile(meta);
+    const source = await this.getExistingSourceFile(meta.path);
     const cls = source.getClass(meta.className);
 
     /* istanbul ignore next */
@@ -89,15 +88,15 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return { type, optional };
   }
 
-  private async getSourceFile(file: string, validate: boolean): Promise<SourceFile | undefined> {
+  private async getSourceFile(tsPath: string, file: string, validate: boolean): Promise<SourceFile | undefined> {
     if (!this.sources) {
       await this.initSourceFiles();
     }
 
-    const source = this.sources.find(s => s.getFilePath().endsWith(file));
+    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath));
 
     if (!source && validate) {
-      throw new Error(`Source file for entity ${file} not found, check your 'entitiesDirsTs' option. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new Error(`Source file for entity '${file}' not found, check your 'entitiesTs' option. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
     return source;
@@ -118,32 +117,12 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   }
 
   private async initSourceFiles(): Promise<void> {
-    const tsDirs = this.config.get('entitiesDirsTs');
-
-    if (tsDirs.length > 0) {
-      const dirs = await this.validateDirectories(tsDirs);
-      this.sources = this.project.addSourceFilesAtPaths(dirs);
-    } else {
-      const dirs = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
-      this.sources = this.project.addSourceFilesAtPaths(dirs);
-    }
-  }
-
-  private async validateDirectories(dirs: string[]): Promise<string[]> {
-    const ret: string[] = [];
-
-    for (const dir of dirs) {
-      const path = Utils.normalizePath(this.config.get('baseDir'), dir);
-      const files = await globby(`${path}/*`);
-
-      if (files.length === 0) {
-        throw new Error(`Path ${path} does not exist`);
-      }
-
-      ret.push(Utils.normalizePath(path, '**', '*.ts'));
-    }
-
-    return ret;
+    // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
+    // metadata storage. We know the path thanks the the decorators being executed. In case we are running via ts-node, the extension
+    // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
+    // the ts-morph reflection.
+    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
+    this.sources = this.project.addSourceFilesAtPaths(paths);
   }
 
 }

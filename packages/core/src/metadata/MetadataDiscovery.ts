@@ -62,27 +62,30 @@ export class MetadataDiscovery {
   private async findEntities(preferTsNode: boolean): Promise<EntityMetadata[]> {
     this.discovered.length = 0;
 
-    if (this.config.get('discovery').requireEntitiesArray && this.config.get('entities').length === 0) {
+    const key = (preferTsNode && this.config.get('tsNode', Utils.detectTsNode()) && this.config.get('entitiesTs').length > 0) ? 'entitiesTs' : 'entities';
+    const paths = this.config.get(key).filter(item => Utils.isString(item)) as string[];
+    const refs = this.config.get(key).filter(item => !Utils.isString(item)) as Constructor<AnyEntity>[];
+
+    if (this.config.get('discovery').requireEntitiesArray && paths.length > 0) {
       throw new Error(`[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`);
     }
 
-    if (this.config.get('entities').length > 0) {
-      await Utils.runSerial(this.config.get('entities'), entity => this.discoverEntity(entity));
-    } else if (preferTsNode && this.config.get('tsNode', Utils.detectTsNode())) {
-      await Utils.runSerial(this.config.get('entitiesDirsTs'), dir => this.discoverDirectory(dir));
-    } else {
-      await Utils.runSerial(this.config.get('entitiesDirs'), dir => this.discoverDirectory(dir));
-    }
-
+    await this.discoverDirectories(paths);
+    await this.discoverReferences(refs);
     this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
 
     return this.discovered;
   }
 
-  private async discoverDirectory(basePath: string): Promise<void> {
-    const files = await globby(Utils.normalizePath(basePath, '*'), { cwd: Utils.normalizePath(this.config.get('baseDir')) });
-    this.logger.log('discovery', `- processing ${chalk.cyan(files.length)} files from directory ${chalk.cyan(basePath)}`);
-    const found: [ObjectConstructor, string][] = [];
+  private async discoverDirectories(paths: string[]): Promise<void> {
+    if (paths.length === 0) {
+      return;
+    }
+
+    paths = paths.map(path => Utils.normalizePath(path));
+    const files = await globby(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
+    this.logger.log('discovery', `- processing ${chalk.cyan(files.length)} files`);
+    const found: [Constructor<AnyEntity>, string][] = [];
 
     for (const filepath of files) {
       const filename = basename(filepath);
@@ -108,11 +111,32 @@ export class MetadataDiscovery {
       }
 
       this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
-      found.push([target, path]);
+
+      const entity = this.prepare(target) as Constructor<AnyEntity>;
+      const schema = this.getSchema(entity);
+      const meta = schema.init().meta;
+      this.metadata.set(meta.className, meta);
+
+      found.push([entity, path]);
     }
 
-    for (const [target, path] of found) {
-      await this.discoverEntity(target, path);
+    for (const [entity, path] of found) {
+      await this.discoverEntity(entity, path);
+    }
+  }
+
+  private async discoverReferences(refs: Constructor<AnyEntity>[]): Promise<void> {
+    const found: Constructor<AnyEntity>[] = [];
+
+    for (const entity of refs) {
+      const schema = this.getSchema(entity);
+      const meta = schema.init().meta;
+      this.metadata.set(meta.className, meta);
+      found.push(entity);
+    }
+
+    for (const entity of found) {
+      await this.discoverEntity(entity);
     }
   }
 
@@ -145,7 +169,10 @@ export class MetadataDiscovery {
       this.metadata.set(entity.name, meta);
     }
 
-    const schema = EntitySchema.fromMetadata<T>(this.metadata.get<T>(entity.name, true));
+    const exists = this.metadata.has(entity.name);
+    const meta = this.metadata.get<T>(entity.name, true);
+    meta.abstract = meta.abstract ?? !(exists && meta.name);
+    const schema = EntitySchema.fromMetadata<T>(meta);
     schema.setClass(entity);
     schema.meta.useCache = this.metadataProvider.useCache();
 

@@ -10,7 +10,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
-  Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2, Sandwich,
+  Car2, CarOwner2, User2, BaseUser2,
 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
@@ -34,7 +34,7 @@ export const TEMP_DIR = process.cwd() + '/temp';
 
 export async function initORMMongo() {
   const orm = await MikroORM.init<MongoDriver>({
-    entitiesDirs: ['entities'],
+    entities: ['entities'],
     tsNode: false,
     clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
     baseDir: BASE_DIR,
@@ -55,10 +55,8 @@ export async function initORMMongo() {
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
   let orm = await MikroORM.init<AbstractSqlDriver>({
-    entities: [
-      Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2, BaseEntity2, BaseEntity22,
-      Car2, CarOwner2, User2, BaseUser2, Employee2, Manager2, CompanyOwner2, Sandwich,
-    ],
+    entities: ['entities-sql/**/*.js', '!**/Label2.js'],
+    entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
     port: type === 'mysql' ? 3307 : 3309,
     baseDir: BASE_DIR,

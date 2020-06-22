@@ -38,7 +38,7 @@ describe('Webpack', () => {
     const options = {
       dbName: `mikro_orm_test`,
       type: 'mysql',
-      entitiesDirs: ['not/existing'],
+      entities: ['not/existing'],
       discovery: { disableDynamicFileAccess: true },
     } as Options;
     const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;

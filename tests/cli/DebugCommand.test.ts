@@ -26,7 +26,7 @@ describe('DebugCommand', () => {
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo' } as any, false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(1);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -37,9 +37,9 @@ describe('DebugCommand', () => {
 
     getSettings.mockResolvedValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entitiesDirs: ['./entities-1', './entities-2'] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entities: ['./entities-1', './entities-2'] } as any, false));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(2);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -47,14 +47,14 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      [' - will use `entitiesDirs` paths:'],
+      [' - will use `entities` array (contains 0 references and 2 paths)'],
       [`   - ${Utils.normalizePath(process.cwd() + '/entities-1') } (found)`],
       [`   - ${Utils.normalizePath(process.cwd() + '/entities-2') } (not found)`],
     ]);
 
     getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(3);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -62,12 +62,12 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      [' - will use `entities` array (contains 2 items)'],
+      [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
 
     getConfiguration.mockRejectedValueOnce(new Error('test error message'));
     dump.mock.calls.length = 0;
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(4);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -79,7 +79,7 @@ describe('DebugCommand', () => {
 
     globbyMock.mockResolvedValue(false);
     dump.mock.calls.length = 0;
-    await expect(cmd.handler({} as any)).resolves.toBeUndefined();
+    await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(5);
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
@@ -87,7 +87,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
-      [' - will use `entities` array (contains 2 items)'],
+      [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
     globbyMock.mockRestore();
   });
