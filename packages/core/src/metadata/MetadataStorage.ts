@@ -6,8 +6,8 @@ import { EventSubscriber } from '../events';
 
 export class MetadataStorage {
 
-  private static readonly metadata: Dictionary<EntityMetadata> = {};
-  private static readonly subscribers: Dictionary<EventSubscriber> = {};
+  private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
+  private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
