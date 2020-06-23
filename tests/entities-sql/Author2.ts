@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy,
+  QueryOrder, OnInit, ManyToMany, DateType, TimeType, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
@@ -84,6 +84,8 @@ export class Author2 extends BaseEntity2 {
   @Property({ persist: false })
   booksTotal!: number;
 
+  hookParams: any[] = [];
+
   constructor(name: string, email: string) {
     super();
     this.name = name;
@@ -93,26 +95,32 @@ export class Author2 extends BaseEntity2 {
   @OnInit()
   onInit() {
     this.code = `${this.email} - ${this.name}`;
+    this.hookParams = [];
   }
 
   @BeforeCreate()
-  beforeCreate() {
+  beforeCreate(args: EventArgs<this>) {
     this.version = 1;
+    this.hookParams.push(args);
   }
 
   @AfterCreate()
-  afterCreate() {
+  afterCreate(args: EventArgs<this>) {
     this.versionAsString = 'v' + this.version;
+    this.hookParams.push(args);
   }
 
   @BeforeUpdate()
-  beforeUpdate() {
+  beforeUpdate(args: EventArgs<this>) {
     this.version += 1;
+    console.log(this);
+    this.hookParams.push(args);
   }
 
   @AfterUpdate()
-  afterUpdate() {
+  afterUpdate(args: EventArgs<this>) {
     this.versionAsString = 'v' + this.version;
+    this.hookParams.push(args);
   }
 
   @BeforeDelete()

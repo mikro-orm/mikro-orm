@@ -7,6 +7,7 @@ export interface ChangeSet<T extends AnyEntity<T>> {
   entity: T;
   payload: EntityData<T>;
   persisted: boolean;
+  originalEntity?: EntityData<T>;
 }
 
 export enum ChangeSetType {
