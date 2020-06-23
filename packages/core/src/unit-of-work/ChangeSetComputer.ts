@@ -24,6 +24,10 @@ export class ChangeSetComputer {
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
+    if (changeSet.type === ChangeSetType.UPDATE) {
+      changeSet.originalEntity = this.originalEntityData[wrap(entity, true).__uuid];
+    }
+
     this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
 
     for (const prop of Object.values(meta.properties)) {

@@ -1,9 +1,11 @@
 import { AnyEntity, EntityName } from '../typings';
 import { EntityManager } from '../EntityManager';
+import { ChangeSet } from '../unit-of-work';
 
 export interface EventArgs<T> {
   entity: T;
   em: EntityManager;
+  changeSet?: ChangeSet<T>;
 }
 
 export interface EventSubscriber<T = AnyEntity> {
