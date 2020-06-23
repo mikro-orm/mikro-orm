@@ -17,6 +17,8 @@ export class Logger {
       return;
     }
 
+    // clean up the whitespace
+    message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
     this.logger(chalk.grey(`[${namespace}] `) + message);
   }
 
