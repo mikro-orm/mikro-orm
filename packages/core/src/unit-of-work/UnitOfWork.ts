@@ -268,7 +268,9 @@ export class UnitOfWork {
     }
 
     const type = changeSet.type.charAt(0).toUpperCase() + changeSet.type.slice(1);
-    await this.runHooks(`before${type}` as EventType, changeSet.entity, changeSet.payload);
+    const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
+    await this.runHooks(`before${type}` as EventType, changeSet);
+    Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
     await this.changeSetPersister.persistToDatabase(changeSet, ctx);
 
     switch (changeSet.type) {
@@ -277,25 +279,11 @@ export class UnitOfWork {
       case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity as T); break;
     }
 
-    await this.runHooks(`after${type}` as EventType, changeSet.entity as T);
+    await this.runHooks(`after${type}` as EventType, changeSet);
   }
 
-  private async runHooks<T extends AnyEntity<T>>(type: EventType, entity: T, payload?: EntityData<T>) {
-    const hooks = this.metadata.get<T>(entity.constructor.name).hooks;
-
-    /* istanbul ignore next */
-    if ((hooks?.[type]?.length || 0) === 0) {
-      return await this.em.getEventManager().dispatchEvent(type, entity, this.em);
-    }
-
-    const copy = Utils.prepareEntity(entity, this.metadata, this.platform);
-    await Utils.runSerial(hooks[type]!, hook => (entity[hook] as unknown as () => Promise<any>)());
-
-    if (payload) {
-      Object.assign(payload, Utils.diffEntities<T>(copy as T, entity, this.metadata, this.platform));
-    }
-
-    await this.em.getEventManager().dispatchEvent(type, entity, this.em);
+  private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>) {
+    await this.em.getEventManager().dispatchEvent(type, changeSet.entity, { em: this.em, changeSet });
   }
 
   /**

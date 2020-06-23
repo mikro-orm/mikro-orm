@@ -9,6 +9,10 @@ There are two ways to hook to the lifecycle of an entity:
 - **EventSubscriber**s are classes that can be used to hook to multiple entities
   or when you do not want to have the method present on the entity prototype.
 
+> Hooks are internally executed the same way as subscribers.
+
+> Hooks are executed before subscribers.
+
 ## Hooks
 
 You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
@@ -100,5 +104,19 @@ export class EverythingSubscriber implements EventSubscriber {
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   onInit<T>(args: EventArgs<T>): void { ... }
 
+}
+```
+
+## EventArgs
+
+As a parameter to the hook method we get `EventArgs` instance. It will always contain
+reference to the current `EntityManager` and the particular entity. Events fired
+from `UnitOfWork` during flush operation also contain the `ChangeSet` object.
+
+```typescript
+interface EventArgs<T> {
+  entity: T;
+  em: EntityManager;
+  changeSet?: ChangeSet<T>;
 }
 ```
