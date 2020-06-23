@@ -1157,16 +1157,21 @@ describe('EntityManagerMySql', () => {
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
+    expect(author.hookParams).toHaveLength(0);
 
     await repo.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
+    expect(author.hookParams[0].em).toBe(orm.em);
+    expect(author.hookParams[0].changeSet).toMatchObject({ entity: author, type: 'create', payload: { name: 'Jon Snow' } });
 
     author.name = 'John Snow';
     await repo.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
+    expect(author.hookParams[2].em).toBe(orm.em);
+    expect(author.hookParams[2].changeSet).toMatchObject({ entity: author, type: 'update', payload: { name: 'John Snow' }, originalEntity: { name: 'Jon Snow' } });
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
@@ -1179,17 +1184,18 @@ describe('EntityManagerMySql', () => {
     await repo.removeAndFlush(author2);
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
-    expect(Author2Subscriber.log).toEqual([
-      ['beforeCreate', { em: orm.em, entity: author }],
-      ['afterCreate', { em: orm.em, entity: author }],
-      ['beforeUpdate', { em: orm.em, entity: author }],
-      ['afterUpdate', { em: orm.em, entity: author }],
-      ['beforeDelete', { em: orm.em, entity: author }],
-      ['afterDelete', { em: orm.em, entity: author }],
-      ['beforeCreate', { em: orm.em, entity: author2 }],
-      ['afterCreate', { em: orm.em, entity: author2 }],
-      ['beforeDelete', { em: orm.em, entity: author2 }],
-      ['afterDelete', { em: orm.em, entity: author2 }],
+
+    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeUpdate', 'Author2'],
+      ['afterUpdate', 'Author2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
     ]);
   });
 
