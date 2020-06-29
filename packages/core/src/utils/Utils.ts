@@ -272,13 +272,17 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata): Primary<T> | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata, strict = false): Primary<T> | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
-    if (Utils.isEntity(data, true) && !meta) {
-      meta = wrap(data, true).__meta;
+    if (Utils.isEntity(data, true)) {
+      return wrap(data, true).__primaryKey as Primary<T>;
+    }
+
+    if (strict && meta && Object.keys(data).length !== meta.primaryKeys.length) {
+      return null;
     }
 
     if (Utils.isObject(data) && meta) {
