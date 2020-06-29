@@ -2232,6 +2232,14 @@ describe('EntityManagerMySql', () => {
     // await expect(orm.em.execute('insert into foo_bar2 () values ()')).rejects.toThrow(NotNullConstraintViolationException);
   });
 
+  test('GH 625', async () => {
+    const a = new Author2('n', 'e');
+    a.termsAccepted = false;
+    await orm.em.persistAndFlush(a);
+    const res = await orm.em.findOne(Author2, { id: a.id, termsAccepted: true });
+    expect(res).toBeNull();
+  });
+
   test('em.execute()', async () => {
     const res1 = await orm.em.execute('insert into author2 (name, email) values (?, ?)', ['name', 'email']);
     expect(res1).toMatchObject({ affectedRows: 1, insertId: 1 });

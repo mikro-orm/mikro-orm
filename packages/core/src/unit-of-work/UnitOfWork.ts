@@ -61,8 +61,8 @@ export class UnitOfWork {
     return this.identityMap[token] as T;
   }
 
-  tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>): T | null {
-    const pk = Utils.extractPK(where, this.metadata.get(entityName));
+  tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
+    const pk = Utils.extractPK(where, this.metadata.get(entityName), strict);
 
     if (!pk) {
       return null;
