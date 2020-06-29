@@ -297,7 +297,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, false);
 
     if (entity && wrap(entity).isInitialized() && !refresh) {
       return entity;
