@@ -190,7 +190,9 @@ describe('embedded entities in mysql', () => {
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
     const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[8][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`address1_city` like ? limit ?');
+    expect(mock.mock.calls[9][0]).toMatch('select `e0`.* from `user` as `e0` where (`e0`.`address1_city` = ? or `e0`.`address1_city` = ?) limit ?');
+    expect(u3.address1.city).toBe('London 1');
+    expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
