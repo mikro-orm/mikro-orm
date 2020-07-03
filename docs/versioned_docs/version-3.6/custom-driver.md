@@ -14,7 +14,7 @@ import { Platform } from 'mikro-orm';
 
 export class MyCustomPlatform extends Platform {
   
-  protected abstract schemaHelper: MyCustomSchemaHelper;
+  protected readonly schemaHelper: MyCustomSchemaHelper;
 
   // here you can override default settings
   usesPivotTable(): boolean;
@@ -90,7 +90,7 @@ If you want to have absolute control, you can implement the whole driver yoursel
 ```typescript
 import { DatabaseDriver } from 'mikro-orm';
 
-export class MyCustomSchemaHelper extends DatabaseDriver {
+export class MyCustomDriver extends DatabaseDriver {
 
   // initialize connection and platform
   protected readonly connection = new MyCustomConnection(this.config);
