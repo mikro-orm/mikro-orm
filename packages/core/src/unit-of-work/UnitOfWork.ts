@@ -75,6 +75,52 @@ export class UnitOfWork {
     return this.identityMap;
   }
 
+  getOriginalEntityData(): Dictionary<EntityData<AnyEntity>> {
+    return this.originalEntityData;
+  }
+
+  getPersistStack(): AnyEntity[] {
+    return this.persistStack;
+  }
+
+  getRemoveStack(): AnyEntity[] {
+    return this.removeStack;
+  }
+
+  getChangeSets(): ChangeSet<AnyEntity>[] {
+    return this.changeSets;
+  }
+
+  computeChangeSet<T>(entity: T): void {
+    const cs = this.changeSetComputer.computeChangeSet(entity);
+
+    if (!cs) {
+      return;
+    }
+
+    const wrapped = wrap(entity, true);
+    this.initIdentifier(entity);
+    this.changeSets.push(cs);
+    this.cleanUpStack(this.persistStack, entity);
+    this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+  }
+
+  recomputeSingleChangeSet<T>(entity: T): void {
+    const idx = this.changeSets.findIndex(cs => cs.entity === entity);
+
+    if (idx === -1) {
+      return;
+    }
+
+    const cs = this.changeSetComputer.computeChangeSet(entity);
+
+    if (cs) {
+      Object.assign(this.changeSets[idx].payload, cs.payload);
+      const uuid = wrap(entity, true).__uuid;
+      this.originalEntityData[uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+    }
+  }
+
   persist<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], checkRemoveStack = false): void {
     if (this.persistStack.includes(entity)) {
       return;
@@ -112,11 +158,17 @@ export class UnitOfWork {
       throw ValidationError.cannotCommit();
     }
 
+    await this.em.getEventManager().dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
     this.working = true;
     this.computeChangeSets();
+    await this.em.getEventManager().dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
+    // nothing to do, do not start transaction
     if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.length === 0) {
-      return this.postCommitCleanup(); // nothing to do, do not start transaction
+      this.postCommitCleanup();
+      await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+
+      return;
     }
 
     this.reorderChangeSets();
@@ -130,6 +182,7 @@ export class UnitOfWork {
     }
 
     this.postCommitCleanup();
+    await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
   }
 
   async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
@@ -201,9 +254,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (!Utils.isDefined(wrapped.__primaryKey, true) && !this.identifierMap[wrapped.__uuid]) {
-      this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
-    }
+    this.initIdentifier(entity);
 
     for (const prop of Object.values<EntityProperty>(wrapped.__meta.properties)) {
       const reference = this.unwrapReference(entity, prop);
@@ -217,6 +268,16 @@ export class UnitOfWork {
       this.cleanUpStack(this.persistStack, entity);
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
     }
+  }
+
+  private initIdentifier<T>(entity: T): void {
+    const wrapped = wrap(entity, true);
+
+    if (Utils.isDefined(wrapped.__primaryKey, true) || this.identifierMap[wrapped.__uuid]) {
+      return;
+    }
+
+    this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
   }
 
   private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: AnyEntity[]): void {
@@ -274,7 +335,7 @@ export class UnitOfWork {
     await this.changeSetPersister.persistToDatabase(changeSet, ctx);
 
     switch (changeSet.type) {
-      case ChangeSetType.CREATE: this.em.merge(changeSet.entity as T); break;
+      case ChangeSetType.CREATE: this.em.merge(changeSet.entity as T, true); break;
       case ChangeSetType.UPDATE: this.merge(changeSet.entity as T); break;
       case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity as T); break;
     }
@@ -283,7 +344,7 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>) {
-    await this.em.getEventManager().dispatchEvent(type, changeSet.entity, { em: this.em, changeSet });
+    await this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
   }
 
   /**

@@ -12,6 +12,7 @@ import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, 
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
+import { FlushSubscriber } from './subscribers/FlushSubscriber';
 
 describe('EntityManagerMySql', () => {
 
@@ -1202,6 +1203,7 @@ describe('EntityManagerMySql', () => {
   test('subscribers', async () => {
     expect(Author2Subscriber.log).toEqual([]);
     expect(EverythingSubscriber.log).toEqual([]);
+    expect(FlushSubscriber.log).toEqual([]);
 
     const pub = new Publisher2('Publisher2');
     await orm.em.persistAndFlush(pub);
@@ -1251,10 +1253,6 @@ describe('EntityManagerMySql', () => {
       ['afterUpdate', 'Author2'],
       ['beforeUpdate', 'Book2'],
       ['afterUpdate', 'Book2'],
-      ['beforeUpdate', 'Book2'],
-      ['afterUpdate', 'Book2'],
-      ['beforeUpdate', 'Book2'],
-      ['afterUpdate', 'Book2'],
       ['beforeDelete', 'Book2'],
       ['afterDelete', 'Book2'],
       ['beforeDelete', 'Book2'],
@@ -1263,6 +1261,21 @@ describe('EntityManagerMySql', () => {
       ['afterDelete', 'Author2'],
       ['beforeDelete', 'Publisher2'],
       ['afterDelete', 'Publisher2'],
+    ]);
+
+    expect(FlushSubscriber.log.map(l => [l[0], Object.keys(l[1])])).toEqual([
+      ['beforeFlush', ['em', 'uow']],
+      ['onFlush', ['em', 'uow']],
+      ['afterFlush', ['em', 'uow']],
+      ['beforeFlush', ['em', 'uow']],
+      ['onFlush', ['em', 'uow']],
+      ['afterFlush', ['em', 'uow']],
+      ['beforeFlush', ['em', 'uow']],
+      ['onFlush', ['em', 'uow']],
+      ['afterFlush', ['em', 'uow']],
+      ['beforeFlush', ['em', 'uow']],
+      ['onFlush', ['em', 'uow']],
+      ['afterFlush', ['em', 'uow']],
     ]);
   });
 
@@ -1633,11 +1646,16 @@ describe('EntityManagerMySql', () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author); // we need to flush here so the entity gets inside IM
 
-    // fork EM without clearing the IM (once for each process), so author entity will be there
+    const saveBook = async (title: string, author: number) => {
+      const em = orm.em.fork();
+      const book = new Book2(title, em.getReference(Author2, author));
+      await em.persistAndFlush(book);
+    };
+
     await Promise.all([
-      orm.em.fork(false).persistAndFlush(new Book2('b1', author)),
-      orm.em.fork(false).persistAndFlush(new Book2('b2', author)),
-      orm.em.fork(false).persistAndFlush(new Book2('b3', author)),
+      saveBook('b1', author.id),
+      saveBook('b2', author.id),
+      saveBook('b3', author.id),
     ]);
 
     orm.em.clear();
