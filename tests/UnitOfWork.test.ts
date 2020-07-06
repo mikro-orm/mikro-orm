@@ -1,6 +1,8 @@
 import { Author } from './entities';
-import { EntityValidator, MikroORM, UnitOfWork, ChangeSetComputer } from '@mikro-orm/core';
+import { ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
+import FooBar from './entities/FooBar';
+import { FooBaz } from './entities/FooBaz';
 
 describe('UnitOfWork', () => {
 
@@ -108,6 +110,59 @@ describe('UnitOfWork', () => {
     uow.remove(author);
     // @ts-ignore
     expect(uow.removeStack.length).toBe(1);
+  });
+
+  test('getters', async () => {
+    const uow = new UnitOfWork(orm.em);
+    const author = new Author('test', 'test');
+    author.id = '00000001885f0a3cc37dc9f0';
+    uow.persist(author);
+    expect(uow.getPersistStack()).toEqual([author]);
+    expect(uow.getRemoveStack()).toEqual([]);
+    expect(uow.getOriginalEntityData()).toEqual({});
+    uow.merge(author);
+    expect(uow.getOriginalEntityData()).toMatchObject({
+      [wrap(author, true).__uuid]: { name: 'test', email: 'test' },
+    });
+    uow.remove(author);
+    expect(uow.getRemoveStack()).toEqual([author]);
+    expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();
+    expect(() => uow.computeChangeSet(author)).not.toThrow();
+    expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();
+    expect(() => uow.computeChangeSet(author)).not.toThrow();
+  });
+
+  test('manually changing the UoW state during flush', async () => {
+    class Subscriber implements EventSubscriber {
+
+      async onFlush(args: FlushEventArgs): Promise<void> {
+        const changeSets = args.uow.getChangeSets();
+        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
+
+        if (cs) {
+          const baz = new FooBaz();
+          baz.name = 'dynamic';
+          cs.entity.baz = baz;
+          args.uow.computeChangeSet(baz);
+          args.uow.recomputeSingleChangeSet(cs.entity);
+        }
+      }
+
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+    const bar = new FooBar();
+    bar.name = 'bar';
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+    await em.persistAndFlush(bar);
+    expect(mock.mock.calls[0][0]).toMatch('db.begin()');
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: '[ClientSession]' })`);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertOne\({ name: 'bar', baz: ObjectId\('\w+'\), onCreateTest: true, onUpdateTest: true }, { session: '\[ClientSession]' }\)/);
+    expect(mock.mock.calls[3][0]).toMatch('db.commit()');
   });
 
   afterAll(async () => orm.close(true));
