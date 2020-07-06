@@ -150,7 +150,7 @@ export class EntityFactory {
       hooks.forEach(hook => (entity[hook] as unknown as () => void)());
     }
 
-    this.em.getEventManager().dispatchEvent(EventType.onInit, entity, { em: this.em });
+    this.em.getEventManager().dispatchEvent(EventType.onInit, { entity, em: this.em });
   }
 
 }

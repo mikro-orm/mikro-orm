@@ -26,6 +26,7 @@ import { schema as FooBaz4 } from './entities-schema/FooBaz4';
 import { schema as BaseEntity5 } from './entities-schema/BaseEntity5';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
+import { FlushSubscriber } from './subscribers/FlushSubscriber';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -86,6 +87,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   orm = await MikroORM.init(orm.config);
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
 
   return orm as MikroORM<D>;
 }
@@ -110,6 +112,7 @@ export async function initORMPostgreSql() {
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
 
   return orm;
 }
@@ -188,6 +191,7 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   em.clear();
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
 }
 
 export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
@@ -207,6 +211,7 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   em.clear();
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
 }
 
 export async function wipeDatabaseSqlite(em: SqlEntityManager) {

@@ -6,4 +6,7 @@ export enum EventType {
   afterUpdate = 'afterUpdate',
   beforeDelete = 'beforeDelete',
   afterDelete = 'afterDelete',
+  beforeFlush = 'beforeFlush',
+  onFlush = 'onFlush',
+  afterFlush = 'afterFlush',
 }

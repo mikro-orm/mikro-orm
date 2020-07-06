@@ -96,12 +96,15 @@ import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
 @Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
 
-  async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
-  async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeCreate<T>(args: EventArgs<T>): Promise<void> { ... }
-  async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
+  async beforeFlush<T>(args: EventArgs<T>): Promise<void> { ... }
+  async onFlush<T>(args: EventArgs<T>): Promise<void> { ... }
+  async afterFlush<T>(args: EventArgs<T>): Promise<void> { ... }
   onInit<T>(args: EventArgs<T>): void { ... }
 
 }
@@ -119,4 +122,68 @@ interface EventArgs<T> {
   em: EntityManager;
   changeSet?: ChangeSet<T>;
 }
+```
+
+## Flush events
+
+There is a special kind of events executed during the commit phase (flush operation).
+They are executed before, during and after the flush, and they are not bound to any
+entity in particular. 
+
+- `beforeFlush` is executed before change sets are computed, this is the only
+  event where it is safe to persist new entities. 
+- `onFlush` is executed after the change sets are computed.
+- `afterFlush` is executed as the last step just before the `flush` call resolves.
+  it will be executed even if there are no changes to be flushed. 
+
+Flush event args will not contain any entity instance, as they are entity agnostic.
+They do contain additional reference to the `UnitOfWork` instance.
+
+```typescript
+interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
+  uow?: UnitOfWork;
+}
+``` 
+
+> Flush events are entity agnostic, specifying `getSubscribedEntities()` method
+> will not have any effect for those. They are fired only once per the `flush` 
+> operation.
+
+### Using onFlush event
+
+In following example we have 2 entities: `FooBar` and `FooBaz`, connected via 
+M:1 relation. Our subscriber will automatically create new `FooBaz` entity and 
+connect it to the `FooBar` when we detect it in the change sets.
+
+We first use `uow.getChangeSets()` method to look up the change set of entity
+we are interested in. After we create the `FooBaz` instance and link it with 
+`FooBar`, we need to do two things:
+
+1. Call `uow.computeChangeSet(baz)` to compute the change set of newly created 
+  `FooBaz` entity
+2. Call `uow.recomputeSingleChangeSet(cs.entity)` to recalculate the existing 
+  change set of the `FooBar` entity.
+
+```typescript
+@Subscriber()
+export class FooBarSubscriber implements EventSubscriber {
+
+  async onFlush(args: FlushEventArgs): Promise<void> {
+    const changeSets = args.uow.getChangeSets();
+    const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
+
+    if (cs) {
+      const baz = new FooBaz();
+      baz.name = 'dynamic';
+      cs.entity.baz = baz;
+      args.uow.computeChangeSet(baz);
+      args.uow.recomputeSingleChangeSet(cs.entity);
+    }
+  }
+
+}
+
+const bar = new FooBar();
+bar.name = 'bar';
+await em.persistAndFlush(bar);
 ```

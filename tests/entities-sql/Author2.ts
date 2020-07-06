@@ -113,7 +113,6 @@ export class Author2 extends BaseEntity2 {
   @BeforeUpdate()
   beforeUpdate(args: EventArgs<this>) {
     this.version += 1;
-    console.log(this);
     this.hookParams.push(args);
   }
 
