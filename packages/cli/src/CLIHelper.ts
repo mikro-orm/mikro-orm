@@ -1,3 +1,4 @@
+import { createRequire, createRequireFromPath } from 'module';
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
 import CliTable3, { Table } from 'cli-table3';
@@ -124,15 +125,12 @@ export class CLIHelper {
   }
 
   static async getModuleVersion(name: string): Promise<string> {
-    const path = process.cwd() + '/node_modules/' + name + '/package.json';
-
-    if (await pathExists(path)) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pkg = require(path);
+    try {
+      const pkg = (createRequire || createRequireFromPath)(process.cwd())(`${name}/package.json`);
       return chalk.green(pkg.version);
+    } catch {
+      return chalk.red('not-found');
     }
-
-    return chalk.red('not-found');
   }
 
   static dumpTable(options: { columns: string[]; rows: string[][]; empty: string }): void {
