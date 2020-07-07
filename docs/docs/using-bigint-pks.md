@@ -22,6 +22,10 @@ If you want to use native `bigint` type, you will need to create new type based 
 export class NativeBigIntType extends BigIntType {
 
   convertToJSValue(value: any): any {
+    if (!value) {
+      return value;
+    }
+
     return BigInt(value);
   }
 
