@@ -49,6 +49,7 @@
   "dependencies": {
     "@mikro-orm/entity-generator": "^4.0.0-alpha.4",
     "@mikro-orm/knex": "^4.0.0-alpha.4",
+    "@mikro-orm/migrations": "^4.0.0-alpha.4",
     "acorn-loose": "^7.1.0",
     "acorn-walk": "^7.2.0",
     "chalk": "^4.1.0",
