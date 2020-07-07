@@ -5,13 +5,21 @@ import { EntityProperty } from '../typings';
 /**
  * This type will automatically convert string values returned from the database to native JS bigints.
  */
-export class BigIntType extends Type {
+export class BigIntType extends Type<string | bigint | null | undefined, string | null | undefined> {
 
-  convertToDatabaseValue(value: string | bigint): string {
+  convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
+    if (!value) {
+      return value as null | undefined;
+    }
+
     return '' + value;
   }
 
-  convertToJSValue(value: string | bigint): string {
+  convertToJSValue(value: string | bigint | null | undefined): string | null | undefined {
+    if (!value) {
+      return value as null | undefined;
+    }
+
     return '' + value;
   }
 
