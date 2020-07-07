@@ -1,9 +1,8 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { Config } from 'knex';
-// @ts-ignore
-import Dialect from 'knex/lib/dialects/sqlite3/index.js';
-import { AbstractSqlConnection } from '@mikro-orm/knex';
+import { AbstractSqlConnection, Knex, requireModule } from '@mikro-orm/knex';
+
+const Dialect = requireModule('knex/lib/dialects/sqlite3/index.js');
 
 export class SqliteConnection extends AbstractSqlConnection {
 
@@ -27,7 +26,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     await this.client.client.releaseConnection(conn);
   }
 
-  protected getKnexOptions(type: string): Config {
+  protected getKnexOptions(type: string): Knex.Config {
     return {
       client: type,
       connection: {
