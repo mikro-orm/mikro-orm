@@ -49,6 +49,7 @@
   "dependencies": {
     "@mikro-orm/core": "^4.0.0-alpha.4",
     "@mikro-orm/knex": "^4.0.0-alpha.4",
+    "fs-extra": "^9.0.1",
     "sqlite3": "^4.2.0"
   }
 }
