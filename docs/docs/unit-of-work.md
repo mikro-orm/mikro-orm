@@ -100,29 +100,5 @@ await em.persistAndFlush(user);
 You can find more information about transactions in [Transactions and concurrency](transactions.md) 
 page.
 
-### Beware: Auto-flushing and Transactions
-
-> Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
-> `em.flush()` yourself to persist changes into database. You can still change this via ORM's
-> options to ease the transition but generally it is not recommended. 
-
-Originally there was only `em.persist(entity, flush = true)` method, that was
-automatically flushing changes to database, if not given second `false` parameter. This 
-behaviour can be now changed via `autoFlush` option when initializing the ORM:
-
-```typescript
-const orm = await MikroORM.init({
-  autoFlush: false, // defaults to false in v3, was true in v2
-  // ...
-});
-orm.em.persist(new Entity()); // no auto-flushing now
-await orm.em.flush();
-await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
-```
-
-When using driver that supports transactions (all SQL drivers), you should either keep auto-flushing 
-disabled, or use `persistLater()` method instead, as otherwise each `persist()` call will immediately 
-create new transaction to run the query.
-
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/unitofwork.html)
 > as the behaviour here is pretty much the same.
