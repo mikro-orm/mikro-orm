@@ -107,9 +107,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator<T extends ISchemaGenerator = ISchemaGenerator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { SchemaGenerator } = (createRequire|| createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/knex');
-    return new SchemaGenerator(this.em);
+    return this.driver.getSchemaGenerator(this.em) as T;
   }
 
   /**

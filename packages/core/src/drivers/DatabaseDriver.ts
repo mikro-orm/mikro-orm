@@ -1,5 +1,5 @@
 import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, PopulateOptions } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, ISchemaGenerator } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
@@ -197,6 +197,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    */
   convertException(exception: Error): DriverException {
     return this.platform.getExceptionConverter().convertException(exception);
+  }
+
+  getSchemaGenerator(em: EntityManager): ISchemaGenerator {
+    throw new Error(`${this.constructor.name} does not use a schema generator`);
   }
 
   protected rethrow<T>(promise: Promise<T>): Promise<T> {

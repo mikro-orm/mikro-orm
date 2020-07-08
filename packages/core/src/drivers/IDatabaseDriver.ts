@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, CollectionItem, ReferencedEntity } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, CollectionItem, ReferencedEntity, ISchemaGenerator } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
@@ -72,6 +72,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   convertException(exception: Error): DriverException;
 
+  getSchemaGenerator(em: EntityManager): ISchemaGenerator;
 }
 
 export interface FindOptions<T> {
