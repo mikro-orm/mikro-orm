@@ -1,7 +1,8 @@
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary, ISchemaGenerator } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
+import { EntityManager } from '../EntityManager';
 
 export abstract class Platform {
 
@@ -125,6 +126,10 @@ export abstract class Platform {
 
   getExceptionConverter(): ExceptionConverter {
     return this.exceptionConverter;
+  }
+
+  getSchemaGenerator(em: EntityManager): ISchemaGenerator {
+    throw new Error(`${this.constructor.name} does not use a schema generator`);
   }
 
 }

@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, CollectionItem, ReferencedEntity, ISchemaGenerator } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, CollectionItem, ReferencedEntity } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
@@ -71,8 +71,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    * Converts native db errors to standardized driver exceptions
    */
   convertException(exception: Error): DriverException;
-
-  getSchemaGenerator(em: EntityManager): ISchemaGenerator;
 
 }
 

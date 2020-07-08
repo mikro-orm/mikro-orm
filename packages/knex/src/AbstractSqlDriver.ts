@@ -5,7 +5,6 @@ import {
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, AbstractSqlPlatform, Field, QueryBuilder } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
-import { SchemaGenerator } from './schema';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
@@ -435,10 +434,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(mode);
     await this.rethrow(qb.execute());
-  }
-
-  getSchemaGenerator(em: SqlEntityManager): SchemaGenerator {
-    return new SchemaGenerator(em);
   }
 
   protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder, fields?: Field[]): Field[] {
