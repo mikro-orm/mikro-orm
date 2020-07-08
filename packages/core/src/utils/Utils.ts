@@ -2,7 +2,7 @@ import fastEqual from 'fast-deep-equal';
 import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
-import { isAbsolute, normalize, relative } from 'path';
+import { isAbsolute, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 // @ts-ignore
@@ -632,7 +632,7 @@ export class Utils {
    */
   static requireFrom(id: string, from: string) {
     /* istanbul ignore next */
-    return (createRequire || createRequireFromPath)(Utils.absolutePath(from))(id);
+    return (createRequire || createRequireFromPath)(resolve(from))(id);
   }
 
 }
