@@ -1,3 +1,4 @@
+import { createRequire, createRequireFromPath } from 'module';
 import { pathExists } from 'fs-extra';
 import path from 'path';
 import { IDatabaseDriver } from '../drivers';
@@ -60,8 +61,9 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json') {
     const tsConfigPath = path.join(process.cwd(), configPath);
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require('ts-node').register({
+    const requireFromConfig = (createRequire || createRequireFromPath)(tsConfigPath);
+
+    requireFromConfig('ts-node').register({
       project: tsConfigPath,
       transpileOnly: true,
     });

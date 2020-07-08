@@ -58,10 +58,5 @@
     "reflect-metadata": "^0.1.13",
     "tsconfig-paths": "^3.9.0",
     "uuid": "^8.1.0"
-  },
-  "peerDependenciesMeta": {
-    "ts-node": {
-      "optional": true
-    }
   }
 }
