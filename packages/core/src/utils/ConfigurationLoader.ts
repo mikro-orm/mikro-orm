@@ -75,8 +75,7 @@ export class ConfigurationLoader {
       const paths = tsConfig.compilerOptions?.paths;
 
       if (paths) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        require('tsconfig-paths').register({
+        requireFromConfig('tsconfig-paths').register({
           baseUrl: tsConfig.compilerOptions.baseUrl,
           paths: tsConfig.compilerOptions.paths,
         });
