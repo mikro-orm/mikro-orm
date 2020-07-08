@@ -1,9 +1,11 @@
 import { Connection } from 'mariadb';
-import { Knex } from '@mikro-orm/knex';
-import { MySqlConnection } from '@mikro-orm/mysql-base';
+import { MySqlConnection, Knex } from '@mikro-orm/mysql-base';
 import { Utils } from '@mikro-orm/core';
 
-const Dialect = Utils.requireFrom('knex/lib/dialects/mysql/index.js', require.resolve('@mikro-orm/knex'));
+const Dialect = Utils.requireFrom(
+	'knex/lib/dialects/mysql/index.js',
+	require.resolve('@mikro-orm/knex', { paths: [require.resolve('@mikro-orm/mysql-base')] })
+);
 
 export class MariaDbConnection extends MySqlConnection {
 
