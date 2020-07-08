@@ -8,10 +8,8 @@ export class EntityRepository<T> {
   constructor(protected readonly em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
 
-  persist(entity: AnyEntity | AnyEntity[], flush?: false): void;
-  persist(entity: AnyEntity | AnyEntity[], flush: true): Promise<void>;
-  persist(entity: AnyEntity | AnyEntity[], flush = false): void | Promise<void> {
-    return this.em.persist(entity, flush as true);
+  persist(entity: AnyEntity | AnyEntity[]): EntityManager {
+    return this.em.persist(entity);
   }
 
   async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
@@ -55,10 +53,8 @@ export class EntityRepository<T> {
     return this.em.find<T>(this.entityName, {}, populate as string[], orderBy, limit, offset);
   }
 
-  remove(where: T | FilterQuery<T>, flush?: false): void;
-  remove(where: T | FilterQuery<T>, flush: true): Promise<number>;
-  remove(where: T | FilterQuery<T>, flush = false): void | Promise<number> {
-    return this.em.remove(this.entityName, where, flush as true);
+  remove(entity: AnyEntity): EntityManager {
+    return this.em.remove(entity);
   }
 
   async removeAndFlush(entity: AnyEntity): Promise<void> {

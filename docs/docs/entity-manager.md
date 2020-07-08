@@ -8,10 +8,9 @@ sidebar_label: Entity Manager
 There are 2 methods we should first describe to understand how persisting works in MikroORM: 
 `em.persist()` and `em.flush()`.
 
-`em.persist(entity, flush?: boolean)` is used to mark new entities for future persisting. 
+`em.persist(entity)` is used to mark new entities for future persisting. 
 It will make the entity managed by given `EntityManager` and once `flush` will be called, it 
-will be written to the database. Second boolean parameter can be used to invoke `flush` 
-immediately. Its default value is configurable via `autoFlush` option.
+will be written to the database. 
 
 To understand `flush`, lets first define what managed entity is: An entity is managed if 
 it’s fetched from the database (via `em.find()`, `em.findOne()` or via other managed entity) 
@@ -58,19 +57,6 @@ orm.em.persistLater(book1);
 orm.em.persistLater(book2);
 orm.em.persistLater(book3); 
 await orm.em.flush(); // flush everything to database at once
-```
-
-### Auto-flushing
-
-Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
-`em.flush()` yourself to persist changes into database. You can still change this via ORM's
-options to ease the transition but generally it is not recommended as it can cause unwanted
-small transactions being created around each `persist`. 
-
-```typescript
-orm.em.persist(new Entity()); // no auto-flushing by default
-await orm.em.flush();
-await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
 
 ## Fetching Entities with EntityManager
@@ -353,18 +339,17 @@ Gets count of entities matching the `where` condition.
 
 ---
 
-#### `persist(entity: AnyEntity | AnyEntity[], flush?: boolean): void | Promise<void>`
+#### `persist(entity: AnyEntity | AnyEntity[]): EntityManager`
 
 Tells the EntityManager to make an instance managed and persistent. The entity will be 
 entered into the database at or before transaction commit or as a result of the flush 
-operation. You can control immediate flushing via `flush` parameter and via `autoFlush`
-configuration option. 
+operation.
 
 ---
 
 #### `persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void>`
 
-Shortcut for `persist` & `flush`.
+Shortcut for `persist` & `flush`. Same as `em.persist(entity).flush()`.
 
 ---
 
@@ -380,20 +365,10 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(entityName: string | EntityClass<T>, where: AnyEntity | FilterQuery<T> | IPrimaryKey, flush?: boolean): Promise<number>`
-
-When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
-otherwise it fires delete query with given `where` condition. 
-
-This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.  
-
----
-
-#### `removeEntity(entity: AnyEntity, flush?: boolean): Promise<number>`
+#### `remove(entity: AnyEntity): EntityManager`
 
 Removes an entity instance. A removed entity will be removed from the database at or before 
-transaction commit or as a result of the flush operation. You can control immediate flushing 
-via `flush` parameter and via `autoFlush` configuration option.
+transaction commit or as a result of the flush operation. 
 
 This method fires `beforeDelete` and `afterDelete` hooks.  
 
@@ -401,13 +376,13 @@ This method fires `beforeDelete` and `afterDelete` hooks.
 
 #### `removeAndFlush(entity: AnyEntity): Promise<void>`
 
-Shortcut for `removeEntity` & `flush`.
+Shortcut for `remove` & `flush`. Same as `em.remove(entity).flush()`.
 
 ---
 
 #### `removeLater(entity: AnyEntity): void`
 
-Shortcut for `removeEntity` without flushing. 
+Shortcut for `remove` without flushing. 
 
 ---
 

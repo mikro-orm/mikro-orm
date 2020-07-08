@@ -72,6 +72,41 @@ Instead of interface merging with `WrappedEntity`, one can now use classic inher
 by extending `BaseEntity` exported from `@mikro-orm/core`. If you do so, `wrap(entity)` 
 will return your entity. 
 
+## Removed `flush` parameter from `persist()` and `remove()` methods
+
+`persist()` and `remove()` are now sync methods that only mark the entity for 
+persistence or removal. They now return the `EntityManager` to allow fluid flushing:
+
+```typescript
+// before
+await em.persist(jon, true);
+await em.remove(Author, jon, true);
+
+// after
+await em.persist(jon).flush();
+await em.remove(jon).flush();
+```
+
+## `remove()` method requires entity instances
+
+The `em.remove()` method originally allowed to pass either entity instance, or 
+a condition. When one passed a condition, it was firing a native delete query, 
+without handling transactions or hooks. 
+
+In v4, the method is now simplified and works only with entity instances. Use 
+`em.nativeDelete()` explicitly if you want to fire a delete query instead of 
+letting the `UnitOfWork` doing its job.
+
+```typescript
+// before
+await em.remove(Author, 1); // fires query directly
+
+// after 
+await em.nativeDelete(Author, 1);
+```
+
+> `em.removeEntity()` has been removed in favour of `em.remove()` (that now has almost the same signature).
+
 ## Custom types are now type safe
 
 Generic `Type` class has now two type arguments - the input and output types. 

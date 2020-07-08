@@ -36,7 +36,6 @@ create the request context for you automatically.
       entitiesDirsTs: ['src/entities'],
       dbName: 'my-db-name.sqlite3',
       type: 'sqlite',
-      autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
     }),
     // ... your feature modules
   ],

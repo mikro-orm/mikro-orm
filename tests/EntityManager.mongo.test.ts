@@ -155,7 +155,7 @@ describe('EntityManagerMongo', () => {
     expect(lastBook3.length).toBe(1);
     expect(lastBook[0]).toBe(lastBook3[0]);
 
-    await orm.em.getRepository(Book).remove(lastBook[0]._id);
+    await orm.em.getRepository(Book).remove(lastBook[0]).flush();
   });
 
   test('should provide custom repository', async () => {
@@ -301,10 +301,9 @@ describe('EntityManagerMongo', () => {
     await repo.removeAndFlush(author);
     expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
-    repo.persistLater(author2);
+    repo.persist(author2);
     orm.em.removeLater(author3);
     await repo.flush();
-    await orm.em.remove(Author, author3);
   });
 
   test('removing persisted entity will remove it from persist stack first', async () => {
@@ -314,7 +313,7 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
     repo.persist(author);
-    orm.em.removeEntity(author);
+    orm.em.remove(author);
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({});
   });
@@ -328,7 +327,7 @@ describe('EntityManagerMongo', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.em.config, { logger });
-    await orm.em.remove(Author, author.id);
+    await orm.em.nativeDelete(Author, author.id);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }, { session: undefined }\)/);
   });
 
@@ -962,7 +961,7 @@ describe('EntityManagerMongo', () => {
     expect(books.length).toBe(3);
     expect(books[0].tags.count()).toBe(2);
     await books[0].author.books.init();
-    await orm.em.removeEntity(books[0].author, true);
+    await orm.em.remove(books[0].author).flush();
     orm.em.clear();
 
     books = await repo.findAll();
@@ -990,7 +989,7 @@ describe('EntityManagerMongo', () => {
     orm.em.getUnitOfWork().unsetIdentity(books[2]);
 
     // by removing one book, publisher will be cascade removed and other books will remain its identifier
-    await orm.em.removeEntity(books[0], true);
+    await orm.em.remove(books[0]).flush();
     orm.em.clear();
 
     books = await repo.findAll();
@@ -1498,7 +1497,7 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.findOne(Book, b3)).resolves.toBeNull();
 
     // removing author will cascade the operation as orphan removal behaves also like cascade remove
-    await orm.em.removeEntity(author, true);
+    await orm.em.remove(author).flush();
     await expect(orm.em.count(Book, { author })).resolves.toBe(0);
   });
 
@@ -1527,7 +1526,7 @@ describe('EntityManagerMongo', () => {
     // removing bar will cascade the operation as orphan removal behaves also like cascade remove
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
-    await orm.em.removeEntity(bar, true);
+    await orm.em.remove(bar).flush();
     await expect(orm.em.count(FooBaz, { bar })).resolves.toBe(0);
   });
 

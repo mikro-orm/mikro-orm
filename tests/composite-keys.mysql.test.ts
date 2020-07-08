@@ -53,7 +53,7 @@ describe('composite keys in mysql', () => {
     const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
     expect(p3).toBe(p2);
 
-    await orm.em.removeEntity(p3, true);
+    await orm.em.remove(p3).flush();
     const p4 = await orm.em.findOne(FooParam2, { bar: param.bar.id, baz: param.baz.id });
     expect(p4).toBeNull();
   });
@@ -81,7 +81,7 @@ describe('composite keys in mysql', () => {
     expect(address.author).toBe(a2);
     expect(address.author.address).toBe(address);
 
-    await orm.em.removeEntity(a2, true);
+    await orm.em.remove(a2).flush();
     const a3 = await orm.em.findOne(Author2, author.id);
     expect(a3).toBeNull();
     const address2 = await orm.em.findOne(Address2, author.id as any);
@@ -125,12 +125,12 @@ describe('composite keys in mysql', () => {
     const c1 = await orm.em.findOneOrFail(Car2, { name: car.name, year: car.year });
     expect(c1).toBe(o2.car);
 
-    await orm.em.removeEntity(o2, true);
+    await orm.em.remove(o2).flush();
     const o3 = await orm.em.findOne(CarOwner2, owner.id);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car);
     expect(c2).toBe(o2.car);
-    await orm.em.removeEntity(c2, true);
+    await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car);
     expect(c3).toBeNull();
     const user1 = new User2('f', 'l');
@@ -187,12 +187,12 @@ describe('composite keys in mysql', () => {
     const c1 = await orm.em.findOneOrFail(Car2, { name: car1.name, year: car1.year });
     expect(c1).toBe(u2.cars[0]);
 
-    await orm.em.removeEntity(u2, true);
+    await orm.em.remove(u2).flush();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car1);
     expect(c2).toBe(u2.cars[0]);
-    await orm.em.removeEntity(c2, true);
+    await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car1);
     expect(c3).toBeNull();
   });
@@ -236,12 +236,12 @@ describe('composite keys in mysql', () => {
     const c1 = await orm.em.findOneOrFail(Sandwich, { id: sandwich1.id });
     expect(c1).toBe(u2.sandwiches[0]);
 
-    await orm.em.removeEntity(u2, true);
+    await orm.em.remove(u2).flush();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, ['users']);
     expect(c2).toBe(u2.sandwiches[0]);
-    await orm.em.removeEntity(c2, true);
+    await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();
   });

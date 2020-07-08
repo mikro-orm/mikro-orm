@@ -457,7 +457,7 @@ describe('EntityManagerMySql', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
+    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -1220,9 +1220,9 @@ describe('EntityManagerMySql', () => {
     bible2.title = '123';
     await orm.em.flush();
 
-    orm.em.removeEntity(bible);
-    orm.em.removeEntity(bible2);
-    orm.em.removeEntity(god);
+    orm.em.remove(bible);
+    orm.em.remove(bible2);
+    orm.em.remove(god);
     await orm.em.flush();
 
     expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
@@ -1984,7 +1984,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const a = await orm.em.findOneOrFail(FooBar2, bar.id, ['baz']);
-    orm.em.removeEntity(a.baz!);
+    orm.em.remove(a.baz!);
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
@@ -1996,8 +1996,10 @@ describe('EntityManagerMySql', () => {
   });
 
   test('em.remove() with null or undefined in where parameter throws', async () => {
-    expect(() => orm.em.remove(Book2, undefined as any)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
-    expect(() => orm.em.remove(Book2, null)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
+    expect(() => orm.em.remove(undefined as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
+    expect(() => orm.em.remove(null as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
+    expect(() => orm.em.remove({} as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
+    expect(() => orm.em.remove({ foo: 1 } as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
   });
 
   test('adding items to not initialized collection', async () => {
@@ -2048,11 +2050,6 @@ describe('EntityManagerMySql', () => {
     tag.books.add(book);
     await orm.em.flush();
     orm.em.clear();
-  });
-
-  test('em.remove() with null or undefined in where parameter throws', async () => {
-    expect(() => orm.em.remove(Book2, undefined as any)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
-    expect(() => orm.em.remove(Book2, null)).toThrowError(`You cannot call 'EntityManager.remove()' with empty 'where' parameter. If you want to remove all entities, use 'em.remove(Book2, {})'.`);
   });
 
   test('adding items to not initialized collection', async () => {

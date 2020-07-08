@@ -143,12 +143,11 @@ Gets count of entities matching the `where` condition.
 
 ---
 
-#### `persist(entity: AnyEntity | AnyEntity[], flush?: boolean): Promise<void>`
+#### `persist(entity: AnyEntity | AnyEntity[]): Promise<void>`
 
 Tells the EntityManager to make an instance managed and persistent. The entity will be 
 entered into the database at or before transaction commit or as a result of the flush 
-operation. You can control immediate flushing via `flush` parameter and via `autoFlush`
-configuration option. 
+operation. 
 
 ---
 
@@ -160,7 +159,7 @@ Shortcut for `persist` & `flush`.
 
 #### `persistLater(entity: AnyEntity | AnyEntity[]): void`
 
-Shortcut for just `persist`, without flushing. 
+Shortcut for just `persist`, without flushing. Deprecated, use `em.persist()`.
 
 ---
 
@@ -170,7 +169,7 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 ---
 
-#### `remove(where: AnyEntity | FilterQuery<T>, flush?: boolean): Promise<number>`
+#### `remove(where: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): Promise<void>`
 
 When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
 otherwise it fires delete query with given `where` condition. 
@@ -181,7 +180,7 @@ This method fires `beforeDelete` and `afterDelete` hooks only if you provide ent
 
 #### `removeAndFlush(entity: AnyEntity): Promise<void>`
 
-Shortcut for `removeEntity` & `flush`.
+Shortcut for `remove` & `flush`.
 
 This method fires `beforeDelete` and `afterDelete` hooks. 
 
@@ -189,7 +188,7 @@ This method fires `beforeDelete` and `afterDelete` hooks.
 
 #### `removeLater(entity: AnyEntity): void`
 
-Shortcut for `removeEntity` without flushing. 
+Shortcut for `remove` without flushing. Deprecated, use `em.remove()`.
 
 This method fires `beforeDelete` and `afterDelete` hooks. 
 

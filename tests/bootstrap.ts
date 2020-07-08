@@ -157,13 +157,13 @@ export async function initORMSqlite2() {
 }
 
 export async function wipeDatabase(em: EntityManager) {
-  await em.getRepository(Author).remove({});
-  await em.getRepository(Book).remove({});
-  await em.getRepository(BookTag).remove({});
-  await em.getRepository(Publisher).remove({});
-  await em.getRepository(Test).remove({});
-  await em.getRepository(FooBar).remove({});
-  await em.getRepository(FooBaz).remove({});
+  await em.getRepository(Author).nativeDelete({});
+  await em.getRepository(Book).nativeDelete({});
+  await em.getRepository(BookTag).nativeDelete({});
+  await em.getRepository(Publisher).nativeDelete({});
+  await em.getRepository(Test).nativeDelete({});
+  await em.getRepository(FooBar).nativeDelete({});
+  await em.getRepository(FooBaz).nativeDelete({});
   em.clear();
 }
 
@@ -216,23 +216,23 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
 
 export async function wipeDatabaseSqlite(em: SqlEntityManager) {
   await em.createQueryBuilder('Author3').delete().execute();
-  await em.remove('Book3', {});
-  await em.remove('BookTag3', {});
-  await em.remove('Publisher3', {});
-  await em.remove('Test3', {});
-  await em.remove('book3_tags', {});
-  await em.remove('publisher3_tests', {});
+  await em.nativeDelete('Book3', {});
+  await em.nativeDelete('BookTag3', {});
+  await em.nativeDelete('Publisher3', {});
+  await em.nativeDelete('Test3', {});
+  await em.nativeDelete('book3_tags', {});
+  await em.nativeDelete('publisher3_tests', {});
   em.clear();
 }
 
 export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
-  await em.remove('Author4', {});
-  await em.remove('Book4', {});
-  await em.remove('BookTag4', {});
-  await em.remove('Publisher4', {});
-  await em.remove('Test4', {});
-  await em.remove('tags_ordered', {});
-  await em.remove('tags_unordered', {});
-  await em.remove('publisher4_tests', {});
+  await em.nativeDelete('Author4', {});
+  await em.nativeDelete('Book4', {});
+  await em.nativeDelete('BookTag4', {});
+  await em.nativeDelete('Publisher4', {});
+  await em.nativeDelete('Test4', {});
+  await em.nativeDelete('tags_ordered', {});
+  await em.nativeDelete('tags_unordered', {});
+  await em.nativeDelete('publisher4_tests', {});
   em.clear();
 }
