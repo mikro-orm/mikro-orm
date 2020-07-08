@@ -50,9 +50,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/core": "^4.0.0-alpha.4",
     "@mikro-orm/knex": "^4.0.0-alpha.4",
     "@mikro-orm/mysql-base": "^4.0.0-alpha.4",
     "mariadb": "^2.4.0"
+  },
+  "devDependencies": {
+    "@mikro-orm/core": "^4.0.0-alpha.4"
+  },
+  "peerDependencies": {
+    "@mikro-orm/core": "^4.0.0-alpha.4"
   }
 }
