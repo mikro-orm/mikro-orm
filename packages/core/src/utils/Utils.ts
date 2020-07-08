@@ -625,6 +625,11 @@ export class Utils {
     return global[key];
   }
 
+  /**
+   * Require a module from a specific location
+   * @param id The module to require
+   * @param from Location to start the node resolution
+   */
   static requireFrom(id: string, from: string) {
     /* istanbul ignore next */
     return (createRequire || createRequireFromPath)(from)(id);
