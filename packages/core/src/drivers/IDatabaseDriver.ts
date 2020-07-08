@@ -73,6 +73,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   convertException(exception: Error): DriverException;
 
   getSchemaGenerator(em: EntityManager): ISchemaGenerator;
+
 }
 
 export interface FindOptions<T> {
