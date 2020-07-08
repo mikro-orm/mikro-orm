@@ -632,7 +632,7 @@ export class Utils {
    */
   static requireFrom(id: string, from: string) {
     /* istanbul ignore next */
-    return (createRequire || createRequireFromPath)(from)(id);
+    return (createRequire || createRequireFromPath)(Utils.absolutePath(from))(id);
   }
 
 }
