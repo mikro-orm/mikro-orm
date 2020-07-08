@@ -149,24 +149,6 @@ MikroORM.init({
 
 Read more about this in [Installation](installation.md) and [Read Connections](read-connections.md) sections.
 
-## Auto-flush
-
-Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
-`em.flush()` yourself to persist changes into database. You can still change this via ORM's 
-options to ease the transition but generally it is not recommended as it can cause unwanted 
-small transactions being created around each `persist`. 
-
-```typescript
-MikroORM.init({
-  autoFlush: true,
-});
-
-await orm.em.persist(new Entity()); // flushed
-orm.em.persist(new Entity(), false); // you can still use second parameter to disable auto-flushing
-```
-
-Read more about this in [Entity Manager](entity-manager.md#auto-flushing) docs.
-
 ## Naming Strategy
 
 When mapping your entities to database tables and columns, their names will be defined by naming 

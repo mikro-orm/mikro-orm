@@ -79,9 +79,9 @@ describe('GH issue 349', () => {
   });
 
   afterEach(async () => {
-    await orm.em.remove(A, {});
-    await orm.em.remove(B, {});
-    await orm.em.remove(C, {});
+    await orm.em.nativeDelete(A, {});
+    await orm.em.nativeDelete(B, {});
+    await orm.em.nativeDelete(C, {});
   });
 
   afterAll(async () => {

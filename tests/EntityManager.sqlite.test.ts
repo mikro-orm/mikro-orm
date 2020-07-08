@@ -177,7 +177,7 @@ describe('EntityManagerSqlite', () => {
 
     const god = new Author3('God', 'hello@heaven.god');
     const bible = new Book3('Bible', god);
-    await orm.em.persist(bible, true);
+    await orm.em.persist(bible).flush();
 
     const author = new Author3('Jon Snow', 'snow@wall.st');
     author.born = new Date('1990-03-23');
@@ -284,13 +284,13 @@ describe('EntityManagerSqlite', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author3);
     expect(lastBook[0].author.isInitialized()).toBe(true);
-    await orm.em.getRepository(Book3).remove(lastBook[0].id);
+    await orm.em.getRepository(Book3).remove(lastBook[0]).flush();
   });
 
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author3('God', 'hello@heaven.god');
     const bible = new Book3('Bible', god);
-    await orm.em.persist(bible, true);
+    await orm.em.persist(bible).flush();
     orm.em.clear();
 
     const ref = orm.em.getReference<any>(Author3, god.id);
@@ -304,7 +304,7 @@ describe('EntityManagerSqlite', () => {
     const author1 = new Author3('Author 1', 'a1@example.com');
     const author2 = new Author3('Author 2', 'a2@example.com');
     const author3 = new Author3('Author 3', 'a3@example.com');
-    await orm.em.persist([author1, author2, author3], true);
+    await orm.em.persist([author1, author2, author3]).flush();
     orm.em.clear();
 
     const authors = await orm.em.find<any>(Author3, { email: /exa.*le\.c.m$/ });
@@ -464,7 +464,7 @@ describe('EntityManagerSqlite', () => {
     const bible = new Book3('Bible', god);
     const bible2 = new Book3('Bible pt. 2', god);
     const bible3 = new Book3('Bible pt. 3', new Author3('Lol', 'lol@lol.lol'));
-    await orm.em.persist([bible, bible2, bible3], true);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = (await orm.em.findOne<any>(Author3, god.id))!;
@@ -480,7 +480,7 @@ describe('EntityManagerSqlite', () => {
 
   test('stable results of serialization (collection)', async () => {
     const pub = new Publisher3('Publisher3');
-    await orm.em.persist(pub, true);
+    await orm.em.persist(pub).flush();
     const god = new Author3('God', 'hello@heaven.god');
     const bible = new Book3('Bible', god);
     bible.publisher = pub;
@@ -488,7 +488,7 @@ describe('EntityManagerSqlite', () => {
     bible2.publisher = pub;
     const bible3 = new Book3('Bible pt. 3', new Author3('Lol', 'lol@lol.lol'));
     bible3.publisher = pub;
-    await orm.em.persist([bible, bible2, bible3], true);
+    await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
     const newGod = orm.em.getReference<any>(Author3, god.id);
@@ -524,12 +524,12 @@ describe('EntityManagerSqlite', () => {
     const authorRepository = orm.em.getRepository(Author3);
     const god = new Author3('God', 'hello@heaven.god');
     const bible = new Book3('Bible', god);
-    await orm.em.persist(bible, true);
+    await orm.em.persist(bible).flush();
 
     let jon = new Author3('Jon Snow', 'snow@wall.st');
     jon.born = new Date('1990-03-23');
     jon.favouriteBook = bible;
-    await orm.em.persist(jon, true);
+    await orm.em.persist(jon).flush();
     orm.em.clear();
 
     jon = (await authorRepository.findOne(jon.id))!;
@@ -560,7 +560,7 @@ describe('EntityManagerSqlite', () => {
 
     await orm.em.persist(book1);
     await orm.em.persist(book2);
-    await orm.em.persist(book3, true);
+    await orm.em.persist(book3).flush();
 
     expect(tag1.id).toBeDefined();
     expect(tag2.id).toBeDefined();
@@ -622,14 +622,14 @@ describe('EntityManagerSqlite', () => {
     // remove
     expect(book.tags.count()).toBe(2);
     book.tags.remove(tag1);
-    await orm.em.persist(book, true);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
-    await orm.em.persist(book, true);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(2);
@@ -643,7 +643,7 @@ describe('EntityManagerSqlite', () => {
 
     // removeAll
     book.tags.removeAll();
-    await orm.em.persist(book, true);
+    await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
     expect(book.tags.count()).toBe(0);
@@ -657,7 +657,7 @@ describe('EntityManagerSqlite', () => {
     expect(p1.tests.count()).toBe(0);
     const p2 = new Publisher3('bar');
     p2.tests.add(new Test3(), new Test3());
-    await orm.em.persist([p1, p2], true);
+    await orm.em.persist([p1, p2]).flush();
     const repo = orm.em.getRepository<any>(Publisher3);
 
     orm.em.clear();
@@ -686,7 +686,7 @@ describe('EntityManagerSqlite', () => {
     book1.tags.add(tag1, tag3);
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persist([book1, book2, book3], true);
+    await orm.em.persist([book1, book2, book3]).flush();
     const repo = orm.em.getRepository<any>(BookTag3);
 
     orm.em.clear();
@@ -722,13 +722,13 @@ describe('EntityManagerSqlite', () => {
 
     expect(Author3.beforeDestroyCalled).toBe(0);
     expect(Author3.afterDestroyCalled).toBe(0);
-    await repo.remove(author, true);
+    await repo.remove(author).flush();
     expect(Author3.beforeDestroyCalled).toBe(1);
     expect(Author3.afterDestroyCalled).toBe(1);
 
     const author2 = new Author3('Johny Cash', 'johny@cash.com');
     await repo.persistAndFlush(author2);
-    await repo.remove(author2, true);
+    await repo.remove(author2).flush();
     expect(Author3.beforeDestroyCalled).toBe(2);
     expect(Author3.afterDestroyCalled).toBe(2);
   });
@@ -749,7 +749,7 @@ describe('EntityManagerSqlite', () => {
     const t1 = Test3.create('t1');
     const t2 = Test3.create('t2');
     const t3 = Test3.create('t3');
-    await orm.em.persist([t1, t2, t3], true);
+    await orm.em.persist([t1, t2, t3]).flush();
     publisher.tests.add(t2, t1, t3);
     await repo.persistAndFlush(publisher);
     orm.em.clear();
@@ -811,7 +811,7 @@ describe('EntityManagerSqlite', () => {
     const author2 = new Author3('Name 2', 'e-mail2');
     author2.favouriteBook = book;
     author2.version = 123;
-    await orm.em.persist([author1, author2, book], true);
+    await orm.em.persist([author1, author2, book]).flush();
     const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
@@ -822,7 +822,7 @@ describe('EntityManagerSqlite', () => {
     const b1 = new Book3('b1', author);
     const b2 = new Book3('b2', author);
     const b3 = new Book3('b3', author);
-    await orm.em.persist([b1, b2, b3], true);
+    await orm.em.persist([b1, b2, b3]).flush();
     orm.em.clear();
 
     const a1 = (await orm.em.findOne<any>(Author3, { 'id:ne': 10 }))!;

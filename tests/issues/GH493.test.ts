@@ -51,7 +51,7 @@ describe('GH issue 493', () => {
     await orm.em.persistAndFlush(a);
     a.name = 'test';
     await expect(orm.em.flush()).rejects.toThrowError('You cannot call em.flush() from inside lifecycle hook handlers');
-    orm.em.removeEntity(a);
+    orm.em.remove(a);
     await expect(orm.em.flush()).rejects.toThrowError('You cannot call em.flush() from inside lifecycle hook handlers');
   });
 });

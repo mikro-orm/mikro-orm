@@ -30,7 +30,7 @@ describe('GH issue 401', () => {
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
     });
-    await orm.em.remove(Entity401, {});
+    await orm.em.nativeDelete(Entity401, {});
   });
 
   afterAll(() => orm.close(true));

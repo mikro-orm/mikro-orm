@@ -318,7 +318,7 @@ describe('EntityManagerPostgre', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
+    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
   });
 
   test('json properties', async () => {
@@ -1219,7 +1219,7 @@ describe('EntityManagerPostgre', () => {
     expect(address.author).toBe(a2);
     expect(address.author.address).toBe(address);
 
-    await orm.em.removeEntity(a2, true);
+    await orm.em.remove(a2).flush();
     const a3 = await orm.em.findOne(Author2, author.id);
     expect(a3).toBeNull();
     const address2 = await orm.em.findOne(Address2, author.id as any);

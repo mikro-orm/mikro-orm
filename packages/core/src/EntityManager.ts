@@ -323,7 +323,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], wrapped: true): IdentifiedReference<T, PK>;
+  getReference<T, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -333,17 +333,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], wrapped: false): T;
+  getReference<T>(entityName: EntityName<T>, id: Primary<T>, wrapped: false): T;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], wrapped: boolean): T | Reference<T>;
+  getReference<T>(entityName: EntityName<T>, id: Primary<T>, wrapped: boolean): T | Reference<T>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[], wrapped = false): T | Reference<T> {
+  getReference<T>(entityName: EntityName<T>, id: Primary<T>, wrapped = false): T | Reference<T> {
     const meta = this.metadata.get(Utils.className(entityName));
 
     if (Utils.isPrimaryKey(id)) {
@@ -351,7 +351,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         throw ValidationError.invalidCompositeIdentifier(meta);
       }
 
-      id = [id];
+      id = [id] as Primary<T>;
     }
 
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
@@ -376,30 +376,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Tells the EntityManager to make an instance managed and persistent. You can force flushing via second parameter.
+   * Tells the EntityManager to make an instance managed and persistent.
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
-  persist(entity: AnyEntity | AnyEntity[], flush?: false): void;
-  persist(entity: AnyEntity | AnyEntity[], flush: true): Promise<void>;
-  persist(entity: AnyEntity | AnyEntity[], flush = false): void | Promise<void> {
+  persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
     const entities = Utils.asArray(entity);
 
     for (const ent of entities) {
-      this.getUnitOfWork().persist(ent);
+      this.getUnitOfWork().persist(Utils.unwrapReference(ent));
     }
 
-    if (flush) {
-      return this.flush();
-    }
+    return this;
   }
 
   /**
    * Persists your entity immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.persistLater(e) && em.flush()`.
+   * Equivalent to `em.persist(e).flush()`.
    */
-  async persistAndFlush(entity: AnyEntity | AnyEntity[]): Promise<void> {
-    this.persist(entity);
-    await this.flush();
+  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): Promise<void> {
+    await this.persist(entity).flush();
   }
 
   /**
@@ -413,55 +408,41 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Removes an entity instance or all entities matching your `where` query. When deleting entity by instance, you
-   * will need to flush your changes. You can force flushing via third parameter.
-   */
-  remove<T>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush?: false): void;
-  remove<T>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush: true): Promise<number>;
-  remove<T>(entityName: EntityName<T>, where: FilterQuery<T> | T, flush = false): void | Promise<number> {
-    entityName = Utils.className(entityName);
-
-    if (Utils.isEntity(where)) {
-      const ret = this.removeEntity(where as T, flush as true);
-      return ret ? ret.then(() => 1) : ret;
-    }
-
-    this.validator.validateRemoveEmptyWhere(entityName, where);
-
-    return this.nativeDelete(entityName, where);
-  }
-
-  /**
    * Removes an entity instance. You can force flushing via second parameter.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
+   *
+   * To remove entities by condition, use `em.nativeDelete()`.
    */
-  removeEntity<T>(entity: T, flush?: false): void;
-  removeEntity<T>(entity: T, flush: true): Promise<void>;
-  removeEntity<T>(entity: T, flush = false): void | Promise<void> {
-    this.getUnitOfWork().remove(entity);
+  remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
+    const entities = Utils.asArray(entity, true);
 
-    if (flush) {
-      return this.flush();
+    for (const ent of entities) {
+      if (!Utils.isEntity(ent, true)) {
+        throw new Error(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
+      }
+
+      this.getUnitOfWork().remove(Utils.unwrapReference(ent));
     }
+
+    return this;
   }
 
   /**
    * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
-   * Equivalent to `em.removeLater(e) && em.flush()`
+   * Equivalent to `em.remove(e).flush()`
    */
-  async removeAndFlush(entity: AnyEntity): Promise<void> {
-    this.getUnitOfWork().remove(entity);
-    await this.flush();
+  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity>): Promise<void> {
+    await this.remove(entity).flush();
   }
 
   /**
    * Removes an entity instance.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
-   * @deprecated use `removeEntity()`
+   * @deprecated use `remove()`
    */
   removeLater(entity: AnyEntity): void {
-    this.getUnitOfWork().remove(entity);
+    this.remove(entity);
   }
 
   /**

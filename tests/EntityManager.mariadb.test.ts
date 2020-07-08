@@ -198,7 +198,7 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
-    await orm.em.getRepository(Book2).remove(lastBook[0].uuid);
+    await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
   });
 
   afterAll(async () => orm.close(true));
