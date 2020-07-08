@@ -1,9 +1,8 @@
-import { createRequire, createRequireFromPath } from 'module';
 import chalk from 'chalk';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Logger, Options } from './utils';
+import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
 import { IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
@@ -114,8 +113,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    /* istanbul ignore next */
-    const { EntityGenerator } = (createRequire || createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/entity-generator');
+    const { EntityGenerator } = Utils.requireFrom('@mikro-orm/entity-generator', this.config.get('baseDir'));
     return new EntityGenerator(this.em);
   }
 
@@ -123,8 +121,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
-    /* istanbul ignore next */
-    const { Migrator } = (createRequire || createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/migrations');
+    const { Migrator } = Utils.requireFrom('@mikro-orm/migrations', this.config.get('baseDir'));
     return new Migrator(this.em);
   }
 

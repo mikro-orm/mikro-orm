@@ -1,4 +1,3 @@
-import { createRequire, createRequireFromPath } from 'module';
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
 import CliTable3, { Table } from 'cli-table3';
@@ -126,7 +125,7 @@ export class CLIHelper {
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
-      const pkg = (createRequire || createRequireFromPath)(process.cwd())(`${name}/package.json`);
+      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
       return chalk.green(pkg.version);
     } catch {
       return chalk.red('not-found');

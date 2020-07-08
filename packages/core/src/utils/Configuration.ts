@@ -1,6 +1,5 @@
 import { fromJson, Theme } from 'cli-highlight';
 import { inspect } from 'util';
-import { createRequire, createRequireFromPath } from 'module';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
@@ -231,8 +230,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private initDriver(): D {
     if (!this.options.driver) {
       const driver = Configuration.PLATFORMS[this.options.type!];
-      /* istanbul ignore next */
-      this.options.driver = (createRequire || createRequireFromPath)(this.options.baseDir)(driver[1])[driver[0]];
+      this.options.driver = Utils.requireFrom(driver[1], this.options.baseDir)[driver[0]];
     }
 
     return new this.options.driver!(this);

@@ -1,4 +1,5 @@
 import fastEqual from 'fast-deep-equal';
+import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
 import { isAbsolute, normalize, relative } from 'path';
@@ -622,6 +623,11 @@ export class Utils {
     global[key] = global[key] || {};
 
     return global[key];
+  }
+
+  static requireFrom(id: string, from: string) {
+    /* istanbul ignore next */
+    return (createRequire || createRequireFromPath)(from)(id);
   }
 
 }

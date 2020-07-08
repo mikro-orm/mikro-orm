@@ -1,8 +1,9 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { AbstractSqlConnection, Knex, requireModule } from '@mikro-orm/knex';
+import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
+import { Utils } from '@mikro-orm/core';
 
-const Dialect = requireModule('knex/lib/dialects/sqlite3/index.js');
+const Dialect = Utils.requireFrom('knex/lib/dialects/sqlite3/index.js', require.resolve('@mikro-orm/knex'));
 
 export class SqliteConnection extends AbstractSqlConnection {
 
