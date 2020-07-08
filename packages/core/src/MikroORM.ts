@@ -1,3 +1,4 @@
+import { createRequire, createRequireFromPath } from 'module';
 import chalk from 'chalk';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
@@ -107,7 +108,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getSchemaGenerator<T extends ISchemaGenerator = ISchemaGenerator>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const SchemaGenerator = require('@mikro-orm/knex').SchemaGenerator;
+    const { SchemaGenerator } = (createRequire|| createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/knex');
     return new SchemaGenerator(this.em);
   }
 
@@ -116,7 +117,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const EntityGenerator = require('@mikro-orm/entity-generator').EntityGenerator;
+    const { EntityGenerator } = (createRequire|| createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/entity-generator');
     return new EntityGenerator(this.em);
   }
 
@@ -125,7 +126,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Migrator = require('@mikro-orm/migrations').Migrator;
+    const { Migrator } = (createRequire|| createRequireFromPath)(this.config.get('baseDir'))('@mikro-orm/migrations');
     return new Migrator(this.em);
   }
 
