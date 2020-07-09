@@ -34,9 +34,6 @@
     "url": "https://github.com/mikro-orm/mikro-orm/issues"
   },
   "homepage": "https://mikro-orm.io",
-  "bin": {
-    "mikro-orm": "./cli.js"
-  },
   "engines": {
     "node": ">= 10.13.0"
   },

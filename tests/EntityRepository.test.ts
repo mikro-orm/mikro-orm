@@ -41,8 +41,8 @@ describe('EntityRepository', () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', false]);
     const e = Object.create(Publisher.prototype);
-    await repo.persist(e);
-    expect(methods.persist.mock.calls[0]).toEqual([e, false]);
+    repo.persist(e);
+    expect(methods.persist.mock.calls[0]).toEqual([e]);
     await repo.persistAndFlush(e);
     expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
     repo.persistLater(e);
@@ -57,8 +57,8 @@ describe('EntityRepository', () => {
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
-    await repo.remove('bar', true);
-    expect(methods.remove.mock.calls[0]).toEqual([Publisher, 'bar', true]);
+    repo.remove(e);
+    expect(methods.remove.mock.calls[0]).toEqual([e]);
     const entity = {} as AnyEntity;
     await repo.removeAndFlush(entity);
     expect(methods.removeAndFlush.mock.calls[0]).toEqual([entity]);
