@@ -134,7 +134,7 @@ export class Author {
 > `orphanRemoval` flag behaves just like `Cascade.REMOVE` for remove operation, so specifying 
 > both is redundant.
 
-With simple `Cascade.REMOVE`, you wound need to remove the `Author` entity to cascade 
+With simple `Cascade.REMOVE`, you would need to remove the `Author` entity to cascade 
 the operation down to all loaded `Book`s. By enabling orphan removal on the collection, 
 `Book`s will be also removed when they get disconnected from the collection (either via 
 `remove()`, or by replacing collection items via `set()`):
