@@ -1,4 +1,4 @@
-import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
+import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2, initORMMongo } from './bootstrap';
 import { EntitySchema, ReferenceType, Utils, MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { FooBar2, FooBaz2 } from './entities-sql';
@@ -564,6 +564,12 @@ describe('SchemaGenerator', () => {
     await generator.updateSchema();
 
     await orm.close(true);
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await initORMMongo();
+    expect(() => orm.getSchemaGenerator()).toThrowError('MongoPlatform does not use a schema generator');
+    await orm.close();
   });
 
 });

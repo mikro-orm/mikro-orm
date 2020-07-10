@@ -1,5 +1,4 @@
-import { CreateTableBuilder } from 'knex';
-import { AbstractSqlConnection, SchemaHelper, Column, Index, IsSame } from '@mikro-orm/knex';
+import { AbstractSqlConnection, SchemaHelper, Column, Index, IsSame, Knex } from '@mikro-orm/knex';
 import { Dictionary, EntityProperty } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
@@ -40,7 +39,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;\n';
   }
 
-  finalizeTable(table: CreateTableBuilder, charset: string): void {
+  finalizeTable(table: Knex.CreateTableBuilder, charset: string): void {
     table.engine('InnoDB');
     table.charset(charset);
   }

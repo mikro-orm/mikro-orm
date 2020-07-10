@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Logger, Options } from './utils';
+import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
 import { IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
@@ -106,17 +106,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator<T extends ISchemaGenerator = ISchemaGenerator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const SchemaGenerator = require('@mikro-orm/knex').SchemaGenerator;
-    return new SchemaGenerator(this.em);
+    return this.driver.getPlatform().getSchemaGenerator(this.em) as T;
   }
 
   /**
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const EntityGenerator = require('@mikro-orm/entity-generator').EntityGenerator;
+    const { EntityGenerator } = Utils.requireFrom('@mikro-orm/entity-generator', this.config.get('baseDir'));
     return new EntityGenerator(this.em);
   }
 
@@ -124,8 +121,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Migrator = require('@mikro-orm/migrations').Migrator;
+    const { Migrator } = Utils.requireFrom('@mikro-orm/migrations', this.config.get('baseDir'));
     return new Migrator(this.em);
   }
 
