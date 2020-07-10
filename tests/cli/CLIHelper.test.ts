@@ -43,11 +43,11 @@ describe('CLIHelper', () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockImplementation(path => path === '../../../../tests/package.json');
     pkg['mikro-orm'].useTsNode = true;
-    const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
-    tsNodeMock.mockImplementation(i => i);
+    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tsNodeMock).toHaveBeenCalled();
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
     pathExistsMock.mockRestore();
   });
 
@@ -56,14 +56,12 @@ describe('CLIHelper', () => {
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'].useTsNode = true;
     delete tsc.compilerOptions.paths;
-    const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
-    tsNodeMock.mockImplementation(i => i);
-    const tsPathsMock = jest.spyOn(require('tsconfig-paths'), 'register');
-    tsPathsMock.mockImplementation(i => i);
+    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tsNodeMock).toHaveBeenCalled();
-    expect(tsPathsMock).not.toHaveBeenCalled();
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
+    expect(requireFromMock).not.toHaveBeenCalledWith('tsconfig-paths', '../../../../tests/tsconfig.json');
     pathExistsMock.mockRestore();
   });
 
@@ -72,14 +70,14 @@ describe('CLIHelper', () => {
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'].useTsNode = true;
     tsc.compilerOptions.paths = { alternativePath: ['alternativePath'] };
-    const tsNodeMock = jest.spyOn(require('ts-node'), 'register');
-    tsNodeMock.mockImplementation(i => i);
-    const tsPathsMock = jest.spyOn(require('tsconfig-paths'), 'register');
-    tsPathsMock.mockImplementation(i => i);
+    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    requireFromMock
+      .mockImplementationOnce(() => ({ register: jest.fn() }))
+      .mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(tsNodeMock).toHaveBeenCalled();
-    expect(tsPathsMock).toHaveBeenCalled();
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', '../../../../tests/tsconfig.json');
     pathExistsMock.mockRestore();
   });
 
@@ -181,10 +179,13 @@ describe('CLIHelper', () => {
   });
 
   test('getModuleVersion', async () => {
+    (global as any).process.cwd = cwd;
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(false);
+    await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('not-found');
     await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('not-found');
     pathExistsMock.mockRestore();
+    (global as any).process.cwd = () => '../../../../tests';
   });
 
   test('getDriverDependencies', async () => {

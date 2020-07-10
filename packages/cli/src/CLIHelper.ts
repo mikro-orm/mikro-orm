@@ -124,15 +124,12 @@ export class CLIHelper {
   }
 
   static async getModuleVersion(name: string): Promise<string> {
-    const path = process.cwd() + '/node_modules/' + name + '/package.json';
-
-    if (await pathExists(path)) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const pkg = require(path);
+    try {
+      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
       return chalk.green(pkg.version);
+    } catch {
+      return chalk.red('not-found');
     }
-
-    return chalk.red('not-found');
   }
 
   static dumpTable(options: { columns: string[]; rows: string[][]; empty: string }): void {
