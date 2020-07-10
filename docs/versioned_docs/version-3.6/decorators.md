@@ -72,7 +72,7 @@ registered = false;
 
 > Every entity needs to have at least one primary key (see composite primary keys).
 
-> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in MySQL. 
+> Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers. 
 
 ```typescript
 @PrimaryKey()
