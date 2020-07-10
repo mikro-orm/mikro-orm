@@ -60,8 +60,7 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json') {
     const tsConfigPath = path.join(process.cwd(), configPath);
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require('ts-node').register({
+    Utils.requireFrom('ts-node', tsConfigPath).register({
       project: tsConfigPath,
       transpileOnly: true,
     });
@@ -73,8 +72,7 @@ export class ConfigurationLoader {
       const paths = tsConfig.compilerOptions?.paths;
 
       if (paths) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        require('tsconfig-paths').register({
+        Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
           baseUrl: tsConfig.compilerOptions.baseUrl,
           paths: tsConfig.compilerOptions.paths,
         });

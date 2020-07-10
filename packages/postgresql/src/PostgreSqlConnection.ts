@@ -1,12 +1,10 @@
 import { types, defaults } from 'pg';
-import { PgConnectionConfig } from 'knex';
-// @ts-ignore
-import TableCompiler_PG from 'knex/lib/dialects/postgres/schema/tablecompiler.js';
-// @ts-ignore
-import TableCompiler from 'knex/lib/schema/tablecompiler.js';
+import { Dictionary, Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
 
-import { Dictionary } from '@mikro-orm/core';
-import { AbstractSqlConnection } from '@mikro-orm/knex';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TableCompiler_PG = Utils.requireFrom('knex/lib/dialects/postgres/schema/tablecompiler.js', require.resolve('@mikro-orm/knex'));
+const TableCompiler = Utils.requireFrom('knex/lib/schema/tablecompiler.js', require.resolve('@mikro-orm/knex'));
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
@@ -19,8 +17,8 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     return 'postgresql://postgres@127.0.0.1:5432';
   }
 
-  getConnectionOptions(): PgConnectionConfig {
-    const ret: PgConnectionConfig = super.getConnectionOptions();
+  getConnectionOptions(): Knex.PgConnectionConfig {
+    const ret: Knex.PgConnectionConfig = super.getConnectionOptions();
 
     if (this.config.get('forceUtcTimezone')) {
       [1082, 1083, 1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // date, time, timestamp types

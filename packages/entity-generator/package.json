@@ -47,9 +47,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/core": "^4.0.0-alpha.4",
     "@mikro-orm/knex": "^4.0.0-alpha.4",
     "fs-extra": "^9.0.1",
     "ts-morph": "^7.1.2"
+  },
+  "devDependencies": {
+    "@mikro-orm/core": "^4.0.0-alpha.4"
+  },
+  "peerDependencies": {
+    "@mikro-orm/core": "^4.0.0-alpha.4"
   }
 }

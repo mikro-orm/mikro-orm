@@ -1,5 +1,4 @@
-import { MySqlConnectionConfig } from 'knex';
-import { AbstractSqlConnection } from '@mikro-orm/knex';
+import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
@@ -11,8 +10,8 @@ export class MySqlConnection extends AbstractSqlConnection {
     return 'mysql://root@127.0.0.1:3306';
   }
 
-  getConnectionOptions(): MySqlConnectionConfig {
-    const ret: MySqlConnectionConfig = super.getConnectionOptions();
+  getConnectionOptions(): Knex.MySqlConnectionConfig {
+    const ret: Knex.MySqlConnectionConfig = super.getConnectionOptions();
 
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');

@@ -1,5 +1,5 @@
 {
-  "name": "mikro-orm",
+  "name": "mikro-orm-root",
   "private": true,
   "workspaces": [
     "packages/*"

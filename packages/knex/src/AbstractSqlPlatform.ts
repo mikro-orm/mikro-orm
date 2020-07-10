@@ -1,6 +1,7 @@
 import { Constructor, Platform } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
-import { SchemaHelper } from './schema';
+import { SchemaHelper, SchemaGenerator } from './schema';
+import { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -16,6 +17,10 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   getSchemaHelper(): SchemaHelper | undefined {
     return this.schemaHelper;
+  }
+
+  getSchemaGenerator(em: SqlEntityManager): SchemaGenerator {
+    return new SchemaGenerator(em);
   }
 
 }
