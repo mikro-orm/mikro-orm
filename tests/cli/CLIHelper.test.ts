@@ -179,10 +179,13 @@ describe('CLIHelper', () => {
   });
 
   test('getModuleVersion', async () => {
+    (global as any).process.cwd = cwd;
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(false);
+    await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('not-found');
     await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('not-found');
     pathExistsMock.mockRestore();
+    (global as any).process.cwd = () => '../../../../tests';
   });
 
   test('getDriverDependencies', async () => {
