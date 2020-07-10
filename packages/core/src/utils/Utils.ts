@@ -2,7 +2,7 @@ import fastEqual from 'fast-deep-equal';
 import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
-import { isAbsolute, normalize, relative, resolve } from 'path';
+import { isAbsolute, normalize, relative, resolve, extname, join } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 // @ts-ignore
@@ -631,6 +631,10 @@ export class Utils {
    * @param from Location to start the node resolution
    */
   static requireFrom(id: string, from: string) {
+    if (!extname(from)) {
+      from = join(from, '__fake.js');
+    }
+
     /* istanbul ignore next */
     return (createRequire || createRequireFromPath)(resolve(from))(id);
   }
