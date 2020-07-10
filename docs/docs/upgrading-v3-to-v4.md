@@ -16,11 +16,58 @@ Support for older TypeScript versions was dropped.
 
 ## Monorepo
 
-TODO multiple packages
+The ORM has been split into several packages. In v4 one needs to require
+`@mikro-orm/core` and a driver package, e.g. `@mikro-orm/mysql`. This driver
+package already contains the `mysql2` dependency, so you can remove that from
+your `package.json`. 
+
+- `@mikro-orm/core`
+- `@mikro-orm/reflection` - `TsMorphMetadataProvider`
+- `@mikro-orm/cli` - CLI support, requires entity-generator, migrator and knex
+- `@mikro-orm/knex` - SQL support
+- `@mikro-orm/entity-generator`
+- `@mikro-orm/migrations`
+- `@mikro-orm/mysql`
+- `@mikro-orm/mariadb`
+- `@mikro-orm/mysql-base` - Common implementation for mysql and mariadb (internal)
+- `@mikro-orm/sqlite`
+- `@mikro-orm/postgresql`
+- `@mikro-orm/mongodb`
+
+> For easier transition, meta package mikro-orm is still present,
+> reexporting core, reflection, migrations, entity-generator and
+> cli packages.
 
 ## SqlEntityManager and MongoEntityManager
 
-TODO QB getter, knex getter, aggregate...
+In v4 the `core` package, where `EntityManager` and `EntityRepository` are 
+defined, is not dependent on knex, and therefore it cannot have a method 
+returning a `QueryBuilder`. You need to import the SQL flavour of the EM 
+from the driver package to access the `createQueryBuilder()` method.
+
+> The SQL flavour of EM is actually called `SqlEntityManager`, it is exported both under 
+> this name and under `EntityManager` alias, so you can just change the 
+> location from where you import.
+
+```typescript
+import { EntityManager } from '@mikro-orm/mysql'; // or any other SQL driver package
+
+const em: EntityManager;
+const qb = await em.createQueryBuilder(...);
+```
+
+Same applies for the `aggregate()` method in mongo driver:
+
+```typescript
+import { EntityManager } from '@mikro-orm/mongodb';
+
+const em: EntityManager;
+const ret = await em.aggregate(...);
+```
+
+> The mongo flavour of EM is actually called `MongoEntityManager`, it is exported both under 
+> this name and under `EntityManager` alias, so you can just change the 
+> location from where you import.
 
 ## Different default `pivotTable`
 
