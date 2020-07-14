@@ -1213,7 +1213,7 @@ describe('QueryBuilder', () => {
   test('select via fulltext search', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1.select('*').where({ name: { $fulltext: 'test' }  });
-    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where match(?) against (\'?\' in natural language mode)');
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where match(?) against (? in natural language mode)');
   });
 
   test('select via multiple where clauses with fulltext search', async () => {
@@ -1223,7 +1223,7 @@ describe('QueryBuilder', () => {
       name: { $fulltext: 'test' },
       email: { $fulltext: 'test'}
     });
-    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`terms_accepted` = ? and match(?) against (\'?\' in natural language mode) and match(?) against (\'?\' in natural language mode)');
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`terms_accepted` = ? and match(?) against (? in natural language mode) and match(?) against (? in natural language mode)');
   });
 
   afterAll(async () => orm.close(true));

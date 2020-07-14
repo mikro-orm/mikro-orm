@@ -1,6 +1,7 @@
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { SchemaHelper } from '../schema';
+import Knex from 'knex';
 
 export abstract class Platform {
 
@@ -83,8 +84,10 @@ export abstract class Platform {
   }
 
   getFullTextWhereClause(): string {
-    return `? match '?'`;
+    return `:column: match :query`;
   }
+
+  addFullTextIndex(table: Knex.CreateTableBuilder, index: { name?: string | boolean; properties: string | string[]; type?: string }) {}
 
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';

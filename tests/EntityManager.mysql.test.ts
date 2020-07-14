@@ -379,6 +379,10 @@ describe('EntityManagerMySql', () => {
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
     await expect(orm.em.populate([], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
+    // full text search test
+    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'on the Wa' }}))!;
+    expect(fullTextBooks.length).toBe(3);
+    
     // count test
     const count = await authorRepository.count();
     expect(count).toBe(authors.length);

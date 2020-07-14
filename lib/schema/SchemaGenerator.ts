@@ -191,6 +191,9 @@ export class SchemaGenerator {
 
         if (unique) {
           table.unique(properties, name);
+        } else if (index.type === 'fulltext') {
+          // Full text indexes are platform specific.
+          this.platform.addFullTextIndex(table, index);
         } else {
           table.index(properties, name, index.type);
         }

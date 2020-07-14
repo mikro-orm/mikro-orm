@@ -27,7 +27,7 @@ export class PostgreSqlPlatform extends Platform {
   }
 
   getFullTextWhereClause(): string {
-    return `? @@ '?'`;
+    return `:column: @@ :query`;
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {

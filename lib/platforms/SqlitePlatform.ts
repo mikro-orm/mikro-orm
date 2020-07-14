@@ -18,7 +18,7 @@ export class SqlitePlatform extends Platform {
   }
 
   getFullTextWhereClause(): string {
-    return `? match '?'`;
+    return `:table: match :column:::query`;
   }
 
 }

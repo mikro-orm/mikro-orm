@@ -987,6 +987,14 @@ set foreign_key_checks = 1;
 "
 `;
 
+exports[`SchemaGenerator update empty schema from metadata [mysql]: postgres-update-schema-drop-table 1`] = `
+"drop table if exists \\"author2\\" cascade;
+
+drop table if exists \\"new_table\\" cascade;
+
+"
+`;
+
 exports[`SchemaGenerator update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
 "set names 'utf8';
 set session_replication_role = 'replica';

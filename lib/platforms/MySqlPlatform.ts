@@ -10,7 +10,7 @@ export class MySqlPlatform extends Platform {
   }
 
   getFullTextWhereClause(): string {
-    return `match(?) against ('?' in natural language mode)`;
+    return `match(:column:) against (:query)`;
   }
 
 }

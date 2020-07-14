@@ -324,7 +324,11 @@ export class QueryBuilderHelper {
     // Full text queries aren't usually a simple operator, they can look like
     // SELECT column::tsvector @@ 'something'::tsquery;
     if (op === '$fulltext') {
-      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(), [key, value[op]]));
+      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(), {
+        table: this.metadata.get(this.entityName).tableName,
+        column: key,
+        query: value[op]
+      }));
     } else {
       qb[m](this.mapper(key, type), replacement, value[op]);
     }

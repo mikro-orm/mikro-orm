@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '../../lib';
+import { Cascade, Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, Index } from '../../lib';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -14,6 +14,7 @@ export class Book2 {
   @Property({ default: 'current_timestamp(3)', length: 3 })
   createdAt: Date = new Date();
 
+  @Index({ type: 'fulltext'})
   @Property({ nullable: true, default: '' })
   title?: string;
 
