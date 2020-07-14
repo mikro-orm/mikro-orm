@@ -1,7 +1,8 @@
+import path from 'path';
 import { ObjectId } from 'mongodb';
 import { Collection, EntityMetadata, MikroORM, Utils } from '@mikro-orm/core';
 import { Author, Book } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { initORMMongo, wipeDatabase, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
 
 class Test {}
@@ -329,6 +330,11 @@ describe('Utils', () => {
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
     expect(Utils.lookupPathFromDecorator(stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+  });
+
+  test('requireFrom can require a package.json file', () => {
+    const { name } = Utils.requireFrom('', path.join(BASE_DIR, '..', 'package.json'));
+    expect(name).toEqual('mikro-orm-root');
   });
 
   afterAll(async () => orm.close(true));
