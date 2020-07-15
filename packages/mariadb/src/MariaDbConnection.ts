@@ -1,11 +1,5 @@
 import { Connection } from 'mariadb';
-import { MySqlConnection, Knex } from '@mikro-orm/mysql-base';
-import { Utils } from '@mikro-orm/core';
-
-const Dialect = Utils.requireFrom(
-  'knex/lib/dialects/mysql/index.js',
-  require.resolve('@mikro-orm/knex', { paths: [require.resolve('@mikro-orm/mysql-base')] })
-);
+import { MySqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/mysql-base';
 
 export class MariaDbConnection extends MySqlConnection {
 
@@ -21,11 +15,12 @@ export class MariaDbConnection extends MySqlConnection {
   }
 
   private getPatchedDialect() {
-    Dialect.prototype.driverName = 'mariadb';
-    Dialect.prototype._driver = () => require('mariadb/callback');
-    Dialect.prototype.validateConnection = (connection: Connection) => connection.isValid();
+    const { MySqlDialect } = MonkeyPatchable;
+    MySqlDialect.prototype.driverName = 'mariadb';
+    MySqlDialect.prototype._driver = () => require('mariadb/callback');
+    MySqlDialect.prototype.validateConnection = (connection: Connection) => connection.isValid();
 
-    return Dialect;
+    return MySqlDialect;
   }
 
 }
