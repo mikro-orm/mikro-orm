@@ -1,10 +1,6 @@
 import { types, defaults } from 'pg';
-import { Dictionary, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const TableCompiler_PG = Utils.requireFrom('knex/lib/dialects/postgres/schema/tablecompiler.js', require.resolve('@mikro-orm/knex'));
-const TableCompiler = Utils.requireFrom('knex/lib/schema/tablecompiler.js', require.resolve('@mikro-orm/knex'));
+import { Dictionary } from '@mikro-orm/core';
+import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
@@ -50,8 +46,8 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   private patchKnex(): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-
-    TableCompiler_PG.prototype.addColumns = function (this: typeof TableCompiler_PG, columns: Dictionary[], prefix: string, colCompilers: Dictionary[]) {
+    const { PostgresDialectTableCompiler, TableCompiler } = MonkeyPatchable;
+    PostgresDialectTableCompiler.prototype.addColumns = function (this: any, columns: Dictionary[], prefix: string, colCompilers: Dictionary[]) {
       if (prefix !== this.alterColumnsPrefix) {
         // base class implementation for normal add
         return TableCompiler.prototype.addColumns.call(this, columns, prefix);
@@ -64,7 +60,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     };
   }
 
-  private addColumn(this: typeof TableCompiler_PG, col: Dictionary, that: PostgreSqlConnection): void {
+  private addColumn(this: any, col: Dictionary, that: PostgreSqlConnection): void {
     const quotedTableName = this.tableName();
     const type = col.getColumnType();
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
@@ -82,7 +78,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     that.alterColumnNullable.call(this, col, colName);
   }
 
-  private alterColumnNullable(this: typeof TableCompiler_PG, col: Dictionary, colName: string): void {
+  private alterColumnNullable(this: any, col: Dictionary, colName: string): void {
     const quotedTableName = this.tableName();
     const nullable = col.modified.nullable;
 
@@ -97,7 +93,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     }
   }
 
-  private alterColumnDefault(this: typeof TableCompiler_PG, col: Dictionary, colName: string): void {
+  private alterColumnDefault(this: any, col: Dictionary, colName: string): void {
     const quotedTableName = this.tableName();
     const defaultTo = col.modified.defaultTo;
 

@@ -1,9 +1,7 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
-import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
-import { Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
 
-const Dialect = Utils.requireFrom('knex/lib/dialects/sqlite3/index.js', require.resolve('@mikro-orm/knex'));
 
 export class SqliteConnection extends AbstractSqlConnection {
 
@@ -56,8 +54,9 @@ export class SqliteConnection extends AbstractSqlConnection {
    * monkey patch knex' sqlite Dialect so it returns inserted id when doing raw insert query
    */
   private getPatchedDialect() {
-    const processResponse = Dialect.prototype.processResponse;
-    Dialect.prototype.processResponse = (obj: any, runner: any) => {
+    const { Sqlite3Dialect } = MonkeyPatchable;
+    const processResponse = Sqlite3Dialect.prototype.processResponse;
+    Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
       if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
         return obj.context;
       }
@@ -65,7 +64,7 @@ export class SqliteConnection extends AbstractSqlConnection {
       return processResponse(obj, runner);
     };
 
-    Dialect.prototype._query = (connection: any, obj: any) => {
+    Sqlite3Dialect.prototype._query = (connection: any, obj: any) => {
       const callMethod = this.getCallMethod(obj);
 
       return new Promise((resolve: any, reject: any) => {
@@ -87,7 +86,7 @@ export class SqliteConnection extends AbstractSqlConnection {
       });
     };
 
-    return Dialect;
+    return Sqlite3Dialect;
   }
 
   private getCallMethod(obj: any): string {

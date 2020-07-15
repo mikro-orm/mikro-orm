@@ -2,6 +2,7 @@
 export * from './AbstractSqlConnection';
 export * from './AbstractSqlDriver';
 export * from './AbstractSqlPlatform';
+export * from './MonkeyPatchable';
 export * from './SqlEntityManager';
 export * from './SqlEntityRepository';
 export * from './query';
