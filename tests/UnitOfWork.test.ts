@@ -1,5 +1,5 @@
 import { Author } from './entities';
-import { ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
+import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
@@ -133,6 +133,8 @@ describe('UnitOfWork', () => {
   });
 
   test('manually changing the UoW state during flush', async () => {
+    let changeSets: ChangeSet<any>[] = [];
+
     class Subscriber implements EventSubscriber {
 
       async onFlush(args: FlushEventArgs): Promise<void> {
@@ -146,6 +148,10 @@ describe('UnitOfWork', () => {
           args.uow.computeChangeSet(baz);
           args.uow.recomputeSingleChangeSet(cs.entity);
         }
+      }
+
+      async afterFlush(args: FlushEventArgs): Promise<void> {
+        changeSets = [...args.uow.getChangeSets()];
       }
 
     }
@@ -163,6 +169,11 @@ describe('UnitOfWork', () => {
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: '[ClientSession]' })`);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertOne\({ name: 'bar', baz: ObjectId\('\w+'\), onCreateTest: true, onUpdateTest: true }, { session: '\[ClientSession]' }\)/);
     expect(mock.mock.calls[3][0]).toMatch('db.commit()');
+
+    expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
+      [ChangeSetType.CREATE, 'FooBaz'],
+      [ChangeSetType.CREATE, 'FooBar'],
+    ]);
   });
 
   afterAll(async () => orm.close(true));

@@ -165,8 +165,8 @@ export class UnitOfWork {
 
     // nothing to do, do not start transaction
     if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.length === 0) {
-      this.postCommitCleanup();
       await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+      this.postCommitCleanup();
 
       return;
     }
@@ -181,8 +181,8 @@ export class UnitOfWork {
       await this.persistToDatabase(this.em.getTransactionContext());
     }
 
-    this.postCommitCleanup();
     await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+    this.postCommitCleanup();
   }
 
   async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
