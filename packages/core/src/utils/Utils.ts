@@ -436,7 +436,7 @@ export class Utils {
   static detectTsNode(): boolean {
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
-      || !!require.extensions['.ts'] // check if the extension is registered
+      || (require.extensions && !!require.extensions['.ts']) // check if the extension is registered
       || !!new Error().stack!.split('\n').find(line => line.match(/\w\.ts:\d/)); // as a last resort, try to find a TS file in the stack trace
   }
 
