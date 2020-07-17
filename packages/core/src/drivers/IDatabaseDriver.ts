@@ -94,6 +94,18 @@ export interface FindOneOptions<T> extends Omit<FindOptions<T>, 'limit' | 'offse
   lockVersion?: number | Date;
 }
 
+export interface CountOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
+export interface UpdateOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
+export interface DeleteOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T[K]> | CollectionItem<T[K]>> };
 export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T> | [LoadStrategy, PopulateChildren<T>];
 export type Populate<T> = (string | PopulateOptions<T>)[] | boolean | PopulateMap<T>;

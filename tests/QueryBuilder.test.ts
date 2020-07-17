@@ -91,6 +91,18 @@ describe('QueryBuilder', () => {
     expect(qb3.getParams()).toEqual(['Audi A8', 2010]);
   });
 
+  test('select query with auto-joined query with operator and scalar', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    qb1.select('*').where({ author: { $ne: null } });
+    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`author_id` is not null');
+    expect(qb1.getParams()).toEqual([]);
+
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({ author: { $ne: null, name: 'Jon Snow' } });
+    expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e1`.`name` = ? and `e0`.`author_id` is not null');
+    expect(qb2.getParams()).toEqual(['Jon Snow']);
+  });
+
   test('select andWhere/orWhere', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*')
