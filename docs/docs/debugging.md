@@ -53,4 +53,6 @@ return MikroORM.init({
 });
 ```
 
-Currently there are 3 namespaces – `query`, `discovery` and `info`.
+Currently there are 4 namespaces – `query`, `query-params`, `discovery` and `info`.
+
+If you provide `query-params` then you must also provide `query` in order for it to take effect.
