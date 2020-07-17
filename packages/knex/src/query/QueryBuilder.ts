@@ -1,7 +1,7 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value, Ref } from 'knex';
 import {
   AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
-  QueryOrderMap, ReferenceType, SmartQueryHelper, Utils, ValidationError, PopulateOptions,
+  QueryOrderMap, ReferenceType, QueryHelper, Utils, ValidationError, PopulateOptions,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver, QueryBuilderHelper } from '../index';
@@ -104,7 +104,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
-    cond = SmartQueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata)!;
+    cond = QueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata)!;
 
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
@@ -146,7 +146,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   orderBy(orderBy: QueryOrderMap): this {
-    orderBy = SmartQueryHelper.processWhere(orderBy as Dictionary, this.entityName, this.metadata) as QueryOrderMap;
+    orderBy = QueryHelper.processWhere(orderBy as Dictionary, this.entityName, this.metadata) as QueryOrderMap;
     this._orderBy = CriteriaNode.create(this.metadata, this.entityName, orderBy).process(this);
     return this;
   }
@@ -337,7 +337,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
-    cond = SmartQueryHelper.processWhere(cond, this.entityName, this.metadata)!;
+    cond = QueryHelper.processWhere(cond, this.entityName, this.metadata)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
@@ -485,7 +485,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         });
     }
 
-    SmartQueryHelper.processParams([this._data, this._cond, this._having]);
+    QueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
 
     if (this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {

@@ -4,7 +4,7 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, IPrimaryKey } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, IPrimaryKey } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { Logger, LoggerNamespace, NotFoundError, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
@@ -20,6 +20,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entities: [],
     entitiesTs: [],
     subscribers: [],
+    filters: [],
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
@@ -301,6 +302,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   subscribers: EventSubscriber[];
+  filters: Dictionary<FilterDef<AnyEntity>>;
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;

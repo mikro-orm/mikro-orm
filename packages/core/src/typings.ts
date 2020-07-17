@@ -181,6 +181,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   class: Constructor<T>;
   abstract: boolean;
   useCache: boolean;
+  filters: Dictionary<FilterDef<T>>;
   comment?: string;
 }
 
@@ -214,3 +215,10 @@ export interface IMigrator {
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
 }
+
+export type FilterDef<T extends AnyEntity<T>> = {
+  name: string;
+  cond: FilterQuery<T> | ((args: Dictionary) => FilterQuery<T>);
+  default?: boolean;
+  entity?: string[];
+};

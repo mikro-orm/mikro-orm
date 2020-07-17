@@ -86,6 +86,7 @@ export interface FindOptions<T> {
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   strategy?: LoadStrategy;
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
 
 export interface FindOneOptions<T> extends Omit<FindOptions<T>, 'limit' | 'offset'> {

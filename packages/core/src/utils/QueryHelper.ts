@@ -1,10 +1,10 @@
 import { Reference, wrap } from '../entity';
 import { Utils } from './Utils';
-import { AnyEntity, Dictionary, EntityMetadata, FilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, FilterDef, FilterQuery } from '../typings';
 import { GroupOperator } from '../enums';
 import { MetadataStorage } from '../metadata';
 
-export class SmartQueryHelper {
+export class QueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
@@ -14,7 +14,7 @@ export class SmartQueryHelper {
     }
 
     if (Utils.isEntity(params)) {
-      return SmartQueryHelper.processEntity(params, root);
+      return QueryHelper.processEntity(params, root);
     }
 
     if (params === undefined) {
@@ -22,12 +22,12 @@ export class SmartQueryHelper {
     }
 
     if (Array.isArray(params)) {
-      return params.map(item => SmartQueryHelper.processParams(item, true));
+      return params.map(item => QueryHelper.processParams(item, true));
     }
 
     if (Utils.isPlainObject(params)) {
       Object.keys(params).forEach(k => {
-        params[k] = SmartQueryHelper.processParams(params[k], !!k);
+        params[k] = QueryHelper.processParams(params[k], !!k);
       });
     }
 
@@ -67,14 +67,14 @@ export class SmartQueryHelper {
 
     // inline PK-only objects in M:N queries so we don't join the target entity when not needed
     if (meta) {
-      SmartQueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
+      QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
-    where = SmartQueryHelper.processParams(where, true) || {};
+    where = QueryHelper.processParams(where, true) || {};
 
     if (Array.isArray(where)) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => SmartQueryHelper.processWhere(sub, entityName, metadata)) } } as FilterQuery<T>;
+      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata)) } } as FilterQuery<T>;
     }
 
     if (!Utils.isPlainObject(where) || Utils.isPrimaryKey(where)) {
@@ -86,29 +86,62 @@ export class SmartQueryHelper {
       const composite = meta?.properties[key]?.joinColumns?.length > 1;
 
       if (key in GroupOperator) {
-        o[key] = value.map((sub: any) => SmartQueryHelper.processWhere(sub, entityName, metadata));
+        o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata));
         return o;
       }
 
-      if (Array.isArray(value) && !SmartQueryHelper.isSupported(key) && !key.includes('?')) {
+      if (Array.isArray(value) && !QueryHelper.isSupported(key) && !key.includes('?')) {
         // comparing single composite key - use $eq instead of $in
         const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
         o[key] = { [op]: value };
         return o;
       }
 
-      if (!SmartQueryHelper.isSupported(key)) {
+      if (!QueryHelper.isSupported(key)) {
         o[key] = where[key as keyof typeof where];
       } else if (key.includes(':')) {
         const [k, expr] = key.split(':');
-        o[k] = SmartQueryHelper.processExpression(expr, value);
+        o[k] = QueryHelper.processExpression(expr, value);
       } else {
         const m = key.match(/([\w-]+) ?([<>=!]+)$/)!;
-        o[m[1]] = SmartQueryHelper.processExpression(m[2], value);
+        o[m[1]] = QueryHelper.processExpression(m[2], value);
       }
 
       return o;
     }, {} as FilterQuery<T>);
+  }
+
+  static getActiveFilters(entityName: string, options: Dictionary<boolean | Dictionary> | string[] | boolean, filters: Dictionary<FilterDef<any>>): FilterDef<any>[] {
+    if (options === false) {
+      return [];
+    }
+
+    const opts: Dictionary<boolean | Dictionary> = {};
+
+    if (Array.isArray(options)) {
+      options.forEach(filter => opts[filter] = true);
+    } else if (Utils.isPlainObject(options)) {
+      Object.keys(options).forEach(filter => opts[filter] = options[filter]);
+    }
+
+    return Object.keys(filters)
+      .filter(f => QueryHelper.isFilterActive(entityName, f, filters[f], opts))
+      .map(f => {
+        filters[f].name = f;
+        return filters[f];
+      });
+  }
+
+  static isFilterActive(entityName: string, filterName: string, filter: FilterDef<any>, options: Dictionary<boolean | Dictionary>): boolean {
+    if (filter.entity && !filter.entity.includes(entityName)) {
+      return false;
+    }
+
+    if (options[filterName] === false) {
+      return false;
+    }
+
+    return filter.default || filterName in options;
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
@@ -134,7 +167,7 @@ export class SmartQueryHelper {
   }
 
   private static isSupported(key: string): boolean {
-    return !!SmartQueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
+    return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
   }
 
 }
