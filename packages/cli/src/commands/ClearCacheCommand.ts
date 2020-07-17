@@ -12,6 +12,12 @@ export class ClearCacheCommand implements CommandModule {
    */
   async handler(args: Arguments) {
     const config = await CLIHelper.getConfiguration(false);
+
+    if (!config.get('cache').enabled) {
+      CLIHelper.dump(chalk.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
+      return;
+    }
+
     const cache = config.getCacheAdapter();
     await cache.clear();
 
