@@ -55,6 +55,7 @@ export type PropertyOptions<T> = {
   lazy?: boolean;
   primary?: boolean;
   serializedPrimaryKey?: boolean;
+  comment?: string;
 };
 
 export interface ReferenceOptions<T, O> extends PropertyOptions<O> {

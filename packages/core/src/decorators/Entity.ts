@@ -20,5 +20,6 @@ export type EntityOptions<T> = {
   discriminatorColumn?: string;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: string;
+  comment?: string;
   customRepository?: () => Constructor<EntityRepository<T>>;
 };
