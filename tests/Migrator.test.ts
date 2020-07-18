@@ -34,6 +34,7 @@ describe('Migrator', () => {
   afterAll(async () => orm.close(true));
 
   test('generate js schema migration', async () => {
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
@@ -42,10 +43,11 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
   });
 
   test('generate migration with custom name', async () => {
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
@@ -54,16 +56,17 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
   });
 
   test('generate schema migration', async () => {
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await unlink(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
   });
 
   test('migration is skipped when no diff', async () => {

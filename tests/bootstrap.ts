@@ -45,6 +45,7 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes: true,
     implicitTransactions: true,
+    filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
   });
 
   // create collections first so we can use transactions
@@ -189,6 +190,7 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute('set foreign_key_checks = 1');
   em.clear();
+  em.config.set('debug', false);
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;

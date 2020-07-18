@@ -71,9 +71,9 @@ export class Utils {
 
     const source = sources.shift();
 
-    if (Utils.isObject(target) && Utils.isObject(source)) {
+    if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
-        if (Utils.isObject(value, [Date, RegExp, Buffer])) {
+        if (Utils.isPlainObject(value)) {
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
           }

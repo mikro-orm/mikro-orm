@@ -1467,7 +1467,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[2][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`title` = \'123\' and `e0`.`author_id` is not null');
+      'where `e0`.`title` = \'123\'');
 
     const books4 = await orm.em.find(Book2, { title: '123' }, {
       filters: true,
@@ -1492,7 +1492,6 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`name` = \'Jon\' and length(perex) > 10000 limit 1');
-    orm.config.set('debug', false);
   });
 
   test('self referencing M:N (unidirectional)', async () => {

@@ -20,7 +20,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     entities: [],
     entitiesTs: [],
     subscribers: [],
-    filters: [],
+    filters: {},
     discovery: {
       warnWhenNoEntities: true,
       requireEntitiesArray: false,
@@ -302,7 +302,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   subscribers: EventSubscriber[];
-  filters: Dictionary<FilterDef<AnyEntity>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef<AnyEntity>, 'name'>>;
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;
