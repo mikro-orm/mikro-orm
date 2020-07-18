@@ -185,6 +185,10 @@ export class SchemaGenerator {
         const constraintName = meta.collection.includes('.') ? meta.collection.split('.').pop()! + '_pkey' : undefined;
         table.primary(Utils.flatten(meta.primaryKeys.map(prop => meta.properties[prop].fieldNames)), constraintName);
       }
+      
+      if (meta.comment) {
+        table.comment(meta.comment);
+      }
 
       const createIndex = (index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean) => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
@@ -382,6 +386,7 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.index(indexName), index);
     Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
     Utils.runIfNotEmpty(() => col.defaultTo(prop.defaultRaw ? this.knex.raw(prop.defaultRaw) : null), !sameDefault);
+    Utils.runIfNotEmpty(() => col.comment(prop.comment!), prop.comment);
 
     return col;
   }
