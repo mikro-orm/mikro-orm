@@ -13,6 +13,7 @@ abstract base classes.
 |-----------|------|----------|-------------|
 | `tableName` | `string` | yes | Override default collection/table name. |
 | `collection` | `string` | yes | Alias for `tableName`. |
+| `comment` | `string` | yes | Specify comment to table **(SQL only)** |
 | `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
 
 > You can also use `@Repository()` decorator instead of `customRepository` parameter.
@@ -42,6 +43,7 @@ extend the `@Property()` decorator, so you can also use its parameters there.
 | `unique` | `boolean` | yes | Set column as unique for [Schema Generator](schema-generator.md).. **(SQL only)** |
 | `nullable` | `boolean` | yes | Set column as nullable for [Schema Generator](schema-generator.md).. **(SQL only)** |
 | `unsigned` | `boolean` | yes | Set column as unsigned for [Schema Generator](schema-generator.md).. **(SQL only)** |
+| `comment` | `string` | yes | Specify comment of column for [Schema Generator](schema-generator.md).. **(SQL only)** |
 | `version` | `boolean` | yes | Set to true to enable [Optimistic Locking](transactions.md#optimistic-locking). **(SQL only)** |
 
 > You can use property initializers as usual.

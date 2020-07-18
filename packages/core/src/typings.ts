@@ -151,6 +151,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
+  comment?: string;
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
@@ -180,6 +181,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   class: Constructor<T>;
   abstract: boolean;
   useCache: boolean;
+  comment?: string;
 }
 
 export interface ISchemaGenerator {
