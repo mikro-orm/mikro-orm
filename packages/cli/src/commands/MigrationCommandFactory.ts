@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { Arguments, Argv, CommandModule } from 'yargs';
 import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
 import { Configuration, MikroORM, Utils } from '@mikro-orm/core';
@@ -99,7 +99,7 @@ export class MigrationCommandFactory {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
-    CLIHelper.dump(chalk.green(message));
+    CLIHelper.dump(c.green(message));
   }
 
   private static async handlePendingCommand(migrator: Migrator) {
@@ -125,15 +125,15 @@ export class MigrationCommandFactory {
     const ret = await migrator.createMigration(args.path, args.blank);
 
     if (ret.diff.length === 0) {
-      return CLIHelper.dump(chalk.green(`No changes required, schema is up-to-date`));
+      return CLIHelper.dump(c.green(`No changes required, schema is up-to-date`));
     }
 
     if (args.dump) {
-      CLIHelper.dump(chalk.green('Creating migration with following queries:'));
+      CLIHelper.dump(c.green('Creating migration with following queries:'));
       CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config, 'sql');
     }
 
-    CLIHelper.dump(chalk.green(`${ret.fileName} successfully created`));
+    CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
   }
 
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {

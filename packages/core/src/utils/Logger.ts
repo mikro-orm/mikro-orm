@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import c from 'ansi-colors';
 
 export class Logger {
 
@@ -19,7 +19,7 @@ export class Logger {
 
     // clean up the whitespace
     message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
-    this.logger(chalk.grey(`[${namespace}] `) + message);
+    this.logger(c.grey(`[${namespace}] `) + message);
   }
 
   /**
