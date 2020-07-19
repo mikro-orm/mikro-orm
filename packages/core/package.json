@@ -49,7 +49,7 @@
   "dependencies": {
     "acorn-loose": "^7.1.0",
     "acorn-walk": "^7.2.0",
-    "chalk": "^4.1.0",
+    "ansi-colors": "^4.1.1",
     "cli-highlight": "^2.1.4",
     "clone": "^2.1.2",
     "fast-deep-equal": "^3.1.1",

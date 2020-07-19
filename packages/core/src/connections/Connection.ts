@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import highlight from 'cli-highlight';
 
 import { Configuration, ConnectionOptions, Utils } from '../utils';
@@ -78,7 +78,7 @@ export abstract class Connection {
 
       return res;
     } catch (e) {
-      this.logQuery(chalk.red(query), Date.now() - now, undefined);
+      this.logQuery(c.red(query), Date.now() - now, undefined);
       throw e;
     }
   }
@@ -88,10 +88,10 @@ export abstract class Connection {
       query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
     }
 
-    let msg = query + (Utils.isDefined(took) ? chalk.grey(` [took ${chalk.grey(took)} ms]`) : '');
+    let msg = query + (Utils.isDefined(took) ? c.grey(` [took ${took} ms]`) : '');
 
     if (this.config.get('replicas', []).length > 0) {
-      msg += chalk.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
+      msg += c.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
     }
 
     this.config.getLogger().log('query', msg);

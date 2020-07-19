@@ -1,5 +1,5 @@
 import { Arguments, CommandModule } from 'yargs';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { MikroORM } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
@@ -15,7 +15,7 @@ export class ImportCommand implements CommandModule {
   async handler(args: Arguments) {
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
     await orm.em.getConnection().loadFile(args.file as string);
-    CLIHelper.dump(chalk.green(`File ${args.file} successfully imported`));
+    CLIHelper.dump(c.green(`File ${args.file} successfully imported`));
     await orm.close(true);
   }
 

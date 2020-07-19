@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import c from 'ansi-colors';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
@@ -73,9 +73,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
 
     if (await this.isConnected()) {
-      this.logger.log('info', `MikroORM successfully connected to database ${chalk.green(db)}`);
+      this.logger.log('info', `MikroORM successfully connected to database ${c.green(db)}`);
     } else {
-      this.logger.log('info', chalk.red(`MikroORM failed to connect to database ${db}`));
+      this.logger.log('info', c.red(`MikroORM failed to connect to database ${db}`));
     }
 
     return this.driver;

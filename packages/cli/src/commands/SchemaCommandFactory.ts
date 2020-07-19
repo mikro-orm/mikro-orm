@@ -1,5 +1,5 @@
 import yargs, { Arguments, Argv, CommandModule } from 'yargs';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { MikroORM } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
@@ -89,7 +89,7 @@ export class SchemaCommandFactory {
     } else {
       const m = method + 'Schema';
       await generator[m](...params);
-      CLIHelper.dump(chalk.green(successMessage));
+      CLIHelper.dump(c.green(successMessage));
     }
 
     await orm.close(true);
