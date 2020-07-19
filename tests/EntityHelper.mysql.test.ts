@@ -94,6 +94,12 @@ describe('EntityHelperMySql', () => {
     expect(jon.identities).toEqual(['3', '4']);
   });
 
+  test(`toObject allows to hide PK (GH issue 644)`, async () => {
+    const bar = FooBar2.create('fb');
+    await orm.em.persistAndFlush(bar);
+    expect(wrap(bar).toObject(['id'])).not.toMatchObject({ id: bar.id, name: 'fb' });
+  });
+
   test(`toObject handles recursion in 1:1`, async () => {
     const bar = FooBar2.create('fb');
     bar.baz = new FooBaz2('fz');

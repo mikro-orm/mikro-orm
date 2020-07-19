@@ -14,7 +14,7 @@ export class EntityTransformer {
     const ret = {} as EntityData<T>;
 
     meta.primaryKeys
-      .filter(pk => !Utils.isDefined(entity[pk], true) || !meta.properties[pk].hidden)
+      .filter(pk => !Utils.isDefined(entity[pk], true) || !(meta.properties[pk].hidden || ignoreFields.includes(pk)))
       .map(pk => [pk, Utils.getPrimaryKeyValue<T>(entity, [pk])] as [string, string])
       .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = platform.normalizePrimaryKey(value));
 
