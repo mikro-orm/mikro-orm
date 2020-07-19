@@ -386,6 +386,7 @@ export class MetadataDiscovery {
       pivotTable: true,
       properties: {} as Record<string, EntityProperty>,
       hooks: {},
+      filters: {},
       indexes: [] as any[],
       uniques: [] as any[],
     } as EntityMetadata;

@@ -8,6 +8,15 @@ import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { PopulateOptions } from '../drivers';
 
+type Options<T extends AnyEntity<T>> = {
+  where?: FilterQuery<T>;
+  orderBy?: QueryOrderMap;
+  refresh?: boolean;
+  validate?: boolean;
+  lookup?: boolean;
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+};
+
 export class EntityLoader {
 
   private readonly metadata = this.em.getMetadata();
@@ -15,20 +24,26 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true, lookup = true): Promise<void> {
+  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: Options<T>): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
 
-    populate = this.normalizePopulate<T>(entityName, populate, lookup);
+    options.where = options.where ?? {};
+    options.orderBy = options.orderBy ?? {};
+    options.filters = options.filters ?? {};
+    options.lookup = options.lookup ?? true;
+    options.validate = options.validate ?? true;
+    options.refresh = options.refresh ?? false;
+    populate = this.normalizePopulate<T>(entityName, populate, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
-    if (validate && invalid) {
+    if (options.validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
     for (const pop of populate) {
-      await this.populateField<T>(entityName, entities, pop, where, orderBy, refresh);
+      await this.populateField<T>(entityName, entities, pop, options as Required<Options<T>>);
     }
   }
 
@@ -77,9 +92,10 @@ export class EntityLoader {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, where: FilterQuery<T>, orderBy: QueryOrderMap, refresh: boolean): Promise<AnyEntity[]> {
+  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
     const field = populate.field as keyof T;
-    const prop = this.metadata.get<T>(entityName).properties[field as string];
+    const meta = this.metadata.get<T>(entityName);
+    const prop = meta.properties[field as string];
 
     if (prop.reference === ReferenceType.SCALAR && prop.lazy) {
       return [];
@@ -92,15 +108,22 @@ export class EntityLoader {
       }
     });
 
-    const filtered = this.filterCollections<T>(entities, field, refresh);
-    const innerOrderBy = Utils.isObject(orderBy[prop.name]) ? orderBy[prop.name] : undefined;
+    const filtered = this.filterCollections<T>(entities, field, options.refresh);
+    const innerOrderBy = Utils.isObject(options.orderBy[prop.name]) ? options.orderBy[prop.name] as QueryOrderMap : undefined;
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<T>(filtered, prop, field, refresh, where[prop.name], innerOrderBy as QueryOrderMap);
+      return this.findChildrenFromPivotTable<T>(filtered, prop, field, options.refresh, options.where[prop.name], innerOrderBy as QueryOrderMap);
     }
 
-    const subCond = Utils.isPlainObject(where[prop.name]) ? where[prop.name] : {};
-    const data = await this.findChildren<T>(entities, prop, refresh, subCond, populate, innerOrderBy as QueryOrderMap);
+    let subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
+    const op = Object.keys(subCond).find(key => Utils.isOperator(key, false));
+    const meta2 = this.metadata.get(prop.type);
+
+    if (op) {
+      subCond = { [Utils.getPrimaryKeyHash(meta2.primaryKeys)]: subCond };
+    }
+
+    const data = await this.findChildren<T>(entities, prop, populate, { ...options, where: subCond, orderBy: innerOrderBy! });
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;
@@ -130,8 +153,8 @@ export class EntityLoader {
     }
   }
 
-  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, refresh: boolean, where: FilterQuery<T>, populate: PopulateOptions<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const children = this.getChildReferences<T>(entities, prop, refresh);
+  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
+    const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.get(prop.type);
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
 
@@ -150,18 +173,22 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, wrap(e, true).__meta.primaryKeys, true)));
-    where = { [fk]: { $in: ids }, ...(where as Dictionary) };
-    orderBy = orderBy || prop.orderBy || { [fk]: QueryOrder.ASC };
+    const where = { [fk]: { $in: ids }, ...(options.where as Dictionary) };
 
-    return this.em.find<T>(prop.type, where, { orderBy, refresh, populate: populate.children });
+    return this.em.find<T>(prop.type, where, {
+      orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },
+      refresh: options.refresh,
+      filters: options.filters,
+      populate: populate.children,
+    });
   }
 
-  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, where: FilterQuery<T>, orderBy: QueryOrderMap, refresh: boolean): Promise<void> {
+  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<void> {
     if (!populate.children) {
-      return void await this.populateMany<T>(entityName, entities, populate, where, orderBy, refresh);
+      return void await this.populateMany<T>(entityName, entities, populate, options);
     }
 
-    await this.populateMany<T>(entityName, entities, populate, where, orderBy, refresh);
+    await this.populateMany<T>(entityName, entities, populate, options);
     const children: T[] = [];
 
     for (const entity of entities) {
@@ -176,7 +203,14 @@ export class EntityLoader {
 
     const filtered = Utils.unique(children);
     const prop = this.metadata.get(entityName).properties[populate.field];
-    await this.populate<T>(prop.type, filtered, populate.children, where[prop.name], orderBy[prop.name] as QueryOrderMap, refresh, false, false);
+    await this.populate<T>(prop.type, filtered, populate.children, {
+      where: options.where[prop.name],
+      orderBy: options.orderBy[prop.name] as QueryOrderMap,
+      refresh: options.refresh,
+      filters: options.filters,
+      validate: false,
+      lookup: false,
+    });
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {

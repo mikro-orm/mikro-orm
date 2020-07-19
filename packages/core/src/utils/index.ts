@@ -3,5 +3,5 @@ export * from './ConfigurationLoader';
 export * from './Logger';
 export * from './Utils';
 export * from './RequestContext';
-export * from './SmartQueryHelper';
+export * from './QueryHelper';
 export * from './errors';

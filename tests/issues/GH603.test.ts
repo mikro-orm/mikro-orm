@@ -102,7 +102,7 @@ describe('GH issue 603', () => {
   // composite pk for versioning purposes. Id stays the same, but version can be changed
   test(`GH issue 603, update entity`, async () => {
     const project = await orm.em.findOneOrFail(ProjectProps, projectId);
-    const task = await orm.em.findOneOrFail(TaskProps, taskId);
+    const task = await orm.em.findOneOrFail(TaskProps, { id: taskId });
     const newVersion = orm.em.create(TaskProps, { id: task.id });
     newVersion.projects.add(project);
     await expect(orm.em.flush()).resolves.not.toThrow();

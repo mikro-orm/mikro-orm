@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap } from '@mikro-orm/core';
+import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -9,10 +9,14 @@ import { BaseEntity3 } from './BaseEntity3';
 @Unique({ properties: ['title', 'author'] })
 @Index({ properties: 'title', type: 'text' })
 @Index({ options: { point: '2dsphere', title: -1 } })
+@Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
 export class Book extends BaseEntity3 {
 
   @PrimaryKey()
   _id!: ObjectId;
+
+  @Property()
+  createdAt: Date = new Date();
 
   @Property()
   title: string;
@@ -31,7 +35,7 @@ export class Book extends BaseEntity3 {
   tags: Collection<BookTag> = new Collection<BookTag>(this);
 
   @Property()
-  metaObject?: object;
+  metaObject?: Dictionary<unknown>;
 
   @Property()
   metaArray?: any[];
@@ -42,6 +46,9 @@ export class Book extends BaseEntity3 {
   @Property()
   @Index({ type: '2dsphere' })
   point?: [number, number];
+
+  @Property()
+  tenant?: number;
 
   constructor(title: string, author?: Author) {
     super();

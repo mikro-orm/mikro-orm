@@ -11,5 +11,6 @@ export * from './Indexed';
 export * from './Repository';
 export * from './Embeddable';
 export * from './Embedded';
+export * from './Filter';
 export * from './Subscriber';
 export * from './hooks';

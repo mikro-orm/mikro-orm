@@ -154,7 +154,7 @@ console.log(qb.getQuery());
 ```
 
 This is currently available only for filtering (`where`) and sorting (`orderBy`), only 
-the root entity will be selected. To populate its relationships, you can use [EntityLoader](nested-populate.md).
+the root entity will be selected. To populate its relationships, you can use [`em.populate()`](nested-populate.md).
 
 ## Explicit Joining
 

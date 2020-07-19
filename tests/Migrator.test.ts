@@ -3,7 +3,7 @@ import umzug from 'umzug';
 import { Logger, MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { unlink, writeFile } from 'fs-extra';
+import { remove, writeFile } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
 
 class MigrationTest1 extends Migration {
@@ -30,7 +30,12 @@ describe('Migrator', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => {
+    orm = await initORMMySql();
+    await remove(process.cwd() + '/temp/migrations/Migration20191013214813.js');
+    await remove(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
+    await remove(process.cwd() + '/temp/migrations/migration-20191013214813.ts');
+  });
   afterAll(async () => orm.close(true));
 
   test('generate js schema migration', async () => {
@@ -42,7 +47,7 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
   test('generate migration with custom name', async () => {
@@ -54,7 +59,7 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
   test('generate schema migration', async () => {
@@ -63,7 +68,7 @@ describe('Migrator', () => {
     const migrator = new Migrator(orm.em);
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    await unlink(process.cwd() + '/temp/migrations/' + migration.fileName);
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
   test('migration is skipped when no diff', async () => {
@@ -170,7 +175,7 @@ describe('Migrator', () => {
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
 
-    await unlink(path + '/' + migration.fileName);
+    await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
@@ -206,7 +211,7 @@ describe('Migrator', () => {
     await migrator.up({ from: migration.fileName } as any);
     await migrator.down();
 
-    await unlink(path + '/' + migration.fileName);
+    await remove(path + '/' + migration.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')

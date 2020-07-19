@@ -56,6 +56,9 @@ export class Author extends BaseEntity<Author> {
   @Property({ persist: false })
   versionAsString!: string;
 
+  @Property()
+  tenant?: number;
+
   constructor(name: string, email: string) {
     super();
     this.name = name;
