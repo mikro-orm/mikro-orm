@@ -5,7 +5,7 @@ import { Configuration, RequestContext, QueryHelper, Utils, ValidationError } fr
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, Populate, PopulateMap, PopulateOptions, UpdateOptions } from './drivers';
-import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, IPrimaryKey, Primary } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, IPrimaryKey, Primary } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -86,7 +86,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const options = Utils.isObject<FindOptions<T>>(populate) ? populate : { populate, orderBy, limit, offset };
     entityName = Utils.className(entityName);
     where = QueryHelper.processWhere(where, entityName, this.metadata);
-    await this.applyFilters(entityName, where, options.filters ?? {});
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = this.preparePopulate<T>(entityName, options.populate, options.strategy);
@@ -104,7 +104,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T>(entityName, unique, options.populate as PopulateOptions<T>[], where, options.orderBy, options.refresh);
+    await this.entityLoader.populate<T>(entityName, unique, options.populate as PopulateOptions<T>[], { ...options, where });
 
     return unique;
   }
@@ -126,25 +126,38 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.filterParams[name] = args;
   }
 
-  protected async applyFilters<T>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean): Promise<void> {
+  protected async applyFilters<T>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.get<T>(entityName, false, false);
     const filters: FilterDef<any>[] = [];
-    let ret = {};
+    const ret = {};
 
     if (!meta) {
-      return;
+      return where;
     }
 
     filters.push(...QueryHelper.getActiveFilters(entityName, options, this.config.get('filters')));
     filters.push(...QueryHelper.getActiveFilters(entityName, options, this.filters));
     filters.push(...QueryHelper.getActiveFilters(entityName, options, meta.filters));
 
+    if (filters.length === 0) {
+      return where;
+    }
+
+    if (Utils.isPrimaryKey(where) && meta.primaryKeys.length === 1) {
+      where = { [meta.primaryKeys[0]]: where } as FilterQuery<T>;
+    }
+
     for (const filter of filters) {
       let cond: Dictionary;
 
       if (filter.cond instanceof Function) {
-        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : (this.filterParams[filter.name] || {});
-        cond = await filter.cond(args);
+        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.filterParams[filter.name];
+
+        if (!args) {
+          throw new Error(`No arguments provided for filter '${filter.name}'`);
+        }
+
+        cond = await filter.cond(args, type);
       } else {
         cond = filter.cond;
       }
@@ -153,13 +166,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       Utils.merge(ret, cond2, where);
     }
 
-    const op = Object.keys(ret).find(key => Utils.isOperator(key, false));
-
-    if (op) {
-      ret = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: ret };
-    }
-
-    Object.assign(where, ret);
+    return Object.assign(where, ret);
   }
 
   /**
@@ -205,7 +212,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const options = Utils.isObject<FindOneOptions<T>>(populate) ? populate : { populate, orderBy };
     const meta = this.metadata.get<T>(entityName);
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
-    await this.applyFilters(entityName, where, options.filters ?? {});
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
@@ -301,7 +308,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     data = QueryHelper.processParams(data);
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
-    await this.applyFilters(entityName, where, options.filters ?? {});
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
@@ -315,7 +322,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async nativeDelete<T>(entityName: EntityName<T>, where: FilterQuery<T>, options: DeleteOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
-    await this.applyFilters(entityName, where, options.filters ?? {});
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'delete');
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
@@ -429,7 +436,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async count<T>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = QueryHelper.processWhere(where, entityName, this.metadata);
-    await this.applyFilters(entityName, where, options.filters ?? {});
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
 
     return this.driver.count(entityName, where, this.transactionContext);
@@ -540,9 +547,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  async populate<T>(entities: T, populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
-  async populate<T>(entities: T[], populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
-  async populate<T>(entities: T | T[], populate: string | Populate<T>, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
+  async populate<T extends AnyEntity<T>>(entities: T, populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
+  async populate<T extends AnyEntity<T>>(entities: T[], populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
+  async populate<T extends AnyEntity<T>>(entities: T | T[], populate: string | Populate<T>, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
     const entitiesArray = Utils.asArray(entities);
 
     if (entitiesArray.length === 0) {
@@ -551,9 +558,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     populate = Utils.isString(populate) ? Utils.asArray(populate) : populate;
 
-    const entityName = (entitiesArray[0] as unknown as Constructor<any>).constructor.name;
+    const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate<T>(entityName, populate);
-    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, where, orderBy, refresh, validate);
+    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, { where, orderBy, refresh, validate });
 
     return entities;
   }
@@ -637,7 +644,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate(entityName, options.populate, options.strategy);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, where, options.orderBy || {}, options.refresh);
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options, where });
 
     return entity;
   }

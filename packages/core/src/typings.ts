@@ -218,7 +218,7 @@ export interface IMigrator {
 
 export type FilterDef<T extends AnyEntity<T>> = {
   name: string;
-  cond: FilterQuery<T> | ((args: Dictionary) => FilterQuery<T>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T>);
   default?: boolean;
   entity?: string[];
 };

@@ -1478,20 +1478,49 @@ describe('EntityManagerMySql', () => {
       'where `e0`.`title` = \'123\' and `e0`.`author_id` is not null');
 
     const b1 = await orm.em.findOne(Book2, '123', {
-      filters: { long: true, writtenBy: { name: 'God' } },
+      filters: { long: true },
     });
     expect(mock.mock.calls[4][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`uuid_pk` = \'123\' limit 1');
+      'where `e0`.`uuid_pk` = \'123\' and `e0`.`author_id` is not null and length(perex) > 10000 limit 1');
 
     const b2 = await orm.em.findOne(Book2, { author: { name: 'Jon' } }, {
-      filters: { hasAuthor: false, long: true, writtenBy: { name: 'God' } },
+      filters: { hasAuthor: false, long: true },
     });
     expect(mock.mock.calls[5][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e2`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`name` = \'Jon\' and length(perex) > 10000 limit 1');
+      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e1`.`name` = \'Jon\' and length(perex) > 10000 limit 1');
+
+    await orm.em.count(Book2, { author: { name: 'Jon' } }, {
+      filters: { hasAuthor: false, long: true },
+    });
+    expect(mock.mock.calls[6][0]).toMatch('select count(distinct `e0`.`uuid_pk`) as `count` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'where `e1`.`name` = \'Jon\' and length(perex) > 10000');
+
+    await orm.em.nativeUpdate(Book2, '123', { title: 'b123' }, {
+      filters: { hasAuthor: false, long: true },
+    });
+    expect(mock.mock.calls[7][0]).toMatch('update `book2` set `title` = \'b123\'');
+
+    await orm.em.nativeUpdate(Book2, '123', { title: 'b123' }, {
+      filters: { hasAuthor: false, long: true },
+    });
+    expect(mock.mock.calls[8][0]).toMatch('update `book2` set `title` = \'b123\' where `uuid_pk` = \'123\' and length(perex) > 10000');
+
+    await orm.em.nativeDelete(Book2, '321', {
+      filters: { hasAuthor: false, long: true },
+    });
+    expect(mock.mock.calls[9][0]).toMatch('delete from `book2` where `uuid_pk` = \'321\' and length(perex) > 10000');
+
+    // wut, name: 'god' should not be here?
+    await expect(orm.em.find(Book2, {}, {
+      filters: { hasAuthor: false, long: true, writtenBy: true },
+    })).rejects.toThrow(`No arguments provided for filter 'writtenBy'`);
   });
 
   test('self referencing M:N (unidirectional)', async () => {
