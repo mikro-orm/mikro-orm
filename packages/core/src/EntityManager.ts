@@ -1,11 +1,11 @@
 import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, RequestContext, SmartQueryHelper, Utils, ValidationError } from './utils';
+import { Configuration, RequestContext, QueryHelper, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
-import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, Populate, PopulateMap, PopulateOptions } from './drivers';
-import { AnyEntity, Constructor, Dictionary, EntityData, EntityMetadata, EntityName, FilterQuery, IPrimaryKey, Primary } from './typings';
+import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, Populate, PopulateMap, PopulateOptions, UpdateOptions } from './drivers';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, IPrimaryKey, Primary } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -24,6 +24,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly eventManager = new EventManager(this.config.get('subscribers'));
+  private filters: Dictionary<FilterDef<any>> = {};
+  private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
 
   constructor(readonly config: Configuration,
@@ -81,10 +83,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Finds all entities matching your `where` query.
    */
   async find<T>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOptions<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<T[]> {
-    entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where, entityName, this.metadata);
-    this.validator.validateParams(where);
     const options = Utils.isObject<FindOptions<T>>(populate) ? populate : { populate, orderBy, limit, offset };
+    entityName = Utils.className(entityName);
+    where = QueryHelper.processWhere(where, entityName, this.metadata);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = this.preparePopulate<T>(entityName, options.populate, options.strategy);
     const results = await this.driver.find<T>(entityName, where, options, this.transactionContext);
@@ -101,9 +104,69 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T>(entityName, unique, options.populate as PopulateOptions<T>[], where, options.orderBy, options.refresh);
+    await this.entityLoader.populate<T>(entityName, unique, options.populate as PopulateOptions<T>[], { ...options, where });
 
     return unique;
+  }
+
+  addFilter<T1>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => FilterQuery<T1>), entityName?: EntityName<T1> | [EntityName<T1>], enabled?: boolean): void;
+  addFilter<T1, T2>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => FilterQuery<T1 | T2>), entityName?: [EntityName<T1>, EntityName<T2>], enabled?: boolean): void;
+  addFilter<T1, T2, T3>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => FilterQuery<T1 | T2 | T3>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
+  addFilter(name: string, cond: FilterQuery<AnyEntity> | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
+    const options: FilterDef<AnyEntity> = { name, cond, default: enabled };
+
+    if (entityName) {
+      options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
+    }
+
+    this.filters[name] = options;
+  }
+
+  setFilterParams(name: string, args: Dictionary): void {
+    this.filterParams[name] = args;
+  }
+
+  protected async applyFilters<T>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
+    const meta = this.metadata.get<T>(entityName, false, false);
+    const filters: FilterDef<any>[] = [];
+    const ret = {};
+
+    if (!meta) {
+      return where;
+    }
+
+    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.config.get('filters')));
+    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.filters));
+    filters.push(...QueryHelper.getActiveFilters(entityName, options, meta.filters));
+
+    if (filters.length === 0) {
+      return where;
+    }
+
+    if (Utils.isPrimaryKey(where) && meta.primaryKeys.length === 1) {
+      where = { [meta.primaryKeys[0]]: where } as FilterQuery<T>;
+    }
+
+    for (const filter of filters) {
+      let cond: Dictionary;
+
+      if (filter.cond instanceof Function) {
+        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.filterParams[filter.name];
+
+        if (!args) {
+          throw new Error(`No arguments provided for filter '${filter.name}'`);
+        }
+
+        cond = await filter.cond(args, type);
+      } else {
+        cond = filter.cond;
+      }
+
+      const cond2 = QueryHelper.processWhere(cond, entityName, this.metadata);
+      Utils.merge(ret, cond2, where);
+    }
+
+    return Object.assign(where, ret);
   }
 
   /**
@@ -148,8 +211,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T>>(populate) ? populate : { populate, orderBy };
     const meta = this.metadata.get<T>(entityName);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateEmptyWhere(where);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
     this.checkLockRequirements(options.lockMode, meta);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
@@ -230,7 +294,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeInsert<T>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>> {
     entityName = Utils.className(entityName);
-    data = SmartQueryHelper.processParams(data);
+    data = QueryHelper.processParams(data);
     this.validator.validateParams(data, 'insert data');
     const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
 
@@ -240,10 +304,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
-  async nativeUpdate<T>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
+  async nativeUpdate<T>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>, options: UpdateOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    data = SmartQueryHelper.processParams(data);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    data = QueryHelper.processParams(data);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
@@ -254,9 +319,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
-  async nativeDelete<T>(entityName: EntityName<T>, where: FilterQuery<T>): Promise<number> {
+  async nativeDelete<T>(entityName: EntityName<T>, where: FilterQuery<T>, options: DeleteOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'delete');
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
@@ -367,9 +433,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count<T>(entityName: EntityName<T>, where: FilterQuery<T> = {}): Promise<number> {
+  async count<T>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = SmartQueryHelper.processWhere(where, entityName, this.metadata);
+    where = QueryHelper.processWhere(where, entityName, this.metadata);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
 
     return this.driver.count(entityName, where, this.transactionContext);
@@ -480,9 +547,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
-  async populate<T>(entities: T, populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
-  async populate<T>(entities: T[], populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
-  async populate<T>(entities: T | T[], populate: string | Populate<T>, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
+  async populate<T extends AnyEntity<T>>(entities: T, populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T>;
+  async populate<T extends AnyEntity<T>>(entities: T[], populate: string | Populate<T>, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<T[]>;
+  async populate<T extends AnyEntity<T>>(entities: T | T[], populate: string | Populate<T>, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<T | T[]> {
     const entitiesArray = Utils.asArray(entities);
 
     if (entitiesArray.length === 0) {
@@ -491,9 +558,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     populate = Utils.isString(populate) ? Utils.asArray(populate) : populate;
 
-    const entityName = (entitiesArray[0] as unknown as Constructor<any>).constructor.name;
+    const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate<T>(entityName, populate);
-    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, where, orderBy, refresh, validate);
+    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, { where, orderBy, refresh, validate });
 
     return entities;
   }
@@ -506,6 +573,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   fork(clear = true, useContext = false): D[typeof EntityManagerType] {
     const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext);
+    em.filters = { ...this.filters };
+    em.filterParams = Utils.copy(this.filterParams);
 
     if (!clear) {
       Object.values(this.getUnitOfWork().getIdentityMap()).forEach(entity => em.merge(entity));
@@ -575,7 +644,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate(entityName, options.populate, options.strategy);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, where, options.orderBy || {}, options.refresh);
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options, where });
 
     return entity;
   }

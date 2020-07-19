@@ -176,6 +176,7 @@ describe('EntityAssignerMongo', () => {
     const b = await orm.em.findOneOrFail(Book, book.id);
     expect(Utils.prepareEntity(b, orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
       _id: b._id,
+      createdAt: b.createdAt,
       title: b.title,
       author: b.author._id,
     });
@@ -218,6 +219,7 @@ describe('EntityAssignerMongo', () => {
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
+    bible.createdAt = new Date('2020-07-18T17:31:08.535Z');
     god.favouriteAuthor = god;
     delete god.createdAt;
     delete god.updatedAt;
@@ -231,6 +233,7 @@ describe('EntityAssignerMongo', () => {
         '  termsAccepted: false,\n' +
         '  books: Collection {\n' +
         "    '0': Book {\n" +
+        '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
         '      tags: [Collection],\n' +
         "      title: 'Bible',\n" +
         '      author: [Author],\n' +

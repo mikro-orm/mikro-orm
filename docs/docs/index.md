@@ -20,6 +20,7 @@ hide_title: true
   - [Unit of Work](unit-of-work.md)
   - [Transactions](transactions.md)
   - [Cascading persist and remove](cascading.md)
+  - [Filters](filters.md)
   - [Deployment](deployment.md)
 - Advanced Features
   - [Smart Nested Populate](nested-populate.md)

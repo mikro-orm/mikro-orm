@@ -943,7 +943,7 @@ describe('EntityManagerPostgre', () => {
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select "e0".* from "author2" as "e0" left join "book2" as "e1" on "e0"."id" = "e1"."author_id" where "e1"."title" in ($1, $2)');
-    expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" in ($1) and "e0"."title" in ($2, $3) order by "e0"."title" asc');
+    expect(mock.mock.calls[1][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and "e0"."author_id" in ($1) and "e0"."title" in ($2, $3) order by "e0"."title" asc');
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

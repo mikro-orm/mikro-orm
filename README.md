@@ -149,6 +149,7 @@ There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit m
 - [Transactions](https://mikro-orm.io/transactions/)
 - [Cascading persist and remove](https://mikro-orm.io/cascading/)
 - [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/composite-keys/)
+- [Filters](https://mikro-orm.io/filters/)
 - [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
 - [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
 - [Property Validation](https://mikro-orm.io/property-validation/)

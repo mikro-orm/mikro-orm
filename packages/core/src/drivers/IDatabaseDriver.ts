@@ -86,11 +86,24 @@ export interface FindOptions<T> {
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   strategy?: LoadStrategy;
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
 
 export interface FindOneOptions<T> extends Omit<FindOptions<T>, 'limit' | 'offset'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
+}
+
+export interface CountOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
+export interface UpdateOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
+export interface DeleteOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
 
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T[K]> | CollectionItem<T[K]>> };
