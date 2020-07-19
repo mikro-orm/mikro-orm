@@ -54,7 +54,7 @@
     "@mikro-orm/knex": "^4.0.0-alpha.5",
     "@mikro-orm/migrations": "^4.0.0-alpha.5",
     "@mikro-orm/entity-generator": "^4.0.0-alpha.5",
-    "chalk": "^4.1.0",
+    "ansi-colors": "^4.1.1",
     "cli-highlight": "^2.1.4",
     "cli-table3": "^0.6.0",
     "fs-extra": "^9.0.1",

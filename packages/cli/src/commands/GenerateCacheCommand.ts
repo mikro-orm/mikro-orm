@@ -1,5 +1,5 @@
 import { Arguments, CommandModule } from 'yargs';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
@@ -15,7 +15,7 @@ export class GenerateCacheCommand implements CommandModule {
     const config = await CLIHelper.getConfiguration(false);
 
     if (!config.get('cache').enabled) {
-      CLIHelper.dump(chalk.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
+      CLIHelper.dump(c.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
       return;
     }
 
@@ -24,7 +24,7 @@ export class GenerateCacheCommand implements CommandModule {
     const discovery = new MetadataDiscovery(MetadataStorage.init(), config.getDriver().getPlatform(), config);
     await discovery.discover(false);
 
-    CLIHelper.dump(chalk.green('Metadata cache was successfully generated'));
+    CLIHelper.dump(c.green('Metadata cache was successfully generated'));
   }
 
 }
