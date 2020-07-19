@@ -1,11 +1,15 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Test2 } from './Test2';
 
 @Entity()
+@Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
+@Filter({ name: 'long', cond: { 'length(perex)': { $gt: 10000 } } })
+@Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
+@Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
 
   @PrimaryKey({ name: 'uuid_pk', length: 36 })

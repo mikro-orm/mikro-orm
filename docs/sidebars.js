@@ -16,6 +16,7 @@ module.exports = {
       'transactions',
       'cascading',
       'composite-keys',
+      'filters',
       'deployment',
       'decorators',
     ],

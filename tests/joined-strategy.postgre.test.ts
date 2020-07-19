@@ -225,6 +225,7 @@ describe('Joined loading strategy', () => {
       'from "book2" as "e0" ' +
       'left join "book2_tags" as "e2" on "e0"."uuid_pk" = "e2"."book2_uuid_pk" ' +
       'left join "book_tag2" as "t1" on "e2"."book_tag2_id" = "t1"."id" ' +
+      'where "e0"."author_id" is not null ' +
       'order by "t1"."name" desc');
 
     expect(books.map(b => b.title)).toEqual(['b4', 'b2', 'b1', 'b5', 'b3']);

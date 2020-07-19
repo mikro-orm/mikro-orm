@@ -51,6 +51,12 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const customExpression = QueryBuilderHelper.isCustomExpression(field);
 
       if (childNode.shouldInline(payload)) {
+        const operators = Object.keys(payload).filter(k => Utils.isOperator(k, false));
+        operators.forEach(op => {
+          const tmp = payload[op];
+          delete payload[op];
+          payload[`${alias}.${field}`] = { [op]: tmp, ...(payload[`${alias}.${field}`] || {}) };
+        });
         Object.assign(o, payload);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
