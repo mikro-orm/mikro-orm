@@ -54,6 +54,28 @@
     "@mikro-orm/core": "^4.0.0-alpha.6"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.0.0-alpha.6"
+    "@mikro-orm/core": "^4.0.0-alpha.6",
+    "mssql": "^6.2.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.1.0",
+    "pg": "^8.0.3",
+    "sqlite3": "^4.1.1"
+  },
+  "peerDependenciesMeta": {
+    "mssql": {
+      "optional": true
+    },
+    "mysql": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    }
   }
 }
