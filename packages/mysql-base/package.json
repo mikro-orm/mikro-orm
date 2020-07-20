@@ -53,6 +53,12 @@
     "@mikro-orm/core": "^4.0.0-alpha.6"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.0.0-alpha.6"
+    "@mikro-orm/core": "^4.0.0-alpha.6",
+    "mysql2": "^2.1.0"
+  },
+  "peerDependenciesMeta": {
+    "mysql2": {
+      "optional": true
+    }
   }
 }
