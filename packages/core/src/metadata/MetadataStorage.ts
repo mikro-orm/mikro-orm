@@ -62,6 +62,10 @@ export class MetadataStorage {
     return this.metadata[entity];
   }
 
+  find<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T> | undefined {
+    return this.get<T>(entity, false, false);
+  }
+
   has(entity: string): boolean {
     return entity in this.metadata;
   }

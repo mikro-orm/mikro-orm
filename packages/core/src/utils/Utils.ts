@@ -89,7 +89,7 @@ export class Utils {
   }
 
   static getRootEntity(metadata: MetadataStorage, meta: EntityMetadata): EntityMetadata {
-    const base = meta.extends && metadata.get(meta.extends, false, false);
+    const base = meta.extends && metadata.find(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
       return meta;

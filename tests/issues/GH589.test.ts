@@ -21,6 +21,9 @@ export class Chat {
   @ManyToOne(() => User, { primary: true, wrappedReference: true })
   recipient: IdentifiedReference<User>;
 
+  @ManyToOne(() => User, { nullable: true })
+  User?: User;
+
   [PrimaryKeyType]: [number, number];
 
   constructor(owner: User, recipient: User) {
@@ -76,4 +79,15 @@ describe('GH issue 589', () => {
 
     await expect(orm.em.flush()).resolves.toBeUndefined();
   });
+
+  test(`GH issue 655 (originally failing)`, async () => {
+    const user1 = new User();
+    const chat1 = new Chat(user1, user1);
+    chat1.User = user1;
+    await orm.em.persistAndFlush(chat1);
+    orm.em.clear();
+
+    await orm.em.find(Chat, {}, ['User']);
+  });
+
 });
