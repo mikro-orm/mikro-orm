@@ -4,7 +4,7 @@ import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, EventType, wrap } from '..';
 
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
+export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
 export class EntityFactory {
 

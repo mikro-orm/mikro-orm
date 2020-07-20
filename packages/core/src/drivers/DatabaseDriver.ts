@@ -140,7 +140,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected getPrimaryKeyFields(entityName: string): string[] {
-    const meta = this.metadata.get(entityName, false, false);
+    const meta = this.metadata.find(entityName);
     return meta ? meta.primaryKeys : [this.config.getNamingStrategy().referenceColumnName()];
   }
 

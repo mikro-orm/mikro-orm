@@ -127,7 +127,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async applyFilters<T>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
-    const meta = this.metadata.get<T>(entityName, false, false);
+    const meta = this.metadata.find<T>(entityName);
     const filters: FilterDef<any>[] = [];
     const ret = {};
 

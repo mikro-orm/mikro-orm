@@ -17,7 +17,7 @@ export class CriteriaNode {
               readonly parent?: CriteriaNode,
               readonly key?: string,
               validate = true) {
-    const meta = parent && metadata.get(parent.entityName, false, false);
+    const meta = parent && metadata.find(parent.entityName);
 
     if (meta && key) {
       Utils.splitPrimaryKeys(key).forEach(k => {

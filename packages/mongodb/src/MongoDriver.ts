@@ -195,7 +195,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private renameFields<T>(entityName: string, data: T): T {
     data = Object.assign({}, data); // copy first
     Utils.renameKey(data, 'id', '_id');
-    const meta = this.metadata.get(entityName, false, false);
+    const meta = this.metadata.find(entityName);
 
     if (meta) {
       this.inlineEmbeddables(meta, data);

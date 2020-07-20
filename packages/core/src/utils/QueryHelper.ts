@@ -52,7 +52,7 @@ export class QueryHelper {
     }
 
     Object.keys(where).forEach(k => {
-      const meta2 = metadata.get(meta.properties[k]?.type, false, false) || meta;
+      const meta2 = metadata.find(meta.properties[k]?.type) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
         where[k] = Utils.getPrimaryKeyValues(where[k], meta2.primaryKeys, true);
@@ -63,7 +63,7 @@ export class QueryHelper {
   }
 
   static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, metadata: MetadataStorage): FilterQuery<T> {
-    const meta = metadata.get(entityName, false, false);
+    const meta = metadata.find(entityName);
 
     // inline PK-only objects in M:N queries so we don't join the target entity when not needed
     if (meta) {
@@ -83,7 +83,8 @@ export class QueryHelper {
 
     return Object.keys(where as Dictionary).reduce((o, key) => {
       const value = where[key];
-      const composite = meta?.properties[key]?.joinColumns?.length > 1;
+      const keys = meta?.properties[key]?.joinColumns?.length ?? 0;
+      const composite = keys > 1;
 
       if (key in GroupOperator) {
         o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata));
