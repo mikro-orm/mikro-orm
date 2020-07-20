@@ -16,7 +16,7 @@ export class EntityAssigner {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
     const wrapped = wrap(entity, true);
     const em = options.em || wrapped.__em;
-    const meta = wrapped.__internal.metadata.get(entity.constructor.name);
+    const meta = wrapped.__meta;
     const root = Utils.getRootEntity(wrapped.__internal.metadata, meta);
     const validator = wrapped.__internal.validator;
     const platform = wrapped.__internal.platform;

@@ -237,7 +237,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     this.helper.getLockSQL(qb, this.lockMode);
-    this.helper.finalize(this.type, qb, this.metadata.get(this.entityName, false, false));
+    this.helper.finalize(this.type, qb, this.metadata.find(this.entityName));
 
     return qb;
   }
@@ -268,9 +268,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
-    const meta = this.metadata.get(this.entityName, false, false);
+    const meta = this.metadata.find(this.entityName);
 
-    if (!mapResults) {
+    if (!mapResults || !meta) {
       return res as unknown as U;
     }
 
@@ -301,7 +301,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     if (alias.includes('.')) {
       const [a, f] = alias.split('.');
-      const meta = this.metadata.get(a, false, false);
+      const meta = this.metadata.find(a);
       /* istanbul ignore next */
       alias = meta?.properties[f]?.fieldNames[0] || alias;
     }
@@ -457,7 +457,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return;
     }
 
-    const meta = this.metadata.get(this.entityName, false, false);
+    const meta = this.metadata.find(this.entityName);
     this._populate.forEach(({ field }) => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
@@ -466,16 +466,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         return this._populateMap[aliasedField] = this._joins[aliasedField].alias;
       }
 
-      if (this.metadata.has(field)) { // pivot table entity
+      if (this.metadata.find(field)?.pivotTable) { // pivot table entity
         this.autoJoinPivotTable(field);
-      } else if (this.helper.isOneToOneInverse(field)) {
+      } else if (meta && this.helper.isOneToOneInverse(field)) {
         const prop = meta.properties[field];
         this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
         this._populateMap[field] = this._joins[field].alias;
       }
     });
 
-    if (this.metadata.has(this.entityName) && (this._fields?.includes('*') || this._fields?.includes(`${this.alias}.*`))) {
+    if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.alias}.*`))) {
       Object.values(meta.properties)
         .filter(prop => prop.formula)
         .forEach(prop => {
@@ -488,11 +488,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     QueryHelper.processParams([this._data, this._cond, this._having]);
     this.finalized = true;
 
-    if (this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {
+    if (meta && this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {
       this.wrapPaginateSubQuery(meta);
     }
 
-    if (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY)) {
+    if (meta && (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY))) {
       this.wrapModifySubQuery(meta);
     }
   }

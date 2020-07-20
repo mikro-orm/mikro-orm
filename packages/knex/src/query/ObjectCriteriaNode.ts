@@ -5,7 +5,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
 
   static create(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: CriteriaNode, key?: string): ObjectCriteriaNode {
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
-    const meta = metadata.get(entityName, false, false);
+    const meta = metadata.find(entityName);
     node.payload = Object.keys(payload).reduce((o, item) => {
       const prop = meta?.properties[item];
 

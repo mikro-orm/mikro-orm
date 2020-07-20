@@ -53,7 +53,7 @@ export class QueryBuilderHelper {
 
   processData(data: Dictionary): any {
     data = Object.assign({}, data); // copy first
-    const meta = this.metadata.get(this.entityName, false, false);
+    const meta = this.metadata.find(this.entityName);
 
     Object.keys(data).forEach(k => {
       if (!meta?.properties[k]) {
@@ -176,7 +176,7 @@ export class QueryBuilderHelper {
   }
 
   getTableName(entityName: string): string {
-    const meta = this.metadata.get(entityName, false, false);
+    const meta = this.metadata.find(entityName);
     return meta ? meta.collection : entityName;
   }
 
@@ -428,7 +428,7 @@ export class QueryBuilderHelper {
       return void qb.forUpdate();
     }
 
-    const meta = this.metadata.get(this.entityName, false, false);
+    const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
       throw ValidationError.lockFailed(this.entityName);
@@ -436,7 +436,7 @@ export class QueryBuilderHelper {
   }
 
   updateVersionProperty(qb: KnexQueryBuilder): void {
-    const meta = this.metadata.get(this.entityName, false, false);
+    const meta = this.metadata.find(this.entityName);
 
     if (!meta || !meta.versionProperty) {
       return;
@@ -495,7 +495,7 @@ export class QueryBuilderHelper {
 
   private getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!] || this.entityName;
-    const meta = this.metadata.get(entityName, false, false);
+    const meta = this.metadata.find(entityName);
 
     return meta ? meta.properties[field] : undefined;
   }
