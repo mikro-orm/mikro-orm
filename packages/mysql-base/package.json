@@ -54,10 +54,14 @@
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0-alpha.6",
-    "mysql2": "^2.1.0"
+    "mysql2": "^2.1.0",
+    "mariadb": "^2.4.0"
   },
   "peerDependenciesMeta": {
     "mysql2": {
+      "optional": true
+    },
+    "mariadb": {
       "optional": true
     }
   }
