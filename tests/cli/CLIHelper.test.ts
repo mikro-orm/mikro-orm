@@ -1,5 +1,3 @@
-(global as any).process.env.FORCE_COLOR = 0;
-
 jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
@@ -10,10 +8,13 @@ const log = jest.fn();
 (global as any).console.log = log;
 
 import c from 'ansi-colors';
+import chalk from 'chalk';
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 // noinspection ES6PreferShortImport
 import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
+
+c.enabled = false;
 
 describe('CLIHelper', () => {
 
@@ -165,11 +166,13 @@ describe('CLIHelper', () => {
   test('dump', async () => {
     log.mock.calls.length = 0;
     CLIHelper.dump('test');
-    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'mongo' } as any, false), 'sql');
-    expect(log.mock.calls.length).toBe(2);
     expect(log.mock.calls[0][0]).toBe('test');
 
-    if (c.enabled) {
+    c.enabled = true;
+    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'mongo' } as any, false), 'sql');
+    c.enabled = false;
+
+    if (chalk.level > 0) {
       expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m + [32m1[39m');
     }
   });
@@ -257,13 +260,13 @@ describe('CLIHelper', () => {
       rows: [['val 1', 'val 2'], ['val 3', 'val 4'], ['val 5', 'val 6']],
       empty: 'Empty...',
     });
-    expect(dumpSpy.mock.calls[0][0]).toMatchSnapshot('has rows');
+    expect(require('colors').stripColors(dumpSpy.mock.calls[0][0])).toMatchSnapshot('has rows');
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
       rows: [],
       empty: 'Empty...',
     });
-    expect(dumpSpy.mock.calls[1][0]).toMatchSnapshot('empty');
+    expect(require('colors').stripColors(dumpSpy.mock.calls[1][0])).toMatchSnapshot('empty');
     dumpSpy.mockRestore();
   });
 
