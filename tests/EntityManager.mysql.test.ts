@@ -712,6 +712,8 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush([bible, bible2, bible3]);
     orm.em.clear();
 
+    const books0 = await orm.em.find(Book2, []);
+    expect(books0).toHaveLength(0);
     const newGod = (await orm.em.findOne(Author2, god.id))!;
     const books = await orm.em.find(Book2, {});
     await wrap(newGod).init(false);
