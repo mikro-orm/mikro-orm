@@ -100,7 +100,7 @@ describe('Joined loading strategy', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
     expect(mock.mock.calls.length).toBe(1);
@@ -151,7 +151,7 @@ describe('Joined loading strategy', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     await orm.em.find(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
     expect(mock.mock.calls.length).toBe(1);
@@ -216,7 +216,7 @@ describe('Joined loading strategy', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
     mock.mock.calls.length = 0;
     const books = await orm.em.find(Book2, {}, { populate: { tags: LoadStrategy.JOINED }, orderBy: { tags: { name: 'desc' } } });
     expect(mock.mock.calls.length).toBe(1);
@@ -301,7 +301,7 @@ describe('Joined loading strategy', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     // autoJoinOneToOneOwner: false
     const b0 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id });
@@ -361,7 +361,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     const tags = await repo.findAll({
       populate: {

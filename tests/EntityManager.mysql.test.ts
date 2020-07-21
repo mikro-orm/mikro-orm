@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import { inspect } from 'util';
 import c from 'ansi-colors';
+import chalk from 'chalk';
 
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
@@ -1940,18 +1941,18 @@ describe('EntityManagerMySql', () => {
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
     orm.config.set('highlight', true);
+    c.enabled = true;
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
 
-    expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch('begin');
-
-    if (c.enabled) {
+    if (chalk.level > 0) {
+      expect(mock.mock.calls.length).toBe(3);
+      expect(mock.mock.calls[0][0]).toMatch('begin');
       expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m, [33m`email`[39m, [33m`name`[39m, [33m`terms_accepted`[39m, [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?, ?, ?, ?, ?)');
+      expect(mock.mock.calls[2][0]).toMatch('commit');
     }
 
-    expect(mock.mock.calls[2][0]).toMatch('commit');
     orm.config.set('highlight', false);
   });
 

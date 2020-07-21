@@ -14,7 +14,7 @@ describe('EntityFactory', () => {
     orm = await initORMMongo();
     await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
     factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em);
-    expect(orm.em.config.getNamingStrategy().referenceColumnName()).toBe('_id');
+    expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
   beforeEach(async () => wipeDatabase(orm.em));
 
