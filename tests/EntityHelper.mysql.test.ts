@@ -79,6 +79,27 @@ describe('EntityHelperMySql', () => {
     expect(book2.tags.getIdentifiers()).toMatchObject([tag2.id]);
   });
 
+  test('assign() should update not initialized collection [mysql]', async () => {
+    const other = new BookTag2('other');
+    await orm.em.persistAndFlush(other);
+    const jon = new Author2('Jon Snow', 'snow@wall.st');
+    const book = new Book2('Book2', jon);
+    const tag1 = new BookTag2('tag 1');
+    const tag2 = new BookTag2('tag 2');
+    const tag3 = new BookTag2('tag 3');
+    book.tags.add(tag1, tag2, tag3);
+    await orm.em.persistAndFlush(book);
+    orm.em.clear();
+
+    const book1 = await orm.em.findOneOrFail(Book2, book.uuid);
+    wrap(book1).assign({ tags: [tag1.id, other.id] });
+    await orm.em.flush();
+    orm.em.clear();
+
+    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, ['tags']);
+    expect(book2.tags.getIdentifiers()).toMatchObject([tag1.id, other.id]);
+  });
+
   test('assign() allows deep merging of object properties [mysql]', async () => {
     const jon = new Author2('Jon Snow', 'snow@wall.st');
     const book = new Book2('Book2', jon);
