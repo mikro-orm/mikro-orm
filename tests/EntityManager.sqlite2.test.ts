@@ -95,7 +95,7 @@ describe('EntityManagerSqlite2', () => {
   test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -384,7 +384,7 @@ describe('EntityManagerSqlite2', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -402,7 +402,7 @@ describe('EntityManagerSqlite2', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);

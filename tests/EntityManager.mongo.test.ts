@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import c from 'ansi-colors';
+import chalk from 'chalk';
 import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 
@@ -326,7 +327,7 @@ describe('EntityManagerMongo', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
     await orm.em.nativeDelete(Author, author.id);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }, { session: undefined }\)/);
   });
@@ -1308,7 +1309,7 @@ describe('EntityManagerMongo', () => {
   test('EM supports native insert/update/delete/aggregate', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectId);
@@ -1421,7 +1422,7 @@ describe('EntityManagerMongo', () => {
   test('self referencing (1 step)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     const author = new Author('name', 'email');
     author.favouriteAuthor = author;
@@ -1617,7 +1618,7 @@ describe('EntityManagerMongo', () => {
   test('automatically fix array of PKs instead of collection when flushing (m:n)', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book = new Book('B123', author);
@@ -1755,19 +1756,20 @@ describe('EntityManagerMongo', () => {
   test('query highlighting', async () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
-    orm.em.config.set('highlight', true);
+    Object.assign(orm.config, { logger });
+    orm.config.set('highlight', true);
+    c.enabled = true;
 
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
 
     expect(mock.mock.calls.length).toBe(3);
 
-    if (c.enabled) {
+    if (chalk.level > 0) {
       expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mfoo\[39m: \[33m'bar'\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mtermsAccepted\[39m: \[36mfalse\[39m }, { \[36msession\[39m: \[33m'\[ClientSession]'\[39m }\)/);
     }
 
-    orm.em.config.set('highlight', false);
+    orm.config.set('highlight', false);
   });
 
   test('findOneOrFail', async () => {
@@ -2005,7 +2007,7 @@ describe('EntityManagerMongo', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
-    Object.assign(orm.em.config, { logger });
+    Object.assign(orm.config, { logger });
 
     const r1 = await orm.em.find(Author, {}, { populate: { books: true } });
     expect(r1[0].books[0].perex).not.toBe('123');
