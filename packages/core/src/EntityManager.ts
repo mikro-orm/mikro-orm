@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, RequestContext, QueryHelper, Utils, ValidationError } from './utils';
+import { Configuration, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, Populate, PopulateMap, PopulateOptions, UpdateOptions } from './drivers';
@@ -450,7 +450,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const entities = Utils.asArray(entity);
 
     for (const ent of entities) {
-      this.getUnitOfWork().persist(Utils.unwrapReference(ent));
+      this.getUnitOfWork().persist(Reference.unwrapReference(ent));
     }
 
     return this;
@@ -488,7 +488,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         throw new Error(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
       }
 
-      this.getUnitOfWork().remove(Utils.unwrapReference(ent));
+      this.getUnitOfWork().remove(Reference.unwrapReference(ent));
     }
 
     return this;

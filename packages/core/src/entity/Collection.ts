@@ -1,4 +1,4 @@
-import { EntityData, AnyEntity, FilterQuery, Dictionary, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, FilterQuery, Primary } from '../typings';
 import { ArrayCollection } from './index';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -43,14 +43,14 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   add(...items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    const unwrapped = items.map(i => Reference.unwrapReference(i));
     unwrapped.map(item => this.validateItemType(item));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
 
   set(items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    const unwrapped = items.map(i => Reference.unwrapReference(i));
     unwrapped.map(item => this.validateItemType(item));
     this.validateModification(unwrapped);
     super.set(unwrapped);
@@ -78,7 +78,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   remove(...items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Utils.unwrapReference(i));
+    const unwrapped = items.map(i => Reference.unwrapReference(i));
     this.modify('remove', unwrapped);
     const em = wrap(this.owner, true).__em;
 

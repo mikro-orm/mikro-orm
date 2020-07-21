@@ -317,7 +317,7 @@ export class UnitOfWork {
         .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
         .filter(prop => changeSet.entity[prop.name])
         .forEach(prop => {
-          const cs = this.changeSets.find(cs => cs.entity === Utils.unwrapReference(changeSet.entity[prop.name]));
+          const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
           const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
           if (isScheduledForInsert) {
