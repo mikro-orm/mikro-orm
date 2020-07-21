@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { inspect } from 'util';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
@@ -1947,7 +1947,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
 
-    if (chalk.level > 0) {
+    if (c.enabled) {
       expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m, [33m`email`[39m, [33m`name`[39m, [33m`terms_accepted`[39m, [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?, ?, ?, ?, ?)');
     }
 
