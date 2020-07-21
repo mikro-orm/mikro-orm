@@ -72,7 +72,7 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where, true) || {};
 
-    if (Array.isArray(where) && where.length > 0) {
+    if (Array.isArray(where)) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
       return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata)) } } as FilterQuery<T>;
     }
