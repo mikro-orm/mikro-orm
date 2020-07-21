@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 
@@ -1763,7 +1763,7 @@ describe('EntityManagerMongo', () => {
 
     expect(mock.mock.calls.length).toBe(3);
 
-    if (chalk.level > 0) {
+    if (c.enabled) {
       expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mfoo\[39m: \[33m'bar'\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mtermsAccepted\[39m: \[36mfalse\[39m }, { \[36msession\[39m: \[33m'\[ClientSession]'\[39m }\)/);
     }
 
