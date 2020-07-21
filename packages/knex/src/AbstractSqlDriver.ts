@@ -231,15 +231,16 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const wrapped = wrap(coll.owner, true);
     const meta = wrapped.__meta;
     const pks = wrapped.__primaryKeys;
-    const snapshot = coll.getSnapshot().map(item => wrap(item, true).__primaryKeys);
+    const snap = coll.getSnapshot();
+    const snapshot = snap ? snap.map(item => wrap(item, true).__primaryKeys) : [];
     const current = coll.getItems(false).map(item => wrap(item, true).__primaryKeys);
-    const deleteDiff = snapshot.filter(item => !current.includes(item));
+    const deleteDiff = snap ? snapshot.filter(item => !current.includes(item)) : true;
     const insertDiff = current.filter(item => !snapshot.includes(item));
     const target = snapshot.filter(item => current.includes(item)).concat(...insertDiff);
     const equals = Utils.equals(current, target);
 
     // wrong order if we just delete and insert to the end
-    if (coll.property.fixedOrder && !equals) {
+    if (coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
       deleteDiff.length = insertDiff.length = 0;
       deleteDiff.push(...snapshot);
       insertDiff.push(...current);
