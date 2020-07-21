@@ -1,13 +1,16 @@
-import { Dictionary, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, IWrappedEntityInternal, Primary } from '../typings';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
 export class Reference<T> {
 
+  private __helper?: IWrappedEntityInternal<T, keyof T>;
+
   constructor(private entity: T) {
     this.set(entity);
     const wrapped = wrap(this.entity, true);
+    Object.defineProperty(this, '__reference', { value: true });
 
     wrapped.__meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -34,6 +37,31 @@ export class Reference<T> {
     return new Reference(entity) as IdentifiedReference<T, PK>;
   }
 
+  /**
+   * Checks whether the argument is instance or `Reference` wrapper.
+   */
+  static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
+    return data instanceof Reference;
+  }
+
+  /**
+   * Wraps the entity in a `Reference` wrapper if the property is defined as `wrappedReference`.
+   */
+  static wrapReference<T extends AnyEntity<T>>(entity: T | Reference<T>, prop: EntityProperty<T>): Reference<T> | T {
+    if (entity && prop.wrappedReference && !Reference.isReference(entity)) {
+      return Reference.create(entity as T);
+    }
+
+    return entity;
+  }
+
+  /**
+   * Returns wrapped entity.
+   */
+  static unwrapReference<T extends AnyEntity<T>>(ref: T | Reference<T>): T {
+    return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
+  }
+
   async load(): Promise<T> {
     if (this.isInitialized()) {
       return this.entity;
@@ -53,6 +81,7 @@ export class Reference<T> {
     }
 
     this.entity = entity;
+    this.__helper = wrap(this.entity, true);
   }
 
   unwrap(): T {

@@ -81,9 +81,9 @@ export class EntityAssigner {
 
     if (prop2 && !entity[prop.name][prop2.name]) {
       if (entity[prop.name] instanceof Reference) {
-        entity[prop.name].unwrap()[prop2.name] = Utils.wrapReference(entity, prop2);
+        entity[prop.name].unwrap()[prop2.name] = Reference.wrapReference(entity, prop2);
       } else {
-        entity[prop.name][prop2.name] = Utils.wrapReference(entity, prop2);
+        entity[prop.name][prop2.name] = Reference.wrapReference(entity, prop2);
       }
     }
   }
@@ -103,13 +103,13 @@ export class EntityAssigner {
       entity[prop.name] = value;
       valid = true;
     } else if (Utils.isPrimaryKey(value, true)) {
-      entity[prop.name] = Utils.wrapReference(em.getReference<T>(prop.type, value), prop);
+      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value), prop);
       valid = true;
     } else if (Utils.isObject<T[keyof T]>(value) && options.merge) {
-      entity[prop.name] = Utils.wrapReference(em.merge(prop.type, value), prop);
+      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
       valid = true;
     } else if (Utils.isObject<T[keyof T]>(value)) {
-      entity[prop.name] = Utils.wrapReference(em.create(prop.type, value), prop);
+      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
       valid = true;
     }
 

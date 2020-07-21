@@ -1,6 +1,5 @@
 import { Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
-import { Utils } from '../utils';
 import { WrappedEntity } from './WrappedEntity';
 import { BaseEntity } from './BaseEntity';
 
@@ -27,5 +26,5 @@ export function wrap<T>(entity: T, preferHelper = false): IWrappedEntity<T, keyo
     return entity as unknown as WrappedEntity<T, keyof T>;
   }
 
-  return (Utils.unwrapReference(entity) as Dictionary).__helper;
+  return (entity as Dictionary).__helper;
 }
