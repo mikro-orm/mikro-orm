@@ -12,7 +12,7 @@ import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Primary } from '../typings';
-import { ArrayCollection, Collection, Reference, ReferenceType, wrap } from '../entity';
+import { ArrayCollection, Collection, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
 import { GroupOperator, QueryOperator } from '../enums';
 
@@ -376,25 +376,15 @@ export class Utils {
    * Checks whether given object is an entity instance.
    */
   static isEntity<T = AnyEntity>(data: any, allowReference = false): data is T {
-    if (allowReference && Utils.isReference(data)) {
+    if (!Utils.isObject(data)) {
+      return false;
+    }
+
+    if (allowReference && !!data.__reference) {
       return true;
     }
 
-    return Utils.isObject(data) && !!data.__entity;
-  }
-
-  /**
-   * Checks whether the argument is instance or `Reference` wrapper.
-   */
-  static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
-    return data instanceof Reference;
-  }
-
-  /**
-   * Returns wrapped entity.
-   */
-  static unwrapReference<T extends AnyEntity<T>>(ref: T | Reference<T>): T {
-    return Utils.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
+    return !!data.__entity;
   }
 
   /**
@@ -489,17 +479,6 @@ export class Utils {
 
     // most likely plain object
     return true;
-  }
-
-  /**
-   * Wraps the entity in a `Reference` wrapper if the property is defined as `wrappedReference`.
-   */
-  static wrapReference<T extends AnyEntity<T>>(entity: T | Reference<T>, prop: EntityProperty<T>): Reference<T> | T {
-    if (entity && prop.wrappedReference && !Utils.isReference(entity)) {
-      return Reference.create(entity as T);
-    }
-
-    return entity;
   }
 
   /**

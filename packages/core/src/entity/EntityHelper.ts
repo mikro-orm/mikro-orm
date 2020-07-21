@@ -6,7 +6,7 @@ import { EntityTransformer } from './EntityTransformer';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
 import { Platform } from '../platforms';
-import { Utils, ValidationError } from '../utils';
+import { ValidationError } from '../utils';
 import { ReferenceType } from './enums';
 import { Collection } from './Collection';
 import { wrap } from './wrap';
@@ -118,8 +118,8 @@ export class EntityHelper {
         return this.__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
-        this.__data[prop.name] = Utils.wrapReference(val as T, prop);
-        const entity = Utils.unwrapReference(val as T);
+        this.__data[prop.name] = Reference.wrapReference(val as T, prop);
+        const entity = Reference.unwrapReference(val as T);
         EntityHelper.propagate(entity, this, prop);
       },
       enumerable: true,
@@ -135,7 +135,7 @@ export class EntityHelper {
       (inverse as Collection<T>).add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity, true).isInitialized() && Utils.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity, true).isInitialized() && Reference.unwrapReference(inverse) !== owner) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
     }
   }
@@ -143,10 +143,10 @@ export class EntityHelper {
   private static propagateOneToOne<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
     const inverse = entity[prop.inversedBy || prop.mappedBy];
 
-    if (Utils.isReference(inverse)) {
+    if (Reference.isReference(inverse)) {
       inverse.set(owner);
     } else {
-      entity[prop.inversedBy || prop.mappedBy] = Utils.wrapReference(owner, prop);
+      entity[prop.inversedBy || prop.mappedBy] = Reference.wrapReference(owner, prop);
     }
   }
 

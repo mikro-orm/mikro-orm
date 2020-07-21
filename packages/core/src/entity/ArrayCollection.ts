@@ -3,7 +3,6 @@ import { ReferenceType } from './enums';
 import { Collection } from './Collection';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
-import { Utils } from '../utils';
 
 export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
@@ -50,7 +49,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   add(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
-      const entity = Utils.unwrapReference(item);
+      const entity = Reference.unwrapReference(item);
 
       if (!this.contains(entity, false)) {
         this.items.push(entity);
@@ -77,7 +76,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   remove(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
-      const entity = Utils.unwrapReference(item);
+      const entity = Reference.unwrapReference(item);
       const idx = this.items.findIndex(i => wrap(i, true).__serializedPrimaryKey === wrap(entity, true).__serializedPrimaryKey);
 
       if (idx !== -1) {
@@ -95,7 +94,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
-    const entity = Utils.unwrapReference(item);
+    const entity = Reference.unwrapReference(item);
 
     return !!this.items.find(i => {
       const objectIdentity = i === entity;

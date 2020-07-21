@@ -141,7 +141,7 @@ export class EntityLoader {
 
   private initializeOneToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
-      const items = children.filter(child => Utils.unwrapReference(child[prop.mappedBy]) as unknown === entity);
+      const items = children.filter(child => Reference.unwrapReference(child[prop.mappedBy]) as unknown === entity);
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
     }
   }
@@ -255,10 +255,10 @@ export class EntityLoader {
     const children = entities.filter(e => Utils.isEntity(e[field], true));
 
     if (refresh) {
-      return children.map(e => Utils.unwrapReference(e[field]));
+      return children.map(e => Reference.unwrapReference(e[field]));
     }
 
-    return children.filter(e => !wrap(e[field], true).isInitialized()).map(e => Utils.unwrapReference(e[field]));
+    return children.filter(e => !wrap(e[field], true).isInitialized()).map(e => Reference.unwrapReference(e[field]));
   }
 
   private lookupAllRelationships<T>(entityName: string, prefix = '', visited: string[] = []): PopulateOptions<T>[] {

@@ -1,6 +1,6 @@
 import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, ReferenceType, wrap } from '../entity';
+import { Collection, EntityAssigner, Reference, ReferenceType, wrap } from '../entity';
 import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
@@ -78,9 +78,9 @@ export class ObjectHydrator extends Hydrator {
     }
 
     if (Utils.isPrimaryKey<T[keyof T]>(value)) {
-      entity[prop.name as keyof T] = Utils.wrapReference<T[keyof T]>(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
+      entity[prop.name as keyof T] = Reference.wrapReference(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
     } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
-      entity[prop.name as keyof T] = Utils.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
+      entity[prop.name as keyof T] = Reference.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
     }
 
     if (entity[prop.name]) {
