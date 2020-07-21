@@ -8,7 +8,7 @@ import { wrap } from './wrap';
 
 export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
 
-  private snapshot: T[] = []; // used to create a diff of the collection at commit time
+  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time
   private initialized = false;
   private dirty = false;
   private _populated = false;
@@ -66,10 +66,13 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
       this.validateModification(items);
     }
 
+    const wasInitialized = this.initialized;
     this.initialized = true;
     super.hydrate(items);
 
-    if (takeSnapshot) {
+    if (!wasInitialized) {
+      this.snapshot = undefined;
+    } else if (takeSnapshot) {
       this.takeSnapshot();
     }
   }
