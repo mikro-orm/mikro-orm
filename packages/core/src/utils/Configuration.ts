@@ -192,6 +192,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.cache.adapter = NullCacheAdapter;
     }
 
+    if ('enabled' in this.options.cache) {
+      this.options.cache.enabled = this.getMetadataProvider().useCache();
+    }
+
     if (!this.options.clientUrl) {
       this.options.clientUrl = this.driver.getConnection().getDefaultClientUrl();
     }
