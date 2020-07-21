@@ -1,17 +1,15 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-jest.mock('../../tests/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['.'] }), { virtual: true });
-jest.mock('../../tests/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['.'] }), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
-jest.mock('../../tests/package.json', () => pkg, { virtual: true });
+jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
 const tsc = { compilerOptions: {} } as any;
-jest.mock('../../tests/tsconfig.json', () => tsc, { virtual: true });
-const cwd = process.cwd;
-(global as any).process.cwd = () => '../../../../tests';
+jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 const log = jest.fn();
 (global as any).console.log = log;
 
-import chalk from 'chalk';
+import c from 'ansi-colors';
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 // noinspection ES6PreferShortImport
@@ -41,13 +39,13 @@ describe('CLIHelper', () => {
 
   test('configures yargs instance [ts-node]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(path => path === '../../../../tests/package.json');
+    pathExistsMock.mockImplementation(path => (path as string).endsWith('package.json'));
     pkg['mikro-orm'].useTsNode = true;
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
     requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
     pathExistsMock.mockRestore();
   });
 
@@ -60,8 +58,8 @@ describe('CLIHelper', () => {
     requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
-    expect(requireFromMock).not.toHaveBeenCalledWith('tsconfig-paths', '../../../../tests/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
+    expect(requireFromMock).not.toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
     pathExistsMock.mockRestore();
   });
 
@@ -76,9 +74,11 @@ describe('CLIHelper', () => {
       .mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIHelper.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', '../../../../tests/tsconfig.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', '../../../../tests/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
     pathExistsMock.mockRestore();
+    pkg['mikro-orm'].useTsNode = false;
+    delete tsc.compilerOptions.paths;
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
@@ -87,11 +87,11 @@ describe('CLIHelper', () => {
 
   test('gets ORM configuration [no package.json]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => path === '../../../../tests/mikro-orm.config.js');
+    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm.config.js'));
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
-    expect(conf.get('entities')).toEqual(['.']);
+    expect(conf.get('entities')).toEqual(['tests/foo']);
     pathExistsMock.mockRestore();
   });
 
@@ -102,7 +102,7 @@ describe('CLIHelper', () => {
     const conf = await CLIHelper.getConfiguration();
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
-    expect(conf.get('entities')).toEqual(['.']);
+    expect(conf.get('entities')).toEqual(['tests/foo']);
     pathExistsMock.mockRestore();
   });
 
@@ -169,7 +169,7 @@ describe('CLIHelper', () => {
     expect(log.mock.calls.length).toBe(2);
     expect(log.mock.calls[0][0]).toBe('test');
 
-    if (chalk.level > 0) {
+    if (c.enabled) {
       expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m + [32m1[39m');
     }
   });
@@ -179,33 +179,33 @@ describe('CLIHelper', () => {
   });
 
   test('getModuleVersion', async () => {
-    (global as any).process.cwd = cwd;
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(false);
     await expect(CLIHelper.getModuleVersion('pg')).resolves.not.toBe('not-found');
     await expect(CLIHelper.getModuleVersion('does-not-exist')).resolves.toBe('not-found');
     pathExistsMock.mockRestore();
-    (global as any).process.cwd = () => '../../../../tests';
   });
 
   test('getDriverDependencies', async () => {
     await expect(CLIHelper.getDriverDependencies()).resolves.toEqual([]);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockImplementation(async path => path === '../../../../tests/mikro-orm.config.js');
+    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm.config.js'));
     await expect(CLIHelper.getDriverDependencies()).resolves.toEqual(['mongodb']);
     pathExistsMock.mockRestore();
   });
 
   test('dumpDependencies', async () => {
+    const cwd = process.cwd;
+    (global as any).process.cwd = () => '/foo/bar';
     log.mock.calls.length = 0;
     await CLIHelper.dumpDependencies();
     expect(log.mock.calls[0][0]).toBe(' - dependencies:');
     expect(log.mock.calls[1][0]).toMatch(/ {3}- mikro-orm [.\w]+/);
     expect(log.mock.calls[2][0]).toMatch(/ {3}- node [.\w]+/);
     expect(log.mock.calls[3][0]).toBe(' - package.json not found');
+    (global as any).process.cwd = cwd;
 
     log.mock.calls.length = 0;
-    (global as any).process.cwd = cwd;
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     const getDriverDependencies = CLIHelper.getDriverDependencies;
@@ -218,7 +218,6 @@ describe('CLIHelper', () => {
     expect(log.mock.calls[4][0]).toMatch(/ {3}- typescript [.\w]+/);
     expect(log.mock.calls[5][0]).toBe(' - package.json found');
     pathExistsMock.mockRestore();
-    (global as any).process.cwd = () => '../../../../tests';
     CLIHelper.getDriverDependencies = getDriverDependencies;
   });
 
