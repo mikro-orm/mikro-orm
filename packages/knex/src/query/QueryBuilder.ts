@@ -228,7 +228,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
-    Utils.runIfNotEmpty(() => qb.orderBy(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
+    Utils.runIfNotEmpty(() => qb.orderByRaw(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
 
