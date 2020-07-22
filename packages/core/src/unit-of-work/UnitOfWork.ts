@@ -474,7 +474,7 @@ export class UnitOfWork {
     const reference = entity[prop.name] as U;
 
     if (Reference.isReference(reference)) {
-      return reference.unwrap() as any as U;
+      return reference.unwrap() as unknown as U;
     }
 
     return reference;
