@@ -1378,6 +1378,18 @@ describe('QueryBuilder', () => {
     expect(qb4.getParams()).toEqual([1]);
   });
 
+  test('order by asc nulls first', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').orderBy({ name: QueryOrder.ASC_NULLS_FIRST });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` asc nulls first');
+  });
+
+  test('order by nulls last', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').orderBy({ name: QueryOrder.DESC_NULLS_LAST, type: QueryOrder.ASC_NULLS_LAST });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` desc nulls last, `e0`.`type` asc nulls last');
+  });
+
   afterAll(async () => orm.close(true));
 
 });
