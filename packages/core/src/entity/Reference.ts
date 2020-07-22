@@ -30,8 +30,8 @@ export class Reference<T> {
   }
 
   static create<T, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
-    if (entity instanceof Reference) {
-      return entity;
+    if (Reference.isReference(entity)) {
+      return entity as IdentifiedReference<T, PK>;
     }
 
     return new Reference(entity) as IdentifiedReference<T, PK>;
@@ -41,7 +41,7 @@ export class Reference<T> {
    * Checks whether the argument is instance or `Reference` wrapper.
    */
   static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
-    return data instanceof Reference;
+    return data && !!data.__reference;
   }
 
   /**
