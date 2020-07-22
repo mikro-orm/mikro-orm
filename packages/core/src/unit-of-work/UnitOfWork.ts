@@ -473,8 +473,8 @@ export class UnitOfWork {
   private unwrapReference<T extends AnyEntity<T>, U extends AnyEntity | Reference<T> | Collection<AnyEntity> | Primary<T> | (AnyEntity | Primary<T>)[]>(entity: T, prop: EntityProperty<T>): U {
     const reference = entity[prop.name] as U;
 
-    if (reference instanceof Reference) {
-      return reference.unwrap();
+    if (Reference.isReference(reference)) {
+      return reference.unwrap() as any as U;
     }
 
     return reference;
