@@ -382,9 +382,8 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): { column: string; order: string }[] {
-    const ret: { column: string; order: string }[] = [];
-
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
+    const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
       // eslint-disable-next-line prefer-const
       let [alias, field] = this.splitField(k);
@@ -394,12 +393,14 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, alias);
         const noPrefix = prop && prop.persist === false;
         const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+        const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
+        const rawColumn = column.split('.').map(e => this.knex.ref(e)).join('.');
 
-        ret.push({ column: this.mapper(noPrefix ? f : `${alias}.${f}`, type), order: order.toLowerCase() });
+        ret.push(`${rawColumn} ${order.toLowerCase()}`);
       });
     });
 
-    return ret;
+    return ret.join(', ');
   }
 
   finalize(type: QueryType, qb: KnexQueryBuilder, meta?: EntityMetadata): void {
