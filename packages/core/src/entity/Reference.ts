@@ -30,7 +30,7 @@ export class Reference<T> {
   }
 
   static create<T, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
-    if (entity instanceof Reference) {
+    if (this.isReference(entity)) {
       return entity;
     }
 

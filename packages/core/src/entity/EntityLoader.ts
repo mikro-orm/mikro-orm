@@ -194,7 +194,7 @@ export class EntityLoader {
     for (const entity of entities) {
       if (Utils.isEntity(entity[populate.field])) {
         children.push(entity[populate.field]);
-      } else if (entity[populate.field] instanceof Reference) {
+      } else if (Reference.isReference(entity[populate.field])) {
         children.push(entity[populate.field].unwrap());
       } else if (entity[populate.field] as unknown instanceof Collection) {
         children.push(...entity[populate.field].getItems());

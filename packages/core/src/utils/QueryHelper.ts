@@ -9,7 +9,7 @@ export class QueryHelper {
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
   static processParams(params: any, root?: boolean): any {
-    if (params instanceof Reference) {
+    if (Reference.isReference(params)) {
       params = params.unwrap();
     }
 
