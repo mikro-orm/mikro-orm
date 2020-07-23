@@ -134,10 +134,13 @@ module.exports = {
     'quote-props': ['error', 'consistent-as-needed'],
     'spaced-comment': 'error',
     'yoda': 'error',
+    'curly': 'error',
     'object-curly-spacing': ['error', 'always'],
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
     'padded-blocks': ['error', { classes: 'always' }],
     'no-else-return': 'error',
+    'block-spacing': ['error', 'always'],
+    'space-before-blocks': ['error', 'always'],
     'brace-style': ['error', '1tbs', { allowSingleLine: true }],
     'keyword-spacing': ['error', { before: true, after: true }],
     'space-in-parens': ['error', 'never']
