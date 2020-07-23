@@ -84,6 +84,13 @@ export abstract class Connection {
   }
 
   protected logQuery(query: string, took?: number, language?: string): void {
+    const logger = this.config.getLogger();
+
+    // We only actually log something when debugMode is enabled. If it's not enabled,
+    // we can jump out here as a performance optimization and save ourselves some cycles
+    // preparing a message that won't get used.
+    if (!logger.debugMode) return;
+
     if (this.config.get('highlight') && language) {
       query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
     }
@@ -94,7 +101,7 @@ export abstract class Connection {
       msg += c.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
     }
 
-    this.config.getLogger().log('query', msg);
+    logger.log('query', msg);
   }
 
 }
