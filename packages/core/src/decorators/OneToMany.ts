@@ -23,10 +23,18 @@ export function createOneToDecorator<T, O>(
 }
 
 export function OneToMany<T, O>(
+  entity: string | ((e?: any) => EntityName<T>),
+  mappedBy: (string & keyof T) | ((e: T) => any),
+  options?: Partial<OneToManyOptions<T, O>>,
+): (target: AnyEntity, propertyName: string) => void;
+export function OneToMany<T, O>(
+  options: OneToManyOptions<T, O>,
+): (target: AnyEntity, propertyName: string) => void;
+export function OneToMany<T, O>(
   entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
   mappedBy?: (string & keyof T) | ((e: T) => any),
   options: Partial<OneToManyOptions<T, O>> = {},
-) {
+): (target: AnyEntity, propertyName: string) => void {
   return createOneToDecorator(entity, mappedBy, options, ReferenceType.ONE_TO_MANY);
 }
 
@@ -39,5 +47,5 @@ export type OneToManyOptions<T, O> = ReferenceOptions<T, O> & {
   inverseJoinColumn?: string;
   inverseJoinColumns?: string[];
   referenceColumnName?: string;
-  mappedBy?: (string & keyof T) | ((e: T) => any);
+  mappedBy: (string & keyof T) | ((e: T) => any);
 };
