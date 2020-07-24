@@ -70,8 +70,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
    */
   hydrate(items: T[]): void {
     this.items.length = 0;
-    this.items.push(...items);
-    Object.assign(this, this.items);
+    this.add(...items);
   }
 
   remove(...items: (T | Reference<T>)[]): void {
@@ -158,7 +157,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove'): boolean {
-    if (!collection) {
+    if (!collection || !collection.isInitialized()) {
       return false;
     }
 
