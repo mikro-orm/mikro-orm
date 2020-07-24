@@ -387,6 +387,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Shortcut for `wrap(entity).assign(data, { em })`
+   */
+  assign<T>(entity: T, data: EntityData<T>): T {
+    return EntityAssigner.assign(entity, data, { em: this });
+  }
+
+  /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
   getReference<T, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;

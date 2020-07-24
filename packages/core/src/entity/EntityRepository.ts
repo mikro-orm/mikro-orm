@@ -115,6 +115,13 @@ export class EntityRepository<T> {
     return this.em.create<T>(this.entityName, data);
   }
 
+  /**
+   * Shortcut for `wrap(entity).assign(data, { em })`
+   */
+  assign(entity: T, data: EntityData<T>): T {
+    return this.em.assign(entity, data);
+  }
+
   async count(where: FilterQuery<T> = {}): Promise<number> {
     return this.em.count<T>(this.entityName, where);
   }

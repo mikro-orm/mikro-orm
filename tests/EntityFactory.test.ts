@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType, wrap } from '@mikro-orm/core';
+import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType, wrap, Logger } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -164,6 +164,73 @@ describe('EntityFactory', () => {
     const t3 = new BookTag('t3');
     const b = factory.create(Book, { title: 'b', author: a, tags: [t1, t2, t3] });
     expect(b.tags.isDirty()).toBe(true);
+  });
+
+  test('create entity from nested object', async () => {
+    const repo = orm.em.getRepository(Author);
+    const a1 = repo.create({ name: 'Jon', email: 'jon@snow.com', books: [
+      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
+    ] });
+
+    expect(a1.name).toBe('Jon');
+    expect(a1.email).toBe('jon@snow.com');
+    expect(a1.books.isInitialized()).toBe(true);
+    expect(a1.books.isDirty()).toBe(false); // inverse side
+    expect(a1.books[0].title).toBe('B1');
+    expect(a1.books[0].author).toBe(a1); // propagation to owning side
+    expect(a1.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');
+    expect(wrap(a1.books[0].publisher).isInitialized()).toBe(false);
+    expect(a1.books[0].tags.isInitialized()).toBe(true);
+    expect(a1.books[0].tags.isDirty()).toBe(true); // owning side
+    expect(a1.books[0].tags[0].name).toBe('t1');
+    expect(a1.books[0].tags[0].id).toBe(null);
+    expect(a1.books[0].tags[1].id).toBe('5b0d19b28b21c648c2c8a601');
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.persistAndFlush(a1);
+
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch('db.begin()');
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertOne\({ name: 't1' }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon@snow\.com', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[5][0]).toMatch('db.commit()');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+
+    const a2 = repo.create({});
+    repo.assign(a2, { name: 'Jon', email: 'jon2@snow.com', books: [
+      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
+    ] });
+
+    expect(a2.name).toBe('Jon');
+    expect(a2.email).toBe('jon2@snow.com');
+    expect(a2.books.isInitialized()).toBe(true);
+    expect(a2.books.isDirty()).toBe(false); // inverse side
+    expect(a2.books[0].title).toBe('B1');
+    expect(a2.books[0].author).toBe(a2); // propagation to owning side
+    expect(a2.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');
+    expect(wrap(a2.books[0].publisher).isInitialized()).toBe(false);
+    expect(a2.books[0].tags.isInitialized()).toBe(true);
+    expect(a2.books[0].tags.isDirty()).toBe(true); // owning side
+    expect(a2.books[0].tags[0].name).toBe('t1');
+    expect(a2.books[0].tags[0].id).toBe(null);
+    expect(a2.books[0].tags[1].id).toBe('5b0d19b28b21c648c2c8a601');
+
+    await orm.em.persistAndFlush(a2);
+
+    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls[0][0]).toMatch('db.begin()');
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertOne\({ name: 't1' }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon2@snow\.com', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[5][0]).toMatch('db.commit()');
   });
 
   afterAll(async () => orm.close(true));
