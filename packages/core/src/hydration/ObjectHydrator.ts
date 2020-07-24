@@ -7,20 +7,16 @@ export class ObjectHydrator extends Hydrator {
 
   protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-      this.hydrateManyToOne(data[prop.name], entity, prop);
+      this.hydrateToOne(data[prop.name], entity, prop);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this.hydrateOneToMany(entity, prop, data[prop.name], newEntity);
+      this.hydrateToMany(entity, prop, data[prop.name], newEntity);
     } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
-      this.hydrateManyToMany(entity, prop, data[prop.name], newEntity);
+      this.hydrateToMany(entity, prop, data[prop.name], newEntity);
     } else if (prop.reference === ReferenceType.EMBEDDED) {
       this.hydrateEmbeddable(entity, prop, data);
     } else { // ReferenceType.SCALAR
       this.hydrateScalar(entity, prop, data[prop.name]);
     }
-  }
-
-  private hydrateOneToMany<T>(entity: T, prop: EntityProperty<T>, value: any, newEntity: boolean): void {
-    entity[prop.name as keyof T] = new Collection<AnyEntity, T>(entity, undefined, !!value || newEntity) as unknown as T[keyof T];
   }
 
   private hydrateScalar<T>(entity: T, prop: EntityProperty, value: any): void {
@@ -32,7 +28,7 @@ export class ObjectHydrator extends Hydrator {
       value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
     }
 
-    entity[prop.name as keyof T] = value;
+    entity[prop.name] = value;
   }
 
   private hydrateEmbeddable<T>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
@@ -46,41 +42,27 @@ export class ObjectHydrator extends Hydrator {
     Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
   }
 
-  private hydrateManyToMany<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
-    if (prop.owner) {
-      return this.hydrateManyToManyOwner(entity, prop, value, newEntity);
-    }
-
-    this.hydrateManyToManyInverse(entity, prop, newEntity);
-  }
-
-  private hydrateManyToManyOwner<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+  private hydrateToMany<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
     if (Array.isArray(value)) {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
-      const coll = new Collection<AnyEntity>(entity, items);
-      entity[prop.name as keyof T] = coll as unknown as T[keyof T];
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, newEntity);
       coll.setDirty();
-    } else if (!entity[prop.name as keyof T]) {
-      const items = this.em.getDriver().getPlatform().usesPivotTable() ? undefined : [];
-      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, items, newEntity) as unknown as T[keyof T];
+    } else if (!entity[prop.name]) {
+      const items = this.em.getDriver().getPlatform().usesPivotTable() || !prop.owner ? undefined : [];
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!value || newEntity);
+      coll.setDirty(false);
     }
   }
 
-  private hydrateManyToManyInverse<T>(entity: T, prop: EntityProperty, newEntity: boolean): void {
-    if (!entity[prop.name as keyof T]) {
-      entity[prop.name as keyof T] = new Collection<AnyEntity>(entity, undefined, newEntity) as unknown as T[keyof T];
-    }
-  }
-
-  private hydrateManyToOne<T>(value: any, entity: T, prop: EntityProperty): void {
+  private hydrateToOne<T>(value: any, entity: T, prop: EntityProperty): void {
     if (typeof value === 'undefined') {
       return;
     }
 
     if (Utils.isPrimaryKey<T[keyof T]>(value)) {
-      entity[prop.name as keyof T] = Reference.wrapReference(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
+      entity[prop.name] = Reference.wrapReference(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
     } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
-      entity[prop.name as keyof T] = Reference.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
+      entity[prop.name] = Reference.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
     }
 
     if (entity[prop.name]) {

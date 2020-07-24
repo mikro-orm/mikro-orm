@@ -21,6 +21,20 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   /**
+   * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
+   */
+  static create<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
+    const coll = new Collection<T, O>(owner, items, initialized);
+    owner[prop] = coll as unknown as O[keyof O];
+
+    if (items) {
+      coll.set(items);
+    }
+
+    return coll;
+  }
+
+  /**
    * Initializes the collection and returns the items
    */
   async loadItems(): Promise<T[]> {
@@ -67,8 +81,10 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     }
 
     const wasInitialized = this.initialized;
+    const wasDirty = this.dirty;
     this.initialized = true;
     super.hydrate(items);
+    this.dirty = wasDirty;
 
     if (!wasInitialized) {
       this.snapshot = undefined;
