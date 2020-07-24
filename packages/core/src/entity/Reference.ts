@@ -1,11 +1,9 @@
-import { AnyEntity, Dictionary, EntityProperty, IWrappedEntityInternal, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, Primary } from '../typings';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
 export class Reference<T> {
-
-  private __helper?: IWrappedEntityInternal<T, keyof T>;
 
   constructor(private entity: T) {
     this.set(entity);
@@ -81,7 +79,7 @@ export class Reference<T> {
     }
 
     this.entity = entity;
-    this.__helper = wrap(this.entity, true);
+    Object.defineProperty(this, '__helper', { value: wrap(this.entity, true), writable: true });
   }
 
   unwrap(): T {
