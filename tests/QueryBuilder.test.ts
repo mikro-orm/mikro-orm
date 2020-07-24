@@ -1,9 +1,11 @@
 import { inspect } from 'util';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2, Car2, CarOwner2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
+import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('QueryBuilder', () => {
 
@@ -1388,6 +1390,34 @@ describe('QueryBuilder', () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').orderBy({ name: QueryOrder.DESC_NULLS_LAST, type: QueryOrder.ASC_NULLS_LAST });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` desc nulls last, `e0`.`type` asc nulls last');
+  });
+
+  test('pg array operators', async () => {
+    const pg = await MikroORM.init<PostgreSqlDriver>({
+      entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, BaseEntity2, Configuration2],
+      dbName: `mikro_orm_test`,
+      type: 'postgresql',
+    });
+
+    const qb1 = pg.em.createQueryBuilder(Publisher2);
+    qb1.select('*').where({ name: { $contains: 'test' } });
+    expect(qb1.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" @> $1');
+    expect(qb1.getParams()).toEqual(['test']);
+
+    const qb2 = pg.em.createQueryBuilder(Publisher2);
+    qb2.select('*').where({ name: { $contained: 'test' } });
+    expect(qb2.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" <@ $1');
+    expect(qb2.getParams()).toEqual(['test']);
+
+    const qb3 = pg.em.createQueryBuilder(Publisher2);
+    qb3.select('*').where({ name: { $overlap: 'test' } });
+    expect(qb3.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" && $1');
+    expect(qb3.getParams()).toEqual(['test']);
+
+    const qb4 = pg.em.createQueryBuilder(Publisher2);
+    qb4.select('*').where({ name: { $ilike: 'test' } });
+    expect(qb4.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" ilike $1');
+    expect(qb4.getParams()).toEqual(['test']);
   });
 
   afterAll(async () => orm.close(true));

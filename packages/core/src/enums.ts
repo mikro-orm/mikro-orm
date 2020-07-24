@@ -15,6 +15,10 @@ export enum QueryOperator {
   $not = 'not',
   $like = 'like',
   $re = 'regexp',
+  $ilike = 'ilike', // postgres only
+  $overlap = '&&', // postgres only
+  $contains = '@>', // postgres only
+  $contained = '<@', // postgres only
 }
 
 export enum QueryOrder {
