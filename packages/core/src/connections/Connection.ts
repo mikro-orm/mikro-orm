@@ -89,7 +89,9 @@ export abstract class Connection {
     // We only actually log something when debugMode is enabled. If it's not enabled,
     // we can jump out here as a performance optimization and save ourselves some cycles
     // preparing a message that won't get used.
-    if (!logger.debugMode) return;
+    if (!logger.debugMode) {
+      return;
+    }
 
     if (this.config.get('highlight') && language) {
       query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
