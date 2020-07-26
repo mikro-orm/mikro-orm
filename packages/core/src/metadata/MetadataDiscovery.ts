@@ -695,7 +695,8 @@ export class MetadataDiscovery {
 
   private initEnumValues(prop: EntityProperty, path: string): void {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const exports = Utils.requireFrom(path, process.cwd());
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const exports = require(path);
     const target = exports[prop.type] || exports.default;
 
     if (target) {
@@ -745,7 +746,8 @@ export class MetadataDiscovery {
   }
 
   private getEntityClassOrSchema(path: string, name: string) {
-    const exports = Utils.requireFrom(path, process.cwd());
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const exports = require(path);
     const target = exports.default || exports[name];
     const schema = Object.values(exports).find(item => item instanceof EntitySchema);
 
