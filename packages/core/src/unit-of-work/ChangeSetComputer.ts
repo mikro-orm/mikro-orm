@@ -52,19 +52,19 @@ export class ChangeSetComputer {
   }
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    const target = changeSet.entity[prop.name];
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && (changeSet.entity[prop.name] as unknown as Collection<T>).isInitialized()) {
-      const collection = changeSet.entity[prop.name] as unknown as Collection<AnyEntity>;
-      collection.getItems()
+    // remove items from collection based on removeStack
+    if (Utils.isCollection<T>(target) && target.isInitialized()) {
+      target.getItems()
         .filter(item => this.removeStack.includes(item))
-        .forEach(item => collection.remove(item));
+        .forEach(item => target.remove(item));
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && (changeSet.entity[prop.name] as unknown as Collection<T>).isDirty()) {
-      this.collectionUpdates.push(changeSet.entity[prop.name] as unknown as Collection<AnyEntity>);
-    } else if (isToOneOwner && changeSet.entity[prop.name]) {
-      this.processManyToOne(prop, changeSet);
+    if (Utils.isCollection(target)) { // m:n or 1:m
+      this.processToMany(prop, changeSet);
+    } else if (prop.reference !== ReferenceType.SCALAR && target) { // m:1 or 1:1
+      this.processToOne(prop, changeSet);
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE) {
@@ -72,12 +72,27 @@ export class ChangeSetComputer {
     }
   }
 
-  private processManyToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const pks = this.metadata.get(prop.type).primaryKeys;
     const entity = changeSet.entity[prop.name] as unknown as T;
+    const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
+    if (isToOneOwner && pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
       changeSet.payload[prop.name] = this.identifierMap[wrap(entity, true).__uuid];
+    }
+  }
+
+  private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+    const target = changeSet.entity[prop.name] as unknown as Collection<any>;
+
+    if (!target.isDirty()) {
+      return;
+    }
+
+    if (prop.owner || target.getItems(false).filter(item => !wrap(item).isInitialized()).length > 0) {
+      this.collectionUpdates.push(target);
+    } else {
+      target.setDirty(false); // inverse side with only populated items, nothing to persist
     }
   }
 

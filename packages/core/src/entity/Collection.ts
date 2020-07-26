@@ -86,7 +86,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     super.hydrate(items);
     this.dirty = wasDirty;
 
-    if (!wasInitialized) {
+    if (!wasInitialized && !takeSnapshot) {
       this.snapshot = undefined;
     } else if (takeSnapshot) {
       this.takeSnapshot();
@@ -139,7 +139,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   setDirty(dirty = true): void {
-    this.dirty = dirty && !!this.property.owner; // set dirty flag only to owning side
+    this.dirty = dirty;
   }
 
   async init(options?: InitOptions<T>): Promise<this>;
@@ -278,10 +278,21 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   private validateModification(items: T[]): void {
-    // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
-    const manyToManyInverse = this.property.reference === ReferenceType.MANY_TO_MANY && this.property.mappedBy;
+    // currently we allow persisting to inverse sides only in SQL drivers
+    if (wrap(this.owner, true).__internal.platform.usesPivotTable() || !this.property.mappedBy) {
+      return;
+    }
 
-    if (manyToManyInverse && items.find(item => !wrap(item, true).isInitialized() || !item[this.property.mappedBy])) {
+    const check = (item: T) => {
+      if (wrap(item).isInitialized()) {
+        return false;
+      }
+
+      return !item[this.property.mappedBy] && this.property.reference === ReferenceType.MANY_TO_MANY;
+    };
+
+    // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
+    if (items.find(item => check(item))) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }

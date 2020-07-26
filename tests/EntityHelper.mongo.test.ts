@@ -240,7 +240,7 @@ describe('EntityAssignerMongo', () => {
         '      publisher: [Reference]\n' +
         '    },\n' +
         '    initialized: true,\n' +
-        '    dirty: false\n' +
+        '    dirty: true\n' +
         '  },\n' +
         '  friends: Collection { initialized: true, dirty: false },\n' +
         "  name: 'God',\n" +
@@ -249,7 +249,7 @@ describe('EntityAssignerMongo', () => {
         '  favouriteAuthor: Author {\n' +
         '    hookTest: false,\n' +
         '    termsAccepted: false,\n' +
-        "    books: Collection { '0': [Book], initialized: true, dirty: false },\n" +
+        "    books: Collection { '0': [Book], initialized: true, dirty: true },\n" +
         '    friends: Collection { initialized: true, dirty: false },\n' +
         "    name: 'God',\n" +
         "    email: 'hello@heaven.god',\n" +

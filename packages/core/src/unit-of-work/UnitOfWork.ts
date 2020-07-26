@@ -287,7 +287,7 @@ export class UnitOfWork {
       return this.processToOneReference(reference, visited);
     }
 
-    if (Utils.isCollection(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
+    if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
       this.processToManyReference(reference, visited, parent, prop);
     }
   }
