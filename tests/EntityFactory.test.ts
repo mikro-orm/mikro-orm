@@ -175,7 +175,7 @@ describe('EntityFactory', () => {
     expect(a1.name).toBe('Jon');
     expect(a1.email).toBe('jon@snow.com');
     expect(a1.books.isInitialized()).toBe(true);
-    expect(a1.books.isDirty()).toBe(false); // inverse side
+    expect(a1.books.isDirty()).toBe(true);
     expect(a1.books[0].title).toBe('B1');
     expect(a1.books[0].author).toBe(a1); // propagation to owning side
     expect(a1.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');
@@ -211,7 +211,7 @@ describe('EntityFactory', () => {
     expect(a2.name).toBe('Jon');
     expect(a2.email).toBe('jon2@snow.com');
     expect(a2.books.isInitialized()).toBe(true);
-    expect(a2.books.isDirty()).toBe(false); // inverse side
+    expect(a2.books.isDirty()).toBe(true);
     expect(a2.books[0].title).toBe('B1');
     expect(a2.books[0].author).toBe(a2); // propagation to owning side
     expect(a2.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');

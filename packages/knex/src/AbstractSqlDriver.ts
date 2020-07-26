@@ -232,21 +232,32 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = wrapped.__meta;
     const pks = wrapped.__primaryKeys;
     const snap = coll.getSnapshot();
+    const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
     const snapshot = snap ? snap.map(item => wrap(item, true).__primaryKeys) : [];
     const current = coll.getItems(false).map(item => wrap(item, true).__primaryKeys);
-    const deleteDiff = snap ? snapshot.filter(item => !current.includes(item)) : true;
-    const insertDiff = current.filter(item => !snapshot.includes(item));
-    const target = snapshot.filter(item => current.includes(item)).concat(...insertDiff);
+    const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
+    const insertDiff = current.filter(item => !includes(snapshot, item));
+    const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
     const equals = Utils.equals(current, target);
 
-    // wrong order if we just delete and insert to the end
-    if (coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
+    // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
+    if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
       deleteDiff.length = insertDiff.length = 0;
       deleteDiff.push(...snapshot);
       insertDiff.push(...current);
     }
 
-    await this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, ctx));
+    if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
+      const cols = coll.property.referencedColumnNames;
+      const qb = this.createQueryBuilder(coll.property.type, ctx, true)
+        .update({ [coll.property.mappedBy]: pks })
+        .getKnexQuery()
+        .whereIn(cols, insertDiff as string[][]);
+
+      return this.rethrow(qb);
+    }
+
+    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, ctx));
   }
 
   async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
