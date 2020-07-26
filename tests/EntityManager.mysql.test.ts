@@ -1022,8 +1022,12 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     let tag = await orm.em.findOneOrFail(BookTag2, tag1.id, ['books']);
-    const err = 'You cannot modify inverse side of M:N collection BookTag2.books when the owning side is not initialized. Consider working with the owning side instead (Book2.tags).';
-    expect(() => tag.books.add(orm.em.getReference(Book2, book4.uuid))).toThrowError(err);
+    expect(tag.books.count()).toBe(2);
+    tag.books.add(orm.em.getReference(Book2, book4.uuid));
+    await orm.em.flush();
+    orm.em.clear();
+    tag = await orm.em.findOneOrFail(BookTag2, tag1.id, ['books']);
+    expect(tag.books.count()).toBe(3);
     orm.em.clear();
 
     tag = await orm.em.findOneOrFail(BookTag2, tag1.id, ['books']);
