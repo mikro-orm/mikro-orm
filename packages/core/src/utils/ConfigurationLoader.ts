@@ -15,7 +15,8 @@ export class ConfigurationLoader {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        const config = Utils.requireFrom(path, process.cwd());
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const config = require(path);
         return new Configuration({ ...(config.default || config), ...options }, validate);
       }
     }
