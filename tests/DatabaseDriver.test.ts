@@ -27,6 +27,10 @@ class Driver extends DatabaseDriver<Connection> {
     return { affectedRows: 0, insertId: 0 };
   }
 
+  async nativeInsertMany<T>(entityName: string, data: EntityData<T>[], ctx: Transaction | undefined): Promise<QueryResult> {
+    return { affectedRows: 0, insertId: 0 };
+  }
+
   async nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult> {
     return { affectedRows: 0, insertId: 0 };
   }

@@ -113,7 +113,7 @@ export abstract class AbstractSqlConnection extends Connection {
     const affectedRows = typeof res === 'number' ? res : 0;
     const insertId = typeof res[0] === 'number' ? res[0] : 0;
 
-    return { insertId, affectedRows, row: res[0] };
+    return { insertId, affectedRows, row: res[0], rows: res };
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;

@@ -191,6 +191,29 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+    const meta = this.metadata.get<T>(entityName, false, false);
+    const collections = data.map(d => this.extractManyToMany(entityName, d));
+    const pks = this.getPrimaryKeyFields(entityName);
+    const qb = this.createQueryBuilder(entityName, ctx, true);
+    const res = await this.rethrow(qb.insert(data).execute('run', false));
+    let pk: any[];
+
+    /* istanbul ignore next  */
+    if (pks.length > 1) { // owner has composite pk
+      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
+    } else {
+      pk = data.map((d, i) => d[pks[0]] ?? res.rows[i]?.[pks[0]]).map(d => [d]);
+      res.insertId = res.insertId || res.row[pks[0]];
+    }
+
+    for (let i = 0; i < collections.length; i++) {
+      await this.processManyToMany<T>(meta, pk[i], collections[i], false, ctx);
+    }
+
+    return res;
+  }
+
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName, false, false);
     const pks = this.getPrimaryKeyFields(entityName);

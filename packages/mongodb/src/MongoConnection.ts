@@ -109,6 +109,10 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('insertOne', collection, data, undefined, ctx);
   }
 
+  async insertMany<T extends { _id: any }>(collection: string, data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+    return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
+  }
+
   async updateMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     return this.runQuery<T>('updateMany', collection, data, where, ctx);
   }
@@ -153,7 +157,7 @@ export class MongoConnection extends Connection {
     super.logQuery(query, took, 'javascript');
   }
 
-  private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T>, where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {
+  private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
     const now = Date.now();
@@ -164,6 +168,10 @@ export class MongoConnection extends Connection {
       case 'insertOne':
         query = `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`;
         res = await this.getCollection(collection).insertOne(data, options);
+        break;
+      case 'insertMany':
+        query = `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`;
+        res = await this.getCollection(collection).insertMany(data as Partial<T>[], options);
         break;
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
@@ -189,8 +197,10 @@ export class MongoConnection extends Connection {
 
   private transformResult(res: any): QueryResult {
     return {
-      affectedRows: res.modifiedCount || res.deletedCount || 0,
-      insertId: res.insertedId,
+      affectedRows: res.modifiedCount || res.deletedCount || res.insertedCount || 0,
+      insertId: res.insertedId ?? res.insertedIds?.[0],
+      row: res.ops?.[0],
+      rows: res.ops,
     };
   }
 
