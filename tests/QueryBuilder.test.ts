@@ -1069,6 +1069,17 @@ describe('QueryBuilder', () => {
     expect(qb3.getParams()).toEqual([123]);
   });
 
+  test('insert many query', async () => {
+    const qb1 = orm.em.createQueryBuilder(Publisher2);
+    qb1.insert([
+      { name: 'test 1', type: PublisherType.GLOBAL },
+      { name: 'test 2', type: PublisherType.LOCAL },
+      { name: 'test 3', type: PublisherType.GLOBAL },
+    ]);
+    expect(qb1.getQuery()).toEqual('insert into `publisher2` (`name`, `type`) values (?, ?), (?, ?), (?, ?)');
+    expect(qb1.getParams()).toEqual(['test 1', PublisherType.GLOBAL, 'test 2', PublisherType.LOCAL, 'test 3', PublisherType.GLOBAL]);
+  });
+
   test('update query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });

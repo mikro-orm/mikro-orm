@@ -70,6 +70,22 @@ describe('EntityManagerMariaDb', () => {
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+
+    // multi inserts
+    const res = await driver.nativeInsertMany(Publisher2.name, [
+      { name: 'test 1', type: PublisherType.GLOBAL },
+      { name: 'test 2', type: PublisherType.LOCAL },
+      { name: 'test 3', type: PublisherType.GLOBAL },
+    ]);
+
+    // mysql returns the first inserted id
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 0, row: 1, rows: [ 1 ] });
+    const res2 = await driver.find(Publisher2.name, {});
+    expect(res2).toMatchObject([
+      { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
+      { id: 2, name: 'test 2', type: PublisherType.LOCAL },
+      { id: 3, name: 'test 3', type: PublisherType.GLOBAL },
+    ]);
   });
 
   test('driver appends errored query', async () => {

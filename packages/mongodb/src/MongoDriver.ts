@@ -22,7 +22,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, ctx?: Transaction<ClientSession>): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<T[]> {
     const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
@@ -50,6 +50,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx));
+  }
+
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+    data = data.map(d => this.renameFields(entityName, d));
+    return this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], ctx));
   }
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {

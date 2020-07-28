@@ -489,6 +489,27 @@ describe('EntityManagerMongo', () => {
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
+
+    // multi inserts
+    const res = await driver.nativeInsertMany(Publisher.name, [
+      { name: 'test 1', type: 'GLOBAL' },
+      { name: 'test 2', type: 'LOCAL' },
+      { name: 'test 3', type: 'GLOBAL' },
+    ]);
+
+    // mongo returns the persisted objects
+    expect(res).toMatchObject({ affectedRows: 3 });
+    expect(res.insertId).toBeInstanceOf(ObjectId);
+    expect(res.row?._id).toBeInstanceOf(ObjectId);
+    expect(res.rows?.[0]._id).toBeInstanceOf(ObjectId);
+    expect(res.rows?.[1]._id).toBeInstanceOf(ObjectId);
+    expect(res.rows?.[2]._id).toBeInstanceOf(ObjectId);
+    const res2 = await driver.find(Publisher.name, {});
+    expect(res2).toEqual([
+      { _id: res.rows?.[0]._id, name: 'test 1', type: 'GLOBAL' },
+      { _id: res.rows?.[1]._id, name: 'test 2', type: 'LOCAL' },
+      { _id: res.rows?.[2]._id, name: 'test 3', type: 'GLOBAL' },
+    ]);
   });
 
   test('ensure indexes', async () => {
