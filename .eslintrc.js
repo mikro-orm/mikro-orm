@@ -68,6 +68,7 @@ module.exports = {
     'prefer-rest-params': 'error',
     'prefer-spread': 'error',
     'constructor-super': 'error',
+    'curly': 'error',
     'for-direction': 'error',
     'getter-return': 'error',
     'no-async-promise-executor': 'error',
