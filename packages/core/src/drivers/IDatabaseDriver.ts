@@ -36,6 +36,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeInsert<T>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
+  nativeInsertMany<T>(entityName: string, data: EntityData<T>[], ctx?: Transaction): Promise<QueryResult>;
+
   nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
   nativeDelete<T>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
