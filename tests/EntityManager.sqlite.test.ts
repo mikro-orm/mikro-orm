@@ -59,6 +59,22 @@ describe('EntityManagerSqlite', () => {
       insertId: 1,
     });
     expect(await driver.find(BookTag3.name, { books: [1] })).not.toBeNull();
+
+    // multi inserts
+    const res = await driver.nativeInsertMany(Publisher3.name, [
+      { name: 'test 1', type: 'GLOBAL' },
+      { name: 'test 2', type: 'LOCAL' },
+      { name: 'test 3', type: 'GLOBAL' },
+    ]);
+
+    // sqlite returns the last inserted id
+    expect(res).toMatchObject({ insertId: 3, affectedRows: 0, row: 3, rows: [ 3 ] });
+    const res2 = await driver.find(Publisher3.name, {});
+    expect(res2).toEqual([
+      { id: 1, name: 'test 1', type: 'GLOBAL' },
+      { id: 2, name: 'test 2', type: 'LOCAL' },
+      { id: 3, name: 'test 3', type: 'GLOBAL' },
+    ]);
   });
 
   test('driver appends errored query', async () => {

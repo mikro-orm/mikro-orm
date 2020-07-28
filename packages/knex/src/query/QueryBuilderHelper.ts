@@ -52,6 +52,10 @@ export class QueryBuilderHelper {
   }
 
   processData(data: Dictionary): any {
+    if (Array.isArray(data)) {
+      return data.map(d => this.processData(d));
+    }
+
     data = Object.assign({}, data); // copy first
     const meta = this.metadata.find(this.entityName);
 

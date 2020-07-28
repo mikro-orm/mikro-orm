@@ -112,6 +112,7 @@ export interface QueryResult {
   affectedRows: number;
   insertId: number;
   row?: Dictionary;
+  rows?: Dictionary[];
 }
 
 export interface ConnectionConfig {
