@@ -120,7 +120,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   /**
    * @internal
    */
-  get property(): EntityProperty {
+  get property(): EntityProperty<T> {
     if (!this._property) {
       const meta = wrap(this.owner, true).__meta;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);

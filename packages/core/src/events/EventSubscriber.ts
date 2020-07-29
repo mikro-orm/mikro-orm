@@ -1,4 +1,4 @@
-import { AnyEntity, EntityName } from '../typings';
+import { EntityName } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { ChangeSet, UnitOfWork } from '../unit-of-work';
 
@@ -12,7 +12,7 @@ export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
   uow: UnitOfWork;
 }
 
-export interface EventSubscriber<T = AnyEntity> {
+export interface EventSubscriber<T = any> {
   getSubscribedEntities?(): EntityName<T>[];
   onInit?(args: EventArgs<T>): void;
   beforeCreate?(args: EventArgs<T>): Promise<void>;

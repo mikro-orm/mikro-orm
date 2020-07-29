@@ -1,13 +1,13 @@
 import { Collection, EntitySchema } from '@mikro-orm/core';
-import { BaseEntity5 } from './BaseEntity5';
-import { Book4 } from './Book4';
-import { Test4 } from './Test4';
+import { IBaseEntity5 } from './BaseEntity5';
+import { IBook4 } from './Book4';
+import { ITest4 } from './Test4';
 
-export interface Publisher4 extends BaseEntity5 {
+export interface IPublisher4 extends IBaseEntity5 {
   name: string;
   type: PublisherType;
-  books: Collection<Book4>;
-  tests: Collection<Test4>;
+  books: Collection<IBook4>;
+  tests: Collection<ITest4>;
 }
 
 export enum PublisherType {
@@ -15,7 +15,7 @@ export enum PublisherType {
   GLOBAL = 'global',
 }
 
-export const schema = new EntitySchema<Publisher4, BaseEntity5>({
+export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
   name: 'Publisher4',
   extends: 'BaseEntity5',
   properties: {

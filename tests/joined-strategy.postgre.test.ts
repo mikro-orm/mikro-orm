@@ -132,7 +132,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books: [LoadStrategy.JOINED, { perex: true }] } });
+    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books: { perex: true } }, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1_uuid_pk", "b1"."created_at" as "b1_created_at", "b1"."title" as "b1_title", "b1"."perex" as "b1_perex", "b1"."price" as "b1_price", "b1".price * 1.19 as "b1_price_taxed", "b1"."double" as "b1_double", "b1"."meta" as "b1_meta", "b1"."author_id" as "b1_author_id", "b1"."publisher_id" as "b1_publisher_id" ' +
@@ -183,7 +183,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.find(Author2, { id: author2.id }, { populate: { books: [LoadStrategy.JOINED, { perex: true }] } });
+    await orm.em.find(Author2, { id: author2.id }, { populate: { books: { perex: true } }, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1_uuid_pk", "b1"."created_at" as "b1_created_at", "b1"."title" as "b1_title", "b1"."perex" as "b1_perex", "b1"."price" as "b1_price", "b1".price * 1.19 as "b1_price_taxed", "b1"."double" as "b1_double", "b1"."meta" as "b1_meta", "b1"."author_id" as "b1_author_id", "b1"."publisher_id" as "b1_publisher_id" ' +

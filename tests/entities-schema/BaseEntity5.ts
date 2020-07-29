@@ -1,12 +1,12 @@
 import { EntitySchema } from '@mikro-orm/core';
 
-export interface BaseEntity5 {
+export interface IBaseEntity5 {
   id: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export const schema = new EntitySchema<BaseEntity5>({
+export const BaseEntity5 = new EntitySchema<IBaseEntity5>({
   name: 'BaseEntity5',
   abstract: true,
   properties: {
