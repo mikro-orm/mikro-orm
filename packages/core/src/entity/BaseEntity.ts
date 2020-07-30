@@ -1,6 +1,6 @@
 import { wrap } from './wrap';
 import { IdentifiedReference, Reference } from './Reference';
-import { Dictionary, EntityData, IWrappedEntity } from '../typings';
+import { Dictionary, EntityData, IWrappedEntity, LoadedReference, Populate } from '../typings';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
 export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntity<T, PK> {
@@ -13,8 +13,8 @@ export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntit
     wrap(this, true).populated(populated);
   }
 
-  toReference(): IdentifiedReference<T, PK> {
-    return Reference.create<T, PK>(this as unknown as T);
+  toReference<PK2 extends PK = never, P extends Populate<T> = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P> {
+    return Reference.create<T, PK>(this as unknown as T) as IdentifiedReference<T, PK> & LoadedReference<T>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {

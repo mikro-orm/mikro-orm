@@ -1,5 +1,5 @@
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded } from '../typings';
+import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New } from '../typings';
 import { QueryOrderMap } from '../enums';
 import { FilterQuery, FindOneOptions, FindOptions, FindOneOrFailOptions, IdentifiedReference, Reference } from '..';
 
@@ -36,21 +36,21 @@ export class EntityRepository<T extends AnyEntity<T>> {
   }
 
   async find<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate: string[] | boolean | FindOptions<T, P> = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
+  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
+  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
   }
 
   async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T>): Promise<[Loaded<T, P>[], number]>;
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: string[] | boolean, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]>;
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate: string[] | boolean | FindOptions<T> = [], orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
+  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]>;
+  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
     return this.em.findAndCount<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
   }
 
-  async findAll<P extends Populate<T> = any>(options?: FindOptions<T>): Promise<Loaded<T, P>[]>;
-  async findAll<P extends Populate<T> = any>(populate?: string[] | boolean | true, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-  async findAll<P extends Populate<T> = any>(populate: string[] | boolean | true | FindOptions<T> = [], orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {}, populate as string[], orderBy, limit, offset);
+  async findAll<P extends Populate<T> = any>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
+  async findAll<P extends Populate<T> = any>(populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
+  async findAll<P extends Populate<T> = any>(populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
+    return this.em.find<T, P>(this.entityName, {}, populate as P, orderBy, limit, offset);
   }
 
   remove(entity: AnyEntity): EntityManager {
@@ -112,8 +112,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create(data: EntityData<T>): T {
-    return this.em.create<T>(this.entityName, data);
+  create<P extends Populate<T> = string[]>(data: EntityData<T, P>): New<T, P> {
+    return this.em.create<T, P>(this.entityName, data);
   }
 
   /**

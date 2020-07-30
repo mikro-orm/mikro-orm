@@ -33,6 +33,12 @@ describe('EntityManagerMongo2', () => {
     const book5 = await orm.em.findOneOrFail(Book, bible, { populate: { publisher: true, tags: true, perex: true } });
     expect(book5.publisher!.$.name).toBe('Publisher 123');
     expect(book5.tags.$[0].name).toBe('t1');
+
+    const pub2 = orm.em.create(Publisher, { name: 'asd' });
+    const wrapped0 = wrap(pub2).toReference<'id' | '_id'>();
+    // @ts-expect-error
+    expect(wrapped0.books).toBeUndefined();
+    book5.publisher = wrapped0;
   });
 
   afterAll(async () => orm.close(true));

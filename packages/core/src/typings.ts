@@ -67,17 +67,17 @@ export type Query<T> = true extends IsEntity<T>
 export type FilterQuery<T> = Query<T> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T, PK extends keyof T> {
+export interface IWrappedEntity<T, PK extends keyof T, P = never> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?: boolean, lockMode?: LockMode): Promise<T>;
-  toReference(): IdentifiedReference<T, PK>;
+  toReference<PK2 extends PK = never, P2 extends P = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T, PK extends keyof T> extends IWrappedEntity<T, PK> {
+export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   __uuid: string;
   __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
@@ -96,7 +96,7 @@ export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
-export type EntityData<T extends AnyEntity<T>> = { [K in keyof T]?: T[K] | Primary<T[K]> | EntityData<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
+export type EntityData<T extends AnyEntity<T>, P extends Populate<T> = keyof T> = { [K in keyof T]?: T[K] | Primary<T[K]> | EntityData<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
@@ -240,7 +240,7 @@ export interface LoadedReference<T extends AnyEntity<T>, P = never> extends Refe
   get(): T & P;
 }
 
-export interface LoadedCollection<T extends AnyEntity<T>, U extends AnyEntity<U>, P = never> extends Collection<T, U> {
+export interface LoadedCollection<T extends AnyEntity<T>, P = never> extends Collection<T> {
   $: readonly (T & P)[];
   get(): readonly (T & P)[];
 }
@@ -248,7 +248,7 @@ export interface LoadedCollection<T extends AnyEntity<T>, U extends AnyEntity<U>
 type MarkLoaded<T extends AnyEntity<T>, P, H = unknown> = P extends Reference<infer U>
   ? LoadedReference<U, Loaded<U, H>>
   : P extends Collection<infer U>
-    ? LoadedCollection<U, T, Loaded<U, H>>
+    ? LoadedCollection<U, Loaded<U, H>>
     : P;
 
 type LoadedIfInKeyHint<T, K extends keyof T, H> = K extends H ? MarkLoaded<T, T[K]> : T[K];
@@ -271,3 +271,5 @@ export type Loaded<T, P = unknown> = unknown extends P ? T : T & {
       ? LoadedIfInNestedHint<T, K, P>
       : LoadedIfInKeyHint<T, K, P>;
 };
+
+export type New<T, P = string[]> = Loaded<T, P>;

@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
+import { EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, EventType, wrap } from '..';
@@ -16,9 +16,9 @@ export class EntityFactory {
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): T {
+  create<T, P extends Populate<T> = keyof T>(entityName: EntityName<T>, data: EntityData<T>, initialized = true, newEntity = false): New<T, P> {
     if (Utils.isEntity<T>(data)) {
-      return data;
+      return data as New<T, P>;
     }
 
     entityName = Utils.className(entityName);
@@ -35,7 +35,7 @@ export class EntityFactory {
 
     this.runHooks(entity, meta);
 
-    return entity;
+    return entity as New<T, P>;
   }
 
   createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>): T {
