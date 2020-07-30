@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 export {
   Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData,
-  AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery,
+  AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate,
 } from './typings';
 export * from './enums';
 export * from './exceptions';

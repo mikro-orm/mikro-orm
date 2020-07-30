@@ -10,7 +10,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
     return node;
   }
 
-  process(qb: QueryBuilder, alias?: string): any {
+  process<T>(qb: QueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const nestedAlias = qb.getAliasForJoinPath(this.getPath()) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;

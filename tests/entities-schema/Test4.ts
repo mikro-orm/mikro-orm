@@ -1,12 +1,12 @@
 import { EntitySchema } from '@mikro-orm/core';
-import { BaseEntity5 } from './BaseEntity5';
+import { IBaseEntity5 } from './BaseEntity5';
 
-export interface Test4 extends BaseEntity5 {
+export interface ITest4 extends IBaseEntity5 {
   name?: string;
   version: number;
 }
 
-export const schema = new EntitySchema<Test4, BaseEntity5>({
+export const Test4 = new EntitySchema<ITest4, IBaseEntity5>({
   name: 'Test4',
   extends: 'BaseEntity5',
   properties: {

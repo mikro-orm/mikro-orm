@@ -52,9 +52,9 @@ describe('EntityRepository', () => {
     await repo.findAndCount({ name: 'bar' });
     expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, [], {}, undefined, undefined]);
     await repo.findOne('bar');
-    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined, undefined]);
     await repo.findOneOrFail('bar');
-    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', [], undefined]);
+    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined, undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     repo.remove(e);

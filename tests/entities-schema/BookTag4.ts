@@ -1,14 +1,14 @@
 import { Collection, EntitySchema } from '@mikro-orm/core';
-import { BaseEntity5 } from './BaseEntity5';
-import { Book4 } from './Book4';
+import { IBaseEntity5 } from './BaseEntity5';
+import { IBook4 } from './Book4';
 
-export interface BookTag4 extends BaseEntity5 {
+export interface IBookTag4 extends IBaseEntity5 {
   name: string;
-  books: Collection<Book4>;
+  books: Collection<IBook4>;
   version: Date;
 }
 
-export const schema = new EntitySchema<BookTag4, BaseEntity5>({
+export const BookTag4 = new EntitySchema<IBookTag4, IBaseEntity5>({
   name: 'BookTag4',
   extends: 'BaseEntity5',
   properties: {

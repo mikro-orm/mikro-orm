@@ -200,7 +200,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     return this._meta;
   }
 
-  get name() {
+  get name(): EntityName<T>  {
     return this._meta.name;
   }
 
@@ -213,7 +213,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
 
     if (!this._meta.class) {
-      this._meta.class = ({ [this.name]: class {} })[this.name] as Constructor<T>;
+      const name = this.name as string;
+      this._meta.class = ({ [name]: class {} })[name] as Constructor<T>;
     }
 
     this.setClass(this._meta.class);

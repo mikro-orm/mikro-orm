@@ -45,7 +45,7 @@ export class CriteriaNode {
     return ScalarCriteriaNode.create(metadata, entityName, payload, parent, key);
   }
 
-  process(qb: QueryBuilder, alias?: string): any {
+  process<T>(qb: QueryBuilder<T>, alias?: string): any {
     return this.payload;
   }
 
@@ -53,7 +53,7 @@ export class CriteriaNode {
     return false;
   }
 
-  willAutoJoin(qb: QueryBuilder, alias?: string) {
+  willAutoJoin<T>(qb: QueryBuilder<T>, alias?: string) {
     return false;
   }
 
@@ -77,7 +77,7 @@ export class CriteriaNode {
     }
   }
 
-  renameFieldToPK(qb: QueryBuilder): string {
+  renameFieldToPK<T>(qb: QueryBuilder<T>): string {
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
       const alias = qb.getAliasForJoinPath(this.getPath());
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));

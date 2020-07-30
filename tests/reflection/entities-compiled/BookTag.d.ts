@@ -5,7 +5,7 @@ export declare class BookTag {
     _id: ObjectId;
     id: string;
     name: string;
-    books: Collection<Book, import("../../../packages/core/src").AnyEntity<any, string | number | symbol>>;
+    books: Collection<Book, import("../../../packages/core/src").AnyEntity<any>>;
     constructor(name: string);
 }
 export declare const BookTagSchema: EntitySchema<BookTag, undefined>;

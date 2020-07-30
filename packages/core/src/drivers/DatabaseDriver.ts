@@ -1,5 +1,5 @@
-import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, PopulateOptions } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary } from '../typings';
+import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
+import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';

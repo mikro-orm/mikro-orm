@@ -62,7 +62,7 @@ export class UnitOfWork {
   }
 
   tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
-    const pk = Utils.extractPK(where, this.metadata.get(entityName), strict);
+    const pk = Utils.extractPK(where, this.metadata.get<T>(entityName), strict);
 
     if (!pk) {
       return null;

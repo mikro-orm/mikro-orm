@@ -168,7 +168,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * @internal
    */
-  populate<T>(populate: PopulateOptions<T>[]): this {
+  populate(populate: PopulateOptions<T>[]): this {
     this._populate = populate;
 
     return this;
@@ -514,9 +514,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const subSubSubQuery = this.getKnex().select(pks).from(subSubQuery.as(this.alias));
     this._limit = undefined;
     this._offset = undefined;
-    this.select(this._fields!).where({
-      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubSubQuery },
-    });
+    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
