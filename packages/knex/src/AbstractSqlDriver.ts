@@ -34,7 +34,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.get(entityName);
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
     const joinedProps = this.joinedProps(meta, populate);
-    const qb = this.createQueryBuilder(entityName, ctx, !!ctx);
+    const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
     const pk = meta.primaryKeys[0];
 
@@ -44,7 +44,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     qb.select(fields)
       .populate(populate)
-      .where(where as Dictionary)
+      .where(where)
       .orderBy(options.orderBy!)
       .groupBy(options.groupBy!)
       .having(options.having!)
@@ -225,14 +225,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (Object.keys(data).length > 0) {
-      const qb = this.createQueryBuilder(entityName, ctx, true)
+      const qb = this.createQueryBuilder<T>(entityName, ctx, true)
         .update(data)
-        .where(where as Dictionary);
+        .where(where);
 
       res = await this.rethrow(qb.execute('run', false));
     }
 
-    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)) as Primary<T>[];
+    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!);
     await this.processManyToMany<T>(meta, pk, collections, true, ctx);
 
     return res;
@@ -296,11 +296,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder(prop.type, ctx, !!ctx);
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx);
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{
       field: prop.pivotTable,
     }]);
-    qb.select('*').populate(populate).where(where as Dictionary).orderBy(orderBy!);
+    qb.select('*').populate(populate).where(where).orderBy(orderBy!);
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
 
     const map: Dictionary<T[]> = {};
@@ -355,7 +355,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return Object.values(res).map((rows: Dictionary[]) => rows[0]) as T[];
   }
 
-  protected getFieldsForJoinedLoad<T>(qb: QueryBuilder, meta: EntityMetadata, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field[] {
+  protected getFieldsForJoinedLoad<T>(qb: QueryBuilder<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field[] {
     const fields: Field[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
@@ -471,7 +471,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     await this.rethrow(qb.execute());
   }
 
-  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder, fields?: Field[]): Field[] {
+  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field[]): Field[] {
     const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasExplicitFields = !!fields;
 

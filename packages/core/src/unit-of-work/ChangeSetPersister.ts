@@ -78,7 +78,7 @@ export class ChangeSetPersister {
       const e = await this.driver.findOne<T>(meta.name, wrap(changeSet.entity, true).__primaryKey, {
         populate: [{
           field: meta.versionProperty,
-        }],
+        }] as unknown as boolean,
       }, ctx);
       (changeSet.entity as T)[meta.versionProperty] = e![meta.versionProperty];
     }

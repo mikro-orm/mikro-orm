@@ -61,10 +61,10 @@ class User {
   @Embedded(() => Address1)
   address1!: Address1;
 
-  @Embedded( { entity: () => Address2, prefix: 'addr_', nullable: true })
+  @Embedded({ entity: () => Address2, prefix: 'addr_', nullable: true })
   address2?: Address2;
 
-  @Embedded( { entity: () => Address1, prefix: false })
+  @Embedded({ entity: () => Address1, prefix: false })
   address3 = new Address1();
 
 }

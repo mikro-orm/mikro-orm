@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityProperty, FilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions } from '../typings';
 import { EntityManager } from '../index';
 import { LoadStrategy, ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -6,7 +6,6 @@ import { Collection } from './Collection';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
-import { PopulateOptions } from '../drivers';
 
 type Options<T extends AnyEntity<T>> = {
   where?: FilterQuery<T>;

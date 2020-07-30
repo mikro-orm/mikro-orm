@@ -1,17 +1,17 @@
-import { ArrayType, BlobType, EntitySchema, JsonType, Property } from '@mikro-orm/core';
-import { FooBaz4, BaseEntity5 } from './index';
+import { ArrayType, BlobType, EntitySchema, JsonType } from '@mikro-orm/core';
+import { IFooBaz4, IBaseEntity5 } from './index';
 
-export interface FooBar4 extends BaseEntity5 {
+export interface IFooBar4 extends IBaseEntity5 {
   name: string;
-  baz?: FooBaz4;
-  fooBar?: FooBar4;
+  baz?: IFooBaz4;
+  fooBar?: IFooBar4;
   version: number;
   blob?: Buffer;
   array?: number[];
   object?: { foo: string; bar: number } | any;
 }
 
-export const schema = new EntitySchema<FooBar4, BaseEntity5>({
+export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
   name: 'FooBar4',
   extends: 'BaseEntity5',
   properties: {

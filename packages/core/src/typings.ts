@@ -35,7 +35,7 @@ export type PrimaryMap<T extends AnyEntity<T>> = Record<keyof T, Primary<T>>;
 export type IPrimaryKeyValue = number | string | bigint | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
-export type IsScalar<T> = T extends number | string | bigint | Date | RegExp ? true : never;
+export type IsScalar<T> = T extends boolean | number | string | bigint | Date | RegExp | Buffer | { toHexString(): string } ? true : never;
 export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string | bigint } ? true : never;
 
 export type OneOrArray<T> = T | T[];
@@ -65,7 +65,7 @@ export type Query<T> = true extends IsEntity<T>
     ? { [KK in keyof K]?: Query<K[KK]> | FilterValue<K[KK]> | null } | FilterValue<K>
     : FilterValue<T>;
 export type FilterQuery<T> = Query<T> | { [PrimaryKeyType]?: any };
-export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary;
+export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
 export interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
@@ -91,11 +91,11 @@ export interface IWrappedEntityInternal<T, PK extends keyof T> extends IWrappedE
   __serializedPrimaryKey: string & keyof T;
 }
 
-export type AnyEntity<T = any, PK extends keyof T = keyof T> = { [K in PK]?: T[K] } & { [PrimaryKeyType]?: T[PK] };
+export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
-export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T>;
+export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
 export type EntityData<T extends AnyEntity<T>> = { [K in keyof T]?: T[K] | Primary<T[K]> | EntityData<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
@@ -221,4 +221,53 @@ export type FilterDef<T extends AnyEntity<T>> = {
   cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T>);
   default?: boolean;
   entity?: string[];
+};
+
+export type ExpandProperty<T> = T extends Reference<infer U> ? U : T extends Collection<infer U> ? U : T;
+export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ExpandProperty<T[K]>> };
+export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T>;
+export type Populate<T> = readonly (keyof T | string)[] | boolean | PopulateMap<T>;
+
+export type PopulateOptions<T> = {
+  field: string;
+  strategy?: LoadStrategy;
+  all?: boolean;
+  children?: PopulateOptions<T[keyof T]>[];
+};
+
+export interface LoadedReference<T extends AnyEntity<T>, P = never> extends Reference<T> {
+  $: T & P;
+  get(): T & P;
+}
+
+export interface LoadedCollection<T extends AnyEntity<T>, U extends AnyEntity<U>, P = never> extends Collection<T, U> {
+  $: readonly (T & P)[];
+  get(): readonly (T & P)[];
+}
+
+type MarkLoaded<T extends AnyEntity<T>, P, H = unknown> = P extends Reference<infer U>
+  ? LoadedReference<U, Loaded<U, H>>
+  : P extends Collection<infer U>
+    ? LoadedCollection<U, T, Loaded<U, H>>
+    : P;
+
+type LoadedIfInKeyHint<T, K extends keyof T, H> = K extends H ? MarkLoaded<T, T[K]> : T[K];
+
+type LoadedIfInNestedHint<T, K extends keyof T, H> = K extends keyof H ? MarkLoaded<T, T[K], H[K]> : T[K];
+
+// https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
+type SubType<T, C> = Pick<T, { [K in keyof T]: T[K] extends C ? K : never }[keyof T]>;
+
+type RelationsIn<T> = SubType<T, Collection<any> | Reference<any> | undefined>;
+
+type NestedLoadHint<T> = {
+  [K in keyof RelationsIn<T>]?: true | LoadStrategy | PopulateMap<ExpandProperty<T[K]>>;
+};
+
+export type Loaded<T, P = unknown> = unknown extends P ? T : T & {
+  [K in keyof RelationsIn<T>]: P extends readonly (infer U)[]
+    ? LoadedIfInKeyHint<T, K, U>
+    : P extends NestedLoadHint<T>
+      ? LoadedIfInNestedHint<T, K, P>
+      : LoadedIfInKeyHint<T, K, P>;
 };

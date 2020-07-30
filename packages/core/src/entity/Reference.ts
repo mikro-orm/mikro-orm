@@ -60,17 +60,18 @@ export class Reference<T> {
     return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
   }
 
-  async load(): Promise<T> {
-    if (this.isInitialized()) {
-      return this.entity;
+  async load(): Promise<T>;
+  async load<K extends keyof T>(prop: K): Promise<T[K]>;
+  async load<K extends keyof T = never>(prop?: K): Promise<T | T[K]> {
+    if (!this.isInitialized()) {
+      await wrap(this.entity).init();
     }
 
-    return wrap(this.entity, true).init();
-  }
+    if (prop) {
+      return this.entity[prop];
+    }
 
-  async get<K extends keyof T>(prop: K): Promise<T[K]> {
-    await this.load();
-    return this.entity[prop];
+    return this.entity;
   }
 
   set(entity: T | IdentifiedReference<T>): void {
@@ -80,6 +81,8 @@ export class Reference<T> {
 
     this.entity = entity;
     Object.defineProperty(this, '__helper', { value: wrap(this.entity, true), writable: true });
+    Object.defineProperty(this, '$', { value: this.entity, writable: true });
+    Object.defineProperty(this, 'get', { value: () => this.entity, writable: true });
   }
 
   unwrap(): T {

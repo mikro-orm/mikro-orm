@@ -154,6 +154,28 @@ await em.nativeDelete(Author, 1);
 
 > `em.removeEntity()` has been removed in favour of `em.remove()` (that now has almost the same signature).
 
+## Type safe references
+
+EM now returns `Loaded<T, P>` instead of the entity (`T`). This type automatically
+adds synchronous method `get()` that returns the entity (for references) or array
+of entities (for collections).
+
+`Reference.get()` is now available only with correct `Loaded` type hint and is used 
+as a sync getter for the entity, just like `unwrap()`. You can use `Reference.load(prop)` 
+for the original `get()` method functionality. 
+
+`em.find()` and similar methods now have two type arguments, due to TypeScript not supporting partial
+type inference, when you specify the `T` explicitly (without also explicitly 
+specifying the load hint), the inference will not work. This use case was mainly
+for usage without classes (interfaces + `EntitySchema`) - in that case it is now 
+supported to pass actual instance of `EntitySchema` as the first parameter to these
+methods, that will allow correct type inference:
+
+```typescript
+const author = await em.findOne(AuthorSchema, { ... }, ['books']);
+console.log(author.books.get()); // `get()` is now inferred correctly
+```
+
 ## Custom types are now type safe
 
 Generic `Type` class has now two type arguments - the input and output types. 
