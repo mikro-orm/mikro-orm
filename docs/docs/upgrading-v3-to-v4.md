@@ -34,9 +34,9 @@ your `package.json`.
 - `@mikro-orm/postgresql`
 - `@mikro-orm/mongodb`
 
-> For easier transition, meta package mikro-orm is still present,
-> reexporting core, reflection, migrations, entity-generator and
-> cli packages.
+> For easier transition, meta package mikro-orm is still present, reexporting 
+> core, reflection, migrations, entity-generator and cli packages. You should 
+> **not** install both `mikro-orm` and `@mikro-orm/core` packages together. 
 
 ## SqlEntityManager and MongoEntityManager
 
