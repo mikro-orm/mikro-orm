@@ -137,13 +137,13 @@ describe('EntityManagerSqlite2', () => {
 
     const publisher = orm.em.create(Publisher4, { name: '7K publisher', type: PublisherType.GLOBAL });
     const book1 = orm.em.create(Book4, { title: 'My Life on The Wall, part 1', author });
-    book1.publisher = publisher;
+    book1.publisher = wrap(publisher).toReference();
     book1.author = author;
     const book2 = orm.em.create(Book4, { title: 'My Life on The Wall, part 2', author });
-    book2.publisher = publisher;
+    book2.publisher = wrap(publisher).toReference();
     book2.author = author;
     const book3 = orm.em.create(Book4, { title: 'My Life on The Wall, part 3', author });
-    book3.publisher = publisher;
+    book3.publisher = wrap(publisher).toReference();
     book3.author = author;
 
     const repo = orm.em.getRepository(Book4);
@@ -208,12 +208,12 @@ describe('EntityManagerSqlite2', () => {
       expect(author.books.isInitialized()).toBe(true);
 
       // iterator test
-      for (const book of author.books) {
+      for (const book of author.books.$) {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
 
         expect(book.author.constructor.name).toBe('Author4');
         expect(wrap(book.author).isInitialized()).toBe(true);
-        expect(book.publisher.constructor.name).toBe('Publisher4');
+        expect(book.publisher!.unwrap().constructor.name).toBe('Publisher4');
         expect(wrap(book.publisher).isInitialized()).toBe(false);
       }
     }
@@ -437,11 +437,11 @@ describe('EntityManagerSqlite2', () => {
     await orm.em.persist(pub).flush();
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
-    bible.publisher = pub;
+    bible.publisher = wrap(pub).toReference();
     const bible2 = orm.em.create(Book4, { title: 'Bible pt. 2', author: god });
-    bible2.publisher = pub;
+    bible2.publisher = wrap(pub).toReference();
     const bible3 = orm.em.create(Book4, { title: 'Bible pt. 3', author: orm.em.create(Author4, { name: 'Lol', email: 'lol@lol.lol' }) });
-    bible3.publisher = pub;
+    bible3.publisher = wrap(pub).toReference();
     await orm.em.persist([bible, bible2, bible3]).flush();
     orm.em.clear();
 
@@ -480,22 +480,22 @@ describe('EntityManagerSqlite2', () => {
     const bible = orm.em.create(Book4, { title: 'Bible', god });
     await orm.em.persist(bible).flush();
 
-    let jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
     jon.born = new Date('1990-03-23');
     jon.favouriteBook = bible;
     await orm.em.persist(jon).flush();
     orm.em.clear();
 
-    jon = (await authorRepository.findOne(jon.id))!;
-    expect(jon).not.toBeNull();
-    expect(jon.name).toBe('Jon Snow');
-    expect(jon.favouriteBook!.constructor.name).toBe('Book4');
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    const jon2 = await authorRepository.findOneOrFail(jon.id);
+    expect(jon2).not.toBeNull();
+    expect(jon2.name).toBe('Jon Snow');
+    expect(jon2.favouriteBook!.constructor.name).toBe('Book4');
+    expect(wrap(jon2.favouriteBook).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
-    expect(jon.favouriteBook!.constructor.name).toBe('Book4');
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
-    expect(jon.favouriteBook!.title).toBe('Bible');
+    await wrap(jon2.favouriteBook).init();
+    expect(jon2.favouriteBook!.constructor.name).toBe('Book4');
+    expect(wrap(jon2.favouriteBook).isInitialized()).toBe(true);
+    expect(jon2.favouriteBook!.title).toBe('Bible');
   });
 
   test('many to many relation', async () => {
