@@ -1,8 +1,8 @@
 import { EntitySchema, Collection, DateType, TimeType } from '@mikro-orm/core';
-import { BaseEntity5 } from './BaseEntity5';
-import { Book4 } from './Book4';
+import { IBaseEntity5 } from './BaseEntity5';
+import { IBook4 } from './Book4';
 
-export interface Author4 extends BaseEntity5 {
+export interface IAuthor4 extends IBaseEntity5 {
   name: string;
   email: string;
   age?: number;
@@ -10,12 +10,12 @@ export interface Author4 extends BaseEntity5 {
   identities?: string[];
   born?: Date;
   bornTime?: string;
-  books: Collection<Book4>;
-  favouriteBook?: Book4;
+  books: Collection<IBook4>;
+  favouriteBook?: IBook4;
   version?: number;
 }
 
-export const schema = new EntitySchema<Author4, BaseEntity5>({
+export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
   name: 'Author4',
   extends: 'BaseEntity5',
   properties: {

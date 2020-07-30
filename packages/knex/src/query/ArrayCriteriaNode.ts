@@ -10,13 +10,13 @@ export class ArrayCriteriaNode extends CriteriaNode {
     return node;
   }
 
-  process(qb: QueryBuilder, alias?: string): any {
+  process<T>(qb: QueryBuilder<T>, alias?: string): any {
     return this.payload.map((node: CriteriaNode) => {
       return node.process(qb, alias);
     });
   }
 
-  willAutoJoin(qb: QueryBuilder, alias?: string) {
+  willAutoJoin<T>(qb: QueryBuilder<T>, alias?: string) {
     return this.payload.some((node: CriteriaNode) => {
       return node.willAutoJoin(qb, alias);
     });

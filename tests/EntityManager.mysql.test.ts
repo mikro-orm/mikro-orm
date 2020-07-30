@@ -402,9 +402,9 @@ describe('EntityManagerMySql', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }))!;
     await orm.em.populate(jon, ['books', 'favouriteBook']);
     const authors = await authorRepository.findAll();
-    await orm.em.populate<Author2>(authors, ['books', 'favouriteBook'], { books: '123' });
+    await orm.em.populate(authors, ['books', 'favouriteBook'], { books: '123' });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
-    await expect(orm.em.populate<Author2>([], ['books', 'favouriteBook'])).resolves.toEqual([]);
+    await expect(orm.em.populate([], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
     // count test
     const count = await authorRepository.count();

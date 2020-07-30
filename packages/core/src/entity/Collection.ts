@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityData, FilterQuery, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, FilterQuery, Loaded, Populate, Primary } from '../typings';
 import { ArrayCollection } from './index';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -8,7 +8,7 @@ import { wrap } from './wrap';
 
 export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
 
-  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time
+  private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private initialized = false;
   private dirty = false;
   private _populated = false;
@@ -18,6 +18,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     this.initialized = !!items || initialized;
     Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
+    Object.defineProperty(this, '$', { value: this.items });
+    Object.defineProperty(this, 'get', { value: () => this.items });
   }
 
   /**
@@ -300,7 +302,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 }
 
 export interface InitOptions<T> {
-  populate?: string[];
+  populate?: Populate<T>;
   orderBy?: QueryOrderMap;
   where?: FilterQuery<T>;
 }

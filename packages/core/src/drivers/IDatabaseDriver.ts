@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, CollectionItem, ReferencedEntity } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, Populate, PopulateOptions } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { QueryOrderMap, QueryFlag } from '../enums';
 import { Platform } from '../platforms';
@@ -76,8 +76,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export interface FindOptions<T> {
-  populate?: Populate<T>;
+export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
+  populate?: P;
   orderBy?: QueryOrderMap;
   limit?: number;
   offset?: number;
@@ -91,9 +91,13 @@ export interface FindOptions<T> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
 
-export interface FindOneOptions<T> extends Omit<FindOptions<T>, 'limit' | 'offset'> {
+export interface FindOneOptions<T, P extends Populate<T> = Populate<T>> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
+}
+
+export interface FindOneOrFailOptions<T, P extends Populate<T> = Populate<T>> extends FindOneOptions<T, P> {
+  failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
 }
 
 export interface CountOptions<T>  {
@@ -107,14 +111,3 @@ export interface UpdateOptions<T>  {
 export interface DeleteOptions<T>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
-
-export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ReferencedEntity<T[K]> | CollectionItem<T[K]>> };
-export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T> | [LoadStrategy, PopulateChildren<T>];
-export type Populate<T> = (string | PopulateOptions<T>)[] | boolean | PopulateMap<T>;
-
-export type PopulateOptions<T> = {
-  field: string;
-  strategy?: LoadStrategy;
-  all?: boolean;
-  children?: PopulateOptions<T[keyof T]>[];
-};

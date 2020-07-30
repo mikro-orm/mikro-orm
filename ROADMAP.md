@@ -9,7 +9,6 @@ discuss specifics.
 
 ## Planned features
 
-- Schema sync (allow automatic synchronization during development)
 - Collection expressions - support querying parts of collection
 - Collection pagination
 - Map collections
@@ -17,43 +16,6 @@ discuss specifics.
 - Leverage async iterators for collections (node 10+)
 - Multi tenant support ([schema per tenant](https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation))
 - Use `bigint` type natively in `BigIntType` (node 12+)
-
-## Planned changes for v4
-
-- [x] Single table inheritance ([#33](https://github.com/mikro-orm/mikro-orm/issues/33))
-- [x] Allow adding items to not initialized collections
-- [x] Use absolute path to entity file in static MetadataStorage keys (fix for 'Multiple property decorators' validation issues)
-- [x] Embedded entities (allow in-lining child entity into parent one with prefixed keys)
-- [x] Use `jsonb` as default for object columns in postgres
-- [x] Support subqueries in QB
-- [x] Nested conditions in `qb.update()` queries via subqueries (#319)
-- [x] Nested conditions in `em.remove()` via subqueries (#492)
-- [x] Use custom errors for specific cases (unique constraint violation, db not accessible, ...)
-- [x] Paginator helper or something similar ([doctrine docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/pagination.html))
-- [x] Add `groupBy` and `distinct` to `FindOptions` and `FindOneOptions`
-- [x] Support computed properties via `@Formula()` decorator
-- [ ] Lazy scalar properties (allow having props that won't be loaded by default, but can be populated)
-- [ ] Association scopes/filters ([hibernate docs](https://docs.jboss.org/hibernate/orm/3.6/reference/en-US/html/filters.html))
-- [ ] Support external hooks when using EntitySchema (hooks outside of entity)
-- [ ] Cache metadata only with ts-morph provider
-- [ ] Diffing entity level indexes in schema generator
-- [ ] Add custom types for blob, array, json
-- [ ] Seeds (#251)
-- [ ] Static checking of population (#214)
-- [ ] Nested object validation (#466)
-- [ ] Migrations Support for MongoDB (#295)
-
-## Planned breaking changes for v4
-
-- [x] Require node 10+
-- [x] Require TS 3.7 or newer
-- [x] Split into multiple packages (core, driver packages, TS support, SQL support, CLI)
-- [x] Remove `autoFlush` option
-- [x] Drop default value for platform `type` (currently defaults to `mongodb`)
-- [x] Remove `IdEntity/UuidEntity/MongoEntity` interfaces
-- [x] Do not define internal methods like `init` directly on the entity prototype ([#506](https://github.com/mikro-orm/mikro-orm/issues/506))
-- [x] Support multiple M:N with same properties without manually specifying `pivotTable`
-- [x] Change behaviour of property `default`, add `defaultRaw`
 
 ## Docs
 

@@ -32,7 +32,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return node;
   }
 
-  process(qb: QueryBuilder, alias?: string): any {
+  process<T>(qb: QueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -70,7 +70,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }, {});
   }
 
-  willAutoJoin(qb: QueryBuilder, alias?: string): boolean {
+  willAutoJoin<T>(qb: QueryBuilder<T>, alias?: string) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -108,7 +108,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return !nestedAlias && !operatorKeys && !embeddable;
   }
 
-  private autoJoin(qb: QueryBuilder, alias: string): string {
+  private autoJoin<T>(qb: QueryBuilder<T>, alias: string): string {
     const nestedAlias = qb.getNextAlias();
     const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;

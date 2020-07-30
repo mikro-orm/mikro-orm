@@ -11,7 +11,7 @@ import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
 import { ArrayCollection, Collection, ReferenceType, wrap } from '../entity';
 import { Platform } from '../platforms';
 import { GroupOperator, QueryOperator } from '../enums';
@@ -183,7 +183,7 @@ export class Utils {
     }
 
     const collection = entity[prop.name] as unknown instanceof ArrayCollection;
-    const noPkRef = Utils.isEntity(entity[prop.name]) && !wrap(entity[prop.name], true).__primaryKeys.every(pk => pk);
+    const noPkRef = Utils.isEntity(entity[prop.name], true) && !wrap(entity[prop.name], true).__primaryKeys.every(pk => Utils.isDefined(pk, true));
     const noPkProp = prop.primary && !Utils.isDefined(entity[prop.name], true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
@@ -273,7 +273,7 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata, strict = false): Primary<T> | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
@@ -288,7 +288,7 @@ export class Utils {
 
     if (Utils.isObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data, meta) as Primary<T>;
+        return Utils.getCompositeKeyHash(data as T, meta) as Primary<T>;
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -362,7 +362,7 @@ export class Utils {
 
   static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], primaryKeys: string[]): Record<string, Primary<T>> {
     return primaryKeys.reduce((o, pk, idx) => {
-      o[pk] = Utils.extractPK(pks[idx]);
+      o[pk] = Utils.extractPK<T>(pks[idx]);
       return o;
     }, {} as any);
   }
@@ -412,12 +412,12 @@ export class Utils {
   /**
    * Gets string name of given class.
    */
-  static className(classOrName: string | { name: string }): string {
+  static className<T>(classOrName: EntityName<T>): string {
     if (Utils.isString(classOrName)) {
       return classOrName;
     }
 
-    return classOrName.name;
+    return classOrName.name as string;
   }
 
   /**

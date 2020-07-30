@@ -1,13 +1,13 @@
 import { EntitySchema } from '@mikro-orm/core';
-import { FooBar4, BaseEntity5 } from './index';
+import { IFooBar4, IBaseEntity5 } from './index';
 
-export interface FooBaz4 extends BaseEntity5 {
+export interface IFooBaz4 extends IBaseEntity5 {
   name: string;
-  bar?: FooBar4;
+  bar?: IFooBar4;
   version: Date;
 }
 
-export const schema = new EntitySchema<FooBaz4, BaseEntity5>({
+export const FooBaz4 = new EntitySchema<IFooBaz4, IBaseEntity5>({
   name: 'FooBaz4',
   extends: 'BaseEntity5',
   properties: {

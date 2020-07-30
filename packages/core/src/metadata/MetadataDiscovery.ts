@@ -181,7 +181,7 @@ export class MetadataDiscovery {
 
   private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
-    this.logger.log('discovery', `- processing entity ${c.cyan(entity.name)}${c.grey(path ? ` (${path})` : '')}`);
+    this.logger.log('discovery', `- processing entity ${c.cyan((entity as EntityClass<T>).name)}${c.grey(path ? ` (${path})` : '')}`);
     const schema = this.getSchema(entity as Constructor<T>);
     const meta = schema.init().meta;
     this.metadata.set(meta.className, meta);
