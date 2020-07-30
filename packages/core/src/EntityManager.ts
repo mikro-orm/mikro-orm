@@ -5,7 +5,7 @@ import { Configuration, QueryHelper, RequestContext, Utils, ValidationError } fr
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -77,12 +77,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Finds all entities matching your `where` query.
    */
-  async find<T, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
+  async find<T, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
 
   /**
    * Finds all entities matching your `where` query.
    */
-  async find<T, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: Populate<T> | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
+  async find<T, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
     entityName = Utils.className(entityName);
     where = QueryHelper.processWhere(where, entityName, this.metadata);
@@ -382,8 +382,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T>(entityName: EntityName<T>, data: EntityData<T>): T {
-    return this.getEntityFactory().create(entityName, data, true, true);
+  create<T, P extends Populate<T> = string[]>(entityName: EntityName<T>, data: EntityData<T, P>): New<T, P> {
+    return this.getEntityFactory().create<T, P>(entityName, data, true, true);
   }
 
   /**

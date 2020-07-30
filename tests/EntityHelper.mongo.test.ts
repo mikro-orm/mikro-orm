@@ -165,6 +165,11 @@ describe('EntityAssignerMongo', () => {
     expect(author._id).toBeNull();
   });
 
+  test('wrap helper returns the argument when its falsy', async () => {
+    expect(wrap(null)).toBeNull();
+    expect(wrap(undefined)).toBeUndefined();
+  });
+
   test('setting m:1 reference is propagated to 1:m collection', async () => {
     const author = new Author('n', 'e');
     const book = new Book('t');

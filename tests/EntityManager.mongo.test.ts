@@ -978,15 +978,15 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository(Book);
-    let books = await repo.findAll(['author', 'tags']);
+    const books = await repo.findAll(['author', 'tags']);
     expect(books.length).toBe(3);
     expect(books[0].tags.count()).toBe(2);
     await books[0].author.books.init();
     await orm.em.remove(books[0].author).flush();
     orm.em.clear();
 
-    books = await repo.findAll();
-    expect(books.length).toBe(0);
+    const books2 = await repo.findAll();
+    expect(books2.length).toBe(0);
   });
 
   test('cascade remove on m:1 reference', async () => {

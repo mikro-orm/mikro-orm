@@ -1,13 +1,12 @@
-import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty, NonFunctionPropertyNames } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty, ExpandProperty, NonFunctionPropertyNames } from '../typings';
 import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import { BaseEntity, Cascade, Collection, EntityRepository, ReferenceType, LoadStrategy } from '../entity';
+import { BaseEntity, Cascade, EntityRepository, ReferenceType, LoadStrategy } from '../entity';
 import { Type } from '../types';
 import { Utils } from '../utils';
 
-type CollectionItem<T> = T extends Collection<infer K> ? K : T;
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
 type Property<T, O> =
@@ -22,7 +21,7 @@ type PropertyKey<T, U> = NonFunctionPropertyNames<Omit<T, keyof U>>;
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<CollectionItem<NonNullable<T[K]>>, T> } };
+  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
 
