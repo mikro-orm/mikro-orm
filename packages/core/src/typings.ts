@@ -226,7 +226,7 @@ export type FilterDef<T extends AnyEntity<T>> = {
 export type ExpandProperty<T> = T extends Reference<infer U> ? U : T extends Collection<infer U> ? U : T;
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ExpandProperty<T[K]>> };
 export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T>;
-export type Populate<T> = readonly (keyof T | string)[] | boolean | PopulateMap<T>;
+export type Populate<T> = readonly (keyof T)[] | readonly string[] | boolean | PopulateMap<T>;
 
 export type PopulateOptions<T> = {
   field: string;
