@@ -35,7 +35,11 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(param);
     orm.em.clear();
 
-    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id]);
+    // test populating a PK
+    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id], ['bar']);
+    expect(wrap(p1).toJSON().bar).toMatchObject(wrap(p1.bar).toJSON());
+    expect(wrap(p1).toJSON().baz).toBe(p1.baz.id);
+
     expect(p1.bar.id).toBe(bar.id);
     expect(p1.baz.id).toBe(baz.id);
     expect(p1.value).toBe('val');
