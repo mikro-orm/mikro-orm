@@ -160,7 +160,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should provide custom repository', async () => {
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);
     expect(repo.magic).toBeInstanceOf(Function);
     expect(repo.magic('test')).toBe('111 test 222');
@@ -256,7 +256,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('findOne should work with options parameter', async () => {
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     const author = new Author('name 1', 'email1');
     const author2 = new Author('name 2', 'email2');
     await repo.persistAndFlush([author, author2]);
@@ -282,7 +282,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     const author = new Author('name', 'email');
     author.favouriteAuthor = author;
     await repo.persistAndFlush(author);
@@ -296,7 +296,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('name', 'email');
     const author2 = new Author('name2', 'email2');
     const author3 = new Author('name3', 'email3');
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     repo.persist(author);
     repo.persist(author2);
     await repo.removeAndFlush(author);
@@ -309,7 +309,7 @@ describe('EntityManagerMongo', () => {
 
   test('removing persisted entity will remove it from persist stack first', async () => {
     const author = new Author('name', 'email');
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     await repo.persistAndFlush(author);
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
     author.name = 'new name';
@@ -321,7 +321,7 @@ describe('EntityManagerMongo', () => {
 
   test('removing persisted entity via PK', async () => {
     const author = new Author('name', 'email');
-    const repo = orm.em.getRepository(Author) as AuthorRepository;
+    const repo = orm.em.getRepository(Author);
     await repo.persistAndFlush(author);
     orm.em.clear();
 
