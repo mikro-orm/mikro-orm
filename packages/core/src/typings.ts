@@ -38,21 +38,31 @@ export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 export type IsScalar<T> = T extends boolean | number | string | bigint | Date | RegExp | Buffer | { toHexString(): string } ? true : never;
 export type IsEntity<T> = T extends Reference<T> | { [PrimaryKeyType]: any } | { _id: any } | { uuid: string } | { id: number | string | bigint } ? true : never;
 
+export type ExpandScalar<T> = null | (T extends string
+  ? string | RegExp
+  : T extends Date
+    ? Date | string | number
+    : T);
+
 export type OneOrArray<T> = T | T[];
 export type OperatorMap<T> = {
   $and?: Query<T>[];
   $or?: Query<T>[];
-  $eq?: Query<T>;
-  $ne?: Query<T>;
-  $in?: Query<T>[];
-  $nin?: Query<T>[];
+  $eq?: ExpandScalar<T>;
+  $ne?: ExpandScalar<T>;
+  $in?: ExpandScalar<T>[];
+  $nin?: ExpandScalar<T>[];
   $not?: Query<T>;
-  $gt?: Query<T>;
-  $gte?: Query<T>;
-  $lt?: Query<T>;
-  $lte?: Query<T>;
+  $gt?: ExpandScalar<T>;
+  $gte?: ExpandScalar<T>;
+  $lt?: ExpandScalar<T>;
+  $lte?: ExpandScalar<T>;
   $like?: string;
   $re?: string;
+  $ilike?: string;
+  $overlap?: string;
+  $contains?: string;
+  $contained?: string;
 };
 export type StringProp<T> = T extends string ? string | RegExp : never;
 export type EntityOrPrimary<T> = true extends IsScalar<T> ? never : DeepPartialEntity<ReferencedEntity<T>> | PartialEntity<ReferencedEntity<T>> | Primary<ReferencedEntity<T>> | ReferencedEntity<T>;
