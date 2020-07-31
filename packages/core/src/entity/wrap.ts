@@ -1,6 +1,5 @@
 import { Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
-import { WrappedEntity } from './WrappedEntity';
 import { BaseEntity } from './BaseEntity';
 
 /**
