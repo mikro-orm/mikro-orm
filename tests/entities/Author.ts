@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection,
-  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner,
+  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
 } from '@mikro-orm/core';
 
 import { Book } from './Book';
@@ -10,6 +10,8 @@ import { BaseEntity } from './BaseEntity';
 @Entity({ customRepository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
 export class Author extends BaseEntity<Author> {
+
+  [EntityRepositoryType]: AuthorRepository;
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
