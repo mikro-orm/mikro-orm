@@ -13,7 +13,7 @@ drop table if exists `publisher3_to_test3`;
 create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` varchar not null, `email` varchar not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` varchar null, `born` date null, `born_time` time null);
 create unique index `author3_email_unique` on `author3` (`email`);
 
-create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` varchar not null default '', `foo` varchar null);
+create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` varchar not null default '', `foo` varchar null default 'lol');
 
 create table `book_tag3` (`id` integer not null primary key autoincrement, `name` varchar not null, `version` datetime not null default current_timestamp);
 
