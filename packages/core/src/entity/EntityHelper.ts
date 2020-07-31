@@ -108,7 +108,14 @@ export class EntityHelper {
 
     meta.prototype[inspect.custom] = function (depth: number) {
       const ret = inspect({ ...this }, { depth });
-      return ret === '[Object]' ? `[${meta.name}]` : meta.name + ' ' + ret;
+      let name = meta.name;
+
+      // distinguish not initialized entities
+      if (!wrap(this).isInitialized()) {
+        name = `Ref<${name}>`;
+      }
+
+      return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
     };
   }
 
