@@ -143,7 +143,13 @@ export class EntityGenerator {
     }
 
     if (prop.default && typeof prop.default === 'string') {
-      options.default = `\`${prop.default}\``;
+      if ([`''`, ''].includes(prop.default)) {
+        options.default = `''`;
+      } else if (prop.default.match(/^'.*'$/)) {
+        options.default = prop.default;
+      } else {
+        options.defaultRaw = `\`${prop.default}\``;
+      }
     }
   }
 
