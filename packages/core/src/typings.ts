@@ -25,6 +25,7 @@ export type DeepPartialEntity<T> = {
         : DeepPartialEntity<T[P]> | PartialEntity<T[P]> | Primary<T[P]> | OperatorMap<T[P]> | StringProp<T[P]>)
 };
 
+export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
   ? PK : T extends { _id: infer PK }
@@ -101,12 +102,13 @@ export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> exte
   __serializedPrimaryKey: string & keyof T;
 }
 
-export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown };
+export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown; [EntityRepositoryType]?: unknown };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
 export type EntityData<T extends AnyEntity<T>, P extends Populate<T> = keyof T> = { [K in keyof T]?: T[K] | Primary<T[K]> | EntityData<T[K]> | CollectionItem<T[K]>[] } & Dictionary;
+export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;

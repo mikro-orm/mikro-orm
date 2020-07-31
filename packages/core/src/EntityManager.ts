@@ -5,7 +5,7 @@ import { Configuration, QueryHelper, RequestContext, Utils, ValidationError } fr
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, wrap } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New, GetRepository } from './typings';
 import { QueryOrderMap } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -50,7 +50,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets repository for given entity. You can pass either string name or entity class reference.
    */
-  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): U {
+  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     entityName = Utils.className(entityName);
 
     if (!this.repositoryMap[entityName]) {
@@ -59,7 +59,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
     }
 
-    return this.repositoryMap[entityName] as unknown as U;
+    return this.repositoryMap[entityName] as unknown as GetRepository<T, U>;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { AnyEntity, EntityManager, EntityName, EntityRepository, Utils } from '@mikro-orm/core';
+import { AnyEntity, EntityManager, EntityName, EntityRepository, GetRepository, Utils } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { Collection } from 'mongodb';
@@ -20,7 +20,7 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
     return this.getConnection().getCollection(entityName);
   }
 
-  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): U {
+  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
 
