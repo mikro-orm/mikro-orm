@@ -222,6 +222,18 @@ describe('EntityAssignerMongo', () => {
         '}');
     }
 
+    bar.baz = orm.em.getReference(FooBaz, '5b0ff0619fbec620008d2414');
+    actual = inspect(bar);
+
+    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
+    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
+      expect(actual).toBe('FooBar {\n' +
+        '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+        "  name: 'bar',\n" +
+        "  baz: Ref<FooBaz> { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+        '}');
+    }
+
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     bible.createdAt = new Date('2020-07-18T17:31:08.535Z');
