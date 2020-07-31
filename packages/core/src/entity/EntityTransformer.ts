@@ -15,8 +15,18 @@ export class EntityTransformer {
 
     meta.primaryKeys
       .filter(pk => !Utils.isDefined(entity[pk], true) || !(meta.properties[pk].hidden || ignoreFields.includes(pk)))
-      .map(pk => [pk, Utils.getPrimaryKeyValue<T>(entity, [pk])] as [string, string])
-      .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = platform.normalizePrimaryKey(value));
+      .map(pk => {
+        let value: unknown;
+
+        if (Utils.isEntity(entity[pk], true)) {
+          value = EntityTransformer.processEntity(pk, entity, ignoreFields, visited);
+        } else {
+          value = platform.normalizePrimaryKey(Utils.getPrimaryKeyValue<T>(entity, [pk]));
+        }
+
+        return [pk, value] as [string, string];
+      })
+      .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = value as unknown as T[keyof T]);
 
     if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(wrapped.__uuid)) {
       return ret;
@@ -63,7 +73,7 @@ export class EntityTransformer {
       return EntityTransformer.processCollection(prop, entity);
     }
 
-    if (Utils.isEntity(entity[prop]) || entity[prop] as unknown instanceof Reference) {
+    if (Utils.isEntity(entity[prop], true)) {
       return EntityTransformer.processEntity(prop, entity, ignoreFields, visited);
     }
 
