@@ -27,10 +27,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -144,7 +144,7 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
   @Property({ length: 255, nullable: true })
@@ -168,7 +168,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true, index: 'book2_publisher_id_index' })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ length: 255, nullable: true, defaultRaw: \`lol\` })
   foo?: string;
 
 }
@@ -290,7 +290,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true, index: 'foo_bar2_foo_bar_id_index', unique: 'foo_bar2_foo_bar_id_unique' })
   fooBar?: FooBar2;
 
-  @Property({ default: \`CURRENT_TIMESTAMP\` })
+  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
   @Property({ length: 65535, columnType: 'blob', nullable: true })
@@ -315,7 +315,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date;
 
 }
@@ -512,10 +512,10 @@ export class Author2 {
   @PrimaryKey()
   id!: number;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -594,10 +594,10 @@ export class Book2 {
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ length: 255, nullable: true, default: \`''\` })
+  @Property({ length: 255, nullable: true, default: '' })
   title?: string;
 
   @Property({ columnType: 'text', nullable: true })
@@ -618,7 +618,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true })
+  @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
 
 }
@@ -705,7 +705,7 @@ export class FooBar2 {
   @OneToOne({ entity: () => FooBar2, nullable: true, unique: 'foo_bar2_foo_bar_id_unique' })
   fooBar?: FooBar2;
 
-  @Property({ default: \`current_timestamp(0)\` })
+  @Property({ defaultRaw: \`current_timestamp(0)\` })
   version!: Date;
 
   @Property({ nullable: true })
@@ -730,7 +730,7 @@ export class FooBaz2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ length: 3, default: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   version!: Date;
 
 }
@@ -901,10 +901,10 @@ export class Book3 {
   @Property({ nullable: true })
   updatedAt?: Date;
 
-  @Property({ default: \`''\` })
+  @Property({ default: '' })
   title!: string;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, default: 'lol' })
   foo?: string;
 
   @ManyToOne({ entity: () => Author3, nullable: true, index: 'book3_author_id_index' })
@@ -944,7 +944,7 @@ export class BookTag3 {
   @Property()
   name!: string;
 
-  @Property({ default: \`current_timestamp\` })
+  @Property({ defaultRaw: \`current_timestamp\` })
   version!: Date;
 
 }
