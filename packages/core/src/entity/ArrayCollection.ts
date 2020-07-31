@@ -35,6 +35,10 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     });
   }
 
+  toJSON(): Dictionary[] {
+    return this.toArray();
+  }
+
   getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string): U[] {
     const items = this.getItems();
 
