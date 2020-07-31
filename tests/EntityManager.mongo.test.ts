@@ -638,6 +638,7 @@ describe('EntityManagerMongo', () => {
     expect(tag4._id).toBeDefined();
     expect(tag5._id).toBeDefined();
     expect(book1.tags.toArray()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
+    expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
@@ -1739,11 +1740,13 @@ describe('EntityManagerMongo', () => {
     expect(ref4.getProperty('name')).toBe('God');
     await expect(ref4.load('email')).resolves.toBe('hello@heaven.god');
     expect(wrap(ref4, true).__populated).toBe(true);
+    expect(wrap(ref4, true).__lazyInitialized).toBe(true);
     ref4.populated(false);
+    expect(wrap(ref4, true).__lazyInitialized).toBe(false);
     expect(wrap(ref4, true).__populated).toBe(false);
     ref4.populated();
     expect(wrap(ref4, true).__populated).toBe(true);
-    expect(wrap(ref4, true).__lazyInitialized).toBe(true);
+    expect(wrap(ref4, true).__lazyInitialized).toBe(false);
     expect(ref4.toJSON()).toMatchObject({
       name: 'God',
     });

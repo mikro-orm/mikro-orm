@@ -41,6 +41,7 @@ export class WrappedEntity<T, PK extends keyof T> {
 
   populated(populated = true): void {
     this.__populated = populated;
+    this.__lazyInitialized = false;
   }
 
   toReference(): IdentifiedReference<T, PK> {

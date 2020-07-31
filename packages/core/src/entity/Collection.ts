@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityData, FilterQuery, Loaded, Populate, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, FilterQuery, Populate, Primary } from '../typings';
 import { ArrayCollection } from './index';
 import { ReferenceType } from './enums';
 import { Utils, ValidationError } from '../utils';
@@ -12,12 +12,14 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   private initialized = false;
   private dirty = false;
   private _populated = false;
+  private _lazyInitialized = false;
 
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
     Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
+    Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
     Object.defineProperty(this, '$', { value: this.items });
     Object.defineProperty(this, 'get', { value: () => this.items });
   }
@@ -129,11 +131,12 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   }
 
   shouldPopulate(): boolean {
-    return this._populated;
+    return this._populated && !this._lazyInitialized;
   }
 
   populated(populated = true): void {
     this._populated = populated;
+    this._lazyInitialized = false;
   }
 
   isDirty(): boolean {
@@ -157,6 +160,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [wrap(this.owner, true).__primaryKeys], options.where, options.orderBy);
       this.hydrate(map[wrap(this.owner, true).__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item)));
+      this._lazyInitialized = true;
 
       return this;
     }
@@ -165,7 +169,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getDriver().getPlatform().usesPivotTable()) && this.length === 0) {
       this.initialized = true;
       this.dirty = false;
-      this.populated();
+      this._lazyInitialized = true;
 
       return this;
     }
@@ -185,7 +189,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     Object.assign(this, items);
     this.initialized = true;
     this.dirty = false;
-    this.populated();
+    this._lazyInitialized = true;
 
     return this;
   }
