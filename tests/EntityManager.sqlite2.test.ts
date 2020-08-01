@@ -449,7 +449,7 @@ describe('EntityManagerSqlite2', () => {
     const publisher = await orm.em.findOneOrFail<IPublisher4>('Publisher4', pub.id, { populate: ['books'] });
     await wrap(newGod).init();
 
-    const json = wrap(publisher).toJSON().books;
+    const json = wrap(publisher).toJSON().books!;
 
     for (const book of publisher.books) {
       expect(json.find((b: any) => b.id === book.id)).toMatchObject({

@@ -104,15 +104,15 @@ export class EntityRepository<T extends AnyEntity<T>> {
 
   async populate<P extends string | keyof T | Populate<T>>(entities: T, populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>>;
   async populate<P extends string | keyof T | Populate<T>>(entities: T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>[]>;
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P> | T[]>;
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<Loaded<T, P> | T[]> {
-    return this.em.populate(entities, populate, where, orderBy, refresh, validate);
+  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P> | Loaded<T, P>[]>;
+  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<Loaded<T, P> | Loaded<T, P>[]> {
+    return this.em.populate<T, P>(entities, populate, where, orderBy, refresh, validate);
   }
 
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<P extends Populate<T> = string[]>(data: EntityData<T, P>): New<T, P> {
+  create<P extends Populate<T> = string[]>(data: EntityData<T>): New<T, P> {
     return this.em.create<T, P>(this.entityName, data);
   }
 

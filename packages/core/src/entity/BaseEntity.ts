@@ -17,11 +17,11 @@ export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntit
     return Reference.create<T, PK>(this as unknown as T) as IdentifiedReference<T, PK> & LoadedReference<T>;
   }
 
-  toObject(ignoreFields: string[] = []): EntityData<T> {
+  toObject(ignoreFields: string[] = []): Dictionary {
     return wrap(this, true).toObject(ignoreFields) as EntityData<T>;
   }
 
-  toJSON(...args: any[]): EntityData<T> & Dictionary {
+  toJSON(...args: any[]): Dictionary {
     return this.toObject(...args);
   }
 

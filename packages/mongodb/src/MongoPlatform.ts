@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy } from '@mikro-orm/core';
+import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
+import { MongoEntityRepository } from './MongoEntityRepository';
 
 export class MongoPlatform extends Platform {
 
@@ -8,6 +9,10 @@ export class MongoPlatform extends Platform {
 
   getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
+  }
+
+  getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
+    return MongoEntityRepository as Constructor<EntityRepository<T>>;
   }
 
   normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
