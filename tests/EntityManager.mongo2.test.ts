@@ -20,7 +20,10 @@ describe('EntityManagerMongo2', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const book1 = await orm.em.findOneOrFail(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] });
+    const book0 = await orm.em.findOne(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] });
+    expect(book0).toBeNull();
+
+    const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags'] });
     expect(book1.publisher!.$.name).toBe('Publisher 123');
     expect(book1.tags.$[0].name).toBe('t1');
     expect(book1.tags.$[1].name).toBe('t2');
