@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
+import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, EventType, wrap } from '..';
@@ -70,7 +70,7 @@ export class EntityFactory {
     }
 
     const Entity = meta.class;
-    const pks = Utils.getOrderedPrimaryKeys<T>(data, meta);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta);
 
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       const params = this.extractConstructorParams<T>(meta, data);

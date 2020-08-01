@@ -56,7 +56,7 @@ describe('EntityManagerMySql', () => {
   test('should return mysql driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
-    await expect(driver.findOne(Book2.name, { title: 'bar' })).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, { title: 'bar' })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
@@ -78,7 +78,7 @@ describe('EntityManagerMySql', () => {
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+    await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
     await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
 
     const conn = driver.getConnection();
