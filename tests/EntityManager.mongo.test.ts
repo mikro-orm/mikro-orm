@@ -2000,6 +2000,9 @@ describe('EntityManagerMongo', () => {
     em.setFilterParams('tenant', { tenant: 123 });
     em.setFilterParams('writtenBy', { author: book1.author });
 
+    expect(em.getFilterParams('tenant')).toMatchObject({ tenant: 123 });
+    expect(em.getFilterParams('writtenBy')).toMatchObject({ author: book1.author });
+
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(em.config, { logger });
