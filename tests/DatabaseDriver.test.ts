@@ -1,6 +1,13 @@
-import { Configuration, Connection, DatabaseDriver, EntityData, EntityManager, FilterQuery, FindOneOptions, FindOptions, LockMode, QueryResult, Transaction } from '@mikro-orm/core';
+import {
+  Configuration, Connection, DatabaseDriver, EntityData, EntityManager, EntityRepository, FilterQuery, FindOneOptions, FindOptions, LockMode,
+  Platform, QueryResult, Transaction,
+} from '@mikro-orm/core';
+
+class Platform1 extends Platform { }
 
 class Driver extends DatabaseDriver<Connection> {
+
+  protected readonly platform = new Platform1();
 
   constructor(protected readonly config: Configuration,
               protected readonly dependencies: string[]) {
@@ -43,6 +50,7 @@ describe('DatabaseDriver', () => {
     const config = new Configuration({ type: 'mongo' } as any, false);
     const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
+    expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     await expect(driver.aggregate('', [])).rejects.toThrowError('Aggregations are not supported by Driver driver');
     await expect(driver.lockPessimistic({}, LockMode.NONE)).rejects.toThrowError('Pessimistic locks are not supported by Driver driver');
   });
