@@ -2,7 +2,7 @@ import c from 'ansi-colors';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
+import { Configuration, ConfigurationLoader, Logger, Options } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
 import { IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
