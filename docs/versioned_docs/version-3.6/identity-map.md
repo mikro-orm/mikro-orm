@@ -48,6 +48,14 @@ app.use((req, res, next) => {
 });
 ``` 
 
+Then you can later retrieve your context-specific instance through the `RequestContext`:
+
+```typescript
+app.use((req, res) => {
+	const em = RequestContext.getEntityManager();
+});
+```
+
 You should register this middleware as the last one just before request handlers and before
 any of your custom middleware that is using the ORM. There might be issues when you register 
 it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
