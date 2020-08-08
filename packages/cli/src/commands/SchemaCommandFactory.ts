@@ -85,7 +85,7 @@ export class SchemaCommandFactory {
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
       const dump = await generator[m](...params);
-      CLIHelper.dump(dump, orm.config, 'sql');
+      CLIHelper.dump(dump, orm.config);
     } else {
       const m = method + 'Schema';
       await generator[m](...params);

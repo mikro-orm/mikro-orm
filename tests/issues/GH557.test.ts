@@ -53,8 +53,6 @@ describe('GH issue 557', () => {
       entities: [Application, Rate],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh557.db',
       type: 'sqlite',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();

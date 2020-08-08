@@ -3,6 +3,7 @@ import c from 'ansi-colors';
 import chalk from 'chalk';
 import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -1780,19 +1781,20 @@ describe('EntityManagerMongo', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', true);
+    orm.config.set('highlighter', new MongoHighlighter());
     c.enabled = true;
 
     const author = new Author('Jon Snow', 'snow@wall.st');
+    author.age = 30;
     await orm.em.persistAndFlush(author);
 
     expect(mock.mock.calls.length).toBe(3);
 
     if (chalk.level > 0) {
-      expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\.getCollection\(\[33m'author'\[39m\)\.insertOne\({ \[36mcreatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mupdatedAt\[39m: ISODate\(\[33m'.*'\[39m\), \[36mfoo\[39m: \[33m'bar'\[39m, \[36mname\[39m: \[33m'Jon Snow'\[39m, \[36memail\[39m: \[33m'snow@wall\.st'\[39m, \[36mtermsAccepted\[39m: \[36mfalse\[39m }, { \[36msession\[39m: \[33m'\[ClientSession]'\[39m }\)/);
+      expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\[0m\.\[0mgetCollection\(\[33m'author'\[39m\)\[0m\.\[0minsertOne\({ \[36mcreatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mupdatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mfoo\[39m\[0m:\[0m \[33m'bar'\[39m\[0m,\[0m \[36mname\[39m\[0m:\[0m \[33m'Jon Snow'\[39m\[0m,\[0m \[36memail\[39m\[0m:\[0m \[33m'snow@wall.st'\[39m\[0m,\[0m \[36mage\[39m\[0m:\[0m \[32m30\[39m\[0m,\[0m \[36mtermsAccepted\[39m\[0m:\[0m \[32mfalse\[39m }\[0m,\[0m { \[36msession\[39m\[0m:\[0m \[33m'\[ClientSession]'\[39m }\)\[0m;\[0m/);
     }
 
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
   });
 
   test('findOneOrFail', async () => {

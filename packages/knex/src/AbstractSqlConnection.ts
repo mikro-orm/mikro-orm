@@ -72,7 +72,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected logQuery(query: string, took?: number): void {
-    super.logQuery(query, took, 'sql');
+    super.logQuery(query, took, true);
   }
 
   protected createKnexClient(type: string): Knex {

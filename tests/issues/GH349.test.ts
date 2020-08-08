@@ -73,8 +73,6 @@ describe('GH issue 349', () => {
       entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
-      metadataProvider: ReflectMetadataProvider,
-      cache: { enabled: false },
     });
   });
 

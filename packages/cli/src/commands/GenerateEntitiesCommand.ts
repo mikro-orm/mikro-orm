@@ -36,10 +36,9 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
   /**
    * @inheritdoc
    */
-  async handler(args: Arguments<U>) {
+  async handler(args: Arguments<U>): Promise<void> {
     if (!args.save && !args.dump) {
-      yargs.showHelp();
-      return;
+      return void yargs.showHelp();
     }
 
     const orm = await CLIHelper.getORM(false);
@@ -47,7 +46,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
     const dump = await generator.generate({ save: args.save, baseDir: args.path });
 
     if (args.dump) {
-      CLIHelper.dump(dump.join('\n\n'), orm.config, 'typescript');
+      CLIHelper.dump(dump.join('\n\n'));
     }
 
     await orm.close(true);

@@ -1,11 +1,11 @@
-import { fromJson, Theme } from 'cli-highlight';
 import { inspect } from 'util';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, IPrimaryKey } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
+import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace, NotFoundError, Utils } from '../utils';
 import { EntityManager } from '../EntityManager';
 import { EntityOptions, EntitySchema, IDatabaseDriver, MetadataStorage } from '..';
@@ -58,14 +58,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       options: { cacheDir: process.cwd() + '/temp' },
     },
     metadataProvider: ReflectMetadataProvider,
-    highlight: true,
-    highlightTheme: {
-      keyword: ['white', 'bold'],
-      built_in: ['cyan', 'dim'],
-      string: ['yellow'],
-      literal: 'cyan',
-      meta: ['yellow', 'dim'],
-    },
+    highlighter: new NullHighlighter(),
   };
 
   static readonly PLATFORMS = {
@@ -81,7 +74,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache: Dictionary = {};
-  private readonly highlightTheme: Theme;
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
@@ -94,7 +86,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
-    this.highlightTheme = fromJson(this.options.highlightTheme!);
     this.init();
   }
 
@@ -110,6 +101,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   set<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, value: U): void {
     this.options[key] = value;
+  }
+
+  /**
+   * Resets the configuration to its default value
+   */
+  reset<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T): void {
+    this.options[key] = Configuration.DEFAULTS[key as string];
   }
 
   /**
@@ -178,13 +176,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return this.platform.getRepositoryClass();
-  }
-
-  /**
-   * Gets highlight there used when logging SQL.
-   */
-  getHighlightTheme(): Theme {
-    return this.highlightTheme;
   }
 
   private init(): void {
@@ -330,8 +321,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
-  highlight: boolean;
-  highlightTheme?: Dictionary<string | string[]>;
+  highlighter: Highlighter;
   tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;

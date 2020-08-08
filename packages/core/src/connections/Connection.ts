@@ -1,6 +1,5 @@
 import { URL } from 'url';
 import c from 'ansi-colors';
-import highlight from 'cli-highlight';
 
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
@@ -90,12 +89,12 @@ export abstract class Connection {
 
       return res;
     } catch (e) {
-      this.logQuery(c.red(query), Date.now() - now, undefined);
+      this.logQuery(c.red(query), Date.now() - now);
       throw e;
     }
   }
 
-  protected logQuery(query: string, took?: number, language?: string): void {
+  protected logQuery(query: string, took?: number, highlight = false): void {
     const logger = this.config.getLogger();
 
     // We only actually log something when debugMode is enabled. If it's not enabled,
@@ -105,8 +104,8 @@ export abstract class Connection {
       return;
     }
 
-    if (this.config.get('highlight') && language) {
-      query = highlight(query, { language, ignoreIllegals: true, theme: this.config.getHighlightTheme() });
+    if (highlight) {
+      query = this.config.get('highlighter').highlight(query);
     }
 
     let msg = query + (Utils.isDefined(took) ? c.grey(` [took ${took} ms]`) : '');
