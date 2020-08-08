@@ -63,7 +63,7 @@ describe('GH issue 482', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
     orm.config.set('debug', ['query', 'query-params']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -77,7 +77,7 @@ describe('GH issue 482', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
     orm.config.set('debug', ['query', 'query-params']);
 
     const job = new Job();

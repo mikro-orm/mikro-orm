@@ -175,7 +175,7 @@ export class MongoConnection extends Connection {
   }
 
   protected logQuery(query: string, took?: number): void {
-    super.logQuery(query, took, 'javascript');
+    super.logQuery(query, took, true);
   }
 
   private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {

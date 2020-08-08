@@ -25,8 +25,6 @@ describe('GH issue 380', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `mikro_orm_test_gh_380`,
-      debug: false,
-      highlight: false,
       type: 'postgresql',
     });
     await new SchemaGenerator(orm.em).ensureDatabase();

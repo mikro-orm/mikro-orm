@@ -36,8 +36,6 @@ describe('GH issue 228', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh228.db',
-      debug: false,
-      highlight: false,
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();
@@ -60,7 +58,7 @@ describe('GH issue 228', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
     await orm.em.findAndCount(A, {}, {
       orderBy: { type: 'asc' },
       populate: true,

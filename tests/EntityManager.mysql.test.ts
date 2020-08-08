@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
 import { inspect } from 'util';
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import c from 'ansi-colors';
 import chalk from 'chalk';
 
@@ -1964,7 +1965,7 @@ describe('EntityManagerMySql', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', true);
+    orm.config.set('highlighter', new SqlHighlighter());
     c.enabled = true;
 
     const author = new Author2('Jon Snow', 'snow@wall.st');
@@ -1973,11 +1974,11 @@ describe('EntityManagerMySql', () => {
     if (chalk.level > 0) {
       expect(mock.mock.calls.length).toBe(3);
       expect(mock.mock.calls[0][0]).toMatch('begin');
-      expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m, [33m`email`[39m, [33m`name`[39m, [33m`terms_accepted`[39m, [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?, ?, ?, ?, ?)');
+      expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`terms_accepted`[39m[0m,[0m [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
       expect(mock.mock.calls[2][0]).toMatch('commit');
     }
 
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
   });
 
   test('read replicas', async () => {

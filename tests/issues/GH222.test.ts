@@ -58,7 +58,6 @@ describe('GH issue 222', () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
-      debug: false,
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();

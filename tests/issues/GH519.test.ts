@@ -73,7 +73,7 @@ describe('GH issue 519', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
-    orm.config.set('highlight', false);
+    orm.config.reset('highlighter');
     const [items, count] = await orm.em.getRepository(Registration).findAndCount({ competition });
     expect(items.length).toBe(3);
     expect(count).toBe(3);

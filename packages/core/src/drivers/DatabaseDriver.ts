@@ -198,6 +198,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    * @inheritDoc
    */
   convertException(exception: Error): DriverException {
+    if (exception instanceof DriverException) {
+      return exception;
+    }
+
     return this.platform.getExceptionConverter().convertException(exception);
   }
 

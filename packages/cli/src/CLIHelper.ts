@@ -1,7 +1,6 @@
 import yargs, { Argv } from 'yargs';
 import { pathExists } from 'fs-extra';
 import CliTable3, { Table } from 'cli-table3';
-import highlight from 'cli-highlight';
 import c from 'ansi-colors';
 
 import { Configuration, ConfigurationLoader, IDatabaseDriver, MikroORM, Utils } from '@mikro-orm/core';
@@ -91,9 +90,9 @@ export class CLIHelper {
     }
   }
 
-  static dump(text: string, config?: Configuration, language?: string): void {
-    if (config && language && config.get('highlight')) {
-      text = highlight(text, { language, ignoreIllegals: true, theme: config.getHighlightTheme() });
+  static dump(text: string, config?: Configuration): void {
+    if (config?.get('highlighter')) {
+      text = config.get('highlighter').highlight(text);
     }
 
     // eslint-disable-next-line no-console
