@@ -17,6 +17,9 @@ describe('EntityManagerSqlite2', () => {
     expect(await orm.isConnected()).toBe(false);
     await orm.connect();
     expect(await orm.isConnected()).toBe(true);
+
+    // as the db lives only in memory, we need to re-create the schema after reconnection
+    await orm.getSchemaGenerator().createSchema();
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {

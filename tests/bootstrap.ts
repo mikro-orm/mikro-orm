@@ -111,7 +111,7 @@ export async function initORMPostgreSql() {
 export async function initORMSqlite() {
   const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
-    dbName: './mikro_orm_test.db',
+    dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: ['query'],
@@ -130,7 +130,7 @@ export async function initORMSqlite() {
 export async function initORMSqlite2() {
   const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
-    dbName: TEMP_DIR + '/mikro_orm_entity_schema.db',
+    dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
     debug: ['query'],

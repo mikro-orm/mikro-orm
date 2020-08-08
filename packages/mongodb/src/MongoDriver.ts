@@ -83,7 +83,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async createCollections(): Promise<void> {
+    const existing = await this.getConnection('write').listCollections();
+
     const promises = Object.values(this.metadata.getAll())
+      .filter(meta => !existing.includes(meta.collection))
       .map(meta => this.getConnection('write').createCollection(meta.collection));
 
     await this.rethrow(Promise.all(promises));
@@ -133,7 +136,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         properties.forEach(prop => spec[prop] = index.type!);
         fieldOrSpec = spec;
       } else {
-        fieldOrSpec = properties;
+        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
       }
 
       promises.push(collection.createIndex(fieldOrSpec, {
@@ -150,7 +153,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const promises: Promise<string>[] = [];
     meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(properties, {
+      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
+      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
         name: index.name,
         unique: true,
         ...(index.options || {}),
@@ -165,7 +169,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return [];
     }
 
-    return [this.getConnection('write').getCollection(meta.name).createIndex(prop.fieldNames, {
+    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
+
+    return [this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
       unique: type === 'unique',
       sparse: prop.nullable === true,

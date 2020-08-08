@@ -31,11 +31,16 @@ export class MongoConnection extends Connection {
     return this.db.collection(this.getCollectionName(name));
   }
 
-  createCollection(name: EntityName<AnyEntity>): Promise<Collection> {
+  async createCollection(name: EntityName<AnyEntity>): Promise<Collection> {
     return this.db.createCollection(this.getCollectionName(name));
   }
 
-  dropCollection(name: EntityName<AnyEntity>): Promise<boolean> {
+  async listCollections(): Promise<string[]> {
+    const collections = await this.db.listCollections({}, { nameOnly: true }).toArray();
+    return collections.map(c => c.name);
+  }
+
+  async dropCollection(name: EntityName<AnyEntity>): Promise<boolean> {
     return this.db.dropCollection(this.getCollectionName(name));
   }
 
@@ -175,7 +180,7 @@ export class MongoConnection extends Connection {
   }
 
   protected logQuery(query: string, took?: number): void {
-    super.logQuery(query, took, true);
+    super.logQuery(query, took);
   }
 
   private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {

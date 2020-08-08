@@ -1,8 +1,6 @@
-import { unlinkSync } from 'fs';
 import { v4 } from 'uuid';
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -40,17 +38,14 @@ describe('GH issue 268', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh268.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test('m:n with uuid PKs', async () => {
     const a1 = new A();

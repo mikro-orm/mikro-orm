@@ -37,7 +37,7 @@ describe('GH issue 435', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
-      dbName: `mikro_orm_test_gh_435.db`,
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).ensureDatabase();
@@ -45,10 +45,7 @@ describe('GH issue 435', () => {
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`custom type methods are called with correct values`, async () => {
     const convertToDatabaseValueSpy = jest.spyOn(MyType.prototype, 'convertToDatabaseValue');

@@ -42,10 +42,7 @@ describe('GH issue 369', () => {
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`removing entity that is inside a 1:m collection`, async () => {
     const mock = jest.fn();

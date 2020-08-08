@@ -65,7 +65,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
       return [];
     }
 
-    return this.toArray();
+    return super.toJSON();
   }
 
   add(...items: (T | Reference<T>)[]): void {

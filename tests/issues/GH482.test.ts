@@ -50,7 +50,7 @@ describe('GH issue 482', () => {
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(() => orm.close(true));
 
   test(`orphan removal with composite keys`, async () => {
     const job = new Job();
@@ -63,7 +63,6 @@ describe('GH issue 482', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.reset('highlighter');
     orm.config.set('debug', ['query', 'query-params']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -77,7 +76,6 @@ describe('GH issue 482', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.reset('highlighter');
     orm.config.set('debug', ['query', 'query-params']);
 
     const job = new Job();
