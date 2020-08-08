@@ -1,3 +1,5 @@
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+
 jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
@@ -169,11 +171,11 @@ describe('CLIHelper', () => {
     expect(log.mock.calls[0][0]).toBe('test');
 
     c.enabled = true;
-    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'mongo' } as any, false), 'sql');
+    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'sqlite', highlighter: new SqlHighlighter() }, false));
     c.enabled = false;
 
     if (chalk.level > 0) {
-      expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m + [32m1[39m');
+      expect(log.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
     }
   });
 

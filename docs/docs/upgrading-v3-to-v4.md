@@ -224,3 +224,24 @@ Removed as it is no longer needed, it was used only for `TsMorphMetadataProvider
 when the `entitiesDirsTs` were not explicitly provided. In v4, this is no longer
 needed, as ts-morph discovery will use `d.ts` files instead, that should be located
 next to the compiled entities. 
+
+## Changes in query highlighting
+
+Previously Highlight.js was used to highlight various things in the CLI, 
+like SQL and mongo queries, or migrations or entities generated via CLI.
+While the library worked fine, it was causing performance issues mainly 
+for those bundling via webpack and using lambdas, as the library was huge.
+
+In v4 highlighting is disabled by default, and there are 2 highlighters 
+you can optionally use (you need to install them first).
+
+```typescript
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+
+MikroORM.init({
+  highlighter: new SqlHighlighter(),
+  // ...
+});
+```
+
+For MongoDB you can use `@mikro-orm/mongo-highlighter`.

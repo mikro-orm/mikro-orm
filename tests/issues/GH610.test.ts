@@ -26,8 +26,7 @@ describe('GH issue 610', () => {
       entities: [Test],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
       type: 'sqlite',
-      highlight: false,
-    });
+});
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });

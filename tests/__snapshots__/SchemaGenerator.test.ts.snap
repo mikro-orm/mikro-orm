@@ -104,7 +104,7 @@ alter table \`author2_following\` add index \`author2_following_author2_1_id_ind
 alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment \'This is address property\') default character set utf8mb4 engine = InnoDB comment = \'This is address table\';
+create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);
@@ -317,7 +317,7 @@ alter table \`author2_following\` add index \`author2_following_author2_1_id_ind
 alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment \'This is address property\') default character set utf8mb4 engine = InnoDB comment = \'This is address table\';
+create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);
@@ -1001,7 +1001,7 @@ alter table \`author2_following\` add index \`author2_following_author2_1_id_ind
 alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
 alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);
 
-create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment \'This is address property\') default character set utf8mb4 engine = InnoDB comment = \'This is address table\';
+create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);
 alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 alter table \`address2\` add unique \`address2_author_id_unique\`(\`author_id\`);

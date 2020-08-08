@@ -48,8 +48,6 @@ describe('GH issue 450', () => {
     orm = await MikroORM.init({
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
-      debug: false,
-      highlight: false,
       type: 'postgresql',
       cache: { enabled: false },
     });

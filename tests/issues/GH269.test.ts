@@ -40,7 +40,6 @@ describe('GH issue 269', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: BASE_DIR + '/../temp/mikro_orm_test_gh269.db',
-      debug: false,
       type: 'sqlite',
       autoJoinOneToOneOwner: false,
     });

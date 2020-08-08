@@ -272,3 +272,7 @@ export type Loaded<T, P = unknown> = unknown extends P ? T : T & {
 };
 
 export type New<T, P = string[]> = Loaded<T, P>;
+
+export interface Highlighter {
+  highlight(text: string): string;
+}

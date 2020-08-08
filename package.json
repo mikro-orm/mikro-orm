@@ -61,6 +61,8 @@
       "<rootDir>/packages/*/src/**/*.ts"
     ],
     "moduleNameMapper": {
+      "@mikro-orm/mongo-highlighter": "<rootDir>/node_modules/@mikro-orm/mongo-highlighter",
+      "@mikro-orm/sql-highlighter": "<rootDir>/node_modules/@mikro-orm/sql-highlighter",
       "@mikro-orm/(.*)": "<rootDir>/packages/$1/src"
     },
     "modulePathIgnorePatterns": [
@@ -99,6 +101,8 @@
   "devDependencies": {
     "@commitlint/cli": "^9.1.1",
     "@commitlint/config-conventional": "^9.1.1",
+    "@mikro-orm/mongo-highlighter": "^1.0.0",
+    "@mikro-orm/sql-highlighter": "^1.0.1",
     "@types/clone": "^0.1.30",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.5",

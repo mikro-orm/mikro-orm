@@ -15,8 +15,7 @@ export class GenerateCacheCommand implements CommandModule {
     const config = await CLIHelper.getConfiguration(false);
 
     if (!config.get('cache').enabled) {
-      CLIHelper.dump(c.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
-      return;
+      return CLIHelper.dump(c.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
     }
 
     config.set('logger', CLIHelper.dump.bind(null));

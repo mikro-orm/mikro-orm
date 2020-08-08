@@ -130,7 +130,7 @@ export class MigrationCommandFactory {
 
     if (args.dump) {
       CLIHelper.dump(c.green('Creating migration with following queries:'));
-      CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config, 'sql');
+      CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config);
     }
 
     CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
