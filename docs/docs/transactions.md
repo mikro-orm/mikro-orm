@@ -47,12 +47,31 @@ The explicit alternative is to use the transactions API directly to control the 
 The code then looks like this:
 
 ```typescript
-await orm.em.transactional(_em => {
+await orm.em.transactional(em => {
   //... do some work
   const user = new User(...);
   user.name = 'George';
-  _em.persistLater(user);
+  em.persist(user);
 });
+```
+
+Or you can use `begin/commit/rollback` methods explicitly. Following example is
+equivalent to the previous one:
+
+```typescript
+const em = orm.em.fork(false);
+await em.begin();
+
+try {
+  //... do some work
+  const user = new User(...);
+  user.name = 'George';
+  em.persist(user);
+  await em.commit(); // will flush before making the actual commit query
+} catch (e) {
+  await em.rollback();
+  throw e;
+}
 ```
 
 Explicit transaction demarcation is required when you want to include custom DBAL operations 

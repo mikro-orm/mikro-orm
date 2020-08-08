@@ -339,38 +339,38 @@ describe('EntityManagerMongo', () => {
 
   test('transactions', async () => {
     const god1 = new Author('God1', 'hello@heaven1.god');
-    try {
-      await orm.em.transactional(async em => {
-        await em.persistAndFlush(god1);
-        throw new Error(); // rollback the transaction
-      });
-    } catch { }
-
+    await orm.em.begin();
+    await orm.em.persist(god1);
+    await orm.em.rollback();
     const res1 = await orm.em.findOne(Author, { name: 'God1' });
     expect(res1).toBeNull();
 
-    const ret = await orm.em.transactional(async em => {
-      const god2 = new Author('God2', 'hello@heaven2.god');
-      await em.persist(god2);
-      return true;
-    });
-
+    await orm.em.begin();
+    const god2 = new Author('God2', 'hello@heaven2.god');
+    orm.em.persist(god2);
+    await orm.em.commit();
     const res2 = await orm.em.findOne(Author, { name: 'God2' });
     expect(res2).not.toBeNull();
-    expect(ret).toBe(true);
+
+    await orm.em.transactional(async em => {
+      const god3 = new Author('God3', 'hello@heaven3.god');
+      em.persist(god3);
+    });
+    const res3 = await orm.em.findOne(Author, { name: 'God3' });
+    expect(res3).not.toBeNull();
 
     const err = new Error('Test');
 
     try {
       await orm.em.transactional(async em => {
-        const god3 = new Author('God4', 'hello@heaven4.god');
-        await em.persist(god3);
+        const god4 = new Author('God4', 'hello@heaven4.god');
+        em.persist(god4);
         throw err;
       });
     } catch (e) {
       expect(e).toBe(err);
-      const res3 = await orm.em.findOne(Author, { name: 'God4' });
-      expect(res3).toBeNull();
+      const res4 = await orm.em.findOne(Author, { name: 'God4' });
+      expect(res4).toBeNull();
     }
   });
 

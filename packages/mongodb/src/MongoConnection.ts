@@ -1,4 +1,7 @@
-import { Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions, ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession } from 'mongodb';
+import {
+  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions,
+  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession,
+} from 'mongodb';
 import { inspect } from 'util';
 import {
   Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
@@ -151,6 +154,24 @@ export class MongoConnection extends Connection {
     }
 
     return ret;
+  }
+
+  async begin(ctx?: ClientSession): Promise<ClientSession> {
+    const session = ctx || this.client.startSession();
+    session.startTransaction();
+    this.logQuery('db.begin();');
+
+    return session;
+  }
+
+  async commit(ctx: ClientSession): Promise<void> {
+    await ctx.commitTransaction();
+    this.logQuery('db.commit();');
+  }
+
+  async rollback(ctx: ClientSession): Promise<void> {
+    await ctx.abortTransaction();
+    this.logQuery('db.rollback();');
   }
 
   protected logQuery(query: string, took?: number): void {
