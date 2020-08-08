@@ -60,6 +60,14 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     return super.getItems();
   }
 
+  toJSON(): Dictionary[] {
+    if (!this.isInitialized()) {
+      return [];
+    }
+
+    return this.toArray();
+  }
+
   add(...items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
     unwrapped.map(item => this.validateItemType(item));
