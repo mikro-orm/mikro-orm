@@ -44,6 +44,18 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
+  async begin(ctx?: Transaction): Promise<unknown> {
+    throw new Error(`Transactions are not supported by current driver`);
+  }
+
+  async commit(ctx: Transaction): Promise<void> {
+    throw new Error(`Transactions are not supported by current driver`);
+  }
+
+  async rollback(ctx: Transaction): Promise<void> {
+    throw new Error(`Transactions are not supported by current driver`);
+  }
+
   abstract async execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {

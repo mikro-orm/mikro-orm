@@ -287,6 +287,30 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
+   */
+  async begin(ctx?: Transaction): Promise<void> {
+    this.transactionContext = await this.getConnection('write').begin(ctx);
+  }
+
+  /**
+   * Commits the transaction bound to this EntityManager. Flushes before doing the actual commit query.
+   */
+  async commit(): Promise<void> {
+    await this.flush();
+    await this.getConnection('write').commit(this.transactionContext);
+    delete this.transactionContext;
+  }
+
+  /**
+   * Rollbacks the transaction bound to this EntityManager.
+   */
+  async rollback(): Promise<void> {
+    await this.getConnection('write').rollback(this.transactionContext);
+    delete this.transactionContext;
+  }
+
+  /**
    * Runs your callback wrapped inside a database transaction.
    */
   async lock(entity: AnyEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {

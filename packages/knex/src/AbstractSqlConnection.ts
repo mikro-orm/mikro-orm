@@ -1,4 +1,4 @@
-import Knex, { Config, QueryBuilder, Raw } from 'knex';
+import Knex, { Config, QueryBuilder, Raw, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
 
 import { Connection, EntityData, AnyEntity, QueryResult, Transaction, Utils } from '@mikro-orm/core';
@@ -26,6 +26,18 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
     return (ctx || this.client).transaction(cb);
+  }
+
+  async begin(ctx?: KnexTransaction): Promise<KnexTransaction> {
+    return (ctx || this.client).transaction();
+  }
+
+  async commit(ctx: KnexTransaction): Promise<void> {
+    return ctx.commit();
+  }
+
+  async rollback(ctx: KnexTransaction): Promise<void> {
+    return ctx.rollback();
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {

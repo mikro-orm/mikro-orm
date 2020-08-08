@@ -31,6 +31,9 @@ describe('Connection', () => {
   test('by default it throws when trying to use transactions', async () => {
     const conn = new CustomConnection(new Configuration({ type: 'mongo' }, false));
     await expect(conn.transactional(async () => void 0)).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(conn.begin()).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(conn.commit({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
+    await expect(conn.rollback({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
   });
 
 });
