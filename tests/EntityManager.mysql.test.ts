@@ -968,9 +968,11 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
     let book = (await orm.em.findOne(Book2, book1.uuid))!;
     expect(book.tags.isInitialized()).toBe(false);
+    expect(book.tags.toJSON()).toEqual([]);
     await book.tags.init();
     expect(book.tags.isInitialized()).toBe(true);
     expect(book.tags.count()).toBe(2);
+    expect(book.tags.toJSON()).toHaveLength(2);
     expect(book.tags.getItems()[0]).toBeInstanceOf(BookTag2);
     expect(book.tags.getItems()[0].id).toBeDefined();
     expect(wrap(book.tags.getItems()[0]).isInitialized()).toBe(true);
