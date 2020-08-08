@@ -1,7 +1,5 @@
-import { unlinkSync } from 'fs';
 import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, Logger } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class Test {
@@ -24,17 +22,14 @@ describe('GH issue 610', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Test],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
+      dbName: ':memory:',
       type: 'sqlite',
-});
+    });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`self referencing with Reference wrapper`, async () => {
     const test = new Test();

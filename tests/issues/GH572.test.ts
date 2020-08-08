@@ -1,7 +1,5 @@
-import { unlinkSync } from 'fs';
-import { Entity, IdentifiedReference, Logger, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder, ReflectMetadataProvider } from '@mikro-orm/core';
+import { Entity, IdentifiedReference, Logger, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -35,17 +33,14 @@ describe('GH issue 572', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh572.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`GH issue 572`, async () => {
     const mock = jest.fn();

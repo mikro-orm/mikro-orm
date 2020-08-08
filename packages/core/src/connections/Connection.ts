@@ -94,20 +94,17 @@ export abstract class Connection {
     }
   }
 
-  protected logQuery(query: string, took?: number, highlight = false): void {
+  protected logQuery(query: string, took?: number): void {
     const logger = this.config.getLogger();
 
     // We only actually log something when debugMode is enabled. If it's not enabled,
     // we can jump out here as a performance optimization and save ourselves some cycles
     // preparing a message that won't get used.
-    if (!logger.debugMode) {
+    if (!logger.debugMode && !(Array.isArray(logger.debugMode) && logger.debugMode.includes('query'))) {
       return;
     }
 
-    if (highlight) {
-      query = this.config.get('highlighter').highlight(query);
-    }
-
+    query = this.config.get('highlighter').highlight(query);
     let msg = query + (Utils.isDefined(took) ? c.grey(` [took ${took} ms]`) : '');
 
     if (this.config.get('replicas', []).length > 0) {

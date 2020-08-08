@@ -1,7 +1,5 @@
-import { unlinkSync } from 'fs';
 import { Collection, Entity, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver, SchemaGenerator } from '@mikro-orm/sqlite';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -39,17 +37,14 @@ describe('GH issue 234', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh234.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test('search by m:n', async () => {
     const a1 = new A();
@@ -67,7 +62,6 @@ describe('GH issue 234', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.reset('highlighter');
     const res1 = await orm.em.find<B>(B, { aCollection: [1, 2, 3] }, ['aCollection']);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?)');
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`a_id`, `e1`.`b_id` from `a` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?) order by `e1`.`id` asc');

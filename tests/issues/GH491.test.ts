@@ -43,7 +43,7 @@ describe('GH issue 491', () => {
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(() => orm.close(true));
 
   test(`GH issue 491`, async () => {
     expect(await orm.getSchemaGenerator().getUpdateSchemaSQL(false)).toBe('');

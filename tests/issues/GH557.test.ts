@@ -1,6 +1,4 @@
-import { unlinkSync } from 'fs';
-import { BASE_DIR } from '../bootstrap';
-import { MikroORM, ReflectMetadataProvider, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -51,17 +49,14 @@ describe('GH issue 557', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Application, Rate],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh557.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test('GH issue 557', async () => {
     const a = new Application();

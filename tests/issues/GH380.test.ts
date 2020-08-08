@@ -32,10 +32,7 @@ describe('GH issue 380', () => {
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`schema updates respect default values`, async () => {
     const generator = new SchemaGenerator(orm.em);

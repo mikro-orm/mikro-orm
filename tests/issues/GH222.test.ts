@@ -1,7 +1,5 @@
-import { unlinkSync } from 'fs';
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -57,17 +55,14 @@ describe('GH issue 222', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh222.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test('cascade persist with pre-filled PK and with cycles', async () => {
     const a = new A();

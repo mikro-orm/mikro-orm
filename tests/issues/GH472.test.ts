@@ -28,7 +28,7 @@ describe('GH issue 472', () => {
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(() => orm.close(true));
 
   test(`case sensitive table names`, async () => {
     await expect(orm.getSchemaGenerator().updateSchema()).resolves.toBeUndefined();

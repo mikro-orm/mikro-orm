@@ -38,10 +38,7 @@ describe('GH issue 467', () => {
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`wrap().assign to collections is persisted`, async () => {
     const a = new A();

@@ -1,7 +1,5 @@
-import { unlinkSync } from 'fs';
-import { BeforeDelete, BeforeUpdate, Entity, MikroORM, PrimaryKey, Property, ReflectMetadataProvider, wrap } from '@mikro-orm/core';
+import { BeforeDelete, BeforeUpdate, Entity, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { BASE_DIR } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -31,17 +29,14 @@ describe('GH issue 493', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
-      dbName: BASE_DIR + '/../temp/mikro_orm_test_gh493.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`GH issue 493`, async () => {
     const a = new A();

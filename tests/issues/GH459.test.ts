@@ -39,17 +39,14 @@ describe('GH issue 459', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C, D],
-      dbName: __dirname + '/../../temp/mikro_orm_test_gh459.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 
-  afterAll(async () => {
-    await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
-  });
+  afterAll(() => orm.close(true));
 
   test(`multiple inheritance`, async () => {
     const sql = 'create table `d` (`id` integer not null primary key autoincrement, `foo` varchar not null, `bar` varchar not null, `name` varchar not null);\n\n';

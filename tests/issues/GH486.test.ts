@@ -41,7 +41,7 @@ describe('GH issue 486', () => {
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(() => orm.close(true));
 
   test(`GH issue 486`, async () => {
     const fixture = new A();

@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryKey,
-  Property,
-  MikroORM,
-  ReflectMetadataProvider,
-  SerializedPrimaryKey,
-} from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, MikroORM, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from 'mongodb';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
@@ -73,6 +66,7 @@ describe('GH issue 349', () => {
       entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
       type: 'mongo',
+      debug: ['discovery'],
     });
   });
 
