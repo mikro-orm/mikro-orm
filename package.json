@@ -131,7 +131,7 @@
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "@types/clone": "^0.1.30",
+    "@types/clone": "^2.0.0",
     "@types/fs-extra": "^8.1.0",
     "@types/jest": "^25.1.4",
     "@types/mongodb": "^3.5.2",
