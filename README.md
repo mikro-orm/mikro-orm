@@ -164,13 +164,13 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 ### TypeScript Examples
 
-- [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-ts)
-- [Nest + MySQL](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
+- [Express + MongoDB](https://github.com/mikro-orm/express-ts-example-app)
+- [Nest + MySQL](https://github.com/mikro-orm/nestjs-example-app)
 - [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
-- [`nestjs-mikro-orm` module](https://github.com/dario1985/nestjs-mikro-orm)
+- [Koa + SQLite](https://github.com/mikro-orm/koa-ts-example-app)
 
 ### JavaScript Examples 
-- [Express + MongoDB](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
+- [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)
 
 ## Articles
 

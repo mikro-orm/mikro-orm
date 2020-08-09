@@ -59,6 +59,7 @@ module.exports = {
       { type: 'link', label: 'NestJS + MySQL + TypeScript', href: 'https://github.com/mikro-orm/nestjs-example-app' },
       { type: 'link', label: 'RealWorld example app (Nest + MySQL)', href: 'https://github.com/mikro-orm/nestjs-realworld-example-app' },
       { type: 'link', label: 'Express + MongoDB + JavaScript', href: 'https://github.com/mikro-orm/express-js-example-app' },
+      { type: 'link', label: 'Koa + SQLite + JavaScript', href: 'https://github.com/mikro-orm/koa-ts-example-app' },
     ],
   },
 };
