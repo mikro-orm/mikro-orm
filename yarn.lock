@@ -1720,9 +1720,10 @@
     "@types/bson" "*"
     "@types/node" "*"
 
-"@types/mysql2@types/mysql2#53599d045503bfe40184d78c67f90c36ddadac37":
+"@types/mysql2@types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9":
   version "1.0.0"
-  resolved "https://codeload.github.com/types/mysql2/tar.gz/53599d045503bfe40184d78c67f90c36ddadac37"
+  uid d4ef3b2292f328049f7e4c545f6adab7d6a350a9
+  resolved "https://codeload.github.com/types/mysql2/tar.gz/d4ef3b2292f328049f7e4c545f6adab7d6a350a9"
   dependencies:
     "@types/mysql" types/mysql
 
