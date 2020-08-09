@@ -329,3 +329,16 @@ MikroORM.init({
 ```
 
 Read more about this in [Metadata Cache](metadata-cache.md) section.
+
+## Importing database dump files (MySQL and Postgress)
+
+Using the `mikro-orm database:import db-file.sql` you can import a database dump file. This can be useful when kickstarting an application or could be used in tests to reset the database. Database dumps often have queries spread over multiple lines and therefore you need the following configuration.
+
+```typescript
+MikroORM.init({
+  ...
+  multipleStatements: true,
+  ...
+});
+```
+ > This should be disabled in production environments for added security.
