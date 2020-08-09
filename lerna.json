@@ -1,6 +1,6 @@
 {
   "packages": ["packages/*"],
-  "version": "4.0.0-alpha.12",
+  "version": "4.0.0-rc.0",
   "command": {
     "version": {
       "conventionalCommits": true,
