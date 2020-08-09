@@ -53,9 +53,9 @@ book3.publisher = publisher;
 await orm.em.persistAndFlush([book1, book2, book3]);
 
 // or one by one
-orm.em.persistLater(book1);
-orm.em.persistLater(book2);
-orm.em.persistLater(book3); 
+orm.em.persist(book1);
+orm.em.persist(book2);
+orm.em.persist(book3); 
 await orm.em.flush(); // flush everything to database at once
 ```
 
@@ -355,7 +355,7 @@ Shortcut for `persist` & `flush`. Same as `em.persist(entity).flush()`.
 
 #### `persistLater(entity: AnyEntity | AnyEntity[]): void`
 
-Shortcut for just `persist`, without flushing. 
+Shortcut for just `persist`, without flushing. Deprecated, use `em.persist()`.
 
 ---
 

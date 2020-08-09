@@ -78,13 +78,15 @@ Reference parameter can be one of (where `SCALAR` is the default one):
 ```typescript
 export enum ReferenceType {
   SCALAR = 'scalar',
+  ONE_TO_ONE = '1:1',
   MANY_TO_ONE = 'm:1',
   ONE_TO_MANY = '1:m',
   MANY_TO_MANY = 'm:n',
+  EMBEDDED = 'embedded',
 }
 ```
 
-You can register your entities as usual (both via `entities` array or via `entitiesDirs`).
+You can register your entities as usual.
 
 ```javascript
 const orm = await MikroORM.init({
@@ -95,4 +97,4 @@ const orm = await MikroORM.init({
 ```
 
 For more examples of plain JavaScript entity definitions take a look
-[Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js). 
+[Express JavaScript example](https://github.com/mikro-orm/express-js-example-app). 

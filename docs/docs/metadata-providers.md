@@ -10,14 +10,29 @@ use:
 
 ## TsMorphMetadataProvider
 
-By default, MikroORM uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
+With `TsMorphMetadataProvider` MikroORM will use [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
 TypeScript source files of all entities to be able to detect all types. Thanks to this, 
 defining the type is enough for runtime validation.
 
-If you use folder-based discovery (via `entitiesDirs`), you should specify paths to
-the compiled entities via `entitiesDirs` as well as paths to the TS source files of
-those entities via `entitiesDirsTs`. When you run the ORM via `ts-node`, the latter
+To use it, first install the `@mikro-orm/reflection` package.
+
+```typescript
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+
+await MikroORM.init({
+  metadataProvider: TsMorphMetadataProvider,
+  // ...
+});
+```
+
+If you use folder-based discovery, you should specify paths to
+the compiled entities via `entities` as well as paths to the TS source files of
+those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter
 will be used automatically, or if you explicitly pass `tsNode: true` in the config.
+
+> When running via `node`, `.d.ts` files are used to obtain the type, so we 
+> need to ship them in the production build. TS source files are no longer 
+> needed (since v4).
 
 After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, 
 `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files. 

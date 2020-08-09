@@ -82,10 +82,12 @@ const dependency = import(dependencyNameInVariable);
 ```
 
 As Webpack creates a file bundle, it isn't desired that it scans directories for entities 
-or metadata. Therefore you need to use the `entities` option in the initialization function 
-and `entitiesDirs`/`entitiesDirsTs` will be ignored (see dynamically including entities as 
-an alternative solution). Also you need to fill `type` or `entity` attributes everywhere 
-(see above) and disable caching (it will decrease start-time slightly).
+or metadata. Therefore you need to provide list of entities in the `entities` option in 
+the initialization function, folder/file based discovery is not supported (see dynamically 
+including entities as an alternative solution). Also you need to fill `type` or `entity` 
+attributes everywhere (see above) and disable caching (it will decrease start-time slightly).
+
+> In v4 caching is disabled by default when using `ReflectMetadataProvider`.
 
 #### Disabling dynamic file access
 
@@ -94,7 +96,7 @@ First thing you should do is to disable dynamic file access in the discovery pro
 
 - set metadata provider to `ReflectMetadataProvider`
 - disable caching
-- disallow usage of `entitiesDirs`
+- disallow usage of paths in `entities/entitiesTs`
 
 #### Manually defining entities
 
@@ -174,8 +176,8 @@ for (const devDependency of Object.keys(devDependencies)) {
 // Later we check these dynamically and tell webpack to ignore the ones we don't have.
 const optionalModules = new Set([
   ...Object.keys(require('knex/package.json').browser),
-  ...Object.keys(require('mikro-orm/package.json').peerDependencies),
-  ...Object.keys(require('mikro-orm/package.json').devDependencies)
+  ...Object.keys(require('@mikro-orm/core/package.json').peerDependencies),
+  ...Object.keys(require('@mikro-orm/core/package.json').devDependencies)
 ]);
 
 module.exports = {
@@ -202,16 +204,6 @@ module.exports = {
   target: 'node',
   module: {
     rules: [
-      // We do not want ts-morph bundled up in the application, as it drags in typescript,
-      // which is huge. We are not using either of these at runtime, but they can't be
-      // ignored using IgnorePlugin because Mikro still requires them, and this causes an error
-      // at runtime. Packaging them with the null-loader allows them to be required without erroring
-      // then simply be swapped with null at runtime.
-      {
-        test: /(TsMorphMetadataProvider|ts-morph)/,
-        loader: 'null-loader',
-      },
-
       // Bring in our typescript files.
       {
         test: /\.ts$/,

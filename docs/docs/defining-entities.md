@@ -197,7 +197,7 @@ database (e.g. when you instantiate new entity via `new Author()` or `em.create(
 will be provided by the database, and automatically mapped to the entity property after
 it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
 
-    > Since v4 you use `defaultRaw` for SQL functions, as `default` with string values
+    > Since v4 you should use `defaultRaw` for SQL functions, as `default` with string values
     > will be automatically quoted. 
 
     ```typescript

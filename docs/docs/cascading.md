@@ -74,7 +74,7 @@ await orm.em.persistAndFlush(a1); // cascade persists favourite book as well
 
 for (let i = 1; i < 1000; i++) {
   const book = new Book('...', a1);
-  orm.em.persistLater(book);
+  orm.em.persist(book);
   
   // persist every 100 records
   if (i % 100 === 0) {

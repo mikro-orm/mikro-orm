@@ -9,7 +9,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entities: [Author, Book, ...],
   dbName: 'my-db-name',
   clientUrl: '...',
   type: 'mongo',
@@ -83,7 +83,7 @@ import { MongoDriver } from 'mikro-orm/dist/drivers/MongoDriver';
 
 // make sure to provide the MongoDriver type hint
 const orm = await MikroORM.init<MongoDriver>({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entities: [Author, Book, ...],
   clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/my-db-name?replicaSet=rs0',
   type: 'mongo',
   implicitTransactions: true, // defaults to false
@@ -104,7 +104,7 @@ To automatically create new indexes when initializing the ORM, you need to enabl
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entities: [Author, Book, ...],
   dbName: 'my-db-name',
   type: 'mongo',
   ensureIndexes: true, // defaults to false
