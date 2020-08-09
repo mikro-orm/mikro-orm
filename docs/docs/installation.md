@@ -159,6 +159,13 @@ app.use((req, res, next) => {
 });
 ```
 
+> If the `next` handler needs to be awaited (like in Koa), 
+> use `RequestContext.createAsync()` instead.
+>
+> ```typescript
+> app.use((ctx, next) => RequestContext.createAsync(orm.em, next));
+> ```
+
 More info about `RequestContext` is described [here](identity-map.md#request-context).
 
 ## Setting up the Commandline Tool

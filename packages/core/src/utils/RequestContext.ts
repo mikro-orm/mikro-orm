@@ -14,11 +14,24 @@ export class RequestContext {
   /**
    * Creates new RequestContext instance and runs the code inside its domain.
    */
-  static create(em: EntityManager, next: (...args: any[]) => void) {
+  static create(em: EntityManager, next: (...args: any[]) => void): void {
     const context = new RequestContext(em.fork(true, true));
     const d = domain.create() as ORMDomain;
     d.__mikro_orm_context = context;
     d.run(next);
+  }
+
+  /**
+   * Creates new RequestContext instance and runs the code inside its domain.
+   * Async variant, when the `next` handler needs to be awaited (like in Koa).
+   */
+  static async createAsync(em: EntityManager, next: (...args: any[]) => Promise<void>): Promise<void> {
+    const context = new RequestContext(em.fork(true, true));
+    const d = domain.create() as ORMDomain;
+    d.__mikro_orm_context = context;
+    await new Promise((resolve, reject) => {
+      d.run(() => next().then(resolve).catch(reject));
+    });
   }
 
   /**
