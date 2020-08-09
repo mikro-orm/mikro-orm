@@ -32,7 +32,8 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 
 ```json
 "experimentalDecorators": true,
-"esModuleInterop": true
+"emitDecoratorMetadata": true,
+"esModuleInterop": true,
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
