@@ -228,11 +228,24 @@ Now you should be able to start using the CLI. All available commands are listed
 Usage: mikro-orm <command> [options]
 
 Commands:
-  mikro-orm cache:clear        Clear metadata cache
-  mikro-orm generate-entities  Generate entities based on current database schema
-  mikro-orm schema:create      Create database schema based on current metadata
-  mikro-orm schema:drop        Drop database schema based on current metadata
-  mikro-orm schema:update      Update database schema based on current metadata
+  mikro-orm cache:clear             Clear metadata cache
+  mikro-orm cache:generate          Generate metadata cache for production
+  mikro-orm generate-entities       Generate entities based on current database
+                                    schema
+  mikro-orm database:import <file>  Imports the SQL file to the database
+  mikro-orm schema:create           Create database schema based on current
+                                    metadata
+  mikro-orm schema:drop             Drop database schema based on current
+                                    metadata
+  mikro-orm schema:update           Update database schema based on current
+                                    metadata
+  mikro-orm migration:create        Create new migration with current schema
+                                    diff
+  mikro-orm migration:up            Migrate up to the latest version
+  mikro-orm migration:down          Migrate one step down
+  mikro-orm migration:list          List all executed migrations
+  mikro-orm migration:pending       List all pending migrations
+  mikro-orm debug                   Debug CLI configuration
 
 Options:
   -v, --version  Show version number                                   [boolean]
@@ -246,5 +259,7 @@ To verify your setup, you can use `mikro-orm debug` command.
 
 > When you have CLI config properly set up, you can omit the `options` parameter
 > when calling `MikroORM.init()`.
+
+> Note: When importing a dump file you need `multipleStatements: true` in your configuration. Please check the configuartion documentation for more information.
 
 Now you can start [defining your entities](defining-entities.md).
