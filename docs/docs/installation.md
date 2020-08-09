@@ -2,24 +2,29 @@
 title: Installation & Usage
 ---
 
-First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
+First install the module via `yarn` or `npm` and do not forget to install the 
+driver package as well:
+
+> Since v4, you should install the driver package, but not the db connector itself,
+> e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included
+> in the driver package.
 
 ```sh
-$ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql/mariadb
-$ yarn add mikro-orm mariadb # for mysql/mariadb
-$ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite3 # for sqlite
+yarn add @mikro-orm/core @mikro-orm/mongodb   # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/postgres  # for postgresql
+yarn add @mikro-orm/core @mikro-orm/sqlite    # for sqlite
 ```
 
 or
 
 ```sh
-$ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql/mariadb
-$ npm i -s mikro-orm mariadb # for mysql/mariadb
-$ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite3 # for sqlite
+npm i -s @mikro-orm/core @mikro-orm/mongodb   # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/postgres  # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/sqlite    # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -45,28 +50,22 @@ console.log(orm.em); // access EntityManager via `em` property
 
 > Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
 
-You can also provide paths where you store your entities via `entitiesDirs` array. Internally
-it uses [`globby`](https://github.com/sindresorhus/globby) so you can use 
-[globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns). 
+We can also provide paths where you store your entities via `entities` array. Internally
+it uses [`globby`](https://github.com/sindresorhus/globby) so we can use 
+[globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), 
+including negative globs. 
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['./dist/app/**/entities'],
+  entities: ['./dist/app/**/entities'],
   // ...
 });
 ```
 
-You should provide list of directories, not paths to entities directly. If you want to do that
-instead, you should use `entities` array and use `globby` manually:
+If you are experiencing problems with folder based discovery, try using `mikro-orm debug`
+CLI command to check what paths are actually being used.
 
-```typescript
-import globby from 'globby';
-
-const orm = await MikroORM.init({
-  entities: await (globby('./dist/app/**/entities/*.js')).map(require),
-  // ...
-});
-```
+> Since v4, you can also use file globs, like `./dist/app/**/entities/*.entity.js`.
 
 > You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
 > The object will be deeply merged, overriding all internally used options.
@@ -75,7 +74,7 @@ const orm = await MikroORM.init({
 
 Your entities will most probably contain circular dependencies (e.g. if you use bi-directional 
 relationship). While this is fine, there might be issues caused by wrong order of entities 
-during discovery, especially when you are using the folder based way (via `entitiesDirs`).
+during discovery, especially when you are using the folder based way.
 
 The errors caused by circular dependencies are usually similar to this one:
 
@@ -96,43 +95,78 @@ TypeError: Cannot read property 'name' of undefined
 
 If you encounter this, you have basically two options:
 
-- Use `entities` array to have control over the order of discovery. You might need to play with the actual 
-  order you provide here, or possibly with the order of import statements.
-- Use strings instead of references (e.g. `@OneToMany('Book', 'author)`). The downside here is that you 
-  will loose the typechecking capabilities of the decorators. 
+- Use entity references in `entities` array to have control over the order of discovery. 
+  You might need to play with the actual order you provide here, or possibly with the 
+  order of import statements.
+- Use strings instead of references (e.g. `@OneToMany('Book', 'author)`). The downside 
+  here is that you will lose the typechecking capabilities of the decorators. 
 
 ## Entity Discovery in TypeScript
 
-Internally, `MikroORM` uses [`ts-morph` to perform analysis](metadata-providers.md) of source files 
-of entities to sniff types of all properties. This process can be slow if your project contains lots 
-of files. To speed up the discovery process a bit, you can provide more accurate paths where your
-entity source files are: 
+In v4 the default metadata provider is `ReflectMetadataProvider`. If you want to use
+`ts-morph` based discovery (that reads actual TS types via the compiler API), you 
+need to install `@mikro-orm/reflection`.
 
 ```typescript
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+
 const orm = await MikroORM.init({
-  entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
-  entitiesDirsTs: ['./src/entities'], // path to your TS entities (source), relative to `baseDir`
+  metadataProvider: TsMorphMetadataProvider,
   // ...
 });
 ```
+
+Read more about the differences in [Metadata Providers section](metadata-providers.md).
+
+```typescript
+const orm = await MikroORM.init({
+  entities: ['./dist/entities/**/*.js'], // path to your JS entities (dist), relative to `baseDir`
+  entitiesTs: ['./src/entities/**/*.ts'], // path to your TS entities (source), relative to `baseDir`
+  // ...
+});
+```
+
+> It is important that `entities` will point to the compiled JS files, and `entitiesTs`
+> will point to the TS source files. You should not mix those. 
 
 You can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
 - `JavaScriptMetadataProvider` that allows you to manually provide the entity schema (mainly for Vanilla JS)
 
+> Using [`EntitySchema`](entity-schema.md) is another way to define your entities, which is better
+> suited than using `JavaScriptMetadataProvider`.
+
 ```typescript
 const orm = await MikroORM.init({
+  // default in v4, so not needed to specify explicitly
   metadataProvider: ReflectMetadataProvider,
   // ...
 });
 ```
 
+## Request Context
+
+Then you will need to fork Entity Manager for each request so their identity maps will not 
+collide. To do so, use the `RequestContext` helper:
+
+```typescript
+const app = express();
+
+app.use((req, res, next) => {
+  RequestContext.create(orm.em, next);
+});
+```
+
+More info about `RequestContext` is described [here](identity-map.md#request-context).
+
 ## Setting up the Commandline Tool
 
 MikroORM ships with a number of command line tools that are very helpful during development, 
-like Schema Generator and Entity Generator. You can call this command from the NPM binary 
+like `SchemaGenerator` and `EntityGenerator`. You can call this command from the NPM binary 
 directory or use `npx`:
+
+> To work with the CLI, first install `@mikro-orm/cli` package.
 
 ```sh
 $ node node_modules/.bin/mikro-orm
@@ -148,6 +182,11 @@ exports your ORM configuration. TypeScript is also supported, just enable `useTs
 as well as use different file name:
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
+
+MikroORM will always try to load the first available config file, based on the 
+order in `configPaths`. This means that if you specify the first item as the TS 
+config, but you do not have `ts-node` enabled and installed, it will fail to 
+load it.
 
 **`./package.json`**
 
@@ -207,19 +246,4 @@ To verify your setup, you can use `mikro-orm debug` command.
 > When you have CLI config properly set up, you can omit the `options` parameter
 > when calling `MikroORM.init()`.
 
-## Request Context
-
-Then you will need to fork Entity Manager for each request so their identity maps will not 
-collide. To do so, use the `RequestContext` helper:
-
-```typescript
-const app = express();
-
-app.use((req, res, next) => {
-  RequestContext.create(orm.em, next);
-});
-```
-
-More info about `RequestContext` is described [here](identity-map.md#request-context).
-
-Now you can start [defining your entities](defining-entities.md) (in one of the `entitiesDirs` folders).
+Now you can start [defining your entities](defining-entities.md).

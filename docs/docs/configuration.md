@@ -13,21 +13,28 @@ MikroORM.init({
 });
 ```
 
-When using `entitiesDirs`, you can optionally provide also set of directories with TS source files, 
-that will be used to look up missing types (see more at [Metadata Providers](metadata-providers.md)).
+We can also use folder based discovery by providing list of paths to the entities
+we want to discover (globs are supported as well). This way we also need to specify
+`entitiesTs`, where we point the paths to the TS source files instead of the JS 
+compiled files (see more at [Metadata Providers](metadata-providers.md)).
 
-> The `entitiesDirsTs` option is used only with the default `TsMorphMetadataProvider`. By default, all your 
-> source files will be scanned, based on your `tsconfig.json`. 
+> The `entitiesTs` option is used when running the app via `ts-node`, as the ORM 
+> needs to discover the TS files. Always specify this option if you use folder/file
+> based discovery. 
 
 ```typescript
 MikroORM.init({
-  entitiesDirs: ['./dist/modules/users/entities', './dist/modules/projects/entities'],
-  // optional, more specific paths will speed up the discovery
-  entitiesDirsTs: ['./src/modules/users/entities', './src/modules/projects/entities'],
+  entities: ['./dist/modules/users/entities', './dist/modules/projects/entities'],
+  entitiesTs: ['./src/modules/users/entities', './src/modules/projects/entities'],
   // optionally you can override the base directory (defaults to `process.cwd()`)
   baseDir: __dirname + '/..',
 });
 ```
+
+> Be careful when overriding the `baseDir` with dynamic values like `__dirname`, 
+> as you can end up with valid paths from `ts-node`, but invalid paths from `node`.
+> Ideally you should keep the default of `process.cwd()` there to always have the 
+> same base path regardless of how you run the app.
 
 By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. 
 You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. 
@@ -53,7 +60,7 @@ There are also some additional options how you can adjust the discovery process:
 MikroORM.init({
   discovery: {
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
-    requireEntitiesArray: true, // force usage of `entities` instead of `entitiesDirs`
+    requireEntitiesArray: true, // force usage of class refrences in `entities` instead of paths
     alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
   },
 });

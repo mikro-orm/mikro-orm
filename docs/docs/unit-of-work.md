@@ -44,12 +44,12 @@ first gets the primary key from the row and checks if it already has an object i
 
 The identity map has a second use-case. When you call `em.flush()`, MikroORM will 
 ask the identity map for all objects that are currently managed. This means you don't have to 
-call `em.persistLater()` over and over again to pass known objects to the 
+call `em.persist()` over and over again to pass known objects to the 
 `EntityManager`. This is a NO-OP for known entities, but leads to much code written that is 
 confusing to other developers.
 
 The following code WILL update your database with the changes made to the `Author` object, 
-even if you did not call `em.persistLater()`:
+even if you did not call `em.persist()`:
 
 ```typescript
 const authorRepository = orm.em.getRepository(Author);
@@ -69,7 +69,7 @@ from the database MikroORM will keep a copy of all the properties and associatio
 the `UnitOfWork`. 
 
 Now whenever you call `em.flush()` MikroORM will iterate over all entities you 
-previously marked for persisting via `em.persistLater()`. For each object it will
+previously marked for persisting via `em.persist()`. For each object it will
 compare the original property and association values with the values that are currently set 
 on the object. If changes are detected then the object is queued for a UPDATE operation. 
 Only the fields that actually changed are updated.
@@ -81,7 +81,7 @@ transactions automatically.
 
 When you call `em.flush()`, all computed changes are queried inside a database
 transaction (if supported by given driver). This means that you can control the boundaries 
-of transactions simply by calling `em.persistLater()` and once all your changes 
+of transactions simply by calling `em.persist()` and once all your changes 
 are ready, simply calling `flush()` will run them inside a transaction. 
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.

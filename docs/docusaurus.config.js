@@ -22,7 +22,8 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      algoliaOptions: { filters: `version:${versions[0]}` },
+      // algoliaOptions: { filters: `version:${versions[0]}` }, // TODO uncomment when v4 is released
+      algoliaOptions: { filters: `version:3.6` },
     },
     navbar: {
       title: '',
@@ -33,7 +34,8 @@ module.exports = {
       links: [
         {
           to: 'versions',
-          label: `${pkg.version}`,
+          // label: `${pkg.version}`, // TODO uncomment when v4 is released
+          label: '3.6.15',
           position: 'left',
           'data-type': 'versions',
         },
@@ -61,8 +63,9 @@ module.exports = {
           items: [
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
-            { label: 'Migration from v2 to v3', to: 'docs/upgrading-v2-to-v3' },
-            { label: 'Version 2.7 docs', to: 'docs/2.7/installation' },
+            { label: 'Migration from v3 to v4', to: 'docs/upgrading-v3-to-v4' },
+            // { label: 'Version 3.6 docs', to: 'docs/3.6/installation' }, // TODO uncomment when v4 is released
+            { label: 'Version 3.6 docs', to: 'docs/installation' },
           ],
         },
         {

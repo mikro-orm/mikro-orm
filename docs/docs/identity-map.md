@@ -53,6 +53,12 @@ any of your custom middleware that is using the ORM. There might be issues when 
 it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
 register the context after them. 
 
+Later on you can then access the request scoped `EntityManager` via `RequestContext.getEntityManager()`.
+This method is used under the hood automatically, so you should not need it. 
+
+> `RequestContext.getEntityManager()` will return `undefinded` if the context was
+> not started yet.
+
 ## Why is Request Context needed?
 
 Imagine you will use single Identity Map throughout your application. It will be shared across 

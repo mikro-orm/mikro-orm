@@ -13,7 +13,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entities: [Author, Book, ...],
   dbName: 'my-db-name',
   type: 'mysql', // or 'sqlite' or 'postgresql' or 'mariadb'
 });
@@ -29,7 +29,7 @@ driver class via `driver` configuration option:
 import { MyCustomDriver } from './MyCustomDriver.ts';
 
 const orm = await MikroORM.init({
-  entitiesDirs: ['entities'], // relative to `baseDir`
+  entities: [Author, Book, ...],
   dbName: 'my-db-name',
   driver: MyCustomDriver, // provide the class, not just its name
 });
