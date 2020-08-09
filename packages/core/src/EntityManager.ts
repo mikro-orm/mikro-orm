@@ -23,7 +23,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
-  private readonly eventManager = new EventManager(this.config.get('subscribers'));
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
@@ -31,7 +30,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   constructor(readonly config: Configuration,
               private readonly driver: D,
               private readonly metadata: MetadataStorage,
-              private readonly useContext = true) { }
+              private readonly useContext = true,
+              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
 
   /**
    * Gets the Driver instance used by this EntityManager
@@ -608,7 +608,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @param useContext use request context? should be used only for top level request scope EM, defaults to false
    */
   fork(clear = true, useContext = false): D[typeof EntityManagerType] {
-    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext);
+    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext, this.eventManager);
     em.filters = { ...this.filters };
     em.filterParams = Utils.copy(this.filterParams);
 
