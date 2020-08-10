@@ -48,6 +48,7 @@ module.exports = {
       'usage-with-mongo',
     ],
     'Recipes': [
+      'quick-start',
       'usage-with-nestjs',
       'usage-with-js',
       'custom-driver',
