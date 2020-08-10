@@ -101,6 +101,8 @@ const books = await orm.em.createQueryBuilder(Book).select('*').getResult();
 console.log(books[0] instanceof Book); // true
 ```
 
+> You can also use `qb.getResultList()` which is alias to `qb.getResult()`.
+
 ## Mapping Raw Results to Entities
 
 Another way to create entity from raw results (that are not necessarily mapped to entity properties)

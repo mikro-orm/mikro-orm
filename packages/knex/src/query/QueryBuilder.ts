@@ -283,6 +283,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   async getResult(): Promise<T[]> {
+    return this.getResultList();
+  }
+
+  async getResultList(): Promise<T[]> {
     const res = await this.execute<T[]>('all', true);
     return res.map(r => this.em!.map<T>(this.entityName, r));
   }

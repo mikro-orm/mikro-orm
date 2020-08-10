@@ -719,6 +719,8 @@ describe('EntityManagerMySql', () => {
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
     expect(res2).toBeNull();
+    const res3 = await qb1.select('*').getResultList();
+    expect(res3).toHaveLength(1);
   });
 
   test('stable results of serialization', async () => {
