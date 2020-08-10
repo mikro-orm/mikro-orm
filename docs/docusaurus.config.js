@@ -53,6 +53,12 @@ module.exports = {
           position: 'right',
           title: 'View on GitHub',
         },
+        {
+          href: 'https://twitter.com/MikroORM',
+          label: 'Twitter',
+          position: 'right',
+          title: 'Twitter',
+        },
       ],
     },
     footer: {
