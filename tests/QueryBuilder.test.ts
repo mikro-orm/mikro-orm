@@ -1403,6 +1403,12 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` desc nulls last, `e0`.`type` asc nulls last');
   });
 
+  test('order by custom expression', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').orderBy({ 'length(name)': QueryOrder.DESC, 'type': QueryOrder.ASC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
+  });
+
   test('pg array operators', async () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, BaseEntity2, Configuration2],

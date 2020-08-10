@@ -395,10 +395,10 @@ export class QueryBuilderHelper {
       Utils.splitPrimaryKeys(field).forEach(f => {
         const direction = orderBy[k];
         const prop = this.getProperty(f, alias);
-        const noPrefix = prop && prop.persist === false;
+        const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
         const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
-        const rawColumn = column.split('.').map(e => this.knex.ref(e)).join('.');
+        const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
         ret.push(`${rawColumn} ${order.toLowerCase()}`);
       });
