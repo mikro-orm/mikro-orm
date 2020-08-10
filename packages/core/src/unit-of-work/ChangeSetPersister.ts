@@ -1,16 +1,18 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
 import { EntityIdentifier, wrap } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
 import { Utils, ValidationError } from '../utils';
 import { IDatabaseDriver } from '../drivers';
+import { Hydrator } from '../hydration';
 
 export class ChangeSetPersister {
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly identifierMap: Dictionary<EntityIdentifier>,
-              private readonly metadata: MetadataStorage) { }
+              private readonly metadata: MetadataStorage,
+              private readonly hydrator: Hydrator) { }
 
   async persistToDatabase<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.get(changeSet.name);
@@ -110,11 +112,14 @@ export class ChangeSetPersister {
    */
   private mapReturnedValues<T extends AnyEntity<T>>(entity: T, res: QueryResult, meta: EntityMetadata<T>): void {
     if (res.row && Object.keys(res.row).length > 0) {
-      Object.values<EntityProperty>(meta.properties).forEach(prop => {
+      const data = Object.values<EntityProperty>(meta.properties).reduce((data, prop) => {
         if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(entity[prop.name], true)) {
-          entity[prop.name] = res.row![prop.fieldNames[0]];
+          data[prop.name] = res.row![prop.fieldNames[0]];
         }
-      });
+
+        return data;
+      }, {} as Dictionary);
+      this.hydrator.hydrate<T>(entity, meta, data as EntityData<T>, false);
     }
   }
 
