@@ -13,7 +13,7 @@ driver package as well:
 yarn add @mikro-orm/core @mikro-orm/mongodb   # for mongo
 yarn add @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
 yarn add @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/postgres  # for postgresql
+yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
 yarn add @mikro-orm/core @mikro-orm/sqlite    # for sqlite
 ```
 
@@ -23,7 +23,7 @@ or
 npm i -s @mikro-orm/core @mikro-orm/mongodb   # for mongo
 npm i -s @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
 npm i -s @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/postgres  # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
 npm i -s @mikro-orm/core @mikro-orm/sqlite    # for sqlite
 ```
 
