@@ -83,14 +83,14 @@ To select driver, you can either use `type` option, or provide the driver class 
 | `postgresql` | `PostgreSqlDriver` | `pg^7.0.0` | - |
 | `sqlite` | `SqliteDriver` | `sqlite3^4.0.0` | - |
 
-> Driver and connection implementations are not directly exported from `mikro-orm` module. 
-> You can import them from `mikro-orm/dist/drivers`.
+> Driver and connection implementations are not directly exported from `@mikro-orm/core` module. 
+> You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
 > You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
 > The object will be deeply merged, overriding all internally used options.
 
 ```typescript
-import { MySqlDriver } from 'mikro-orm/dist/drivers/MySqlDriver';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 MikroORM.init({
   driver: MySqlDriver,

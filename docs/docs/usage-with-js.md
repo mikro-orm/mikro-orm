@@ -13,7 +13,7 @@ Here is an example of such entity:
 **`./entities/Author.js`**
 
 ```javascript
-const { Collection, EntitySchema } = require('mikro-orm');
+const { Collection, EntitySchema } = require('@mikro-orm/core');
 const { Book } = require('./Book');
 const { BaseEntity } = require('./BaseEntity');
 

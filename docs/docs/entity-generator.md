@@ -16,7 +16,7 @@ Or you can create simple script where you initialize MikroORM like this:
 **`./generate-entities.ts`**
 
 ```typescript
-import { MikroORM } from 'mikro-orm';
+import { MikroORM } from '@mikro-orm/core';
 
 (async () => {
   const orm = await MikroORM.init({

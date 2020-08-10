@@ -79,7 +79,7 @@ Or you can create a simple script where you initialize MikroORM like this:
 **`./migrate.ts`**
 
 ```typescript
-import { MikroORM } from 'mikro-orm';
+import { MikroORM } from '@mikro-orm/core';
 
 (async () => {
   const orm = await MikroORM.init({

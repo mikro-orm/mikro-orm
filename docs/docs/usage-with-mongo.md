@@ -78,8 +78,8 @@ $ run-rs -v 4.2.3
 ```
 
 ```typescript
-import { MikroORM } from 'mikro-orm';
-import { MongoDriver } from 'mikro-orm/dist/drivers/MongoDriver';
+import { MikroORM } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 // make sure to provide the MongoDriver type hint
 const orm = await MikroORM.init<MongoDriver>({

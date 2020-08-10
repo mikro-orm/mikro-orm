@@ -19,7 +19,7 @@ book.author = orm.em.getReference<Author>(Author, '...id...');
 Same result can be easily achieved with `entity.assign()`:
 
 ```typescript
-import { wrap } from 'mikro-orm';
+import { wrap } from '@mikro-orm/core';
 
 wrap(book).assign({ 
   title: 'Better Book 1', 
@@ -34,7 +34,7 @@ To use `entity.assign()` on not managed entities, you need to provide `EntityMan
 instance explicitly: 
 
 ```typescript
-import { wrap } from 'mikro-orm';
+import { wrap } from '@mikro-orm/core';
 
 const book = new Book();
 wrap(book).assign({ 
@@ -48,7 +48,7 @@ e.g. it does not merge things recursively. To enable deep merging of object prop
 use second parameter to enable `mergeObjects` flag:
 
 ```typescript
-import { wrap } from 'mikro-orm';
+import { wrap } from '@mikro-orm/core';
 
 book.meta = { foo: 1, bar: 2 };
 

@@ -25,7 +25,7 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
   By default returns `columnType` of given property.
 
 ```typescript
-import { Type, Platform, EntityProperty, ValidationError } from 'mikro-orm';
+import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
 export class DateType extends Type<Date, string> {
 

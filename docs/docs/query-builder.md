@@ -44,8 +44,8 @@ type cast the connection to `AbstractSqlConnection` (or the actual implementatio
 e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance, 
 which will be then automatically inferred in `em.getConnection()` method.
 
-> Driver and connection implementations are not directly exported from `mikro-orm` module. 
-> You can import them from `mikro-orm/dist` (e.g. `import { PostgreSqlDriver } from 'mikro-orm/dist/drivers/PostgreSqlDriver'`).
+> Driver and connection implementations are not directly exported from `@mikro-orm/core` module. 
+> You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
 ```typescript
 const conn = orm.em.getConnection() as AbstractSqlConnection;

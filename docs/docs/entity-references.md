@@ -58,7 +58,7 @@ for you, making sure the entity is initialized first, then returning the value o
 directly. 
 
 ```typescript
-import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from 'mikro-orm';
+import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
 
 @Entity()
 export class Book {

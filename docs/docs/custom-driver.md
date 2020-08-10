@@ -10,7 +10,7 @@ To do so, you will need to design 4 classes:
 Platform is a class that provides information about available features of given driver: 
 
 ```typescript
-import { Platform } from 'mikro-orm';
+import { Platform } from '@mikro-orm/core';
 
 export class MyCustomPlatform extends Platform {
   
@@ -36,7 +36,7 @@ export class MyCustomPlatform extends Platform {
 Part of platform is a `SchemaHelper`, that provides information about how to build schema.
 
 ```typescript
-import { SchemaHelper } from 'mikro-orm';
+import { SchemaHelper } from '@mikro-orm/core';
 
 export class MyCustomSchemaHelper extends SchemaHelper {
   
@@ -64,7 +64,7 @@ export class MyCustomSchemaHelper extends SchemaHelper {
 Next part is connection wrapper, that will be responsible for querying the database:
 
 ```typescript
-import { Connection } from 'mikro-orm';
+import { Connection } from '@mikro-orm/core';
 
 export class MyCustomConnection extends Connection {
   
@@ -88,7 +88,7 @@ If you want to have absolute control, you can implement the whole driver yoursel
 `IDatabaseDriver` interface. 
 
 ```typescript
-import { DatabaseDriver } from 'mikro-orm';
+import { DatabaseDriver } from '@mikro-orm/core';
 
 export class MyCustomSchemaHelper extends DatabaseDriver {
 
