@@ -211,6 +211,7 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 
 ```json
 "experimentalDecorators": true,
+"emitDecoratorMetadata": true,
 "esModuleInterop": true
 ```
 

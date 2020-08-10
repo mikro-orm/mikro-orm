@@ -10,21 +10,21 @@ driver package as well:
 > in the driver package.
 
 ```sh
-yarn add @mikro-orm/core @mikro-orm/mongodb   # for mongo
-yarn add @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
-yarn add @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
 yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-yarn add @mikro-orm/core @mikro-orm/sqlite    # for sqlite
+yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 or
 
 ```sh
-npm i -s @mikro-orm/core @mikro-orm/mongodb   # for mongo
-npm i -s @mikro-orm/core @mikro-orm/mysql     # for mysql/mariadb
-npm i -s @mikro-orm/core @mikro-orm/mariadb   # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
 npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
-npm i -s @mikro-orm/core @mikro-orm/sqlite    # for sqlite
+npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
