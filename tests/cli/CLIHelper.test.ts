@@ -88,6 +88,13 @@ describe('CLIHelper', () => {
     await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./mikro-orm.config.js']`);
   });
 
+  test('registerTsNode works with tsconfig.json with comments', async () => {
+    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
+    requireFromMock.mockImplementation(() => ({ register: jest.fn() }));
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
+    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
+  });
+
   test('gets ORM configuration [no package.json]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm.config.js'));

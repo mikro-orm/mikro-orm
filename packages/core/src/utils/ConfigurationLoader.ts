@@ -1,5 +1,6 @@
-import { pathExists } from 'fs-extra';
-import path from 'path';
+import { pathExists, readFile } from 'fs-extra';
+import { join, isAbsolute } from 'path';
+import stripJsonComments from 'strip-json-comments';
 import { IDatabaseDriver } from '../drivers';
 import { Configuration } from './Configuration';
 import { Utils } from './Utils';
@@ -56,8 +57,8 @@ export class ConfigurationLoader {
     return paths;
   }
 
-  static async registerTsNode(configPath = 'tsconfig.json') {
-    const tsConfigPath = path.join(process.cwd(), configPath);
+  static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
+    const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
     Utils.requireFrom('ts-node', tsConfigPath).register({
       project: tsConfigPath,
@@ -65,8 +66,7 @@ export class ConfigurationLoader {
     });
 
     if (await pathExists(tsConfigPath)) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const tsConfig = require(tsConfigPath);
+      const tsConfig = await this.getTsConfig(tsConfigPath);
       /* istanbul ignore next */
       const paths = tsConfig.compilerOptions?.paths;
 
@@ -77,6 +77,11 @@ export class ConfigurationLoader {
         });
       }
     }
+  }
+
+  static async getTsConfig(tsConfigPath: string): Promise<Dictionary> {
+    const json = await readFile(tsConfigPath);
+    return JSON.parse(stripJsonComments(json.toString()));
   }
 
 }
