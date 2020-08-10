@@ -1,5 +1,5 @@
 import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
-import { EntityMetadata, EntityProperty, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
+import { EntityMetadata, EntityProperty, MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -23,9 +23,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       return await this.getExistingSourceFile(path, '.d.ts', false) || await this.getExistingSourceFile(path, '.ts');
     }
 
-    const tsPath = path.match(/\/[^/]+$/)![0].replace(/\.js$/, ext);
+    const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
 
-    return (await this.getSourceFile(tsPath, path, validate))!;
+    return (await this.getSourceFile(tsPath, validate))!;
   }
 
   protected async initProperties(meta: EntityMetadata): Promise<void> {
@@ -71,12 +71,13 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     /* istanbul ignore next */
     if (!cls) {
-      throw new Error(`Source class for entity ${meta.className} not found. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
     const properties = cls.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
 
+    /* istanbul ignore next */
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
     }
@@ -88,15 +89,15 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return { type, optional };
   }
 
-  private async getSourceFile(tsPath: string, file: string, validate: boolean): Promise<SourceFile | undefined> {
+  private async getSourceFile(tsPath: string, validate: boolean): Promise<SourceFile | undefined> {
     if (!this.sources) {
       await this.initSourceFiles();
     }
 
-    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath));
+    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\./, '')));
 
     if (!source && validate) {
-      throw new Error(`Source file for entity '${file}' not found, check your 'entitiesTs' option. If you are using webpack, see https://bit.ly/35pPDNn`);
+      throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
     }
 
     return source;

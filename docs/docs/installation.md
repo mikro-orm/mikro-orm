@@ -130,6 +130,9 @@ const orm = await MikroORM.init({
 > It is important that `entities` will point to the compiled JS files, and `entitiesTs`
 > will point to the TS source files. You should not mix those. 
 
+> For `ts-morph` discovery to work in production, we need to deploy `.d.ts` declaration
+> files. Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
+
 You can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
@@ -267,6 +270,7 @@ To verify your setup, you can use `mikro-orm debug` command.
 > When you have CLI config properly set up, you can omit the `options` parameter
 > when calling `MikroORM.init()`.
 
-> Note: When importing a dump file you need `multipleStatements: true` in your configuration. Please check the configuartion documentation for more information.
+> Note: When importing a dump file you need `multipleStatements: true` in your
+> configuration. Please check the configuartion documentation for more information.
 
 Now you can start [defining your entities](defining-entities.md).

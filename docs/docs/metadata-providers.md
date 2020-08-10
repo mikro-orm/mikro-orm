@@ -32,7 +32,8 @@ will be used automatically, or if you explicitly pass `tsNode: true` in the conf
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so we 
 > need to ship them in the production build. TS source files are no longer 
-> needed (since v4).
+> needed (since v4). Be sure to enable `compilerOptions.declaration` in your
+> `tsconfig.json`.
 
 After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, 
 `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files. 

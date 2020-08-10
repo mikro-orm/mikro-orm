@@ -334,4 +334,4 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   metadataProvider: { new (config: Configuration): MetadataProvider };
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> | MikroORMOptions<D>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> & Partial<MikroORMOptions<D>>;
