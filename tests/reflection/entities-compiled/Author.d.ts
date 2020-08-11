@@ -4,7 +4,7 @@ import { Collection } from '../TsMorphMetadataProvider.test';
 export declare class Author extends BaseEntity {
     name: string;
     email: string;
-    age?: number;
+    age: number | null;
     termsAccepted: boolean;
     optional?: boolean;
     identities?: string[];

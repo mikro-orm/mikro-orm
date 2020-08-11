@@ -13,7 +13,7 @@ export class Author extends BaseEntity {
   email: string;
 
   @Property()
-  age?: number;
+  age: number | null = null;
 
   @Property()
   termsAccepted = false;

@@ -3,7 +3,12 @@ import { EntityMetadata, EntityProperty, MetadataError, MetadataProvider, Metada
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
-  private readonly project = new Project();
+  private readonly project = new Project({
+    compilerOptions: {
+      strictNullChecks: true,
+    },
+  });
+
   private sources!: SourceFile[];
 
   useCache(): boolean {
@@ -82,9 +87,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       return { type: prop.type, optional: prop.nullable };
     }
 
-    const type = property.getType().getText(property);
+    let type = property.getType().getText(property);
+    const union = type.split(' | ');
     /* istanbul ignore next */
-    const optional = property.hasQuestionToken?.();
+    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
+    type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
     return { type, optional };
   }
