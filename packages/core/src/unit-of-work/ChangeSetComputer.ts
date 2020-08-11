@@ -11,7 +11,7 @@ export class ChangeSetComputer {
               private readonly originalEntityData: Dictionary<EntityData<AnyEntity>>,
               private readonly identifierMap: Dictionary<EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
-              private readonly removeStack: AnyEntity[],
+              private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform) { }
 
@@ -57,7 +57,7 @@ export class ChangeSetComputer {
     // remove items from collection based on removeStack
     if (Utils.isCollection<T>(target) && target.isInitialized()) {
       target.getItems()
-        .filter(item => this.removeStack.includes(item))
+        .filter(item => this.removeStack.has(item))
         .forEach(item => target.remove(item));
     }
 

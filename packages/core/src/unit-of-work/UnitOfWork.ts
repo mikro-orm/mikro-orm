@@ -18,12 +18,12 @@ export class UnitOfWork {
   /** map of wrapped primary keys so we can compute change set without eager commit */
   private readonly identifierMap = Object.create(null) as Dictionary<EntityIdentifier>;
 
-  private readonly persistStack: AnyEntity[] = [];
-  private readonly removeStack: AnyEntity[] = [];
-  private readonly orphanRemoveStack: AnyEntity[] = [];
+  private readonly persistStack = new Set<AnyEntity>();
+  private readonly removeStack = new Set<AnyEntity>();
+  private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets: ChangeSet<AnyEntity>[] = [];
   private readonly collectionUpdates: Collection<AnyEntity>[] = [];
-  private readonly extraUpdates: [AnyEntity, string, AnyEntity | Reference<AnyEntity>][] = [];
+  private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform);
@@ -79,11 +79,11 @@ export class UnitOfWork {
     return this.originalEntityData;
   }
 
-  getPersistStack(): AnyEntity[] {
+  getPersistStack(): Set<AnyEntity> {
     return this.persistStack;
   }
 
-  getRemoveStack(): AnyEntity[] {
+  getRemoveStack(): Set<AnyEntity> {
     return this.removeStack;
   }
 
@@ -101,7 +101,7 @@ export class UnitOfWork {
     const wrapped = wrap(entity, true);
     this.initIdentifier(entity);
     this.changeSets.push(cs);
-    this.cleanUpStack(this.persistStack, entity);
+    this.persistStack.delete(entity);
     this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
   }
 
@@ -122,11 +122,11 @@ export class UnitOfWork {
   }
 
   persist<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = [], checkRemoveStack = false): void {
-    if (this.persistStack.includes(entity)) {
+    if (this.persistStack.has(entity)) {
       return;
     }
 
-    if (checkRemoveStack && this.removeStack.includes(entity)) {
+    if (checkRemoveStack && this.removeStack.has(entity)) {
       return;
     }
 
@@ -134,21 +134,21 @@ export class UnitOfWork {
       this.identifierMap[wrap(entity, true).__uuid] = new EntityIdentifier();
     }
 
-    this.persistStack.push(entity);
-    this.cleanUpStack(this.removeStack, entity);
+    this.persistStack.add(entity);
+    this.removeStack.delete(entity);
     this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack });
   }
 
   remove(entity: AnyEntity, visited: AnyEntity[] = []): void {
-    if (this.removeStack.includes(entity)) {
+    if (this.removeStack.has(entity)) {
       return;
     }
 
     if (wrap(entity, true).__primaryKey) {
-      this.removeStack.push(entity);
+      this.removeStack.add(entity);
     }
 
-    this.cleanUpStack(this.persistStack, entity);
+    this.persistStack.delete(entity);
     this.unsetIdentity(entity);
     this.cascade(entity, Cascade.REMOVE, visited);
   }
@@ -164,7 +164,7 @@ export class UnitOfWork {
     await this.em.getEventManager().dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
     // nothing to do, do not start transaction
-    if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.length === 0) {
+    if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.size === 0) {
       await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
       this.postCommitCleanup();
 
@@ -217,14 +217,14 @@ export class UnitOfWork {
     this.changeSets.length = 0;
 
     Object.values(this.identityMap)
-      .filter(entity => !this.removeStack.includes(entity) && !this.orphanRemoveStack.includes(entity))
+      .filter(entity => !this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity))
       .forEach(entity => this.persist(entity, [], true));
 
-    while (this.persistStack.length) {
-      this.findNewEntities(this.persistStack.shift()!);
+    for (const entity of this.persistStack) {
+      this.findNewEntities(entity);
     }
 
-    for (const entity of Object.values(this.orphanRemoveStack)) {
+    for (const entity of this.orphanRemoveStack) {
       this.remove(entity);
     }
 
@@ -235,11 +235,11 @@ export class UnitOfWork {
   }
 
   scheduleOrphanRemoval(entity: AnyEntity): void {
-    this.orphanRemoveStack.push(entity);
+    this.orphanRemoveStack.add(entity);
   }
 
   cancelOrphanRemoval(entity: AnyEntity): void {
-    this.cleanUpStack(this.orphanRemoveStack, entity);
+    this.orphanRemoveStack.delete(entity);
   }
 
   private findNewEntities<T extends AnyEntity<T>>(entity: T, visited: AnyEntity[] = []): void {
@@ -250,7 +250,7 @@ export class UnitOfWork {
     visited.push(entity);
     const wrapped = wrap(entity, true);
 
-    if (!wrapped.isInitialized() || this.removeStack.includes(entity) || this.orphanRemoveStack.includes(entity)) {
+    if (!wrapped.isInitialized() || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
       return;
     }
 
@@ -265,7 +265,7 @@ export class UnitOfWork {
 
     if (changeSet) {
       this.changeSets.push(changeSet);
-      this.cleanUpStack(this.persistStack, entity);
+      this.persistStack.delete(entity);
       this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
     }
   }
@@ -300,7 +300,7 @@ export class UnitOfWork {
 
   private processToManyReference<T extends AnyEntity<T>>(reference: Collection<AnyEntity>, visited: AnyEntity[], parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(reference, visited)) {
-      this.extraUpdates.push([parent, prop.name, reference]);
+      this.extraUpdates.add([parent, prop.name, reference]);
       parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
 
       return;
@@ -321,7 +321,7 @@ export class UnitOfWork {
           const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
           if (isScheduledForInsert) {
-            this.extraUpdates.push([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+            this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
             delete changeSet.entity[prop.name];
             delete changeSet.payload[prop.name];
           }
@@ -347,25 +347,14 @@ export class UnitOfWork {
     await this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
   }
 
-  /**
-   * clean up persist/remove stack from previous persist/remove calls for this entity done before flushing
-   */
-  private cleanUpStack(stack: AnyEntity[], entity: AnyEntity): void {
-    const idx = stack.indexOf(entity);
-
-    if (idx !== -1) {
-      stack.splice(idx, 1);
-    }
-  }
-
   private postCommitCleanup(): void {
     Object.keys(this.identifierMap).forEach(key => delete this.identifierMap[key]);
-    this.persistStack.length = 0;
-    this.removeStack.length = 0;
-    this.orphanRemoveStack.length = 0;
+    this.persistStack.clear();
+    this.removeStack.clear();
+    this.orphanRemoveStack.clear();
     this.changeSets.length = 0;
     this.collectionUpdates.length = 0;
-    this.extraUpdates.length = 0;
+    this.extraUpdates.clear();
     this.working = false;
   }
 
@@ -485,8 +474,7 @@ export class UnitOfWork {
       await this.commitChangeSet(changeSet, tx);
     }
 
-    while (this.extraUpdates.length) {
-      const extraUpdate = this.extraUpdates.shift()!;
+    for (const extraUpdate of this.extraUpdates) {
       extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
       const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
 
@@ -516,7 +504,7 @@ export class UnitOfWork {
       return arr.indexOf(a[key]) - arr.indexOf(b[key]);
     };
 
-    const copy = this.changeSets.slice(); // make copy to maintain commitOrder
+    const copy = this.changeSets.slice(); // make copy to maintain commit order
     this.changeSets.sort((a, b) => {
       if (a.type !== b.type) {
         return compare(copy, typeOrder, a, b, 'type');

@@ -97,19 +97,14 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.persist(author);
-    // @ts-ignore
-    expect(uow.persistStack.length).toBe(1);
+    expect(uow.getPersistStack().size).toBe(1);
     uow.persist(author);
-    // @ts-ignore
-    expect(uow.persistStack.length).toBe(1);
+    expect(uow.getPersistStack().size).toBe(1);
     uow.remove(author);
-    // @ts-ignore
-    expect(uow.persistStack.length).toBe(0);
-    // @ts-ignore
-    expect(uow.removeStack.length).toBe(1);
+    expect(uow.getPersistStack().size).toBe(0);
+    expect(uow.getRemoveStack().size).toBe(1);
     uow.remove(author);
-    // @ts-ignore
-    expect(uow.removeStack.length).toBe(1);
+    expect(uow.getRemoveStack().size).toBe(1);
   });
 
   test('getters', async () => {
@@ -117,15 +112,15 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
     author.id = '00000001885f0a3cc37dc9f0';
     uow.persist(author);
-    expect(uow.getPersistStack()).toEqual([author]);
-    expect(uow.getRemoveStack()).toEqual([]);
+    expect([...uow.getPersistStack()]).toEqual([author]);
+    expect([...uow.getRemoveStack()]).toEqual([]);
     expect(uow.getOriginalEntityData()).toEqual({});
     uow.merge(author);
     expect(uow.getOriginalEntityData()).toMatchObject({
       [wrap(author, true).__uuid]: { name: 'test', email: 'test' },
     });
     uow.remove(author);
-    expect(uow.getRemoveStack()).toEqual([author]);
+    expect([...uow.getRemoveStack()]).toEqual([author]);
     expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();
     expect(() => uow.computeChangeSet(author)).not.toThrow();
     expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();
