@@ -44,7 +44,7 @@ export class CLIHelper {
     // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
-      .version(CLIHelper.getORMVersion())
+      .version(Utils.getORMVersion())
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .alias('v', 'version')
@@ -64,17 +64,6 @@ export class CLIHelper {
       .command(new DebugCommand())
       .recommendCommands()
       .strict();
-  }
-
-  static getORMVersion(): string {
-    /* istanbul ignore next */
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('../package.json').version;
-    } catch {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('./package.json').version;
-    }
   }
 
   static getNodeVersion(): string {
@@ -105,7 +94,7 @@ export class CLIHelper {
 
   static async dumpDependencies() {
     CLIHelper.dump(' - dependencies:');
-    CLIHelper.dump(`   - mikro-orm ${c.green(CLIHelper.getORMVersion())}`);
+    CLIHelper.dump(`   - mikro-orm ${c.green(Utils.getORMVersion())}`);
     CLIHelper.dump(`   - node ${c.green(CLIHelper.getNodeVersion())}`);
 
     if (await pathExists(process.cwd() + '/package.json')) {

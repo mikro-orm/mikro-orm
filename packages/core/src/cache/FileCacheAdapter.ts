@@ -6,6 +6,9 @@ import { Utils } from '../utils';
 
 export class FileCacheAdapter implements CacheAdapter {
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  private readonly VERSION = Utils.getORMVersion();
+
   constructor(private readonly options: { cacheDir: string },
               private readonly baseDir: string,
               private readonly pretty = false) { }
@@ -40,7 +43,7 @@ export class FileCacheAdapter implements CacheAdapter {
     ]);
 
     const opts = this.pretty ? { spaces: 2 } : {};
-    await writeJSON(path!, { data, origin, hash }, opts);
+    await writeJSON(path!, { data, origin, hash, version: this.VERSION }, opts);
   }
 
   /**
@@ -66,7 +69,7 @@ export class FileCacheAdapter implements CacheAdapter {
 
     const contents = await readFile(origin);
 
-    return Utils.hash(contents.toString());
+    return Utils.hash(contents.toString() + this.VERSION);
   }
 
 }
