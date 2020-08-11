@@ -351,10 +351,10 @@ export class UnitOfWork {
    * clean up persist/remove stack from previous persist/remove calls for this entity done before flushing
    */
   private cleanUpStack(stack: AnyEntity[], entity: AnyEntity): void {
-    for (const index in stack) {
-      if (stack[index] === entity) {
-        stack.splice(+index, 1);
-      }
+    const idx = stack.indexOf(entity);
+
+    if (idx !== -1) {
+      stack.splice(idx, 1);
     }
   }
 
