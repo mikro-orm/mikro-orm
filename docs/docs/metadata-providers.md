@@ -140,6 +140,8 @@ which requires `@types/mongodb` to be installed.
 
 ## JavaScriptMetadataProvider
 
+> `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
+
 This provider should be used only if you are not using TypeScript at all and therefore you do 
 not use decorators to annotate your properties. It will require you to specify the whole schema 
 manually. 

@@ -3,6 +3,9 @@ import { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../entity';
 
+/**
+ * @deprecated use EntitySchema instead
+ */
 export class JavaScriptMetadataProvider extends MetadataProvider {
 
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
