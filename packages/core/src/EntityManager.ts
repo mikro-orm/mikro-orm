@@ -400,7 +400,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>);
 
     // add to IM immediately - needed for self-references that can be part of `data` (do not trigger cascade merge)
-    this.getUnitOfWork().merge(entity, [entity]);
+    this.getUnitOfWork().merge(entity, new Set([entity]));
     EntityAssigner.assign(entity, data as EntityData<T>, { onlyProperties: true, merge: true });
     this.getUnitOfWork().merge(entity); // add to IM again so we have correct payload saved for change set computation
 
@@ -456,7 +456,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const entity = this.getEntityFactory().createReference<T>(entityName, id);
-    this.getUnitOfWork().merge(entity, [entity], false);
+    this.getUnitOfWork().merge(entity, new Set([entity]), false);
 
     if (wrapped) {
       return Reference.create(entity);
