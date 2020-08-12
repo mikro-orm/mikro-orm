@@ -47,7 +47,7 @@
     "access": "public"
   },
   "dependencies": {
-    "acorn-loose": "^7.1.0",
+    "acorn-loose": "^8.0.0",
     "acorn-walk": "^8.0.0",
     "ansi-colors": "^4.1.1",
     "clone": "^2.1.2",
