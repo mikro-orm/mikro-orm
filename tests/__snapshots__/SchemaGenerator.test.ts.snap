@@ -21,6 +21,8 @@ alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
 alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
 alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);
 
+create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
+
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;
 alter table \`car2\` add index \`car2_name_index\`(\`name\`);
 alter table \`car2\` add index \`car2_year_index\`(\`year\`);
@@ -180,6 +182,7 @@ drop table if exists \`user2_sandwiches\`;
 drop table if exists \`user2\`;
 drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
+drop table if exists \`dummy2\`;
 drop table if exists \`foo_param2\`;
 drop table if exists \`foo_bar2\`;
 drop table if exists \`foo_baz2\`;
@@ -211,6 +214,7 @@ drop table if exists \`user2_sandwiches\`;
 drop table if exists \`user2\`;
 drop table if exists \`car_owner2\`;
 drop table if exists \`car2\`;
+drop table if exists \`dummy2\`;
 drop table if exists \`foo_param2\`;
 drop table if exists \`foo_bar2\`;
 drop table if exists \`foo_baz2\`;
@@ -233,6 +237,8 @@ create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` in
 alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
 alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
 alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);
+
+create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;
 alter table \`car2\` add index \`car2_name_index\`(\`name\`);
@@ -917,6 +923,8 @@ create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` in
 alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);
 alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);
 alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);
+
+create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;
 alter table \`car2\` add index \`car2_name_index\`(\`name\`);

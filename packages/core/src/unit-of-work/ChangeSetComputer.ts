@@ -19,6 +19,10 @@ export class ChangeSetComputer {
     const changeSet = { entity } as ChangeSet<T>;
     const meta = this.metadata.get(entity.constructor.name);
 
+    if (meta.readonly) {
+      return null;
+    }
+
     changeSet.name = meta.name;
     changeSet.type = this.originalEntityData[wrap(entity, true).__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;

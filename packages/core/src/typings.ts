@@ -182,6 +182,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   useCache: boolean;
   filters: Dictionary<FilterDef<T>>;
   comment?: string;
+  readonly?: boolean;
 }
 
 export interface ISchemaGenerator {

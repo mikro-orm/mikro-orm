@@ -12,6 +12,7 @@ drop table if exists `foo_baz2`;
 drop table if exists `foo_param2`;
 drop table if exists `configuration2`;
 drop table if exists `car2`;
+drop table if exists `dummy2`;
 drop table if exists `car_owner2`;
 drop table if exists `user2`;
 drop table if exists `base_user2`;
@@ -79,6 +80,8 @@ create table `configuration2` (`property` varchar(255) not null, `test_id` int(1
 alter table `configuration2` add index `configuration2_property_index`(`property`);
 alter table `configuration2` add index `configuration2_test_id_index`(`test_id`);
 alter table `configuration2` add primary key `configuration2_pkey`(`property`, `test_id`);
+
+create table `dummy2` (`id` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
 create table `car2` (`name` varchar(100) not null, `year` int(11) unsigned not null, `price` int(11) not null) default character set utf8mb4 engine = InnoDB;
 alter table `car2` add index `car2_name_index`(`name`);
