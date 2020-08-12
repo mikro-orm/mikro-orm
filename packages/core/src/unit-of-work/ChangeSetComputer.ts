@@ -1,6 +1,6 @@
 import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
@@ -8,8 +8,8 @@ import { Platform } from '../platforms';
 export class ChangeSetComputer {
 
   constructor(private readonly validator: EntityValidator,
-              private readonly originalEntityData: Dictionary<EntityData<AnyEntity>>,
-              private readonly identifierMap: Dictionary<EntityIdentifier>,
+              private readonly originalEntityData: Map<string, EntityData<AnyEntity>>,
+              private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
@@ -24,12 +24,12 @@ export class ChangeSetComputer {
     }
 
     changeSet.name = meta.name;
-    changeSet.type = this.originalEntityData[entity.__helper!.__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    changeSet.type = this.originalEntityData.has(entity.__helper!.__uuid) ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.originalEntity = this.originalEntityData[entity.__helper!.__uuid];
+      changeSet.originalEntity = this.originalEntityData.get(entity.__helper!.__uuid);
     }
 
     this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
@@ -46,8 +46,8 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    if (this.originalEntityData[entity.__helper!.__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[entity.__helper!.__uuid] as T, entity, this.metadata, this.platform);
+    if (this.originalEntityData.get(entity.__helper!.__uuid)) {
+      return Utils.diffEntities<T>(this.originalEntityData.get(entity.__helper!.__uuid) as T, entity, this.metadata, this.platform);
     }
 
     return Utils.prepareEntity(entity, this.metadata, this.platform);
@@ -80,7 +80,7 @@ export class ChangeSetComputer {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (isToOneOwner && pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
-      changeSet.payload[prop.name] = this.identifierMap[entity.__helper!.__uuid];
+      changeSet.payload[prop.name] = this.identifierMap.get(entity.__helper!.__uuid);
     }
   }
 
@@ -100,7 +100,7 @@ export class ChangeSetComputer {
 
   private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
-    const data = this.originalEntityData[changeSet.entity.__helper!.__uuid] as EntityData<T>;
+    const data = this.originalEntityData.get(changeSet.entity.__helper!.__uuid) as EntityData<T>;
     const em = changeSet.entity.__helper!.__em;
 
     if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {

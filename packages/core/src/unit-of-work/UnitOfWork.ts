@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
@@ -10,13 +10,13 @@ import { Transaction } from '../connections';
 export class UnitOfWork {
 
   /** map of references to managed entities */
-  private readonly identityMap = Object.create(null) as Dictionary<AnyEntity>;
+  private readonly identityMap = new Map<string, AnyEntity>();
 
   /** holds copy of identity map so we can compute changes when persisting managed entities */
-  private readonly originalEntityData = Object.create(null) as Dictionary<EntityData<AnyEntity>>;
+  private readonly originalEntityData = new Map<string, EntityData<AnyEntity>>();
 
   /** map of wrapped primary keys so we can compute change set without eager commit */
-  private readonly identifierMap = Object.create(null) as Dictionary<EntityIdentifier>;
+  private readonly identifierMap = new Map<string, EntityIdentifier>();
 
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
@@ -41,10 +41,10 @@ export class UnitOfWork {
     }
 
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
-    this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`] = entity;
+    this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 
-    if (mergeData || !this.originalEntityData[entity.__helper!.__uuid]) {
-      this.originalEntityData[entity.__helper!.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+    if (mergeData || !this.originalEntityData.has(entity.__helper!.__uuid)) {
+      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
     }
 
     this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
@@ -58,7 +58,7 @@ export class UnitOfWork {
     const hash = Utils.getPrimaryKeyHash(Utils.asArray(id) as string[]);
     const token = `${root.name}-${hash}`;
 
-    return this.identityMap[token] as T;
+    return this.identityMap.get(token) as T;
   }
 
   tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
@@ -71,11 +71,11 @@ export class UnitOfWork {
     return this.getById<T>(entityName, pk);
   }
 
-  getIdentityMap(): Dictionary<AnyEntity> {
+  getIdentityMap(): Map<string, AnyEntity> {
     return this.identityMap;
   }
 
-  getOriginalEntityData(): Dictionary<EntityData<AnyEntity>> {
+  getOriginalEntityData(): Map<string, EntityData<AnyEntity>> {
     return this.originalEntityData;
   }
 
@@ -101,7 +101,7 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.push(cs);
     this.persistStack.delete(entity);
-    this.originalEntityData[entity.__helper!.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+    this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
@@ -115,7 +115,7 @@ export class UnitOfWork {
 
     if (cs) {
       Object.assign(this.changeSets[idx].payload, cs.payload);
-      this.originalEntityData[entity.__helper!.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
     }
   }
 
@@ -129,7 +129,7 @@ export class UnitOfWork {
     }
 
     if (!Utils.isDefined(entity.__helper!.__primaryKey, true)) {
-      this.identifierMap[entity.__helper!.__uuid] = new EntityIdentifier();
+      this.identifierMap.set(entity.__helper!.__uuid, new EntityIdentifier());
     }
 
     this.persistStack.add(entity);
@@ -198,25 +198,27 @@ export class UnitOfWork {
   }
 
   clear(): void {
-    Object.keys(this.identityMap).forEach(key => delete this.identityMap[key]);
-    Object.keys(this.originalEntityData).forEach(key => delete this.originalEntityData[key]);
+    this.identityMap.clear();
+    this.originalEntityData.clear();
     this.postCommitCleanup();
   }
 
   unsetIdentity(entity: AnyEntity): void {
     const wrapped = entity.__helper!;
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
-    delete this.identityMap[`${root.name}-${wrapped.__serializedPrimaryKey}`];
-    delete this.identifierMap[wrapped.__uuid];
-    delete this.originalEntityData[wrapped.__uuid];
+    this.identityMap.delete(`${root.name}-${wrapped.__serializedPrimaryKey}`);
+    this.identifierMap.delete(wrapped.__uuid);
+    this.originalEntityData.delete(wrapped.__uuid);
   }
 
   computeChangeSets(): void {
     this.changeSets.length = 0;
 
-    Object.values(this.identityMap)
-      .filter(entity => !this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity))
-      .forEach(entity => this.persist(entity, undefined, true));
+    for (const entity of this.identityMap.values()) {
+      if (!this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
+        this.persist(entity, undefined, true);
+      }
+    }
 
     for (const entity of this.persistStack) {
       this.findNewEntities(entity);
@@ -264,18 +266,18 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.persistStack.delete(entity);
-      this.originalEntityData[wrapped.__uuid] = Utils.prepareEntity(entity, this.metadata, this.platform);
+      this.originalEntityData.set(wrapped.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
     }
   }
 
   private initIdentifier<T extends AnyEntity<T>>(entity: T): void {
     const wrapped = entity.__helper!;
 
-    if (Utils.isDefined(wrapped.__primaryKey, true) || this.identifierMap[wrapped.__uuid]) {
+    if (Utils.isDefined(wrapped.__primaryKey, true) || this.identifierMap.has(wrapped.__uuid)) {
       return;
     }
 
-    this.identifierMap[wrapped.__uuid] = new EntityIdentifier();
+    this.identifierMap.set(wrapped.__uuid, new EntityIdentifier());
   }
 
   private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>): void {
@@ -291,7 +293,7 @@ export class UnitOfWork {
   }
 
   private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: Set<AnyEntity>): void {
-    if (!this.originalEntityData[reference.__helper!.__uuid]) {
+    if (!this.originalEntityData.has(reference.__helper!.__uuid)) {
       this.findNewEntities(reference, visited);
     }
   }
@@ -305,7 +307,7 @@ export class UnitOfWork {
     }
 
     reference.getItems(false)
-      .filter(item => !this.originalEntityData[item.__helper!.__uuid])
+      .filter(item => !this.originalEntityData.has(item.__helper!.__uuid))
       .forEach(item => this.findNewEntities(item, visited));
   }
 
@@ -346,7 +348,7 @@ export class UnitOfWork {
   }
 
   private postCommitCleanup(): void {
-    Object.keys(this.identifierMap).forEach(key => delete this.identifierMap[key]);
+    this.identifierMap.clear();
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();
@@ -401,7 +403,7 @@ export class UnitOfWork {
   }
 
   private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: Set<AnyEntity>): boolean {
-    const filtered = collection.getItems(false).filter(item => !this.originalEntityData[item.__helper!.__uuid]);
+    const filtered = collection.getItems(false).filter(item => !this.originalEntityData.has(item.__helper!.__uuid));
     return filtered.some(items => visited.has(items));
   }
 

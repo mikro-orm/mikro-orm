@@ -91,7 +91,7 @@ describe('single table inheritance in mysql', () => {
       favouriteManager: users[2],
     });
 
-    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual(['BaseUser2-2', 'BaseUser2-1', 'BaseUser2-3', 'BaseUser2-4']);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-2', 'BaseUser2-1', 'BaseUser2-3', 'BaseUser2-4']);
 
     const o = await orm.em.findOneOrFail(CompanyOwner2, 4);
     expect(o.state).toBeUndefined();

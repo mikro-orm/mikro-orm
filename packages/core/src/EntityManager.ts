@@ -613,7 +613,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.filterParams = Utils.copy(this.filterParams);
 
     if (!clear) {
-      Object.values(this.getUnitOfWork().getIdentityMap()).forEach(entity => em.merge(entity));
+      for (const entity of this.getUnitOfWork().getIdentityMap().values()) {
+        em.merge(entity);
+      }
     }
 
     return em;

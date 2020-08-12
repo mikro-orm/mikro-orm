@@ -10,7 +10,7 @@ import { Hydrator } from '../hydration';
 export class ChangeSetPersister {
 
   constructor(private readonly driver: IDatabaseDriver,
-              private readonly identifierMap: Dictionary<EntityIdentifier>,
+              private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly metadata: MetadataStorage,
               private readonly hydrator: Hydrator) { }
 
@@ -55,7 +55,7 @@ export class ChangeSetPersister {
     const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.driver.getPlatform()) : value;
     const wrapped = changeSet.entity.__helper!;
     wrapped.__primaryKey = Utils.isDefined(wrapped.__primaryKey, true) ? wrapped.__primaryKey : insertId;
-    this.identifierMap[wrapped.__uuid].setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
+    this.identifierMap.get(wrapped.__uuid)!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {

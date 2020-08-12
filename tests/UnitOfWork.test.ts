@@ -89,9 +89,9 @@ describe('UnitOfWork', () => {
     uow.merge(author); // add entity to IM first
     const changeSet = await computer.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
-    expect(uow.getIdentityMap()).not.toEqual({});
+    expect(uow.getIdentityMap()).not.toEqual(new Map());
     uow.clear();
-    expect(uow.getIdentityMap()).toEqual({});
+    expect(uow.getIdentityMap()).toEqual(new Map());
   });
 
   test('changeSet is null for readonly entity', async () => {
@@ -122,11 +122,9 @@ describe('UnitOfWork', () => {
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);
-    expect(uow.getOriginalEntityData()).toEqual({});
+    expect(uow.getOriginalEntityData()).toEqual(new Map());
     uow.merge(author);
-    expect(uow.getOriginalEntityData()).toMatchObject({
-      [wrap(author, true).__uuid]: { name: 'test', email: 'test' },
-    });
+    expect(uow.getOriginalEntityData().get(wrap(author, true).__uuid)).toMatchObject({ name: 'test', email: 'test' });
     uow.remove(author);
     expect([...uow.getRemoveStack()]).toEqual([author]);
     expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();

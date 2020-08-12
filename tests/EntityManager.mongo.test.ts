@@ -301,7 +301,7 @@ describe('EntityManagerMongo', () => {
     repo.persist(author);
     repo.persist(author2);
     await repo.removeAndFlush(author);
-    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([`Author-${author2.id}`]);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
     repo.persist(author2);
     orm.em.removeLater(author3);
@@ -317,7 +317,7 @@ describe('EntityManagerMongo', () => {
     repo.persist(author);
     orm.em.remove(author);
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
-    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({});
+    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual(new Map());
   });
 
   test('removing persisted entity via PK', async () => {
@@ -383,7 +383,7 @@ describe('EntityManagerMongo', () => {
 
     expect(fork).not.toBe(orm.em);
     expect(fork.getMetadata()).toBe(orm.em.getMetadata());
-    expect(fork.getUnitOfWork().getIdentityMap()).toEqual({});
+    expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new Map());
 
     // request context is not started so we can use UoW and EF getters
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
@@ -818,7 +818,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     const cachedAuthor = orm.em.merge<Author>(Author, cache);
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
-    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
       'BookTag-' + tag1.id,
@@ -833,7 +833,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     const cachedAuthor2 = orm.em.merge(author);
     expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook.author);
-    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap())).toEqual([
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
       'BookTag-' + tag1.id,
@@ -1530,14 +1530,12 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
-    // @ts-ignore
-    expect(orm.em.getUnitOfWork().originalEntityData[wrap(bar, true).__uuid].baz).toEqual(baz1._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persistAndFlush(bar);
-    // @ts-ignore
-    expect(orm.em.getUnitOfWork().originalEntityData[wrap(bar, true).__uuid].baz).toEqual(baz2._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
