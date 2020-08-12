@@ -272,6 +272,16 @@ export class Configuration2 {
 
 }
 ",
+  "import { Entity, PrimaryKey } from 'mikro-orm';
+
+@Entity()
+export class Dummy2 {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FooBaz2 } from './FooBaz2';
 

@@ -3,6 +3,7 @@ import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubs
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
+import { Dummy } from './entities/Dummy';
 
 describe('UnitOfWork', () => {
 
@@ -91,6 +92,13 @@ describe('UnitOfWork', () => {
     expect(uow.getIdentityMap()).not.toEqual({});
     uow.clear();
     expect(uow.getIdentityMap()).toEqual({});
+  });
+
+  test('changeSet is null for readonly entity', async () => {
+    const dummy = new Dummy();
+    uow.merge(dummy);
+    const changeSet = await computer.computeChangeSet(dummy);
+    expect(changeSet).toBeNull();
   });
 
   test('persist and remove will add entity to given stack only once', async () => {
