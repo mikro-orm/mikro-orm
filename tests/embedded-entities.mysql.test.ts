@@ -140,7 +140,7 @@ describe('embedded entities in mysql', () => {
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     orm.config.reset('highlighter');
     await orm.em.persistAndFlush(user);

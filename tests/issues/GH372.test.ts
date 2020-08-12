@@ -60,7 +60,7 @@ describe('GH issue 372', () => {
 
   test(`schema updates respect default values`, async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const a1 = new A();

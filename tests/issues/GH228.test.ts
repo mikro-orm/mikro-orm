@@ -51,7 +51,7 @@ describe('GH issue 228', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     await orm.em.findAndCount(A, {}, {
       orderBy: { type: 'asc' },

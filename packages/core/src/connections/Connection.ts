@@ -100,7 +100,7 @@ export abstract class Connection {
     // We only actually log something when debugMode is enabled. If it's not enabled,
     // we can jump out here as a performance optimization and save ourselves some cycles
     // preparing a message that won't get used.
-    if (!logger.debugMode || (Array.isArray(logger.debugMode) && !logger.debugMode.includes('query'))) {
+    if (!logger.isEnabled('query')) {
       return;
     }
 

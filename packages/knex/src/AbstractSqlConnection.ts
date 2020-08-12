@@ -1,7 +1,7 @@
 import Knex, { Config, QueryBuilder, Raw, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
 
-import { Connection, EntityData, AnyEntity, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import { AnyEntity, Connection, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
 
 export abstract class AbstractSqlConnection extends Connection {
 
@@ -100,10 +100,13 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   private getSql(qb: QueryBuilder | Raw): string {
-    const debug = this.config.get('debug');
-    const dumpParams = Array.isArray(debug) ? debug.includes('query-params') : debug;
+    const logger = this.config.getLogger();
 
-    if (dumpParams) {
+    if (!logger.isEnabled('query')) {
+      return '';
+    }
+
+    if (logger.isEnabled('query-params')) {
       return qb.toString();
     }
 

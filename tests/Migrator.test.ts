@@ -121,7 +121,7 @@ describe('Migrator', () => {
     const runner = migrator.runner;
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);
@@ -164,7 +164,7 @@ describe('Migrator', () => {
     migratorMock.mockImplementation(async () => void 0);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await migrator.up(migration.fileName);
@@ -200,7 +200,7 @@ describe('Migrator', () => {
     migratorMock.mockImplementation(async () => void 0);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await migrator.up(migration.fileName);

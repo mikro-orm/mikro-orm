@@ -275,7 +275,7 @@ describe('composite keys in mysql', () => {
     expect(wrap(u1.cars[2], true).__em).not.toBeUndefined(); // PK only, so will be merged automatically
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     await orm.em.persistAndFlush(u1);
     expect(mock.mock.calls[0][0]).toMatch('begin');

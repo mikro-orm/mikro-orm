@@ -60,7 +60,7 @@ describe('GH issue 234', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     const res1 = await orm.em.find<B>(B, { aCollection: [1, 2, 3] }, ['aCollection']);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?)');

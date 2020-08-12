@@ -322,7 +322,7 @@ describe('EntityManagerMySql', () => {
 
   test('nested transaction rollback with save-points will commit the outer one', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     // start outer transaction
@@ -646,7 +646,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(author);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await orm.em.transactional(async em => {
@@ -664,7 +664,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(author);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await orm.em.transactional(async em => {
@@ -831,7 +831,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const b0 = (await orm.em.findOne(FooBaz2, { id: baz.id }))!;
@@ -1419,7 +1419,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(author);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     orm.em.clear();
@@ -1466,7 +1466,6 @@ describe('EntityManagerMySql', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.set('debug', true);
 
     orm.em.clear();
     const books1 = await orm.em.find(Book2, { title: '123' }, {
@@ -1561,7 +1560,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const jon = await orm.em.findOneOrFail(Author2, author.id, ['friends'], { friends: { name: QueryOrder.ASC } });
@@ -1731,7 +1730,7 @@ describe('EntityManagerMySql', () => {
 
   test('self referencing (1 step)', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const author = new Author2('name', 'email');
@@ -1853,7 +1852,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, ['perex']);
     expect(res1).toHaveLength(3);
@@ -1965,7 +1964,7 @@ describe('EntityManagerMySql', () => {
 
   test('query highlighting', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     orm.config.set('highlighter', new SqlHighlighter());
     c.enabled = true;
@@ -1985,7 +1984,7 @@ describe('EntityManagerMySql', () => {
 
   test('read replicas', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     let author = new Author2('Jon Snow', 'snow@wall.st');
@@ -2080,7 +2079,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2', populate: ['perex'] });
@@ -2116,7 +2115,7 @@ describe('EntityManagerMySql', () => {
     orm.em.remove(a.baz!);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -2245,7 +2244,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     // without paginate flag it fails to get 5 records
@@ -2310,7 +2309,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const b = await orm.em.findOneOrFail(Book2, { author: { name: 'God' } });
@@ -2398,7 +2397,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const r1 = await orm.em.find(Author2, {}, { populate: { books: true } });

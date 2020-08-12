@@ -99,7 +99,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
@@ -150,7 +150,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await orm.em.find(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
@@ -215,7 +215,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     mock.mock.calls.length = 0;
     const books = await orm.em.find(Book2, {}, { populate: { tags: LoadStrategy.JOINED }, orderBy: { tags: { name: 'desc' } } });
@@ -300,7 +300,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     // autoJoinOneToOneOwner: false
@@ -360,7 +360,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const tags = await repo.findAll({
@@ -439,7 +439,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: { perex: true, author: LoadStrategy.JOINED } });
     expect(res1).toHaveLength(3);

@@ -9,11 +9,7 @@ export class Logger {
    * Logs a message inside given namespace.
    */
   log(namespace: LoggerNamespace, message: string): void {
-    if (!this.debugMode) {
-      return;
-    }
-
-    if (Array.isArray(this.debugMode) && !this.debugMode.includes(namespace)) {
+    if (!this.isEnabled(namespace)) {
       return;
     }
 
@@ -27,6 +23,10 @@ export class Logger {
    */
   setDebugMode(debugMode: boolean | LoggerNamespace[]): void {
     this.debugMode = debugMode;
+  }
+
+  isEnabled(namespace: LoggerNamespace): boolean {
+    return this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
   }
 
 }

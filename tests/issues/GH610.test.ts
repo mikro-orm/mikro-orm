@@ -38,7 +38,7 @@ describe('GH issue 610', () => {
     orm.em.persist(test);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
