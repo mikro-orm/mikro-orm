@@ -15,7 +15,7 @@ export class ChangeSetPersister {
               private readonly hydrator: Hydrator) { }
 
   async persistToDatabase<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
-    const meta = this.metadata.get(changeSet.name);
+    const meta = this.metadata.find(changeSet.name)!;
 
     // process references first
     for (const prop of Object.values(meta.properties)) {

@@ -54,7 +54,7 @@ export class UnitOfWork {
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
   getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
-    const root = Utils.getRootEntity(this.metadata, this.metadata.get(entityName));
+    const root = Utils.getRootEntity(this.metadata, this.metadata.find(entityName)!);
     const hash = Utils.getPrimaryKeyHash(Utils.asArray(id) as string[]);
     const token = `${root.name}-${hash}`;
 
@@ -62,7 +62,7 @@ export class UnitOfWork {
   }
 
   tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
-    const pk = Utils.extractPK(where, this.metadata.get<T>(entityName), strict);
+    const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 
     if (!pk) {
       return null;
@@ -190,7 +190,7 @@ export class UnitOfWork {
       throw ValidationError.entityNotManaged(entity);
     }
 
-    const meta = this.metadata.get<T>(entity.constructor.name);
+    const meta = this.metadata.find<T>(entity.constructor.name)!;
 
     if (mode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, version!);
@@ -229,7 +229,7 @@ export class UnitOfWork {
     }
 
     for (const entity of this.removeStack) {
-      const meta = this.metadata.get(entity.constructor.name);
+      const meta = this.metadata.find(entity.constructor.name)!;
       this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<AnyEntity>);
     }
   }
@@ -371,7 +371,7 @@ export class UnitOfWork {
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
-    const meta = this.metadata.get<T>(entity.constructor.name);
+    const meta = this.metadata.find<T>(entity.constructor.name)!;
 
     for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR)) {
       this.cascadeReference<T>(entity, prop, type, visited, options);
@@ -526,7 +526,7 @@ export class UnitOfWork {
     let entityName = types.pop();
 
     while (entityName) {
-      for (const prop of Object.values<EntityProperty>(this.metadata.get(entityName).properties)) {
+      for (const prop of Object.values<EntityProperty>(this.metadata.find(entityName)!.properties)) {
         if (!calc.hasNode(prop.type)) {
           continue;
         }

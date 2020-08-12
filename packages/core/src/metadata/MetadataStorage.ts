@@ -51,11 +51,11 @@ export class MetadataStorage {
   }
 
   get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
-    if (entity && !this.metadata[entity] && validate && !init) {
+    if (validate && !init && entity && !this.has(entity)) {
       throw MetadataError.missingMetadata(entity);
     }
 
-    if (!this.metadata[entity] && init) {
+    if (init && !this.has(entity)) {
       this.metadata[entity] = { properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
     }
 
@@ -63,7 +63,7 @@ export class MetadataStorage {
   }
 
   find<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T> | undefined {
-    return this.get<T>(entity, false, false);
+    return this.metadata[entity];
   }
 
   has(entity: string): boolean {

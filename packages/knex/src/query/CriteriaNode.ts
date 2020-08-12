@@ -87,7 +87,7 @@ export class CriteriaNode {
       return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
     }
 
-    const meta = this.metadata.get(this.prop!.type);
+    const meta = this.metadata.find(this.prop!.type)!;
     const alias = qb.getAliasForJoinPath(this.getPath());
     const pks = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
 

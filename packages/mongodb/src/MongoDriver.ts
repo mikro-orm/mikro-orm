@@ -27,7 +27,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
 
-    return res.map((r: T) => this.mapResult<T>(r, this.metadata.get(entityName))!);
+    return res.map((r: T) => this.mapResult<T>(r, this.metadata.find(entityName)!)!);
   }
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }, ctx?: Transaction<ClientSession>): Promise<T | null> {
@@ -39,7 +39,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, ctx));
 
-    return this.mapResult<T>(res[0], this.metadata.get(entityName));
+    return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
   async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
@@ -225,7 +225,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         if (prop.reference === ReferenceType.SCALAR) {
           isObjectId = prop.type.toLowerCase() === 'objectid';
         } else {
-          const meta2 = this.metadata.get(prop.type);
+          const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type.toLowerCase() === 'objectid';
         }
@@ -266,7 +266,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private buildFilterById<T extends AnyEntity<T>>(entityName: string, id: string): FilterQuery<T> {
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
 
 
     if (meta.properties[meta.primaryKeys[0]].type.toLowerCase() === 'objectid') {
@@ -278,7 +278,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private buildFields<T>(entityName: string, populate: PopulateOptions<T>[], fields?: string[]): string[] | undefined {
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
     const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
     const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name));
 

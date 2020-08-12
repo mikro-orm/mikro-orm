@@ -158,7 +158,7 @@ export class Utils {
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
-        return ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.get(prop.type).primaryKeys, true);
+        return ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
       }
 
       if (prop.customType) {

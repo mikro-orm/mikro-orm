@@ -12,7 +12,7 @@ export abstract class Hydrator {
     const root = Utils.getRootEntity(metadata, meta);
 
     if (root.discriminatorColumn) {
-      meta = metadata.get(entity.constructor.name);
+      meta = metadata.find(entity.constructor.name)!;
     }
 
     const props = Object.values<EntityProperty>(meta.properties).filter(prop => {

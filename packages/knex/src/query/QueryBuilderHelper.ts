@@ -87,7 +87,7 @@ export class QueryBuilderHelper {
   }
 
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
-    const meta = this.metadata.get(prop.type);
+    const meta = this.metadata.find(prop.type)!;
     const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
 
     return {
@@ -125,18 +125,18 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    const prop2 = this.metadata.get(prop.pivotTable).properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
+    const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
     ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
 
     return ret;
   }
 
   joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
-    const prop2 = this.metadata.get(field).properties[prop.mappedBy || prop.inversedBy];
+    const prop2 = this.metadata.find(field)!.properties[prop.mappedBy || prop.inversedBy];
 
     return {
       prop, type, cond, ownerAlias, alias,
-      table: this.metadata.get(field).collection,
+      table: this.metadata.find(field)!.collection,
       joinColumns: prop.joinColumns,
       inverseJoinColumns: prop2.joinColumns,
       primaryKeys: prop.referencedColumnNames,
@@ -173,7 +173,7 @@ export class QueryBuilderHelper {
   }
 
   isOneToOneInverse(field: string): boolean {
-    const meta = this.metadata.get(this.entityName);
+    const meta = this.metadata.find(this.entityName)!;
     const prop = meta.properties[field];
 
     return prop && prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
@@ -301,7 +301,7 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (key === op) { // substitute top level operators with PK
-      const meta = this.metadata.get(this.entityName);
+      const meta = this.metadata.find(this.entityName)!;
       key = meta.properties[meta.primaryKeys[0]].fieldNames[0];
     }
 

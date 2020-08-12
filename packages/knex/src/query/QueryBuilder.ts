@@ -78,7 +78,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   count(field?: string | string[], distinct = false): this {
-    this._fields = [...(field ? Utils.asArray(field) : this.metadata.get(this.entityName).primaryKeys)];
+    this._fields = [...(field ? Utils.asArray(field) : this.metadata.find(this.entityName)!.primaryKeys)];
 
     if (distinct) {
       this.flags.add(QueryFlag.DISTINCT);
@@ -118,7 +118,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
-      this.select(this.metadata.get(this.entityName).primaryKeys, true);
+      this.select(this.metadata.find(this.entityName)!.primaryKeys, true);
     }
 
     if (topLevel) {
@@ -536,7 +536,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private autoJoinPivotTable(field: string): void {
-    const pivotMeta = this.metadata.get(field);
+    const pivotMeta = this.metadata.find(field)!;
     const owner = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
     const inverse = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
     const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;

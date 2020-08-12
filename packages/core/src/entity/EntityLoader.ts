@@ -65,7 +65,7 @@ export class EntityLoader {
       const [f, ...parts] = p.field.split('.');
       p.field = f;
       p.children = p.children || [];
-      const prop = this.metadata.get(entityName).properties[f];
+      const prop = this.metadata.find(entityName)!.properties[f];
       p.children.push(this.expandNestedPopulate(prop.type, parts));
     });
 
@@ -76,7 +76,7 @@ export class EntityLoader {
    * Expands `books.perex` like populate to use `children` array instead of the dot syntax
    */
   private expandNestedPopulate<T>(entityName: string, parts: string[]): PopulateOptions<T> {
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
     const field = parts.shift()!;
     const prop = meta.properties[field];
     const ret = { field } as PopulateOptions<T>;
@@ -93,7 +93,7 @@ export class EntityLoader {
    */
   private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
     const field = populate.field as keyof T;
-    const meta = this.metadata.get<T>(entityName);
+    const meta = this.metadata.find<T>(entityName)!;
     const prop = meta.properties[field as string];
 
     if (prop.reference === ReferenceType.SCALAR && prop.lazy) {
@@ -116,7 +116,7 @@ export class EntityLoader {
 
     let subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
     const op = Object.keys(subCond).find(key => Utils.isOperator(key, false));
-    const meta2 = this.metadata.get(prop.type);
+    const meta2 = this.metadata.find(prop.type)!;
 
     if (op) {
       subCond = { [Utils.getPrimaryKeyHash(meta2.primaryKeys)]: subCond };
@@ -154,7 +154,7 @@ export class EntityLoader {
 
   private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
-    const meta = this.metadata.get(prop.type);
+    const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
@@ -201,7 +201,7 @@ export class EntityLoader {
     }
 
     const filtered = Utils.unique(children);
-    const prop = this.metadata.get(entityName).properties[populate.field];
+    const prop = this.metadata.find(entityName)!.properties[populate.field];
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: options.where[prop.name],
       orderBy: options.orderBy[prop.name] as QueryOrderMap,
@@ -267,7 +267,7 @@ export class EntityLoader {
 
     visited.push(entityName);
     const ret: PopulateOptions<T>[] = [];
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
 
     Object.values(meta.properties)
       .filter(prop => prop.reference !== ReferenceType.SCALAR)
@@ -294,7 +294,7 @@ export class EntityLoader {
     }
 
     visited.push(entityName);
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
 
     Object.values(meta.properties)
       .filter(prop => prop.eager)

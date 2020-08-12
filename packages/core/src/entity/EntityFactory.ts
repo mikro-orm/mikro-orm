@@ -66,7 +66,7 @@ export class EntityFactory {
       const value = data[root.discriminatorColumn];
       delete data[root.discriminatorColumn];
       const type = root.discriminatorMap![value];
-      meta = type ? this.metadata.get(type) : meta;
+      meta = type ? this.metadata.find(type)! : meta;
     }
 
     const Entity = meta.class;

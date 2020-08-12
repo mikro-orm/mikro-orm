@@ -31,7 +31,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
     options = { populate: [], orderBy: {}, ...options };
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx);
@@ -66,7 +66,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
     const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as PopulateOptions<T>[]);
     const joinedProps = this.joinedProps(meta, populate);
 
@@ -98,7 +98,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     joinedProps.forEach(p => {
       const relation = meta.properties[p.field as keyof T & string];
-      const meta2 = this.metadata.get(relation.type);
+      const meta2 = this.metadata.find(relation.type)!;
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
       const relationAlias = qb.getAliasForJoinPath(path);
       const relationPojo = {};
@@ -161,7 +161,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async count(entityName: string, where: any, ctx?: Transaction<KnexTransaction>): Promise<number> {
-    const pks = this.metadata.get(entityName).primaryKeys;
+    const pks = this.metadata.find(entityName)!.primaryKeys;
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
       .count(pks, true)
       .where(where);
@@ -171,7 +171,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
-    const meta = this.metadata.get<T>(entityName, false, false);
+    const meta = this.metadata.find<T>(entityName);
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
     const qb = this.createQueryBuilder(entityName, ctx, true);
@@ -192,7 +192,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
-    const meta = this.metadata.get<T>(entityName, false, false);
+    const meta = this.metadata.find<T>(entityName);
     const collections = data.map(d => this.extractManyToMany(entityName, d));
     const pks = this.getPrimaryKeyFields(entityName);
     const qb = this.createQueryBuilder(entityName, ctx, true);
@@ -215,7 +215,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
-    const meta = this.metadata.get<T>(entityName, false, false);
+    const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
     let res: QueryResult = { affectedRows: 0, insertId: 0, row: {} };
@@ -285,8 +285,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
-    const ownerMeta = this.metadata.get(pivotProp2.type);
-    const targetMeta = this.metadata.get(prop.type);
+    const ownerMeta = this.metadata.find(pivotProp2.type)!;
+    const targetMeta = this.metadata.find(prop.type)!;
     const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
@@ -366,7 +366,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     joinedProps.forEach(relation => {
       const prop = meta.properties[relation.field];
-      const meta2 = this.metadata.get(prop.type);
+      const meta2 = this.metadata.find(prop.type)!;
       const tableAlias = qb.getNextAlias(prop.name);
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
@@ -401,7 +401,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return {};
     }
 
-    const props = this.metadata.get(entityName).properties;
+    const props = this.metadata.find(entityName)!.properties;
     const ret: EntityData<T> = {};
 
     for (const k of Object.keys(data)) {
@@ -429,7 +429,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], ctx?: Transaction): Promise<void> {
-    const meta2 = this.metadata.get<T>(prop.type);
+    const meta2 = this.metadata.find<T>(prop.type)!;
 
     if (!deleteDiff) {
       deleteDiff = [];
