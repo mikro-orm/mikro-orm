@@ -3,15 +3,14 @@ import { EntityManager } from '../EntityManager';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { EntityValidator } from './EntityValidator';
-import { Dictionary, EntityData, EntityMetadata, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { EntityHelper } from './EntityHelper';
 import { Utils } from '../utils';
-import { wrap } from './wrap';
 
-export class WrappedEntity<T, PK extends keyof T> {
+export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   __initialized = true;
   __populated = false;
@@ -86,11 +85,13 @@ export class WrappedEntity<T, PK extends keyof T> {
       return Utils.getCompositeKeyHash(this.entity, this.__meta);
     }
 
-    if (Utils.isEntity(this.entity[this.__meta.serializedPrimaryKey])) {
-      return wrap(this.entity[this.__meta.serializedPrimaryKey], true).__serializedPrimaryKey as string;
+    const value = this.entity[this.__meta.serializedPrimaryKey];
+
+    if (Utils.isEntity<T>(value)) {
+      return value.__helper!.__serializedPrimaryKey as string;
     }
 
-    return this.entity[this.__meta.serializedPrimaryKey] as unknown as string;
+    return value as unknown as string;
   }
 
 }

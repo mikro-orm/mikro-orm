@@ -8,7 +8,7 @@ import { wrap } from './wrap';
 export class EntityTransformer {
 
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
     const platform = wrapped.__internal.platform;
     const meta = wrapped.__meta;
     const ret = {} as EntityData<T>;
@@ -28,11 +28,11 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(wrapped.__uuid)) {
+    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(entity.__helper!.__uuid)) {
       return ret;
     }
 
-    visited.push(wrapped.__uuid);
+    visited.push(entity.__helper!.__uuid);
 
     // normal properties
     Object.keys(entity)
@@ -60,7 +60,7 @@ export class EntityTransformer {
   }
 
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
     const property = wrapped.__meta.properties[prop];
     const platform = wrapped.__internal.platform;
 
@@ -82,7 +82,7 @@ export class EntityTransformer {
 
   private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     const child = entity[prop] as unknown as T | Reference<T>;
-    const wrapped = wrap(child, true);
+    const wrapped = (child as T).__helper!;
 
     if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
       const args = [...wrapped.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];

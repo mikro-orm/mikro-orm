@@ -6,16 +6,14 @@ import { EntityTransformer } from './EntityTransformer';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
 import { Platform } from '../platforms';
-import { ValidationError } from '../utils';
+import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
-import { Collection } from './Collection';
-import { wrap } from './wrap';
 import { WrappedEntity } from './WrappedEntity';
 
 export class EntityHelper {
 
   static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
     const em = wrapped.__em;
 
     if (!em) {
@@ -111,7 +109,7 @@ export class EntityHelper {
       let name = meta.name;
 
       // distinguish not initialized entities
-      if (!wrap(this).isInitialized()) {
+      if (!this.__helper!.isInitialized()) {
         name = `Ref<${name}>`;
       }
 
@@ -135,19 +133,19 @@ export class EntityHelper {
     ref[prop.name] = val as T[string & keyof T];
   }
 
-  private static propagate<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
+  private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(entity: T, owner: O, prop: EntityProperty<O>): void {
     const inverse = entity && entity[prop.inversedBy || prop.mappedBy];
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE && inverse && wrap(inverse, true).isInitialized()) {
-      (inverse as Collection<T>).add(owner);
+    if (prop.reference === ReferenceType.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
+      inverse.add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && wrap(entity, true).isInitialized() && Reference.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.isInitialized() && Reference.unwrapReference(inverse) !== owner) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
     }
   }
 
-  private static propagateOneToOne<T>(entity: T, owner: T, prop: EntityProperty<T>): void {
+  private static propagateOneToOne<T, O>(entity: T, owner: O, prop: EntityProperty<O>): void {
     const inverse = entity[prop.inversedBy || prop.mappedBy];
 
     if (Reference.isReference(inverse)) {

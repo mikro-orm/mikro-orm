@@ -2,7 +2,6 @@ import { AnyEntity } from '../typings';
 import { EventArgs, EventSubscriber, FlushEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
 import { EventType } from './EventType';
-import { wrap } from '../entity/wrap';
 
 export class EventManager {
 
@@ -30,7 +29,7 @@ export class EventManager {
     const entity: T = (args as EventArgs<T>).entity;
 
     // execute lifecycle hooks first
-    const hooks = (entity && wrap(entity, true).__meta.hooks[event]) || [];
+    const hooks = (entity && entity.__helper!.__meta.hooks[event]) || [];
     listeners.push(...hooks.map(hook => [hook, entity] as [EventType, EventSubscriber<T>]));
 
     for (const listener of this.listeners[event] || []) {

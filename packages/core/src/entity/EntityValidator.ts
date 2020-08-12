@@ -2,7 +2,6 @@ import { SCALAR_TYPES } from './EntityFactory';
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
-import { wrap } from './wrap';
 
 export class EntityValidator {
 
@@ -82,7 +81,7 @@ export class EntityValidator {
   }
 
   private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
-    if (wrap(entity).isInitialized() && !entity[prop.name as keyof T]) {
+    if (entity.__helper!.isInitialized() && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
   }

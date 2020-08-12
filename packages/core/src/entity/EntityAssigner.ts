@@ -6,7 +6,6 @@ import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typing
 import { Utils } from '../utils';
 import { ReferenceType } from './enums';
 import { Reference } from './Reference';
-import { wrap } from './wrap';
 
 export class EntityAssigner {
 
@@ -14,7 +13,7 @@ export class EntityAssigner {
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
     const em = options.em || wrapped.__em;
     const meta = wrapped.__meta;
     const root = Utils.getRootEntity(wrapped.__internal.metadata, meta);
@@ -76,7 +75,7 @@ export class EntityAssigner {
       return;
     }
 
-    const meta2 = wrap(entity[prop.name], true).__meta as EntityMetadata;
+    const meta2 = entity[prop.name].__helper!.__meta as EntityMetadata;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
     if (prop2 && !entity[prop.name][prop2.name]) {

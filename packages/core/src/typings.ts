@@ -63,7 +63,7 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T, PK extends keyof T, P = never> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = never> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init(populated?: boolean, lockMode?: LockMode): Promise<T>;
@@ -73,7 +73,7 @@ export interface IWrappedEntity<T, PK extends keyof T, P = never> {
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   __uuid: string;
   __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
@@ -87,7 +87,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> exte
   __serializedPrimaryKey: string & keyof T;
 }
 
-export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown; [EntityRepositoryType]?: unknown };
+export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown; [EntityRepositoryType]?: unknown; __helper?: IWrappedEntityInternal<T, keyof T> };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
@@ -261,9 +261,9 @@ type MarkLoaded<T extends AnyEntity<T>, P, H = unknown> = P extends Reference<in
     ? LoadedCollection<U, Loaded<U, H>>
     : P;
 
-type LoadedIfInKeyHint<T, K extends keyof T, H> = K extends H ? MarkLoaded<T, T[K]> : T[K];
+type LoadedIfInKeyHint<T extends AnyEntity<T>, K extends keyof T, H> = K extends H ? MarkLoaded<T, T[K]> : T[K];
 
-type LoadedIfInNestedHint<T, K extends keyof T, H> = K extends keyof H ? MarkLoaded<T, T[K], H[K]> : T[K];
+type LoadedIfInNestedHint<T extends AnyEntity<T>, K extends keyof T, H> = K extends keyof H ? MarkLoaded<T, T[K], H[K]> : T[K];
 
 // https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
 type SubType<T, C> = Pick<T, { [K in keyof T]: T[K] extends C ? K : never }[keyof T]>;
@@ -274,7 +274,7 @@ type NestedLoadHint<T> = {
   [K in keyof RelationsIn<T>]?: true | LoadStrategy | PopulateMap<ExpandProperty<T[K]>>;
 };
 
-export type Loaded<T, P = unknown> = unknown extends P ? T : T & {
+export type Loaded<T extends AnyEntity<T>, P = unknown> = unknown extends P ? T : T & {
   [K in keyof RelationsIn<T>]: P extends readonly (infer U)[]
     ? LoadedIfInKeyHint<T, K, U>
     : P extends NestedLoadHint<T>
@@ -282,7 +282,7 @@ export type Loaded<T, P = unknown> = unknown extends P ? T : T & {
       : LoadedIfInKeyHint<T, K, P>;
 };
 
-export type New<T, P = string[]> = Loaded<T, P>;
+export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
 
 export interface Highlighter {
   highlight(text: string): string;

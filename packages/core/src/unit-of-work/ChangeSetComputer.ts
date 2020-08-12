@@ -2,7 +2,7 @@ import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityIdentifier, EntityValidator, ReferenceType, wrap } from '../entity';
+import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
 
 export class ChangeSetComputer {
@@ -24,12 +24,12 @@ export class ChangeSetComputer {
     }
 
     changeSet.name = meta.name;
-    changeSet.type = this.originalEntityData[wrap(entity, true).__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    changeSet.type = this.originalEntityData[entity.__helper!.__uuid] ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.originalEntity = this.originalEntityData[wrap(entity, true).__uuid];
+      changeSet.originalEntity = this.originalEntityData[entity.__helper!.__uuid];
     }
 
     this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
@@ -46,10 +46,8 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    const wrapped = wrap(entity, true);
-
-    if (this.originalEntityData[wrapped.__uuid]) {
-      return Utils.diffEntities<T>(this.originalEntityData[wrapped.__uuid] as T, entity, this.metadata, this.platform);
+    if (this.originalEntityData[entity.__helper!.__uuid]) {
+      return Utils.diffEntities<T>(this.originalEntityData[entity.__helper!.__uuid] as T, entity, this.metadata, this.platform);
     }
 
     return Utils.prepareEntity(entity, this.metadata, this.platform);
@@ -82,7 +80,7 @@ export class ChangeSetComputer {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (isToOneOwner && pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
-      changeSet.payload[prop.name] = this.identifierMap[wrap(entity, true).__uuid];
+      changeSet.payload[prop.name] = this.identifierMap[entity.__helper!.__uuid];
     }
   }
 
@@ -93,7 +91,7 @@ export class ChangeSetComputer {
       return;
     }
 
-    if (prop.owner || target.getItems(false).filter(item => !wrap(item).isInitialized()).length > 0) {
+    if (prop.owner || target.getItems(false).filter(item => !item.__helper!.isInitialized()).length > 0) {
       this.collectionUpdates.push(target);
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
@@ -102,9 +100,8 @@ export class ChangeSetComputer {
 
   private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
-    const wrapped = wrap(changeSet.entity, true);
-    const data = this.originalEntityData[wrapped.__uuid] as EntityData<T>;
-    const em = wrapped.__em;
+    const data = this.originalEntityData[changeSet.entity.__helper!.__uuid] as EntityData<T>;
+    const em = changeSet.entity.__helper!.__em;
 
     if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {
       const orphan = em.getReference(prop.type, data[prop.name] as Primary<T>);

@@ -5,7 +5,7 @@ import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Platform } from '../platforms';
-import { Collection, ReferenceType, wrap } from '../entity';
+import { Collection, ReferenceType } from '../entity';
 import { DriverException, EntityManager, LockMode } from '../index';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
@@ -50,7 +50,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, wrap(coll.owner, true).__primaryKey, data, ctx);
+    await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.__primaryKey, data, ctx);
   }
 
   mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): T | null {
@@ -178,7 +178,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 
-  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
+  protected shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
     if (prop.formula) {
       return includeFormulas;
     }

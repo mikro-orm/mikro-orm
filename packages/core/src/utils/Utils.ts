@@ -12,7 +12,7 @@ import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
-import { ArrayCollection, Collection, ReferenceType, wrap } from '../entity';
+import { Collection, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
 import { GroupOperator, QueryOperator } from '../enums';
 
@@ -177,20 +177,21 @@ export class Utils {
     return ret;
   }
 
-  private static shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>, root: EntityMetadata) {
+  private static shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, root: EntityMetadata) {
     if (!(prop.name in entity) || prop.persist === false) {
       return true;
     }
 
-    const collection = entity[prop.name] as unknown instanceof ArrayCollection;
-    const noPkRef = Utils.isEntity(entity[prop.name], true) && !wrap(entity[prop.name], true).__primaryKeys.every(pk => Utils.isDefined(pk, true));
-    const noPkProp = prop.primary && !Utils.isDefined(entity[prop.name], true);
+    const value = entity[prop.name];
+    const collection = Utils.isCollection(value);
+    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.__primaryKeys.every(pk => Utils.isDefined(pk, true));
+    const noPkProp = prop.primary && !Utils.isDefined(value, true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
-    const emptyRef = isSetter && entity[prop.name] === undefined;
+    const emptyRef = isSetter && value === undefined;
 
     return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef;
   }
@@ -279,7 +280,7 @@ export class Utils {
     }
 
     if (Utils.isEntity(data, true)) {
-      return wrap(data, true).__primaryKey as Primary<T>;
+      return data.__helper!.__primaryKey as Primary<T>;
     }
 
     if (strict && meta && Object.keys(data).length !== meta.primaryKeys.length) {
@@ -297,13 +298,15 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T>(entity: T, meta: EntityMetadata<T>): string {
+  static getCompositeKeyHash<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
-      if (Utils.isEntity(entity[pk], true)) {
-        return wrap(entity[pk], true).__serializedPrimaryKey;
+      const value = entity[pk];
+
+      if (Utils.isEntity<T>(value, true)) {
+        return value.__helper!.__serializedPrimaryKey;
       }
 
-      return entity[pk];
+      return value;
     });
 
     return Utils.getPrimaryKeyHash(pks as string[]);
@@ -323,7 +326,7 @@ export class Utils {
     }
 
     if (Utils.isEntity(entity[primaryKeys[0]])) {
-      return wrap(entity[primaryKeys[0]], true).__primaryKey;
+      return entity[primaryKeys[0]].__helper!.__primaryKey;
     }
 
     return entity[primaryKeys[0]];
@@ -332,7 +335,7 @@ export class Utils {
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]])) {
-        return wrap(entity[primaryKeys[0]], true).__primaryKey;
+        return entity[primaryKeys[0]].__helper!.__primaryKey;
       }
 
       return entity[primaryKeys[0]];
@@ -340,7 +343,7 @@ export class Utils {
 
     return primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk])) {
-        return wrap(entity[pk], true).__primaryKey;
+        return entity[pk].__helper!.__primaryKey;
       }
 
       return entity[pk];

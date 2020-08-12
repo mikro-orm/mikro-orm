@@ -1,16 +1,15 @@
-import { wrap } from './wrap';
 import { IdentifiedReference, Reference } from './Reference';
-import { Dictionary, EntityData, IWrappedEntity, LoadedReference, Populate } from '../typings';
+import { AnyEntity, Dictionary, EntityData, IWrappedEntity, LoadedReference, Populate } from '../typings';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
-export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntity<T, PK> {
+export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T> implements IWrappedEntity<T, PK> {
 
   isInitialized(): boolean {
-    return wrap(this, true).isInitialized();
+    return (this as unknown as T).__helper!.isInitialized();
   }
 
   populated(populated = true): void {
-    wrap(this, true).populated(populated);
+    (this as unknown as T).__helper!.populated(populated);
   }
 
   toReference<PK2 extends PK = never, P extends Populate<T> = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P> {
@@ -18,7 +17,7 @@ export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntit
   }
 
   toObject(ignoreFields: string[] = []): Dictionary {
-    return wrap(this, true).toObject(ignoreFields) as EntityData<T>;
+    return (this as unknown as T).__helper!.toObject(ignoreFields) as EntityData<T>;
   }
 
   toJSON(...args: any[]): Dictionary {
@@ -30,7 +29,7 @@ export abstract class BaseEntity<T, PK extends keyof T> implements IWrappedEntit
   }
 
   init(populated = true): Promise<T> {
-    return wrap(this as unknown as T, true).init(populated);
+    return (this as unknown as T).__helper!.init(populated);
   }
 
 }

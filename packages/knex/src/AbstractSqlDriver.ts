@@ -1,7 +1,7 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, Value } from 'knex';
 import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty,
-  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, wrap, PopulateOptions, LoadStrategy,
+  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, AbstractSqlPlatform, Field, QueryBuilder } from './index';
 import { SqlEntityManager } from './SqlEntityManager';
@@ -93,7 +93,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return ret as T;
   }
 
-  private mapJoinedProps<T>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
+  private mapJoinedProps<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
     const joinedProps = this.joinedProps(meta, populate);
 
     joinedProps.forEach(p => {
@@ -146,7 +146,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     });
   }
 
-  private appendToCollection<T>(meta: EntityMetadata<T>, collection: EntityData<T>[], relationPojo: EntityData<T>): void {
+  private appendToCollection<T extends AnyEntity<T>>(meta: EntityMetadata<T>, collection: EntityData<T>[], relationPojo: EntityData<T>): void {
     if (collection.length === 0) {
       return void collection.push(relationPojo);
     }
@@ -251,13 +251,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
-    const wrapped = wrap(coll.owner, true);
+    const wrapped = coll.owner.__helper!;
     const meta = wrapped.__meta;
     const pks = wrapped.__primaryKeys;
     const snap = coll.getSnapshot();
     const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
-    const snapshot = snap ? snap.map(item => wrap(item, true).__primaryKeys) : [];
-    const current = coll.getItems(false).map(item => wrap(item, true).__primaryKeys);
+    const snapshot = snap ? snap.map(item => item.__helper!.__primaryKeys) : [];
+    const current = coll.getItems(false).map(item => item.__helper!.__primaryKeys);
     const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
     const insertDiff = current.filter(item => !includes(snapshot, item));
     const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -355,7 +355,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return Object.values(res).map((rows: Dictionary[]) => rows[0]) as T[];
   }
 
-  protected getFieldsForJoinedLoad<T>(qb: QueryBuilder<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field[] {
+  protected getFieldsForJoinedLoad<T extends AnyEntity<T>>(qb: QueryBuilder<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field[] {
     const fields: Field[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
@@ -377,7 +377,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return fields;
   }
 
-  protected mapPropToFieldNames<T>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field[] {
+  protected mapPropToFieldNames<T extends AnyEntity<T>>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field[] {
     if (prop.formula) {
       const alias = qb.ref(tableAlias ?? qb.alias).toString();
       const aliased = qb.ref(tableAlias ? `${tableAlias}_${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
@@ -465,13 +465,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
     const qb = this.createQueryBuilder(entity.constructor.name, ctx);
-    const meta = wrap(entity, true).__meta;
+    const meta = entity.__helper!.__meta;
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(mode);
     await this.rethrow(qb.execute());
   }
 
-  protected buildFields<T>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field[]): Field[] {
+  protected buildFields<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field[]): Field[] {
     const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasExplicitFields = !!fields;
 

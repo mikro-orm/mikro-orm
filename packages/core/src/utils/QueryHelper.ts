@@ -146,7 +146,7 @@ export class QueryHelper {
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
 
     if (root || wrapped.__meta.compositePK) {
       return wrapped.__primaryKey;

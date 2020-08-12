@@ -28,7 +28,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   toArray(): Dictionary[] {
     return this.getItems().map(item => {
-      const meta = wrap(item, true).__meta;
+      const meta = item.__helper!.__meta;
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return wrap(item).toJSON(...args);
@@ -46,7 +46,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
       return [];
     }
 
-    field = field || wrap(this.items[0], true).__meta.serializedPrimaryKey;
+    field = field || this.items[0].__helper!.__meta.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -80,7 +80,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   remove(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
-      const idx = this.items.findIndex(i => wrap(i, true).__serializedPrimaryKey === wrap(entity, true).__serializedPrimaryKey);
+      const idx = this.items.findIndex(i => i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey);
 
       if (idx !== -1) {
         delete this[this.items.length - 1]; // remove last item
@@ -101,7 +101,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
     return !!this.items.find(i => {
       const objectIdentity = i === entity;
-      const primaryKeyIdentity = !!wrap(i, true).__primaryKey && !!wrap(entity, true).__primaryKey && wrap(i, true).__serializedPrimaryKey === wrap(entity, true).__serializedPrimaryKey;
+      const primaryKeyIdentity = i.__helper!.__primaryKey && entity.__helper!.__primaryKey && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
@@ -126,7 +126,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = wrap(this.owner, true).__meta;
+      const meta = this.owner.__helper!.__meta;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

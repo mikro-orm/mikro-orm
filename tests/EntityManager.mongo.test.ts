@@ -232,7 +232,7 @@ describe('EntityManagerMongo', () => {
   test(`entity.init() and collection.init() works only for managed entities`, async () => {
     const author = new Author('a', 'b');
     await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
-    await expect(wrap(author.books).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
+    await expect(author.books.init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
   test(`persisting 1:1 created via assign from inverse (gh #210)`, async () => {

@@ -25,7 +25,7 @@ export class EntityFactory {
     const meta = this.metadata.get(entityName);
     meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
     const entity = this.createEntity(data, meta);
-    const wrapped = wrap(entity, true);
+    const wrapped = entity.__helper!;
 
     if (initialized && !Utils.isEntity(data)) {
       this.hydrator.hydrate(entity, meta, data, newEntity);

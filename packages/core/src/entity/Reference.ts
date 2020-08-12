@@ -1,13 +1,13 @@
 import { AnyEntity, Dictionary, EntityProperty, Primary } from '../typings';
 import { wrap } from './wrap';
 
-export type IdentifiedReference<T, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
+export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
 
-export class Reference<T> {
+export class Reference<T extends AnyEntity<T>> {
 
   constructor(private entity: T) {
     this.set(entity);
-    const wrapped = wrap(this.entity, true);
+    const wrapped = this.entity.__helper!;
     Object.defineProperty(this, '__reference', { value: true });
 
     wrapped.__meta.primaryKeys.forEach(primaryKey => {
@@ -21,18 +21,18 @@ export class Reference<T> {
     if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKeys[0] !== wrapped.__meta.serializedPrimaryKey) {
       Object.defineProperty(this, wrapped.__meta.serializedPrimaryKey, {
         get() {
-          return wrap(this.entity, true).__serializedPrimaryKey;
+          return this.entity.__helper!.__serializedPrimaryKey;
         },
       });
     }
   }
 
-  static create<T, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+  static create<T extends AnyEntity<T>, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
     if (Reference.isReference(entity)) {
       return entity as IdentifiedReference<T, PK>;
     }
 
-    return new Reference(entity) as IdentifiedReference<T, PK>;
+    return new Reference(entity as T) as IdentifiedReference<T, PK>;
   }
 
   /**
@@ -64,7 +64,7 @@ export class Reference<T> {
   async load<K extends keyof T>(prop: K): Promise<T[K]>;
   async load<K extends keyof T = never>(prop?: K): Promise<T | T[K]> {
     if (!this.isInitialized()) {
-      await wrap(this.entity).init();
+      await this.entity.__helper!.init();
     }
 
     if (prop) {
@@ -80,7 +80,7 @@ export class Reference<T> {
     }
 
     this.entity = entity;
-    Object.defineProperty(this, '__helper', { value: wrap(this.entity, true), writable: true });
+    Object.defineProperty(this, '__helper', { value: this.entity.__helper!, writable: true });
     Object.defineProperty(this, '$', { value: this.entity, writable: true });
     Object.defineProperty(this, 'get', { value: () => this.entity, writable: true });
   }
@@ -91,7 +91,7 @@ export class Reference<T> {
 
   getEntity(): T {
     if (!this.isInitialized()) {
-      throw new Error(`Reference<${wrap(this, true).__meta.name}> ${(wrap(this.entity, true).__primaryKey as Primary<T>)} not initialized`);
+      throw new Error(`Reference<${this.entity.__helper!.__meta.name}> ${(this.entity.__helper!.__primaryKey as Primary<T>)} not initialized`);
     }
 
     return this.entity;
@@ -102,11 +102,11 @@ export class Reference<T> {
   }
 
   isInitialized(): boolean {
-    return wrap(this.entity, true).isInitialized();
+    return this.entity.__helper!.isInitialized();
   }
 
   populated(populated?: boolean): void {
-    wrap(this.entity, true).populated!(populated);
+    this.entity.__helper!.populated!(populated);
   }
 
   toJSON(...args: any[]): Dictionary {

@@ -5,7 +5,6 @@ import { Utils, ValidationError } from '../utils';
 import { Collection } from './Collection';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
-import { wrap } from './wrap';
 
 type Options<T extends AnyEntity<T>> = {
   where?: FilterQuery<T>;
@@ -102,8 +101,12 @@ export class EntityLoader {
 
     // set populate flag
     entities.forEach(entity => {
-      if (Utils.isEntity(entity[field], true) || entity[field] as unknown instanceof Collection) {
-        wrap(entity[field], true).populated();
+      const value = entity[field];
+
+      if (Utils.isEntity(value, true)) {
+        (value as AnyEntity).__helper!.populated();
+      } else if (Utils.isCollection(value)) {
+        value.populated();
       }
     });
 
@@ -171,7 +174,7 @@ export class EntityLoader {
       return [];
     }
 
-    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, wrap(e, true).__meta.primaryKeys, true)));
+    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__helper!.__meta.primaryKeys, true)));
     const where = { [fk]: { $in: ids }, ...(options.where as Dictionary) };
 
     return this.em.find<T>(prop.type, where, {
@@ -213,11 +216,11 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => wrap(e, true).__primaryKeys), where, orderBy, this.em.getTransactionContext());
+    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.__helper!.__primaryKeys), where, orderBy, this.em.getTransactionContext());
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[wrap(entity, true).__serializedPrimaryKey as string].map(item => this.em.merge(prop.type, item, refresh));
+      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => this.em.merge(prop.type, item, refresh));
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }
@@ -257,7 +260,7 @@ export class EntityLoader {
       return children.map(e => Reference.unwrapReference(e[field]));
     }
 
-    return children.filter(e => !wrap(e[field], true).isInitialized()).map(e => Reference.unwrapReference(e[field]));
+    return children.filter(e => !(e[field] as AnyEntity).__helper!.isInitialized()).map(e => Reference.unwrapReference(e[field]));
   }
 
   private lookupAllRelationships<T>(entityName: string, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
