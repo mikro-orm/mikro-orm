@@ -258,7 +258,7 @@ export interface ConnectionOptions {
 
 export type MigrationObject = {
   name: string;
-  MigrationClass: Migration;
+  class: Migration;
 };
 
 export type MigrationsOptions = {
