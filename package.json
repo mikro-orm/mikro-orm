@@ -110,7 +110,6 @@
     "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
     "@types/node": "^14.0.19",
     "@types/pg": "^7.14.3",
-    "@types/umzug": "^2.2.3",
     "@types/uuid": "^8.0.0",
     "@types/webpack-env": "^1.15.2",
     "@typescript-eslint/eslint-plugin": "~3.9.0",
