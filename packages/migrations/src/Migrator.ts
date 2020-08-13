@@ -1,3 +1,4 @@
+// @ts-ignore
 import umzug, { Umzug, migrationsList } from 'umzug';
 import { Utils, Constructor, MigrationObject } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
@@ -21,7 +22,7 @@ export class Migrator {
     let migrations = {
       path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
       pattern: this.options.pattern,
-      customResolver: (file) => this.resolve(file),
+      customResolver: (file: string) => this.resolve(file),
     };
 
     if (this.options.migrationsList?.length) {
