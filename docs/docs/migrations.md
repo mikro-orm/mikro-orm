@@ -107,14 +107,17 @@ $ ts-node migrate
 
 ## Importing migrations statically
 
+If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations
+directly.
+
 ```typescript
-import Migration20191019195930 from "../migrations/Migration20191019195930.ts";
+import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
 
 await MikroORM.init({
   migrations: {
     migrationsList: [
       {
-        name: "Migration20191019195930.ts",
+        name: 'Migration20191019195930.ts',
         class: Migration20191019195930,
       },
     ],
@@ -122,11 +125,11 @@ await MikroORM.init({
 });
 ```
 
-or with the help of (webpacks context module api)[https://webpack.js.org/guides/dependency-management/#context-module-api]
-we can dynamically import the migrations
+With the help of (webpacks context module api)[https://webpack.js.org/guides/dependency-management/#context-module-api]
+we can dynamically import the migrations making it possible to import all files in a folder.
 
 ```typescript
-import { basename } from "path";
+import { basename } from 'path';
 
 const migrations = {};
 
@@ -136,7 +139,7 @@ function importAll(r) {
   );
 }
 
-importAll(require.context("../migrations", false, /\.ts$/));
+importAll(require.context('../migrations', false, /\.ts$/));
 
 const migrationsList = Object.keys(migrations).map((migrationName) => ({
   name: migrationName,

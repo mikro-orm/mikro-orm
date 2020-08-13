@@ -81,6 +81,7 @@ export class Migrator {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const migration = require(file);
     const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+
     return this.initialize(MigrationClass);
   }
 

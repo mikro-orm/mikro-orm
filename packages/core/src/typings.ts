@@ -215,6 +215,16 @@ export interface IMigrator {
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
 }
 
+export interface Migration {
+  up(): Promise<void>;
+  down(): Promise<void>;
+}
+
+export interface MigrationObject {
+  name: string;
+  class: Constructor<Migration>;
+}
+
 export type FilterDef<T extends AnyEntity<T>> = {
   name: string;
   cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T>);
@@ -275,9 +285,4 @@ export type New<T, P = string[]> = Loaded<T, P>;
 
 export interface Highlighter {
   highlight(text: string): string;
-}
-
-export interface Migration {
-  up(): Promise<void>;
-  down(): Promise<void>;
 }

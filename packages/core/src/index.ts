@@ -2,7 +2,7 @@
 export {
   Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection,
-  GetRepository, EntityRepositoryType,
+  GetRepository, EntityRepositoryType, MigrationObject
 } from './typings';
 export * from './enums';
 export * from './exceptions';

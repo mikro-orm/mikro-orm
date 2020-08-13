@@ -3,7 +3,7 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, Migration } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, Migration, MigrationObject } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace, NotFoundError, Utils } from '../utils';
@@ -255,11 +255,6 @@ export interface ConnectionOptions {
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
 }
-
-export type MigrationObject = {
-  name: string;
-  class: Migration;
-};
 
 export type MigrationsOptions = {
   tableName?: string;
