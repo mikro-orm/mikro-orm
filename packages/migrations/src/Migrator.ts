@@ -26,7 +26,7 @@ export class Migrator {
 
     if (this.options.migrationsList?.length) {
       migrations = migrationsList(
-        this.options.migrationsList.map((migration: MigrationObject) => 
+        this.options.migrationsList.map((migration: MigrationObject) =>
           this.initialize(
             migration.class as unknown as Constructor<Migration>,
             migration.name
