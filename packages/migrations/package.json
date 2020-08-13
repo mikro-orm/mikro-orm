@@ -54,9 +54,7 @@
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.0.0-rc.1",
-    "@types/sequelize": "^4.28.9",
-    "@types/validator": "^13.1.0",
-    "sequelize": "^6.3.4"
+    "@types/sequelize": "^4.28.9"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0-rc.1"
