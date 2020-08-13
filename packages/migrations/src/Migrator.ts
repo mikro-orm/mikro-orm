@@ -1,5 +1,6 @@
-import umzug, { Umzug } from 'umzug';
-import { Utils, Constructor } from '@mikro-orm/core';
+// @ts-ignore
+import umzug, { Umzug, migrationsList } from 'umzug';
+import { Utils, Constructor, MigrationObject } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
@@ -18,14 +19,27 @@ export class Migrator {
   private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly em: EntityManager) {
+    let migrations = {
+      path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
+      pattern: this.options.pattern,
+      customResolver: (file: string) => this.resolve(file),
+    };
+
+    if (this.options.migrationsList?.length) {
+      migrations = migrationsList(
+        this.options.migrationsList.map((migration: MigrationObject) =>
+          this.initialize(
+            migration.class as unknown as Constructor<Migration>,
+            migration.name
+          )
+        )
+      );
+    }
+
     this.umzug = new umzug({
       storage: this.storage,
       logging: this.config.get('logger'),
-      migrations: {
-        path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
-        pattern: this.options.pattern,
-        customResolver: file => this.resolve(file),
-      },
+      migrations,
     });
   }
 
@@ -67,9 +81,15 @@ export class Migrator {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const migration = require(file);
     const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+
+    return this.initialize(MigrationClass);
+  }
+
+  protected initialize(MigrationClass: Constructor<Migration>, name?: string) {
     const instance = new MigrationClass(this.driver.getConnection(), this.config);
 
     return {
+      name,
       up: () => this.runner.run(instance, 'up'),
       down: () => this.runner.run(instance, 'down'),
     };
