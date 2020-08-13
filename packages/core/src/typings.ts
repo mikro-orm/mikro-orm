@@ -276,3 +276,8 @@ export type New<T, P = string[]> = Loaded<T, P>;
 export interface Highlighter {
   highlight(text: string): string;
 }
+
+export interface Migration {
+  up(): Promise<void>;
+  down(): Promise<void>;
+}
