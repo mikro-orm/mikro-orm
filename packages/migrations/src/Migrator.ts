@@ -1,4 +1,4 @@
-import umzug, { Umzug } from 'umzug';
+import { Umzug } from 'umzug';
 import { Utils, Constructor } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { Migration } from './Migration';
@@ -18,7 +18,7 @@ export class Migrator {
   private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly em: EntityManager) {
-    this.umzug = new umzug({
+    this.umzug = new Umzug({
       storage: this.storage,
       logging: this.config.get('logger'),
       migrations: {

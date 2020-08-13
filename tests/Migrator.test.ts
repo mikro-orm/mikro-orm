@@ -1,5 +1,5 @@
 (global as any).process.env.FORCE_COLOR = 0;
-import umzug from 'umzug';
+import { Umzug } from 'umzug';
 import { Logger, MikroORM } from '@mikro-orm/core';
 import { Migration, Migrator } from '@mikro-orm/migrations';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -80,10 +80,10 @@ describe('Migrator', () => {
   });
 
   test('run schema migration', async () => {
-    const upMock = jest.spyOn(umzug.prototype, 'up');
-    const downMock = jest.spyOn(umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0);
-    downMock.mockImplementationOnce(() => void 0);
+    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    upMock.mockImplementationOnce(async () => []);
+    downMock.mockImplementationOnce(async () => []);
     const migrator = new Migrator(orm.em);
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);

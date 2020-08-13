@@ -53,7 +53,9 @@
     "umzug": "^3.0.0-beta.5"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.1"
+    "@mikro-orm/core": "^4.0.0-rc.1",
+    "@types/validator": "^13.1.0",
+    "sequelize": "^6.3.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0-rc.1"
