@@ -76,8 +76,10 @@ describe('GH issue 519', () => {
     const [items, count] = await orm.em.getRepository(Registration).findAndCount({ competition });
     expect(items.length).toBe(3);
     expect(count).toBe(3);
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "registration" as "e0" where "e0"."competition_id" = $1`);
-    expect(mock.mock.calls[1][0]).toMatch(`select count(distinct("e0"."competition_id", "e0"."user_id")) as "count" from "registration" as "e0" where "e0"."competition_id" = $1`);
+    const queries: string[] = mock.mock.calls.map(c => c[0]).sort();
+    expect(queries).toHaveLength(2);
+    expect(queries[0]).toMatch('select "e0".* from "registration" as "e0" where "e0"."competition_id" = $1');
+    expect(queries[1]).toMatch('select count(distinct("e0"."competition_id", "e0"."user_id")) as "count" from "registration" as "e0" where "e0"."competition_id" = $1');
   });
 
 });
