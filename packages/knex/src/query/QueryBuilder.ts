@@ -104,11 +104,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
-    cond = QueryHelper.processWhere(cond as Dictionary, this.entityName, this.metadata)!;
-
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
+    } else {
+      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata)!;
     }
 
     const op = operator || params as keyof typeof GroupOperator;
@@ -493,7 +493,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         });
     }
 
-    QueryHelper.processParams([this._data, this._cond, this._having]);
+    QueryHelper.processObjectParams(this._data);
+    QueryHelper.processObjectParams(this._cond);
+    QueryHelper.processObjectParams(this._having);
     this.finalized = true;
 
     if (meta && this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {

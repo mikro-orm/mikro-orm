@@ -26,10 +26,16 @@ export class QueryHelper {
     }
 
     if (Utils.isPlainObject(params)) {
-      Object.keys(params).forEach(k => {
-        params[k] = QueryHelper.processParams(params[k], !!k);
-      });
+      QueryHelper.processObjectParams(params);
     }
+
+    return params;
+  }
+
+  static processObjectParams(params: Dictionary = {}): any {
+    Object.keys(params).forEach(k => {
+      params[k] = QueryHelper.processParams(params[k], !!k);
+    });
 
     return params;
   }

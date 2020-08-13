@@ -466,21 +466,8 @@ export class Utils {
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
   static isPlainObject(value: any): boolean {
-    if (!Utils.isObject(value)) {
-      return false;
-    }
-
-    if (typeof value.constructor !== 'function') {
-      return false;
-    }
-
     // eslint-disable-next-line no-prototype-builtins
-    if (!value.constructor.prototype.hasOwnProperty('isPrototypeOf')) {
-      return false;
-    }
-
-    // most likely plain object
-    return true;
+    return value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf');
   }
 
   /**

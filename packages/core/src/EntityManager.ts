@@ -322,7 +322,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>> {
     entityName = Utils.className(entityName);
-    data = QueryHelper.processParams(data);
+    data = QueryHelper.processObjectParams(data);
     this.validator.validateParams(data, 'insert data');
     const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
 
@@ -334,7 +334,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeUpdate<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>, options: UpdateOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    data = QueryHelper.processParams(data);
+    data = QueryHelper.processObjectParams(data);
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'update');
     this.validator.validateParams(data, 'update data');

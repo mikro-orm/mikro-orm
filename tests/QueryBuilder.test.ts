@@ -6,6 +6,7 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
+import { performance } from 'perf_hooks';
 
 describe('QueryBuilder', () => {
 
@@ -1435,6 +1436,32 @@ describe('QueryBuilder', () => {
     qb4.select('*').where({ name: { $ilike: 'test' } });
     expect(qb4.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" ilike $1');
     expect(qb4.getParams()).toEqual(['test']);
+  });
+
+  test('perf: insert', async () => {
+    const start = performance.now();
+    for (let i = 1; i <= 10_000; i++) {
+      const qb = orm.em.createQueryBuilder(Publisher2);
+      qb.insert({ name: `test ${i}`, type: PublisherType.GLOBAL }).getKnexQuery();
+    }
+    const took = performance.now() - start;
+
+    if (took > 200) {
+      process.stdout.write(`insert test took ${took}\n`);
+    }
+  });
+
+  test('perf: update', async () => {
+    const start = performance.now();
+    for (let i = 1; i <= 10_000; i++) {
+      const qb = orm.em.createQueryBuilder(Publisher2);
+      qb.update({ name: `test ${i}`, type: PublisherType.GLOBAL }).where({ id: 123 }).getKnexQuery();
+    }
+    const took = performance.now() - start;
+
+    if (took > 300) {
+      process.stdout.write(`update test took ${took}\n`);
+    }
   });
 
   afterAll(async () => orm.close(true));
