@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, MikroORM } from '@mikro-orm/core';
+import { Configuration, EntityManager, JavaScriptMetadataProvider, MikroORM, Options, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -47,8 +47,8 @@ export async function initORMMongo() {
   return orm;
 }
 
-export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql') {
-  let orm = await MikroORM.init<AbstractSqlDriver>({
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}) {
+  let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
@@ -57,13 +57,14 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     debug: ['query'],
     timezone: 'Z',
     charset: 'utf8mb4',
-    logger: i => i,
+    logger: (i: any) => i,
     multipleStatements: true,
     entityRepository: SqlEntityRepository,
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations' },
-  });
+
+  }, additionalOptions));
 
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();

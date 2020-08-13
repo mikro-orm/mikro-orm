@@ -1,5 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
+Array [
+  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "begin (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "set names utf8mb4; (via write connection '127.0.0.1')",
+  "set foreign_key_checks = 0; (via write connection '127.0.0.1')",
+  "select 1 + 1 (via write connection '127.0.0.1')",
+  "set foreign_key_checks = 1; (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
+  "commit (via write connection '127.0.0.1')",
+]
+`;
+
 exports[`Migrator generate js schema migration: migration-js-dump 1`] = `
 Object {
   "code": "'use strict';
