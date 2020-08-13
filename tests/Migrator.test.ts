@@ -248,7 +248,7 @@ describe('Migrator - with explicit migrations', () => {
     await migrator.storage.ensureTable();
 
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
+    const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');

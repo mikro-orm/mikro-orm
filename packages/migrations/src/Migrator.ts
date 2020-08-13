@@ -1,11 +1,22 @@
-// @ts-ignore
 import umzug, { Umzug, migrationsList } from 'umzug';
-import { Utils, Constructor, MigrationObject } from '@mikro-orm/core';
+import { Utils, Constructor, Dictionary } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
 import { MigrationStorage } from './MigrationStorage';
+
+declare module 'umzug' {
+
+  interface MigrationDefinitionWithName extends UmzugMigration {
+    name: string;
+  }
+
+  interface UmzugStatic {
+    migrationsList(migrations: MigrationDefinitionWithName[], parameters?: any[]): UmzugMigration[];
+  }
+
+}
 
 export class Migrator {
 
@@ -19,21 +30,15 @@ export class Migrator {
   private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly em: EntityManager) {
-    let migrations = {
+    let migrations: Dictionary = {
       path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
       pattern: this.options.pattern,
       customResolver: (file: string) => this.resolve(file),
     };
 
     if (this.options.migrationsList?.length) {
-      migrations = migrationsList(
-        this.options.migrationsList.map((migration: MigrationObject) =>
-          this.initialize(
-            migration.class as unknown as Constructor<Migration>,
-            migration.name
-          )
-        )
-      );
+      const list = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+      migrations = migrationsList(list as unknown as Required<UmzugMigration>[]);
     }
 
     this.umzug = new umzug({
@@ -148,7 +153,7 @@ export class Migrator {
 
 }
 
-export type UmzugMigration = { path?: string; file: string };
+export type UmzugMigration = { name?: string; path?: string; file: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
 export type MigrationResult = { fileName: string; code: string; diff: string[] };
 export type MigrationRow = { name: string; executed_at: Date };
