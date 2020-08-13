@@ -52,3 +52,4 @@ hide_title: true
   - [Nest + MySQL + TypeScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/nest)
   - [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
   - [Express + MongoDB + JavaScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
+  - [GraphQL + PostgreSQL + Typescript](https://github.com/driescroons/mikro-orm-graphql-example)
