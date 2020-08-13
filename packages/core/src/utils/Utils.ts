@@ -7,7 +7,6 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 // @ts-ignore
 import { parse } from 'acorn-loose';
-// @ts-ignore
 import { simple as walk } from 'acorn-walk';
 
 import { MetadataStorage } from '../metadata';
@@ -232,7 +231,7 @@ export class Utils {
    */
   static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
-    const parsed = parse(func.toString());
+    const parsed = parse(func.toString(), { ecmaVersion: '2020' });
 
     const checkNode = (node: any, methodName?: string) => {
       if (methodName && !(node.key && (node.key as any).name === methodName)) {
