@@ -2,7 +2,7 @@ import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from 
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { Configuration, ConnectionOptions, Utils } from '../utils';
+import { Configuration, ConnectionOptions, Utils, ValidationError } from '../utils';
 import { QueryOrder, QueryOrderMap } from '../enums';
 import { Platform } from '../platforms';
 import { Collection, ReferenceType } from '../entity';
@@ -123,6 +123,31 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async ensureIndexes(): Promise<void> {
     throw new Error(`${this.constructor.name} does not use ensureIndexes`);
+  }
+
+  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T): void {
+    Object.keys(data).forEach(k => {
+      if (Utils.isOperator(k)) {
+        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload));
+      }
+    });
+
+    Object.values<EntityProperty>(meta.properties).forEach(prop => {
+      if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
+        const props = prop.embeddedProps;
+
+        Object.keys(data[prop.name]).forEach(kk => {
+          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
+
+          if (operator) {
+            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name, prop.name, data);
+          }
+
+          data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+        });
+        delete data[prop.name];
+      }
+    });
   }
 
   protected getPivotOrderBy(prop: EntityProperty, orderBy?: QueryOrderMap): QueryOrderMap {

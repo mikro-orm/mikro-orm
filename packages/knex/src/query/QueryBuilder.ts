@@ -1,4 +1,4 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value, Ref } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Ref, Transaction, Value } from 'knex';
 import {
   AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
   QueryOrderMap, ReferenceType, QueryHelper, Utils, ValidationError, PopulateOptions,
@@ -44,7 +44,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               readonly alias = `e0`,
               private readonly connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) {
-    this.select('*');
+    this._aliasMap[this.alias] = this.entityName;
   }
 
   select(fields: Field | Field[], distinct = false): this {
@@ -459,6 +459,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private finalize(): void {
     if (this.finalized) {
       return;
+    }
+
+    if (!this.type) {
+      this.select('*');
     }
 
     const meta = this.metadata.find(this.entityName);

@@ -1,4 +1,4 @@
-import { Reference, wrap } from '../entity';
+import { Reference } from '../entity';
 import { Utils } from './Utils';
 import { AnyEntity, Dictionary, EntityMetadata, FilterDef, FilterQuery } from '../typings';
 import { GroupOperator } from '../enums';
