@@ -43,7 +43,7 @@ export class EntityGenerator {
   async createEntity(table: DatabaseTable): Promise<void> {
     const meta = table.getEntityDeclaration(this.namingStrategy, this.helper);
     const entity = this.project.createSourceFile(meta.className + '.ts', writer => {
-      writer.writeLine(`import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, OneToOne, ManyToMany, Cascade, Index, Unique } from 'mikro-orm';`);
+      writer.writeLine(`import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, OneToOne, ManyToMany, Cascade, Index, Unique } from '@mikro-orm/core';`);
       writer.blankLine();
       writer.writeLine('@Entity()');
 
