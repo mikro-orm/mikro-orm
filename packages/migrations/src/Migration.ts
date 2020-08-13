@@ -1,7 +1,7 @@
-import { Configuration } from '@mikro-orm/core';
+import { Configuration, Migration as CoreMigration } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 
-export abstract class Migration {
+export abstract class Migration implements CoreMigration {
 
   private readonly queries: string[] = [];
 

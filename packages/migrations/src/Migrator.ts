@@ -1,5 +1,4 @@
-// @ts-ignore
-import umzug, { Umzug, migrationsList } from 'umzug';
+import umzug, { Umzug, migrationsList, MigrationDefinitionWithName, MigrationOptions, Migration as UmzugMigration } from 'umzug';
 import { Utils, Constructor, MigrationObject } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { Migration } from './Migration';
@@ -19,7 +18,7 @@ export class Migrator {
   private readonly storage = new MigrationStorage(this.driver, this.options);
 
   constructor(private readonly em: EntityManager) {
-    let migrations = {
+    let migrations: MigrationOptions | UmzugMigration[] = {
       path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
       pattern: this.options.pattern,
       customResolver: (file: string) => this.resolve(file),
@@ -31,7 +30,7 @@ export class Migrator {
           this.initialize(
             migration.class as unknown as Constructor<Migration>,
             migration.name
-          )
+          ) as MigrationDefinitionWithName
         )
       );
     }
@@ -148,7 +147,6 @@ export class Migrator {
 
 }
 
-export type UmzugMigration = { path?: string; file: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
 export type MigrationResult = { fileName: string; code: string; diff: string[] };
 export type MigrationRow = { name: string; executed_at: Date };
