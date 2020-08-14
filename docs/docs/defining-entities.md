@@ -476,6 +476,24 @@ export class Book {
 }
 ```
 
+### Using PostgreSQL [uuid-osp](https://www.postgresql.org/docs/current/uuid-ossp.html) module function as primary key
+
+```typescript
+@Entity()
+export class Book {
+
+  @PrimaryKey({ type: "uuid", defaultRaw: "uuid_generate_v4()" })
+  uuid: string;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne()
+  author!: Author;
+
+}
+```
+
 ### Using BigInt as primary key (MySQL and PostgreSQL)
 
 You can use `BigIntType` to support `bigint`s. By default it will represent the value as
