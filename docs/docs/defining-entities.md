@@ -482,7 +482,7 @@ export class Book {
 @Entity()
 export class Book {
 
-  @PrimaryKey({ type: "uuid", defaultRaw: "uuid_generate_v4()" })
+  @PrimaryKey({ type: 'uuid', defaultRaw: 'uuid_generate_v4()' })
   uuid: string;
 
   @Property()
