@@ -1372,9 +1372,9 @@ describe('EntityManagerPostgre', () => {
     await orm.em.flush();
     const took = performance.now() - start;
 
-    // if (took > 200) {
+    if (took > 300) {
       process.stdout.write(`delete test took ${took}\n`);
-    // }
+    }
   });
 
   afterAll(async () => orm.close(true));

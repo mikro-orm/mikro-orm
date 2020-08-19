@@ -1,6 +1,6 @@
 import {
   Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions,
-  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession,
+  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession, SortOptionObject,
 } from 'mongodb';
 import { inspect } from 'util';
 import {
@@ -93,7 +93,7 @@ export class MongoConnection extends Connection {
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
       }, {});
       query += `.sort(${this.logObject(orderBy)})`;
-      resultSet.sort(orderBy);
+      resultSet.sort(orderBy as SortOptionObject<T>);
     }
 
     if (limit !== undefined) {

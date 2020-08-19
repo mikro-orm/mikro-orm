@@ -47,7 +47,8 @@
     "access": "public"
   },
   "dependencies": {
-    "mongodb": "^3.6.0"
+    "mongodb": "^3.6.0",
+    "@types/mongodb": "^3.5.26"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.0.0-rc.2"
