@@ -59,7 +59,7 @@ describe('GH issue 369', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into `b` (`a_id`, `foo`) values (?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch('delete from `b` where `id` = ?');
+    expect(mock.mock.calls[5][0]).toMatch('delete from `b` where `id` in (?)');
     expect(mock.mock.calls[6][0]).toMatch('commit');
     expect(mock.mock.calls).toHaveLength(7);
   });

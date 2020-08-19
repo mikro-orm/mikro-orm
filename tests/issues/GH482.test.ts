@@ -66,9 +66,8 @@ describe('GH issue 482', () => {
     orm.config.set('debug', ['query', 'query-params']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`delete from "level" where "type" = 'A' and "job_id" = '1'`);
-    expect(mock.mock.calls[2][0]).toMatch(`delete from "level" where "type" = 'B' and "job_id" = '1'`);
-    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch(`delete from "level" where ("type", "job_id") in (('A', '1'), ('B', '1'))`);
+    expect(mock.mock.calls[2][0]).toMatch('commit');
     mock.mock.calls.length = 0;
   });
 

@@ -172,8 +172,8 @@ describe('UnitOfWork', () => {
     expect(mock.mock.calls[3][0]).toMatch('db.commit()');
 
     expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
-      [ChangeSetType.CREATE, 'FooBaz'],
       [ChangeSetType.CREATE, 'FooBar'],
+      [ChangeSetType.CREATE, 'FooBaz'],
     ]);
   });
 

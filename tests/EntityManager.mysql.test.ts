@@ -1282,8 +1282,8 @@ describe('EntityManagerMySql', () => {
       ['beforeUpdate', 'Book2'],
       ['afterUpdate', 'Book2'],
       ['beforeDelete', 'Book2'],
-      ['afterDelete', 'Book2'],
       ['beforeDelete', 'Book2'],
+      ['afterDelete', 'Book2'],
       ['afterDelete', 'Book2'],
       ['beforeDelete', 'Author2'],
       ['afterDelete', 'Author2'],
@@ -2119,7 +2119,7 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.config, { logger });
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `foo_baz2` where `id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `foo_baz2` where `id` in (?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 

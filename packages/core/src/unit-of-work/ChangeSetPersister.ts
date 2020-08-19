@@ -30,9 +30,7 @@ export class ChangeSetPersister {
     let res: QueryResult | undefined;
     const wrapped = changeSet.entity.__helper!;
 
-    if (changeSet.type === ChangeSetType.DELETE) {
-      await this.driver.nativeDelete(changeSet.name, wrapped.__primaryKey as Dictionary, ctx);
-    } else if (changeSet.type === ChangeSetType.UPDATE) {
+    if (changeSet.type === ChangeSetType.UPDATE) {
       res = await this.updateEntity(meta, changeSet, ctx);
       this.mapReturnedValues(changeSet.entity, res, meta);
     } else if (Utils.isDefined(wrapped.__primaryKey, true)) { // ChangeSetType.CREATE with primary key

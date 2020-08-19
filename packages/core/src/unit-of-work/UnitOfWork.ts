@@ -1,4 +1,4 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
 import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
@@ -169,14 +169,14 @@ export class UnitOfWork {
       return;
     }
 
-    this.reorderChangeSets();
+    const groups = this.getChangeSetGroups();
     const platform = this.em.getDriver().getPlatform();
     const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
     if (runInTransaction) {
-      await this.em.getConnection('write').transactional(trx => this.persistToDatabase(trx));
+      await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx));
     } else {
-      await this.persistToDatabase(this.em.getTransactionContext());
+      await this.persistToDatabase(groups, this.em.getTransactionContext());
     }
 
     await this.em.getEventManager().dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
@@ -337,7 +337,6 @@ export class UnitOfWork {
     switch (changeSet.type) {
       case ChangeSetType.CREATE: this.em.merge(changeSet.entity as T, true); break;
       case ChangeSetType.UPDATE: this.merge(changeSet.entity as T); break;
-      case ChangeSetType.DELETE: this.unsetIdentity(changeSet.entity as T); break;
     }
 
     await this.runHooks(`after${type}` as EventType, changeSet);
@@ -471,11 +470,30 @@ export class UnitOfWork {
     return reference;
   }
 
-  private async persistToDatabase(tx?: Transaction): Promise<void> {
-    for (const changeSet of this.changeSets) {
-      await this.commitChangeSet(changeSet, tx);
+  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, tx?: Transaction): Promise<void> {
+    const commitOrder = this.getCommitOrder();
+    const commitOrderReversed = [...commitOrder].reverse();
+
+    // 1. create
+    for (const name of commitOrder) {
+      for (const changeSet of (groups[ChangeSetType.CREATE][name] ?? [])) {
+        await this.commitChangeSet(changeSet, tx);
+      }
     }
 
+    // 2. update
+    for (const name of commitOrder) {
+      for (const changeSet of (groups[ChangeSetType.UPDATE][name] ?? [])) {
+        await this.commitChangeSet(changeSet, tx);
+      }
+    }
+
+    // 3. delete - entity deletions need to be in reverse commit order
+    for (const name of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE][name] ?? [], tx);
+    }
+
+    // 4. extra updates
     for (const extraUpdate of this.extraUpdates) {
       extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
       const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
@@ -485,40 +503,58 @@ export class UnitOfWork {
       }
     }
 
+    // 5. collection updates
     for (const coll of this.collectionUpdates) {
       await this.em.getDriver().syncCollection(coll, tx);
       coll.takeSnapshot();
     }
   }
 
+  private async commitDeleteChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    if (changeSets.length === 0) {
+      return;
+    }
+
+    for (const changeSet of changeSets) {
+      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
+      await this.runHooks(EventType.beforeDelete, changeSet);
+      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+    }
+
+    const meta = changeSets[0].entity.__helper!.__meta;
+    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+
+    if (meta.compositePK) {
+      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeys);
+      await this.em.getDriver().nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+    } else {
+      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKey as Dictionary);
+      await this.em.getDriver().nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+    }
+
+    for (const changeSet of changeSets) {
+      this.unsetIdentity(changeSet.entity);
+      await this.runHooks(EventType.afterDelete, changeSet);
+    }
+  }
+
   /**
    * Orders change sets so FK constrains are maintained, ensures stable order (needed for node < 11)
    */
-  private reorderChangeSets() {
-    const commitOrder = this.getCommitOrder();
-    const commitOrderReversed = [...commitOrder].reverse();
-    const typeOrder = [ChangeSetType.CREATE, ChangeSetType.UPDATE, ChangeSetType.DELETE];
-    const compare = <T, K extends keyof T>(base: T[], arr: T[K][], a: T, b: T, key: K) => {
-      if (arr.indexOf(a[key]) === arr.indexOf(b[key])) {
-        return base.indexOf(a) - base.indexOf(b); // ensure stable order
-      }
-
-      return arr.indexOf(a[key]) - arr.indexOf(b[key]);
+  private getChangeSetGroups(): { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> } {
+    const groups = {
+      [ChangeSetType.CREATE]: new Map<string, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE]: new Map<string, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE]: new Map<string, ChangeSet<any>[]>(),
     };
 
-    const copy = this.changeSets.slice(); // make copy to maintain commit order
-    this.changeSets.sort((a, b) => {
-      if (a.type !== b.type) {
-        return compare(copy, typeOrder, a, b, 'type');
-      }
-
-      // Entity deletions come last and need to be in reverse commit order
-      if (a.type === ChangeSetType.DELETE) {
-        return compare(copy, commitOrderReversed, a, b, 'name');
-      }
-
-      return compare(copy, commitOrder, a, b, 'name');
+    this.changeSets.forEach(cs => {
+      const group = groups[cs.type];
+      group[cs.name] = group[cs.name] ?? [];
+      group[cs.name].push(cs);
     });
+
+    return groups;
   }
 
   private getCommitOrder(): string[] {
