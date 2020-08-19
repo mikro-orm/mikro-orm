@@ -177,7 +177,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * @internal
    */
-  ref(field: string): Ref<string, string> {
+  ref(field: string) {
     return this.knex.ref(field);
   }
 

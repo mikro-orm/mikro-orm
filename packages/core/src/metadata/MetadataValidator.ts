@@ -20,6 +20,8 @@ export class MetadataValidator {
     }
 
     this.validateVersionField(meta);
+    this.validateIndexes(meta, meta.indexes, 'index');
+    this.validateIndexes(meta, meta.uniques, 'unique');
     const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
 
     for (const prop of references) {
@@ -110,6 +112,16 @@ export class MetadataValidator {
     // owning side is not defined as inverse
     if (owner.mappedBy) {
       throw MetadataError.fromWrongOwnership(meta, prop, 'mappedBy');
+    }
+  }
+
+  private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {
+    for (const index of indexes) {
+      for (const prop of Utils.asArray(index.properties)) {
+        if (!(prop in meta.properties)) {
+          throw MetadataError.unknownIndexProperty(meta, prop, type);
+        }
+      }
     }
   }
 

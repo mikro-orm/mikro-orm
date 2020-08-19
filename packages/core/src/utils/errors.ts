@@ -138,6 +138,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Entity '${name}' not found in ${path}`);
   }
 
+  static unknownIndexProperty(meta: EntityMetadata, prop: string, type: string): MetadataError {
+    return new MetadataError(`Entity ${meta.className} has wrong ${type} definition: '${prop}' does not exist. You need to use property name, not column name.`);
+  }
+
   static multipleVersionFields(meta: EntityMetadata, fields: string[]): MetadataError {
     return new MetadataError(`Entity ${meta.className} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
   }
