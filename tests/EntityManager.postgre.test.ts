@@ -6,6 +6,7 @@ import {
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
+import { performance } from 'perf_hooks';
 
 describe('EntityManagerPostgre', () => {
 
@@ -1358,6 +1359,22 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(driver.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
+  });
+
+  test('perf: delete', async () => {
+    const start = performance.now();
+    for (let i = 1; i <= 5_000; i++) {
+      const e = new FooBaz2(`baz ${i}`);
+      e.id = i;
+      orm.em.merge(e);
+      orm.em.remove(e);
+    }
+    await orm.em.flush();
+    const took = performance.now() - start;
+
+    // if (took > 200) {
+      process.stdout.write(`delete test took ${took}\n`);
+    // }
   });
 
   afterAll(async () => orm.close(true));
