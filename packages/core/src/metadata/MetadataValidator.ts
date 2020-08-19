@@ -20,8 +20,8 @@ export class MetadataValidator {
     }
 
     this.validateVersionField(meta);
-    this.validateIndexes(meta, meta.indexes, 'index');
-    this.validateIndexes(meta, meta.uniques, 'unique');
+    this.validateIndexes(meta, meta.indexes ?? [], 'index');
+    this.validateIndexes(meta, meta.uniques ?? [], 'unique');
     const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
 
     for (const prop of references) {
