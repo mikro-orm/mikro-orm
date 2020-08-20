@@ -5,9 +5,7 @@ import globby, { GlobbyOptions } from 'globby';
 import { isAbsolute, normalize, relative, resolve, extname, join } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
-// @ts-ignore
-import { parse } from 'acorn-loose';
-import { simple as walk } from 'acorn-walk';
+import { recovery } from 'escaya';
 
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
@@ -231,19 +229,20 @@ export class Utils {
    */
   static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
-    const parsed = parse(func.toString(), { ecmaVersion: '2020' });
+    const parsed = recovery(func.toString(), 'entity.js', { next: true, module: true });
 
-    const checkNode = (node: any, methodName?: string) => {
-      if (methodName && !(node.key && (node.key as any).name === methodName)) {
+    const checkNode = (node: Dictionary) => {
+      if (methodName && node.name?.name !== methodName) {
         return;
       }
 
-      const params = node.value ? node.value.params : node.params;
+      // const params = node.value ? node.value.params : node.params;
+      const params = node.uniqueFormalParameters ?? node.params;
       ret.push(...params.map((p: any) => {
         switch (p.type) {
-          case 'AssignmentPattern':
+          case 'BindingElement':
             return p.left.name;
-          case 'RestElement':
+          case 'BindingRestElement':
             return '...' + p.argument.name;
           default:
             return p.name;
@@ -251,10 +250,25 @@ export class Utils {
       }));
     };
 
-    walk(parsed, {
-      MethodDefinition: (node: any) => checkNode(node, methodName),
-      FunctionDeclaration: (node: any) => checkNode(node, methodName),
-    });
+    const walk = (node: Dictionary) => {
+      if (['MethodDefinition', 'FunctionDeclaration'].includes(node.type!)) {
+        checkNode(node);
+      }
+
+      if (Array.isArray(node.leafs)) {
+        node.leafs.forEach((row: Dictionary) => walk(row));
+      }
+
+      if (Array.isArray(node.elements)) {
+        node.elements.forEach(element => walk(element));
+      }
+
+      if (node.method) {
+        walk(node.method);
+      }
+    };
+
+    walk(parsed);
 
     return ret;
   }
