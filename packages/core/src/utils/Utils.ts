@@ -441,12 +441,22 @@ export class Utils {
     // use some dark magic to get source path to caller
     stack = stack || new Error().stack!.split('\n');
     let line = stack.findIndex(line => line.includes('__decorate'))!;
+    let compiled = false;
+
+    if (line === -1) {
+      line = stack.findIndex(line => line.includes('_compile'))!;
+
+      if (line !== -1) {
+        line--;
+        compiled = true;
+      }
+    }
 
     if (line === -1) {
       throw new Error('Cannot find path to entity');
     }
 
-    if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
+    if (!compiled && Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
 

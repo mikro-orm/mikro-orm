@@ -312,6 +312,36 @@ describe('Utils', () => {
     ];
     expect(Utils.lookupPathFromDecorator(stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
+    // using babel
+    const stack4 = [
+      '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
+      '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
+      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/decorators/PrimaryKey.js:8:49',
+      '    at /usr/local/var/www/my-project/dist/entities/Customer.js:20:9',
+      '    at Array.reduce (<anonymous>)',
+      '    at _applyDecoratedDescriptor (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
+      '    at Object.<anonymous> (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
+      '    at Module._compile (internal/modules/cjs/loader.js:1138:30)',
+      '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
+      '    at Module.load (internal/modules/cjs/loader.js:986:32)',
+    ];
+    expect(Utils.lookupPathFromDecorator(stack4)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+
+    // using babel
+    const stack5 = [
+      '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
+      '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
+      '    at /usr/local/var/www/my-project/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at Object.<anonymous> (/usr/local/var/www/my-project/dist/entities/Customer.js:20:9)',
+      '    at Module._compile (internal/modules/cjs/loader.js:1138:30)',
+      '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
+      '    at Module.load (internal/modules/cjs/loader.js:986:32)',
+      '    at Function.Module._load (internal/modules/cjs/loader.js:879:14)',
+      '    at Module.require (internal/modules/cjs/loader.js:1026:19)',
+      '    at require (internal/modules/cjs/helpers.js:72:18)',
+    ];
+    expect(Utils.lookupPathFromDecorator(stack5)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+
     // no decorated line found
     expect(() => Utils.lookupPathFromDecorator()).toThrowError('Cannot find path to entity');
   });
