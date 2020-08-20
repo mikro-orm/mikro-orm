@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH issue 529 GH issue 760 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table \\"product\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"current_price\\" int4 not null);
+
+create table \\"customer\\" (\\"id\\" serial primary key);
+
+create table \\"order\\" (\\"id\\" serial primary key, \\"customer_id\\" int4 not null, \\"paid\\" jsonb not null, \\"shipped\\" jsonb not null, \\"created\\" timestamptz(0) not null);
+
+create table \\"order_item\\" (\\"order_id\\" int4 not null, \\"product_id\\" int4 not null, \\"amount\\" int4 not null, \\"offered_price\\" int4 not null);
+alter table \\"order_item\\" add constraint \\"order_item_pkey\\" primary key (\\"order_id\\", \\"product_id\\");
+
+alter table \\"order\\" add constraint \\"order_customer_id_foreign\\" foreign key (\\"customer_id\\") references \\"customer\\" (\\"id\\") on update cascade;
+
+alter table \\"order_item\\" add constraint \\"order_item_order_id_foreign\\" foreign key (\\"order_id\\") references \\"order\\" (\\"id\\") on update cascade;
+alter table \\"order_item\\" add constraint \\"order_item_product_id_foreign\\" foreign key (\\"product_id\\") references \\"product\\" (\\"id\\") on update cascade;
+
+set session_replication_role = 'origin';
+"
+`;

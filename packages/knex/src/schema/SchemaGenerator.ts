@@ -373,7 +373,7 @@ export class SchemaGenerator {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
     const sameNullable = alter && 'sameNullable' in alter && alter.sameNullable;
     const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
-    const index = (indexed || (prop.primary && meta.compositePK)) && !(alter?.sameIndex);
+    const index = indexed && !alter?.sameIndex;
     const indexName = this.getIndexName(meta, prop, false, columnName);
     const uniqueName = this.getIndexName(meta, prop, true, columnName);
     const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !prop.defaultRaw;

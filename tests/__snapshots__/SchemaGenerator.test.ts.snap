@@ -32,8 +32,6 @@ create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add index \`user2_first_name_index\`(\`first_name\`);
-alter table \`user2\` add index \`user2_last_name_index\`(\`last_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_name_unique\`(\`favourite_car_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_year_unique\`(\`favourite_car_year\`);
 alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);
@@ -79,7 +77,6 @@ alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
 
 create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
-alter table \`configuration2\` add index \`configuration2_property_index\`(\`property\`);
 alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);
 alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);
 
@@ -249,8 +246,6 @@ create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add index \`user2_first_name_index\`(\`first_name\`);
-alter table \`user2\` add index \`user2_last_name_index\`(\`last_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_name_unique\`(\`favourite_car_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_year_unique\`(\`favourite_car_year\`);
 alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);
@@ -296,7 +291,6 @@ alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
 
 create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
-alter table \`configuration2\` add index \`configuration2_property_index\`(\`property\`);
 alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);
 alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);
 
@@ -408,8 +402,6 @@ alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\
 alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
 
 create table \\"foo_param2\\" (\\"bar_id\\" int4 not null, \\"baz_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"foo_param2_bar_id_index\\" on \\"foo_param2\\" (\\"bar_id\\");
-create index \\"foo_param2_baz_id_index\\" on \\"foo_param2\\" (\\"baz_id\\");
 alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
@@ -439,8 +431,6 @@ create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) n
 alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
 
 create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"configuration2_property_index\\" on \\"configuration2\\" (\\"property\\");
-create index \\"configuration2_test_id_index\\" on \\"configuration2\\" (\\"test_id\\");
 alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
 
 create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -549,8 +539,6 @@ alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\
 alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
 
 create table \\"foo_param2\\" (\\"bar_id\\" int4 not null, \\"baz_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"foo_param2_bar_id_index\\" on \\"foo_param2\\" (\\"bar_id\\");
-create index \\"foo_param2_baz_id_index\\" on \\"foo_param2\\" (\\"baz_id\\");
 alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
@@ -580,8 +568,6 @@ create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) n
 alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
 
 create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"configuration2_property_index\\" on \\"configuration2\\" (\\"property\\");
-create index \\"configuration2_test_id_index\\" on \\"configuration2\\" (\\"test_id\\");
 alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
 
 create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);
@@ -935,8 +921,6 @@ create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add index \`user2_first_name_index\`(\`first_name\`);
-alter table \`user2\` add index \`user2_last_name_index\`(\`last_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_name_unique\`(\`favourite_car_name\`);
 alter table \`user2\` add unique \`user2_favourite_car_year_unique\`(\`favourite_car_year\`);
 alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);
@@ -982,7 +966,6 @@ alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
 
 create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
-alter table \`configuration2\` add index \`configuration2_property_index\`(\`property\`);
 alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);
 alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);
 
@@ -1078,8 +1061,6 @@ alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\
 alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
 
 create table \\"foo_param2\\" (\\"bar_id\\" int4 not null, \\"baz_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"foo_param2_bar_id_index\\" on \\"foo_param2\\" (\\"bar_id\\");
-create index \\"foo_param2_baz_id_index\\" on \\"foo_param2\\" (\\"baz_id\\");
 alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
 
 create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" int2 null, \\"enum2\\" int2 null, \\"enum3\\" int2 null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null);
@@ -1109,8 +1090,6 @@ create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) n
 alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
 
 create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int4 not null, \\"value\\" varchar(255) not null);
-create index \\"configuration2_property_index\\" on \\"configuration2\\" (\\"property\\");
-create index \\"configuration2_test_id_index\\" on \\"configuration2\\" (\\"test_id\\");
 alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
 
 create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int4 not null, \\"test2_id\\" int4 not null);

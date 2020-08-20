@@ -117,4 +117,10 @@ describe('GH issue 529', () => {
     await o.items.init();
     expect(o.items.getItems()).toHaveLength(3);
   });
+
+  test(`GH issue 760`, async () => {
+    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    expect(sql).toMatchSnapshot();
+  });
+
 });
