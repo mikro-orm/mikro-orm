@@ -225,7 +225,7 @@ export class Utils {
   }
 
   /**
-   * Returns array of functions argument names. Uses `acorn` for source code analysis.
+   * Returns array of functions argument names. Uses `escaya` for source code analysis.
    */
   static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
