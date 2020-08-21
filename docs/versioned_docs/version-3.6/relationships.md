@@ -43,7 +43,7 @@ export class Book {
 }
 ```
 
-You can also specify how operations on given entity should should [cascade](cascading.md) 
+You can also specify how operations on given entity should [cascade](cascading.md) 
 to the referred entity.
 
 ## OneToMany
