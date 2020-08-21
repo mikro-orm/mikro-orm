@@ -1669,7 +1669,8 @@ describe('EntityManagerMySql', () => {
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
-    const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    const a = new Author2('native name 1', 'native1@email.com');
+    const res1 = await orm.em.nativeInsert(a);
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });

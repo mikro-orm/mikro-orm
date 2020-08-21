@@ -320,9 +320,27 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>> {
-    entityName = Utils.className(entityName);
-    data = QueryHelper.processObjectParams(data);
+  async nativeInsert<T extends AnyEntity<T>>(entity: T): Promise<Primary<T>>;
+
+  /**
+   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   */
+  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>>;
+
+  /**
+   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   */
+  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>): Promise<Primary<T>> {
+    let entityName;
+
+    if (data === undefined) {
+      entityName = entityNameOrEntity.constructor.name;
+      data = Utils.prepareEntity(entityNameOrEntity as T, this.metadata, this.driver.getPlatform());
+    } else {
+      entityName = Utils.className(entityNameOrEntity as EntityName<T>);
+    }
+
+    data = QueryHelper.processObjectParams(data) as EntityData<T>;
     this.validator.validateParams(data, 'insert data');
     const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
 
