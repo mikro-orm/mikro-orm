@@ -54,7 +54,7 @@ export class MetadataDiscovery {
 
     this.discovered
       .filter(meta => meta.name)
-      .forEach(meta => discovered.set(meta.name, meta));
+      .forEach(meta => discovered.set(meta.name!, meta));
 
     return discovered;
   }
@@ -203,7 +203,7 @@ export class MetadataDiscovery {
     if (!meta.collection && meta.name) {
       const root = Utils.getRootEntity(this.metadata, meta);
       const entityName = root.discriminatorColumn ? root.name : meta.name;
-      meta.collection = this.namingStrategy.classToTableName(entityName);
+      meta.collection = this.namingStrategy.classToTableName(entityName!);
     }
 
     await this.saveToCache(meta);
@@ -339,7 +339,7 @@ export class MetadataDiscovery {
     meta.primaryKeys = pks.map(prop => prop.name);
     meta.compositePK = pks.length > 1;
 
-    this.validator.validateEntityDefinition(this.metadata, meta.name);
+    this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
     Object.values(meta.properties).forEach(prop => {
       this.applyNamingStrategy(meta, prop);
@@ -412,7 +412,7 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name, prop.type + '_inverse', true);
+    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name!, prop.type + '_inverse', true);
     data.properties[prop.type + '_inverse'] = this.definePivotProperty(prop, prop.type + '_inverse', prop.type, meta.name + '_owner', false);
 
     return this.metadata.set(prop.pivotTable, data);

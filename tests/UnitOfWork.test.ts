@@ -70,6 +70,7 @@ describe('UnitOfWork', () => {
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
 
     // missing collection instance in m:n and 1:m relations
+    // @ts-ignore
     delete author.books;
     expect(() => computer.computeChangeSet(author)).toThrowError(`Author.books is not initialized, define it as 'books = new Collection<Book>(this);'`);
   });

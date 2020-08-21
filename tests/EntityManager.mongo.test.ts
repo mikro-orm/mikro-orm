@@ -1310,7 +1310,7 @@ describe('EntityManagerMongo', () => {
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     // allow 1 ms difference as updated time is recalculated when persisting
-    await expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
+    await expect(+author.updatedAt - +author.createdAt!).toBeLessThanOrEqual(1);
     await repo.persistAndFlush(author);
 
     author.name = 'name1';
@@ -1318,14 +1318,14 @@ describe('EntityManagerMongo', () => {
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
     await expect(author.updatedAt).not.toEqual(author.createdAt);
-    await expect(author.updatedAt > author.createdAt).toBe(true);
+    await expect(author.updatedAt > author.createdAt!).toBe(true);
 
     orm.em.clear();
     const ent = (await repo.findOne(author.id))!;
     await expect(ent.createdAt).toBeDefined();
     await expect(ent.updatedAt).toBeDefined();
     await expect(ent.updatedAt).not.toEqual(ent.createdAt);
-    await expect(ent.updatedAt > ent.createdAt).toBe(true);
+    await expect(ent.updatedAt > ent.createdAt!).toBe(true);
   });
 
   test('EM supports native insert/update/delete/aggregate', async () => {

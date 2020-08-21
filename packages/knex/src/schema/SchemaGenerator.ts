@@ -467,7 +467,7 @@ export class SchemaGenerator {
   private getOrderedMetadata(): EntityMetadata[] {
     const metadata = Object.values(this.metadata.getAll()).filter(meta => !meta.discriminatorValue && !meta.embeddable);
     const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.name));
+    metadata.forEach(meta => calc.addNode(meta.name!));
     let meta = metadata.pop();
 
     while (meta) {
@@ -476,7 +476,7 @@ export class SchemaGenerator {
           continue;
         }
 
-        this.addCommitDependency(calc, prop, meta.name);
+        this.addCommitDependency(calc, prop, meta.name!);
       }
 
       meta = metadata.pop();

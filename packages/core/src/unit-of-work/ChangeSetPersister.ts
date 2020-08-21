@@ -75,7 +75,7 @@ export class ChangeSetPersister {
     }
 
     if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
-      const e = await this.driver.findOne<T>(meta.name, changeSet.entity.__helper!.__primaryKey, {
+      const e = await this.driver.findOne<T>(meta.name!, changeSet.entity.__helper!.__primaryKey, {
         populate: [{
           field: meta.versionProperty,
         }] as unknown as boolean,

@@ -10,7 +10,7 @@ export abstract class BaseEntity<T extends BaseEntity<T>> extends MikroBaseEntit
   id!: string;
 
   @Property()
-  createdAt: Date = new Date();
+  createdAt?: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();

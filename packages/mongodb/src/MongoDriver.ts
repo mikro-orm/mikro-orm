@@ -125,7 +125,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     meta.indexes.forEach(index => {
       let fieldOrSpec: string | Dictionary;
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const collection = this.getConnection('write').getCollection(meta.name);
+      const collection = this.getConnection('write').getCollection(meta.name!);
 
       if (index.options && properties.length === 0) {
         return promises.push(collection.createIndex(index.options));
@@ -154,7 +154,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
       const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
-      promises.push(this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
+      promises.push(this.getConnection('write').getCollection(meta.name!).createIndex(fieldOrSpec, {
         name: index.name,
         unique: true,
         ...(index.options || {}),
@@ -171,7 +171,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
 
-    return [this.getConnection('write').getCollection(meta.name).createIndex(fieldOrSpec, {
+    return [this.getConnection('write').getCollection(meta.name!).createIndex(fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
       unique: type === 'unique',
       sparse: prop.nullable === true,

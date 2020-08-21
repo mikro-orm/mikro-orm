@@ -239,7 +239,7 @@ describe('EntityAssignerMongo', () => {
     bible.createdAt = new Date('2020-07-18T17:31:08.535Z');
     god.favouriteAuthor = god;
     delete god.createdAt;
-    delete god.updatedAt;
+    delete (god as any).updatedAt;
     bible.publisher = Reference.create(new Publisher('Publisher 1'));
     actual = inspect(god);
 

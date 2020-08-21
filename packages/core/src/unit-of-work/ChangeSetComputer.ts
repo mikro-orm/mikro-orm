@@ -23,7 +23,7 @@ export class ChangeSetComputer {
       return null;
     }
 
-    changeSet.name = meta.name;
+    changeSet.name = meta.name!;
     changeSet.type = this.originalEntityData.has(entity.__helper!.__uuid) ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);

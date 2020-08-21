@@ -140,7 +140,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
 
           if (operator) {
-            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name, prop.name, data);
+            throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
           }
 
           data[props[kk].name] = data[prop.name][props[kk].embedded![1]];

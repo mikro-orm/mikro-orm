@@ -200,7 +200,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   get name(): EntityName<T>  {
-    return this._meta.name;
+    return this._meta.name!;
   }
 
   /**

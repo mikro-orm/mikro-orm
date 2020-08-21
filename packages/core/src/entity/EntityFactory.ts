@@ -80,8 +80,8 @@ export class EntityFactory {
       return new Entity(...params);
     }
 
-    if (this.unitOfWork.getById<T>(meta.name, pks)) {
-      return this.unitOfWork.getById<T>(meta.name, pks);
+    if (this.unitOfWork.getById<T>(meta.name!, pks)) {
+      return this.unitOfWork.getById<T>(meta.name!, pks);
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity

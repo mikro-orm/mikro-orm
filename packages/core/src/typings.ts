@@ -154,7 +154,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
-  name: string;
+  name?: string; // abstract classes do not have a name, but once discovery ends, we have only non-abstract classes stored
   className: string;
   tableName: string;
   pivotTable: boolean;

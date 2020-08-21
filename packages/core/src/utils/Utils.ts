@@ -217,7 +217,7 @@ export class Utils {
    * Renames object key, keeps order of properties.
    */
   static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
-    if (Utils.isObject(payload) && from in payload && !(to in payload)) {
+    if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
       Object.keys(payload).forEach(key => {
         const value = payload[key];
         delete payload[key];
