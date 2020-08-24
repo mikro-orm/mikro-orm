@@ -3,7 +3,7 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Filt
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
-import { Utils, ValidationError } from '../utils';
+import { OptimisticLockError, Utils } from '../utils';
 import { IDatabaseDriver } from '../drivers';
 import { Hydrator } from '../hydration';
 
@@ -71,7 +71,7 @@ export class ChangeSetPersister {
 
   private async processOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined, ctx?: Transaction) {
     if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
-      throw ValidationError.lockFailed(changeSet.entity);
+      throw OptimisticLockError.lockFailed(changeSet.entity);
     }
 
     if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {

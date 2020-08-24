@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
+import { Configuration, OptimisticLockError, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
@@ -686,7 +686,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (mode === LockMode.OPTIMISTIC && !meta.versionProperty) {
-      throw ValidationError.notVersioned(meta);
+      throw OptimisticLockError.notVersioned(meta);
     }
 
     if ([LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode) && !this.isInTransaction()) {

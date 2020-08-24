@@ -1,8 +1,8 @@
 import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { inspect } from 'util';
 import {
-  Utils, ValidationError, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, QueryOrderNumeric,
-  Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator,
+  Utils, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, QueryOrderNumeric,
+  Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator, OptimisticLockError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { JoinOptions } from './QueryBuilder';
@@ -436,7 +436,7 @@ export class QueryBuilderHelper {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
-      throw ValidationError.lockFailed(this.entityName);
+      throw OptimisticLockError.lockFailed(this.entityName);
     }
   }
 

@@ -3,7 +3,7 @@ import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from 
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
 import { EntityManager, EventType } from '../index';
-import { Utils, ValidationError } from '../utils';
+import { Utils, ValidationError, OptimisticLockError } from '../utils';
 import { LockMode } from './enums';
 import { Transaction } from '../connections';
 
@@ -424,7 +424,7 @@ export class UnitOfWork {
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
     if (!meta.versionProperty) {
-      throw ValidationError.notVersioned(meta);
+      throw OptimisticLockError.notVersioned(meta);
     }
 
     if (!Utils.isDefined<number | Date>(version)) {
@@ -440,7 +440,7 @@ export class UnitOfWork {
     const previousVersion = entity[meta.versionProperty] as unknown as Date | number;
 
     if (previousVersion !== version) {
-      throw ValidationError.lockFailedVersionMismatch(entity, version, previousVersion);
+      throw OptimisticLockError.lockFailedVersionMismatch(entity, version, previousVersion);
     }
   }
 

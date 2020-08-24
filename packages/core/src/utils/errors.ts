@@ -50,24 +50,6 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${Utils.getObjectType(data)} given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
   }
 
-  static notVersioned(meta: EntityMetadata): ValidationError {
-    return new ValidationError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
-  }
-
-  static lockFailed(entityOrName: AnyEntity | string): ValidationError {
-    const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
-    const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
-
-    return new ValidationError(`The optimistic lock on entity ${name} failed`, entity);
-  }
-
-  static lockFailedVersionMismatch(entity: AnyEntity, expectedLockVersion: number | Date, actualLockVersion: number | Date): ValidationError {
-    expectedLockVersion = expectedLockVersion instanceof Date ? expectedLockVersion.getTime() : expectedLockVersion;
-    actualLockVersion = actualLockVersion instanceof Date ? actualLockVersion.getTime() : actualLockVersion;
-
-    return new ValidationError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
-  }
-
   static invalidPropertyName(entityName: string, invalid: string): ValidationError {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
   }
@@ -105,7 +87,29 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
 }
 
-export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationError {
+export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
+
+  static notVersioned(meta: EntityMetadata): OptimisticLockError {
+    return new OptimisticLockError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
+  }
+
+  static lockFailed(entityOrName: AnyEntity | string): OptimisticLockError {
+    const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
+    const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
+
+    return new OptimisticLockError(`The optimistic lock on entity ${name} failed`, entity);
+  }
+
+  static lockFailedVersionMismatch(entity: AnyEntity, expectedLockVersion: number | Date, actualLockVersion: number | Date): OptimisticLockError {
+    expectedLockVersion = expectedLockVersion instanceof Date ? expectedLockVersion.getTime() : expectedLockVersion;
+    actualLockVersion = actualLockVersion instanceof Date ? actualLockVersion.getTime() : actualLockVersion;
+
+    return new OptimisticLockError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
+  }
+
+}
+
+export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
 
   static fromMissingPrimaryKey(meta: EntityMetadata): MetadataError {
     return new MetadataError(`${meta.className} entity is missing @PrimaryKey()`);
@@ -185,7 +189,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
 }
 
-export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationError {
+export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
 
   static findOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`${name} not found (${inspect(where)})`);
