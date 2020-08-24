@@ -18,6 +18,8 @@ class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
+    const res = await this.execute('select 1 + 1 as count');
+    expect(res).toEqual([{ count: 2 }]);
   }
 
   isTransactional(): boolean {
@@ -147,8 +149,9 @@ describe('Migrator', () => {
     migrator.options.disableForeignKeys = false;
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
-    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count');
   });
 
   test('up/down params [all or nothing enabled]', async () => {

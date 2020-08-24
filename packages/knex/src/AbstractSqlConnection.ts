@@ -24,7 +24,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction<KnexTransaction>) => Promise<T>, ctx?: Transaction<KnexTransaction>): Promise<T> {
     return (ctx || this.client).transaction(cb);
   }
 

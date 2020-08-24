@@ -1,4 +1,4 @@
-import { Configuration, MigrationsOptions, Utils, Transaction } from '@mikro-orm/core';
+import { Configuration, MigrationsOptions, Transaction, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 
@@ -14,6 +14,28 @@ export class MigrationRunner {
 
   async run(migration: Migration, method: 'up' | 'down'): Promise<void> {
     migration.reset();
+
+    if (!this.options.transactional || !migration.isTransactional()) {
+      const queries = await this.getQueries(migration, method);
+      await Utils.runSerial(queries, sql => this.driver.execute(sql));
+    } else {
+      await this.connection.transactional(async tx => {
+        migration.setTransactionContext(tx);
+        const queries = await this.getQueries(migration, method);
+        await Utils.runSerial(queries, sql => this.driver.execute(tx.raw(sql)));
+      }, this.masterTransaction);
+    }
+  }
+
+  setMasterMigration(trx: Transaction) {
+    this.masterTransaction = trx;
+  }
+
+  unsetMasterMigration() {
+    delete this.masterTransaction;
+  }
+
+  private async getQueries(migration: Migration, method: 'up' | 'down') {
     await migration[method]();
     let queries = migration.getQueries();
 
@@ -24,23 +46,7 @@ export class MigrationRunner {
     }
 
     queries = queries.filter(sql => sql.trim().length > 0);
-
-    if (!this.options.transactional || !migration.isTransactional()) {
-      await Utils.runSerial(queries, sql => this.driver.execute(sql));
-      return;
-    }
-
-    await this.connection.transactional(async tx => {
-      await Utils.runSerial(queries, sql => this.driver.execute(tx.raw(sql)));
-    }, this.masterTransaction);
-  }
-
-  setMasterMigration(trx: Transaction) {
-    this.masterTransaction = trx;
-  }
-
-  unsetMasterMigration() {
-    delete this.masterTransaction;
+    return queries;
   }
 
 }
