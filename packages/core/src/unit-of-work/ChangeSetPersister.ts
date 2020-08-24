@@ -14,20 +14,46 @@ export class ChangeSetPersister {
               private readonly metadata: MetadataStorage,
               private readonly hydrator: Hydrator) { }
 
-  async persistToDatabase<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
-    const meta = this.metadata.find(changeSet.name)!;
+  async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    changeSets.forEach(changeSet => this.processProperties(changeSet));
 
-    // process references first
-    for (const prop of Object.values(meta.properties)) {
-      this.processReference(changeSet, prop);
+    for (const changeSet of changeSets) {
+      await this.persistEntity(changeSet, ctx);
     }
-
-    // persist the entity itself
-    await this.persistEntity(changeSet, meta, ctx);
   }
 
-  private async persistEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>, ctx?: Transaction): Promise<void> {
+  async executeUpdates<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    changeSets.forEach(changeSet => this.processProperties(changeSet));
+
+    for (const changeSet of changeSets) {
+      await this.persistEntity(changeSet, ctx);
+    }
+  }
+
+  async executeDeletes<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const meta = changeSets[0].entity.__helper!.__meta;
+    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+
+    if (meta.compositePK) {
+      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeys);
+      await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+    } else {
+      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKey as Dictionary);
+      await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+    }
+  }
+
+  private processProperties<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
+    const meta = this.metadata.find(changeSet.name)!;
+
+    for (const prop of Object.values(meta.properties)) {
+      this.processProperty(changeSet, prop);
+    }
+  }
+
+  private async persistEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     let res: QueryResult | undefined;
+    const meta = this.metadata.find(changeSet.name)!;
     const wrapped = changeSet.entity.__helper!;
 
     if (changeSet.type === ChangeSetType.UPDATE) {
@@ -70,21 +96,21 @@ export class ChangeSetPersister {
   }
 
   private async processOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined, ctx?: Transaction) {
-    if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
+    if (!meta.versionProperty) {
+      return;
+    }
+
+    if (changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
 
-    if (meta.versionProperty && [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(changeSet.type)) {
-      const e = await this.driver.findOne<T>(meta.name!, changeSet.entity.__helper!.__primaryKey, {
-        populate: [{
-          field: meta.versionProperty,
-        }] as unknown as boolean,
-      }, ctx);
-      (changeSet.entity as T)[meta.versionProperty] = e![meta.versionProperty];
-    }
+    const e = await this.driver.findOne<T>(meta.name!, changeSet.entity.__helper!.__primaryKey, {
+      fields: [meta.versionProperty],
+    }, ctx);
+    changeSet.entity[meta.versionProperty] = e![meta.versionProperty];
   }
 
-  private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+  private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const value = changeSet.payload[prop.name];
 
     if (value as unknown instanceof EntityIdentifier) {
