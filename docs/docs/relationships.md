@@ -43,7 +43,7 @@ export class Book {
 }
 ```
 
-You can also specify how operations on given entity should should [cascade](cascading.md) 
+You can also specify how operations on given entity should [cascade](cascading.md) 
 to the referred entity.
 
 ## OneToMany
@@ -74,7 +74,7 @@ export class Author {
 As you can see, OneToMany is the inverse side of ManyToOne (which is the owning side).
 More about how collections work can be found on [collections page](collections.md). 
 
-You can also specify how operations on given entity should should [cascade](cascading.md) to the referred
+You can also specify how operations on given entity should [cascade](cascading.md) to the referred
 entities. There is also more aggressive remove mode called [Orphan Removal](cascading.md#orphan-removal) 
 (`books4` example).
 
