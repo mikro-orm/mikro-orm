@@ -45,7 +45,7 @@ usual from inside the hook. Calling `em.flush()` from hooks will result in
 validation error. Calling `em.persist()` can result in undefined behaviour like
 locking errors. 
 
-> The **internal** instance of `EntityManager` accessible under `wrap(this).__em` is 
+> The **internal** instance of `EntityManager` accessible under `wrap(this, true).__em` is 
 > not meant for public usage. 
 
 ## EventSubscriber
@@ -121,6 +121,22 @@ interface EventArgs<T> {
   entity: T;
   em: EntityManager;
   changeSet?: ChangeSet<T>;
+}
+
+interface ChangeSet<T> {
+  name: string;                   // entity name
+  collection: string;             // db table name
+  type: ChangeSetType;            // type of operation
+  entity: T;                      // up to date entity instance
+  payload: EntityData<T>;         // changes that will be used to build the update query
+  persisted: boolean;             // whether the changeset was already persisted/executed
+  originalEntity?: EntityData<T>; // snapshot of the entity when it was loaded from db
+}
+
+enum ChangeSetType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
 }
 ```
 
