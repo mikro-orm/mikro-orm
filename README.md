@@ -169,6 +169,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [RealWorld example app (Nest + MySQL)](https://github.com/mikro-orm/nestjs-realworld-example-app)
 - [Koa + SQLite](https://github.com/mikro-orm/koa-ts-example-app)
 - [GraphQL + PostgreSQL](https://github.com/driescroons/mikro-orm-graphql-example)
+- [Inversify + PostgreSQL](https://github.com/PodaruDragos/inversify-example-app)
 
 ### JavaScript Examples 
 - [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)
