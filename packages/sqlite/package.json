@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/sqlite",
-  "version": "4.0.0-rc.3",
+  "version": "4.0.0-rc.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,14 +47,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^4.0.0-rc.3",
+    "@mikro-orm/knex": "^4.0.0-rc.4",
     "fs-extra": "^9.0.1",
     "sqlite3": "^4.2.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.3"
+    "@mikro-orm/core": "^4.0.0-rc.4"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.3"
+    "@mikro-orm/core": "^4.0.0-rc.4"
   }
 }
