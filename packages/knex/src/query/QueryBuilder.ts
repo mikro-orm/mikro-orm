@@ -14,7 +14,7 @@ import { SqlEntityManager } from '../SqlEntityManager';
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   type!: QueryType;
-  _fields?: Field[];
+  _fields?: Field<T>[];
   _populate: PopulateOptions<T>[] = [];
   _populateMap: Dictionary<string> = {};
 
@@ -27,7 +27,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _cond: Dictionary = {};
   private _data!: Dictionary;
   private _orderBy: QueryOrderMap = {};
-  private _groupBy: string[] = [];
+  private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
   private _limit?: number;
   private _offset?: number;
@@ -47,7 +47,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this._aliasMap[this.alias] = this.entityName;
   }
 
-  select(fields: Field | Field[], distinct = false): this {
+  select(fields: Field<T> | Field<T>[], distinct = false): this {
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
@@ -151,7 +151,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  groupBy(fields: string | string[]): this {
+  groupBy(fields: (string | keyof T) | (string | keyof T)[]): this {
     this._groupBy = Utils.asArray(fields);
     return this;
   }
@@ -366,8 +366,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this._joins[aliasedName].path = path;
   }
 
-  private prepareFields<T extends string | Raw = string | Raw>(fields: Field[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): T[] {
-    const ret: Field[] = [];
+  private prepareFields<T extends AnyEntity<T>, U extends string | Raw = string | Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+    const ret: Field<T>[] = [];
 
     fields.forEach(f => {
       if (!Utils.isString(f)) {
@@ -393,7 +393,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       }
     });
 
-    return ret as T[];
+    return ret as U[];
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
@@ -560,7 +560,7 @@ type KnexStringRef = Ref<string, {
   [alias: string]: string;
 }>;
 
-export type Field = string | KnexStringRef | KnexQueryBuilder;
+export type Field<T> = string | keyof T | KnexStringRef | KnexQueryBuilder;
 
 export interface JoinOptions {
   table: string;
