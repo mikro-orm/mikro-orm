@@ -13,6 +13,8 @@ import { Collection, ReferenceType } from '../entity';
 import { Platform } from '../platforms';
 import { GroupOperator, QueryOperator } from '../enums';
 
+export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
+
 export class Utils {
 
   /**
@@ -241,6 +243,10 @@ export class Utils {
       ret.push(...params.map((p: any) => {
         switch (p.type) {
           case 'BindingElement':
+            if (p.left.type === 'ObjectBindingPattern') {
+              return ObjectBindingPattern;
+            }
+
             return p.left.name;
           case 'BindingRestElement':
             return '...' + p.argument.name;

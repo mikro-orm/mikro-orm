@@ -1,4 +1,4 @@
-import { Utils } from '../utils';
+import { ObjectBindingPattern, Utils } from '../utils';
 import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
@@ -136,6 +136,10 @@ export class EntityFactory {
         }
 
         return this.createReference(meta.properties[k].type, data[k]);
+      }
+
+      if (!(k in data) || k as unknown === ObjectBindingPattern) {
+        return data;
       }
 
       return data[k];
