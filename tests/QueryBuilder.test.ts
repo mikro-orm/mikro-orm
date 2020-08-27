@@ -1410,6 +1410,34 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
   });
 
+  test('GH issue 786', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    qb1.select('*').where({
+      $and: [
+        { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } },
+        { tags: { name: { $in: ['tag1'] } } },
+      ],
+    });
+    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'where `e0`.`uuid_pk` != ? and `e0`.`created_at` > ? and `e1`.`name` in (?)');
+
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({
+      $and: [
+        { tags: { name: { $in: ['tag1'] } } },
+        { uuid: { $ne: '...' }, createdAt: { $gt: '2020-08-26T20:01:48.863Z' } },
+      ],
+    });
+    expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'where `e1`.`name` in (?) and `e0`.`uuid_pk` != ? and `e0`.`created_at` > ?');
+  });
+
   test('pg array operators', async () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, BaseEntity2, Configuration2],

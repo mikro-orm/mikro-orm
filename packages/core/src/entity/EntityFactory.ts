@@ -1,8 +1,8 @@
-import { ObjectBindingPattern, Utils } from '../utils';
+import { Utils } from '../utils';
 import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
-import { EntityManager, EventType, wrap } from '..';
+import { EntityManager, EventType } from '..';
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
@@ -138,7 +138,7 @@ export class EntityFactory {
         return this.createReference(meta.properties[k].type, data[k]);
       }
 
-      if (!(k in data) || k as unknown === ObjectBindingPattern) {
+      if (!meta.properties[k]) {
         return data;
       }
 

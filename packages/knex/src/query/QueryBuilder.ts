@@ -251,7 +251,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   getAliasForJoinPath(path: string): string | undefined {
-    if (path === this.entityName) {
+    if (!path || path === this.entityName) {
       return this.alias;
     }
 
