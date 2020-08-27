@@ -1,4 +1,3 @@
-import { unlinkSync } from 'fs';
 import { Collection, Entity, PrimaryKey, ManyToOne, OneToMany, MikroORM, IdentifiedReference } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
