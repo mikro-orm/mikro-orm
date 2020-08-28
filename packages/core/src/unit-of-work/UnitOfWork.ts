@@ -91,6 +91,14 @@ export class UnitOfWork {
     return this.changeSets;
   }
 
+  getCollectionUpdates(): Collection<AnyEntity>[] {
+    return this.collectionUpdates;
+  }
+
+  getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<AnyEntity>)]> {
+    return this.extraUpdates;
+  }
+
   computeChangeSet<T extends AnyEntity<T>>(entity: T): void {
     const cs = this.changeSetComputer.computeChangeSet(entity);
 

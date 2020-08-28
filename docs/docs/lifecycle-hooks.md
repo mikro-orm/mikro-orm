@@ -165,6 +165,19 @@ interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
 > will not have any effect for those. They are fired only once per the `flush` 
 > operation.
 
+### Getting the changes from UnitOfWork
+
+You can observe all the changes that are part of given UnitOfWork via those methods:
+
+```typescript
+UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];
+UnitOfWork.getOriginalEntityData(): Map<string, EntityData<AnyEntity>>;
+UnitOfWork.getPersistStack(): Set<AnyEntity>;
+UnitOfWork.getRemoveStack(): Set<AnyEntity>;
+UnitOfWork.getCollectionUpdates(): Collection<AnyEntity>[];
+UnitOfWork.getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<AnyEntity>)]>;
+```
+
 ### Using onFlush event
 
 In following example we have 2 entities: `FooBar` and `FooBaz`, connected via 
