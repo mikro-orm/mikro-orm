@@ -1240,6 +1240,30 @@ describe('QueryBuilder', () => {
     const qb2 = orm.em.createQueryBuilder(Author2, 'a');
     qb2.select('*').where({ $or: items.map(i => ({ $and: [i] })) });
     expect(qb2.getQuery()).toEqual('select `a`.* from `author2` as `a` where ((`a`.`name` = ? and `a`.`email` = ?) or (`a`.`name` = ? and `a`.`email` = ?))');
+
+    const qb3 = orm.em.createQueryBuilder(Author2, 'a');
+    qb3.select('*').where({
+      $and: [
+        { $or: [{ name: 'value1' }] },
+        { $or: [{ name: 'value3' }] },
+      ],
+    });
+    expect(qb3.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` ' +
+      'where (`a`.`name` = ?) and (`a`.`name` = ?)');
+
+
+    const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+    qb4.select('*').where({
+      $and: [
+        { $or: [{ name: 'value1', email: 'value2' }] },
+        { $or: [{ name: 'value3', email: 'value4' }] },
+      ],
+    });
+    expect(qb4.getQuery()).toEqual(
+      'select `a`.* from `author2` as `a` ' +
+      'where (`a`.`name` = ? or `a`.`email` = ?) and (`a`.`name` = ? or `a`.`email` = ?)');
+
   });
 
   test('select fk by operator should not trigger auto-joining', async () => {
