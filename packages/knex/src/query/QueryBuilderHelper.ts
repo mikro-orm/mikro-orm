@@ -219,26 +219,47 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+  appendQueryCondition(
+    type: QueryType,
+    cond: any,
+    qb: KnexQueryBuilder,
+    operator?: '$and' | '$or',
+    method: 'where' | 'having' = 'where'
+  ): void {
+    const m = (operator === '$or') ? 'orWhere' : 'andWhere';
     Object.keys(cond).forEach(k => {
-      if (k === '$and' || k === '$or') {
-        if (operator === '$and' && k === '$or') {
-          return qb.andWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
-        }
-
-        if (operator === '$or' && k === '$and') {
-          return qb.orWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
-        }
-
-        return this.appendGroupCondition(type, qb, k, method, cond[k]);
+      if (cond[k].length === 1) {
+        return qb[m](inner =>
+          this.appendQueryCondition(type, cond[k][0], inner, '$and', method)
+        );
       }
 
-      if (k === '$not') {
-        const m = operator === '$or' ? 'orWhereNot' : 'whereNot';
-        return qb[m](inner => this.appendQueryCondition(type, cond[k], inner));
-      }
+      switch (k) {
+        case '$and': {
+          return qb[m](inner =>
+            this.appendGroupCondition(type, inner, k, method, cond[k])
+          );
+        }
 
-      this.appendQuerySubCondition(qb, type, method, cond, k, operator);
+        case '$or': {
+          return qb[m](inner =>
+            this.appendGroupCondition(type, inner, k, method, cond[k])
+          );
+        }
+
+        case '$not': {
+          const m = operator === '$or' ? 'orWhereNot' : 'whereNot';
+          return qb[m](inner =>
+            this.appendQueryCondition(type, cond[k], inner)
+          );
+        }
+
+        default: {
+          return qb[m](inner =>
+            this.appendQuerySubCondition(inner, type, method, cond, k, operator)
+          );
+        }
+      }
     });
   }
 
@@ -475,22 +496,26 @@ export class QueryBuilderHelper {
     return a + '.' + this.fieldName(f, a);
   }
 
-  private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
-    if (subCondition.length === 1) {
-      return this.appendQueryCondition(type, subCondition[0], qb, operator, method);
-    }
-
-    if (operator === '$and') {
-      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, operator));
-    }
-
-    qb[method](outer => subCondition.forEach(sub => {
+  private appendGroupCondition(
+    type: QueryType,
+    qb: KnexQueryBuilder,
+    operator: '$and' | '$or',
+    method: 'where' | 'having',
+    subCondition: any[]
+  ): void {
+    subCondition.forEach(sub => {
       if (Object.keys(sub).length === 1) {
-        return this.appendQueryCondition(type, sub, outer, operator);
+        return this.appendQueryCondition(type, sub, qb, operator);
       }
 
-      outer.orWhere(inner => this.appendQueryCondition(type, sub, inner, '$and'));
-    }));
+      if (operator === '$and') {
+        return qb.andWhere(inner =>
+          this.appendQueryCondition(type, sub, inner, operator)
+        );
+      }
+
+      qb.orWhere(inner => this.appendQueryCondition(type, sub, inner, '$and'));
+    });
   }
 
   private isPrefixed(field: string): boolean {
