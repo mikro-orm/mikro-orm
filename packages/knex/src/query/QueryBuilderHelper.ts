@@ -222,6 +222,10 @@ export class QueryBuilderHelper {
   appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
+        if (operator === '$and' && k === '$or') {
+          return qb.andWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
+        }
+
         if (operator === '$or' && k === '$and') {
           return qb.orWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
         }
