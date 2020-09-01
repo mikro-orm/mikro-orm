@@ -157,7 +157,13 @@ export class Utils {
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
-        return ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
+        ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
+
+        if (prop.customType) {
+          return ret[prop.name] = prop.customType.convertToDatabaseValue(ret[prop.name], platform);
+        }
+
+        return;
       }
 
       if (prop.customType) {
@@ -287,7 +293,7 @@ export class Utils {
       return true;
     }
 
-    return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key) || key instanceof Date;
+    return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
   }
 
   /**
@@ -389,9 +395,17 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>): Primary<T>[] {
+  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
-    return meta.primaryKeys.map(pk => data[pk]) as Primary<T>[];
+    return meta.primaryKeys.map(pk => {
+      const prop = meta.properties[pk];
+
+      if (prop.customType && convertCustomTypes) {
+        return prop.customType.convertToJSValue(data[pk], platform);
+      }
+
+      return data[pk];
+    }) as Primary<T>[];
   }
 
   /**
@@ -496,7 +510,7 @@ export class Utils {
   /**
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
-  static isPlainObject(value: any): boolean {
+  static isPlainObject(value: any): value is Dictionary {
     // eslint-disable-next-line no-prototype-builtins
     return value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf');
   }

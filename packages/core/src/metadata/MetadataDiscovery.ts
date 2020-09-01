@@ -650,7 +650,6 @@ export class MetadataDiscovery {
 
     if (prop.type as unknown instanceof Type) {
       prop.customType = prop.type as unknown as Type<any>;
-      prop.type = prop.customType.constructor.name;
     }
 
     if (Object.getPrototypeOf(prop.type) === Type && !prop.customType) {
@@ -658,8 +657,11 @@ export class MetadataDiscovery {
     }
 
     if (prop.customType) {
-      prop.type = prop.customType.constructor.name;
       prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
+    }
+
+    if (prop.customType as unknown instanceof Type && prop.reference === ReferenceType.SCALAR) {
+      prop.type = prop.customType.constructor.name;
     }
   }
 
@@ -686,6 +688,7 @@ export class MetadataDiscovery {
 
       if (pk.customType) {
         prop.columnTypes.push(pk.customType.getColumnType(pk, this.platform));
+        prop.customType = pk.customType;
         return;
       }
 

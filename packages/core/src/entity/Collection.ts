@@ -166,7 +166,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item)));
+      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item, false, true)));
       this._lazyInitialized = true;
 
       return this;

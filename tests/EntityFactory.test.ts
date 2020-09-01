@@ -157,13 +157,15 @@ describe('EntityFactory', () => {
     expect(book.author).toBe(author);
   });
 
-  test('create should flag collections as dirty', async () => {
+  test('create should flag collections as dirty for new entities', async () => {
     const a = new Author('n', 'e');
     const t1 = new BookTag('t1');
     const t2 = new BookTag('t2');
     const t3 = new BookTag('t3');
-    const b = factory.create(Book, { title: 'b', author: a, tags: [t1, t2, t3] });
-    expect(b.tags.isDirty()).toBe(true);
+    const b1 = factory.create(Book, { title: 'b1', author: a, tags: [t1, t2, t3] }, { newEntity: false });
+    expect(b1.tags.isDirty()).toBe(false);
+    const b2 = factory.create(Book, { title: 'b2', author: a, tags: [t1, t2, t3] }, { newEntity: true });
+    expect(b2.tags.isDirty()).toBe(true);
   });
 
   test('create entity from nested object', async () => {

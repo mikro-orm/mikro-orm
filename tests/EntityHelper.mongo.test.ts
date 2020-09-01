@@ -1,14 +1,14 @@
 import { ObjectId } from 'mongodb';
 import { inspect } from 'util';
 
-import { EntityAssigner, EntityData, EntityHelper, MikroORM, Reference, Utils, wrap } from '@mikro-orm/core';
+import { EntityHelper, MikroORM, Reference, Utils, wrap } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { Author, Book, BookTag, Publisher, Test } from './entities';
+import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
-describe('EntityAssignerMongo', () => {
+describe('EntityHelperMongo', () => {
 
   let orm: MikroORM<MongoDriver>;
 
@@ -106,51 +106,6 @@ describe('EntityAssignerMongo', () => {
     expect(jon!.name).toBe('Jon Snow');
     await EntityHelper.init(jon!);
     expect(jon!.name).toBe('Changed!');
-  });
-
-  test('#assign() should update entity values', async () => {
-    const god = new Author('God', 'hello@heaven.god');
-    const jon = new Author('Jon Snow', 'snow@wall.st');
-    const book = new Book('Book2', jon);
-    await orm.em.persistAndFlush(book);
-    expect(book.title).toBe('Book2');
-    expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
-    expect(book.author).toBe(god);
-    expect((book as any).notExisting).toBe(true);
-    await orm.em.persistAndFlush(god);
-    wrap(book, true).assign({ title: 'Better Book2 2', author: god.id });
-    expect(book.author).toBe(god);
-    book.assign({ title: 'Better Book2 3', author: jon._id });
-    expect(book.title).toBe('Better Book2 3');
-    expect(book.author).toBe(jon);
-  });
-
-  test('#assign() should update entity collection', async () => {
-    const other = new BookTag('other');
-    await orm.em.persistAndFlush(other);
-    const jon = new Author('Jon Snow', 'snow@wall.st');
-    const book = new Book('Book2', jon);
-    const tag1 = new BookTag('tag 1');
-    const tag2 = new BookTag('tag 2');
-    const tag3 = new BookTag('tag 3');
-    book.tags.add(tag1);
-    book.tags.add(tag2);
-    book.tags.add(tag3);
-    await orm.em.persistAndFlush(book);
-    EntityAssigner.assign(book, { tags: [other._id] });
-    expect(book.tags.getIdentifiers('_id')).toMatchObject([other._id]);
-    EntityAssigner.assign(book, { tags: [] });
-    expect(book.tags.getIdentifiers()).toMatchObject([]);
-    EntityAssigner.assign(book, { tags: [tag1.id, tag3.id] });
-    expect(book.tags.getIdentifiers('id')).toMatchObject([tag1.id, tag3.id]);
-    EntityAssigner.assign(book, { tags: [tag2] });
-    expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
-    EntityAssigner.assign(book, { tags: [wrap(tag2).toObject()] });
-    expect(book.tags.getIdentifiers('_id')).toMatchObject([tag2._id]);
-    expect(book.tags.isDirty()).toBe(true);
-    expect(() => EntityAssigner.assign(book, { tags: [false] } as any)).toThrowError(`Invalid collection values provided for 'Book.tags' in Book.assign(): [ false ]`);
-    expect(() => EntityAssigner.assign(book, { publisher: [{ foo: 'bar' }] } as EntityData<Book>)).toThrowError(`Invalid reference value provided for 'Book.publisher' in Book.assign(): [{"foo":"bar"}]`);
   });
 
   test('should have string id getter and setter', async () => {

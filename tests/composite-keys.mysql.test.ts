@@ -165,10 +165,12 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User2, user1, { populate: { cars: LoadStrategy.JOINED } });
+    expect(u1.cars.isDirty()).toBe(false);
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },
       { name: 'Audi A8', price: 200_000, year: 2013 },
     ]);
+    expect(u1.cars[0].users.isDirty()).toBe(false);
     expect(wrap(u1).toJSON()).toEqual({
       firstName: 'John',
       lastName: 'Doe 1',
@@ -261,14 +263,13 @@ describe('composite keys in mysql', () => {
   test('composite key in em.create()', async () => {
     await orm.em.nativeInsert(Car2, { name: 'n4', year: 2000, price: 456 });
 
-    const factory = orm.em.getEntityFactory();
     const c1 = new Car2('n1', 2000, 1);
     const c2 = { name: 'n3', year: 2000, price: 123 };
     const c3 = ['n4', 2000]; // composite PK
 
     // managed entity have an internal __em reference, so that is what we are testing here
     expect(wrap(c1, true).__em).toBeUndefined();
-    const u1 = factory.create(User2, { firstName: 'f', lastName: 'l', cars: [c1, c2, c3] });
+    const u1 = orm.em.create(User2, { firstName: 'f', lastName: 'l', cars: [c1, c2, c3] });
     expect(wrap(u1, true).__em).toBeUndefined();
     expect(wrap(u1.cars[0], true).__em).toBeUndefined();
     expect(wrap(u1.cars[1], true).__em).toBeUndefined();

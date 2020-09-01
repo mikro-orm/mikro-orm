@@ -5,26 +5,24 @@ import { Utils } from '../utils';
 
 export class ObjectHydrator extends Hydrator {
 
-  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean): void {
+  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, newEntity: boolean, convertCustomTypes: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateToOne(data[prop.name], entity, prop);
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
-      this.hydrateToMany(entity, prop, data[prop.name], newEntity);
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
       this.hydrateToMany(entity, prop, data[prop.name], newEntity);
     } else if (prop.reference === ReferenceType.EMBEDDED) {
       this.hydrateEmbeddable(entity, prop, data);
     } else { // ReferenceType.SCALAR
-      this.hydrateScalar(entity, prop, data[prop.name]);
+      this.hydrateScalar(entity, prop, data[prop.name], convertCustomTypes);
     }
   }
 
-  private hydrateScalar<T>(entity: T, prop: EntityProperty, value: any): void {
+  private hydrateScalar<T>(entity: T, prop: EntityProperty, value: any, convertCustomTypes: boolean): void {
     if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
       return;
     }
 
-    if (prop.customType) {
+    if (prop.customType && convertCustomTypes) {
       value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
     }
 
@@ -42,14 +40,14 @@ export class ObjectHydrator extends Hydrator {
     Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
   }
 
-  private hydrateToMany<T>(entity: T, prop: EntityProperty, value: any, newEntity: boolean): void {
+  private hydrateToMany<T>(entity: T, prop: EntityProperty<T>, value: any, newEntity?: boolean): void {
     if (Array.isArray(value)) {
-      const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value));
-      const coll = Collection.create<AnyEntity>(entity, prop.name, items, newEntity);
-      coll.setDirty();
+      const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value, newEntity));
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!newEntity);
+      coll.setDirty(!!newEntity);
     } else if (!entity[prop.name]) {
       const items = this.em.getDriver().getPlatform().usesPivotTable() || !prop.owner ? undefined : [];
-      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!value || newEntity);
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!(value || newEntity));
       coll.setDirty(false);
     }
   }
@@ -59,10 +57,12 @@ export class ObjectHydrator extends Hydrator {
       return;
     }
 
-    if (Utils.isPrimaryKey<T[keyof T]>(value)) {
-      entity[prop.name] = Reference.wrapReference(this.factory.createReference<T[keyof T]>(prop.type, value), prop) as T[keyof T];
+    if (Utils.isPrimaryKey<T[keyof T]>(value, true)) {
+      entity[prop.name] = Reference.wrapReference(this.factory.createReference<T[keyof T]>(prop.type, value, { merge: true }), prop) as T[keyof T];
     } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
-      entity[prop.name] = Reference.wrapReference(this.factory.create(prop.type, value), prop) as T[keyof T];
+      entity[prop.name] = Reference.wrapReference(this.factory.create(prop.type, value, { initialized: true, merge: true }), prop) as T[keyof T];
+    } else if (value === null) {
+      entity[prop.name] = null;
     }
 
     if (entity[prop.name]) {
@@ -70,11 +70,11 @@ export class ObjectHydrator extends Hydrator {
     }
   }
 
-  private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T): T {
+  private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T, newEntity?: boolean): T {
     const meta = this.em.getMetadata().get(prop.type);
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
-      const ref = this.factory.createReference<T>(prop.type, value);
+      const ref = this.factory.createReference<T>(prop.type, value, { merge: true });
       this.em.merge(ref);
 
       return ref;
@@ -84,7 +84,7 @@ export class ObjectHydrator extends Hydrator {
       return value;
     }
 
-    return this.factory.create(prop.type, value as EntityData<T>);
+    return this.factory.create(prop.type, value as EntityData<T>, { newEntity });
   }
 
 }

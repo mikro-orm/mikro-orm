@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId, MongoDriver } from '@mikro-orm/mongodb';
 
 @Embeddable()
@@ -184,6 +184,12 @@ describe('embedded entities in mongo', () => {
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+  });
+
+  test('#assign() works with embeddables', async () => {
+    const jon = new User();
+    assign(jon, { address1: { city: '1', country: '2', postalCode: '3', street: '4' } });
+    expect(jon.address1).toMatchObject({ city: '1', country: '2', postalCode: '3', street: '4' });
   });
 
 });

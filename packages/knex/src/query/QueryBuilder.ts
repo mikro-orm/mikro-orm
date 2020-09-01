@@ -108,7 +108,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
     } else {
-      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata)!;
+      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
     }
 
     const op = operator || params as keyof typeof GroupOperator;
@@ -146,7 +146,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   orderBy(orderBy: QueryOrderMap): this {
-    orderBy = QueryHelper.processWhere(orderBy as Dictionary, this.entityName, this.metadata) as QueryOrderMap;
+    QueryHelper.inlinePrimaryKeyObjects(orderBy, this.metadata.find(this.entityName)!, this.metadata);
     this._orderBy = CriteriaNode.create(this.metadata, this.entityName, orderBy).process(this);
     return this;
   }
@@ -341,7 +341,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const entityName = this._aliasMap[fromAlias];
     const prop = this.metadata.get(entityName).properties[fromField];
     this._aliasMap[alias] = prop.type;
-    cond = QueryHelper.processWhere(cond, this.entityName, this.metadata)!;
+    cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
