@@ -2,7 +2,19 @@ import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
 import { Configuration, OptimisticLockError, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
-import { EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType } from './entity';
+import {
+  AssignOptions,
+  EntityAssigner,
+  EntityFactory,
+  EntityLoader,
+  EntityRepository,
+  EntityValidator,
+  IdentifiedReference,
+  LoadStrategy,
+  Reference,
+  ReferenceType,
+  SCALAR_TYPES,
+} from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New, GetRepository } from './typings';
@@ -85,7 +97,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where, entityName, this.metadata);
+    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform(), false);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
@@ -99,7 +111,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.merge<T>(entityName, data, options.refresh);
+      const entity = this.merge<T>(entityName, data, options.refresh, true);
       ret.push(entity);
     }
 
@@ -166,7 +178,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      const cond2 = QueryHelper.processWhere(cond, entityName, this.metadata);
+      const cond2 = QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform());
       Utils.merge(ret, cond2, where);
     }
 
@@ -215,7 +227,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T, P>>(populate) ? populate : { populate, orderBy } as FindOneOptions<T, P>;
     const meta = this.metadata.get<T>(entityName);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
@@ -234,7 +246,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = this.merge(entityName, data as EntityData<T>, options.refresh) as T;
+    entity = this.merge(entityName, data as EntityData<T>, options.refresh, true) as T;
     await this.lockAndPopulate(entityName, entity, where, options);
 
     return entity as Loaded<T, P>;
@@ -353,7 +365,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async nativeUpdate<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>, options: UpdateOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
@@ -367,7 +379,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeDelete<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options: DeleteOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata);
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'delete');
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
@@ -381,9 +393,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityData<T>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    const data = this.driver.mapResult(result, meta)!;
+    const data = this.driver.mapResult(result, meta) as Dictionary;
 
-    return this.merge<T>(entityName, data, true);
+    Object.keys(data).forEach(k => {
+      const prop = meta.properties[k];
+      if (prop && prop.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
+        return data[k] = this.validator.validateProperty(prop, data[k], data);
+      }
+    });
+
+    return this.merge<T>(entityName, data as EntityData<T>, true, true);
   }
 
   /**
@@ -396,13 +415,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, refresh?: boolean): T;
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, refresh?: boolean, convertCustomTypes?: boolean): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean): T {
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean, convertCustomTypes?: boolean): T {
     if (Utils.isEntity(entityName)) {
       return this.merge(entityName.constructor.name, entityName as EntityData<T>, data as boolean);
     }
@@ -415,12 +434,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return entity;
     }
 
-    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>);
-
-    // add to IM immediately - needed for self-references that can be part of `data` (do not trigger cascade merge)
-    this.getUnitOfWork().merge(entity, new Set([entity]));
-    EntityAssigner.assign(entity, data as EntityData<T>, { onlyProperties: true, merge: true });
-    this.getUnitOfWork().merge(entity); // add to IM again so we have correct payload saved for change set computation
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, convertCustomTypes });
+    this.validator.validate(entity, data, this.metadata.find(entityName)!);
+    this.getUnitOfWork().merge(entity);
 
     return entity;
   }
@@ -429,20 +445,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Creates new instance of given entity and populates it with given data
    */
   create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>): New<T, P> {
-    return this.getEntityFactory().create<T, P>(entityName, data, true, true);
+    return this.getEntityFactory().create<T, P>(entityName, data, { newEntity: true });
   }
 
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>): T {
-    return EntityAssigner.assign(entity, data, { em: this });
+  assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options: AssignOptions = {}): T {
+    return EntityAssigner.assign(entity, data, { em: this, ...options });
   }
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;
+  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true, convertCustomTypes?: boolean): IdentifiedReference<T, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -452,17 +468,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false): T;
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false, convertCustomTypes?: boolean): T;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: boolean): T | Reference<T>;
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped?: boolean, convertCustomTypes?: boolean): T | Reference<T>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped = false): T | Reference<T> {
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped = false, convertCustomTypes = false): T | Reference<T> {
     const meta = this.metadata.get(Utils.className(entityName));
 
     if (Utils.isPrimaryKey(id)) {
@@ -473,8 +489,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       id = [id] as Primary<T>;
     }
 
-    const entity = this.getEntityFactory().createReference<T>(entityName, id);
-    this.getUnitOfWork().merge(entity, new Set([entity]), false);
+    const entity = this.getEntityFactory().createReference<T>(entityName, id, { merge: true, convertCustomTypes });
 
     if (wrapped) {
       return Reference.create(entity);
@@ -488,7 +503,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async count<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where, entityName, this.metadata);
+    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform());
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
 

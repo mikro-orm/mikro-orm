@@ -18,7 +18,7 @@ describe('QueryHelper', () => {
       'key4<=': 123,
       'key5!=': 123,
       'key6!': 123,
-    }, 'id', orm.getMetadata())).toEqual({
+    }, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -33,7 +33,7 @@ describe('QueryHelper', () => {
       'key4 <=': 123,
       'key5 !=': 123,
       'key6 !': 123,
-    }, 'id', orm.getMetadata())).toEqual({
+    }, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -53,7 +53,7 @@ describe('QueryHelper', () => {
       'key6:not': 123,
       'key7:in': [123],
       'key8:nin': [123],
-    }, 'id', orm.getMetadata())).toEqual({
+    }, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
       key3: { $gte: 123 },
@@ -66,7 +66,7 @@ describe('QueryHelper', () => {
   });
 
   test('processWhere returns empty object for undefined condition', async () => {
-    expect(QueryHelper.processWhere(undefined as any, 'id', orm.getMetadata())).toEqual({});
+    expect(QueryHelper.processWhere(undefined as any, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({});
   });
 
   test('test entity conversion to PK', async () => {
@@ -102,10 +102,10 @@ describe('QueryHelper', () => {
     const book1 = new Book2('b1', author);
     const book2 = new Book2('b2', author);
     const book3 = new Book2('b3', author);
-    expect(QueryHelper.processWhere<Author2>([1, 2, 3], 'uuid', orm.getMetadata())).toEqual({ uuid: { $in: [1, 2, 3] } });
-    expect(QueryHelper.processWhere<Book2>([book1, book2, book3], 'uuid', orm.getMetadata())).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
-    expect(QueryHelper.processWhere<Author2>({ favouriteBook: ['1', '2', '3'] }, 'id', orm.getMetadata())).toEqual({ favouriteBook: { $in: ['1', '2', '3'] } });
-    expect(QueryHelper.processWhere<Book2>({ $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] }, 'id', orm.getMetadata())).toEqual({
+    expect(QueryHelper.processWhere<Author2>([1, 2, 3], 'uuid', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({ uuid: { $in: [1, 2, 3] } });
+    expect(QueryHelper.processWhere<Book2>([book1, book2, book3], 'uuid', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({ uuid: { $in: [book1.uuid, book2.uuid, book3.uuid] } });
+    expect(QueryHelper.processWhere<Author2>({ favouriteBook: ['1', '2', '3'] }, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({ favouriteBook: { $in: ['1', '2', '3'] } });
+    expect(QueryHelper.processWhere<Book2>({ $or: [{ author: [1, 2, 3] }, { author: [7, 8, 9] }] }, 'id', orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
       $or: [{ author: { $in: [1, 2, 3] } }, { author: { $in: [7, 8, 9] } }],
     });
   });

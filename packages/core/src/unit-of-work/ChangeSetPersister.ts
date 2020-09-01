@@ -143,7 +143,7 @@ export class ChangeSetPersister {
 
         return data;
       }, {} as Dictionary);
-      this.hydrator.hydrate<T>(entity, meta, data as EntityData<T>, false);
+      this.hydrator.hydrate<T>(entity, meta, data as EntityData<T>, false, true);
     }
   }
 

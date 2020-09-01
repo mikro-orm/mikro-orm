@@ -1,7 +1,8 @@
 import { Reference } from '../entity';
 import { Utils } from './Utils';
-import { AnyEntity, Dictionary, EntityMetadata, FilterDef, FilterQuery } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery } from '../typings';
 import { GroupOperator } from '../enums';
+import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 
 export class QueryHelper {
@@ -68,7 +69,7 @@ export class QueryHelper {
     return false;
   }
 
-  static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, metadata: MetadataStorage): FilterQuery<T> {
+  static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, metadata: MetadataStorage, platform: Platform, convertCustomTypes = true): FilterQuery<T> {
     const meta = metadata.find(entityName);
 
     // inline PK-only objects in M:N queries so we don't join the target entity when not needed
@@ -80,7 +81,7 @@ export class QueryHelper {
 
     if (Array.isArray(where)) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata)) } } as FilterQuery<T>;
+      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform)) } } as FilterQuery<T>;
     }
 
     if (!Utils.isPlainObject(where) || Utils.isPrimaryKey(where)) {
@@ -88,24 +89,29 @@ export class QueryHelper {
     }
 
     return Object.keys(where as Dictionary).reduce((o, key) => {
-      const value = where[key];
-      const keys = meta?.properties[key]?.joinColumns?.length ?? 0;
+      let value = where[key];
+      const prop = meta?.properties[key];
+      const keys = prop?.joinColumns?.length ?? 0;
       const composite = keys > 1;
 
       if (key in GroupOperator) {
-        o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata));
+        o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata, platform));
         return o;
       }
 
-      if (Array.isArray(value) && !QueryHelper.isSupported(key) && !key.includes('?')) {
+      if (prop?.customType && convertCustomTypes) {
+        value = QueryHelper.processCustomType(prop, value, platform);
+      }
+
+      if (Array.isArray(value) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
         // comparing single composite key - use $eq instead of $in
         const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
         o[key] = { [op]: value };
         return o;
       }
 
-      if (!QueryHelper.isSupported(key)) {
-        o[key] = where[key as keyof typeof where];
+      if (!QueryHelper.isSupportedOperator(key)) {
+        o[key] = value;
       } else if (key.includes(':')) {
         const [k, expr] = key.split(':');
         o[k] = QueryHelper.processExpression(expr, value);
@@ -173,8 +179,23 @@ export class QueryHelper {
     }
   }
 
-  private static isSupported(key: string): boolean {
+  private static isSupportedOperator(key: string): boolean {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
+  }
+
+  private static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform): FilterQuery<T> {
+    if (Utils.isPlainObject(cond)) {
+      return Object.keys(cond).reduce((o, k) => {
+        o[k] = QueryHelper.processCustomType(prop, cond[k], platform);
+        return o;
+      }, {});
+    }
+
+    if (Array.isArray(cond)) {
+      return cond.map(v => QueryHelper.processCustomType(prop, v, platform)) as FilterQuery<T>;
+    }
+
+    return prop.customType.convertToDatabaseValue(cond, platform);
   }
 
 }

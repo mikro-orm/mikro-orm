@@ -1358,7 +1358,7 @@ describe('QueryBuilder', () => {
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)');
-    expect(qb2.getParams()).toEqual([1]);
+    expect(qb2.getParams()).toEqual(['1']);
 
     const qb3 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: { name: QueryOrder.ASC } });
     expect(qb3.getQuery()).toMatch('select `a`.* ' +
@@ -1384,7 +1384,7 @@ describe('QueryBuilder', () => {
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where `e1`.`book_tag2_id` = ?');
-    expect(qb1.getParams()).toEqual([1]);
+    expect(qb1.getParams()).toEqual(['1']);
 
     const qb11 = await orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: { name: 'n', year: 1 } });
     expect(qb11.getQuery()).toMatch('select `u`.* ' +
@@ -1405,7 +1405,7 @@ describe('QueryBuilder', () => {
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)');
-    expect(qb2.getParams()).toEqual([1]);
+    expect(qb2.getParams()).toEqual(['1']);
 
     const qb4 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: 1 }).orderBy({ friends: { id: QueryOrder.ASC } });
     expect(qb4.getQuery()).toMatch('select `a`.* ' +

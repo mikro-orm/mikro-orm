@@ -16,7 +16,6 @@ export class EntityAssigner {
     const wrapped = entity.__helper!;
     const em = options.em || wrapped.__em;
     const meta = wrapped.__meta;
-    const root = Utils.getRootEntity(wrapped.__internal.metadata, meta);
     const validator = wrapped.__internal.validator;
     const platform = wrapped.__internal.platform;
     const props = meta.properties;
@@ -26,13 +25,11 @@ export class EntityAssigner {
         return;
       }
 
-      if (props[prop]?.inherited || root.discriminatorColumn === prop || props[prop]?.embedded) {
-        return;
-      }
-
+      /* istanbul ignore next */
+      const customType = props[prop]?.customType;
       let value = data[prop as keyof EntityData<T>];
 
-      if (props[prop]?.customType && !Utils.isEntity(data)) {
+      if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {
         value = props[prop].customType.convertToJSValue(value, platform);
       }
 
@@ -57,7 +54,7 @@ export class EntityAssigner {
 
       if (options.mergeObjects && Utils.isObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
-      } else if (!props[prop] || !props[prop].getter || props[prop].setter) {
+      } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
         entity[prop as keyof T] = value;
       }
     });
@@ -96,23 +93,15 @@ export class EntityAssigner {
   }
 
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
-    let valid = false;
-
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = value;
-      valid = true;
     } else if (Utils.isPrimaryKey(value, true)) {
-      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value), prop);
-      valid = true;
+      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, false, options.convertCustomTypes), prop);
     } else if (Utils.isObject<T[keyof T]>(value) && options.merge) {
       entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
-      valid = true;
     } else if (Utils.isObject<T[keyof T]>(value)) {
       entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
-      valid = true;
-    }
-
-    if (!valid) {
+    } else {
       const name = entity.constructor.name;
       throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
     }
@@ -157,8 +146,11 @@ export class EntityAssigner {
 
 }
 
+export const assign = EntityAssigner.assign;
+
 export interface AssignOptions {
   onlyProperties?: boolean;
+  convertCustomTypes?: boolean;
   mergeObjects?: boolean;
   merge?: boolean;
   em?: EntityManager;
