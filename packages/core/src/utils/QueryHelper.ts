@@ -199,3 +199,5 @@ export class QueryHelper {
   }
 
 }
+
+export const expr = (sql: string) => sql;

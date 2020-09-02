@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap, UniqueConstraintViolationException,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap, expr, UniqueConstraintViolationException,
   TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
@@ -1149,6 +1149,18 @@ describe('EntityManagerPostgre', () => {
     const test = new Test2({ name: 'name' });
     await orm.em.persistAndFlush(test);
     expect(test.id).toBeDefined();
+  });
+
+  test('find with custom function', async () => {
+    const author = new Author2('name', 'email');
+    const b1 = new Book2('b1', author);
+    const b2 = new Book2('b2', author);
+    const b3 = new Book2('b3', author);
+    await orm.em.persistAndFlush([b1, b2, b3]);
+    orm.em.clear();
+
+    const books = await orm.em.find(Book2, { [expr('upper(title)')]: ['B1', 'B2'] });
+    expect(books).toHaveLength(2);
   });
 
   test('find by joined property', async () => {
