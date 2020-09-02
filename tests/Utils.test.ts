@@ -312,7 +312,8 @@ describe('Utils', () => {
     ];
     expect(Utils.lookupPathFromDecorator(stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
-    // using babel
+    // using babel will ignore the path, as there is no `__decorate` and there can be other issues too
+    // @see https://github.com/mikro-orm/mikro-orm/issues/790
     const stack4 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
@@ -325,9 +326,9 @@ describe('Utils', () => {
       '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
       '    at Module.load (internal/modules/cjs/loader.js:986:32)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack4)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator(stack4)).toBeUndefined();
 
-    // using babel
+    // using babel will ignore the path, as there is no `__decorate`
     const stack5 = [
       '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/utils/Utils.js:360:26)',
       '    at Function.getMetadataFromDecorator (/usr/local/var/www/my-project/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:21:36)',
@@ -340,10 +341,10 @@ describe('Utils', () => {
       '    at Module.require (internal/modules/cjs/loader.js:1026:19)',
       '    at require (internal/modules/cjs/helpers.js:72:18)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack5)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator(stack5)).toBeUndefined();
 
     // no decorated line found
-    expect(() => Utils.lookupPathFromDecorator()).toThrowError('Cannot find path to entity');
+    expect(Utils.lookupPathFromDecorator()).toBeUndefined();
   });
 
   test('lookup path from decorator on windows', () => {

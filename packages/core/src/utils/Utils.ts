@@ -471,26 +471,16 @@ export class Utils {
    * Uses some dark magic to get source path to caller where decorator is used.
    * Analyses stack trace of error created inside the function call.
    */
-  static lookupPathFromDecorator(stack?: string[]): string {
+  static lookupPathFromDecorator(stack?: string[]): string | undefined {
     // use some dark magic to get source path to caller
     stack = stack || new Error().stack!.split('\n');
     let line = stack.findIndex(line => line.includes('__decorate'))!;
-    let compiled = false;
 
     if (line === -1) {
-      line = stack.findIndex(line => line.includes('_compile'))!;
-
-      if (line !== -1) {
-        line--;
-        compiled = true;
-      }
+      return undefined;
     }
 
-    if (line === -1) {
-      throw new Error('Cannot find path to entity');
-    }
-
-    if (!compiled && Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
+    if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
 
