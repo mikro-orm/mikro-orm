@@ -35,6 +35,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     hydrator: ObjectHydrator,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
+    populateAfterFlush: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
     debug: false,
@@ -312,6 +313,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   implicitTransactions?: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
+  populateAfterFlush: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;
   ensureIndexes: boolean;

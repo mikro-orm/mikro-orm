@@ -3,7 +3,7 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Filt
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
-import { OptimisticLockError, Utils } from '../utils';
+import { Configuration, OptimisticLockError, Utils } from '../utils';
 import { IDatabaseDriver } from '../drivers';
 import { Hydrator } from '../hydration';
 
@@ -12,7 +12,8 @@ export class ChangeSetPersister {
   constructor(private readonly driver: IDatabaseDriver,
               private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly metadata: MetadataStorage,
-              private readonly hydrator: Hydrator) { }
+              private readonly hydrator: Hydrator,
+              private readonly config: Configuration) { }
 
   async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     changeSets.forEach(changeSet => this.processProperties(changeSet));
@@ -88,6 +89,10 @@ export class ChangeSetPersister {
    * Sets populate flag to new entities so they are serialized like if they were loaded from the db
    */
   private markAsPopulated<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>) {
+    if (!this.config.get('populateAfterFlush')) {
+      return;
+    }
+
     changeSet.entity.__helper!.populated();
     Object.values(meta.properties).forEach(prop => {
       const value = changeSet.entity[prop.name];

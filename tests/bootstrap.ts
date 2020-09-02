@@ -37,6 +37,7 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes: true,
     implicitTransactions: true,
+    populateAfterFlush: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
   });
 

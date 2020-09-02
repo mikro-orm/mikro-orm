@@ -27,7 +27,7 @@ export class UnitOfWork {
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform);
-  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em));
+  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em), this.em.config);
   private working = false;
 
   constructor(private readonly em: EntityManager) { }
