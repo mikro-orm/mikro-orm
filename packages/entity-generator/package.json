@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/entity-generator",
-  "version": "4.0.0-rc.4",
+  "version": "4.0.0-rc.5",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,14 +47,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^4.0.0-rc.4",
+    "@mikro-orm/knex": "^4.0.0-rc.5",
     "fs-extra": "^9.0.1",
     "ts-morph": "^8.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.4"
+    "@mikro-orm/core": "^4.0.0-rc.5"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.4"
+    "@mikro-orm/core": "^4.0.0-rc.5"
   }
 }
