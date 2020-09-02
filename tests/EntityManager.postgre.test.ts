@@ -652,7 +652,7 @@ describe('EntityManagerPostgre', () => {
     const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: ['baz'], refresh: true }))!;
     expect(b1.baz).toBeInstanceOf(FooBaz2);
     expect(b1.baz!.id).toBe(baz.id);
-    expect(wrap(b1).toJSON()).toMatchObject({ baz: wrap(baz).toJSON() });
+    expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
   });
 
   test('populate OneToOne relation on inverse side', async () => {
@@ -677,7 +677,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[2][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
-    expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+    expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, ['bar']);
@@ -685,7 +685,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[4][0]).toMatch('select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."baz_id" in ($1) order by "e0"."baz_id" asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
-    expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+    expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
   });
 
   test('populate OneToOne relation with uuid PK', async () => {
@@ -698,7 +698,7 @@ describe('EntityManagerPostgre', () => {
 
     const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test.config']))!;
     expect(b1.uuid).not.toBeNull();
-    expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
+    expect(wrap(b1).toJSON()).toMatchObject({ test: { id: test.id, book: test.book.uuid, name: 't' } });
   });
 
   test('many to many relation', async () => {

@@ -18,7 +18,7 @@ export class ChangeSetPersister {
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
     for (const changeSet of changeSets) {
-      await this.persistEntity(changeSet, ctx);
+      await this.persistNewEntity(changeSet, ctx);
     }
   }
 
@@ -26,7 +26,7 @@ export class ChangeSetPersister {
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
     for (const changeSet of changeSets) {
-      await this.persistEntity(changeSet, ctx);
+      await this.persistManagedEntity(changeSet, ctx);
     }
   }
 
@@ -51,25 +51,27 @@ export class ChangeSetPersister {
     }
   }
 
-  private async persistEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
-    let res: QueryResult | undefined;
+  private async persistNewEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
     const wrapped = changeSet.entity.__helper!;
+    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
+    const hasPrimaryKey = Utils.isDefined(wrapped.__primaryKey, true);
+    this.mapReturnedValues(changeSet.entity, res, meta);
 
-    if (changeSet.type === ChangeSetType.UPDATE) {
-      res = await this.updateEntity(meta, changeSet, ctx);
-      this.mapReturnedValues(changeSet.entity, res, meta);
-    } else if (Utils.isDefined(wrapped.__primaryKey, true)) { // ChangeSetType.CREATE with primary key
-      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
-      this.mapReturnedValues(changeSet.entity, res, meta);
-      wrapped.__initialized = true;
-    } else { // ChangeSetType.CREATE without primary key
-      res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
-      this.mapReturnedValues(changeSet.entity, res, meta);
+    if (!hasPrimaryKey) {
       this.mapPrimaryKey(meta, res.insertId, changeSet);
-      wrapped.__initialized = true;
     }
 
+    this.markAsPopulated(changeSet, meta);
+    wrapped.__initialized = true;
+    await this.processOptimisticLock(meta, changeSet, res, ctx);
+    changeSet.persisted = true;
+  }
+
+  private async persistManagedEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
+    const meta = this.metadata.find(changeSet.name)!;
+    const res = await this.updateEntity(meta, changeSet, ctx);
+    this.mapReturnedValues(changeSet.entity, res, meta);
     await this.processOptimisticLock(meta, changeSet, res, ctx);
     changeSet.persisted = true;
   }
@@ -80,6 +82,22 @@ export class ChangeSetPersister {
     const wrapped = changeSet.entity.__helper!;
     wrapped.__primaryKey = Utils.isDefined(wrapped.__primaryKey, true) ? wrapped.__primaryKey : insertId;
     this.identifierMap.get(wrapped.__uuid)!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
+  }
+
+  /**
+   * Sets populate flag to new entities so they are serialized like if they were loaded from the db
+   */
+  private markAsPopulated<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>) {
+    changeSet.entity.__helper!.populated();
+    Object.values(meta.properties).forEach(prop => {
+      const value = changeSet.entity[prop.name];
+
+      if (Utils.isEntity(value, true)) {
+        (value as AnyEntity).__helper!.populated();
+      } else if (Utils.isCollection(value)) {
+        value.populated();
+      }
+    });
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {

@@ -84,6 +84,23 @@ describe('EntityAssignerMongo', () => {
     expect((jon as any).code).toBeUndefined();
   });
 
+  test('newly created entity should be considered as populated (GH issue #784)', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const jon = new Author('Jon Snow', 'snow@wall.st');
+    const book = new Book('Book2', jon);
+    jon.favouriteAuthor = god;
+    jon.books.add(book);
+    await orm.em.persistAndFlush(jon);
+    expect(jon.toObject().id).not.toBeUndefined();
+    expect(jon.toObject().books).toHaveLength(1);
+    expect(jon.toObject().books[0]).toMatchObject({
+      title: 'Book2',
+    });
+    expect(jon.toObject().favouriteAuthor).toMatchObject({
+      name: 'God',
+    });
+  });
+
   afterAll(async () => orm.close(true));
 
 });

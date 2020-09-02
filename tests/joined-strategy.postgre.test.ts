@@ -289,7 +289,7 @@ describe('Joined loading strategy', () => {
     expect(connMock).toBeCalledTimes(1);
     expect(b1.baz).toBeInstanceOf(FooBaz2);
     expect(b1.baz!.id).toBe(baz.id);
-    expect(wrap(b1).toJSON()).toMatchObject({ baz: wrap(baz).toJSON() });
+    expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
   });
 
   test('populate OneToOne relation on inverse side', async () => {
@@ -320,7 +320,7 @@ describe('Joined loading strategy', () => {
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(b1.bar!.random).toBe(123);
-    expect(wrap(b1).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+    expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: { bar: LoadStrategy.JOINED } }))!;
@@ -333,7 +333,7 @@ describe('Joined loading strategy', () => {
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(b2.bar!.random).toBe(123);
-    expect(wrap(b2).toJSON()).toMatchObject({ bar: wrap(bar).toJSON() });
+    expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
   });
 
   test('nested populating', async () => {
