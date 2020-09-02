@@ -18,8 +18,11 @@ class MigrationTest2 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
-    const res = await this.execute('select 1 + 1 as count');
-    expect(res).toEqual([{ count: 2 }]);
+    const knex = this.getKnex();
+    this.addSql(knex.raw('select 1 + 1'));
+    this.addSql(knex.select(knex.raw('2 + 2 as count2')));
+    const res = await this.execute('select 1 + 1 as count1');
+    expect(res).toEqual([{ count1: 2 }]);
   }
 
   isTransactional(): boolean {
@@ -97,7 +100,7 @@ describe('Migrator', () => {
   });
 
   test('ensureTable and list executed migrations', async () => {
-    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     const storage = migrator.storage;
@@ -115,7 +118,7 @@ describe('Migrator', () => {
   });
 
   test('runner', async () => {
-    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();
@@ -149,13 +152,15 @@ describe('Migrator', () => {
     migrator.options.disableForeignKeys = false;
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count');
+    expect(mock.mock.calls.length).toBe(4);
+    expect(mock.mock.calls[0][0]).toMatch('select 1 + 1 as count1');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[2][0]).toMatch('select 1 + 1');
+    expect(mock.mock.calls[3][0]).toMatch('select 2 + 2 as count2');
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -189,7 +194,7 @@ describe('Migrator', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
-    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
@@ -245,7 +250,7 @@ describe('Migrator - with explicit migrations', () => {
   afterAll(async () => orm.close(true));
 
   test('runner', async () => {
-    await orm.em.getConnection().getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
     // @ts-ignore
     await migrator.storage.ensureTable();

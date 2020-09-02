@@ -22,7 +22,7 @@ export class MigrationRunner {
       await this.connection.transactional(async tx => {
         migration.setTransactionContext(tx);
         const queries = await this.getQueries(migration, method);
-        await Utils.runSerial(queries, sql => this.driver.execute(tx.raw(sql)));
+        await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
       }, this.masterTransaction);
     }
   }
@@ -45,7 +45,7 @@ export class MigrationRunner {
       queries.push(...this.helper.getSchemaEnd().split('\n'));
     }
 
-    queries = queries.filter(sql => sql.trim().length > 0);
+    queries = queries.filter(sql => !Utils.isString(sql) || sql.trim().length > 0);
     return queries;
   }
 

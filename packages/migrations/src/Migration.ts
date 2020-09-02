@@ -1,9 +1,11 @@
 import { Configuration, Transaction } from '@mikro-orm/core';
 import { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
 
+export type Query = string | Knex.QueryBuilder | Knex.Raw;
+
 export abstract class Migration {
 
-  private readonly queries: string[] = [];
+  private readonly queries: Query[] = [];
   protected ctx?: Transaction<Knex.Transaction>;
 
   constructor(protected readonly driver: AbstractSqlDriver,
@@ -19,7 +21,7 @@ export abstract class Migration {
     return true;
   }
 
-  addSql(sql: string): void {
+  addSql(sql: Query): void {
     this.queries.push(sql);
   }
 
@@ -32,11 +34,15 @@ export abstract class Migration {
     this.ctx = ctx;
   }
 
-  async execute(sql: string) {
+  async execute(sql: Query) {
     return this.driver.execute(sql, undefined, 'all', this.ctx);
   }
 
-  getQueries(): string[] {
+  getKnex() {
+    return this.driver.getConnection('write').getKnex();
+  }
+
+  getQueries(): Query[] {
     return this.queries;
   }
 
