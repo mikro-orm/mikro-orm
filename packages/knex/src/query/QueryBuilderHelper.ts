@@ -220,14 +220,12 @@ export class QueryBuilderHelper {
   }
 
   appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+    const m = operator === '$or' ? 'orWhere' : 'andWhere';
+
     Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
-        if (operator === '$and' && k === '$or') {
-          return qb.andWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
-        }
-
-        if (operator === '$or' && k === '$and') {
-          return qb.orWhere(inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
+        if (operator) {
+          return qb[m](inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
         }
 
         return this.appendGroupCondition(type, qb, k, method, cond[k]);
@@ -287,7 +285,7 @@ export class QueryBuilderHelper {
 
     if (Object.keys(value).length > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-      return void subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
+      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
 
     if (value instanceof RegExp) {
@@ -476,20 +474,22 @@ export class QueryBuilderHelper {
   }
 
   private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
-    if (subCondition.length === 1) {
-      return this.appendQueryCondition(type, subCondition[0], qb, operator, method);
-    }
-
-    if (operator === '$and') {
-      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, operator));
+    // single sub-condition can be ignored to reduce nesting of parens
+    if (subCondition.length === 1 || operator === '$and') {
+      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, undefined, method));
     }
 
     qb[method](outer => subCondition.forEach(sub => {
-      if (Object.keys(sub).length === 1) {
+      // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
+      const keys = Object.keys(sub);
+      const val = sub[keys[0]];
+      const simple = !Utils.isPlainObject(val) || Object.keys(val).length === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
+
+      if (keys.length === 1 && simple) {
         return this.appendQueryCondition(type, sub, outer, operator);
       }
 
-      outer.orWhere(inner => this.appendQueryCondition(type, sub, inner, '$and'));
+      outer.orWhere(inner => this.appendQueryCondition(type, sub, inner));
     }));
   }
 
