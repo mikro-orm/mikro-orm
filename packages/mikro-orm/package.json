@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "4.0.0-rc.5",
+  "version": "4.0.0-rc.6",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,18 +47,18 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/core": "^4.0.0-rc.5",
-    "@mikro-orm/cli": "^4.0.0-rc.5",
-    "@mikro-orm/entity-generator": "^4.0.0-rc.5",
-    "@mikro-orm/migrations": "^4.0.0-rc.5",
-    "@mikro-orm/reflection": "^4.0.0-rc.5"
+    "@mikro-orm/core": "^4.0.0-rc.6",
+    "@mikro-orm/cli": "^4.0.0-rc.6",
+    "@mikro-orm/entity-generator": "^4.0.0-rc.6",
+    "@mikro-orm/migrations": "^4.0.0-rc.6",
+    "@mikro-orm/reflection": "^4.0.0-rc.6"
   },
   "peerDependencies": {
-    "@mikro-orm/mongodb": "^4.0.0-rc.5",
-    "@mikro-orm/mysql": "^4.0.0-rc.5",
-    "@mikro-orm/mariadb": "^4.0.0-rc.5",
-    "@mikro-orm/postgresql": "^4.0.0-rc.5",
-    "@mikro-orm/sqlite": "^4.0.0-rc.5"
+    "@mikro-orm/mongodb": "^4.0.0-rc.6",
+    "@mikro-orm/mysql": "^4.0.0-rc.6",
+    "@mikro-orm/mariadb": "^4.0.0-rc.6",
+    "@mikro-orm/postgresql": "^4.0.0-rc.6",
+    "@mikro-orm/sqlite": "^4.0.0-rc.6"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/mongodb": {
