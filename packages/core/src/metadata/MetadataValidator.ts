@@ -5,8 +5,13 @@ import { MetadataStorage } from './MetadataStorage';
 
 export class MetadataValidator {
 
-  static validateSingleDecorator(meta: EntityMetadata, propertyName: string): void {
-    if (meta.properties[propertyName]?.reference) {
+  /**
+   * Validate there is only one property decorator. This disallows using `@Property()` together with e.g. `@ManyToOne()`
+   * on the same property. One should use only `@ManyToOne()` in such case.
+   * We allow the existence of the property in metadata if the reference type is the same, this should allow things like HMR to work.
+   */
+  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceType): void {
+    if (meta.properties[propertyName] && meta.properties[propertyName].reference !== reference) {
       throw MetadataError.multipleDecorators(meta.className, propertyName);
     }
   }

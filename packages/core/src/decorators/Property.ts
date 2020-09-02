@@ -8,7 +8,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
-    MetadataValidator.validateSingleDecorator(meta, propertyName);
+    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {

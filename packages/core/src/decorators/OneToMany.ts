@@ -6,19 +6,17 @@ import { QueryOrder } from '../enums';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function createOneToDecorator<T, O>(
-  entity?: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedBy?: (string & keyof T) | ((e: T) => any),
-  options?: Partial<OneToManyOptions<T, O>>,
-  reference?: ReferenceType,
+  entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),
+  mappedBy: (string & keyof T) | ((e: T) => any) | undefined,
+  options: Partial<OneToManyOptions<T, O>>,
+  reference: ReferenceType,
 ) {
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.isObject<OneToManyOptions<T, O>>(entity) ? entity : { ...options, entity, mappedBy };
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    MetadataValidator.validateSingleDecorator(meta, propertyName);
-
-    const prop = { name: propertyName, reference } as EntityProperty<T>;
-    Object.assign(prop, options);
-    meta.properties[propertyName] = prop;
+    MetadataValidator.validateSingleDecorator(meta, propertyName, reference);
+    const property = { name: propertyName, reference } as EntityProperty<T>;
+    meta.properties[propertyName] = Object.assign(meta.properties[propertyName] ?? {}, property, options);
   };
 }
 
