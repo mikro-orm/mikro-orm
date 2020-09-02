@@ -1159,8 +1159,22 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush([b1, b2, b3]);
     orm.em.clear();
 
-    const books = await orm.em.find(Book2, { [expr('upper(title)')]: ['B1', 'B2'] });
-    expect(books).toHaveLength(2);
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query', 'query-params']);
+    Object.assign(orm.config, { logger });
+
+    const books1 = await orm.em.find(Book2, {
+      [expr('upper(title)')]: ['B1', 'B2'],
+    }, { populate: ['perex'] });
+    expect(books1).toHaveLength(2);
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) in ('B1', 'B2') and "e0"."author_id" is not null`);
+    orm.em.clear();
+
+    const books2 = await orm.em.find(Book2, {
+      [expr('upper(title)')]: orm.em.getKnex().raw('upper(?)', ['b2']),
+    }, { populate: ['perex'] });
+    expect(books2).toHaveLength(1);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) = upper('b2') and "e0"."author_id" is not null`);
   });
 
   test('find by joined property', async () => {

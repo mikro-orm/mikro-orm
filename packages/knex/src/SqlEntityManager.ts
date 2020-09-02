@@ -1,4 +1,4 @@
-import Knex, { QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { AnyEntity, EntityData, EntityManager, EntityName, EntityRepository, GetRepository, QueryResult, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
@@ -17,7 +17,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), this.getTransactionContext(), alias, type, this);
   }
 
-  getKnex(type?: 'read' | 'write'): Knex {
+  getKnex(type?: 'read' | 'write') {
     return this.getConnection(type).getKnex();
   }
 

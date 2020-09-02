@@ -59,7 +59,7 @@ export class EntityValidator {
       return params.forEach((item: any) => this.validateParams(item, type, field));
     }
 
-    if (Utils.isObject(params)) {
+    if (Utils.isPlainObject(params)) {
       Object.keys(params).forEach(k => {
         this.validateParams(params[k], type, k);
       });
