@@ -91,7 +91,7 @@ export class Migrator {
   }
 
   protected initialize(MigrationClass: Constructor<Migration>, name?: string) {
-    const instance = new MigrationClass(this.driver.getConnection(), this.config);
+    const instance = new MigrationClass(this.driver, this.config);
 
     return {
       name,
