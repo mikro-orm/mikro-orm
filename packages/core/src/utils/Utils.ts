@@ -471,13 +471,13 @@ export class Utils {
    * Uses some dark magic to get source path to caller where decorator is used.
    * Analyses stack trace of error created inside the function call.
    */
-  static lookupPathFromDecorator(stack?: string[]): string | undefined {
+  static lookupPathFromDecorator(name: string, stack?: string[]): string {
     // use some dark magic to get source path to caller
     stack = stack || new Error().stack!.split('\n');
     let line = stack.findIndex(line => line.includes('__decorate'))!;
 
     if (line === -1) {
-      return undefined;
+      return name;
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {

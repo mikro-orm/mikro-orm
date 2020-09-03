@@ -280,7 +280,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:643:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:556:12)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack1)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator('Customer', stack1)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
     // no tslib, via ts-node
     const stack2 = [
@@ -295,7 +295,7 @@ describe('Utils', () => {
       '    at Module._extensions.js (internal/modules/cjs/loader.js:787:10)',
       '    at Object.require.extensions.<computed> [as .ts] (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:476:12)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
+    expect(Utils.lookupPathFromDecorator('Customer', stack2)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
 
     // no parens
     const stack3 = [
@@ -310,7 +310,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:643:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:556:12)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
+    expect(Utils.lookupPathFromDecorator('Customer', stack3)).toBe('/usr/local/var/www/my-project/dist/entities/Customer.js');
 
     // using babel will ignore the path, as there is no `__decorate` and there can be other issues too
     // @see https://github.com/mikro-orm/mikro-orm/issues/790
@@ -326,7 +326,7 @@ describe('Utils', () => {
       '    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1158:10)',
       '    at Module.load (internal/modules/cjs/loader.js:986:32)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack4)).toBeUndefined();
+    expect(Utils.lookupPathFromDecorator('Customer', stack4)).toBe('Customer');
 
     // using babel will ignore the path, as there is no `__decorate`
     const stack5 = [
@@ -341,10 +341,10 @@ describe('Utils', () => {
       '    at Module.require (internal/modules/cjs/loader.js:1026:19)',
       '    at require (internal/modules/cjs/helpers.js:72:18)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack5)).toBeUndefined();
+    expect(Utils.lookupPathFromDecorator('Customer', stack5)).toBe('Customer');
 
     // no decorated line found
-    expect(Utils.lookupPathFromDecorator()).toBeUndefined();
+    expect(Utils.lookupPathFromDecorator('Customer')).toBe('Customer');
   });
 
   test('lookup path from decorator on windows', () => {
@@ -361,7 +361,7 @@ describe('Utils', () => {
       '    at Module.load (internal/modules/cjs/loader.js:790:32)',
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
-    expect(Utils.lookupPathFromDecorator(stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    expect(Utils.lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
   });
 
   test('requireFrom can require a package.json file', () => {
