@@ -2,19 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
 import { Configuration, OptimisticLockError, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
-import {
-  AssignOptions,
-  EntityAssigner,
-  EntityFactory,
-  EntityLoader,
-  EntityRepository,
-  EntityValidator,
-  IdentifiedReference,
-  LoadStrategy,
-  Reference,
-  ReferenceType,
-  SCALAR_TYPES,
-} from './entity';
+import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, SCALAR_TYPES } from './entity';
 import { LockMode, UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New, GetRepository } from './typings';
@@ -97,7 +85,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform(), false);
+    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
@@ -116,7 +104,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where });
+    await this.entityLoader.populate<T>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false });
 
     return unique as Loaded<T, P>[];
   }
@@ -157,10 +145,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (filters.length === 0) {
       return where;
-    }
-
-    if (Utils.isPrimaryKey(where) && meta.primaryKeys.length === 1) {
-      where = { [meta.primaryKeys[0]]: where } as FilterQuery<T>;
     }
 
     for (const filter of filters) {
@@ -227,7 +211,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T, P>>(populate) ? populate : { populate, orderBy } as FindOneOptions<T, P>;
     const meta = this.metadata.get<T>(entityName);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
@@ -629,7 +613,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate<T>(entityName, populate as true);
-    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, { where, orderBy, refresh, validate });
+    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, { where, orderBy, refresh, validate, convertCustomTypes: false });
 
     return entities as Loaded<T, P>[];
   }
@@ -715,7 +699,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate(entityName, options.populate as string[], options.strategy);
-    await this.entityLoader.populate<T>(entityName, [entity], preparedPopulate, { ...options, where });
+    await this.entityLoader.populate<T>(entityName, [entity], preparedPopulate, { ...options, where, convertCustomTypes: false });
 
     return entity as Loaded<T, P>;
   }

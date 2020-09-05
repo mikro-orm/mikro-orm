@@ -82,6 +82,7 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   limit?: number;
   offset?: number;
   refresh?: boolean;
+  convertCustomTypes?: boolean;
   fields?: string[];
   schema?: string;
   flags?: QueryFlag[];

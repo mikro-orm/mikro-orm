@@ -46,9 +46,9 @@ export type OperatorMap<T> = {
   $like?: string;
   $re?: string;
   $ilike?: string;
-  $overlap?: string;
-  $contains?: string;
-  $contained?: string;
+  $overlap?: string[];
+  $contains?: string[];
+  $contained?: string[];
 };
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;

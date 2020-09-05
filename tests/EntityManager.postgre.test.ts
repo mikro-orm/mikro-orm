@@ -1375,6 +1375,16 @@ describe('EntityManagerPostgre', () => {
     expect(b4.object).toBe(123);
   });
 
+  test('using $contains', async () => {
+    const a = new Author2('n', 'e');
+    a.identities = ['1', '2', '3'];
+    await orm.em.persistAndFlush(a);
+    orm.em.clear();
+
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['2'] } })).resolves.toBeTruthy();
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrowError();
+  });
+
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });

@@ -21,6 +21,8 @@ export enum QueryOperator {
   $contained = '<@', // postgres only
 }
 
+export const ARRAY_OPERATORS = ['$overlap', '$contains', '$contained'];
+
 export enum QueryOrder {
   ASC = 'ASC',
   ASC_NULLS_LAST = 'ASC NULLS LAST',
@@ -57,4 +59,5 @@ export enum QueryFlag {
   PAGINATE = 'PAGINATE',
   UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
   DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
+  CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
 }

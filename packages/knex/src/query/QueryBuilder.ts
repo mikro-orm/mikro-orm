@@ -1,7 +1,7 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Ref, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, QBFilterQuery, QueryFlag,
-  QueryOrderMap, ReferenceType, QueryHelper, Utils, ValidationError, PopulateOptions,
+  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
+  PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver, QueryBuilderHelper } from '../index';
@@ -19,7 +19,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 1;
-  private flags: Set<QueryFlag> = new Set();
+  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
   private finalized = false;
   private _joins: Dictionary<JoinOptions> = {};
   private _aliasMap: Dictionary<string> = {};
@@ -108,7 +108,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
     } else {
-      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
+      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES))!;
     }
 
     const op = operator || params as keyof typeof GroupOperator;
@@ -218,6 +218,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   setFlag(flag: QueryFlag): this {
     this.flags.add(flag);
+    return this;
+  }
+
+  unsetFlag(flag: QueryFlag): this {
+    this.flags.delete(flag);
     return this;
   }
 

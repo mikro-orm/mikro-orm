@@ -1,7 +1,7 @@
 import { Reference } from '../entity';
 import { Utils } from './Utils';
 import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery } from '../typings';
-import { GroupOperator } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 
@@ -79,13 +79,17 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where, true) || {};
 
-    if (Array.isArray(where)) {
-      const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform)) } } as FilterQuery<T>;
+    if (meta && Utils.isPrimaryKey(where, meta.compositePK)) {
+      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where };
     }
 
-    if (!Utils.isPlainObject(where) || Utils.isPrimaryKey(where)) {
-      return where as FilterQuery<T>;
+    if (Array.isArray(where)) {
+      const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
+      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes)) } } as FilterQuery<T>;
+    }
+
+    if (!Utils.isPlainObject(where)) {
+      return where;
     }
 
     return Object.keys(where as Dictionary).reduce((o, key) => {
@@ -157,6 +161,21 @@ export class QueryHelper {
     return filter.default || filterName in options;
   }
 
+  static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string): FilterQuery<T> {
+    if (Utils.isPlainObject(cond)) {
+      return Object.keys(cond).reduce((o, k) => {
+        o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k);
+        return o;
+      }, {});
+    }
+
+    if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
+      return cond.map(v => QueryHelper.processCustomType(prop, v, platform, key)) as FilterQuery<T>;
+    }
+
+    return prop.customType.convertToDatabaseValue(cond, platform);
+  }
+
   private static processEntity(entity: AnyEntity, root?: boolean): any {
     const wrapped = entity.__helper!;
 
@@ -181,21 +200,6 @@ export class QueryHelper {
 
   private static isSupportedOperator(key: string): boolean {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
-  }
-
-  private static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform): FilterQuery<T> {
-    if (Utils.isPlainObject(cond)) {
-      return Object.keys(cond).reduce((o, k) => {
-        o[k] = QueryHelper.processCustomType(prop, cond[k], platform);
-        return o;
-      }, {});
-    }
-
-    if (Array.isArray(cond)) {
-      return cond.map(v => QueryHelper.processCustomType(prop, v, platform)) as FilterQuery<T>;
-    }
-
-    return prop.customType.convertToDatabaseValue(cond, platform);
   }
 
 }

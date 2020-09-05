@@ -160,6 +160,16 @@ describe('EntityManagerMongo', () => {
     await orm.em.getRepository(Book).remove(lastBook[0]).flush();
   });
 
+  test('create/drop collection', async () => {
+    const driver = orm.em.getDriver();
+    await driver.getConnection().dropCollection(FooBar);
+    let collections = await driver.getConnection().listCollections();
+    expect(collections.sort()).toEqual(['a', 'author', 'b', 'book-tag', 'books-table', 'c', 'dummy', 'entity401', 'foo-baz', 'publisher', 'test']);
+    await driver.createCollections();
+    collections = await driver.getConnection().listCollections();
+    expect(collections.sort()).toEqual(['a', 'author', 'b', 'book-tag', 'books-table', 'c', 'dummy', 'entity401', 'foo-bar', 'foo-baz', 'publisher', 'test']);
+  });
+
   test('should provide custom repository', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);
@@ -511,6 +521,9 @@ describe('EntityManagerMongo', () => {
       { _id: res.rows?.[1]._id, name: 'test 2', type: 'LOCAL' },
       { _id: res.rows?.[2]._id, name: 'test 3', type: 'GLOBAL' },
     ]);
+    await driver.nativeDelete(Publisher.name, res.rows?.[0]._id);
+    const count = await driver.count(Publisher.name, {});
+    expect(count).toBe(2);
   });
 
   test('ensure indexes', async () => {
