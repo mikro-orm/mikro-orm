@@ -3,12 +3,13 @@ import { EntityManager } from '../EntityManager';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
 import { EntityValidator } from './EntityValidator';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { EntityHelper } from './EntityHelper';
 import { Utils } from '../utils';
+import { LockMode } from '../unit-of-work';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -64,8 +65,8 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityAssigner.assign(this.entity, data, options);
   }
 
-  init(populated = true): Promise<T> {
-    return EntityHelper.init<T>(this.entity, populated) as Promise<T>;
+  init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
+    return EntityHelper.init<T>(this.entity, populated, populate, lockMode) as Promise<T>;
   }
 
   get __primaryKey(): Primary<T> {

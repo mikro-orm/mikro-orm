@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, Populate } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
 import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
@@ -12,7 +12,7 @@ import { WrappedEntity } from './WrappedEntity';
 
 export class EntityHelper {
 
-  static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
+  static async init<T extends AnyEntity<T>, P extends Populate<T> = Populate<T>>(entity: T, populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
     const wrapped = entity.__helper!;
     const em = wrapped.__em;
 
@@ -20,7 +20,7 @@ export class EntityHelper {
       throw ValidationError.entityNotManaged(entity);
     }
 
-    await em.findOne(entity.constructor.name, entity, { refresh: true, lockMode });
+    await em.findOne(entity.constructor.name, entity, { refresh: true, lockMode, populate });
     wrapped.populated(populated);
     wrapped.__lazyInitialized = true;
 

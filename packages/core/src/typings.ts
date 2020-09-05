@@ -66,7 +66,7 @@ export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T
 export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = never> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?: boolean, lockMode?: LockMode): Promise<T>;
+  init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK = never, P2 extends P = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
