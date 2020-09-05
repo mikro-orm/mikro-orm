@@ -164,10 +164,10 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver();
     await driver.getConnection().dropCollection(FooBar);
     let collections = await driver.getConnection().listCollections();
-    expect(collections.sort()).toEqual(['a', 'author', 'b', 'book-tag', 'books-table', 'c', 'dummy', 'entity401', 'foo-baz', 'publisher', 'test']);
+    expect(collections).not.toContain('foo-bar');
     await driver.createCollections();
     collections = await driver.getConnection().listCollections();
-    expect(collections.sort()).toEqual(['a', 'author', 'b', 'book-tag', 'books-table', 'c', 'dummy', 'entity401', 'foo-bar', 'foo-baz', 'publisher', 'test']);
+    expect(collections).toContain('foo-bar');
   });
 
   test('should provide custom repository', async () => {
