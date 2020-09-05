@@ -99,8 +99,8 @@
     "node": ">= 10.13.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^10.0.0",
-    "@commitlint/config-conventional": "^10.0.0",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@mikro-orm/mongo-highlighter": "^1.0.0",
     "@mikro-orm/sql-highlighter": "^1.0.1",
     "@types/clone": "^2.1.0",
