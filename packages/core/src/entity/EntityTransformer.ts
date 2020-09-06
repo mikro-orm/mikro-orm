@@ -79,12 +79,18 @@ export class EntityTransformer {
     const property = wrapped.__meta.properties[prop];
     const platform = wrapped.__internal.platform;
 
-    if (property?.serializer) {
-      return property.serializer(entity[prop]);
+    /* istanbul ignore next */
+    const serializer = property?.serializer;
+
+    if (serializer) {
+      return serializer(entity[prop]);
     }
 
-    if (property?.customType) {
-      return property.customType.toJSON(entity[prop], platform);
+    /* istanbul ignore next */
+    const customType = property?.customType;
+
+    if (customType) {
+      return customType.toJSON(entity[prop], platform);
     }
 
     if (entity[prop] as unknown instanceof ArrayCollection) {
