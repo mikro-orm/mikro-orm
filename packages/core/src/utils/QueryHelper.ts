@@ -69,7 +69,7 @@ export class QueryHelper {
     return false;
   }
 
-  static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, metadata: MetadataStorage, platform: Platform, convertCustomTypes = true): FilterQuery<T> {
+  static processWhere<T extends AnyEntity<T>>(where: FilterQuery<T>, entityName: string, metadata: MetadataStorage, platform: Platform, convertCustomTypes = true, root = true): FilterQuery<T> {
     const meta = metadata.find(entityName);
 
     // inline PK-only objects in M:N queries so we don't join the target entity when not needed
@@ -79,13 +79,17 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where, true) || {};
 
+    if (!root && Utils.isPrimaryKey(where)) {
+      return where;
+    }
+
     if (meta && Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where };
     }
 
     if (Array.isArray(where)) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes)) } } as FilterQuery<T>;
+      return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes, false)) } } as FilterQuery<T>;
     }
 
     if (!Utils.isPlainObject(where)) {
@@ -99,7 +103,7 @@ export class QueryHelper {
       const composite = keys > 1;
 
       if (key in GroupOperator) {
-        o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata, platform));
+        o[key] = value.map((sub: any) => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes, false));
         return o;
       }
 

@@ -1391,6 +1391,17 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(l).toObject()).toMatchObject({ id: 'uuid is ' + l.uuid, name: 'l' });
   });
 
+  test('should allow to find by array of PKs', async () => {
+    await orm.em.getDriver().nativeInsertMany(Author2.name, [
+      { id: 1, name: 'n1', email: 'e1' },
+      { id: 2, name: 'n2', email: 'e2' },
+      { id: 3, name: 'n3', email: 'e3' },
+    ]);
+    const repo = orm.em.getRepository(Author2);
+    const res = await repo.find([1, 2, 3]);
+    expect(res.map(a => a.id)).toEqual([1, 2, 3]);
+  });
+
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });

@@ -141,6 +141,17 @@ describe('EntityManagerMySql', () => {
     expect(await repo.findOne({ termsAccepted: false })).toBeNull();
   });
 
+  test('should allow to find by array of PKs', async () => {
+    await orm.em.getDriver().nativeInsertMany(Author2.name, [
+      { id: 1, name: 'n1', email: 'e1' },
+      { id: 2, name: 'n2', email: 'e2' },
+      { id: 3, name: 'n3', email: 'e3' },
+    ]);
+    const repo = orm.em.getRepository(Author2);
+    const res = await repo.find([1, 2, 3]);
+    expect(res.map(a => a.id)).toEqual([1, 2, 3]);
+  });
+
   test('should allow shadow properties in EM.create()', async () => {
     const repo = orm.em.getRepository(Author2);
     const author = repo.create({ name: 'name', email: 'email', version: 123 });
@@ -2129,56 +2140,6 @@ describe('EntityManagerMySql', () => {
     expect(() => orm.em.remove(null as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
     expect(() => orm.em.remove({} as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
     expect(() => orm.em.remove({ foo: 1 } as any)).toThrowError(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
-  });
-
-  test('adding items to not initialized collection', async () => {
-    const god = new Author2('God', 'hello@heaven.god');
-    const b1 = new Book2('Bible 1', god);
-    await orm.em.persistAndFlush(b1);
-    orm.em.clear();
-
-    const a = await orm.em.findOneOrFail(Author2, god.id);
-    expect(a.books.isInitialized()).toBe(false);
-    const b2 = new Book2('Bible 2', a);
-    const b3 = new Book2('Bible 3', a);
-    a.books.add(b2, b3);
-    await orm.em.flush();
-    orm.em.clear();
-
-    const a2 = await orm.em.findOneOrFail(Author2, god.id, ['books']);
-    expect(a2.books.count()).toBe(3);
-    expect(a2.books.getIdentifiers()).toEqual([b1.uuid, b2.uuid, b3.uuid]);
-
-    const tag1 = new BookTag2('silly');
-    const tag2 = new BookTag2('funny');
-    const tag3 = new BookTag2('sick');
-    const tag4 = new BookTag2('strange');
-    let tag5 = new BookTag2('sexy');
-    a2.books[0].tags.add(tag1);
-    a2.books[1].tags.add(tag1);
-    a2.books[2].tags.add(tag5);
-    await orm.em.flush();
-    orm.em.clear();
-
-    const a3 = await orm.em.findOneOrFail(Author2, god.id, ['books']);
-    tag5 = orm.em.getReference(BookTag2, tag5.id);
-    a3.books[0].tags.add(tag3);
-    a3.books[1].tags.add(tag2, tag5);
-    a3.books[2].tags.add(tag4);
-    await orm.em.flush();
-    orm.em.clear();
-
-    const a4 = await orm.em.findOneOrFail(Author2, god.id, ['books.tags']);
-    expect(a4.books[0].tags.getIdentifiers()).toEqual([tag1.id, tag3.id]);
-    expect(a4.books[1].tags.getIdentifiers()).toEqual([tag1.id, tag2.id, tag5.id]);
-    expect(a4.books[2].tags.getIdentifiers()).toEqual([tag5.id, tag4.id]);
-    orm.em.clear();
-
-    const tag = await orm.em.findOneOrFail(BookTag2, tag1.id);
-    const book = await orm.em.findOneOrFail(Book2, b3.uuid);
-    tag.books.add(book);
-    await orm.em.flush();
-    orm.em.clear();
   });
 
   test('adding items to not initialized collection', async () => {
