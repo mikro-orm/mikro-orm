@@ -60,6 +60,11 @@ export class MigrationCommandFactory {
       type: 'boolean',
       desc: 'Create blank migration',
     });
+    args.option('i', {
+      alias: 'initial',
+      type: 'boolean',
+      desc: 'Create initial migration',
+    });
     args.option('d', {
       alias: 'dump',
       type: 'boolean',
@@ -122,7 +127,7 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration): Promise<void> {
-    const ret = await migrator.createMigration(args.path, args.blank);
+    const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
     if (ret.diff.length === 0) {
       return CLIHelper.dump(c.green(`No changes required, schema is up-to-date`));
@@ -179,5 +184,5 @@ export class MigrationCommandFactory {
 
 type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; path?: string; disableFkChecks?: boolean };
+type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean };
 type Options = GenerateOptions & CliUpDownOptions;

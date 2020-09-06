@@ -1,7 +1,7 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
 import { Logger, MikroORM } from '@mikro-orm/core';
-import { Migration, Migrator } from '@mikro-orm/migrations';
+import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { remove, writeFile } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
@@ -74,6 +74,30 @@ describe('Migrator', () => {
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
+  test('generate initial migration', async () => {
+    const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
+    getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
+    const migrator = new Migrator(orm.em);
+    const err = 'Initial migration cannot be created, as some migrations already exist';
+    await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+
+    getExecutedMigrationsMock.mockResolvedValueOnce([]);
+    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+    logMigrationMock.mockImplementationOnce(i => i);
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+
+    const migration = await migrator.createMigration(undefined, false, true);
+    expect(logMigrationMock).toBeCalledWith('Migration20191013214813.ts');
+    expect(migration).toMatchSnapshot('initial-migration-dump');
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
+  test('migration storage getter', async () => {
+    const migrator = new Migrator(orm.em);
+    expect(migrator.getStorage()).toBeInstanceOf(MigrationStorage);
   });
 
   test('migration is skipped when no diff', async () => {
