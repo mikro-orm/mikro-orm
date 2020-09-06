@@ -191,6 +191,20 @@ describe('EntityManagerMongo', () => {
     expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
   });
 
+  test('property serializer', async () => {
+    const bar = FooBar.create('fb');
+    bar.baz = FooBaz.create('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const a = await orm.em.findOne(FooBar, bar.id, ['baz']);
+    expect(wrap(a).toJSON()).toMatchObject({
+      name: 'fb',
+      fooBaz: 'FooBaz id: ' + bar.baz.id,
+    });
+    expect(wrap(a).toJSON().baz).toBeUndefined();
+  });
+
   test(`persisting 1:1 from owning side with cycle`, async () => {
     const bar = FooBar.create('fb');
     const baz = FooBaz.create('fz');

@@ -81,3 +81,22 @@ book.assign({ count: 123 });
 console.log(book.toObject().count); // 123
 console.log(book.toJSON().count); // 123
 ```
+
+## Property Serializers
+
+As an alternative to custom `toJSON()` method, we can also use property serializers.
+They allow to specify a callback that will be used when serializing a property:
+
+```typescript
+@Entity()
+export class Book {
+
+  @ManyToOne({ serializer: value => value.name, serializedName: 'authorName' })
+  author: Author;
+
+}
+
+const author = new Author('God')
+const book = new Book(author);
+console.log(book.toJSON().authorName); // 'God'
+```
