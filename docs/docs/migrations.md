@@ -29,6 +29,26 @@ per migration basis by implementing the `isTransactional(): boolean` method.
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
+You can execute queries in the migration via `Migration.execute()` method, which 
+will run queries in the same transaction as the rest of the migration. The 
+`Migration.addSql()` method also accepts instances of knex. Knex instance can be 
+accessed via `Migration.getKnex()`; 
+
+## Initial migration
+
+If you want to start using migrations, and you already have the schema generated, 
+you can do so by creating so called initial migration:
+
+> Initial migration can be created only if there are no migrations previously
+> generated or executed. 
+
+```sh
+npx mikro-orm migration:create --initial
+```
+
+This will create the initial migration, containing the schema dump from 
+`schema:create` command. The migration will be automatically marked as executed. 
+
 ## Configuration
 
 ```typescript

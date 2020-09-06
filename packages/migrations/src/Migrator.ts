@@ -48,8 +48,12 @@ export class Migrator {
     });
   }
 
-  async createMigration(path?: string, blank = false): Promise<MigrationResult> {
-    const diff = blank ? ['select 1'] : await this.getSchemaDiff();
+  async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
+    if (initial) {
+      await this.validateInitialMigration();
+    }
+
+    const diff = await this.getSchemaDiff(blank, initial);
 
     if (diff.length === 0) {
       return { fileName: '', code: '', diff };
@@ -57,11 +61,24 @@ export class Migrator {
 
     const migration = await this.generator.generate(diff, path);
 
+    if (initial) {
+      await this.storage.logMigration(migration[1]);
+    }
+
     return {
       fileName: migration[1],
       code: migration[0],
       diff,
     };
+  }
+
+  async validateInitialMigration() {
+    const executed = await this.getExecutedMigrations();
+    const pending = await this.getPendingMigrations();
+
+    if (executed.length > 0 || pending.length > 0) {
+      throw new Error('Initial migration cannot be created, as some migrations already exist');
+    }
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
@@ -82,6 +99,10 @@ export class Migrator {
     return this.runMigrations('down', options);
   }
 
+  getStorage(): MigrationStorage {
+    return this.storage;
+  }
+
   protected resolve(file: string) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const migration = require(file);
@@ -100,9 +121,18 @@ export class Migrator {
     };
   }
 
-  private async getSchemaDiff(): Promise<string[]> {
-    const dump = await this.schemaGenerator.getUpdateSchemaSQL(false, this.options.safe, this.options.dropTables);
-    const lines = dump.split('\n');
+  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<string[]> {
+    const lines: string[] = [];
+
+    if (blank) {
+      lines.push('select 1');
+    } else if (initial) {
+      const dump = await this.schemaGenerator.getCreateSchemaSQL(false);
+      lines.push(...dump.split('\n'));
+    } else {
+      const dump = await this.schemaGenerator.getUpdateSchemaSQL(false, this.options.safe, this.options.dropTables);
+      lines.push(...dump.split('\n'));
+    }
 
     for (let i = lines.length - 1; i > 0; i--) {
       if (lines[i]) {
