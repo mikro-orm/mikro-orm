@@ -57,6 +57,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
       const customExpression = QueryBuilderHelper.isCustomExpression(field);
+      const virtual = childNode.prop?.persist === false;
 
       if (childNode.shouldInline(payload)) {
         const operators = Object.keys(payload).filter(k => Utils.isOperator(k, false));
@@ -68,7 +69,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
         Object.assign(o, payload);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
-      } else if (operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
+      } else if (virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         o[field] = payload;
       } else {
         o[`${alias}.${field}`] = payload;

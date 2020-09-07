@@ -1407,6 +1407,15 @@ describe('QueryBuilder', () => {
     expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) order by `code` asc');
   });
 
+  test('having with virtual property', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select(['*', '"1" as code']).where({ $in: [1, 2] }).having({
+      code: { $gte: 'c' },
+      $or: [{ code: { $gt: 'c' } }, { id: { $lt: 3 } }],
+    });
+    expect(qb1.getQuery()).toEqual('select `a`.*, "1" as code from `author2` as `a` where `a`.`id` in (?, ?) having `code` >= ? and (`code` > ? or `a`.`id` < ?)');
+  });
+
   test('select with sub-query', async () => {
     const knex = orm.em.getKnex();
     const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('Author2.booksTotal');
