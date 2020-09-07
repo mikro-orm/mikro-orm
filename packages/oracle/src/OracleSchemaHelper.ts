@@ -52,7 +52,7 @@ export class OracleSchemaHelper extends SchemaHelper {
 
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
     return `
-      select 
+      select
         a.column_name column_name,
         a.constraint_name constraint_name,
         b.table_name referenced_table_name,
@@ -63,13 +63,13 @@ export class OracleSchemaHelper extends SchemaHelper {
       join all_cons_columns a ON c.owner = a.owner AND c.constraint_name = a.constraint_name
       join all_cons_columns b ON b.owner = r_owner AND b.constraint_name = c.r_constraint_name AND b.position = a.position
       where c.constraint_type = 'R'
-        and c.owner = '${schemaName}' 
+        and c.owner = '${schemaName}'
         and c.table_name = '${tableName}'`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
     const sql = `
-      select 
+      select
         tab.column_name,
         tab.data_type,
         tab.data_length,
@@ -79,7 +79,7 @@ export class OracleSchemaHelper extends SchemaHelper {
       from all_tab_cols tab
       left join all_cons_columns cols on cols.owner = tab.owner on cols.table_name = tab.table_name on cols.column_name = tab.column_name
       left join all_constraints cons on cons.owner = cols.owner on cons.constraint_name = cols.constraint_name on cons.constraint_type in ( 'U', 'P' )
-      where tab.owner = '${schemaName}' 
+      where tab.owner = '${schemaName}'
         and tab.table_name = '${tableName}'`;
 
     const columns = await connection.execute<any[]>(sql);
@@ -97,15 +97,15 @@ export class OracleSchemaHelper extends SchemaHelper {
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
     const sql = `
-      select  
+      select
         idxs.index_name,
         idxs.uniqueness,
         cols.column_name,
         cons.constraint_type
-      from all_indexes idxs 
+      from all_indexes idxs
       join all_ind_columns cols on cols.index_owner = idxs.owner and cols.index_name = idxs.index_name and cols.table_owner = idxs.table_owner and cols.table_name = idxs.table_name
       left join all_constraints cons on cons.index_name = idxs.index_name and cons.index_owner = idxs.owner and cons.table_name = idxs.table_name
-      where idxs.owner = '${schemaName}' 
+      where idxs.owner = '${schemaName}'
       and idxs.table_name = '${tableName}'`;
 
     const indexes = await connection.execute<any[]>(sql);
