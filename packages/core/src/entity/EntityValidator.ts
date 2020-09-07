@@ -1,4 +1,3 @@
-import { SCALAR_TYPES } from './EntityFactory';
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { Utils, ValidationError } from '../utils';
 import { ReferenceType } from './enums';
@@ -16,6 +15,7 @@ export class EntityValidator {
 
     Object.keys(payload).forEach(prop => {
       const property = meta.properties[prop];
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
       if (!property || property.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(property.type)) {
         return;
