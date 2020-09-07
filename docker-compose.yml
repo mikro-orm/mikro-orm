@@ -31,7 +31,17 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  oracle:
+    image: store/oracle/database-enterprise:12.2.0.1
+    ports: 
+      - 1521:1521
+      - 5500:5500
+      - 8080:8080
+    volumes: 
+      - oracle:/opt/oracle/data
+      
 volumes:
   mysql:
   mariadb:
   postgre:
+  oracle:
