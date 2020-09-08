@@ -10,10 +10,9 @@ MariaDB, PostgreSQL and SQLite databases.
 
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA)
-[![Downloads](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
+[![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)
-[![Dependency Status](https://david-dm.org/mikro-orm/mikro-orm.svg)](https://david-dm.org/mikro-orm/mikro-orm)
 [![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/tests/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm/actions?workflow=tests)
 
 ## 🤔 Unit of What?
@@ -127,15 +126,15 @@ comparison by identity (`ent1 === ent2`).
 
 ## 📖 Documentation
 
-MikroORM v3 documentation, included in this repo in the root directory, is built with 
+MikroORM v4 documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
-> You can browse MikroORM v2 docs at [https://mikro-orm.io/docs/2.7/installation](https://mikro-orm.io/docs/2.7/installation).
+> You can browse MikroORM v3 docs at [https://mikro-orm.io/docs/3.6/installation](https://mikro-orm.io/docs/3.6/installation).
 
-> To upgrade to v3, please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v2-to-v3.md).
+> To upgrade to v4, please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v3-to-v4).
 
 ## ✨ Core Features
 
@@ -190,22 +189,26 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
-```
-$ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql/mariadb
-$ yarn add mikro-orm mariadb # for mysql/mariadb
-$ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite3 # for sqlite
+> Since v4, you should install the driver package, but not the db connector itself,
+> e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included
+> in the driver package.
+
+```sh
+yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 or
 
-```
-$ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql/mariadb
-$ npm i -s mikro-orm mariadb # for mysql/mariadb
-$ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite3 # for sqlite
+```sh
+npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -214,14 +217,14 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 ```json
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true,
-"esModuleInterop": true
+"esModuleInterop": true,
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
+  entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   type: 'mongo',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
@@ -230,12 +233,12 @@ console.log(orm.em); // access EntityManager via `em` property
 ```
 
 There are more ways to configure your entities, take a look at 
-[installation page](https://mikro-orm.io/installation/).
+[installation page](https://mikro-orm.io/docs/installation/).
 
 > Read more about all the possible configuration options in [Advanced Configuration](https://mikro-orm.io/docs/configuration) section.
 
 Then you will need to fork entity manager for each request so their 
-[identity maps](https://mikro-orm.io/identity-map/) will not collide. 
+[identity maps](https://mikro-orm.io/docs/identity-map/) will not collide. 
 To do so, use the `RequestContext` helper:
 
 ```typescript
@@ -251,9 +254,9 @@ app.use((req, res, next) => {
 > it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
 > register the context after them. 
 
-More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
+More info about `RequestContext` is described [here](https://mikro-orm.io/docs/identity-map/#request-context).
 
-Now you can start defining your entities (in one of the `entitiesDirs` folders). This is how
+Now you can start defining your entities (in one of the `entities` folders). This is how
 simple entity can look like in mongo driver:
 
 **`./entities/MongoBook.ts`**
