@@ -40,6 +40,11 @@ export class UnitOfWork {
       return;
     }
 
+    // skip new entities that could be linked from already persisted entity that is being re-fetched
+    if (!entity.__helper!.__managed) {
+      return;
+    }
+
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
     this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 

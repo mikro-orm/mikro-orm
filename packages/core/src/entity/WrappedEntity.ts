@@ -16,6 +16,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __initialized = true;
   __populated = false;
   __lazyInitialized = false;
+  __managed = false;
   __em?: EntityManager;
 
   readonly __uuid = uuid();

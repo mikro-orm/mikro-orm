@@ -65,6 +65,7 @@ export class ChangeSetPersister {
 
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
+    wrapped.__managed = true;
     await this.processOptimisticLock(meta, changeSet, res, ctx);
     changeSet.persisted = true;
   }

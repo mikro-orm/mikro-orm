@@ -85,8 +85,7 @@ describe('UnitOfWork', () => {
   });
 
   test('changeSet is null for empty payload', async () => {
-    const author = new Author('test', 'test');
-    author.id = '00000001885f0a3cc37dc9f0';
+    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
     uow.merge(author); // add entity to IM first
     const changeSet = await computer.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
@@ -103,8 +102,7 @@ describe('UnitOfWork', () => {
   });
 
   test('persist and remove will add entity to given stack only once', async () => {
-    const author = new Author('test', 'test');
-    author.id = '00000001885f0a3cc37dc9f0';
+    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
     uow.persist(author);
     expect(uow.getPersistStack().size).toBe(1);
     uow.persist(author);
@@ -120,8 +118,7 @@ describe('UnitOfWork', () => {
 
   test('getters', async () => {
     const uow = new UnitOfWork(orm.em);
-    const author = new Author('test', 'test');
-    author.id = '00000001885f0a3cc37dc9f0';
+    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);

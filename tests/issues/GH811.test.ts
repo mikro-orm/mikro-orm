@@ -1,6 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
-
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -44,22 +43,23 @@ export class Employee {
 
 describe('GH issue 811', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Contact, Employee, Address],
-      dbName: ':memory:',
-      type: 'sqlite',
+      dbName: 'mikro_orm_test_gh811',
+      type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));
 
-  test('811', async () => {
-    // Create a Contact and and Employee
+  test('loading entity will not cascade merge new entities in the entity graph', async () => {
+    // Create a Contact and an Employee
     const contactCreate = new Contact();
     contactCreate.name = 'My Contact';
     const employeeCreate = new Employee();
@@ -86,7 +86,16 @@ describe('GH issue 811', () => {
     contact.address = address;
 
     // Find my previously created employee
-    const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id); // This line causes the error!
+    expect([...orm.em.getUnitOfWork().getOriginalEntityData().values()]).toEqual([
+      { id: contact.id, name: 'My Contact', address: null },
+    ]);
+    const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
+
+    // previously the `Employee.contact.address` was accidentally cascade merged
+    expect([...orm.em.getUnitOfWork().getOriginalEntityData().values()]).toEqual([
+      { id: contact.id, name: 'My Contact', address: null },
+      { id: employee.id, contact: contact.id, name: 'My Employee' },
+    ]);
     await orm.em.flush();
 
     expect(employee).toBeInstanceOf(Employee);

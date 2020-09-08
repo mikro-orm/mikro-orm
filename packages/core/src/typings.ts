@@ -80,6 +80,7 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __data: Dictionary;
   __em?: EntityManager;
   __initialized?: boolean;
+  __managed: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
   __primaryKey: PrimaryMap<T>;

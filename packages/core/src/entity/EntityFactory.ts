@@ -1,5 +1,5 @@
 import { Utils } from '../utils';
-import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
+import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary, AnyEntity } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { ReferenceType } from './enums';
 import { EntityManager, EventType } from '..';
@@ -104,11 +104,12 @@ export class EntityFactory {
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
-    const entity = Object.create(Entity.prototype);
+    const entity = Object.create(Entity.prototype) as T & AnyEntity<T>;
+    entity.__helper!.__managed = true;
     this.hydrator.hydrateReference(entity, meta, data, convertCustomTypes);
 
     if (merge) {
-      this.unitOfWork.merge(entity, new Set([entity]), false);
+      this.unitOfWork.merge<T>(entity, new Set([entity]), false);
     }
 
     return entity;
