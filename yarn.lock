@@ -3624,10 +3624,10 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
-escaya@^0.0.38:
-  version "0.0.38"
-  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.38.tgz#886de55b609eaf5ef9b9bd4fe17eec85ffd031ac"
-  integrity sha512-unr8thsNJBB6TnDt9aI0i1UXkJPuxPYqquRYvZjFIRpgOQZ1SbJqtlPuieLbj9tcrzCTCtlzOp12+W2kh+nGGg==
+escaya@^0.0.40:
+  version "0.0.40"
+  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.40.tgz#d0d110af73e6d50b9b22baa4734a70b170ea3162"
+  integrity sha512-na9XXhkdu6PA59eMnK+ib4FgFhbdawbAb9JGAbohLPLspoiOh8wkYgMdqf4HKC39Sjt07ZWLJeAb8mW70E/XRg==
   dependencies:
     "@babel/parser" "^7.11.5"
 
