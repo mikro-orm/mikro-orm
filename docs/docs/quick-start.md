@@ -36,7 +36,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
+  entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   type: 'mongo',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
@@ -68,7 +68,7 @@ app.use((req, res, next) => {
 
 More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
 
-Now you can start defining your entities (in one of the `entitiesDirs` folders). This is how
+Now you can start defining your entities (in one of the `entities` folders). This is how
 simple entity can look like in mongo driver:
 
 **`./entities/MongoBook.ts`**
