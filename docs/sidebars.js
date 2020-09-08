@@ -32,6 +32,7 @@ module.exports = {
       'loading-strategies',
       'naming-strategy',
       'custom-types',
+      'embeddables',
       'entity-schema',
       'inheritance-mapping',
       'metadata-providers',

@@ -21,7 +21,7 @@ console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
 
-# Better Type-safety with `Reference<T>` Wrapper
+## Better Type-safety with `Reference<T>` Wrapper
 
 When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler
 will think that desired entities are always loaded:
@@ -108,7 +108,7 @@ parameter:
 author!: IdentifiedReference<Author>;
 ```
 
-## Assigning to Reference Properties
+### Assigning to Reference Properties
 
 When you define the property as `Reference` wrapper, you will need to assign the `Reference`
 to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped`
@@ -139,7 +139,7 @@ If the reference already exist, you can also re-assign to it via `set()` method:
 book.author.set(new Author(...));
 ```
 
-## What is IdentifiedReference?
+### What is IdentifiedReference?
 
 `IdentifiedReference` is an intersection type that adds primary key property to the `Reference` 
 interface. It allows to get the primary key from `Reference` instance directly.

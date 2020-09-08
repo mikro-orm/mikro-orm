@@ -7,7 +7,7 @@ There are two ways how you can define your entities:
 - Decorated classes
 - `EntitySchema` helper
 
-# EntitySchema helper
+## EntitySchema helper
 
 With `EntitySchema` helper you define the schema programmatically. 
 
@@ -45,7 +45,7 @@ await repo.persistAndFlush(author);
 You can optionally use custom class for entity instances. Read more about this approach 
 in [Defining Entities via EntitySchema section](entity-schema.md).
 
-# Classes and Decorators
+## Classes and Decorators
 
 Entities are simple javascript objects (so called POJO), decorated with `@Entity` decorator.
 No real restrictions are made, you do not have to extend any base class, you are more than welcome
@@ -256,7 +256,7 @@ export const enum UserStatus {
 // export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
 
-## Formulas
+### Formulas
 
 `@Formula()` decorator can be used to map some SQL snippet to your entity. 
 The SQL fragment can be as complex as you want and even include subselects.
@@ -275,7 +275,7 @@ callback that will receive the entity alias in the parameter:
 objectVolume?: number;
 ```
 
-## Indexes
+### Indexes
 
 You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator. 
 You can use it either on entity class, or on entity property:
@@ -302,7 +302,7 @@ export class Author {
 }
 ```
 
-## Custom Types
+### Custom Types
 
 You can define custom types by extending `Type` abstract class. It has 4 optional methods:
 
@@ -325,7 +325,7 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 
 More information can be found in [Custom Types](custom-types.md) section.
 
-## Lazy scalar properties
+### Lazy scalar properties
 
 You can mark any property as `lazy: true` to omit it from the select clause. 
 This can be handy for properties that are too large and you want to have them 
@@ -351,7 +351,7 @@ const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the
 > If the entity is already loaded and you need to populate a lazy scalar property, 
 > you might need to pass `refresh: true` in the `FindOptions`.
 
-## Virtual Properties
+### Virtual Properties
 
 You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
 
@@ -392,7 +392,7 @@ console.log(author.fullName2); // 'Jon Snow'
 console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
 ```
 
-## Entity file names
+### Entity file names
 
 You are free to choose one of those formats for entity filename (for a `BookTag` entity):
 
@@ -407,7 +407,7 @@ add any suffix behind the dot, not just `.model.ts` or `.entity.ts`.
 
 > You can change this behaviour by defining custom `NamingStrategy.getClassName()` method.
 
-## Using BaseEntity
+### Using BaseEntity
 
 You can define your own base entity with properties that you require on all entities, like
 primary key and created/updated time. Single table inheritance is also supported.
@@ -436,9 +436,9 @@ export abstract class BaseEntity {
 }
 ```
 
-## Examples of entity definition with various primary keys
+### Examples of entity definition with various primary keys
 
-### Using id as primary key (SQL drivers)
+#### Using id as primary key (SQL drivers)
 
 ```typescript
 @Entity()
@@ -456,7 +456,7 @@ export class Book {
 }
 ```
 
-### Using UUID as primary key (SQL drivers)
+#### Using UUID as primary key (SQL drivers)
 
 ```typescript
 import { v4 } from 'uuid';
@@ -476,7 +476,7 @@ export class Book {
 }
 ```
 
-### Using PostgreSQL [uuid-osp](https://www.postgresql.org/docs/current/uuid-ossp.html) module function as primary key
+#### Using PostgreSQL [uuid-osp](https://www.postgresql.org/docs/current/uuid-ossp.html) module function as primary key
 
 Requires enabling the module via: `create extension "uuid-ossp";`
 
@@ -496,7 +496,7 @@ export class Book {
 }
 ```
 
-### Using BigInt as primary key (MySQL and PostgreSQL)
+#### Using BigInt as primary key (MySQL and PostgreSQL)
 
 You can use `BigIntType` to support `bigint`s. By default it will represent the value as
 a `string`.  
@@ -514,7 +514,7 @@ export class Book {
 If you want to use native `bigint`s, read the following guide: [Using native BigInt PKs](using-bigint-pks.md).
 
 
-### Example of Mongo entity
+#### Example of Mongo entity
 
 ```typescript
 @Entity()
@@ -535,7 +535,7 @@ export class Book {
 }
 ```
 
-### Using BaseEntity (previously WrappedEntity)
+#### Using BaseEntity (previously WrappedEntity)
 
 From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign`
 and other methods that are otherwise available via the `wrap()` helper.

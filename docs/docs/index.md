@@ -1,6 +1,6 @@
 ---
 layout: homepage
-title: MikroORM v3
+title: MikroORM v4
 hide_title: true
 ---
 

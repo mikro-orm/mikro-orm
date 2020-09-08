@@ -2,9 +2,9 @@
 title: Upgrading from v3 to v4
 ---
 
-Following sections describe (hopefully) all breaking changes, most of them might be not valid 
-for you, like if you do not use custom `NamingStrategy` implementation, you do not care about
-the interface being changed.
+> Following sections describe (hopefully) all breaking changes, most of them might be not valid 
+> for you, like if you do not use custom `NamingStrategy` implementation, you do not care about
+> the interface being changed.
 
 ## Node 10.13.0+ required
 
@@ -37,6 +37,9 @@ your `package.json`.
 > For easier transition, meta package mikro-orm is still present, reexporting 
 > core, reflection, migrations, entity-generator and cli packages. You should 
 > **not** install both `mikro-orm` and `@mikro-orm/core` packages together. 
+
+> You should prefer the `@mikro-orm/core` over `mikro-orm` package, there were
+> weird dependency issues reported with the `mikro-orm` meta-package. 
 
 ## SqlEntityManager and MongoEntityManager
 
@@ -121,8 +124,8 @@ will return your entity.
 
 ## Removed `flush` parameter from `persist()` and `remove()` methods
 
-`persist()` and `remove()` are now sync methods that only mark the entity for 
-persistence or removal. They now return the `EntityManager` to allow fluid flushing:
+`flush` param is removed, both `persist` and `remove` methods are synchronous and
+require explicit flushing, possibly via fluent interface call.
 
 ```typescript
 // before
@@ -200,9 +203,6 @@ with string value, it will be automatically quoted.
 To use SQL functions we now need to use `defaultRaw`: `@Property({ defaultRaw: 'now()' })`.
 
 ## `autoFlush` option has been removed
-
-The `flush` parameter of `persist()` and `remove()` methods is still there, but you
-should prefer to call `em.flush()` explicitly. 
 
 Also `persistLater()` and `removeLater()` methods are deprecated. Use `persist()` or
 `remove` respectively.
