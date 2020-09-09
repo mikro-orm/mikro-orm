@@ -148,11 +148,6 @@
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.11.4.tgz#6fa1a118b8b0d80d0267b719213dc947e88cc0ca"
   integrity sha512-MggwidiH+E9j5Sh8pbrX5sJvMcsqS5o+7iB42M9/k0CD63MjYbdP4nhSh7uB5wnv2/RVzTZFTxzF/kIa5mrCqA==
 
-"@babel/parser@^7.11.5":
-  version "7.11.5"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.11.5.tgz#c7ff6303df71080ec7a4f5b8c003c58f1cf51037"
-  integrity sha512-X9rD8qqm695vgmeaQ4fvz/o3+Wk4ZzQvSHkDBgpYKxpD4qTAUm88ZKtHkVqIOsYFFbIQ6wQYhC6q7pjqVK0E0Q==
-
 "@babel/plugin-syntax-async-generators@^7.8.4":
   version "7.8.4"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-async-generators/-/plugin-syntax-async-generators-7.8.4.tgz#a983fb1aeb2ec3f6ed042a210f640e90e786fe0d"
@@ -3624,12 +3619,10 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
-escaya@^0.0.40:
-  version "0.0.40"
-  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.40.tgz#d0d110af73e6d50b9b22baa4734a70b170ea3162"
-  integrity sha512-na9XXhkdu6PA59eMnK+ib4FgFhbdawbAb9JGAbohLPLspoiOh8wkYgMdqf4HKC39Sjt07ZWLJeAb8mW70E/XRg==
-  dependencies:
-    "@babel/parser" "^7.11.5"
+escaya@^0.0.42:
+  version "0.0.42"
+  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.42.tgz#259d1991cb262cde12769a3b33a97047f7277d05"
+  integrity sha512-hiiqQo63tb/DM7FJ2DvgH/eWjeCxbcQefSjtZfv8EFTTNXwrBup5W1r0g/lboligQFjFSOTXfx5La7qJ0HXbew==
 
 escodegen@^1.14.1:
   version "1.14.3"
