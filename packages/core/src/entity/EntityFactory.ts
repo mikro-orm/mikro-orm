@@ -75,15 +75,7 @@ export class EntityFactory {
   }
 
   private createEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, merge?: boolean, convertCustomTypes?: boolean): T {
-    const root = Utils.getRootEntity(this.metadata, meta);
-
-    if (root.discriminatorColumn) {
-      const value = data[root.discriminatorColumn];
-      delete data[root.discriminatorColumn];
-      const type = root.discriminatorMap![value];
-      meta = type ? this.metadata.find(type)! : meta;
-    }
-
+    meta = this.processDiscriminatorColumn<T>(meta, data);
     const Entity = meta.class;
 
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
@@ -111,6 +103,26 @@ export class EntityFactory {
     }
 
     return entity;
+  }
+
+  private processDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
+    const root = Utils.getRootEntity(this.metadata, meta);
+
+    if (!root.discriminatorColumn) {
+      return meta;
+    }
+
+    const prop = meta.properties[root.discriminatorColumn];
+    const value = data[prop.name];
+    const type = root.discriminatorMap![value];
+    meta = type ? this.metadata.find(type)! : meta;
+
+    // `prop.userDefined` is either `undefined` or `false`
+    if (prop.userDefined === false) {
+      delete data[prop.name];
+    }
+
+    return meta;
   }
 
   /**

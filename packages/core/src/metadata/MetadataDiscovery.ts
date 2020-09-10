@@ -572,6 +572,9 @@ export class MetadataDiscovery {
       root.properties[root.discriminatorColumn] = this.createDiscriminatorProperty(root);
     }
 
+    Utils.defaultValue(root.properties[root.discriminatorColumn], 'items', Object.keys(root.discriminatorMap));
+    Utils.defaultValue(root.properties[root.discriminatorColumn], 'index', true);
+
     if (root === meta) {
       return;
     }
@@ -591,18 +594,13 @@ export class MetadataDiscovery {
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): EntityProperty {
-    const prop = {
+    return {
       name: meta.discriminatorColumn!,
       type: 'string',
       enum: true,
-      index: true,
       reference: ReferenceType.SCALAR,
-      items: Object.keys(meta.discriminatorMap!),
+      userDefined: false,
     } as EntityProperty;
-    this.initFieldName(prop);
-    this.initColumnType(prop);
-
-    return prop;
   }
 
   private getDefaultVersionValue(prop: EntityProperty): string {
