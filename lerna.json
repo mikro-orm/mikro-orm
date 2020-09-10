@@ -1,6 +1,8 @@
 {
-  "packages": ["packages/*"],
-  "version": "4.0.0",
+  "packages": [
+    "packages/*"
+  ],
+  "version": "4.0.1",
   "command": {
     "version": {
       "conventionalCommits": true,
