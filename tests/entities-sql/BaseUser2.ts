@@ -1,4 +1,10 @@
-import { AfterCreate, AfterUpdate, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { AfterCreate, AfterUpdate, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+
+export enum Type {
+  Employee = 'employee',
+  Manager = 'manager',
+  Owner = 'owner',
+}
 
 @Entity({
   discriminatorColumn: 'type',
@@ -18,6 +24,9 @@ export abstract class BaseUser2 {
 
   @Property({ length: 100 })
   lastName: string;
+
+  @Enum()
+  type!: Type;
 
   baseState?: string;
 

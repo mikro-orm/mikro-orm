@@ -104,7 +104,6 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   primary: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
-  discriminator?: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
@@ -151,6 +150,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;
+  userDefined?: boolean;
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
