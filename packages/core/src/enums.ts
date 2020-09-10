@@ -61,3 +61,46 @@ export enum QueryFlag {
   DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
 }
+
+export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
+
+export enum ReferenceType {
+  SCALAR = 'scalar',
+  ONE_TO_ONE = '1:1',
+  ONE_TO_MANY = '1:m',
+  MANY_TO_ONE = 'm:1',
+  MANY_TO_MANY = 'm:n',
+  EMBEDDED = 'embedded',
+}
+
+export enum Cascade {
+  PERSIST = 'persist',
+  MERGE = 'merge',
+  REMOVE = 'remove',
+  ALL = 'all',
+}
+
+export enum LoadStrategy {
+  SELECT_IN = 'select-in',
+  JOINED = 'joined'
+}
+
+export enum LockMode {
+  NONE = 0,
+  OPTIMISTIC = 1,
+  PESSIMISTIC_READ = 2,
+  PESSIMISTIC_WRITE = 3,
+}
+
+export enum EventType {
+  onInit = 'onInit',
+  beforeCreate = 'beforeCreate',
+  afterCreate = 'afterCreate',
+  beforeUpdate = 'beforeUpdate',
+  afterUpdate = 'afterUpdate',
+  beforeDelete = 'beforeDelete',
+  afterDelete = 'afterDelete',
+  beforeFlush = 'beforeFlush',
+  onFlush = 'onFlush',
+  afterFlush = 'afterFlush',
+}

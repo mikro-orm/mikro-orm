@@ -1,7 +1,7 @@
 import { AnyEntity, EntityProperty } from '../typings';
 import { MetadataStorage, MetadataValidator } from '../metadata';
-import { ReferenceType } from '../entity/enums';
 import { Utils } from '../utils';
+import { ReferenceType } from '../enums';
 
 export function Embedded(options: EmbeddedOptions | (() => AnyEntity) = {}) {
   return function (target: AnyEntity, propertyName: string) {

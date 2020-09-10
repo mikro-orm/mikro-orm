@@ -1,7 +1,5 @@
 import { inspect } from 'util';
-import { Dictionary, EntityMetadata, EntityProperty, AnyEntity, IPrimaryKey, Constructor } from '../typings';
-import { Utils } from './Utils';
-import { Type } from '../types';
+import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
@@ -47,15 +45,16 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
-    return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${Utils.getObjectType(data)} given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
+    const type = Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
+    return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
   }
 
   static invalidPropertyName(entityName: string, invalid: string): ValidationError {
     return new ValidationError(`Entity '${entityName}' does not have property '${invalid}'`);
   }
 
-  static invalidType(type: Constructor<Type<any>>, value: any, mode: string): ValidationError {
-    const valueType = Utils.getObjectType(value);
+  static invalidType(type: Constructor<any>, value: any, mode: string): ValidationError {
+    const valueType = Object.prototype.toString.call(value).match(/\[object (\w+)]/)![1].toLowerCase();
 
     if (value instanceof Date) {
       value = value.toISOString();
@@ -94,8 +93,8 @@ export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends Valida
   }
 
   static lockFailed(entityOrName: AnyEntity | string): OptimisticLockError {
-    const name = Utils.isString(entityOrName) ? entityOrName : entityOrName.constructor.name;
-    const entity = Utils.isString(entityOrName) ? undefined : entityOrName;
+    const name = typeof entityOrName === 'string' ? entityOrName : entityOrName.constructor.name;
+    const entity = typeof entityOrName === 'string' ? undefined : entityOrName;
 
     return new OptimisticLockError(`The optimistic lock on entity ${name} failed`, entity);
   }

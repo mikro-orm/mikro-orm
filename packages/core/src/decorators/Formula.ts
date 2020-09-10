@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { ReferenceType } from '../entity';
+import { ReferenceType } from '../enums';
 import { EntityProperty, AnyEntity } from '../typings';
 
 export function Formula(formula: string | ((alias: string) => string)) {

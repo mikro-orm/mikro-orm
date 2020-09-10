@@ -1,16 +1,10 @@
-import { MetadataStorage, ReferenceType } from '@mikro-orm/core';
-import { QueryBuilder, CriteriaNode } from './internal';
+import { ReferenceType } from '@mikro-orm/core';
+import { CriteriaNode } from './CriteriaNode';
+import { IQueryBuilder } from '../typings';
 
 export class ScalarCriteriaNode extends CriteriaNode {
 
-  static create(metadata: MetadataStorage, entityName: string, payload: any, parent?: CriteriaNode, key?: string): ScalarCriteriaNode {
-    const node = new ScalarCriteriaNode(metadata, entityName, parent, key);
-    node.payload = payload;
-
-    return node;
-  }
-
-  process<T>(qb: QueryBuilder<T>, alias?: string): any {
+  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const nestedAlias = qb.getAliasForJoinPath(this.getPath()) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;

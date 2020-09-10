@@ -1,4 +1,5 @@
-import { EntityManager, Utils } from '..';
+import { EntityManager } from '../EntityManager';
+import { Utils } from '../utils/Utils';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
 

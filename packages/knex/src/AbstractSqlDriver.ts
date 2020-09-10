@@ -3,8 +3,11 @@ import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty, QueryFlag,
   FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, AbstractSqlPlatform, Field, QueryBuilder } from './index';
+import { AbstractSqlConnection } from './AbstractSqlConnection';
+import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+import { QueryBuilder } from './query/QueryBuilder';
 import { SqlEntityManager } from './SqlEntityManager';
+import { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 

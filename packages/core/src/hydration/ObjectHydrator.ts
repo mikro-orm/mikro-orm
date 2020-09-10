@@ -1,7 +1,10 @@
 import { AnyEntity, Dictionary, EntityData, EntityProperty, Primary } from '../typings';
 import { Hydrator } from './Hydrator';
-import { Collection, EntityAssigner, Reference, ReferenceType } from '../entity';
-import { Utils } from '../utils';
+import { Collection } from '../entity/Collection';
+import { EntityAssigner } from '../entity/EntityAssigner';
+import { Reference } from '../entity/Reference';
+import { Utils } from '../utils/Utils';
+import { ReferenceType } from '../enums';
 
 export class ObjectHydrator extends Hydrator {
 

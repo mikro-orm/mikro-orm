@@ -1,10 +1,13 @@
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
-import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
+import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
-import { EntityManager, EventType } from '../index';
-import { Utils, ValidationError, OptimisticLockError } from '../utils';
-import { LockMode } from './enums';
+import { ChangeSetComputer } from './ChangeSetComputer';
+import { ChangeSetPersister } from './ChangeSetPersister';
+import { CommitOrderCalculator } from './CommitOrderCalculator';
+import { Utils } from '../utils';
+import { EntityManager } from '../EntityManager';
+import { EventType, Cascade, LockMode, ReferenceType } from '../enums';
+import { ValidationError, OptimisticLockError } from '../errors';
 import { Transaction } from '../connections';
 
 export class UnitOfWork {

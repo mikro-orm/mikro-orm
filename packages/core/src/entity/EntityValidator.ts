@@ -1,6 +1,7 @@
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
-import { Utils, ValidationError } from '../utils';
-import { ReferenceType } from './enums';
+import { ReferenceType } from '../enums';
+import { Utils } from '../utils';
+import { ValidationError } from '../errors';
 
 export class EntityValidator {
 

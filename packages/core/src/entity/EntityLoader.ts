@@ -1,9 +1,10 @@
 import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions } from '../typings';
-import { EntityManager, QueryHelper } from '../index';
-import { LoadStrategy, ReferenceType } from './enums';
-import { Utils, ValidationError } from '../utils';
+import { EntityManager } from '../EntityManager';
+import { QueryHelper } from '../utils/QueryHelper';
+import { Utils } from '../utils/Utils';
+import { ValidationError } from '../errors';
 import { Collection } from './Collection';
-import { QueryOrder, QueryOrderMap } from '../enums';
+import { LoadStrategy, ReferenceType, QueryOrder, QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 
 type Options<T extends AnyEntity<T>> = {

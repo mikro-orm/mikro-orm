@@ -1,7 +1,7 @@
 import { MetadataProvider } from './MetadataProvider';
 import { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType } from '../entity';
+import { Cascade, ReferenceType } from '../enums';
 
 /**
  * @deprecated use EntitySchema instead

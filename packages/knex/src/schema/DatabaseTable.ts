@@ -1,5 +1,6 @@
 import { Dictionary, EntityMetadata, EntityProperty, EntitySchema, NamingStrategy, ReferenceType, Utils } from '@mikro-orm/core';
 import { SchemaHelper } from './SchemaHelper';
+import { Column, ForeignKey, Index } from '../typings';
 
 export class DatabaseTable {
 
@@ -173,35 +174,4 @@ export class DatabaseTable {
     return '' + val;
   }
 
-}
-
-export interface Column {
-  name: string;
-  type: string;
-  fk: ForeignKey;
-  fks: ForeignKey[];
-  indexes: Index[];
-  primary: boolean;
-  unique: boolean;
-  nullable: boolean;
-  maxLength: number;
-  defaultValue: string | null;
-  enumItems: string[];
-}
-
-export interface ForeignKey {
-  columnName: string;
-  constraintName: string;
-  referencedTableName: string;
-  referencedColumnName: string;
-  updateRule: string;
-  deleteRule: string;
-}
-
-export interface Index {
-  columnName: string;
-  keyName: string;
-  unique: boolean;
-  primary: boolean;
-  composite?: boolean;
 }

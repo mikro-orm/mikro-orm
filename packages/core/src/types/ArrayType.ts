@@ -1,7 +1,8 @@
 import { Type } from './Type';
-import { Utils, ValidationError } from '../utils';
+import { Utils } from '../utils';
 import { EntityProperty } from '../typings';
 import { Platform } from '../platforms';
+import { ValidationError } from '../errors';
 
 export class ArrayType<T extends string | number = string> extends Type<T[] | null, string | null> {
 

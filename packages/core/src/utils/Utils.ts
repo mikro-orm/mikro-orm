@@ -7,11 +7,10 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
-import { Collection, ReferenceType } from '../entity';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary, IMetadataStorage } from '../typings';
+import { GroupOperator, ReferenceType, QueryOperator } from '../enums';
+import { Collection } from '../entity';
 import { Platform } from '../platforms';
-import { GroupOperator, QueryOperator } from '../enums';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -87,7 +86,7 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
-  static getRootEntity(metadata: MetadataStorage, meta: EntityMetadata): EntityMetadata {
+  static getRootEntity(metadata: IMetadataStorage, meta: EntityMetadata): EntityMetadata {
     const base = meta.extends && metadata.find(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
@@ -123,7 +122,7 @@ export class Utils {
   /**
    * Computes difference between two entities. First calls `prepareEntity` on both, then uses the `diff` method.
    */
-  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
+  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: IMetadataStorage, platform: Platform): EntityData<T> {
     return Utils.diff(Utils.prepareEntity(a, metadata, platform), Utils.prepareEntity(b, metadata, platform)) as EntityData<T>;
   }
 
@@ -131,7 +130,7 @@ export class Utils {
    * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
-  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
+  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: IMetadataStorage, platform: Platform): EntityData<T> {
     if ((entity as Dictionary).__prepared) {
       return entity;
     }
@@ -519,7 +518,7 @@ export class Utils {
   }
 
   static isCollection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
-    if (!(item instanceof Collection)) {
+    if (!item?.__collection) {
       return false;
     }
 

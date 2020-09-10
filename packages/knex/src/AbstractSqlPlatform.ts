@@ -1,7 +1,6 @@
-import { Constructor, EntityRepository, Platform } from '@mikro-orm/core';
+import { Constructor, EntityManager, EntityRepository, Platform } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SchemaHelper, SchemaGenerator } from './schema';
-import { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -19,8 +18,8 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.schemaHelper;
   }
 
-  getSchemaGenerator(em: SqlEntityManager): SchemaGenerator {
-    return new SchemaGenerator(em);
+  getSchemaGenerator(em: EntityManager): SchemaGenerator {
+    return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
   }
 
 }

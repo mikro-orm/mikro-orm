@@ -1,4 +1,3 @@
-export * from './enums';
 export * from './EntityRepository';
 export * from './EntityIdentifier';
 export * from './EntityValidator';
@@ -10,6 +9,6 @@ export * from './ArrayCollection';
 export * from './Collection';
 export * from './EntityLoader';
 export * from './Reference';
-export * from './wrap';
 export * from './BaseEntity';
 export * from './WrappedEntity';
+export * from './wrap';

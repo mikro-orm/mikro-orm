@@ -5,3 +5,4 @@ export * from './CriteriaNode';
 export * from './ArrayCriteriaNode';
 export * from './ObjectCriteriaNode';
 export * from './ScalarCriteriaNode';
+export * from './CriteriaNodeFactory';

@@ -2,8 +2,9 @@ import { Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityIdentifier, EntityValidator, ReferenceType } from '../entity';
+import { Collection, EntityIdentifier, EntityValidator } from '../entity';
 import { Platform } from '../platforms';
+import { ReferenceType } from '../enums';
 
 export class ChangeSetComputer {
 

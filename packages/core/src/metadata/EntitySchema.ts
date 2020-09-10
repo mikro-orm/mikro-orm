@@ -3,7 +3,8 @@ import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import { BaseEntity, Cascade, EntityRepository, ReferenceType, LoadStrategy } from '../entity';
+import { BaseEntity, EntityRepository } from '../entity';
+import { Cascade, ReferenceType, LoadStrategy } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 

@@ -1,6 +1,6 @@
 import { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import { AbstractSqlDriver, Table } from '@mikro-orm/knex';
-import { MigrationRow } from './Migrator';
+import { MigrationRow } from './typings';
 
 export class MigrationStorage {
 

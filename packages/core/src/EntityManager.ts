@@ -1,15 +1,16 @@
 import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, OptimisticLockError, QueryHelper, RequestContext, Utils, ValidationError } from './utils';
-import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType, SCALAR_TYPES } from './entity';
-import { LockMode, UnitOfWork } from './unit-of-work';
+import { Configuration, QueryHelper, RequestContext, Utils } from './utils';
+import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
+import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New, GetRepository } from './typings';
-import { QueryOrderMap } from './enums';
+import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 import { EventManager } from './events';
+import { OptimisticLockError, ValidationError } from './errors';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems

@@ -5,4 +5,3 @@ export * from './Utils';
 export * from './RequestContext';
 export * from './QueryHelper';
 export * from './NullHighlighter';
-export * from './errors';

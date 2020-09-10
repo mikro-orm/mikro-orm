@@ -3,13 +3,15 @@ import globby from 'globby';
 import c from 'ansi-colors';
 
 import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
-import { Configuration, Utils, MetadataError } from '../utils';
+import { Utils } from '../utils/Utils';
+import { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { Cascade, ReferenceType } from '../entity';
+import { EntitySchema } from './EntitySchema';
+import { Cascade, ReferenceType } from '../enums';
+import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
 import { ArrayType, BlobType, Type } from '../types';
-import { EntitySchema } from '../metadata';
 
 export class MetadataDiscovery {
 

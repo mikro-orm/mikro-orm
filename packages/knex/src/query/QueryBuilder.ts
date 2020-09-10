@@ -1,12 +1,14 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Ref, Transaction, Value } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
+  AnyEntity, Dictionary, EntityMetadata, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
   PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { AbstractSqlDriver, QueryBuilderHelper } from '../index';
-import { CriteriaNode } from './internal';
+import { AbstractSqlDriver } from '../AbstractSqlDriver';
+import { QueryBuilderHelper } from './QueryBuilderHelper';
 import { SqlEntityManager } from '../SqlEntityManager';
+import { CriteriaNodeFactory } from './CriteriaNodeFactory';
+import { Field, JoinOptions } from '../typings';
 
 /**
  * SQL query builder
@@ -113,7 +115,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     const op = operator || params as keyof typeof GroupOperator;
     const topLevel = !op || Object.keys(this._cond).length === 0;
-    const criteriaNode = CriteriaNode.create(this.metadata, this.entityName, cond);
+    const criteriaNode = CriteriaNodeFactory.createNode(this.metadata, this.entityName, cond);
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {
       // use sub-query to support joining
@@ -147,7 +149,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   orderBy(orderBy: QueryOrderMap): this {
     QueryHelper.inlinePrimaryKeyObjects(orderBy, this.metadata.find(this.entityName)!, this.metadata);
-    this._orderBy = CriteriaNode.create(this.metadata, this.entityName, orderBy).process(this);
+    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, orderBy).process(this);
     return this;
   }
 
@@ -161,7 +163,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       cond = { [`(${cond})`]: Utils.asArray(params) };
     }
 
-    this._having = CriteriaNode.create(this.metadata, this.entityName, cond).process(this);
+    this._having = CriteriaNodeFactory.createNode(this.metadata, this.entityName, cond).process(this);
     return this;
   }
 
@@ -559,24 +561,4 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this._populateMap[field] = this._joins[field].alias;
   }
 
-}
-
-type KnexStringRef = Ref<string, {
-  [alias: string]: string;
-}>;
-
-export type Field<T> = string | keyof T | KnexStringRef | KnexQueryBuilder;
-
-export interface JoinOptions {
-  table: string;
-  type: 'leftJoin' | 'innerJoin' | 'pivotJoin';
-  alias: string;
-  ownerAlias: string;
-  inverseAlias?: string;
-  joinColumns?: string[];
-  inverseJoinColumns?: string[];
-  primaryKeys?: string[];
-  path?: string;
-  prop: EntityProperty;
-  cond: Dictionary;
 }

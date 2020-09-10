@@ -5,18 +5,7 @@ import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
 import { MigrationStorage } from './MigrationStorage';
-
-declare module 'umzug' {
-
-  interface MigrationDefinitionWithName extends UmzugMigration {
-    name: string;
-  }
-
-  interface UmzugStatic {
-    migrationsList(migrations: MigrationDefinitionWithName[], parameters?: any[]): UmzugMigration[];
-  }
-
-}
+import { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 
 export class Migrator {
 
@@ -182,8 +171,3 @@ export class Migrator {
   }
 
 }
-
-export type UmzugMigration = { name?: string; path?: string; file: string };
-export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
-export type MigrationResult = { fileName: string; code: string; diff: string[] };
-export type MigrationRow = { name: string; executed_at: Date };

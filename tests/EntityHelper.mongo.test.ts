@@ -92,7 +92,7 @@ describe('EntityHelperMongo', () => {
 
     const jon = orm.em.getReference(Author, author.id!);
     expect(wrap(jon).isInitialized()).toBe(false);
-    await EntityHelper.init(jon);
+    await wrap(jon).init();
     expect(wrap(jon).isInitialized()).toBe(true);
   });
 
@@ -104,7 +104,7 @@ describe('EntityHelperMongo', () => {
     const jon = await orm.em.findOne(Author, author.id);
     await orm.em.nativeUpdate(Author, { id: author.id }, { name: 'Changed!' });
     expect(jon!.name).toBe('Jon Snow');
-    await EntityHelper.init(jon!);
+    await wrap(jon).init();
     expect(jon!.name).toBe('Changed!');
   });
 
