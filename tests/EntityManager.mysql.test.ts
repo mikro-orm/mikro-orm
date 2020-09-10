@@ -5,7 +5,7 @@ import c from 'ansi-colors';
 import chalk from 'chalk';
 
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
@@ -1718,7 +1718,7 @@ describe('EntityManagerMySql', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
+    const diff = orm.em.getComparator().diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
     expect(typeof diff.favouriteBook).toBe('string');
     expect(diff.favouriteBook).toBe(book.uuid);

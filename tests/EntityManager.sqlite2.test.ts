@@ -1,5 +1,5 @@
 import { unlinkSync } from 'fs';
-import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Utils, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
@@ -737,7 +737,7 @@ describe('EntityManagerSqlite2', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persist([author1, author2, book]).flush();
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
+    const diff = orm.em.getComparator().diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
     expect(typeof diff.favouriteBook).toBe('number');
   });

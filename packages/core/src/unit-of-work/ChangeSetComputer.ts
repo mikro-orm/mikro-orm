@@ -5,8 +5,11 @@ import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityIdentifier, EntityValidator } from '../entity';
 import { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
+import { EntityComparator } from '../utils/EntityComparator';
 
 export class ChangeSetComputer {
+
+  private readonly comparator = new EntityComparator(this.metadata, this.platform);
 
   constructor(private readonly validator: EntityValidator,
               private readonly originalEntityData: Map<string, EntityData<AnyEntity>>,
@@ -48,10 +51,10 @@ export class ChangeSetComputer {
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     if (this.originalEntityData.get(entity.__helper!.__uuid)) {
-      return Utils.diffEntities<T>(this.originalEntityData.get(entity.__helper!.__uuid) as T, entity, this.metadata, this.platform);
+      return this.comparator.diffEntities<T>(this.originalEntityData.get(entity.__helper!.__uuid) as T, entity);
     }
 
-    return Utils.prepareEntity(entity, this.metadata, this.platform);
+    return this.comparator.prepareEntity(entity);
   }
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

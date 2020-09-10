@@ -1,4 +1,4 @@
-import { Dictionary, MetadataStorage, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import { Dictionary, EntityMetadata, MetadataStorage, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
@@ -45,29 +45,33 @@ export class CriteriaNodeFactory {
 
     const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
     node.payload = Object.keys(payload).reduce((o, item) => {
-      const prop = meta?.properties[item];
-
-      if (prop?.reference === ReferenceType.EMBEDDED) {
-        const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
-
-        if (operator) {
-          throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
-        }
-
-        const map = Object.keys(payload[item]).reduce((oo, k) => {
-          oo[prop.embeddedProps[k].name] = payload[item][k];
-          return oo;
-        }, {});
-        o[item] = this.createNode(metadata, entityName, map, node, item);
-      } else {
-        const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
-        o[item] = this.createNode(metadata, childEntity, payload[item], node, item);
-      }
-
+      o[item] = this.createObjectItemNode(metadata, entityName, node, payload, item, meta);
       return o;
     }, {});
 
     return node;
+  }
+
+  static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
+    const prop = meta?.properties[item];
+
+    if (prop?.reference !== ReferenceType.EMBEDDED) {
+      const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
+      return this.createNode(metadata, childEntity, payload[item], node, item);
+    }
+
+    const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
+
+    if (operator) {
+      throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
+    }
+
+    const map = Object.keys(payload[item]).reduce((oo, k) => {
+      oo[prop.embeddedProps[k].name] = payload[item][k];
+      return oo;
+    }, {});
+
+    return this.createNode(metadata, entityName, map, node, item);
   }
 
 }

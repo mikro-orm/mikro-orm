@@ -10,6 +10,7 @@ import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } fr
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 import { EventManager } from './events';
+import { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
 /**
@@ -24,6 +25,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
+  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
@@ -332,7 +334,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (data === undefined) {
       entityName = entityNameOrEntity.constructor.name;
-      data = Utils.prepareEntity(entityNameOrEntity as T, this.metadata, this.driver.getPlatform());
+      data = this.comparator.prepareEntity(entityNameOrEntity as T);
     } else {
       entityName = Utils.className(entityNameOrEntity as EntityName<T>);
     }
@@ -678,6 +680,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getMetadata(): MetadataStorage {
     return this.metadata;
+  }
+
+  getComparator(): EntityComparator {
+    return this.comparator;
   }
 
   private checkLockRequirements(mode: LockMode | undefined, meta: EntityMetadata): void {
