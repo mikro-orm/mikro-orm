@@ -48,8 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "^4.0.1",
-    "fs-extra": "^9.0.1",
-    "ts-morph": "^8.0.0"
+    "fs-extra": "^9.0.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.0.1"

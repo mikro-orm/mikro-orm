@@ -13,8 +13,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-
-
 # [4.0.0](https://github.com/mikro-orm/mikro-orm/compare/v3.6.15...v4.0.0) (2020-09-08)
 
 ### Bug Fixes
