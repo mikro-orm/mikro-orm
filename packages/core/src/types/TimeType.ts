@@ -1,7 +1,7 @@
 import { Type } from './Type';
 import { Platform } from '../platforms';
 import { EntityProperty } from '../typings';
-import { ValidationError } from '../utils';
+import { ValidationError } from '../errors';
 
 export class TimeType extends Type {
 

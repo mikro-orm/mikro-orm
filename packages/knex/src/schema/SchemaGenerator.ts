@@ -1,6 +1,8 @@
 import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
 import { Cascade, CommitOrderCalculator, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
-import { Column, DatabaseSchema, DatabaseTable, IsSame } from '../index';
+import { DatabaseSchema } from './DatabaseSchema';
+import { DatabaseTable } from './DatabaseTable';
+import { Column, IsSame } from '../typings';
 import { SqlEntityManager } from '../SqlEntityManager';
 
 export class SchemaGenerator {

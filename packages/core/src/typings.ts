@@ -1,11 +1,8 @@
-import { QueryOrder } from './enums';
-import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType } from './entity';
-import { EntityManager } from './EntityManager';
-import { LockMode } from './unit-of-work';
+import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
+import { AssignOptions, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { Platform } from './platforms';
-import { EntitySchema, MetadataStorage } from './metadata';
+import { EntitySchema } from './metadata';
 import { Type } from './types';
-import { EventType } from './events';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -76,9 +73,9 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   __uuid: string;
   __meta: EntityMetadata<T>;
-  __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
+  __internal: { platform: Platform; metadata: IMetadataStorage; validator: EntityValidator };
   __data: Dictionary;
-  __em?: EntityManager;
+  __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __initialized?: boolean;
   __managed: boolean;
   __populated: boolean;
@@ -289,4 +286,12 @@ export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
 
 export interface Highlighter {
   highlight(text: string): string;
+}
+export interface IMetadataStorage {
+  getAll(): Dictionary<EntityMetadata>;
+  get<T extends AnyEntity<T> = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
+  find<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T> | undefined;
+  has(entity: string): boolean;
+  set(entity: string, meta: EntityMetadata): EntityMetadata;
+  reset(entity: string): void;
 }

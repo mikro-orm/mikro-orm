@@ -1,7 +1,7 @@
 import { AnyEntity } from '../typings';
 import { EventArgs, EventSubscriber, FlushEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
-import { EventType } from './EventType';
+import { EventType } from '../enums';
 
 export class EventManager {
 

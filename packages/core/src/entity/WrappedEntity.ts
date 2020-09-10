@@ -7,9 +7,9 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } 
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
-import { EntityHelper } from './EntityHelper';
-import { Utils } from '../utils';
-import { LockMode } from '../unit-of-work';
+import { Utils } from '../utils/Utils';
+import { LockMode } from '../enums';
+import { ValidationError } from '../errors';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -66,8 +66,19 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityAssigner.assign(this.entity, data, options);
   }
 
-  init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
-    return EntityHelper.init<T>(this.entity, populated, populate, lockMode) as Promise<T>;
+  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
+    const wrapped = this.entity.__helper!;
+    const em = wrapped.__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.entity);
+    }
+
+    await em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate });
+    wrapped.populated(populated);
+    wrapped.__lazyInitialized = true;
+
+    return this.entity;
   }
 
   get __primaryKey(): Primary<T> {

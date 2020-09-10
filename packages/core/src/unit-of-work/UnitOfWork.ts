@@ -1,10 +1,13 @@
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
-import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
+import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
-import { EntityManager, EventType } from '../index';
-import { Utils, ValidationError, OptimisticLockError } from '../utils';
-import { LockMode } from './enums';
+import { ChangeSetComputer } from './ChangeSetComputer';
+import { ChangeSetPersister } from './ChangeSetPersister';
+import { CommitOrderCalculator } from './CommitOrderCalculator';
+import { Utils } from '../utils/Utils';
+import { EntityManager } from '../EntityManager';
+import { EventType, Cascade, LockMode, ReferenceType } from '../enums';
+import { ValidationError, OptimisticLockError } from '../errors';
 import { Transaction } from '../connections';
 
 export class UnitOfWork {
@@ -49,7 +52,7 @@ export class UnitOfWork {
     this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 
     if (mergeData || !this.originalEntityData.has(entity.__helper!.__uuid)) {
-      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
     }
 
     this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
@@ -114,7 +117,7 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.push(cs);
     this.persistStack.delete(entity);
-    this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+    this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
@@ -128,7 +131,7 @@ export class UnitOfWork {
 
     if (cs) {
       Object.assign(this.changeSets[idx].payload, cs.payload);
-      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
     }
   }
 
@@ -279,7 +282,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.persistStack.delete(entity);
-      this.originalEntityData.set(wrapped.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(wrapped.__uuid, this.em.getComparator().prepareEntity(entity));
     }
   }
 
@@ -512,9 +515,9 @@ export class UnitOfWork {
           }
         });
 
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
+      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
       await this.runHooks(EventType.beforeCreate, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
     }
 
     await this.changeSetPersister.executeInserts(changeSets, ctx);
@@ -531,9 +534,9 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
+      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
       await this.runHooks(EventType.beforeUpdate, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
     }
 
     await this.changeSetPersister.executeUpdates(changeSets, ctx);
@@ -550,9 +553,9 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
+      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
       await this.runHooks(EventType.beforeDelete, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
     }
 
     await this.changeSetPersister.executeDeletes(changeSets, ctx);

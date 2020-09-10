@@ -1,9 +1,9 @@
-import { Reference } from '../entity';
+import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery } from '../typings';
 import { ARRAY_OPERATORS, GroupOperator } from '../enums';
 import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export class QueryHelper {
 

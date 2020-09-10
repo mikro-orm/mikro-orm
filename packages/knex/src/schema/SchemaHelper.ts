@@ -1,7 +1,7 @@
 import { TableBuilder } from 'knex';
 import { Connection, Dictionary, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection } from '../index';
-import { Column, Index } from './DatabaseTable';
+import { AbstractSqlConnection } from '../AbstractSqlConnection';
+import { Column, Index, IsSame } from '../typings';
 
 export abstract class SchemaHelper {
 
@@ -250,13 +250,4 @@ export abstract class SchemaHelper {
     return Utils.equals(prop.items, column.enumItems);
   }
 
-}
-
-export interface IsSame {
-  all?: boolean;
-  sameTypes?: boolean;
-  sameNullable?: boolean;
-  sameDefault?: boolean;
-  sameIndex?: boolean;
-  sameEnums?: boolean;
 }

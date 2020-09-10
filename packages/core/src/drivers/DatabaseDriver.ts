@@ -2,11 +2,13 @@ import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from 
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { Configuration, ConnectionOptions, Utils, ValidationError } from '../utils';
-import { QueryOrder, QueryOrderMap } from '../enums';
+import { Configuration, ConnectionOptions, Utils } from '../utils';
+import { LockMode, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Platform } from '../platforms';
-import { Collection, ReferenceType } from '../entity';
-import { DriverException, EntityManager, LockMode } from '../index';
+import { Collection } from '../entity';
+import { EntityManager } from '../EntityManager';
+import { ValidationError } from '../errors';
+import { DriverException } from '../exceptions';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 

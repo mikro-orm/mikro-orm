@@ -1,10 +1,10 @@
-import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { Platform } from '../platforms';
+import { Utils } from '../utils/Utils';
 
 export class EntityTransformer {
 

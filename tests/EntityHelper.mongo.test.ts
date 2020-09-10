@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { inspect } from 'util';
 
-import { EntityHelper, MikroORM, Reference, Utils, wrap } from '@mikro-orm/core';
+import { MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -92,7 +92,7 @@ describe('EntityHelperMongo', () => {
 
     const jon = orm.em.getReference(Author, author.id!);
     expect(wrap(jon).isInitialized()).toBe(false);
-    await EntityHelper.init(jon);
+    await wrap(jon).init();
     expect(wrap(jon).isInitialized()).toBe(true);
   });
 
@@ -104,7 +104,7 @@ describe('EntityHelperMongo', () => {
     const jon = await orm.em.findOne(Author, author.id);
     await orm.em.nativeUpdate(Author, { id: author.id }, { name: 'Changed!' });
     expect(jon!.name).toBe('Jon Snow');
-    await EntityHelper.init(jon!);
+    await wrap(jon).init();
     expect(jon!.name).toBe('Changed!');
   });
 
@@ -134,7 +134,7 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const b = await orm.em.findOneOrFail(Book, book.id);
-    expect(Utils.prepareEntity(b, orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
+    expect(orm.em.getComparator().prepareEntity(b)).toEqual({
       _id: b._id,
       createdAt: b.createdAt,
       title: b.title,
@@ -151,7 +151,7 @@ describe('EntityHelperMongo', () => {
     orm.em.clear();
 
     const b = await orm.em.findOneOrFail(FooBar, bar.id);
-    expect(Utils.prepareEntity(b, orm.getMetadata(), orm.em.getDriver().getPlatform())).toEqual({
+    expect(orm.em.getComparator().prepareEntity(b)).toEqual({
       _id: b._id,
       name: b.name,
       baz: b.baz!._id,

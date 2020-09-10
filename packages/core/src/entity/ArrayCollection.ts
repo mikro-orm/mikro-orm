@@ -1,14 +1,14 @@
 import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
-import { ReferenceType } from './enums';
-import { Collection } from './Collection';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
+import { ReferenceType } from '../enums';
 
 export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   [k: number]: T;
 
   protected readonly items: T[] = [];
+  protected initialized = true;
   private _property?: EntityProperty;
 
   constructor(readonly owner: O, items?: T[]) {
@@ -20,6 +20,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     Object.defineProperty(this, 'items', { enumerable: false });
     Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
     Object.defineProperty(this, '_property', { enumerable: false, writable: true });
+    Object.defineProperty(this, '__collection', { value: true });
   }
 
   getItems(): T[] {
@@ -111,6 +112,14 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     return this.items.length;
   }
 
+  isInitialized(fully = false): boolean {
+    if (fully) {
+      return this.initialized && this.items.every(item => item.__helper!.isInitialized());
+    }
+
+    return this.initialized;
+  }
+
   get length(): number {
     return this.count();
   }
@@ -143,7 +152,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.inversedBy as keyof T] as unknown as Collection<O, T>;
+    const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
       collection[method](this.owner);
@@ -151,7 +160,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
-    const collection = item[this.property.mappedBy as keyof T] as unknown as Collection<O, T>;
+    const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
       collection[method](this.owner);
@@ -160,7 +169,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
     }
   }
 
-  protected shouldPropagateToCollection(collection: Collection<O, T>, method: 'add' | 'remove'): boolean {
+  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove'): boolean {
     if (!collection || !collection.isInitialized()) {
       return false;
     }

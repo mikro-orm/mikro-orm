@@ -3,15 +3,21 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, Migration, MigrationObject } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, MigrationObject } from '../typings';
 import { Hydrator, ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import { Logger, LoggerNamespace, NotFoundError, Utils } from '../utils';
+import { Logger, LoggerNamespace } from '../utils/Logger';
+import { Utils } from '../utils/Utils';
 import { EntityManager } from '../EntityManager';
-import { EntityOptions, EntitySchema, IDatabaseDriver, MetadataStorage } from '..';
 import { Platform } from '../platforms';
-import { MetadataProvider, ReflectMetadataProvider } from '../metadata';
+import { EntitySchema } from '../metadata/EntitySchema';
+import { MetadataProvider } from '../metadata/MetadataProvider';
+import { MetadataStorage } from '../metadata/MetadataStorage';
+import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import { EventSubscriber } from '../events';
+import { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import { EntityOptions } from '../decorators';
+import { NotFoundError } from '../errors';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -154,7 +160,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of MetadataProvider. (cached)
    */
   getMetadataProvider(): MetadataProvider {
-    return this.cached(this.options.metadataProvider || ReflectMetadataProvider, this);
+    return this.cached(this.options.metadataProvider, this);
   }
 
   /**

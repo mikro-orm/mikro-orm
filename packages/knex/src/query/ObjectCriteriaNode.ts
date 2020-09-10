@@ -1,46 +1,11 @@
-import { Dictionary, MetadataStorage, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
-import { CriteriaNode, QueryBuilder, QueryBuilderHelper, QueryType } from './internal';
+import { ReferenceType, Utils } from '@mikro-orm/core';
+import { CriteriaNode } from './CriteriaNode';
+import { IQueryBuilder } from '../typings';
+import { QueryType } from './enums';
 
 export class ObjectCriteriaNode extends CriteriaNode {
 
-  static create(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: CriteriaNode, key?: string): ObjectCriteriaNode {
-    const node = new ObjectCriteriaNode(metadata, entityName, parent, key);
-    const meta = metadata.find(entityName);
-
-    if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.reference === ReferenceType.SCALAR)) {
-      const node = new CriteriaNode(metadata, entityName, parent, key);
-      node.payload = payload;
-
-      return node as ObjectCriteriaNode;
-    }
-
-    node.payload = Object.keys(payload).reduce((o, item) => {
-      const prop = meta?.properties[item];
-
-      if (prop?.reference === ReferenceType.EMBEDDED) {
-        const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
-
-        if (operator) {
-          throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
-        }
-
-        const map = Object.keys(payload[item]).reduce((oo, k) => {
-          oo[prop.embeddedProps[k].name] = payload[item][k];
-          return oo;
-        }, {});
-        o[item] = CriteriaNode.create(metadata, entityName, map, node, item);
-      } else {
-        const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
-        o[item] = CriteriaNode.create(metadata, childEntity, payload[item], node, item);
-      }
-
-      return o;
-    }, {});
-
-    return node;
-  }
-
-  process<T>(qb: QueryBuilder<T>, alias?: string): any {
+  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -56,7 +21,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const childNode = this.payload[field] as CriteriaNode;
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
-      const customExpression = QueryBuilderHelper.isCustomExpression(field);
+      const customExpression = ObjectCriteriaNode.isCustomExpression(field);
       const virtual = childNode.prop?.persist === false;
 
       if (childNode.shouldInline(payload)) {
@@ -79,7 +44,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }, {});
   }
 
-  willAutoJoin<T>(qb: QueryBuilder<T>, alias?: string) {
+  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -98,7 +63,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
   }
 
   shouldInline(payload: any): boolean {
-    const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
+    const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
@@ -117,9 +82,9 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return !nestedAlias && !operatorKeys && !embeddable;
   }
 
-  private autoJoin<T>(qb: QueryBuilder<T>, alias: string): string {
+  private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {
     const nestedAlias = qb.getNextAlias();
-    const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
+    const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;

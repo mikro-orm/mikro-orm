@@ -1,10 +1,8 @@
-import { Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary, AnyEntity } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
-import { ReferenceType } from './enums';
-import { EntityManager, EventType } from '..';
-
-export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
+import { EntityManager } from '../EntityManager';
+import { EventType, ReferenceType } from '../enums';
 
 export interface FactoryOptions {
   initialized?: boolean;

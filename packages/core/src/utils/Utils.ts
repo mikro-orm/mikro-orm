@@ -7,11 +7,10 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, Primary } from '../typings';
-import { Collection, ReferenceType } from '../entity';
+import { AnyEntity, Dictionary, EntityMetadata, EntityName, EntityProperty, Primary, IMetadataStorage } from '../typings';
+import { GroupOperator, ReferenceType, QueryOperator } from '../enums';
+import { Collection } from '../entity';
 import { Platform } from '../platforms';
-import { GroupOperator, QueryOperator } from '../enums';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -87,7 +86,7 @@ export class Utils {
     return Utils.merge(target, ...sources);
   }
 
-  static getRootEntity(metadata: MetadataStorage, meta: EntityMetadata): EntityMetadata {
+  static getRootEntity(metadata: IMetadataStorage, meta: EntityMetadata): EntityMetadata {
     const base = meta.extends && metadata.find(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
@@ -118,87 +117,6 @@ export class Utils {
     });
 
     return ret;
-  }
-
-  /**
-   * Computes difference between two entities. First calls `prepareEntity` on both, then uses the `diff` method.
-   */
-  static diffEntities<T extends AnyEntity<T>>(a: T, b: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
-    return Utils.diff(Utils.prepareEntity(a, metadata, platform), Utils.prepareEntity(b, metadata, platform)) as EntityData<T>;
-  }
-
-  /**
-   * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
-   * References will be mapped to primary keys, collections to arrays of primary keys.
-   */
-  static prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
-    if ((entity as Dictionary).__prepared) {
-      return entity;
-    }
-
-    const meta = metadata.get<T>(entity.constructor.name);
-    const root = Utils.getRootEntity(metadata, meta);
-    const ret = {} as EntityData<T>;
-
-    if (meta.discriminatorValue) {
-      ret[root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as T[keyof T];
-    }
-
-    // copy all props, ignore collections and references, process custom types
-    Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
-      if (Utils.shouldIgnoreProperty(entity, prop, root)) {
-        return;
-      }
-
-      if (prop.reference === ReferenceType.EMBEDDED) {
-        return Object.values<EntityProperty>(meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-          ret[childProp.name as keyof T] = entity[prop.name][childProp.embedded![1]];
-        });
-      }
-
-      if (Utils.isEntity(entity[prop.name], true)) {
-        ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
-
-        if (prop.customType) {
-          return ret[prop.name] = prop.customType.convertToDatabaseValue(ret[prop.name], platform);
-        }
-
-        return;
-      }
-
-      if (prop.customType) {
-        return ret[prop.name] = prop.customType.convertToDatabaseValue(entity[prop.name], platform);
-      }
-
-      if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
-        return ret[prop.name] = Utils.copy(entity[prop.name]);
-      }
-
-      ret[prop.name] = entity[prop.name];
-    });
-
-    Object.defineProperty(ret, '__prepared', { value: true });
-
-    return ret;
-  }
-
-  private static shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, root: EntityMetadata) {
-    if (!(prop.name in entity) || prop.persist === false) {
-      return true;
-    }
-
-    const value = entity[prop.name];
-    const collection = Utils.isCollection(value);
-    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.__primaryKeys.every(pk => Utils.isDefined(pk, true));
-    const noPkProp = prop.primary && !Utils.isDefined(value, true);
-    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
-    const discriminator = prop.name === root.discriminatorColumn;
-
-    // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
-    const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
-    const emptyRef = isSetter && value === undefined;
-
-    return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef;
   }
 
   /**
@@ -519,7 +437,7 @@ export class Utils {
   }
 
   static isCollection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
-    if (!(item instanceof Collection)) {
+    if (!item?.__collection) {
       return false;
     }
 

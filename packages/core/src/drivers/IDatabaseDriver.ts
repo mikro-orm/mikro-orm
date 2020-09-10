@@ -1,11 +1,10 @@
 import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, Populate, PopulateOptions } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { QueryOrderMap, QueryFlag } from '../enums';
+import { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
-import { LockMode } from '../unit-of-work';
-import { Collection, LoadStrategy } from '../entity';
-import { EntityManager } from '../index';
+import { Collection } from '../entity';
+import { EntityManager } from '../EntityManager';
 import { DriverException } from '../exceptions';
 
 export const EntityManagerType = Symbol('EntityManagerType');

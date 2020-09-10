@@ -1,6 +1,6 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
-import { ReferenceType } from '../entity';
-import { PropertyOptions } from '.';
+import { ReferenceType } from '../enums';
+import { PropertyOptions } from './Property';
 import { AnyEntity, EntityProperty } from '../typings';
 
 function createDecorator<T>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
