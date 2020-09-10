@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const pkg = require('../package.json');
+const pkg = require('../packages/core/package.json');
 const versions = require('./versions.json');
 
 module.exports = {
