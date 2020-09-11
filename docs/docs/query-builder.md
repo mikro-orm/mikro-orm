@@ -303,35 +303,3 @@ qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ)
 console.log(qb.getQuery()); // for MySQL
 // select `e0`.* from `test` as `e0` where `e0`.`name` = ? lock in share mode
 ```
-
-## QueryBuilder API
-
-`QueryBuilder` provides fluent interface with these methods:
-
-```typescript
-qb.select(fields: string | string[], distinct?: boolean): QueryBuilder;
-qb.addSelect(fields: string | string[]): QueryBuilder;
-qb.insert(data: Record<string, any>): QueryBuilder;
-qb.update(data: Record<string, any>): QueryBuilder;
-qb.delete(cond: Record<string, any>): QueryBuilder;
-qb.count(fields: string | string[], distinct?: boolean): QueryBuilder;
-qb.join(field: string, alias?: string): QueryBuilder;
-qb.leftJoin(field: string, alias?: string): QueryBuilder;
-qb.where(cond: Record<string, any>, operator?: '$and' | '$or'): QueryBuilder;
-qb.andWhere(cond: Record<string, any>): QueryBuilder;
-qb.orWhere(cond: Record<string, any>): QueryBuilder;
-qb.groupBy(fields: string | string[]): QueryBuilder;
-qb.having(cond: Record<string, any>): QueryBuilder;
-qb.limit(limit: number, offset?: number): QueryBuilder;
-qb.offset(offset: number): QueryBuilder;
-qb.withSchema(schema?: string): QueryBuilder;
-qb.withSubQuery(subQuery: KnexQueryBuilder, alias: string): QueryBuilder;
-qb.execute<T>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): T;
-qb.getResult<T>(): T[];
-qb.getSingleResult<T>(): T;
-qb.setLockMode(mode: LockMode): QueryBuilder;
-qb.getQuery(): string;
-qb.getParams(): any[];
-qb.raw(sql): Raw;
-qb.clone(): QueryBuilder;
-```

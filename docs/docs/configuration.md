@@ -1,5 +1,5 @@
 ---
-title: Advanced Configuration
+title: Configuration
 ---
 
 ## Entity Discovery
@@ -77,7 +77,7 @@ To select driver, you can either use `type` option, or provide the driver class 
 
 | type | driver name | dependency | note |
 |------|-------------|------------|------|
-| `mongo` | `MongoDriver` | `mongodb^3.3.4` | default driver |
+| `mongo` | `MongoDriver` | `mongodb^3.3.4` | - |
 | `mysql` | `MySqlDriver` | `mysql2^2.0.0` | compatible with MariaDB |
 | `mariadb` | `MariaDbDriver` | `mariadb^2.0.0` | compatible with MySQL |
 | `postgresql` | `PostgreSqlDriver` | `pg^7.0.0` | - |

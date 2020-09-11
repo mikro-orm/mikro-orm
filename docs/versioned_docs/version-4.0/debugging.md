@@ -1,5 +1,5 @@
 ---
-title: Debugging
+title: Logging
 ---
 
 For development purposes it might come handy to enable logging and debug mode:
@@ -53,6 +53,28 @@ return MikroORM.init({
 });
 ```
 
-Currently there are 4 namespaces – `query`, `query-params`, `discovery` and `info`.
+Currently, there are 4 namespaces – `query`, `query-params`, `discovery` and `info`.
 
 If you provide `query-params` then you must also provide `query` in order for it to take effect.
+
+## Highlighters
+
+Previously Highlight.js was used to highlight various things in the CLI, 
+like SQL and mongo queries, or migrations or entities generated via CLI.
+While the library worked fine, it was causing performance issues mainly 
+for those bundling via webpack and using lambdas, as the library was huge.
+
+In v4 highlighting is disabled by default, and there are 2 highlighters 
+you can optionally use (you need to install them first).
+
+```typescript
+import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+
+MikroORM.init({
+  highlighter: new SqlHighlighter(),
+  // ...
+});
+```
+
+For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` 
+package.

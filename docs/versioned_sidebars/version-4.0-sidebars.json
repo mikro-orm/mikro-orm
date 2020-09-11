@@ -1,6 +1,7 @@
 {
   "version-4.0/docs": [
     {
+      "collapsed": true,
       "type": "category",
       "label": "Overview",
       "items": [
@@ -22,11 +23,12 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/repositories"
+          "id": "version-4.0/unit-of-work"
         }
       ]
     },
     {
+      "collapsed": true,
       "type": "category",
       "label": "Fundamentals",
       "items": [
@@ -40,15 +42,11 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/entity-constructors"
-        },
-        {
-          "type": "doc",
           "id": "version-4.0/collections"
         },
         {
           "type": "doc",
-          "id": "version-4.0/unit-of-work"
+          "id": "version-4.0/repositories"
         },
         {
           "type": "doc",
@@ -56,11 +54,11 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/cascading"
+          "id": "version-4.0/inheritance-mapping"
         },
         {
           "type": "doc",
-          "id": "version-4.0/composite-keys"
+          "id": "version-4.0/cascading"
         },
         {
           "type": "doc",
@@ -72,11 +70,16 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/decorators"
+          "id": "version-4.0/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.0/debugging"
         }
       ]
     },
     {
+      "collapsed": true,
       "type": "category",
       "label": "Advanced Features",
       "items": [
@@ -87,10 +90,6 @@
         {
           "type": "doc",
           "id": "version-4.0/query-conditions"
-        },
-        {
-          "type": "doc",
-          "id": "version-4.0/query-builder"
         },
         {
           "type": "doc",
@@ -122,6 +121,10 @@
         },
         {
           "type": "doc",
+          "id": "version-4.0/composite-keys"
+        },
+        {
+          "type": "doc",
           "id": "version-4.0/custom-types"
         },
         {
@@ -134,19 +137,11 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/inheritance-mapping"
-        },
-        {
-          "type": "doc",
           "id": "version-4.0/metadata-providers"
         },
         {
           "type": "doc",
           "id": "version-4.0/metadata-cache"
-        },
-        {
-          "type": "doc",
-          "id": "version-4.0/debugging"
         },
         {
           "type": "doc",
@@ -163,6 +158,29 @@
         {
           "type": "doc",
           "id": "version-4.0/read-connections"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Reference",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.0/entity-manager-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.0/repositories-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.0/query-builder-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.0/decorators"
         },
         {
           "type": "doc",
@@ -171,6 +189,7 @@
       ]
     },
     {
+      "collapsed": true,
       "type": "category",
       "label": "Usage with Different Drivers",
       "items": [
@@ -185,6 +204,7 @@
       ]
     },
     {
+      "collapsed": true,
       "type": "category",
       "label": "Recipes",
       "items": [
@@ -202,7 +222,7 @@
         },
         {
           "type": "doc",
-          "id": "version-4.0/custom-driver"
+          "id": "version-4.0/entity-constructors"
         },
         {
           "type": "doc",
@@ -211,10 +231,15 @@
         {
           "type": "doc",
           "id": "version-4.0/using-bigint-pks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.0/custom-driver"
         }
       ]
     },
     {
+      "collapsed": true,
       "type": "category",
       "label": "Example Integrations",
       "items": [

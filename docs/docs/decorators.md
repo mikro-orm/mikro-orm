@@ -1,5 +1,5 @@
 ---
-title: Decorators Reference
+title: Decorators
 ---
 
 ## Entity Definition
