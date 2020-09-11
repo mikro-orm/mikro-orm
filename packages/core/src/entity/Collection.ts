@@ -5,7 +5,7 @@ import { ValidationError } from '../errors';
 import { QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 
-export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
+export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private dirty = false;
@@ -25,7 +25,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T, O = any>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, items, initialized);
     owner[prop] = coll as unknown as O[keyof O];
 
@@ -231,8 +231,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.owner.__helper!.__internal.platform.usesPivotTable()) {
-      const pk = this.items[0].__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
-      cond[pk] = { $in: this.items.map(item => item.__helper!.__primaryKey) };
+      const pk = (this.items[0] as AnyEntity<T>).__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
+      cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
     }
@@ -287,7 +287,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
       return;
     }
 
-    const check = (item: T) => {
+    const check = (item: T & AnyEntity<T>) => {
       if (item.__helper!.isInitialized()) {
         return false;
       }

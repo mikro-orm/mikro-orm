@@ -436,7 +436,7 @@ export class Utils {
     return ret;
   }
 
-  static isCollection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
+  static isCollection<T, O = unknown>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
     if (!item?.__collection) {
       return false;
     }

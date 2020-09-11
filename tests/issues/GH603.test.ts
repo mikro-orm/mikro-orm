@@ -6,7 +6,7 @@ class TaskProps {
 
   id = v4();
   version = new Date();
-  projects: Collection<ProjectProps> = new Collection<ProjectProps>(this);
+  projects = new Collection<ProjectProps>(this);
 
 }
 

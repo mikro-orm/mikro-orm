@@ -530,7 +530,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Removes an entity instance. You can force flushing via second parameter.
+   * Marks entity for removal.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
    * To remove entities by condition, use `em.nativeDelete()`.
@@ -558,7 +558,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Removes an entity instance.
+   * Marks entity for removal.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
    * @deprecated use `remove()`

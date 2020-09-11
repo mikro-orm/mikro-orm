@@ -3,7 +3,7 @@ import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
 
-export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
+export class ArrayCollection<T, O> {
 
   [k: number]: T;
 
@@ -11,7 +11,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   protected initialized = true;
   private _property?: EntityProperty;
 
-  constructor(readonly owner: O, items?: T[]) {
+  constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
     if (items) {
       this.items = items;
       Object.assign(this, items);
@@ -28,7 +28,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   toArray(): Dictionary[] {
-    return this.getItems().map(item => {
+    return this.getItems().map((item: AnyEntity<T>) => {
       const meta = item.__helper!.__meta;
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
@@ -47,7 +47,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
       return [];
     }
 
-    field = field || this.items[0].__helper!.__meta.serializedPrimaryKey;
+    field = field || (this.items[0] as AnyEntity<T>).__helper!.__meta.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -81,7 +81,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   remove(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
-      const idx = this.items.findIndex(i => i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey);
+      const idx = this.items.findIndex((i: AnyEntity<T>) => i.__helper!.__serializedPrimaryKey === (entity as AnyEntity<T>).__helper!.__serializedPrimaryKey);
 
       if (idx !== -1) {
         delete this[this.items.length - 1]; // remove last item
@@ -98,9 +98,9 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
-    const entity = Reference.unwrapReference(item);
+    const entity = Reference.unwrapReference(item) as AnyEntity<T>;
 
-    return !!this.items.find(i => {
+    return !!this.items.find((i: AnyEntity<T>) => {
       const objectIdentity = i === entity;
       const primaryKeyIdentity = i.__helper!.__primaryKey && entity.__helper!.__primaryKey && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
 
@@ -114,7 +114,7 @@ export class ArrayCollection<T extends AnyEntity<T>, O extends AnyEntity<O>> {
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every(item => item.__helper!.isInitialized());
+      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.isInitialized());
     }
 
     return this.initialized;

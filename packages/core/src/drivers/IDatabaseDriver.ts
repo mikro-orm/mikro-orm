@@ -41,7 +41,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
+  syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 
   count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 

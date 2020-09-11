@@ -8,7 +8,7 @@ class Competition {
   id!: number;
 
   @OneToMany('Registration', 'competition', { orphanRemoval: true })
-  registrations: Collection<Registration> = new Collection<Registration>(this);
+  registrations = new Collection<Registration>(this);
 
 }
 
@@ -19,7 +19,7 @@ class User {
   id!: number;
 
   @OneToMany('Registration', 'user', { orphanRemoval: true })
-  registrations: Collection<Registration> = new Collection<Registration>(this);
+  registrations = new Collection<Registration>(this);
 
 }
 

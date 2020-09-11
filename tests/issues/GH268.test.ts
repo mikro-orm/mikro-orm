@@ -13,7 +13,7 @@ export class A {
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
-  bCollection: Collection<B> = new Collection<B>(this);
+  bCollection = new Collection<B>(this);
 
 }
 
@@ -27,7 +27,7 @@ export class B {
   name!: string;
 
   @ManyToMany(() => A, undefined, { fixedOrder: true })
-  aCollection: Collection<A> = new Collection<A>(this);
+  aCollection = new Collection<A>(this);
 
 }
 
