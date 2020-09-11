@@ -1,5 +1,5 @@
 ---
-id: mikro-orm-3-released
+slug: mikro-orm-3-released
 title: 'MikroORM 3: Knex.js, CLI, Schema Updates, Entity Generator and more…'
 author: Martin Adámek
 authorTitle: Author of MikroORM

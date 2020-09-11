@@ -1,5 +1,5 @@
 ---
-id: mikro-orm-4-released
+slug: mikro-orm-4-released
 title: 'MikroORM 4: Filling the Gaps'
 author: Martin Adámek
 authorTitle: Author of MikroORM
@@ -15,7 +15,7 @@ After 4 months of active development, I am thrilled to announce the release of [
 
 <!--truncate-->
 
-![](https://cdn-images-1.medium.com/max/1024/0*JU7VN0bgkL57RnZJ)<figcaption>Photo by <a href="https://unsplash.com/@ryoji__iwata?utm_source=medium&amp;utm_medium=referral">Ryoji Iwata</a> on <a href="https://unsplash.com?utm_source=medium&amp;utm_medium=referral">Unsplash</a></figcaption>
+![Photo by Ryoji Iwata on Unsplash](https://cdn-images-1.medium.com/max/1024/0*JU7VN0bgkL57RnZJ)
 
 ### In case you don’t know…
 
@@ -46,15 +46,36 @@ In v4, there are 12 packages and 2 highlighters, you install only what you use, 
 
 It felt natural to offer some shortcuts on the EntityManager and EntityRepository level, so we now have flavours of those classes in place, that offer things like em.execute(sql) or em.aggregate(). To access those driver specific methods, be sure to use the classes from driver packages:
 
-{% gist https://gist.github.com/B4nan/adcbf0ada5b18a9e1a9699e998d9519c %}
+```ts
+import { EntityManager } from '@mikro-orm/mysql'; // or any other SQL driver package
+
+const em: EntityManager;
+const qb = await em.createQueryBuilder(…); // or `em.execute()`, `em.getKnex()`, ...
+```
 
 > Database connectors like pg or sqlite3 are now dependencies of the driver packages (e. g. @mikro-orm/sqlite).
 
-### **Filters**
+### Filters
 
 Probably the most interesting feature of v4 are [filters](https://mikro-orm.io/docs/filters/), also known as association scopes. They allow you to define data visibility rules, both global and bound to entity. One common application of filters are soft deletes, or automatic tenant conditions.
 
-{% gist https://gist.github.com/B4nan/7b8dd8c84e71bf10d76745cba7f3961f %}
+```ts
+@Entity()
+@Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
+@Filter({ name: 'long', cond: { 'length(text)': { $gt: 10000 } } })
+@Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
+@Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
+export class Book {
+  ...
+}
+
+const books1 = await orm.em.find(Book, {}, {
+  filters: ['long', 'expensive'],
+});
+const books2 = await orm.em.find(Book, {}, {
+  filters: { hasAuthor: false, long: true, writtenBy: { name: 'God' } },
+});
+```
 
 Filters are applied to those methods of EntityManager: find(), findOne(), findAndCount(), findOneOrFail(), count(), nativeUpdate() and nativeDelete(). Filters can be parametric, the parameter can be also in form of callback (possibly async). You can also make the filter enabled by default.
 
@@ -66,13 +87,46 @@ We can also register filters dynamically via EntityManager API. We call such fil
 
 > _Filters as well as filter params set on the EM will be copied to all its forks._
 
-{% gist https://gist.github.com/B4nan/836afb7a1a7f42d13c9f9722df211020 %}
+```ts
+// bound to entity, enabled by default
+em.addFilter('writtenBy', args => ({ author: args.id }), Book);
 
-### **EventSubscribers and flush events**
+// global, enabled by default, for all entities
+em.addFilter('tenant', args => { ... });
+
+// global, enabled by default, for only specified entities
+em.addFilter('tenant', args => { ... }, [Author, Book]);
+...
+
+// set params (probably in some middleware)
+em.setFilterParams('tenant', { tenantId: 123 });
+em.setFilterParams('writtenBy', { id: 321 });
+```
+
+### EventSubscribers and flush events
 
 As opposed to regular lifecycle hooks, we can now use [EventSubscriber](https://mikro-orm.io/docs/lifecycle-hooks/#eventsubscriber) to hook to multiple entities or if you do not want to pollute the entity prototype. All methods are optional, if you omit the getSubscribedEntities() method, it means you are subscribing to all entities.
 
-{% gist https://gist.github.com/B4nan/d8d73a182170843fa611f9ecd88691a6 %}
+```ts
+import { EntityName, EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
+
+@Subscriber()
+export class AuthorSubscriber implements EventSubscriber<Author> {
+
+  getSubscribedEntities(): EntityName<Author2>[] {
+    return [Author2];
+  }
+
+  async afterCreate(args: EventArgs<Author2>): Promise<void> {
+    // ...
+  }
+
+  async afterUpdate(args: EventArgs<Author2>): Promise<void> {
+    // ... 
+  }
+
+}
+```
 
 #### Flush events
 
@@ -86,15 +140,48 @@ Flush event args will not contain any entity instance, as they are entity agnost
 
 Following example demonstrates the hidden power of flush events — they allow to hook into the change set tracking, adjusting what will be persisted and how. Here we try to find a CREATE change set for entity FooBar, and if there is any, we automatically create a new FooBaz entity, connecting it to the FooBar one. This kind of operations was previously impossible, as in regular lifecycle hooks we can only adjust the entity that triggers the event.
 
-{% gist https://gist.github.com/B4nan/b4ad60b1b3a3ce802469de375077ec42 %}
+```ts
+@Subscriber()
+export class FooBarSubscriber implements EventSubscriber {
+
+  async onFlush(args: FlushEventArgs): Promise<void> {
+    const changeSets = args.uow.getChangeSets();
+    const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
+
+    if (cs) {
+      const baz = new FooBaz();
+      baz.name = 'dynamic';
+      cs.entity.baz = baz;
+      args.uow.computeChangeSet(baz);
+      args.uow.recomputeSingleChangeSet(cs.entity);
+    }
+  }
+
+}
+
+const bar = new FooBar();
+bar.name = 'bar';
+await em.persistAndFlush(bar);
+```
 
 ### Joined loading strategy
 
 Loading of complex relations now support so called [JOINED strategy](https://mikro-orm.io/docs/loading-strategies/). Its name is quite self-explanatory — instead of the default (SELECT\_IN) strategy, it uses single SQL query and maps the result to multiple entities.
 
-{% gist https://gist.github.com/B4nan/02a55833ace1bb320f4256cfa2444e78 %}
+```ts
+// with the default SELECT_IN strategy, following will issue 2 queries
+const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
 
-### **Single Table Inheritance**
+// select * from author where id = 1;
+// select * from book where author_id in (1);
+
+// we can now use JOINED strategy to use a single query
+const author = await orm.em.findOne(Author, 1, { populate: ['books'], strategy: LoadStrategy.JOINED });
+
+// select a.*, b.* from author a left join book b on b.author_id = a.id where a.id = 1;
+```
+
+### Single Table Inheritance
 
 [STI is an inheritance mapping strategy](https://mikro-orm.io/docs/inheritance-mapping/#single-table-inheritance) where all classes of a hierarchy are mapped to a single database table. In order to distinguish which row represents which type in the hierarchy a so-called discriminator column is used.
 
@@ -102,9 +189,27 @@ Loading of complex relations now support so called [JOINED strategy](https://mik
 
 Following example defines 3 entities — they will all be stored in a single database table called person, with a special column named type, that will be used behind the scenes to know what class should be used to represent given row/entity.
 
-{% gist https://gist.github.com/B4nan/5bb15df276b243c275bb373f0458ee44 %}
+```ts
+@Entity({
+  discriminatorColumn: 'type',
+  discriminatorMap: { person: 'Person', employee: 'Employee', owner: 'Owner' },
+})
+export class Person {
+  // …
+}
 
-### **Embeddables**
+@Entity()
+export class Employee extends Person {
+  // …
+}
+
+@Entity()
+export class Owner extends Person {
+  // …
+}
+```
+
+### Embeddables
 
 [Embeddables](https://mikro-orm.io/docs/embeddables/) are classes which are not entities themselves, but are embedded in entities and can also be queried. You’ll mostly want to use them to reduce duplication or separating concerns. Value objects such as date range or address are the primary use case for this feature.
 
@@ -112,9 +217,34 @@ Following example defines 3 entities — they will all be stored in a single
 
 Following example will result in a single database table, where the address fields will be inlined (with prefix) to the user table.
 
-{% gist https://gist.github.com/B4nan/b185efab7a265b0381812a4fb53969de %}
+```ts
+@Entity()
+export class User {
 
-### **Lazy scalar properties**
+  @Embedded()
+  address!: Address;
+
+}
+
+@Embeddable()
+export class Address {
+  
+  @Property()
+  street!: string;
+
+  @Property()
+  postalCode!: string;
+
+  @Property()
+  city!: string;
+
+  @Property()
+  country!: string;
+
+}
+```
+
+### Lazy scalar properties
 
 In MikroORM 4, we can mark any property as [lazy: true](https://mikro-orm.io/docs/defining-entities#lazy-scalar-properties) to omit it from the select clause. This can be handy for properties that are too large and you want to have them available only some times, like a full text of an article.
 
@@ -122,23 +252,74 @@ When we need such value, we can use populate parameter to load it as if it was a
 
 > If the entity is already loaded and you need to populate a lazy scalar property, you might need to pass refresh: true in the FindOptions.
 
-{% gist https://gist.github.com/B4nan/c1c232603ecbce5a15cba3fc9f504239 %}
+```ts
+@Entity()
+export class Book {
 
-### **Computed Properties**
+  @Property({ columnType: 'text', lazy: true })
+  text: string;
+
+}
+
+const b1 = await em.find(Book, 1); // this will omit the `text` property
+const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the `text` property
+```
+
+### Computed Properties
 
 Another small enhancement in entity definition is the [@Formula() decorator](https://mikro-orm.io/docs/defining-entities/#formulas). It can be used to map some SQL snippet to your entity. The SQL fragment can be as complex as you want and even include subselects.
 
-{% gist https://gist.github.com/B4nan/15ef341965979c9cb1804f6771292363 %}
+```ts
+@Entity()
+export class Box {
+
+  @Formula('obj_length * obj_height * obj_width')
+  objectVolume?: number;
+
+}
+```
 
 > Formulas will be added to the select clause automatically. In case you are facing problems with NonUniqueFieldNameException, you can define the formula as a callback that will receive the entity alias in the parameter.
 
-### **Type-safe references**
+### Type-safe references
 
 Next feature I would like to mention is rather hidden, and is a bit experimental. In MikroORM 4, all EntityManager and EntityRepository methods for querying entities (e.g. find()) will now return special Loaded type, where we automatically infer what relations are populated. It dynamically adds special get() method to both Reference and Collection instances, that you can use to ensure the relation is loaded on the type level.
 
-{% gist https://gist.github.com/B4nan/6e49c78a67333b79fb0d2233f3fceba4 %}
+```ts
+@Entity()
+export class Book {
 
-### **QueryBuilder improvements**
+  @PrimaryKey()
+  id: number;
+
+  @ManyToOne(() => Author, { wrappedReference: true })
+  author: IdentifiedReference<Author, 'id'>;
+
+  @ManyToOne(() => Publisher, { wrappedReference: true })
+  publisher: IdentifiedReference<Publisher, 'id'>;
+
+  @ManyToMany(() => BookTag)
+  tags = new Collection<BookTag>(this);
+    
+}
+```
+
+```ts
+// will return `Loaded<Book, 'publisher' | 'tags' >`
+const book = await orm.em.findOne(Book, 1, { populate: ['publisher', 'tags'] });
+
+// the `Book.publisher.get()` will be available as we explicitly populated that relation
+console.log(book.publisher.get().name);
+console.log(book.publisher.$.name); // we can also use the `$` alias
+
+// on the other hand, `Book.author` was not populated, so trying to access `get()` will fail to compile
+console.log(book.author.get().name); // fails with `TS2339: Property 'get' does not exist on type 'IdentifiedReference'`
+
+// we can also use it on collections
+console.log(book.tags.get().map(t => t.name)); // `get()` will return array of items
+```
+
+### QueryBuilder improvements
 
 There have been quite a lot of small adjustments in QueryBuilder, to name a few things:
 
@@ -149,9 +330,52 @@ There have been quite a lot of small adjustments in QueryBuilder, to name a few 
 
 Here are few examples of those features in action:
 
-{% gist https://gist.github.com/B4nan/8acf4ec57aabad78bfe7b17bb9aa5cc0 %}
+```ts
+const qb = em.createQueryBuilder(Book);
+qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
 
-### **And many many more…**
+// update `book` set `price` = price + 1 where `uuid_pk` = ?'
+```
+
+```ts
+// following example assumes that there is a virtual (persist: false) property
+// on `Author` entity named `booksTotal`
+
+const qb1 = em.createQueryBuilder(Book, 'b');
+qb1.count('b.uuid', true).where({ author: qb1.ref('a.id') });
+const qb2 = em.createQueryBuilder(Author, 'a');
+qb2.select(['*', qb1.as('Author.booksTotal')]).orderBy({ booksTotal: 'desc' });
+
+// select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` 
+// from `author` as `a` 
+// order by `books_total` desc
+```
+
+```ts
+// following example assumes that there is a virtual (persist: false) property
+// on `Author` entity named `booksTotal`
+
+const knex = em.getKnex();
+const qb1 = em.createQueryBuilder(Book, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+const qb2 = em.createQueryBuilder(Author, 'a');
+qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
+
+// select `a`.* 
+// from `author` as `a`
+// where (select count(distinct `b`.`uuid_pk`) as `count` from `book` as `b` where `b`.`author_id` = `a`.`id`) in (?, ?, ?)
+```
+
+```ts
+const qb = em.createQueryBuilder(Publisher);
+qb.update({ name: 'test 123' }).where({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
+
+// update `publisher` set `name` = ? 
+// where `id` in (select `e0`.`id` from (
+//   select distinct `e0`.`id` from `publisher` as `e0` left join `book` as `e1` on `e0`.`id` = `e1`.`publisher_id` where (`e1`.`author_id` = ? or `e1`.`title` = ?)
+// ) as `e0`)
+```
+
+### And many many more…
 
 - em.begin/commit/rollback() methods are back
 - using file globs for discovery (\*\*/\*.entity.ts)
@@ -163,7 +387,7 @@ Here are few examples of those features in action:
 
 See the [changelog](https://github.com/mikro-orm/mikro-orm/blob/master/CHANGELOG.md) for full list of new features and fixes.
 
-#### **More example integrations**
+#### More example integrations
 
 - Koa: [https://github.com/mikro-orm/koa-ts-example-app](https://github.com/mikro-orm/koa-ts-example-app)
 - GraphQL: [https://github.com/driescroons/mikro-orm-graphql-example](https://github.com/driescroons/mikro-orm-graphql-example)

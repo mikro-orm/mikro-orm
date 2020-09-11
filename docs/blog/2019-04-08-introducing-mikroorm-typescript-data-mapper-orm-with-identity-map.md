@@ -1,5 +1,5 @@
 ---
-id: introducing-mikroorm-typescript-data-mapper-orm-with-identity-map
+slug: introducing-mikroorm-typescript-data-mapper-orm-with-identity-map
 title: 'Introducing MikroORM, TypeScript data-mapper ORM with Identity Map'
 author: Martin Adámek
 authorTitle: Author of MikroORM

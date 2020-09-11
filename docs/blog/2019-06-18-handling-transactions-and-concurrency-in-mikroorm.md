@@ -1,5 +1,5 @@
 ---
-id: handling-transactions-and-concurrency-in-mikroorm
+slug: handling-transactions-and-concurrency-in-mikroorm
 title: Handling Transactions and Concurrency in MikroORM
 author: Martin Adámek
 authorTitle: Author of MikroORM
