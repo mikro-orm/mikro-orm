@@ -213,3 +213,17 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
     font-size: 0.8rem;
   }
 }
+
+html code {
+  color: #1c1e21;
+  background-color: #ebedf0;
+}
+
+html[data-theme="dark"] code {
+  color: #f5f6f7;
+  background-color: #444950;
+}
+
+html a code {
+  color: inherit
+}

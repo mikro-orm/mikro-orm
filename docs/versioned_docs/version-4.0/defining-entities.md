@@ -394,6 +394,9 @@ console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
 
 ### Entity file names
 
+> This limitation applies only to folder based discovery. Another way around it
+> is using `EntitySchema` for entity definition. 
+
 You are free to choose one of those formats for entity filename (for a `BookTag` entity):
 
 - `BookTag.ts`
