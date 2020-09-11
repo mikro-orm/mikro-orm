@@ -6,9 +6,7 @@ To generate schema from your entity metadata, you can use `SchemaGenerator`
 helper. You will need to create simple script where you initialize MikroORM
 like this:
 
-**`./create-schema.ts`**
-
-```typescript
+```typescript title="./create-schema.ts"
 import { MikroORM, SchemaGenerator } from 'mikro-orm';
 
 (async () => {

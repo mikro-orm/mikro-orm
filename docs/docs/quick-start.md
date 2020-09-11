@@ -71,9 +71,7 @@ More info about `RequestContext` is described [here](https://mikro-orm.io/identi
 Now you can start defining your entities (in one of the `entities` folders). This is how
 simple entity can look like in mongo driver:
 
-**`./entities/MongoBook.ts`**
-
-```typescript
+```typescript title="./entities/MongoBook.ts"
 @Entity()
 export class MongoBook {
 
@@ -102,9 +100,7 @@ export class MongoBook {
 
 For SQL drivers, you can use `id: number` PK:
 
-**`./entities/SqlBook.ts`**
-
-```typescript
+```typescript title="./entities/SqlBook.ts"
 @Entity()
 export class SqlBook {
 
@@ -116,9 +112,7 @@ export class SqlBook {
 
 Or if you want to use UUID primary keys:
 
-**`./entities/UuidBook.ts`**
-
-```typescript
+```typescript title="./entities/UuidBook.ts"
 import { v4 } from 'uuid';
 
 @Entity()

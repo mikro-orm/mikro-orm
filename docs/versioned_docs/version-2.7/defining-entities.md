@@ -7,9 +7,7 @@ No real restrictions are made, you do not have to extend any base class, you are
 to [use entity constructors](entity-constructors.md), just do not forget to specify primary key with
 `@PrimaryKey` decorator.
 
-**`./entities/Book.ts`**
-
-```typescript
+```typescript title="./entities/Book.ts"
 @Entity()
 export class Book {
 
@@ -57,9 +55,7 @@ of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMan
 
 Here is another example of `Author` entity, that was referenced from the `Book` one:
 
-**`./entities/Author.ts`**
-
-```typescript
+```typescript title="./entities/Author.ts"
 @Entity()
 export class Author {
 
@@ -134,9 +130,7 @@ primary key and created/updated time.
 > If you are initializing the ORM via `entities` option, you need to specify all your
 > base entities as well.
 
-**`./entities/BaseEntity.ts`**
-
-```typescript
+```typescript title="./entities/BaseEntity.ts"
 export abstract class BaseEntity {
 
   @PrimaryKey()

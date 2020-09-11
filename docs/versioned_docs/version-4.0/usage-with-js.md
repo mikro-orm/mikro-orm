@@ -10,9 +10,7 @@ decorators, which works also for Vanilla JavaScript.
 
 Here is an example of such entity:
 
-**`./entities/Author.js`**
-
-```javascript
+```javascript title="./entities/Author.js"
 const { Collection, EntitySchema } = require('@mikro-orm/core');
 const { Book } = require('./Book');
 const { BaseEntity } = require('./BaseEntity');

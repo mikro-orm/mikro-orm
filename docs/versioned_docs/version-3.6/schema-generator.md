@@ -40,9 +40,7 @@ the whole database instead.
 
 Or you can create simple script where you initialize MikroORM like this:
 
-**`./create-schema.ts`**
-
-```typescript
+```typescript title="./create-schema.ts"
 import { MikroORM } from 'mikro-orm';
 
 (async () => {

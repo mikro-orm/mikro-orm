@@ -13,9 +13,7 @@ npx mikro-orm generate-entities --save --path=./my-entities  # Saves entities in
 
 Or you can create simple script where you initialize MikroORM like this:
 
-**`./generate-entities.ts`**
-
-```typescript
+```typescript title="./generate-entities.ts"
 import { MikroORM } from '@mikro-orm/core';
 
 (async () => {

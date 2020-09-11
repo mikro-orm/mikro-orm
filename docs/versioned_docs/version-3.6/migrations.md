@@ -76,9 +76,7 @@ npx mikro-orm migration:down --to 0                           # migratee down al
 
 Or you can create a simple script where you initialize MikroORM like this:
 
-**`./migrate.ts`**
-
-```typescript
+```typescript title="./migrate.ts"
 import { MikroORM } from 'mikro-orm';
 
 (async () => {

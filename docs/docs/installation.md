@@ -199,9 +199,7 @@ order in `configPaths`. This means that if you specify the first item as the TS
 config, but you do not have `ts-node` enabled and installed, it will fail to 
 load it.
 
-**`./package.json`**
-
-```json
+```json title="./package.json"
 {
   "name": "your-app",
   "dependencies": { ... },
@@ -215,9 +213,7 @@ load it.
 }
 ```
 
-**`./src/mikro-orm.config.ts`**
-
-```typescript
+```typescript title="./src/mikro-orm.config.ts"
 export default {
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',

@@ -149,9 +149,7 @@ as well as use different file name:
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 
-**`./package.json`**
-
-```json
+```json title="./package.json"
 {
   "name": "your-app",
   "dependencies": { ... },
@@ -165,9 +163,7 @@ as well as use different file name:
 }
 ```
 
-**`./src/mikro-orm.config.ts`**
-
-```typescript
+```typescript title="./src/mikro-orm.config.ts"
 export default {
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
