@@ -327,8 +327,20 @@ export class UnitOfWork {
       .forEach(item => this.findNewEntities(item, visited));
   }
 
-  private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>) {
+  private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
+    const hasListeners = this.em.getEventManager().hasListeners(type, changeSet.entity);
+
+    if (!hasListeners) {
+      return;
+    }
+
+    if (!sync) {
+      return this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    }
+
+    const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
     await this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
   }
 
   private postCommitCleanup(): void {
@@ -501,23 +513,8 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      Object.values<EntityProperty>(changeSet.entity.__helper!.__meta.properties)
-        .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
-        .filter(prop => changeSet.entity[prop.name])
-        .forEach(prop => {
-          const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
-          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
-
-          if (isScheduledForInsert) {
-            this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-            delete changeSet.entity[prop.name];
-            delete changeSet.payload[prop.name];
-          }
-        });
-
-      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
-      await this.runHooks(EventType.beforeCreate, changeSet);
-      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
+      this.findExtraUpdates(changeSet);
+      await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
     await this.changeSetPersister.executeInserts(changeSets, ctx);
@@ -528,15 +525,29 @@ export class UnitOfWork {
     }
   }
 
+  private findExtraUpdates<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
+    Object.values<EntityProperty>(changeSet.entity.__helper!.__meta.properties)
+      .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
+      .filter(prop => changeSet.entity[prop.name])
+      .forEach(prop => {
+        const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
+        const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+        if (isScheduledForInsert) {
+          this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+          delete changeSet.entity[prop.name];
+          delete changeSet.payload[prop.name];
+        }
+      });
+  }
+
   private async commitUpdateChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
 
     for (const changeSet of changeSets) {
-      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
-      await this.runHooks(EventType.beforeUpdate, changeSet);
-      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
+      await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
     await this.changeSetPersister.executeUpdates(changeSets, ctx);
@@ -553,9 +564,7 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
-      await this.runHooks(EventType.beforeDelete, changeSet);
-      Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
+      await this.runHooks(EventType.beforeDelete, changeSet, true);
     }
 
     await this.changeSetPersister.executeDeletes(changeSets, ctx);
