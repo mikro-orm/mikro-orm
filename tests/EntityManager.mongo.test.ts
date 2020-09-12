@@ -2093,6 +2093,24 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
   });
 
+  test('working with arrays', async () => {
+    const book = new Book('B');
+    await orm.em.persist(book).flush();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    book.metaArray = ['a', 'b'];
+    await orm.em.flush();
+
+    book.metaArray.push('c');
+    await orm.em.flush();
+
+    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
+    expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');

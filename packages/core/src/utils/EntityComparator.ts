@@ -40,7 +40,7 @@ export class EntityComparator {
 
       if (prop.reference === ReferenceType.EMBEDDED) {
         return Object.values<EntityProperty>(meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-          ret[childProp.name as keyof T] = entity[prop.name][childProp.embedded![1]];
+          ret[childProp.name as keyof T] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
         });
       }
 
@@ -48,21 +48,21 @@ export class EntityComparator {
         ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], this.metadata.find(prop.type)!.primaryKeys, true);
 
         if (prop.customType) {
-          return ret[prop.name] = prop.customType.convertToDatabaseValue(ret[prop.name], this.platform);
+          return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name], this.platform));
         }
 
         return;
       }
 
       if (prop.customType) {
-        return ret[prop.name] = prop.customType.convertToDatabaseValue(entity[prop.name], this.platform);
+        return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], this.platform));
       }
 
       if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
         return ret[prop.name] = Utils.copy(entity[prop.name]);
       }
 
-      ret[prop.name] = entity[prop.name];
+      ret[prop.name] = Utils.copy(entity[prop.name]);
     });
 
     Object.defineProperty(ret, '__prepared', { value: true });
