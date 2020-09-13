@@ -15,9 +15,6 @@ export class UnitOfWork {
   /** map of references to managed entities */
   private readonly identityMap = new Map<string, AnyEntity>();
 
-  /** map of wrapped primary keys so we can compute change set without eager commit */
-  private readonly identifierMap = new Map<string, EntityIdentifier>();
-
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
   private readonly orphanRemoveStack = new Set<AnyEntity>();
@@ -26,8 +23,8 @@ export class UnitOfWork {
   private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
-  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em), this.em.config);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
+  private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em), this.em.config);
   private working = false;
 
   constructor(private readonly em: EntityManager) { }
@@ -189,7 +186,7 @@ export class UnitOfWork {
     }
 
     if (!Utils.isDefined(entity.__helper!.__primaryKey, true)) {
-      this.identifierMap.set(entity.__helper!.__uuid, new EntityIdentifier());
+      entity.__helper!.__identifier = new EntityIdentifier();
     }
 
     this.persistStack.add(entity);
@@ -266,7 +263,7 @@ export class UnitOfWork {
     const wrapped = entity.__helper!;
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
     this.identityMap.delete(`${root.name}-${wrapped.__serializedPrimaryKey}`);
-    this.identifierMap.delete(wrapped.__uuid);
+    delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
   }
 
@@ -332,11 +329,11 @@ export class UnitOfWork {
   private initIdentifier<T extends AnyEntity<T>>(entity: T): void {
     const wrapped = entity.__helper!;
 
-    if (Utils.isDefined(wrapped.__primaryKey, true) || this.identifierMap.has(wrapped.__uuid)) {
+    if (Utils.isDefined(wrapped.__primaryKey, true) || wrapped.__identifier) {
       return;
     }
 
-    this.identifierMap.set(wrapped.__uuid, new EntityIdentifier());
+    wrapped.__identifier = new EntityIdentifier();
   }
 
   private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>): void {
@@ -387,7 +384,6 @@ export class UnitOfWork {
   }
 
   private postCommitCleanup(): void {
-    this.identifierMap.clear();
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();

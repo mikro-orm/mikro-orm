@@ -11,7 +11,6 @@ import { OptimisticLockError } from '../errors';
 export class ChangeSetPersister {
 
   constructor(private readonly driver: IDatabaseDriver,
-              private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly metadata: MetadataStorage,
               private readonly hydrator: Hydrator,
               private readonly config: Configuration) { }
@@ -85,7 +84,7 @@ export class ChangeSetPersister {
     const wrapped = changeSet.entity.__helper!;
     wrapped.__primaryKey = Utils.isDefined(wrapped.__primaryKey, true) ? wrapped.__primaryKey : insertId;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
-    this.identifierMap.get(wrapped.__uuid)!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
+    wrapped.__identifier!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
 
   /**
