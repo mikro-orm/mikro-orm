@@ -58,12 +58,12 @@ export class ChangeSetPersister {
     const wrapped = changeSet.entity.__helper!;
     const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
     const hasPrimaryKey = Utils.isDefined(wrapped.__primaryKey, true);
-    this.mapReturnedValues(changeSet.entity, res, meta);
 
     if (!hasPrimaryKey) {
       this.mapPrimaryKey(meta, res.insertId, changeSet);
     }
 
+    this.mapReturnedValues(changeSet, res, meta);
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
@@ -74,7 +74,7 @@ export class ChangeSetPersister {
   private async persistManagedEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, ctx);
-    this.mapReturnedValues(changeSet.entity, res, meta);
+    this.mapReturnedValues(changeSet, res, meta);
     await this.processOptimisticLock(meta, changeSet, res, ctx);
     changeSet.persisted = true;
   }
@@ -84,6 +84,7 @@ export class ChangeSetPersister {
     const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.driver.getPlatform()) : value;
     const wrapped = changeSet.entity.__helper!;
     wrapped.__primaryKey = Utils.isDefined(wrapped.__primaryKey, true) ? wrapped.__primaryKey : insertId;
+    changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
     this.identifierMap.get(wrapped.__uuid)!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
 
@@ -114,7 +115,7 @@ export class ChangeSetPersister {
 
     const cond = {
       ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
-      [meta.versionProperty]: changeSet.entity[meta.versionProperty],
+      [meta.versionProperty]: this.driver.getPlatform().processVersionProperty(meta, changeSet.entity),
     } as FilterQuery<T>;
 
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
@@ -129,10 +130,16 @@ export class ChangeSetPersister {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
 
-    const e = await this.driver.findOne<T>(meta.name!, changeSet.entity.__helper!.__primaryKey, {
+    const e = await this.driver.findOne(meta.name!, changeSet.entity.__helper!.__primaryKey, {
       fields: [meta.versionProperty],
     }, ctx);
-    changeSet.entity[meta.versionProperty] = e![meta.versionProperty];
+
+    // needed for sqlite
+    if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {
+      changeSet.entity[meta.versionProperty] = new Date(e![meta.versionProperty] as unknown as string) as unknown as T[keyof T & string];
+    } else {
+      changeSet.entity[meta.versionProperty] = e![meta.versionProperty];
+    }
   }
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
@@ -158,17 +165,18 @@ export class ChangeSetPersister {
   /**
    * Maps values returned via `returning` statement (postgres) or the inserted id (other sql drivers).
    * No need to handle composite keys here as they need to be set upfront.
+   * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  private mapReturnedValues<T extends AnyEntity<T>>(entity: T, res: QueryResult, meta: EntityMetadata<T>): void {
+  private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
     if (res.row && Object.keys(res.row).length > 0) {
       const data = Object.values<EntityProperty>(meta.properties).reduce((data, prop) => {
-        if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(entity[prop.name], true)) {
-          data[prop.name] = res.row![prop.fieldNames[0]];
+        if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(changeSet.entity[prop.name], true)) {
+          data[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
 
         return data;
       }, {} as Dictionary);
-      this.hydrator.hydrate<T>(entity, meta, data as EntityData<T>, false, true);
+      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, false, true);
     }
   }
 

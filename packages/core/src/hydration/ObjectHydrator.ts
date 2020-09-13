@@ -29,7 +29,11 @@ export class ObjectHydrator extends Hydrator {
       value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
     }
 
-    entity[prop.name] = value;
+    if (value && prop.type.toLowerCase() === 'date') {
+      entity[prop.name] = new Date(value);
+    } else {
+      entity[prop.name] = value;
+    }
   }
 
   private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
@@ -78,7 +82,7 @@ export class ObjectHydrator extends Hydrator {
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
       const ref = this.factory.createReference<T>(prop.type, value, { merge: true });
-      this.em.merge(ref);
+      this.em.getUnitOfWork().registerManaged(ref, value);
 
       return ref;
     }
@@ -87,7 +91,7 @@ export class ObjectHydrator extends Hydrator {
       return value;
     }
 
-    return this.factory.create(prop.type, value as EntityData<T>, { newEntity });
+    return this.factory.create(prop.type, value as EntityData<T>, { newEntity, merge: true });
   }
 
 }

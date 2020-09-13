@@ -34,6 +34,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       disableDynamicFileAccess: false,
     },
     strict: false,
+    validate: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
@@ -327,6 +328,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
+  validate: boolean;
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];

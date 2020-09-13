@@ -12,20 +12,23 @@ export class EntityValidator {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
       }
-    });
 
-    Object.keys(payload).forEach(prop => {
-      const property = meta.properties[prop];
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-      if (!property || property.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(property.type)) {
+      if (prop.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
         return;
       }
 
-      payload[prop] = this.validateProperty(property, payload[prop], entity);
+      const newValue = this.validateProperty(prop, payload[prop.name], entity);
 
-      if (entity[prop]) {
-        entity[prop] = payload[prop];
+      if (payload[prop.name] === newValue) {
+        return;
+      }
+
+      payload[prop.name] = newValue;
+
+      if (entity[prop.name]) {
+        entity[prop.name] = payload[prop.name];
       }
     });
   }

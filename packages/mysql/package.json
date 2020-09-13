@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/mysql-base": "^4.0.2",
-    "mysql2": "^2.1.0"
+    "mysql2": "sidorares/node-mysql2#master"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.0.2"

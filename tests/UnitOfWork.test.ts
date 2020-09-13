@@ -68,6 +68,7 @@ describe('UnitOfWork', () => {
     expect(() => computer.computeChangeSet(author)).toThrowError(/Trying to set Author\.age of type 'number' to '.*' of type 'date'/);
     Object.assign(author, { age: false });
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
+    author.age = 21;
 
     // missing collection instance in m:n and 1:m relations
     // @ts-ignore

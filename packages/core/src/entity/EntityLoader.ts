@@ -230,7 +230,10 @@ export class EntityLoader {
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => this.em.merge(prop.type, item, refresh, true));
+      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => {
+        const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
+        return this.em.getUnitOfWork().registerManaged(entity, item, refresh);
+      });
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }
