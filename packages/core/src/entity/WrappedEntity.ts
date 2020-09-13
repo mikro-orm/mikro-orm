@@ -22,6 +22,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;
 
+  /** holds wrapped primary key so we can compute change set without eager commit */
+  __identifier?: EntityData<T>;
+
   readonly __uuid = uuid();
   readonly __internal: {
     platform: Platform;

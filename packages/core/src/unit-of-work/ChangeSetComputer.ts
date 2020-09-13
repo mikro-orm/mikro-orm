@@ -2,7 +2,7 @@ import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityIdentifier, EntityValidator } from '../entity';
+import { Collection, EntityValidator } from '../entity';
 import { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 import { EntityComparator } from '../utils/EntityComparator';
@@ -12,7 +12,6 @@ export class ChangeSetComputer {
   private readonly comparator = new EntityComparator(this.metadata, this.platform);
 
   constructor(private readonly validator: EntityValidator,
-              private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
@@ -88,7 +87,7 @@ export class ChangeSetComputer {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (isToOneOwner && pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
-      changeSet.payload[prop.name] = this.identifierMap.get(entity.__helper!.__uuid);
+      changeSet.payload[prop.name] = entity.__helper!.__identifier;
     }
   }
 
