@@ -1557,12 +1557,12 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
-    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz1._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persistAndFlush(bar);
-    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz2._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 

@@ -77,6 +77,7 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __initialized?: boolean;
+  __originalEntityData?: EntityData<T>;
   __managed: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
