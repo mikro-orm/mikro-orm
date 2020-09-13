@@ -289,15 +289,24 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
   }
 
+  /**
+   * Alias for `qb.getResultList()`
+   */
   async getResult(): Promise<T[]> {
     return this.getResultList();
   }
 
+  /**
+   * Executes the query, returning array of results
+   */
   async getResultList(): Promise<T[]> {
     const res = await this.execute<T[]>('all', true);
     return res.map(r => this.em!.map<T>(this.entityName, r));
   }
 
+  /**
+   * Executes the query, returning the first result or null
+   */
   async getSingleResult(): Promise<T | null> {
     const res = await this.getResult();
     return res[0] || null;

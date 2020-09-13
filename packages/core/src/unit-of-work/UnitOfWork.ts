@@ -6,8 +6,8 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
 import { EntityManager } from '../EntityManager';
-import { EventType, Cascade, LockMode, ReferenceType } from '../enums';
-import { ValidationError, OptimisticLockError } from '../errors';
+import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
+import { OptimisticLockError, ValidationError } from '../errors';
 import { Transaction } from '../connections';
 
 export class UnitOfWork {
@@ -29,7 +29,7 @@ export class UnitOfWork {
   private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em), this.em.config);
   private working = false;
 
@@ -56,6 +56,26 @@ export class UnitOfWork {
     }
 
     this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
+  }
+
+  /**
+   * @internal
+   */
+  registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
+    const root = Utils.getRootEntity(this.metadata, entity.__helper!.__meta);
+    this.identityMap.set(`${root.name}-${entity.__helper!.__serializedPrimaryKey}`, entity);
+
+    if (newEntity) {
+      return entity;
+    }
+
+    entity.__helper!.__em = this.em;
+
+    if (data && (refresh || !this.originalEntityData.has(entity.__helper!.__uuid))) {
+      this.originalEntityData.set(entity.__helper!.__uuid, data);
+    }
+
+    return entity;
   }
 
   /**
@@ -520,7 +540,7 @@ export class UnitOfWork {
     await this.changeSetPersister.executeInserts(changeSets, ctx);
 
     for (const changeSet of changeSets) {
-      this.em.merge(changeSet.entity as T, true);
+      this.registerManaged<T>(changeSet.entity, changeSet.payload, true);
       await this.runHooks(EventType.afterCreate, changeSet);
     }
   }

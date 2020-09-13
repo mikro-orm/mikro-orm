@@ -71,7 +71,7 @@ describe('GH issue 349', () => {
     });
   });
 
-  afterEach(async () => {
+  beforeEach(async () => {
     await orm.em.nativeDelete(A, {});
     await orm.em.nativeDelete(B, {});
     await orm.em.nativeDelete(C, {});

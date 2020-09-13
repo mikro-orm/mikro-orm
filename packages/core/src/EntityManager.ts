@@ -102,7 +102,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.merge<T>(entityName, data, options.refresh, true);
+      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, convertCustomTypes: true }) as T;
+      this.getUnitOfWork().registerManaged(entity, data, options.refresh);
       ret.push(entity);
     }
 
@@ -233,7 +234,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = this.merge(entityName, data as EntityData<T>, options.refresh, true) as T;
+    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
+    this.getUnitOfWork().registerManaged(entity, data, options.refresh);
     await this.lockAndPopulate(entityName, entity, where, options);
 
     return entity as Loaded<T, P>;

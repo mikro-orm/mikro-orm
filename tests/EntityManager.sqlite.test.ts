@@ -1,4 +1,3 @@
-import { unlinkSync } from 'fs';
 import {
   Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
@@ -331,6 +330,7 @@ describe('EntityManagerSqlite', () => {
     expect(authors[0].name).toBe('Author 1');
     expect(authors[1].name).toBe('Author 2');
     expect(authors[2].name).toBe('Author 3');
+    expect(authors[0].createdAt).toBeInstanceOf(Date);
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
@@ -870,6 +870,9 @@ describe('EntityManagerSqlite', () => {
     expect(res[0].created_at).toBe(+author.createdAt);
     const a = await orm.em.findOneOrFail<any>(Author3, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+    const a1 = await orm.em.findOneOrFail<any>(Author3, { createdAt: { $eq: a.createdAt } });
+    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(orm.em.merge(a1)).toBe(a1);
   });
 
   test('exceptions', async () => {
@@ -886,7 +889,6 @@ describe('EntityManagerSqlite', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
   });
 
 });

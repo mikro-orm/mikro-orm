@@ -541,7 +541,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('ensure indexes', async () => {
-    await orm.em.getDriver().ensureIndexes();
+    // await orm.em.getDriver().ensureIndexes(); // executed in the init method
     const conn = orm.em.getDriver().getConnection('write');
 
     const authorInfo = await conn.getCollection('author').indexInformation({ full: true, session: undefined as any });

@@ -1,4 +1,4 @@
-import { Utils } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
@@ -17,7 +17,8 @@ export class ChangeSetComputer {
               private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
-              private readonly platform: Platform) { }
+              private readonly platform: Platform,
+              private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
     const changeSet = { entity } as ChangeSet<T>;
@@ -36,7 +37,9 @@ export class ChangeSetComputer {
       changeSet.originalEntity = this.originalEntityData.get(entity.__helper!.__uuid);
     }
 
-    this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
+    if (this.config.get('validate')) {
+      this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
+    }
 
     for (const prop of Object.values(meta.properties)) {
       this.processReference(changeSet, prop);
@@ -50,11 +53,13 @@ export class ChangeSetComputer {
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
+    const data = this.comparator.prepareEntity(entity);
+
     if (this.originalEntityData.get(entity.__helper!.__uuid)) {
-      return this.comparator.diffEntities<T>(this.originalEntityData.get(entity.__helper!.__uuid) as T, entity);
+      return Utils.diff(this.originalEntityData.get(entity.__helper!.__uuid) as T, data);
     }
 
-    return this.comparator.prepareEntity(entity);
+    return data;
   }
 
   private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

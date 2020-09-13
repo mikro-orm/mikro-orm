@@ -26,6 +26,7 @@ export class MySqlConnection extends AbstractSqlConnection {
     }
 
     ret.supportBigNumbers = true;
+    ret.dateStrings = ['DATE'] as any;
 
     return ret;
   }

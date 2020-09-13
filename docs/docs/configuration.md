@@ -245,7 +245,11 @@ MikroORM.init({
 
 Read more about this in [Repositories](repositories.md) section.
 
-## Strict Mode
+## Strict Mode and property validation
+
+> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`.
+> It has performance implications and usually should not be needed, as long as
+> you don't modify your entities via `Object.assign()`.
 
 `MirkoORM` will validate your properties before actual persisting happens. It will try to fix wrong 
 data types for you automatically. If automatic conversion fails, it will throw an error. You can 
@@ -254,6 +258,7 @@ when persisting the entity.
 
 ```typescript
 MikroORM.init({
+  validate: true,
   strict: true,
 });
 ```

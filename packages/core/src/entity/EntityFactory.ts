@@ -8,6 +8,7 @@ export interface FactoryOptions {
   initialized?: boolean;
   newEntity?: boolean;
   merge?: boolean;
+  refresh?: boolean;
   convertCustomTypes?: boolean;
 }
 
@@ -21,7 +22,7 @@ export class EntityFactory {
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T, P extends Populate<T> = keyof T>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends Populate<T> = keyof T>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
     if (Utils.isEntity<T>(data)) {
@@ -31,20 +32,22 @@ export class EntityFactory {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
     meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
-    const entity = this.createEntity(data, meta, options.merge, options.convertCustomTypes);
-    const wrapped = entity.__helper!;
 
-    if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, options.newEntity, options.convertCustomTypes);
-    } else {
-      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
+    const meta2 = this.processDiscriminatorColumn<T>(meta, data);
+    const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
+
+    if (exists && exists.__helper!.isInitialized() && !options.refresh) {
+      return exists as New<T, P>;
     }
+
+    const entity = exists ?? this.createEntity<T>(data, meta2, options);
+    this.hydrate(entity, meta, data, options);
 
     if (options.merge) {
-      this.unitOfWork.merge(entity, undefined, false);
+      this.unitOfWork.registerManaged(entity, data, options.refresh, options.newEntity);
     }
 
-    wrapped.__initialized = options.initialized;
+    entity.__helper!.__initialized = options.initialized;
     this.runHooks(entity, meta);
 
     return entity as New<T, P>;
@@ -74,35 +77,44 @@ export class EntityFactory {
     return this.create<T>(entityName, id as EntityData<T>, { initialized: false, ...options });
   }
 
-  private createEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, merge?: boolean, convertCustomTypes?: boolean): T {
-    meta = this.processDiscriminatorColumn<T>(meta, data);
-    const Entity = meta.class;
-
+  private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       const params = this.extractConstructorParams<T>(meta, data);
+      const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
       return new Entity(...params);
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.driver.getPlatform(), convertCustomTypes);
-    const exists = this.unitOfWork.getById<T>(meta.name!, pks);
-
-    if (exists) {
-      return exists;
-    }
-
     // creates new entity instance, bypassing constructor call as its already persisted entity
-    const entity = Object.create(Entity.prototype) as T & AnyEntity<T>;
+    const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
     entity.__helper!.__managed = true;
-    this.hydrator.hydrateReference(entity, meta, data, convertCustomTypes);
+    this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 
-    if (merge) {
-      this.unitOfWork.merge<T>(entity, new Set([entity]), false);
+    if (!options.newEntity) {
+      this.unitOfWork.registerManaged<T>(entity);
     }
 
     return entity;
+  }
+
+  private hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
+    if (options.initialized) {
+      this.hydrator.hydrate(entity, meta, data, options.newEntity, options.convertCustomTypes);
+    } else {
+      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
+    }
+  }
+
+  private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {
+    if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
+      return undefined;
+    }
+
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.driver.getPlatform(), convertCustomTypes);
+
+    return this.unitOfWork.getById<T>(meta.name!, pks);
   }
 
   private processDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
