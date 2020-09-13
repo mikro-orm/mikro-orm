@@ -12,7 +12,6 @@ export class ChangeSetComputer {
   private readonly comparator = new EntityComparator(this.metadata, this.platform);
 
   constructor(private readonly validator: EntityValidator,
-              private readonly originalEntityData: Map<string, EntityData<AnyEntity>>,
               private readonly identifierMap: Map<string, EntityIdentifier>,
               private readonly collectionUpdates: Collection<AnyEntity>[],
               private readonly removeStack: Set<AnyEntity>,
@@ -29,12 +28,12 @@ export class ChangeSetComputer {
     }
 
     changeSet.name = meta.name!;
-    changeSet.type = this.originalEntityData.has(entity.__helper!.__uuid) ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    changeSet.type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     changeSet.collection = meta.collection;
     changeSet.payload = this.computePayload(entity);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.originalEntity = this.originalEntityData.get(entity.__helper!.__uuid);
+      changeSet.originalEntity = entity.__helper!.__originalEntityData;
     }
 
     if (this.config.get('validate')) {
@@ -55,8 +54,8 @@ export class ChangeSetComputer {
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
 
-    if (this.originalEntityData.get(entity.__helper!.__uuid)) {
-      return Utils.diff(this.originalEntityData.get(entity.__helper!.__uuid) as T, data);
+    if (entity.__helper!.__originalEntityData) {
+      return Utils.diff(entity.__helper!.__originalEntityData, data);
     }
 
     return data;
@@ -109,7 +108,7 @@ export class ChangeSetComputer {
 
   private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
-    const data = this.originalEntityData.get(changeSet.entity.__helper!.__uuid) as EntityData<T>;
+    const data = changeSet.entity.__helper!.__originalEntityData as EntityData<T>;
     const em = changeSet.entity.__helper!.__em;
 
     if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {

@@ -15,9 +15,6 @@ export class UnitOfWork {
   /** map of references to managed entities */
   private readonly identityMap = new Map<string, AnyEntity>();
 
-  /** holds copy of identity map so we can compute changes when persisting managed entities */
-  private readonly originalEntityData = new Map<string, EntityData<AnyEntity>>();
-
   /** map of wrapped primary keys so we can compute change set without eager commit */
   private readonly identifierMap = new Map<string, EntityIdentifier>();
 
@@ -29,7 +26,7 @@ export class UnitOfWork {
   private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.originalEntityData, this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.identifierMap, this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.identifierMap, this.metadata, this.em.config.getHydrator(this.em.getEntityFactory(), this.em), this.em.config);
   private working = false;
 
@@ -51,8 +48,8 @@ export class UnitOfWork {
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
     this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 
-    if (mergeData || !this.originalEntityData.has(entity.__helper!.__uuid)) {
-      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
+    if (mergeData || !entity.__helper!.__originalEntityData) {
+      entity.__helper!.__originalEntityData = this.em.getComparator().prepareEntity(entity);
     }
 
     this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
@@ -71,8 +68,8 @@ export class UnitOfWork {
 
     entity.__helper!.__em = this.em;
 
-    if (data && (refresh || !this.originalEntityData.has(entity.__helper!.__uuid))) {
-      this.originalEntityData.set(entity.__helper!.__uuid, data);
+    if (data && (refresh || !entity.__helper!.__originalEntityData)) {
+      entity.__helper!.__originalEntityData = data;
     }
 
     return entity;
@@ -99,12 +96,39 @@ export class UnitOfWork {
     return this.getById<T>(entityName, pk);
   }
 
+  /**
+   * Returns map of all managed entities.
+   */
   getIdentityMap(): Map<string, AnyEntity> {
     return this.identityMap;
   }
 
-  getOriginalEntityData(): Map<string, EntityData<AnyEntity>> {
-    return this.originalEntityData;
+  /**
+   * @deprecated, use `uow.getOriginalEntityData(entity)`
+   */
+  getOriginalEntityData<T extends AnyEntity<T>>(): Map<string, AnyEntity>;
+
+  /**
+   * Returns stored snapshot of entity state that is used for change set computation.
+   */
+  getOriginalEntityData<T extends AnyEntity<T>>(entity: T): EntityData<T> | undefined;
+
+  /**
+   * Returns stored snapshot of entity state that is used for change set computation.
+   */
+  getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): Map<string, AnyEntity> | EntityData<T> | undefined {
+    if (!entity) {
+      const map = new Map();
+      this.identityMap.forEach(e => {
+        if (e.__helper!.__originalEntityData) {
+          map.set(e.__helper!.__uuid, e.__helper!.__originalEntityData);
+        }
+      });
+
+      return map;
+    }
+
+    return entity.__helper!.__originalEntityData;
   }
 
   getPersistStack(): Set<AnyEntity> {
@@ -137,7 +161,7 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.push(cs);
     this.persistStack.delete(entity);
-    this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
+    entity.__helper!.__originalEntityData = this.em.getComparator().prepareEntity(entity);
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
@@ -151,7 +175,7 @@ export class UnitOfWork {
 
     if (cs) {
       Object.assign(this.changeSets[idx].payload, cs.payload);
-      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
+      entity.__helper!.__originalEntityData = this.em.getComparator().prepareEntity(entity);
     }
   }
 
@@ -235,7 +259,6 @@ export class UnitOfWork {
 
   clear(): void {
     this.identityMap.clear();
-    this.originalEntityData.clear();
     this.postCommitCleanup();
   }
 
@@ -244,7 +267,7 @@ export class UnitOfWork {
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
     this.identityMap.delete(`${root.name}-${wrapped.__serializedPrimaryKey}`);
     this.identifierMap.delete(wrapped.__uuid);
-    this.originalEntityData.delete(wrapped.__uuid);
+    delete wrapped.__originalEntityData;
   }
 
   computeChangeSets(): void {
@@ -302,7 +325,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.persistStack.delete(entity);
-      this.originalEntityData.set(wrapped.__uuid, this.em.getComparator().prepareEntity(entity));
+      wrapped.__originalEntityData = this.em.getComparator().prepareEntity(entity);
     }
   }
 
@@ -329,7 +352,7 @@ export class UnitOfWork {
   }
 
   private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: Set<AnyEntity>): void {
-    if (!this.originalEntityData.has(reference.__helper!.__uuid)) {
+    if (!reference.__helper!.__originalEntityData) {
       this.findNewEntities(reference, visited);
     }
   }
@@ -343,7 +366,7 @@ export class UnitOfWork {
     }
 
     reference.getItems(false)
-      .filter(item => !this.originalEntityData.has(item.__helper!.__uuid))
+      .filter(item => !item.__helper!.__originalEntityData)
       .forEach(item => this.findNewEntities(item, visited));
   }
 
@@ -419,7 +442,7 @@ export class UnitOfWork {
   }
 
   private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: Set<AnyEntity>): boolean {
-    const filtered = collection.getItems(false).filter(item => !this.originalEntityData.has(item.__helper!.__uuid));
+    const filtered = collection.getItems(false).filter(item => !item.__helper!.__originalEntityData);
     return filtered.some(items => visited.has(items));
   }
 
