@@ -1,6 +1,6 @@
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { Constructor, Dictionary, EntityProperty, EntityMetadata, IPrimaryKey, Primary, ISchemaGenerator } from '../typings';
+import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary, ISchemaGenerator } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import { EntityManager } from '../EntityManager';
 
@@ -130,10 +130,6 @@ export abstract class Platform {
 
   getSchemaGenerator(em: EntityManager): ISchemaGenerator {
     throw new Error(`${this.constructor.name} does not use a schema generator`);
-  }
-
-  processVersionProperty<T>(meta: EntityMetadata<T>, entity: T): string | number | Date {
-    return entity[meta.versionProperty] as unknown as string;
   }
 
   processDateProperty(value: unknown): string | number | Date {

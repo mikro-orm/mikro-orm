@@ -53,11 +53,12 @@ export class EntityHelper {
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     Object.defineProperties(prototype, {
       __entity: { value: true },
+      __meta: { value: meta },
       __helper: {
         get(): string {
           if (!this.___helper) {
-            const helper = new WrappedEntity(this, meta, em);
-            Object.defineProperty(this, '___helper', { value: helper });
+            const helper = new WrappedEntity(this, em);
+            Object.defineProperty(this, '___helper', { value: helper, writable: true });
           }
 
           return this.___helper;

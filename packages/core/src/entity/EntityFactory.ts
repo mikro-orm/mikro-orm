@@ -3,6 +3,7 @@ import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New
 import { UnitOfWork } from '../unit-of-work';
 import { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
+import { WrappedEntity } from './WrappedEntity';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -84,11 +85,17 @@ export class EntityFactory {
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
-      return new Entity(...params);
+      const entity = new Entity(...params);
+      // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
+      Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em) });
+
+      return entity;
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
+    // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
+    Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em) });
     entity.__helper!.__managed = true;
     this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 

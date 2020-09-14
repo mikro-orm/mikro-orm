@@ -31,11 +31,11 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[this.propertyName(meta, pk, platform)] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.has(entity.__helper!)) {
+    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.has(entity)) {
       return ret;
     }
 
-    visited.add(entity.__helper!);
+    visited.add(entity);
 
     // normal properties
     Object.keys(entity)
