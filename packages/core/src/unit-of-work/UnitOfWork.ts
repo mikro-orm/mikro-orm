@@ -101,9 +101,9 @@ export class UnitOfWork {
   }
 
   /**
-   * @deprecated, use `uow.getOriginalEntityData(entity)`
+   * @deprecated use `uow.getOriginalEntityData(entity)`
    */
-  getOriginalEntityData<T extends AnyEntity<T>>(): Map<string, AnyEntity>;
+  getOriginalEntityData<T extends AnyEntity<T>>(): AnyEntity[];
 
   /**
    * Returns stored snapshot of entity state that is used for change set computation.
@@ -113,14 +113,11 @@ export class UnitOfWork {
   /**
    * Returns stored snapshot of entity state that is used for change set computation.
    */
-  getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): Map<string, AnyEntity> | EntityData<T> | undefined {
+  getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): EntityData<T>[] | EntityData<T> | undefined {
     if (!entity) {
-      const map = new Map();
-      this.identityMap.forEach(e => {
-        map.set(e.__helper!.__uuid, e.__helper!.__originalEntityData);
+      return [...this.identityMap.values()].map(e => {
+        return e.__helper!.__originalEntityData;
       });
-
-      return map;
     }
 
     return entity.__helper!.__originalEntityData;
