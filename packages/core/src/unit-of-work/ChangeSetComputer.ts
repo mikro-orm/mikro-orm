@@ -40,7 +40,7 @@ export class ChangeSetComputer {
     }
 
     for (const prop of Object.values(meta.properties)) {
-      this.processReference(changeSet, prop);
+      this.processProperty(changeSet, prop);
     }
 
     if (changeSet.type === ChangeSetType.UPDATE && Object.keys(changeSet.payload).length === 0) {
@@ -60,15 +60,8 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processReference<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+  private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const target = changeSet.entity[prop.name];
-
-    // remove items from collection based on removeStack
-    if (Utils.isCollection<T>(target) && target.isInitialized()) {
-      target.getItems()
-        .filter(item => this.removeStack.has(item))
-        .forEach(item => target.remove(item));
-    }
 
     if (Utils.isCollection(target)) { // m:n or 1:m
       this.processToMany(prop, changeSet);
@@ -93,6 +86,13 @@ export class ChangeSetComputer {
 
   private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
+
+    // remove items from collection based on removeStack
+    if (target.isInitialized()) {
+      target.getItems()
+        .filter(item => this.removeStack.has(item))
+        .forEach(item => target.remove(item));
+    }
 
     if (!target.isDirty()) {
       return;

@@ -1,5 +1,13 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
+import {
+  AnyEntity,
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FilterQuery,
+  IPrimaryKey,
+} from '../typings';
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
@@ -139,6 +147,8 @@ export class ChangeSetPersister {
     } else {
       changeSet.entity[meta.versionProperty] = e![meta.versionProperty];
     }
+
+    changeSet.payload![meta.versionProperty] = e![meta.versionProperty];
   }
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
@@ -158,6 +168,10 @@ export class ChangeSetPersister {
 
     if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate(changeSet.entity);
+    }
+
+    if (changeSet.payload[prop.name] as unknown instanceof Date) {
+      changeSet.payload[prop.name] = this.driver.getPlatform().processDateProperty(changeSet.payload[prop.name]);
     }
   }
 

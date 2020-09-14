@@ -77,6 +77,10 @@ describe('EntityManagerSqlite', () => {
       { id: 2, name: 'test 2', type: 'LOCAL' },
       { id: 3, name: 'test 3', type: 'GLOBAL' },
     ]);
+
+    const now = new Date();
+    expect(driver.getPlatform().processDateProperty(now)).toBe(+now);
+    expect(driver.getPlatform().processDateProperty(1)).toBe(1);
   });
 
   test('driver appends errored query', async () => {
