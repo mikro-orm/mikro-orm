@@ -53,11 +53,10 @@ export class EntityHelper {
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     Object.defineProperties(prototype, {
       __entity: { value: true },
-      __meta: { value: meta },
       __helper: {
         get(): string {
           if (!this.___helper) {
-            const helper = new WrappedEntity(this, em);
+            const helper = new WrappedEntity(this, em, meta);
             Object.defineProperty(this, '___helper', { value: helper, writable: true });
           }
 
@@ -94,7 +93,7 @@ export class EntityHelper {
       let name = meta.name;
 
       // distinguish not initialized entities
-      if (!this.__helper!.isInitialized()) {
+      if (!this.__helper!.__initialized) {
         name = `Ref<${name}>`;
       }
 
@@ -125,7 +124,7 @@ export class EntityHelper {
       inverse.add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.isInitialized() && Reference.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
     }
   }

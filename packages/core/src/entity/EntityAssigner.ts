@@ -15,8 +15,8 @@ export class EntityAssigner {
     const wrapped = entity.__helper!;
     const em = options.em || wrapped.__em;
     const meta = wrapped.__meta;
-    const validator = wrapped.__internal.validator;
-    const platform = wrapped.__internal.platform;
+    const validator = wrapped.__internal.getValidator();
+    const platform = wrapped.__internal.getDriver().getPlatform();
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {

@@ -1,4 +1,4 @@
-import { MetadataDiscovery, MikroORM, wrap } from '@mikro-orm/core';
+import { MikroORM, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2 } from './entities-sql';
@@ -7,10 +7,7 @@ describe('EntityHelperMySql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => {
-    orm = await initORMMySql();
-    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
-  });
+  beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('assign() should update entity values [mysql]', async () => {

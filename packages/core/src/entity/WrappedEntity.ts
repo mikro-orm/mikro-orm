@@ -1,7 +1,4 @@
 import { EntityManager } from '../EntityManager';
-import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata';
-import { EntityValidator } from './EntityValidator';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer } from './EntityTransformer';
@@ -12,11 +9,10 @@ import { ValidationError } from '../errors';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
-  readonly __meta: EntityMetadata<T>;
   __initialized = true;
-  __populated = false;
-  __lazyInitialized = false;
-  __managed = false;
+  __populated?: boolean;
+  __lazyInitialized?: boolean;
+  __managed?: boolean;
   __em?: EntityManager;
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
@@ -25,20 +21,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   /** holds wrapped primary key so we can compute change set without eager commit */
   __identifier?: EntityData<T>;
 
-  readonly __internal: {
-    platform: Platform;
-    metadata: MetadataStorage;
-    validator: EntityValidator;
-  };
-
-  constructor(private readonly entity: T, em: EntityManager) {
-    this.__meta = (entity as Dictionary).__meta;
-    this.__internal = {
-      platform: em.getDriver().getPlatform(),
-      metadata: em.getMetadata(),
-      validator: em.getValidator(),
-    };
-  }
+  constructor(private readonly entity: T,
+              readonly __internal: EntityManager,
+              readonly __meta: EntityMetadata<T>) { }
 
   isInitialized(): boolean {
     return this.__initialized;

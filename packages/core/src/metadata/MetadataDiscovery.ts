@@ -282,7 +282,7 @@ export class MetadataDiscovery {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
 
-    if (!prop.pivotTable && prop.owner) {
+    if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
       prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
     }
 

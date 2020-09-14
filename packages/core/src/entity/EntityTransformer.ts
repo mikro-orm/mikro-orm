@@ -10,7 +10,7 @@ export class EntityTransformer {
 
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited = new WeakSet<AnyEntity>()): EntityData<T> {
     const wrapped = entity.__helper!;
-    const platform = wrapped.__internal.platform;
+    const platform = wrapped.__internal.getDriver().getPlatform();
     const meta = wrapped.__meta;
     const ret = {} as EntityData<T>;
 
@@ -77,7 +77,7 @@ export class EntityTransformer {
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: WeakSet<AnyEntity>): T[keyof T] | undefined {
     const wrapped = entity.__helper!;
     const property = wrapped.__meta.properties[prop];
-    const platform = wrapped.__internal.platform;
+    const platform = wrapped.__internal.getDriver().getPlatform();
 
     /* istanbul ignore next */
     const serializer = property?.serializer;
@@ -113,7 +113,7 @@ export class EntityTransformer {
       return wrap(child).toJSON(...args) as T[keyof T];
     }
 
-    return wrapped.__internal.platform.normalizePrimaryKey(wrapped.__primaryKey as unknown as IPrimaryKey) as unknown as T[keyof T];
+    return wrapped.__internal.getDriver().getPlatform().normalizePrimaryKey(wrapped.__primaryKey as unknown as IPrimaryKey) as unknown as T[keyof T];
   }
 
   private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {

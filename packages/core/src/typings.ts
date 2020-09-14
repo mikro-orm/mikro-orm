@@ -1,6 +1,5 @@
 import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityValidator, EntityIdentifier, IdentifiedReference, Reference } from './entity';
-import { Platform } from './platforms';
+import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference } from './entity';
 import { EntitySchema } from './metadata';
 import { Type } from './types';
 
@@ -72,10 +71,10 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 
 export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   __meta: EntityMetadata<T>;
-  __internal: { platform: Platform; metadata: IMetadataStorage; validator: EntityValidator };
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
-  __initialized?: boolean;
+  __internal: any; // we cannot have `EntityManager` here as that causes a cycle
+  __initialized: boolean;
   __originalEntityData?: EntityData<T>;
   __identifier?: EntityIdentifier;
   __managed: boolean;

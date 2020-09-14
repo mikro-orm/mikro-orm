@@ -37,7 +37,7 @@ export class EntityFactory {
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
     const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
 
-    if (exists && exists.__helper!.isInitialized() && !options.refresh) {
+    if (exists && exists.__helper!.__initialized && !options.refresh) {
       return exists as New<T, P>;
     }
 
@@ -87,7 +87,7 @@ export class EntityFactory {
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
       // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-      Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em) });
+      Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em, meta) });
 
       return entity;
     }
@@ -95,7 +95,7 @@ export class EntityFactory {
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
     // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-    Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em) });
+    Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em, meta) });
     entity.__helper!.__managed = true;
     this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 
