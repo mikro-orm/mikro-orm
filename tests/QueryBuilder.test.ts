@@ -1603,6 +1603,8 @@ describe('QueryBuilder', () => {
     qb4.select('*').where({ name: { $ilike: 'test' } });
     expect(qb4.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" ilike $1');
     expect(qb4.getParams()).toEqual(['test']);
+
+    await pg.close(true);
   });
 
   test('perf: insert', async () => {
