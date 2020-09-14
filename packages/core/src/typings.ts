@@ -71,7 +71,6 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 }
 
 export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
-  __uuid: string;
   __meta: EntityMetadata<T>;
   __internal: { platform: Platform; metadata: IMetadataStorage; validator: EntityValidator };
   __data: Dictionary;

@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
@@ -25,7 +24,6 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   /** holds wrapped primary key so we can compute change set without eager commit */
   __identifier?: EntityData<T>;
 
-  readonly __uuid = uuid();
   readonly __internal: {
     platform: Platform;
     metadata: MetadataStorage;

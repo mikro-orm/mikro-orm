@@ -8,7 +8,7 @@ import { Utils } from '../utils/Utils';
 
 export class EntityTransformer {
 
-  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited: string[] = []): EntityData<T> {
+  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited = new WeakSet<AnyEntity>()): EntityData<T> {
     const wrapped = entity.__helper!;
     const platform = wrapped.__internal.platform;
     const meta = wrapped.__meta;
@@ -31,11 +31,11 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[this.propertyName(meta, pk, platform)] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(entity.__helper!.__uuid)) {
+    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.has(entity.__helper!)) {
       return ret;
     }
 
-    visited.push(entity.__helper!.__uuid);
+    visited.add(entity.__helper!);
 
     // normal properties
     Object.keys(entity)
@@ -74,7 +74,7 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: WeakSet<AnyEntity>): T[keyof T] | undefined {
     const wrapped = entity.__helper!;
     const property = wrapped.__meta.properties[prop];
     const platform = wrapped.__internal.platform;
@@ -104,7 +104,7 @@ export class EntityTransformer {
     return entity[prop];
   }
 
-  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
+  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], visited: WeakSet<AnyEntity>): T[keyof T] | undefined {
     const child = entity[prop] as unknown as T | Reference<T>;
     const wrapped = (child as T).__helper!;
 
