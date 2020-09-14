@@ -1,4 +1,5 @@
-import { EntityManager, Utils } from '..';
+import { EntityManager } from '../EntityManager';
+import { Utils } from '../utils/Utils';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
 
@@ -39,7 +40,9 @@ export abstract class Hydrator {
     }
 
     return Object.values<EntityProperty>(meta.properties).filter(prop => {
-      return !prop.inherited && root.discriminatorColumn !== prop.name && !prop.embedded;
+      // `prop.userDefined` is either `undefined` or `false`
+      const discriminator = root.discriminatorColumn === prop.name && prop.userDefined === false;
+      return !prop.inherited && !discriminator && !prop.embedded;
     });
   }
 

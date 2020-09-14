@@ -1,4 +1,4 @@
-import { ReferenceType } from '../entity';
+import { ReferenceType } from '../enums';
 import { createOneToDecorator, OneToManyOptions } from './OneToMany';
 import { EntityName } from '../typings';
 

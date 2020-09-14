@@ -10,7 +10,7 @@ jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 import c from 'ansi-colors';
 import chalk from 'chalk';
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
-import { CLIHelper } from '@mikro-orm/cli';
+import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 // noinspection ES6PreferShortImport
 import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
 
@@ -19,7 +19,7 @@ c.enabled = false;
 describe('CLIHelper', () => {
 
   test('configures yargs instance', async () => {
-    const cli = await CLIHelper.configure() as any;
+    const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(cli.getCommandInstance().getCommands()).toEqual([
       'cache:clear',
@@ -44,7 +44,7 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'].useTsNode = true;
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
     requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
-    const cli = await CLIHelper.configure() as any;
+    const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
     pathExistsMock.mockRestore();
@@ -60,7 +60,7 @@ describe('CLIHelper', () => {
     delete tsc.compilerOptions.paths;
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
     requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
-    const cli = await CLIHelper.configure() as any;
+    const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
     expect(requireFromMock).not.toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
@@ -80,7 +80,7 @@ describe('CLIHelper', () => {
     requireFromMock
       .mockImplementationOnce(() => ({ register: jest.fn() }))
       .mockImplementationOnce(() => ({ register: jest.fn() }));
-    const cli = await CLIHelper.configure() as any;
+    const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
     expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');

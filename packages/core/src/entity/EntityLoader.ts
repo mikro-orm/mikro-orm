@@ -1,9 +1,10 @@
 import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions } from '../typings';
-import { EntityManager } from '../index';
-import { LoadStrategy, ReferenceType } from './enums';
-import { Utils, ValidationError } from '../utils';
+import { EntityManager } from '../EntityManager';
+import { QueryHelper } from '../utils/QueryHelper';
+import { Utils } from '../utils/Utils';
+import { ValidationError } from '../errors';
 import { Collection } from './Collection';
-import { QueryOrder, QueryOrderMap } from '../enums';
+import { LoadStrategy, ReferenceType, QueryOrder, QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 
 type Options<T extends AnyEntity<T>> = {
@@ -12,6 +13,7 @@ type Options<T extends AnyEntity<T>> = {
   refresh?: boolean;
   validate?: boolean;
   lookup?: boolean;
+  convertCustomTypes?: boolean;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 };
 
@@ -33,6 +35,7 @@ export class EntityLoader {
     options.lookup = options.lookup ?? true;
     options.validate = options.validate ?? true;
     options.refresh = options.refresh ?? false;
+    options.convertCustomTypes = options.convertCustomTypes ?? true;
     populate = this.normalizePopulate<T>(entityName, populate, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
@@ -175,12 +178,13 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__helper!.__meta.primaryKeys, true)));
-    const where = { [fk]: { $in: ids }, ...(options.where as Dictionary) };
+    const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform()), ...(options.where as Dictionary) } as FilterQuery<T>;
 
     return this.em.find<T>(prop.type, where, {
       orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },
       refresh: options.refresh,
       filters: options.filters,
+      convertCustomTypes: options.convertCustomTypes,
       populate: populate.children,
     });
   }
@@ -216,7 +220,13 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const map = await this.driver.loadFromPivotTable(prop, filtered.map(e => e.__helper!.__primaryKeys), where, orderBy, this.em.getTransactionContext());
+    const ids = filtered.map(e => e.__helper!.__primaryKeys);
+
+    if (prop.customType) {
+      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id, this.driver.getPlatform()));
+    }
+
+    const map = await this.driver.loadFromPivotTable(prop, ids, where, orderBy, this.em.getTransactionContext());
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {

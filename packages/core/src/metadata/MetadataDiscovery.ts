@@ -3,13 +3,15 @@ import globby from 'globby';
 import c from 'ansi-colors';
 
 import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
-import { Configuration, Utils, MetadataError } from '../utils';
+import { Utils } from '../utils/Utils';
+import { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
-import { Cascade, ReferenceType } from '../entity';
+import { EntitySchema } from './EntitySchema';
+import { Cascade, ReferenceType } from '../enums';
+import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
 import { ArrayType, BlobType, Type } from '../types';
-import { EntitySchema } from '../metadata';
 
 export class MetadataDiscovery {
 
@@ -570,6 +572,9 @@ export class MetadataDiscovery {
       root.properties[root.discriminatorColumn] = this.createDiscriminatorProperty(root);
     }
 
+    Utils.defaultValue(root.properties[root.discriminatorColumn], 'items', Object.keys(root.discriminatorMap));
+    Utils.defaultValue(root.properties[root.discriminatorColumn], 'index', true);
+
     if (root === meta) {
       return;
     }
@@ -589,18 +594,13 @@ export class MetadataDiscovery {
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): EntityProperty {
-    const prop = {
+    return {
       name: meta.discriminatorColumn!,
       type: 'string',
       enum: true,
-      index: true,
       reference: ReferenceType.SCALAR,
-      items: Object.keys(meta.discriminatorMap!),
+      userDefined: false,
     } as EntityProperty;
-    this.initFieldName(prop);
-    this.initColumnType(prop);
-
-    return prop;
   }
 
   private getDefaultVersionValue(prop: EntityProperty): string {

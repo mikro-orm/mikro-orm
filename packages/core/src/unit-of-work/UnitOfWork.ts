@@ -1,10 +1,13 @@
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
-import { Cascade, Collection, EntityIdentifier, Reference, ReferenceType } from '../entity';
+import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { ChangeSetComputer, ChangeSetPersister, CommitOrderCalculator } from './index';
-import { EntityManager, EventType } from '../index';
-import { Utils, ValidationError, OptimisticLockError } from '../utils';
-import { LockMode } from './enums';
+import { ChangeSetComputer } from './ChangeSetComputer';
+import { ChangeSetPersister } from './ChangeSetPersister';
+import { CommitOrderCalculator } from './CommitOrderCalculator';
+import { Utils } from '../utils/Utils';
+import { EntityManager } from '../EntityManager';
+import { EventType, Cascade, LockMode, ReferenceType } from '../enums';
+import { ValidationError, OptimisticLockError } from '../errors';
 import { Transaction } from '../connections';
 
 export class UnitOfWork {
@@ -40,11 +43,16 @@ export class UnitOfWork {
       return;
     }
 
+    // skip new entities that could be linked from already persisted entity that is being re-fetched
+    if (!entity.__helper!.__managed) {
+      return;
+    }
+
     const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
     this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 
     if (mergeData || !this.originalEntityData.has(entity.__helper!.__uuid)) {
-      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
     }
 
     this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
@@ -109,7 +117,7 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.push(cs);
     this.persistStack.delete(entity);
-    this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+    this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
@@ -123,7 +131,7 @@ export class UnitOfWork {
 
     if (cs) {
       Object.assign(this.changeSets[idx].payload, cs.payload);
-      this.originalEntityData.set(entity.__helper!.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(entity.__helper!.__uuid, this.em.getComparator().prepareEntity(entity));
     }
   }
 
@@ -274,7 +282,7 @@ export class UnitOfWork {
     if (changeSet) {
       this.changeSets.push(changeSet);
       this.persistStack.delete(entity);
-      this.originalEntityData.set(wrapped.__uuid, Utils.prepareEntity(entity, this.metadata, this.platform));
+      this.originalEntityData.set(wrapped.__uuid, this.em.getComparator().prepareEntity(entity));
     }
   }
 
@@ -319,8 +327,20 @@ export class UnitOfWork {
       .forEach(item => this.findNewEntities(item, visited));
   }
 
-  private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>) {
+  private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
+    const hasListeners = this.em.getEventManager().hasListeners(type, changeSet.entity);
+
+    if (!hasListeners) {
+      return;
+    }
+
+    if (!sync) {
+      return this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    }
+
+    const copy = this.em.getComparator().prepareEntity(changeSet.entity) as T;
     await this.em.getEventManager().dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+    Object.assign(changeSet.payload, this.em.getComparator().diffEntities<T>(copy, changeSet.entity));
   }
 
   private postCommitCleanup(): void {
@@ -493,23 +513,8 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      Object.values<EntityProperty>(changeSet.entity.__helper!.__meta.properties)
-        .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
-        .filter(prop => changeSet.entity[prop.name])
-        .forEach(prop => {
-          const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
-          const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
-
-          if (isScheduledForInsert) {
-            this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-            delete changeSet.entity[prop.name];
-            delete changeSet.payload[prop.name];
-          }
-        });
-
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
-      await this.runHooks(EventType.beforeCreate, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      this.findExtraUpdates(changeSet);
+      await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
     await this.changeSetPersister.executeInserts(changeSets, ctx);
@@ -520,15 +525,29 @@ export class UnitOfWork {
     }
   }
 
+  private findExtraUpdates<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
+    Object.values<EntityProperty>(changeSet.entity.__helper!.__meta.properties)
+      .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
+      .filter(prop => changeSet.entity[prop.name])
+      .forEach(prop => {
+        const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
+        const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+        if (isScheduledForInsert) {
+          this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+          delete changeSet.entity[prop.name];
+          delete changeSet.payload[prop.name];
+        }
+      });
+  }
+
   private async commitUpdateChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
 
     for (const changeSet of changeSets) {
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
-      await this.runHooks(EventType.beforeUpdate, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
     await this.changeSetPersister.executeUpdates(changeSets, ctx);
@@ -545,9 +564,7 @@ export class UnitOfWork {
     }
 
     for (const changeSet of changeSets) {
-      const copy = Utils.prepareEntity(changeSet.entity, this.metadata, this.platform) as T;
-      await this.runHooks(EventType.beforeDelete, changeSet);
-      Object.assign(changeSet.payload, Utils.diffEntities<T>(copy, changeSet.entity, this.metadata, this.platform));
+      await this.runHooks(EventType.beforeDelete, changeSet, true);
     }
 
     await this.changeSetPersister.executeDeletes(changeSets, ctx);

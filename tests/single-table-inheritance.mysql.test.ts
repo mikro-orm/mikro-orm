@@ -1,6 +1,6 @@
 import { Dictionary, MetadataDiscovery, MetadataStorage, MikroORM, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { BaseUser2, CompanyOwner2, Employee2, Manager2 } from './entities-sql';
+import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
 describe('single table inheritance in mysql', () => {
@@ -67,19 +67,21 @@ describe('single table inheritance in mysql', () => {
       firstName: 'Emp',
       lastName: '1',
       employeeProp: 1,
+      type: Type.Employee,
     });
-    expect((users[0] as any).type).not.toBeDefined();
     expect(users[1]).toEqual({
       id: 1,
       firstName: 'Emp',
       lastName: '2',
       employeeProp: 2,
+      type: Type.Employee,
     });
     expect(users[2]).toEqual({
       id: 3,
       firstName: 'Man',
       lastName: '3',
       managerProp: 'i am manager',
+      type: Type.Manager,
     });
     expect(users[3]).toEqual({
       id: 4,
@@ -89,6 +91,7 @@ describe('single table inheritance in mysql', () => {
       ownerProp: 'i am owner',
       favouriteEmployee: users[1],
       favouriteManager: users[2],
+      type: Type.Owner,
     });
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-2', 'BaseUser2-1', 'BaseUser2-3', 'BaseUser2-4']);
@@ -100,6 +103,20 @@ describe('single table inheritance in mysql', () => {
     await orm.em.flush();
     expect(o.state).toBe('updated');
     expect(o.baseState).toBe('updated');
+    orm.em.clear();
+
+    const users2 = await orm.em.find(BaseUser2, { type: Type.Employee }, { orderBy: { lastName: 'asc', firstName: 'asc' } });
+    expect(users2.map(u => [u.type, u.lastName])).toEqual([[Type.Employee, '1'], [Type.Employee, '2']]);
+  });
+
+  test('generated discriminator column', async () => {
+    const meta = orm.getMetadata().get(BaseUser2.name);
+    const prop = meta.properties[meta.discriminatorColumn!];
+    await createEntities();
+    prop.userDefined = false;
+    const users = await orm.em.find(BaseUser2, { type: Type.Employee }, { orderBy: { lastName: 'asc', firstName: 'asc' } });
+    expect(users.map(u => [u.type, u.lastName])).toEqual([[undefined, '1'], [undefined, '2']]);
+    prop.userDefined = undefined; // revert back
   });
 
   test('STI in m:1 and 1:1 relations', async () => {

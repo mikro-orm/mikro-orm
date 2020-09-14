@@ -1,11 +1,10 @@
 import { inspect } from 'util';
 import { Collection } from './Collection';
-import { SCALAR_TYPES } from './EntityFactory';
 import { EntityManager } from '../EntityManager';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
-import { Utils } from '../utils';
-import { ReferenceType } from './enums';
+import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
+import { ReferenceType, SCALAR_TYPES } from '../enums';
 
 export class EntityAssigner {
 

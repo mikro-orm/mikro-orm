@@ -1,9 +1,10 @@
-import { Utils } from '../utils';
 import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IPrimaryKey } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
+import { Platform } from '../platforms';
+import { Utils } from '../utils/Utils';
 
 export class EntityTransformer {
 
@@ -18,15 +19,17 @@ export class EntityTransformer {
       .map(pk => {
         let value: unknown;
 
-        if (Utils.isEntity(entity[pk], true)) {
+        if (meta.properties[pk].serializer) {
+          value = meta.properties[pk].serializer!(entity[pk]);
+        } else if (Utils.isEntity(entity[pk], true)) {
           value = EntityTransformer.processEntity(pk, entity, ignoreFields, visited);
         } else {
           value = platform.normalizePrimaryKey(Utils.getPrimaryKeyValue<T>(entity, [pk]));
         }
 
-        return [pk, value] as [string, string];
+        return [pk, value] as [string & keyof T, string];
       })
-      .forEach(([pk, value]) => ret[platform.getSerializedPrimaryKeyField(pk) as keyof T] = value as unknown as T[keyof T]);
+      .forEach(([pk, value]) => ret[this.propertyName(meta, pk, platform)] = value as unknown as T[keyof T]);
 
     if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.includes(entity.__helper!.__uuid)) {
       return ret;
@@ -39,17 +42,17 @@ export class EntityTransformer {
       .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
       .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T & string, entity, ignoreFields, visited)])
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[prop as keyof T] = value as T[keyof T]);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string)] = value as T[keyof T]);
 
     // decorated getters
     Object.values<EntityProperty<T>>(meta.properties)
       .filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined')
-      .forEach(prop => ret[prop.name] = entity[prop.name]);
+      .forEach(prop => ret[this.propertyName(meta, prop.name)] = entity[prop.name]);
 
     // decorated get methods
     Object.values<EntityProperty<T>>(meta.properties)
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
-      .forEach(prop => ret[prop.name] = (entity[prop.getterName!] as unknown as () => void)());
+      .forEach(prop => ret[this.propertyName(meta, prop.name)] = (entity[prop.getterName!] as unknown as () => void)());
 
     return ret;
   }
@@ -59,14 +62,35 @@ export class EntityTransformer {
     return visible && !meta.primaryKeys.includes(prop) && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
+  private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
+    if (meta.properties[prop].serializedName) {
+      return meta.properties[prop].serializedName!;
+    }
+
+    if (meta.properties[prop].primary && platform) {
+      return platform.getSerializedPrimaryKeyField(prop);
+    }
+
+    return prop;
+  }
+
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: string[]): T[keyof T] | undefined {
     const wrapped = entity.__helper!;
     const property = wrapped.__meta.properties[prop];
     const platform = wrapped.__internal.platform;
 
     /* istanbul ignore next */
-    if (property?.customType) {
-      return property.customType.toJSON(entity[prop], platform);
+    const serializer = property?.serializer;
+
+    if (serializer) {
+      return serializer(entity[prop]);
+    }
+
+    /* istanbul ignore next */
+    const customType = property?.customType;
+
+    if (customType) {
+      return customType.toJSON(entity[prop], platform);
     }
 
     if (entity[prop] as unknown instanceof ArrayCollection) {

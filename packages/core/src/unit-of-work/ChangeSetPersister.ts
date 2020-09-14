@@ -3,9 +3,10 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, Filt
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
-import { Configuration, OptimisticLockError, Utils } from '../utils';
+import { Configuration, Utils } from '../utils';
 import { IDatabaseDriver } from '../drivers';
 import { Hydrator } from '../hydration';
+import { OptimisticLockError } from '../errors';
 
 export class ChangeSetPersister {
 
@@ -65,6 +66,7 @@ export class ChangeSetPersister {
 
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
+    wrapped.__managed = true;
     await this.processOptimisticLock(meta, changeSet, res, ctx);
     changeSet.persisted = true;
   }

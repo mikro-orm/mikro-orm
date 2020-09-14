@@ -4,9 +4,7 @@ title: Defining Entities via EntitySchema
 
 With `EntitySchema` helper you define the schema programmatically. 
 
-**`./entities/Book.ts`**
-
-```typescript
+```typescript title="./entities/Book.ts"
 export interface Book extends BaseEntity {
   title: string;
   author: Author;
@@ -41,9 +39,7 @@ await repo.persistAndFlush(author);
 
 You can optionally use custom class for entity instances.  
 
-**`./entities/Author.ts`**
-
-```typescript
+```typescript title="./entities/Author.ts"
 export class Author extends BaseEntity {
   name: string;
   email: string;
@@ -89,9 +85,7 @@ await repo.persistAndFlush(author);
 
 Do not forget that base entities needs to be discovered just like normal entities. 
 
-**`./entities/BaseEntity.ts`**
-
-```typescript
+```typescript title="./entities/BaseEntity.ts"
 export interface BaseEntity extends IdEntity<BaseEntity> {
   id: number;
   createdAt: Date;

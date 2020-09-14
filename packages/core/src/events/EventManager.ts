@@ -1,7 +1,7 @@
 import { AnyEntity } from '../typings';
 import { EventArgs, EventSubscriber, FlushEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
-import { EventType } from './EventType';
+import { EventType } from '../enums';
 
 export class EventManager {
 
@@ -45,6 +45,25 @@ export class EventManager {
     }
 
     return Utils.runSerial(listeners, listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs)) as Promise<void>);
+  }
+
+  hasListeners<T extends AnyEntity<T>>(event: EventType, entity?: T): boolean {
+    /* istanbul ignore next */
+    const hasHooks = entity?.__helper!.__meta.hooks[event]?.length;
+
+    if (hasHooks) {
+      return true;
+    }
+
+    for (const listener of this.listeners[event] ?? []) {
+      const entities = this.entities.get(listener)!;
+
+      if (entities.length === 0 || !entity || entities.includes(entity.constructor.name)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private getSubscribedEntities(listener: EventSubscriber): string[] {

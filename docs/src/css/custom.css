@@ -95,6 +95,7 @@
   white-space: nowrap;
   text-decoration: underline;
   position: relative;
+  font-size: 0.8em;
 }
 
 .navbar .react-toggle {
@@ -137,15 +138,21 @@ a[href*=edit] {
   padding-right: 40px;
 }
 
-html[data-theme="dark"] .navbar .navbar__brand {
+html[data-theme="dark"] .navbar .navbar__brand,
+html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] {
   background-image: url('/img/logo-dark.svg');
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
 }
 
-html[data-theme="dark"] .navbar .navbar__brand img {
+html[data-theme="dark"] .navbar .navbar__brand img,
+html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] img {
   visibility: hidden;
+}
+
+html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] {
+  margin-right: 70px;
 }
 
 html[data-theme="dark"] .hero.hero--primary {
@@ -172,15 +179,6 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
 
   .hero.hero--primary .container img {
     height: 260px;
-  }
-}
-
-@media screen and (min-width: 701px) {
-  .navbar a[data-type="versions"] {
-    padding: 0;
-    font-size: calc(0.9 * var(--ifm-font-size-base));
-    left: -8px;
-    top: 1px;
   }
 }
 
@@ -214,4 +212,18 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
   .hero.hero--primary .button.button--outline {
     font-size: 0.8rem;
   }
+}
+
+html code {
+  color: #1c1e21;
+  background-color: #ebedf0;
+}
+
+html[data-theme="dark"] code {
+  color: #f5f6f7;
+  background-color: #444950;
+}
+
+html a code {
+  color: inherit
 }

@@ -1,7 +1,8 @@
 import { EntityMetadata, AnyEntity, Dictionary } from '../typings';
-import { MetadataError, Utils } from '../utils';
+import { Utils } from '../utils/Utils';
+import { MetadataError } from '../errors';
 import { EntityManager } from '../EntityManager';
-import { EntityHelper } from '../entity';
+import { EntityHelper } from '../entity/EntityHelper';
 import { EventSubscriber } from '../events';
 
 export class MetadataStorage {

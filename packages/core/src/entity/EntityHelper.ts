@@ -3,29 +3,13 @@ import { inspect } from 'util';
 import { EntityManager } from '../EntityManager';
 import { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
-import { LockMode } from '../unit-of-work';
 import { Reference } from './Reference';
 import { Platform } from '../platforms';
-import { Utils, ValidationError } from '../utils';
-import { ReferenceType } from './enums';
+import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
+import { ReferenceType } from '../enums';
 
 export class EntityHelper {
-
-  static async init<T extends AnyEntity<T>>(entity: T, populated = true, lockMode?: LockMode): Promise<T> {
-    const wrapped = entity.__helper!;
-    const em = wrapped.__em;
-
-    if (!em) {
-      throw ValidationError.entityNotManaged(entity);
-    }
-
-    await em.findOne(entity.constructor.name, entity, { refresh: true, lockMode });
-    wrapped.populated(populated);
-    wrapped.__lazyInitialized = true;
-
-    return entity;
-  }
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
     if (meta.embeddable) {

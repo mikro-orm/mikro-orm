@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const pkg = require('../package.json');
+const pkg = require('../packages/core/package.json');
 const versions = require('./versions.json');
 
 module.exports = {
@@ -22,25 +22,38 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      // algoliaOptions: { filters: `version:${versions[0]}` }, // TODO uncomment when v4 is released
-      algoliaOptions: { filters: `version:3.6` },
+      searchParameters: { facetFilters: `version:${versions[0]}` }, // `version:latest` is not working?
+    },
+    announcementBar: {
+      id: 'supportus',
+      content: '⭐️ If you like MikroORM, give it a star on ' +
+        '<a target="_blank" rel="noopener noreferrer" href="https://github.com/mikro-orm/mikro-orm">GitHub</a> ' +
+        'and consider <a target="_blank" rel="noopener noreferrer" href="https://github.com/sponsors/B4nan">sponsoring</a> its development! ⭐️',
+    },
+    prism: {
+      theme: require('prism-react-renderer/themes/github'),
+      darkTheme: require('prism-react-renderer/themes/dracula'),
     },
     navbar: {
+      hideOnScroll: true,
       title: '',
       logo: {
         alt: 'MikroORM',
         src: 'img/logo.svg',
       },
-      links: [
+      items: [
         {
-          to: 'versions',
-          // label: `${pkg.version}`, // TODO uncomment when v4 is released
-          label: '3.6.15',
+          type: 'docsVersionDropdown',
           position: 'left',
-          'data-type': 'versions',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
+        {
+          to: '/versions',
+          label: `latest: v${pkg.version}`,
+          position: 'right',
+          'data-type': 'versions',
+        },
         {
           href: 'https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA',
           label: 'Slack',
@@ -70,8 +83,7 @@ module.exports = {
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
             { label: 'Migration from v3 to v4', to: 'docs/upgrading-v3-to-v4' },
-            // { label: 'Version 3.6 docs', to: 'docs/3.6/installation' }, // TODO uncomment when v4 is released
-            { label: 'Version 3.6 docs', to: 'docs/installation' },
+            { label: 'Version 3.6 docs', to: 'docs/3.6/installation' },
           ],
         },
         {
@@ -111,6 +123,8 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/mikro-orm/mikro-orm/edit/master/docs/',
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

@@ -14,7 +14,7 @@ export default class FooBar {
   @Property()
   name!: string;
 
-  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true })
+  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true, serializedName: 'fooBaz', serializer: value => `FooBaz id: ${value.id}` })
   baz!: FooBaz | null;
 
   @OneToOne(() => FooBar)

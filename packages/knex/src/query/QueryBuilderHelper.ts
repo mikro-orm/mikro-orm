@@ -5,7 +5,7 @@ import {
   Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator, OptimisticLockError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { JoinOptions } from './QueryBuilder';
+import { JoinOptions } from '../typings';
 
 export class QueryBuilderHelper {
 

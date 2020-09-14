@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Utils, Logger, ValidationError, wrap, expr, UniqueConstraintViolationException,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap, expr, UniqueConstraintViolationException,
   TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
 
@@ -1069,7 +1069,7 @@ describe('EntityManagerPostgre', () => {
     author2.favouriteBook = book;
     author2.version = 123;
     await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = Utils.diffEntities(author1, author2, orm.getMetadata(), orm.em.getDriver().getPlatform());
+    const diff = orm.em.getComparator().diffEntities(author1, author2);
     expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
     expect(typeof diff.favouriteBook).toBe('string');
     expect(diff.favouriteBook).toBe(book.uuid);
@@ -1373,6 +1373,33 @@ describe('EntityManagerPostgre', () => {
 
     const b4 = await orm.em.findOneOrFail(FooBar2, bar.id);
     expect(b4.object).toBe(123);
+  });
+
+  test('using $contains', async () => {
+    const a = new Author2('n', 'e');
+    a.identities = ['1', '2', '3'];
+    await orm.em.persistAndFlush(a);
+    orm.em.clear();
+
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['2'] } })).resolves.toBeTruthy();
+    await expect(orm.em.findOneOrFail(Author2, { identities: { $contains: ['4'] } })).rejects.toThrowError();
+  });
+
+  test(`toObject uses serializedName on PKs`, async () => {
+    const l = new Label2('l');
+    await orm.em.persistAndFlush(l);
+    expect(wrap(l).toObject()).toMatchObject({ id: 'uuid is ' + l.uuid, name: 'l' });
+  });
+
+  test('should allow to find by array of PKs', async () => {
+    await orm.em.getDriver().nativeInsertMany(Author2.name, [
+      { id: 1, name: 'n1', email: 'e1' },
+      { id: 2, name: 'n2', email: 'e2' },
+      { id: 3, name: 'n3', email: 'e3' },
+    ]);
+    const repo = orm.em.getRepository(Author2);
+    const res = await repo.find([1, 2, 3]);
+    expect(res.map(a => a.id)).toEqual([1, 2, 3]);
   });
 
   test('exceptions', async () => {

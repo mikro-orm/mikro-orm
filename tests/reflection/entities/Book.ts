@@ -18,9 +18,10 @@ export class Book extends BaseEntity3 {
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany()
-  tags: Collection<BookTag> = new Collection<BookTag>(this);
+  tags = new Collection<BookTag>(this);
 
   @Property()
+    // eslint-disable-next-line @typescript-eslint/ban-types
   metaObject?: object;
 
   @Property()

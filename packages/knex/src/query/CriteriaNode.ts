@@ -1,7 +1,6 @@
 import { inspect } from 'util';
 import { EntityProperty, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
-import { QueryBuilder } from './QueryBuilder';
-import { ArrayCriteriaNode, ObjectCriteriaNode, QueryBuilderHelper, ScalarCriteriaNode } from './internal';
+import { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
@@ -14,7 +13,7 @@ export class CriteriaNode {
 
   constructor(protected readonly metadata: MetadataStorage,
               readonly entityName: string,
-              readonly parent?: CriteriaNode,
+              readonly parent?: ICriteriaNode,
               readonly key?: string,
               validate = true) {
     const meta = parent && metadata.find(parent.entityName);
@@ -23,29 +22,14 @@ export class CriteriaNode {
       Utils.splitPrimaryKeys(key).forEach(k => {
         this.prop = Object.values(meta.properties).find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
 
-        if (validate && !this.prop && !k.includes('.') && !Utils.isOperator(k) && !QueryBuilderHelper.isCustomExpression(k)) {
+        if (validate && !this.prop && !k.includes('.') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
     }
   }
 
-  static create(metadata: MetadataStorage, entityName: string, payload: any, parent?: CriteriaNode, key?: string): CriteriaNode {
-    const customExpression = QueryBuilderHelper.isCustomExpression(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
-
-    if (Array.isArray(payload) && !scalar) {
-      return ArrayCriteriaNode.create(metadata, entityName, payload, parent, key);
-    }
-
-    if (Utils.isPlainObject(payload) && !scalar) {
-      return ObjectCriteriaNode.create(metadata, entityName, payload, parent, key);
-    }
-
-    return ScalarCriteriaNode.create(metadata, entityName, payload, parent, key);
-  }
-
-  process<T>(qb: QueryBuilder<T>, alias?: string): any {
+  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     return this.payload;
   }
 
@@ -53,14 +37,14 @@ export class CriteriaNode {
     return false;
   }
 
-  willAutoJoin<T>(qb: QueryBuilder<T>, alias?: string) {
+  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
     return false;
   }
 
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.reference : null;
     const composite = /* istanbul ignore next */ this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
-    const customExpression = QueryBuilderHelper.isCustomExpression(this.key!);
+    const customExpression = CriteriaNode.isCustomExpression(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
     const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
@@ -77,7 +61,7 @@ export class CriteriaNode {
     }
   }
 
-  renameFieldToPK<T>(qb: QueryBuilder<T>): string {
+  renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
       const alias = qb.getAliasForJoinPath(this.getPath());
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
@@ -97,7 +81,7 @@ export class CriteriaNode {
   getPath(): string {
     let ret = this.parent && this.prop ? this.prop.name : this.entityName;
 
-    if (this.parent instanceof ArrayCriteriaNode && this.parent.parent && !this.key) {
+    if (this.parent && Array.isArray(this.parent.payload) && this.parent.parent && !this.key) {
       ret = this.parent.parent.key!;
     }
 
@@ -121,7 +105,7 @@ export class CriteriaNode {
       return false;
     }
 
-    const customExpression = QueryBuilderHelper.isCustomExpression(this.key);
+    const customExpression = CriteriaNode.isCustomExpression(this.key);
     const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
     const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
 
@@ -134,6 +118,10 @@ export class CriteriaNode {
 
   [inspect.custom]() {
     return `${this.constructor.name} ${inspect({ entityName: this.entityName, key: this.key, payload: this.payload })}`;
+  }
+
+  static isCustomExpression(field: string): boolean {
+    return !!field.match(/[ ?<>=()]|^\d/);
   }
 
 }

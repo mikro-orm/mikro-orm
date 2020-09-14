@@ -2,18 +2,17 @@
   <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
-TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/unit-of-work/) 
-and [Identity Map](https://mikro-orm.io/identity-map/) patterns. Supports MongoDB, MySQL, 
+TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) 
+and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, 
 MariaDB, PostgreSQL and SQLite databases. 
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
 
 [![NPM version](https://img.shields.io/npm/v/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
 [![Chat on slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://join.slack.com/t/mikroorm/shared_invite/enQtNTM1ODYzMzM4MDk3LWM4ZDExMjU5ZDhmNjA2MmM3MWMwZmExNjhhNDdiYTMwNWM0MGY5ZTE3ZjkyZTMzOWExNDgyYmMzNDE1NDI5NjA)
-[![Downloads](https://img.shields.io/npm/dm/mikro-orm.svg)](https://www.npmjs.com/package/mikro-orm)
+[![Downloads](https://img.shields.io/npm/dm/@mikro-orm/core.svg)](https://www.npmjs.com/package/@mikro-orm/core)
 [![Coverage Status](https://img.shields.io/coveralls/mikro-orm/mikro-orm.svg)](https://coveralls.io/r/mikro-orm/mikro-orm?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27999651d3adc47cfa40/maintainability)](https://codeclimate.com/github/mikro-orm/mikro-orm/maintainability)
-[![Dependency Status](https://david-dm.org/mikro-orm/mikro-orm.svg)](https://david-dm.org/mikro-orm/mikro-orm)
 [![Build Status](https://github.com/mikro-orm/mikro-orm/workflows/tests/badge.svg?branch=master)](https://github.com/mikro-orm/mikro-orm/actions?workflow=tests)
 
 ## 🤔 Unit of What?
@@ -127,36 +126,36 @@ comparison by identity (`ent1 === ent2`).
 
 ## 📖 Documentation
 
-MikroORM v3 documentation, included in this repo in the root directory, is built with 
+MikroORM v4 documentation, included in this repo in the root directory, is built with 
 [Jekyll](https://jekyllrb.com/) and publicly hosted on GitHub Pages at https://mikro-orm.io.
 
 There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit messages 
 (via `semantic-release`). 
 
-> You can browse MikroORM v2 docs at [https://mikro-orm.io/docs/2.7/installation](https://mikro-orm.io/docs/2.7/installation).
+> You can browse MikroORM v3 docs at [https://mikro-orm.io/docs/3.6/installation](https://mikro-orm.io/docs/3.6/installation).
 
-> To upgrade to v3, please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v2-to-v3.md).
+> To upgrade to v4, please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v3-to-v4).
 
 ## ✨ Core Features
 
-- [Clean and Simple Entity Definition](https://mikro-orm.io/defining-entities/)
-- [Identity Map](https://mikro-orm.io/identity-map/)
-- [Entity References](https://mikro-orm.io/entity-references/)
-- [Using Entity Constructors](https://mikro-orm.io/using-entity-constructors/)
-- [Modelling Relationships](https://mikro-orm.io/relationships/)
-- [Collections](https://mikro-orm.io/collections/)
-- [Unit of Work](https://mikro-orm.io/unit-of-work/)
-- [Transactions](https://mikro-orm.io/transactions/)
-- [Cascading persist and remove](https://mikro-orm.io/cascading/)
-- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/composite-keys/)
-- [Filters](https://mikro-orm.io/filters/)
-- [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
-- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
-- [Property Validation](https://mikro-orm.io/property-validation/)
-- [Lifecycle Hooks](https://mikro-orm.io/lifecycle-hooks/)
-- [Vanilla JS Support](https://mikro-orm.io/usage-with-js/)
-- [Schema Generator](https://mikro-orm.io/schema-generator/)
-- [Entity Generator](https://mikro-orm.io/entity-generator/)
+- [Clean and Simple Entity Definition](https://mikro-orm.io/docs/defining-entities/)
+- [Identity Map](https://mikro-orm.io/docs/identity-map/)
+- [Entity References](https://mikro-orm.io/docs/entity-references/)
+- [Using Entity Constructors](https://mikro-orm.io/docs/using-entity-constructors/)
+- [Modelling Relationships](https://mikro-orm.io/docs/relationships/)
+- [Collections](https://mikro-orm.io/docs/collections/)
+- [Unit of Work](https://mikro-orm.io/docs/unit-of-work/)
+- [Transactions](https://mikro-orm.io/docs/transactions/)
+- [Cascading persist and remove](https://mikro-orm.io/docs/cascading/)
+- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/docs/composite-keys/)
+- [Filters](https://mikro-orm.io/docs/filters/)
+- [Using `QueryBuilder`](https://mikro-orm.io/docs/query-builder/)
+- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/docs/nested-populate/)
+- [Property Validation](https://mikro-orm.io/docs/property-validation/)
+- [Lifecycle Hooks](https://mikro-orm.io/docs/lifecycle-hooks/)
+- [Vanilla JS Support](https://mikro-orm.io/docs/usage-with-js/)
+- [Schema Generator](https://mikro-orm.io/docs/schema-generator/)
+- [Entity Generator](https://mikro-orm.io/docs/entity-generator/)
 
 ## 📦 Example Integrations
 
@@ -190,22 +189,26 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 
 First install the module via `yarn` or `npm` and do not forget to install the database driver as well:
 
-```
-$ yarn add mikro-orm mongodb # for mongo
-$ yarn add mikro-orm mysql2  # for mysql/mariadb
-$ yarn add mikro-orm mariadb # for mysql/mariadb
-$ yarn add mikro-orm pg      # for postgresql
-$ yarn add mikro-orm sqlite3 # for sqlite
+> Since v4, you should install the driver package, but not the db connector itself,
+> e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included
+> in the driver package.
+
+```sh
+yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 or
 
-```
-$ npm i -s mikro-orm mongodb # for mongo
-$ npm i -s mikro-orm mysql2  # for mysql/mariadb
-$ npm i -s mikro-orm mariadb # for mysql/mariadb
-$ npm i -s mikro-orm pg      # for postgresql
-$ npm i -s mikro-orm sqlite3 # for sqlite
+```sh
+npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
 Next you will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
@@ -214,14 +217,14 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 ```json
 "experimentalDecorators": true,
 "emitDecoratorMetadata": true,
-"esModuleInterop": true
+"esModuleInterop": true,
 ```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 ```typescript
 const orm = await MikroORM.init({
-  entitiesDirs: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
+  entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
   type: 'mongo',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
@@ -230,12 +233,12 @@ console.log(orm.em); // access EntityManager via `em` property
 ```
 
 There are more ways to configure your entities, take a look at 
-[installation page](https://mikro-orm.io/installation/).
+[installation page](https://mikro-orm.io/docs/installation/).
 
 > Read more about all the possible configuration options in [Advanced Configuration](https://mikro-orm.io/docs/configuration) section.
 
 Then you will need to fork entity manager for each request so their 
-[identity maps](https://mikro-orm.io/identity-map/) will not collide. 
+[identity maps](https://mikro-orm.io/docs/identity-map/) will not collide. 
 To do so, use the `RequestContext` helper:
 
 ```typescript
@@ -251,9 +254,9 @@ app.use((req, res, next) => {
 > it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
 > register the context after them. 
 
-More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
+More info about `RequestContext` is described [here](https://mikro-orm.io/docs/identity-map/#request-context).
 
-Now you can start defining your entities (in one of the `entitiesDirs` folders). This is how
+Now you can start defining your entities (in one of the `entities` folders). This is how
 simple entity can look like in mongo driver:
 
 **`./entities/MongoBook.ts`**
@@ -316,7 +319,7 @@ export class UuidBook {
 ```
 
 More information can be found in
-[defining entities section](https://mikro-orm.io/defining-entities/) in docs.
+[defining entities section](https://mikro-orm.io/docs/defining-entities/) in docs.
 
 When you have your entities defined, you can start using ORM either via `EntityManager`
 or via `EntityRepository`s.
@@ -379,8 +382,8 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
-Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/entity-manager/)
-or [using `EntityRepository` instead](https://mikro-orm.io/repositories/).
+Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/docs/entity-manager/)
+or [using `EntityRepository` instead](https://mikro-orm.io/docs/repositories/).
 
 ## 🤝 Contributing
 

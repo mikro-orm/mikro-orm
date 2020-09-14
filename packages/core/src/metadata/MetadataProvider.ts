@@ -1,9 +1,14 @@
 import { EntityMetadata, EntityProperty } from '../typings';
-import { Configuration, Utils } from '../utils';
+import { Utils } from '../utils/Utils';
+
+// to get around circular dependencies
+export interface IConfiguration {
+  get(key: string, defaultValue?: any): any;
+}
 
 export abstract class MetadataProvider {
 
-  constructor(protected readonly config: Configuration) { }
+  constructor(protected readonly config: IConfiguration) { }
 
   abstract async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 

@@ -1,6 +1,6 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType, LoadStrategy } from '../entity';
+import { Cascade, ReferenceType, LoadStrategy } from '../enums';
 import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
 import { Type } from '../types';
 
@@ -55,6 +55,8 @@ export type PropertyOptions<T> = {
   lazy?: boolean;
   primary?: boolean;
   serializedPrimaryKey?: boolean;
+  serializer?: (value: any) => any;
+  serializedName?: string;
   comment?: string;
 };
 

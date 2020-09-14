@@ -17,7 +17,7 @@ export class Car2 {
   price: number;
 
   @ManyToMany(() => User2, u => u.cars)
-  users: Collection<User2> = new Collection<User2>(this);
+  users = new Collection<User2>(this);
 
   [PrimaryKeyType]: [string, number];
 

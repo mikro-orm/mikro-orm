@@ -1,7 +1,7 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType } from '../entity';
+import { ReferenceType } from '../enums';
 import { AnyEntity, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T, O>(

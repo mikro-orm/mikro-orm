@@ -95,8 +95,6 @@ describe('GH issue 349', () => {
     expect(getA!._id).not.toBeInstanceOf(ObjectId);
     expect(getA!._id).toBe(uuid);
     expect(getA!.id).toBe(uuid);
-
-    orm.em.clear();
   });
 
   test(`should fetch all documents with uuid _id type`, async () => {
@@ -113,7 +111,6 @@ describe('GH issue 349', () => {
     const getAll = await orm.em.find<A>(A, {});
     expect(getAll[0]._id).not.toBeInstanceOf(ObjectId);
     expect(getAll[1]._id).not.toBeInstanceOf(ObjectId);
-    orm.em.clear();
   });
 
   test(`should not convert to objectId even if it can`, async () => {
@@ -125,7 +122,8 @@ describe('GH issue 349', () => {
     orm.em.clear();
     const getA = await orm.em.findOneOrFail(A, a1._id);
     expect(getA._id).not.toBeInstanceOf(ObjectId);
-    orm.em.clear();
+    const getA2 = await orm.em.getDriver().findOne<A>(A.name, a1._id);
+    expect(getA2!._id).not.toBeInstanceOf(ObjectId);
   });
 
   test(`should convert to objectId if type is ObjectId`, async () => {
@@ -135,7 +133,6 @@ describe('GH issue 349', () => {
     orm.em.clear();
     const getB = await orm.em.findOneOrFail(B, b._id);
     expect(getB._id).toBeInstanceOf(ObjectId);
-    orm.em.clear();
   });
 
   test(`should work with number id`, async () => {
@@ -149,7 +146,6 @@ describe('GH issue 349', () => {
     const getC = await orm.em.findOneOrFail(C, c._id);
     expect(getC._id).not.toBeInstanceOf(ObjectId);
     expect(getC._id).toStrictEqual(nrId);
-    orm.em.clear();
   });
 
 });

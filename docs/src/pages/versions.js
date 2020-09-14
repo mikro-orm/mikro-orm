@@ -13,7 +13,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-import pkg from '../../../package.json';
+import pkg from '../../../packages/core/package.json';
 import versions from '../../versions.json';
 
 function Version() {
@@ -34,7 +34,7 @@ function Version() {
           <table>
             <tbody>
             <tr>
-              <th>{latestVersion[0]}</th>
+              <th>{latestVersion[1]}</th>
               <td>
                 <Link to={useBaseUrl('/docs/installation')}>
                   Documentation

@@ -1,9 +1,8 @@
 import { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType } from '../entity';
 import { EntityName, EntityProperty, AnyEntity } from '../typings';
-import { QueryOrder } from '../enums';
+import { ReferenceType, QueryOrder } from '../enums';
 
 export function ManyToMany<T, O>(
   entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),

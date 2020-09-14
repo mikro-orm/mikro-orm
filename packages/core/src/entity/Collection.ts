@@ -1,14 +1,13 @@
 import { AnyEntity, Dictionary, EntityData, FilterQuery, Populate, Primary } from '../typings';
-import { ArrayCollection } from './index';
-import { ReferenceType } from './enums';
-import { Utils, ValidationError } from '../utils';
-import { QueryOrder, QueryOrderMap } from '../enums';
+import { ArrayCollection } from './ArrayCollection';
+import { Utils } from '../utils/Utils';
+import { ValidationError } from '../errors';
+import { QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 
-export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity> extends ArrayCollection<T, O> {
+export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
-  private initialized = false;
   private dirty = false;
   private _populated = false;
   private _lazyInitialized = false;
@@ -26,7 +25,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEntity>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T, O = any>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, items, initialized);
     owner[prop] = coll as unknown as O[keyof O];
 
@@ -129,14 +128,6 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     return super.count();
   }
 
-  isInitialized(fully = false): boolean {
-    if (fully) {
-      return this.initialized && this.items.every(item => item.__helper!.isInitialized());
-    }
-
-    return this.initialized;
-  }
-
   shouldPopulate(): boolean {
     return this._populated && !this._lazyInitialized;
   }
@@ -165,8 +156,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     }
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable<T, O>(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map(item => em.merge<T>(this.property.type, item, false, true)));
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
+      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
       this._lazyInitialized = true;
 
       return this;
@@ -185,7 +176,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
-    const items = await em.find<T>(this.property.type, where, options.populate, orderBy);
+    const items = await em.find(this.property.type, where, options.populate, orderBy);
 
     if (!customOrder) {
       this.reorderItems(items, order);
@@ -240,8 +231,8 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.owner.__helper!.__internal.platform.usesPivotTable()) {
-      const pk = this.items[0].__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
-      cond[pk] = { $in: this.items.map(item => item.__helper!.__primaryKey) };
+      const pk = (this.items[0] as AnyEntity<T>).__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
+      cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
     }
@@ -296,7 +287,7 @@ export class Collection<T extends AnyEntity<T>, O extends AnyEntity<O> = AnyEnti
       return;
     }
 
-    const check = (item: T) => {
+    const check = (item: T & AnyEntity<T>) => {
       if (item.__helper!.isInitialized()) {
         return false;
       }

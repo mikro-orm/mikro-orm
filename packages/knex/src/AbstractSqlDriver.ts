@@ -1,10 +1,13 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, Value } from 'knex';
 import {
-  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty,
+  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty, QueryFlag,
   FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, AbstractSqlPlatform, Field, QueryBuilder } from './index';
+import { AbstractSqlConnection } from './AbstractSqlConnection';
+import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+import { QueryBuilder } from './query/QueryBuilder';
 import { SqlEntityManager } from './SqlEntityManager';
+import { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
@@ -34,12 +37,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
     const joinedProps = this.joinedProps(meta, populate);
-    const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx);
+    const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
-    const pk = meta.primaryKeys[0];
 
-    if (Utils.isPrimaryKey(where)) {
-      where = { [pk]: where } as FilterQuery<T>;
+    if (Utils.isPrimaryKey(where, meta.compositePK)) {
+      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
     qb.select(fields)
@@ -163,6 +165,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async count(entityName: string, where: any, ctx?: Transaction<KnexTransaction>): Promise<number> {
     const pks = this.metadata.find(entityName)!.primaryKeys;
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
+      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .count(pks, true)
       .where(where);
     const res = await this.rethrow(qb.execute('get', false));
@@ -226,6 +229,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (Object.keys(data).length > 0) {
       const qb = this.createQueryBuilder<T>(entityName, ctx, true)
+        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
         .update(data)
         .where(where);
 
@@ -245,7 +249,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pks[0]]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName, ctx, true).delete(where);
+    const qb = this.createQueryBuilder(entityName, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).delete(where);
 
     return this.rethrow(qb.execute('run', false));
   }
@@ -273,6 +277,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
       const qb = this.createQueryBuilder(coll.property.type, ctx, true)
+        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
         .update({ [coll.property.mappedBy]: pks })
         .getKnexQuery()
         .whereIn(cols, insertDiff as string[][]);
@@ -296,7 +301,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx);
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{
       field: prop.pivotTable,
     }]);

@@ -1,11 +1,10 @@
 import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, Populate, PopulateOptions } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { QueryOrderMap, QueryFlag } from '../enums';
+import { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata';
-import { LockMode } from '../unit-of-work';
-import { Collection, LoadStrategy } from '../entity';
-import { EntityManager } from '../index';
+import { Collection } from '../entity';
+import { EntityManager } from '../EntityManager';
 import { DriverException } from '../exceptions';
 
 export const EntityManagerType = Symbol('EntityManagerType');
@@ -42,7 +41,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
+  syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 
   count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
 
@@ -82,6 +81,7 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   limit?: number;
   offset?: number;
   refresh?: boolean;
+  convertCustomTypes?: boolean;
   fields?: string[];
   schema?: string;
   flags?: QueryFlag[];

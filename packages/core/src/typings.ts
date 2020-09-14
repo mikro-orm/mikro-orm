@@ -1,11 +1,8 @@
-import { QueryOrder } from './enums';
-import { AssignOptions, Cascade, Collection, EntityRepository, EntityValidator, IdentifiedReference, LoadStrategy, Reference, ReferenceType } from './entity';
-import { EntityManager } from './EntityManager';
-import { LockMode } from './unit-of-work';
+import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
+import { AssignOptions, Collection, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { Platform } from './platforms';
-import { EntitySchema, MetadataStorage } from './metadata';
+import { EntitySchema } from './metadata';
 import { Type } from './types';
-import { EventType } from './events';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -46,9 +43,9 @@ export type OperatorMap<T> = {
   $like?: string;
   $re?: string;
   $ilike?: string;
-  $overlap?: string;
-  $contains?: string;
-  $contained?: string;
+  $overlap?: string[];
+  $contains?: string[];
+  $contained?: string[];
 };
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
@@ -66,7 +63,7 @@ export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T
 export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = never> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
-  init(populated?: boolean, lockMode?: LockMode): Promise<T>;
+  init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK = never, P2 extends P = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
@@ -76,10 +73,11 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   __uuid: string;
   __meta: EntityMetadata<T>;
-  __internal: { platform: Platform; metadata: MetadataStorage; validator: EntityValidator };
+  __internal: { platform: Platform; metadata: IMetadataStorage; validator: EntityValidator };
   __data: Dictionary;
-  __em?: EntityManager;
+  __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __initialized?: boolean;
+  __managed: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
   __primaryKey: PrimaryMap<T>;
@@ -106,7 +104,6 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   primary: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
-  discriminator?: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
@@ -150,7 +147,10 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
+  serializer?: (value: any) => any;
+  serializedName?: string;
   comment?: string;
+  userDefined?: boolean;
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
@@ -286,4 +286,12 @@ export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
 
 export interface Highlighter {
   highlight(text: string): string;
+}
+export interface IMetadataStorage {
+  getAll(): Dictionary<EntityMetadata>;
+  get<T extends AnyEntity<T> = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
+  find<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T> | undefined;
+  has(entity: string): boolean;
+  set(entity: string, meta: EntityMetadata): EntityMetadata;
+  reset(entity: string): void;
 }

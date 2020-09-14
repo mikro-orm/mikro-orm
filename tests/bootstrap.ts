@@ -26,6 +26,8 @@ const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./
 export const BASE_DIR = __dirname;
 export const TEMP_DIR = process.cwd() + '/temp';
 
+let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
+
 export async function initORMMongo() {
   const orm = await MikroORM.init<MongoDriver>({
     entities: ['entities'],
@@ -35,15 +37,13 @@ export async function initORMMongo() {
     debug: true,
     logger: i => i,
     type: 'mongo',
-    ensureIndexes: true,
+    ensureIndexes,
     implicitTransactions: true,
     populateAfterFlush: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
   });
 
-  // create collections first so we can use transactions
-  await orm.em.getDriver().dropCollections();
-  await orm.em.getDriver().ensureIndexes();
+  ensureIndexes = false;
 
   return orm;
 }

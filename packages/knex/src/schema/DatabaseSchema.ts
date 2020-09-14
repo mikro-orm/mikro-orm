@@ -1,7 +1,8 @@
 import { Configuration } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
 import { SchemaHelper } from './SchemaHelper';
-import { AbstractSqlConnection } from '../index';
+import { AbstractSqlConnection } from '../AbstractSqlConnection';
+import { Table } from '../typings';
 
 export class DatabaseSchema {
 
@@ -43,9 +44,4 @@ export class DatabaseSchema {
     return schema;
   }
 
-}
-
-export interface Table {
-  table_name: string;
-  schema_name?: string;
 }

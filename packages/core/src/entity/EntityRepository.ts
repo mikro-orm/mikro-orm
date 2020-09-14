@@ -1,7 +1,8 @@
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New } from '../typings';
+import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery } from '../typings';
 import { QueryOrderMap } from '../enums';
-import { FilterQuery, FindOneOptions, FindOptions, FindOneOrFailOptions, IdentifiedReference, Reference } from '..';
+import { FindOneOptions, FindOneOrFailOptions, FindOptions } from '../drivers/IDatabaseDriver';
+import { IdentifiedReference, Reference } from './Reference';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 

@@ -14,7 +14,7 @@ export class Sandwich {
   price: number;
 
   @ManyToMany(() => User2, u => u.sandwiches)
-  users: Collection<User2> = new Collection<User2>(this);
+  users = new Collection<User2>(this);
 
   constructor(name: string, price: number) {
     this.name = name;

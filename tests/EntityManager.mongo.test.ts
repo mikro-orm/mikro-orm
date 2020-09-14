@@ -160,6 +160,16 @@ describe('EntityManagerMongo', () => {
     await orm.em.getRepository(Book).remove(lastBook[0]).flush();
   });
 
+  test('create/drop collection', async () => {
+    const driver = orm.em.getDriver();
+    await driver.getConnection().dropCollection(FooBar);
+    let collections = await driver.getConnection().listCollections();
+    expect(collections).not.toContain('foo-bar');
+    await driver.createCollections();
+    collections = await driver.getConnection().listCollections();
+    expect(collections).toContain('foo-bar');
+  });
+
   test('should provide custom repository', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);
@@ -179,6 +189,20 @@ describe('EntityManagerMongo', () => {
     expect(wrap(a!.baz!).isInitialized()).toBe(true);
     expect(wrap(a!.baz!.book).isInitialized()).toBe(true);
     expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
+  });
+
+  test('property serializer', async () => {
+    const bar = FooBar.create('fb');
+    bar.baz = FooBaz.create('fz');
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const a = await orm.em.findOne(FooBar, bar.id, ['baz']);
+    expect(wrap(a).toJSON()).toMatchObject({
+      name: 'fb',
+      fooBaz: 'FooBaz id: ' + bar.baz.id,
+    });
+    expect(wrap(a).toJSON().baz).toBeUndefined();
   });
 
   test(`persisting 1:1 from owning side with cycle`, async () => {
@@ -511,6 +535,9 @@ describe('EntityManagerMongo', () => {
       { _id: res.rows?.[1]._id, name: 'test 2', type: 'LOCAL' },
       { _id: res.rows?.[2]._id, name: 'test 3', type: 'GLOBAL' },
     ]);
+    await driver.nativeDelete(Publisher.name, res.rows?.[0]._id);
+    const count = await driver.count(Publisher.name, {});
+    expect(count).toBe(2);
   });
 
   test('ensure indexes', async () => {
@@ -2064,6 +2091,24 @@ describe('EntityManagerMongo', () => {
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
+  });
+
+  test('working with arrays', async () => {
+    const book = new Book('B');
+    await orm.em.persist(book).flush();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    book.metaArray = ['a', 'b'];
+    await orm.em.flush();
+
+    book.metaArray.push('c');
+    await orm.em.flush();
+
+    expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
+    expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
   });
 
   // this should run in ~600ms (when running single test locally)
