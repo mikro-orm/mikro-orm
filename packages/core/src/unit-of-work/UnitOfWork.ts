@@ -117,9 +117,7 @@ export class UnitOfWork {
     if (!entity) {
       const map = new Map();
       this.identityMap.forEach(e => {
-        if (e.__helper!.__originalEntityData) {
-          map.set(e.__helper!.__uuid, e.__helper!.__originalEntityData);
-        }
+        map.set(e.__helper!.__uuid, e.__helper!.__originalEntityData);
       });
 
       return map;

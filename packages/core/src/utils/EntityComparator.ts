@@ -58,6 +58,10 @@ export class EntityComparator {
         return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], this.platform));
       }
 
+      if (prop.type.toLowerCase() === 'date') {
+        return ret[prop.name] = Utils.copy(this.platform.processDateProperty(entity[prop.name]));
+      }
+
       if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
         return ret[prop.name] = Utils.copy(entity[prop.name]);
       }
@@ -86,7 +90,7 @@ export class EntityComparator {
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
     const emptyRef = isSetter && value === undefined;
 
-    return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef;
+    return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef || prop.version;
   }
 
 }

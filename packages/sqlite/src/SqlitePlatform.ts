@@ -34,13 +34,27 @@ export class SqlitePlatform extends AbstractSqlPlatform {
    * This might be narrowed via custom DateTimeType that would be automatically used in v5.
    */
   processVersionProperty<T>(meta: EntityMetadata<T>, entity: T): string | number | Date {
-    const value = entity[meta.versionProperty] as unknown as string;
+    const value = entity[meta.versionProperty] as unknown;
 
-    if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {
-      return new Date().toISOString().substr(0, 19).replace('T', ' ');
+    if (value instanceof Date) {
+      return value.toISOString().substr(0, 19).replace('T', ' ');
     }
 
-    return value ;
+    return value as string;
+  }
+
+  /**
+   * This is used to narrow the value of Date properties as they will be stored as timestamps in sqlite.
+   * We use this method to convert Dates to timestamps when computing the changeset, so we have the right
+   * data type in the payload as well as in original entity data. Without that, we would end up with diffs
+   * including all Date properties, as we would be comparing Date object with timestamp.
+   */
+  processDateProperty(value: unknown): string | number | Date {
+    if (value instanceof Date) {
+      return +value;
+    }
+
+    return value as number;
   }
 
 }

@@ -136,4 +136,8 @@ export abstract class Platform {
     return entity[meta.versionProperty] as unknown as string;
   }
 
+  processDateProperty(value: unknown): string | number | Date {
+    return value as string;
+  }
+
 }
