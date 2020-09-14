@@ -504,6 +504,7 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
+    expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('');
     expect(await driver.find(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toEqual([]);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();

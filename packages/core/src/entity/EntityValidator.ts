@@ -85,7 +85,7 @@ export class EntityValidator {
   }
 
   private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
-    if (entity.__helper!.isInitialized() && !entity[prop.name as keyof T]) {
+    if (entity.__helper!.__initialized && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
   }

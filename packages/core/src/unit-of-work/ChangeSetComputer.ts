@@ -98,7 +98,7 @@ export class ChangeSetComputer {
       return;
     }
 
-    if (prop.owner || target.getItems(false).filter(item => !item.__helper!.isInitialized()).length > 0) {
+    if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
       this.collectionUpdates.push(target);
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist

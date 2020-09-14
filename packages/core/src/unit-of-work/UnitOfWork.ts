@@ -301,7 +301,7 @@ export class UnitOfWork {
     visited.add(entity);
     const wrapped = entity.__helper!;
 
-    if (!wrapped.isInitialized() || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
+    if (!wrapped.__initialized || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
       return;
     }
 
@@ -427,7 +427,7 @@ export class UnitOfWork {
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
       collection
         .getItems(false)
-        .filter(item => !requireFullyInitialized || item.__helper!.isInitialized())
+        .filter(item => !requireFullyInitialized || item.__helper!.__initialized)
         .forEach(item => this.cascade(item, type, visited, options));
     }
   }
@@ -464,7 +464,7 @@ export class UnitOfWork {
 
     const wrapped = entity.__helper!;
 
-    if (!wrapped.isInitialized()) {
+    if (!wrapped.__initialized) {
       await wrapped.init();
     }
 

@@ -273,7 +273,7 @@ export class EntityLoader {
       return children.map(e => Reference.unwrapReference(e[field]));
     }
 
-    return children.filter(e => !(e[field] as AnyEntity).__helper!.isInitialized()).map(e => Reference.unwrapReference(e[field]));
+    return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
   private lookupAllRelationships<T>(entityName: string, prefix = '', visited: string[] = []): PopulateOptions<T>[] {

@@ -102,7 +102,7 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   isInitialized(): boolean {
-    return this.entity.__helper!.isInitialized();
+    return this.entity.__helper!.__initialized;
   }
 
   populated(populated?: boolean): void {

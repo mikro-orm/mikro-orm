@@ -114,7 +114,7 @@ export class ArrayCollection<T, O> {
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.isInitialized());
+      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.__initialized);
     }
 
     return this.initialized;

@@ -76,7 +76,7 @@ describe('EntityHelperMongo', () => {
 
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
-    expect(wrap(god, true).__populated).toBe(false);
+    expect(wrap(god, true).__populated).toBeUndefined();
     god.populated();
     expect(wrap(god, true).__populated).toBe(true);
 
