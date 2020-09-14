@@ -2,8 +2,8 @@
   <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
 </h1>
 
-TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/unit-of-work/) 
-and [Identity Map](https://mikro-orm.io/identity-map/) patterns. Supports MongoDB, MySQL, 
+TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) 
+and [Identity Map](https://mikro-orm.io/docs/identity-map/) patterns. Supports MongoDB, MySQL, 
 MariaDB, PostgreSQL and SQLite databases. 
 
 > Heavily inspired by [Doctrine](https://www.doctrine-project.org/) and [Nextras Orm](https://nextras.org/orm/).
@@ -138,24 +138,24 @@ There is also auto-generated [CHANGELOG.md](CHANGELOG.md) file based on commit m
 
 ## ✨ Core Features
 
-- [Clean and Simple Entity Definition](https://mikro-orm.io/defining-entities/)
-- [Identity Map](https://mikro-orm.io/identity-map/)
-- [Entity References](https://mikro-orm.io/entity-references/)
-- [Using Entity Constructors](https://mikro-orm.io/using-entity-constructors/)
-- [Modelling Relationships](https://mikro-orm.io/relationships/)
-- [Collections](https://mikro-orm.io/collections/)
-- [Unit of Work](https://mikro-orm.io/unit-of-work/)
-- [Transactions](https://mikro-orm.io/transactions/)
-- [Cascading persist and remove](https://mikro-orm.io/cascading/)
-- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/composite-keys/)
-- [Filters](https://mikro-orm.io/filters/)
-- [Using `QueryBuilder`](https://mikro-orm.io/query-builder/)
-- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/nested-populate/)
-- [Property Validation](https://mikro-orm.io/property-validation/)
-- [Lifecycle Hooks](https://mikro-orm.io/lifecycle-hooks/)
-- [Vanilla JS Support](https://mikro-orm.io/usage-with-js/)
-- [Schema Generator](https://mikro-orm.io/schema-generator/)
-- [Entity Generator](https://mikro-orm.io/entity-generator/)
+- [Clean and Simple Entity Definition](https://mikro-orm.io/docs/defining-entities/)
+- [Identity Map](https://mikro-orm.io/docs/identity-map/)
+- [Entity References](https://mikro-orm.io/docs/entity-references/)
+- [Using Entity Constructors](https://mikro-orm.io/docs/using-entity-constructors/)
+- [Modelling Relationships](https://mikro-orm.io/docs/relationships/)
+- [Collections](https://mikro-orm.io/docs/collections/)
+- [Unit of Work](https://mikro-orm.io/docs/unit-of-work/)
+- [Transactions](https://mikro-orm.io/docs/transactions/)
+- [Cascading persist and remove](https://mikro-orm.io/docs/cascading/)
+- [Composite and Foreign Keys as Primary Key](https://mikro-orm.io/docs/composite-keys/)
+- [Filters](https://mikro-orm.io/docs/filters/)
+- [Using `QueryBuilder`](https://mikro-orm.io/docs/query-builder/)
+- [Preloading Deeply Nested Structures via populate](https://mikro-orm.io/docs/nested-populate/)
+- [Property Validation](https://mikro-orm.io/docs/property-validation/)
+- [Lifecycle Hooks](https://mikro-orm.io/docs/lifecycle-hooks/)
+- [Vanilla JS Support](https://mikro-orm.io/docs/usage-with-js/)
+- [Schema Generator](https://mikro-orm.io/docs/schema-generator/)
+- [Entity Generator](https://mikro-orm.io/docs/entity-generator/)
 
 ## 📦 Example Integrations
 
@@ -319,7 +319,7 @@ export class UuidBook {
 ```
 
 More information can be found in
-[defining entities section](https://mikro-orm.io/defining-entities/) in docs.
+[defining entities section](https://mikro-orm.io/docs/defining-entities/) in docs.
 
 When you have your entities defined, you can start using ORM either via `EntityManager`
 or via `EntityRepository`s.
@@ -382,8 +382,8 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
-Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/entity-manager/)
-or [using `EntityRepository` instead](https://mikro-orm.io/repositories/).
+Take a look at docs about [working with `EntityManager`](https://mikro-orm.io/docs/entity-manager/)
+or [using `EntityRepository` instead](https://mikro-orm.io/docs/repositories/).
 
 ## 🤝 Contributing
 
