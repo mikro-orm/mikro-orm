@@ -122,7 +122,7 @@ export class ChangeSetPersister {
 
     const cond = {
       ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
-      [meta.versionProperty]: this.driver.getPlatform().processVersionProperty(meta, changeSet.entity),
+      [meta.versionProperty]: changeSet.entity[meta.versionProperty],
     } as FilterQuery<T>;
 
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);

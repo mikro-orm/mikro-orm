@@ -12,6 +12,7 @@ import { ValidationError } from '../errors';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
+  readonly __meta: EntityMetadata<T>;
   __initialized = true;
   __populated = false;
   __lazyInitialized = false;
@@ -30,9 +31,8 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     validator: EntityValidator;
   };
 
-  constructor(private readonly entity: T,
-              readonly __meta: EntityMetadata<T>,
-              em: EntityManager) {
+  constructor(private readonly entity: T, em: EntityManager) {
+    this.__meta = (entity as Dictionary).__meta;
     this.__internal = {
       platform: em.getDriver().getPlatform(),
       metadata: em.getMetadata(),
