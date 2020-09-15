@@ -70,6 +70,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 }
 
 export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+  hasPrimaryKey(): boolean;
   __meta: EntityMetadata<T>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle

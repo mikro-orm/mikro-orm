@@ -31,7 +31,7 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[this.propertyName(meta, pk, platform)] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && Utils.isDefined(wrapped.__primaryKey, true)) || visited.has(entity)) {
+    if ((!wrapped.isInitialized() && wrapped.hasPrimaryKey()) || visited.has(entity)) {
       return ret;
     }
 

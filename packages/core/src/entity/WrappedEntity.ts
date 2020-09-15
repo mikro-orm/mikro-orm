@@ -70,6 +70,13 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return this.entity;
   }
 
+  hasPrimaryKey(): boolean {
+    return this.__meta.primaryKeys.every(pk => {
+      const val = Utils.extractPK(this.entity[pk]);
+      return val !== undefined && val !== null;
+    });
+  }
+
   get __primaryKey(): Primary<T> {
     return Utils.getPrimaryKeyValue(this.entity, this.__meta.primaryKeys);
   }

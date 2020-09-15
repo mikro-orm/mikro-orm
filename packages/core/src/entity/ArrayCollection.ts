@@ -102,7 +102,7 @@ export class ArrayCollection<T, O> {
 
     return !!this.items.find((i: AnyEntity<T>) => {
       const objectIdentity = i === entity;
-      const primaryKeyIdentity = i.__helper!.__primaryKey && entity.__helper!.__primaryKey && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
+      const primaryKeyIdentity = i.__helper!.hasPrimaryKey() && entity.__helper!.hasPrimaryKey() && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
