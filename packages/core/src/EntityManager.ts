@@ -1,7 +1,6 @@
-import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, QueryHelper, RequestContext, Utils } from './utils';
+import { Configuration, QueryHelper, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
@@ -19,7 +18,8 @@ import { OptimisticLockError, ValidationError } from './errors';
  */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  readonly id = uuid();
+  private static counter = 1;
+  readonly id = EntityManager.counter++;
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
@@ -647,7 +647,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
   getUnitOfWork(): UnitOfWork {
-    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
+    const em = this.useContext ? (this.config.get('context')() || this) : this;
     return em.unitOfWork;
   }
 
@@ -655,7 +655,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityFactory used by the EntityManager.
    */
   getEntityFactory(): EntityFactory {
-    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
+    const em = this.useContext ? (this.config.get('context')() || this) : this;
     return em.entityFactory;
   }
 

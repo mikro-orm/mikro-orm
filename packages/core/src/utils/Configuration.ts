@@ -18,6 +18,7 @@ import { EventSubscriber } from '../events';
 import { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
+import { RequestContext } from './RequestContext';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -35,6 +36,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     strict: false,
     validate: false,
+    context: () => RequestContext.getEntityManager(),
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
@@ -329,6 +331,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
+  context: () => EntityManager | undefined;
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
