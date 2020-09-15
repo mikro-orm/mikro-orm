@@ -23,9 +23,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
+  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
-  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;

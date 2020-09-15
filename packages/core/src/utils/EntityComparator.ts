@@ -81,7 +81,7 @@ export class EntityComparator {
 
     const value = entity[prop.name];
     const collection = Utils.isCollection(value);
-    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.__primaryKeys.every(pk => Utils.isDefined(pk, true));
+    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.hasPrimaryKey();
     const noPkProp = prop.primary && !Utils.isDefined(value, true);
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;

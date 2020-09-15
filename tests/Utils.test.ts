@@ -370,6 +370,10 @@ describe('Utils', () => {
     expect(name).toEqual('mikro-orm-root');
   });
 
+  test('getPrimaryKeyCond', () => {
+    expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

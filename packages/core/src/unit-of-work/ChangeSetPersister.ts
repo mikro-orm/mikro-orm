@@ -64,9 +64,8 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSet.name)!;
     const wrapped = changeSet.entity.__helper!;
     const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
-    const hasPrimaryKey = Utils.isDefined(wrapped.__primaryKey, true);
 
-    if (!hasPrimaryKey) {
+    if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId, changeSet);
     }
 
@@ -90,7 +89,11 @@ export class ChangeSetPersister {
     const prop = meta.properties[meta.primaryKeys[0]];
     const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.driver.getPlatform()) : value;
     const wrapped = changeSet.entity.__helper!;
-    wrapped.__primaryKey = Utils.isDefined(wrapped.__primaryKey, true) ? wrapped.__primaryKey : insertId;
+
+    if (!wrapped.hasPrimaryKey()) {
+      wrapped.__primaryKey = insertId;
+    }
+
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
     wrapped.__identifier!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
   }
