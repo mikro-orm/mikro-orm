@@ -177,7 +177,7 @@ export class EntityLoader {
       return [];
     }
 
-    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__helper!.__meta.primaryKeys, true)));
+    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform()), ...(options.where as Dictionary) } as FilterQuery<T>;
 
     return this.em.find<T>(prop.type, where, {
@@ -285,8 +285,7 @@ export class EntityLoader {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
-    Object.values(meta.properties)
-      .filter(prop => prop.reference !== ReferenceType.SCALAR)
+    meta.relations
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
         const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
@@ -312,7 +311,7 @@ export class EntityLoader {
     visited.push(entityName);
     const meta = this.metadata.find(entityName)!;
 
-    Object.values(meta.properties)
+    meta.relations
       .filter(prop => prop.eager)
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;

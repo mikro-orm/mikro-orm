@@ -231,7 +231,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.property.pivotTable) {
-      const pk = (this.items[0] as AnyEntity<T>).__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
+      const pk = (this.items[0] as AnyEntity<T>).__meta!.primaryKeys[0]; // we know there is at least one item as it was checked in load method
       cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;

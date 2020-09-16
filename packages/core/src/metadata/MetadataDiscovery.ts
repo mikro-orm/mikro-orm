@@ -12,6 +12,7 @@ import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
 import { ArrayType, BlobType, Type } from '../types';
+import { EntityComparator } from '../utils/EntityComparator';
 
 export class MetadataDiscovery {
 
@@ -47,7 +48,14 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
-    this.discovered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(meta, prop)));
+
+    this.discovered.forEach(meta => {
+      const root = Utils.getRootEntity(this.metadata, meta);
+      meta.props = Object.values(meta.properties);
+      meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+      meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
+      meta.props.forEach(prop => this.initIndexes(meta, prop));
+    });
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished, found ${c.green('' + this.discovered.length)} entities, took ${c.green(`${diff} ms`)}`);
@@ -186,6 +194,7 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `- processing entity ${c.cyan((entity as EntityClass<T>).name)}${c.grey(path ? ` (${path})` : '')}`);
     const schema = this.getSchema(entity as Constructor<T>);
     const meta = schema.init().meta;
+    const root = Utils.getRootEntity(this.metadata, meta);
     this.metadata.set(meta.className, meta);
     schema.meta.path = Utils.relativePath(path || meta.path, this.config.get('baseDir'));
     const cache = meta.useCache && meta.path && await this.cache.get(meta.className + extname(meta.path));
@@ -193,6 +202,7 @@ export class MetadataDiscovery {
     if (cache) {
       this.logger.log('discovery', `- using cached metadata for entity ${c.cyan(meta.className)}`);
       this.metadataProvider.loadFromCache(meta, cache);
+      meta.root = root;
       this.discovered.push(meta);
 
       return;
@@ -203,12 +213,12 @@ export class MetadataDiscovery {
     }
 
     if (!meta.collection && meta.name) {
-      const root = Utils.getRootEntity(this.metadata, meta);
       const entityName = root.discriminatorColumn ? root.name : meta.name;
       meta.collection = this.namingStrategy.classToTableName(entityName!);
     }
 
     await this.saveToCache(meta);
+    meta.root = root;
     this.discovered.push(meta);
   }
 
@@ -551,46 +561,44 @@ export class MetadataDiscovery {
   }
 
   private initSingleTableInheritance(meta: EntityMetadata): void {
-    const root = Utils.getRootEntity(this.metadata, meta);
-
-    if (!root.discriminatorColumn) {
+    if (!meta.root.discriminatorColumn) {
       return;
     }
 
-    if (!root.discriminatorMap) {
-      root.discriminatorMap = {} as Dictionary<string>;
-      const children = Object.values(this.metadata.getAll()).filter(m => Utils.getRootEntity(this.metadata, m) === root);
+    if (!meta.root.discriminatorMap) {
+      meta.root.discriminatorMap = {} as Dictionary<string>;
+      const children = Object.values(this.metadata.getAll()).filter(m => m.root === meta.root);
       children.forEach(m => {
         const name = m.discriminatorValue || this.namingStrategy.classToTableName(m.className);
-        root.discriminatorMap![name] = m.className;
+        meta.root.discriminatorMap![name] = m.className;
       });
     }
 
-    meta.discriminatorValue = Object.entries(root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
+    meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
 
-    if (!root.properties[root.discriminatorColumn]) {
-      root.properties[root.discriminatorColumn] = this.createDiscriminatorProperty(root);
+    if (!meta.root.properties[meta.root.discriminatorColumn]) {
+      meta.root.properties[meta.root.discriminatorColumn] = this.createDiscriminatorProperty(meta.root);
     }
 
-    Utils.defaultValue(root.properties[root.discriminatorColumn], 'items', Object.keys(root.discriminatorMap));
-    Utils.defaultValue(root.properties[root.discriminatorColumn], 'index', true);
+    Utils.defaultValue(meta.root.properties[meta.root.discriminatorColumn], 'items', Object.keys(meta.root.discriminatorMap));
+    Utils.defaultValue(meta.root.properties[meta.root.discriminatorColumn], 'index', true);
 
-    if (root === meta) {
+    if (meta.root === meta) {
       return;
     }
 
     Object.values(meta.properties).forEach(prop => {
-      const exists = root.properties[prop.name];
-      root.properties[prop.name] = Utils.copy(prop);
-      root.properties[prop.name].nullable = true;
+      const exists = meta.root.properties[prop.name];
+      meta.root.properties[prop.name] = Utils.copy(prop);
+      meta.root.properties[prop.name].nullable = true;
 
       if (!exists) {
-        root.properties[prop.name].inherited = true;
+        meta.root.properties[prop.name].inherited = true;
       }
     });
 
-    root.indexes = Utils.unique([...root.indexes, ...meta.indexes]);
-    root.uniques = Utils.unique([...root.uniques, ...meta.uniques]);
+    meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
+    meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
   }
 
   private createDiscriminatorProperty(meta: EntityMetadata): EntityProperty {

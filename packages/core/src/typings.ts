@@ -2,11 +2,20 @@ import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode }
 import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference } from './entity';
 import { EntitySchema } from './metadata';
 import { Type } from './types';
+import { Platform } from './platforms';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NonFunctionPropertyNames<T> = NonNullable<{ [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>;
+
+export type DeepPartial<T> = T & {
+  [P in keyof T]?: T[P] extends (infer U)[]
+    ? DeepPartial<U>[]
+    : T[P] extends Readonly<infer U>[]
+      ? Readonly<DeepPartial<U>>[]
+      : DeepPartial<T[P]>
+};
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
@@ -74,7 +83,7 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __meta: EntityMetadata<T>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
-  __internal: any; // we cannot have `EntityManager` here as that causes a cycle
+  __platform: Platform;
   __initialized: boolean;
   __originalEntityData?: EntityData<T>;
   __identifier?: EntityIdentifier;
@@ -86,7 +95,14 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __serializedPrimaryKey: string & keyof T;
 }
 
-export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & { [PrimaryKeyType]?: unknown; [EntityRepositoryType]?: unknown; __helper?: IWrappedEntityInternal<T, keyof T> };
+export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & {
+  [PrimaryKeyType]?: unknown;
+  [EntityRepositoryType]?: unknown;
+  __helper?: IWrappedEntityInternal<T, keyof T>;
+  __meta?: EntityMetadata<T>;
+  __platform?: Platform;
+};
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
@@ -173,6 +189,9 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
+  props: EntityProperty<T>[];
+  relations: EntityProperty<T>[];
+  comparableProps: EntityProperty<T>[]; // for EntityComparator
   indexes: { properties: string | string[]; name?: string; type?: string; options?: Dictionary }[];
   uniques: { properties: string | string[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
@@ -184,6 +203,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   filters: Dictionary<FilterDef<T>>;
   comment?: string;
   readonly?: boolean;
+  root: EntityMetadata<T>;
 }
 
 export interface ISchemaGenerator {

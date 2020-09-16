@@ -1,10 +1,10 @@
-import { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityName, EntityProperty, ExpandProperty, NonFunctionPropertyNames } from '../typings';
+import { AnyEntity, Constructor, DeepPartial, Dictionary, EntityMetadata, EntityName, EntityProperty, ExpandProperty, NonFunctionPropertyNames } from '../typings';
 import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
 import { BaseEntity, EntityRepository } from '../entity';
-import { Cascade, ReferenceType, LoadStrategy } from '../enums';
+import { Cascade, LoadStrategy, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 
@@ -41,7 +41,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, filters: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
   }
 
-  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T>): EntitySchema<T, U> {
+  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
     const schema = new EntitySchema<T, U>(meta as Metadata<T, U>);
     schema.internal = true;
 
@@ -225,6 +225,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     this.initProperties();
     this.initPrimaryKeys();
+    this._meta.props = Object.values(this._meta.properties);
     this.initialized = true;
 
     return this;

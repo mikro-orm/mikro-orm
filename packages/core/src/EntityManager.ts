@@ -504,6 +504,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
+    if (Utils.isEntity(entity)) {
+      this.getUnitOfWork().persist(entity);
+      return this;
+    }
+
     const entities = Utils.asArray(entity);
 
     for (const ent of entities) {

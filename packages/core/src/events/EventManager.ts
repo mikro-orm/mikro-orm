@@ -29,7 +29,7 @@ export class EventManager {
     const entity: T = (args as EventArgs<T>).entity;
 
     // execute lifecycle hooks first
-    const hooks = (entity && entity.__helper!.__meta.hooks[event]) || [];
+    const hooks = (entity && entity.__meta!.hooks[event]) || [];
     listeners.push(...hooks.map(hook => [hook, entity] as [EventType, EventSubscriber<T>]));
 
     for (const listener of this.listeners[event] || []) {
@@ -49,7 +49,7 @@ export class EventManager {
 
   hasListeners<T extends AnyEntity<T>>(event: EventType, entity?: T): boolean {
     /* istanbul ignore next */
-    const hasHooks = entity?.__helper!.__meta.hooks[event]?.length;
+    const hasHooks = entity?.__meta!.hooks[event]?.length;
 
     if (hasHooks) {
       return true;

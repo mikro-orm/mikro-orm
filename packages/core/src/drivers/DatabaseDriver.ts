@@ -62,7 +62,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     const ret = Object.assign({}, result) as any;
 
-    Object.values(meta.properties).forEach(prop => {
+    meta.props.forEach(prop => {
       if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => Utils.isDefined(ret[joinColumn], true))) {
         const temp: any[] = [];
         prop.fieldNames.forEach(joinColumn => {
@@ -134,7 +134,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
     });
 
-    Object.values<EntityProperty>(meta.properties).forEach(prop => {
+    meta.props.forEach(prop => {
       if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
 

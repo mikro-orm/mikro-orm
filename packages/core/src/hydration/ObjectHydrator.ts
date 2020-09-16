@@ -39,7 +39,7 @@ export class ObjectHydrator extends Hydrator {
   private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
     const value: Dictionary = {};
 
-    Object.values<EntityProperty>(entity.__helper!.__meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+    entity.__meta!.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
       value[childProp.embedded![1]] = data[childProp.name];
     });
 

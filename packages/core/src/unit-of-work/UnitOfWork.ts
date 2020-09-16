@@ -18,8 +18,8 @@ export class UnitOfWork {
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
   private readonly orphanRemoveStack = new Set<AnyEntity>();
-  private readonly changeSets: ChangeSet<AnyEntity>[] = [];
-  private readonly collectionUpdates: Collection<AnyEntity>[] = [];
+  private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
+  private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
@@ -32,6 +32,7 @@ export class UnitOfWork {
   constructor(private readonly em: EntityManager) { }
 
   merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>(), mergeData = true): void {
+    const meta = entity.__meta!;
     const wrapped = entity.__helper!;
     wrapped.__em = this.em;
 
@@ -44,8 +45,7 @@ export class UnitOfWork {
       return;
     }
 
-    const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
-    this.identityMap.set(`${root.name}-${wrapped.__serializedPrimaryKey}`, entity);
+    this.identityMap.set(`${meta.root.name}-${wrapped.__serializedPrimaryKey}`, entity);
 
     if (mergeData || !entity.__helper!.__originalEntityData) {
       entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
@@ -58,7 +58,7 @@ export class UnitOfWork {
    * @internal
    */
   registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
-    const root = Utils.getRootEntity(this.metadata, entity.__helper!.__meta);
+    const root = entity.__meta!.root;
     this.identityMap.set(`${root.name}-${entity.__helper!.__serializedPrimaryKey}`, entity);
 
     if (newEntity) {
@@ -78,8 +78,8 @@ export class UnitOfWork {
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
   getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
-    const root = Utils.getRootEntity(this.metadata, this.metadata.find(entityName)!);
-    const hash = Utils.getPrimaryKeyHash(Utils.asArray(id) as string[]);
+    const root = this.metadata.find(entityName)!.root;
+    const hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : id;
     const token = `${root.name}-${hash}`;
 
     return this.identityMap.get(token) as T;
@@ -134,11 +134,11 @@ export class UnitOfWork {
   }
 
   getChangeSets(): ChangeSet<AnyEntity>[] {
-    return this.changeSets;
+    return [...this.changeSets.values()];
   }
 
   getCollectionUpdates(): Collection<AnyEntity>[] {
-    return this.collectionUpdates;
+    return [...this.collectionUpdates];
   }
 
   getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<AnyEntity>)]> {
@@ -153,22 +153,24 @@ export class UnitOfWork {
     }
 
     this.initIdentifier(entity);
-    this.changeSets.push(cs);
+    this.checkOrphanRemoval(cs);
+    this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
     entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
-    const idx = this.changeSets.findIndex(cs => cs.entity === entity);
+    const changeSet = this.changeSets.get(entity);
 
-    if (idx === -1) {
+    if (!changeSet) {
       return;
     }
 
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
     if (cs) {
-      Object.assign(this.changeSets[idx].payload, cs.payload);
+      this.checkOrphanRemoval(cs);
+      Object.assign(changeSet.payload, cs.payload);
       entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
     }
   }
@@ -212,7 +214,7 @@ export class UnitOfWork {
     await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
     // nothing to do, do not start transaction
-    if (this.changeSets.length === 0 && this.collectionUpdates.length === 0 && this.extraUpdates.size === 0) {
+    if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
       this.postCommitCleanup();
 
@@ -254,14 +256,13 @@ export class UnitOfWork {
 
   unsetIdentity(entity: AnyEntity): void {
     const wrapped = entity.__helper!;
-    const root = Utils.getRootEntity(this.metadata, wrapped.__meta);
-    this.identityMap.delete(`${root.name}-${wrapped.__serializedPrimaryKey}`);
+    this.identityMap.delete(`${entity.__meta!.root.name}-${wrapped.__serializedPrimaryKey}`);
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
   }
 
   computeChangeSets(): void {
-    this.changeSets.length = 0;
+    this.changeSets.clear();
 
     for (const entity of this.identityMap.values()) {
       if (!this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
@@ -280,7 +281,7 @@ export class UnitOfWork {
 
     for (const entity of this.removeStack) {
       const meta = this.metadata.find(entity.constructor.name)!;
-      this.changeSets.push({ entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<AnyEntity>);
+      this.changeSets.set(entity, { entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<AnyEntity>);
     }
   }
 
@@ -306,17 +307,33 @@ export class UnitOfWork {
 
     this.initIdentifier(entity);
 
-    for (const prop of Object.values<EntityProperty>(wrapped.__meta.properties)) {
+    for (const prop of entity.__meta!.relations) {
       const reference = Reference.unwrapReference(entity[prop.name]);
       this.processReference(entity, prop, reference, visited);
     }
 
-    const changeSet = this.changeSetComputer.computeChangeSet<AnyEntity>(entity);
+    const changeSet = this.changeSetComputer.computeChangeSet(entity);
 
     if (changeSet) {
-      this.changeSets.push(changeSet);
+      this.checkOrphanRemoval(changeSet);
+      this.changeSets.set(entity, changeSet);
       this.persistStack.delete(entity);
       wrapped.__originalEntityData = changeSet.payload;
+    }
+  }
+
+  private checkOrphanRemoval<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
+    const meta = this.metadata.find(changeSet.name)!;
+    const props = meta.relations.filter(prop => prop.reference === ReferenceType.ONE_TO_ONE);
+
+    for (const prop of props) {
+      // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
+      const data = changeSet.entity.__helper!.__originalEntityData;
+
+      if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload) {
+        const orphan = this.getById(prop.type, data[prop.name]);
+        this.scheduleOrphanRemoval(orphan);
+      }
     }
   }
 
@@ -381,8 +398,8 @@ export class UnitOfWork {
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();
-    this.changeSets.length = 0;
-    this.collectionUpdates.length = 0;
+    this.changeSets.clear();
+    this.collectionUpdates.clear();
     this.extraUpdates.clear();
     this.working = false;
   }
@@ -400,9 +417,7 @@ export class UnitOfWork {
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
-    const meta = this.metadata.find<T>(entity.constructor.name)!;
-
-    for (const prop of Object.values<EntityProperty>(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR)) {
+    for (const prop of entity.__meta!.relations) {
       this.cascadeReference<T>(entity, prop, type, visited, options);
     }
   }
@@ -535,8 +550,12 @@ export class UnitOfWork {
       return;
     }
 
+    const props = changeSets[0].entity.__meta!.relations.filter(prop => {
+      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
+    });
+
     for (const changeSet of changeSets) {
-      this.findExtraUpdates(changeSet);
+      this.findExtraUpdates(changeSet, props);
       await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
@@ -548,20 +567,21 @@ export class UnitOfWork {
     }
   }
 
-  private findExtraUpdates<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
-    Object.values<EntityProperty>(changeSet.entity.__helper!.__meta.properties)
-      .filter(prop => (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE)
-      .filter(prop => changeSet.entity[prop.name])
-      .forEach(prop => {
-        const cs = this.changeSets.find(cs => cs.entity === Reference.unwrapReference(changeSet.entity[prop.name]));
-        const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+  private findExtraUpdates<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
+    for (const prop of props) {
+      if (!changeSet.entity[prop.name]) {
+        continue;
+      }
 
-        if (isScheduledForInsert) {
-          this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-          delete changeSet.entity[prop.name];
-          delete changeSet.payload[prop.name];
-        }
-      });
+      const cs = this.changeSets.get(Reference.unwrapReference(changeSet.entity[prop.name]));
+      const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
+
+      if (isScheduledForInsert) {
+        this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+        delete changeSet.entity[prop.name];
+        delete changeSet.payload[prop.name];
+      }
+    }
   }
 
   private async commitUpdateChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -619,20 +639,18 @@ export class UnitOfWork {
 
   private getCommitOrder(): string[] {
     const calc = new CommitOrderCalculator();
-    const types = Utils.unique(this.changeSets.map(cs => cs.name));
-    types.forEach(entityName => calc.addNode(entityName));
-    let entityName = types.pop();
+    const set = new Set<string>();
+    this.changeSets.forEach(cs => set.add(cs.name));
+    set.forEach(entityName => calc.addNode(entityName));
 
-    while (entityName) {
-      for (const prop of Object.values<EntityProperty>(this.metadata.find(entityName)!.properties)) {
+    for (const entityName of set) {
+      for (const prop of this.metadata.find(entityName)!.props) {
         if (!calc.hasNode(prop.type)) {
           continue;
         }
 
         this.addCommitDependency(calc, prop, entityName);
       }
-
-      entityName = types.pop();
     }
 
     return calc.sort();
