@@ -80,38 +80,41 @@ export class MetadataValidator {
   private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
     if (prop.inversedBy) {
       const inverse = metadata.get(prop.type).properties[prop.inversedBy];
-      this.validateOwningSide(meta, prop, inverse);
+      this.validateOwningSide(meta, prop, inverse, metadata);
     } else if (prop.mappedBy) {
       const inverse = metadata.get(prop.type).properties[prop.mappedBy];
-      this.validateInverseSide(meta, prop, inverse);
+      this.validateInverseSide(meta, prop, inverse, metadata);
     }
   }
 
-  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty): void {
+  private validateOwningSide(meta: EntityMetadata, prop: EntityProperty, inverse: EntityProperty, metadata: MetadataStorage): void {
     // has correct `inversedBy` on owning side
     if (!inverse) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy');
     }
 
+    /* istanbul ignore next */
+    const targetClassName = metadata.find(inverse.type)?.root.className;
+
     // has correct `inversedBy` reference type
-    if (inverse.type !== meta.className) {
+    if (inverse.type !== meta.className && targetClassName !== meta.root.className) {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy', inverse);
     }
 
-    // inversed side is not defined as owner
+    // inverse side is not defined as owner
     if (inverse.inversedBy) {
       throw MetadataError.fromWrongOwnership(meta, prop, 'inversedBy');
     }
   }
 
-  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty): void {
+  private validateInverseSide(meta: EntityMetadata, prop: EntityProperty, owner: EntityProperty, metadata: MetadataStorage): void {
     // has correct `mappedBy` on inverse side
     if (prop.mappedBy && !owner) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy');
     }
 
     // has correct `mappedBy` reference type
-    if (owner.type !== meta.className) {
+    if (owner.type !== meta.className && metadata.find(owner.type)?.root.className !== meta.root.className) {
       throw MetadataError.fromWrongReference(meta, prop, 'mappedBy', owner);
     }
 

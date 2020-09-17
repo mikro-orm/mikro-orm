@@ -8,6 +8,7 @@ describe('MetadataValidator', () => {
 
   test('validates entity definition', async () => {
     const meta = { Author: { name: 'Author', className: 'Author', properties: {} } } as any;
+    meta.Author.root = meta.Author;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError('Author entity is missing @PrimaryKey()');
 
     // many to one
@@ -20,6 +21,7 @@ describe('MetadataValidator', () => {
 
     // one to many
     meta.Test = { name: 'Test', className: 'Test', properties: {} };
+    meta.Test.root = meta.Test;
     meta.Author.properties.tests = { name: 'tests', reference: ReferenceType.ONE_TO_MANY, type: 'Test', mappedBy: 'foo' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests has unknown 'mappedBy' reference: Test.foo`);
 
@@ -37,6 +39,7 @@ describe('MetadataValidator', () => {
 
     // many to many inversedBy
     meta.Book = { name: 'Book', className: 'Book', properties: {} };
+    meta.Book.root = meta.Book;
     meta.Author.properties.books = { name: 'books', reference: ReferenceType.MANY_TO_MANY, type: 'Book', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.books has unknown 'inversedBy' reference: Book.bar`);
 
@@ -67,10 +70,12 @@ describe('MetadataValidator', () => {
 
     // one to one inversedBy
     meta.Bar = { name: 'Bar', className: 'Bar', properties: {} };
+    meta.Bar.root = meta.Bar;
     meta.Foo.properties.bar = { name: 'bar', reference: ReferenceType.ONE_TO_ONE, type: 'Bar', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo')).toThrowError(`Foo.bar has unknown 'inversedBy' reference: Bar.bar`);
 
     meta.Foo.properties.bar.inversedBy = 'foo';
+    meta.Foo.root = meta.Foo;
     meta.Bar.properties.foo = { name: 'foo', reference: ReferenceType.ONE_TO_ONE, type: 'FooBar', inversedBy: 'bar' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Foo')).toThrowError(`Foo.bar has wrong 'inversedBy' reference type: FooBar instead of Foo`);
 
