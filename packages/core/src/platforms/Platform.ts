@@ -132,4 +132,8 @@ export abstract class Platform {
     throw new Error(`${this.constructor.name} does not use a schema generator`);
   }
 
+  processDateProperty(value: unknown): string | number | Date {
+    return value as string;
+  }
+
 }

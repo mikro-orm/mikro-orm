@@ -230,8 +230,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   private createManyToManyCondition(cond: Dictionary) {
-    if (this.property.owner || this.owner.__helper!.__internal.platform.usesPivotTable()) {
-      const pk = (this.items[0] as AnyEntity<T>).__helper!.__meta.primaryKeys[0]; // we know there is at least one item as it was checked in load method
+    if (this.property.owner || this.property.pivotTable) {
+      const pk = (this.items[0] as AnyEntity<T>).__meta!.primaryKeys[0]; // we know there is at least one item as it was checked in load method
       cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
@@ -283,12 +283,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private validateModification(items: T[]): void {
     // currently we allow persisting to inverse sides only in SQL drivers
-    if (this.owner.__helper!.__internal.platform.usesPivotTable() || !this.property.mappedBy) {
+    if (this.property.pivotTable || !this.property.mappedBy) {
       return;
     }
 
     const check = (item: T & AnyEntity<T>) => {
-      if (item.__helper!.isInitialized()) {
+      if (item.__helper!.__initialized) {
         return false;
       }
 

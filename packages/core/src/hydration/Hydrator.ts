@@ -1,5 +1,4 @@
 import { EntityManager } from '../EntityManager';
-import { Utils } from '../utils/Utils';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
 
@@ -33,15 +32,14 @@ export abstract class Hydrator {
 
   private getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T): EntityProperty<T>[] {
     const metadata = this.em.getMetadata();
-    const root = Utils.getRootEntity(metadata, meta);
 
-    if (root.discriminatorColumn) {
+    if (meta.root.discriminatorColumn) {
       meta = metadata.find(entity.constructor.name)!;
     }
 
-    return Object.values<EntityProperty>(meta.properties).filter(prop => {
+    return meta.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
-      const discriminator = root.discriminatorColumn === prop.name && prop.userDefined === false;
+      const discriminator = meta.root.discriminatorColumn === prop.name && prop.userDefined === false;
       return !prop.inherited && !discriminator && !prop.embedded;
     });
   }

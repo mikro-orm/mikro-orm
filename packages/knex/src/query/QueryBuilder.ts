@@ -289,15 +289,24 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
   }
 
+  /**
+   * Alias for `qb.getResultList()`
+   */
   async getResult(): Promise<T[]> {
     return this.getResultList();
   }
 
+  /**
+   * Executes the query, returning array of results
+   */
   async getResultList(): Promise<T[]> {
     const res = await this.execute<T[]>('all', true);
     return res.map(r => this.em!.map<T>(this.entityName, r));
   }
 
+  /**
+   * Executes the query, returning the first result or null
+   */
   async getSingleResult(): Promise<T | null> {
     const res = await this.getResult();
     return res[0] || null;
@@ -491,7 +500,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     });
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.alias}.*`))) {
-      Object.values(meta.properties)
+      meta.props
         .filter(prop => prop.formula)
         .forEach(prop => {
           const alias = this.knex.ref(this.alias).toString();
@@ -550,8 +559,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   private autoJoinPivotTable(field: string): void {
     const pivotMeta = this.metadata.find(field)!;
-    const owner = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
-    const inverse = Object.values(pivotMeta.properties).find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
+    const owner = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
+    const inverse = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
     const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;
     const pivotAlias = this.getNextAlias();
 

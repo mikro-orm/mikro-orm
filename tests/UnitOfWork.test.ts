@@ -68,6 +68,7 @@ describe('UnitOfWork', () => {
     expect(() => computer.computeChangeSet(author)).toThrowError(/Trying to set Author\.age of type 'number' to '.*' of type 'date'/);
     Object.assign(author, { age: false });
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.age of type 'number' to 'false' of type 'boolean'`);
+    author.age = 21;
 
     // missing collection instance in m:n and 1:m relations
     // @ts-ignore
@@ -122,9 +123,9 @@ describe('UnitOfWork', () => {
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);
-    expect(uow.getOriginalEntityData()).toEqual(new Map());
+    expect(uow.getOriginalEntityData()).toEqual([]);
     uow.merge(author);
-    expect(uow.getOriginalEntityData().get(wrap(author, true).__uuid)).toMatchObject({ name: 'test', email: 'test' });
+    expect(uow.getOriginalEntityData()).toEqual([{ _id: author._id, name: 'test', email: 'test' }]);
     uow.remove(author);
     expect([...uow.getRemoveStack()]).toEqual([author]);
     expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();

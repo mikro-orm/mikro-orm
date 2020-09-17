@@ -59,6 +59,7 @@ module.exports = {
       'entity-constructors',
       'multiple-schemas',
       'using-bigint-pks',
+      'async-local-storage',
       'custom-driver',
     ],
     'Example Integrations': [

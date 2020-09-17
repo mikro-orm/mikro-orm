@@ -1,13 +1,16 @@
 import domain, { Domain } from 'domain';
-import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
 import { Dictionary } from '../typings';
 
 export type ORMDomain = Domain & { __mikro_orm_context?: RequestContext };
 
+/**
+ * For node 14 and above it is suggested to use `AsyncLocalStorage` instead,
+ * @see https://mikro-orm.io/docs/async-local-storage/
+ */
 export class RequestContext {
 
-  readonly id = uuid();
+  readonly id = this.em.id;
 
   constructor(readonly em: EntityManager) { }
 

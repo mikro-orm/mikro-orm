@@ -86,13 +86,13 @@ describe('GH issue 811', () => {
     contact.address = address;
 
     // Find my previously created employee
-    expect([...orm.em.getUnitOfWork().getOriginalEntityData().values()]).toEqual([
+    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([
       { id: contact.id, name: 'My Contact', address: null },
     ]);
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
-    expect([...orm.em.getUnitOfWork().getOriginalEntityData().values()]).toEqual([
+    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([
       { id: contact.id, name: 'My Contact', address: null },
       { id: employee.id, contact: contact.id, name: 'My Employee' },
     ]);

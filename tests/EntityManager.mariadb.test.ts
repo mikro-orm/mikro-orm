@@ -39,6 +39,7 @@ describe('EntityManagerMariaDb', () => {
       timezone: 'Z',
       supportBigNumbers: true,
       bigNumberStrings: true,
+      dateStrings: ['DATE'],
     });
   });
 

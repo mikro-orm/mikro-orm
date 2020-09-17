@@ -9,7 +9,7 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T> imp
   }
 
   isInitialized(): boolean {
-    return (this as unknown as T).__helper!.isInitialized();
+    return (this as unknown as T).__helper!.__initialized;
   }
 
   populated(populated = true): void {

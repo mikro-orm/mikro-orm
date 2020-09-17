@@ -29,7 +29,7 @@ export class ArrayCollection<T, O> {
 
   toArray(): Dictionary[] {
     return this.getItems().map((item: AnyEntity<T>) => {
-      const meta = item.__helper!.__meta;
+      const meta = item.__meta!;
       const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
       return wrap(item).toJSON(...args);
@@ -47,7 +47,7 @@ export class ArrayCollection<T, O> {
       return [];
     }
 
-    field = field || (this.items[0] as AnyEntity<T>).__helper!.__meta.serializedPrimaryKey;
+    field = field || (this.items[0] as AnyEntity<T>).__meta!.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -102,7 +102,7 @@ export class ArrayCollection<T, O> {
 
     return !!this.items.find((i: AnyEntity<T>) => {
       const objectIdentity = i === entity;
-      const primaryKeyIdentity = i.__helper!.__primaryKey && entity.__helper!.__primaryKey && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
+      const primaryKeyIdentity = i.__helper!.hasPrimaryKey() && entity.__helper!.hasPrimaryKey() && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
 
       return objectIdentity || primaryKeyIdentity;
     });
@@ -114,7 +114,7 @@ export class ArrayCollection<T, O> {
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.isInitialized());
+      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.__initialized);
     }
 
     return this.initialized;
@@ -135,7 +135,7 @@ export class ArrayCollection<T, O> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = this.owner.__helper!.__meta;
+      const meta = this.owner.__meta!;
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

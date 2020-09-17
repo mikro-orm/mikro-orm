@@ -1,6 +1,6 @@
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { ReferenceType } from '../enums';
-import { Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 
 export class EntityValidator {
@@ -8,24 +8,27 @@ export class EntityValidator {
   constructor(private strict: boolean) { }
 
   validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
-    Object.values(meta.properties).forEach(prop => {
+    meta.props.forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
       }
-    });
 
-    Object.keys(payload).forEach(prop => {
-      const property = meta.properties[prop];
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-      if (!property || property.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(property.type)) {
+      if (prop.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
         return;
       }
 
-      payload[prop] = this.validateProperty(property, payload[prop], entity);
+      const newValue = this.validateProperty(prop, payload[prop.name], entity);
 
-      if (entity[prop]) {
-        entity[prop] = payload[prop];
+      if (payload[prop.name] === newValue) {
+        return;
+      }
+
+      payload[prop.name] = newValue;
+
+      if (entity[prop.name]) {
+        entity[prop.name] = payload[prop.name];
       }
     });
   }
@@ -82,7 +85,7 @@ export class EntityValidator {
   }
 
   private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
-    if (entity.__helper!.isInitialized() && !entity[prop.name as keyof T]) {
+    if (entity.__helper!.__initialized && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
   }

@@ -504,6 +504,7 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
+    expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('');
     expect(await driver.find(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toEqual([]);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
@@ -541,7 +542,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('ensure indexes', async () => {
-    await orm.em.getDriver().ensureIndexes();
+    // await orm.em.getDriver().ensureIndexes(); // executed in the init method
     const conn = orm.em.getDriver().getConnection('write');
 
     const authorInfo = await conn.getCollection('author').indexInformation({ full: true, session: undefined as any });
@@ -1557,12 +1558,12 @@ describe('EntityManagerMongo', () => {
     const baz2 = FooBaz.create('fz2');
     bar.baz = baz1;
     await orm.em.persistAndFlush(bar);
-    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz1._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz1._id);
 
     // replacing reference with value will trigger orphan removal
     bar.baz = baz2;
     await orm.em.persistAndFlush(bar);
-    expect(orm.em.getUnitOfWork().getOriginalEntityData().get(wrap(bar, true).__uuid)!.baz).toEqual(baz2._id);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData(bar)!.baz).toEqual(baz2._id);
     await expect(orm.em.findOne(FooBaz, baz1)).resolves.toBeNull();
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
@@ -2004,6 +2005,7 @@ describe('EntityManagerMongo', () => {
     const em = orm.em.fork();
     em.addFilter('writtenBy', args => ({ author: args.author }), Book, false);
     em.addFilter('tenant', args => ({ tenant: args.tenant }));
+    em.addFilter('withoutParams2', () => ({}));
     em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
 
     const author1 = new Author('n1', 'e1');
@@ -2109,6 +2111,9 @@ describe('EntityManagerMongo', () => {
 
     expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
     expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
+
+    const b1 = await orm.em.findOne(Book, { metaArray: 'a' });
+    expect(b1).not.toBeNull();
   });
 
   // this should run in ~600ms (when running single test locally)

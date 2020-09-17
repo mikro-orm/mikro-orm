@@ -22,7 +22,7 @@ export class EntityHelper {
       EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
     }
 
-    EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+    EntityHelper.defineBaseProperties(meta, meta.prototype, em.getDriver().getPlatform());
     const prototype = meta.prototype as Dictionary;
 
     if (em.config.get('propagateToOneOwner')) {
@@ -50,17 +50,17 @@ export class EntityHelper {
     });
   }
 
-  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
+  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, platform: Platform) {
     Object.defineProperties(prototype, {
       __entity: { value: true },
+      __meta: { value: meta },
+      __platform: { value: platform },
       __helper: {
-        get(): string {
-          if (!this.___helper) {
-            const helper = new WrappedEntity(this, meta, em);
-            Object.defineProperty(this, '___helper', { value: helper });
-          }
+        get(): WrappedEntity<T, keyof T> {
+          const helper = new WrappedEntity(this);
+          Object.defineProperty(this, '__helper', { value: helper, writable: true });
 
-          return this.___helper;
+          return helper;
         },
       },
     });
@@ -93,7 +93,7 @@ export class EntityHelper {
       let name = meta.name;
 
       // distinguish not initialized entities
-      if (!this.__helper!.isInitialized()) {
+      if (!this.__helper!.__initialized) {
         name = `Ref<${name}>`;
       }
 
@@ -124,7 +124,7 @@ export class EntityHelper {
       inverse.add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.isInitialized() && Reference.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
     }
   }

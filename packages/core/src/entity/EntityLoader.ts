@@ -177,7 +177,7 @@ export class EntityLoader {
       return [];
     }
 
-    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__helper!.__meta.primaryKeys, true)));
+    const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform()), ...(options.where as Dictionary) } as FilterQuery<T>;
 
     return this.em.find<T>(prop.type, where, {
@@ -230,7 +230,10 @@ export class EntityLoader {
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => this.em.merge(prop.type, item, refresh, true));
+      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => {
+        const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
+        return this.em.getUnitOfWork().registerManaged(entity, item, refresh);
+      });
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }
@@ -270,7 +273,7 @@ export class EntityLoader {
       return children.map(e => Reference.unwrapReference(e[field]));
     }
 
-    return children.filter(e => !(e[field] as AnyEntity).__helper!.isInitialized()).map(e => Reference.unwrapReference(e[field]));
+    return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
   private lookupAllRelationships<T>(entityName: string, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
@@ -282,8 +285,7 @@ export class EntityLoader {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
-    Object.values(meta.properties)
-      .filter(prop => prop.reference !== ReferenceType.SCALAR)
+    meta.relations
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
         const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
@@ -309,7 +311,7 @@ export class EntityLoader {
     visited.push(entityName);
     const meta = this.metadata.find(entityName)!;
 
-    Object.values(meta.properties)
+    meta.relations
       .filter(prop => prop.eager)
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;

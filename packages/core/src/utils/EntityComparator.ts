@@ -25,21 +25,20 @@ export class EntityComparator {
     }
 
     const meta = this.metadata.get<T>(entity.constructor.name);
-    const root = Utils.getRootEntity(this.metadata, meta);
     const ret = {} as EntityData<T>;
 
     if (meta.discriminatorValue) {
-      ret[root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as T[keyof T];
+      ret[meta.root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as T[keyof T];
     }
 
-    // copy all props, ignore collections and references, process custom types
-    Object.values<EntityProperty<T>>(meta.properties).forEach(prop => {
-      if (this.shouldIgnoreProperty(entity, prop, root)) {
+    // copy all comparable props, ignore collections and references, process custom types
+    meta.comparableProps.forEach(prop => {
+      if (this.shouldIgnoreProperty(entity, prop)) {
         return;
       }
 
       if (prop.reference === ReferenceType.EMBEDDED) {
-        return Object.values<EntityProperty>(meta.properties).filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+        return meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
           ret[childProp.name as keyof T] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
         });
       }
@@ -58,6 +57,10 @@ export class EntityComparator {
         return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], this.platform));
       }
 
+      if (prop.type.toLowerCase() === 'date') {
+        return ret[prop.name] = Utils.copy(this.platform.processDateProperty(entity[prop.name]));
+      }
+
       if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
         return ret[prop.name] = Utils.copy(entity[prop.name]);
       }
@@ -70,23 +73,35 @@ export class EntityComparator {
     return ret;
   }
 
-  private shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, root: EntityMetadata) {
-    if (!(prop.name in entity) || prop.persist === false) {
+  /**
+   * should be used only for `meta.comparableProps` that are defined based on the static `isComparable` helper
+   */
+  private shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>) {
+    if (!(prop.name in entity)) {
       return true;
     }
 
     const value = entity[prop.name];
-    const collection = Utils.isCollection(value);
-    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.__primaryKeys.every(pk => Utils.isDefined(pk, true));
+    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.hasPrimaryKey();
     const noPkProp = prop.primary && !Utils.isDefined(value, true);
-    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
-    const discriminator = prop.name === root.discriminatorColumn;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
     const emptyRef = isSetter && value === undefined;
 
-    return collection || noPkProp || noPkRef || inverse || discriminator || emptyRef;
+    return noPkProp || noPkRef || emptyRef || prop.version;
+  }
+
+  /**
+   * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
+   */
+  static isComparable<T extends AnyEntity<T>>(prop: EntityProperty<T>, root: EntityMetadata) {
+    const virtual = prop.persist === false;
+    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+    const discriminator = prop.name === root.discriminatorColumn;
+    const collection = prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY;
+
+    return !virtual && !collection && !inverse && !discriminator && !prop.version;
   }
 
 }

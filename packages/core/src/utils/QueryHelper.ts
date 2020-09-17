@@ -108,7 +108,7 @@ export class QueryHelper {
       }
 
       if (prop?.customType && convertCustomTypes) {
-        value = QueryHelper.processCustomType(prop, value, platform);
+        value = QueryHelper.processCustomType(prop, value, platform, undefined, true);
       }
 
       if (Array.isArray(value) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
@@ -165,19 +165,19 @@ export class QueryHelper {
     return filter.default || filterName in options;
   }
 
-  static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string): FilterQuery<T> {
+  static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Object.keys(cond).reduce((o, k) => {
-        o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k);
+        o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
         return o;
       }, {});
     }
 
     if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
-      return cond.map(v => QueryHelper.processCustomType(prop, v, platform, key)) as FilterQuery<T>;
+      return cond.map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as FilterQuery<T>;
     }
 
-    return prop.customType.convertToDatabaseValue(cond, platform);
+    return prop.customType.convertToDatabaseValue(cond, platform, fromQuery);
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {

@@ -50,6 +50,7 @@ describe('EntityManagerMySql', () => {
       port: 3308,
       user: 'user',
       timezone: 'Z',
+      dateStrings: ['DATE'],
       supportBigNumbers: true,
     });
   });
@@ -899,7 +900,6 @@ describe('EntityManagerMySql', () => {
     b4.tags.add(tag2, tag4, tag5);
     b5.tags.add(tag5);
 
-    author.books.add(b1, b2, b3, b4, b5);
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 

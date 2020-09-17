@@ -1,8 +1,4 @@
-import { v4 as uuid } from 'uuid';
 import { EntityManager } from '../EntityManager';
-import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata';
-import { EntityValidator } from './EntityValidator';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer } from './EntityTransformer';
@@ -10,31 +6,23 @@ import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import { LockMode } from '../enums';
 import { ValidationError } from '../errors';
+import { Platform } from '../platforms/Platform';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   __initialized = true;
-  __populated = false;
-  __lazyInitialized = false;
-  __managed = false;
+  __populated?: boolean;
+  __lazyInitialized?: boolean;
+  __managed?: boolean;
   __em?: EntityManager;
 
-  readonly __uuid = uuid();
-  readonly __internal: {
-    platform: Platform;
-    metadata: MetadataStorage;
-    validator: EntityValidator;
-  };
+  /** holds last entity data snapshot so we can compute changes when persisting managed entities */
+  __originalEntityData?: EntityData<T>;
 
-  constructor(private readonly entity: T,
-              readonly __meta: EntityMetadata<T>,
-              em: EntityManager) {
-    this.__internal = {
-      platform: em.getDriver().getPlatform(),
-      metadata: em.getMetadata(),
-      validator: em.getValidator(),
-    };
-  }
+  /** holds wrapped primary key so we can compute change set without eager commit */
+  __identifier?: EntityData<T>;
+
+  constructor(private readonly entity: T) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -67,18 +55,30 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
-    const wrapped = this.entity.__helper!;
-    const em = wrapped.__em;
-
-    if (!em) {
+    if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate });
-    wrapped.populated(populated);
-    wrapped.__lazyInitialized = true;
+    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate });
+    this.populated(populated);
+    this.__lazyInitialized = true;
 
     return this.entity;
+  }
+
+  hasPrimaryKey(): boolean {
+    return this.__meta.primaryKeys.every(pk => {
+      const val = Utils.extractPK(this.entity[pk]);
+      return val !== undefined && val !== null;
+    });
+  }
+
+  get __meta(): EntityMetadata<T> {
+    return this.entity.__meta!;
+  }
+
+  get __platform(): Platform {
+    return this.entity.__platform!;
   }
 
   get __primaryKey(): Primary<T> {

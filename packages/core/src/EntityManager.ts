@@ -1,7 +1,6 @@
-import { v4 as uuid } from 'uuid';
 import { inspect } from 'util';
 
-import { Configuration, QueryHelper, RequestContext, Utils } from './utils';
+import { Configuration, QueryHelper, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
@@ -19,13 +18,14 @@ import { OptimisticLockError, ValidationError } from './errors';
  */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  readonly id = uuid();
+  private static counter = 1;
+  readonly id = EntityManager.counter++;
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
+  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
-  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
@@ -102,7 +102,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.merge<T>(entityName, data, options.refresh, true);
+      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, convertCustomTypes: true }) as T;
+      this.getUnitOfWork().registerManaged(entity, data, options.refresh);
       ret.push(entity);
     }
 
@@ -156,7 +157,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       if (filter.cond instanceof Function) {
         const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.filterParams[filter.name];
 
-        if (!args) {
+        if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
@@ -221,7 +222,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
-    if (entity && entity.__helper!.isInitialized() && !options.refresh && isOptimisticLocking) {
+    if (entity && entity.__helper!.__initialized && !options.refresh && isOptimisticLocking) {
       return this.lockAndPopulate<T, P>(entityName, entity, where, options);
     }
 
@@ -233,7 +234,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = this.merge(entityName, data as EntityData<T>, options.refresh, true) as T;
+    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
+    this.getUnitOfWork().registerManaged(entity, data, options.refresh);
     await this.lockAndPopulate(entityName, entity, where, options);
 
     return entity as Loaded<T, P>;
@@ -417,7 +419,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, false);
 
-    if (entity && entity.__helper!.isInitialized() && !refresh) {
+    if (entity && entity.__helper!.__initialized && !refresh) {
       return entity;
     }
 
@@ -502,6 +504,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
+    if (Utils.isEntity(entity)) {
+      this.getUnitOfWork().persist(entity);
+      return this;
+    }
+
     const entities = Utils.asArray(entity);
 
     for (const ent of entities) {
@@ -645,7 +652,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
   getUnitOfWork(): UnitOfWork {
-    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
+    const em = this.useContext ? (this.config.get('context')() || this) : this;
     return em.unitOfWork;
   }
 
@@ -653,7 +660,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityFactory used by the EntityManager.
    */
   getEntityFactory(): EntityFactory {
-    const em = this.useContext ? (RequestContext.getEntityManager() || this) : this;
+    const em = this.useContext ? (this.config.get('context')() || this) : this;
     return em.entityFactory;
   }
 

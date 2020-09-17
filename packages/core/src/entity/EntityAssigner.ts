@@ -5,6 +5,9 @@ import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typing
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
+import { EntityValidator } from './EntityValidator';
+
+const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
@@ -13,10 +16,8 @@ export class EntityAssigner {
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
     const wrapped = entity.__helper!;
+    const meta = entity.__meta!;
     const em = options.em || wrapped.__em;
-    const meta = wrapped.__meta;
-    const validator = wrapped.__internal.validator;
-    const platform = wrapped.__internal.platform;
     const props = meta.properties;
 
     Object.keys(data).forEach(prop => {
@@ -29,7 +30,7 @@ export class EntityAssigner {
       let value = data[prop as keyof EntityData<T>];
 
       if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {
-        value = props[prop].customType.convertToJSValue(value, platform);
+        value = props[prop].customType.convertToJSValue(value, entity.__platform);
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
@@ -71,7 +72,7 @@ export class EntityAssigner {
       return;
     }
 
-    const meta2 = entity[prop.name].__helper!.__meta as EntityMetadata;
+    const meta2 = entity[prop.name].__meta! as EntityMetadata;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
     if (prop2 && !entity[prop.name][prop2.name]) {

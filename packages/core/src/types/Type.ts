@@ -8,7 +8,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: JSType | DBType, platform: Platform): DBType {
+  convertToDatabaseValue(value: JSType | DBType, platform: Platform, fromQuery?: boolean): DBType {
     return value as DBType;
   }
 
