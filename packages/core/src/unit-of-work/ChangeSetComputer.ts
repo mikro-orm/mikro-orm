@@ -1,6 +1,6 @@
 import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityData, EntityProperty, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { Collection, EntityValidator } from '../entity';
 import { Platform } from '../platforms';
@@ -12,7 +12,7 @@ export class ChangeSetComputer {
   private readonly comparator = new EntityComparator(this.metadata, this.platform);
 
   constructor(private readonly validator: EntityValidator,
-              private readonly collectionUpdates: Collection<AnyEntity>[],
+              private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
@@ -39,7 +39,7 @@ export class ChangeSetComputer {
       this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
     }
 
-    for (const prop of Object.values(meta.properties)) {
+    for (const prop of meta.relations) {
       this.processProperty(changeSet, prop);
     }
 
@@ -68,10 +68,6 @@ export class ChangeSetComputer {
     } else if (prop.reference !== ReferenceType.SCALAR && target) { // m:1 or 1:1
       this.processToOne(prop, changeSet);
     }
-
-    if (prop.reference === ReferenceType.ONE_TO_ONE) {
-      this.processOneToOne(prop, changeSet);
-    }
   }
 
   private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
@@ -99,20 +95,9 @@ export class ChangeSetComputer {
     }
 
     if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-      this.collectionUpdates.push(target);
+      this.collectionUpdates.add(target);
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
-    }
-  }
-
-  private processOneToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
-    const data = changeSet.entity.__helper!.__originalEntityData as EntityData<T>;
-    const em = changeSet.entity.__helper!.__em;
-
-    if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload && em) {
-      const orphan = em.getReference(prop.type, data[prop.name] as Primary<T>);
-      em.getUnitOfWork().scheduleOrphanRemoval(orphan);
     }
   }
 

@@ -79,6 +79,7 @@ describe('EntityHelperMongo', () => {
     expect(wrap(god, true).__populated).toBeUndefined();
     god.populated();
     expect(wrap(god, true).__populated).toBe(true);
+    expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
 
     const ref = god.toReference();
     expect(ref).toBeInstanceOf(Reference);

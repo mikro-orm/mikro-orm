@@ -1,6 +1,6 @@
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
 import { ReferenceType } from '../enums';
-import { Utils } from '../utils';
+import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 
 export class EntityValidator {
@@ -8,7 +8,7 @@ export class EntityValidator {
   constructor(private strict: boolean) { }
 
   validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
-    Object.values(meta.properties).forEach(prop => {
+    meta.props.forEach(prop => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
       }

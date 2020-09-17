@@ -100,7 +100,7 @@ describe('SchemaGenerator', () => {
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em);
 
-    const newTableMeta = {
+    const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
           reference: ReferenceType.SCALAR,
@@ -142,7 +142,7 @@ describe('SchemaGenerator', () => {
       uniques: [],
       collection: 'new_table',
       primaryKey: 'id',
-    } as any;
+    } as any).init().meta;
     meta.set('NewTable', newTableMeta);
     await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
@@ -423,7 +423,7 @@ describe('SchemaGenerator', () => {
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em as EntityManager);
 
-    const newTableMeta = {
+    const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
           reference: ReferenceType.SCALAR,
@@ -465,7 +465,7 @@ describe('SchemaGenerator', () => {
       hooks: {},
       indexes: [],
       uniques: [],
-    } as any;
+    } as any).init().meta;
     meta.set('NewTable', newTableMeta);
     const authorMeta = meta.get('Author2');
     authorMeta.properties.termsAccepted.defaultRaw = 'false';

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { MikroORM, Collection, EntityFactory, MetadataDiscovery, ReferenceType, wrap, Logger } from '@mikro-orm/core';
+import { MikroORM, Collection, EntityFactory, ReferenceType, wrap, Logger } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -12,8 +12,7 @@ describe('EntityFactory', () => {
 
   beforeAll(async () => {
     orm = await initORMMongo();
-    await new MetadataDiscovery(orm.getMetadata(), orm.em.getDriver().getPlatform(), orm.config).discover();
-    factory = new EntityFactory(orm.em.getUnitOfWork(), orm.em);
+    factory = orm.em.getEntityFactory();
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
   beforeEach(async () => wipeDatabase(orm.em));

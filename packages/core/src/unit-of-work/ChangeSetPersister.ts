@@ -40,7 +40,7 @@ export class ChangeSetPersister {
   }
 
   async executeDeletes<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
-    const meta = changeSets[0].entity.__helper!.__meta;
+    const meta = changeSets[0].entity.__meta!;
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
 
     if (meta.compositePK) {
@@ -55,7 +55,7 @@ export class ChangeSetPersister {
   private processProperties<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
 
-    for (const prop of Object.values(meta.properties)) {
+    for (const prop of meta.props) {
       this.processProperty(changeSet, prop);
     }
   }
@@ -107,7 +107,7 @@ export class ChangeSetPersister {
     }
 
     changeSet.entity.__helper!.populated();
-    Object.values(meta.properties).forEach(prop => {
+    meta.relations.forEach(prop => {
       const value = changeSet.entity[prop.name];
 
       if (Utils.isEntity(value, true)) {
@@ -165,7 +165,7 @@ export class ChangeSetPersister {
       changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
 
       if (prop.primary) {
-        this.mapPrimaryKey(changeSet.entity.__helper!.__meta, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
+        this.mapPrimaryKey(changeSet.entity.__meta!, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
       }
     }
 
@@ -185,12 +185,12 @@ export class ChangeSetPersister {
    */
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
     if (res.row && Object.keys(res.row).length > 0) {
-      const data = Object.values<EntityProperty>(meta.properties).reduce((data, prop) => {
+      const data = meta.props.reduce((ret, prop) => {
         if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(changeSet.entity[prop.name], true)) {
-          data[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
+          ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
 
-        return data;
+        return ret;
       }, {} as Dictionary);
       this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, false, true);
     }

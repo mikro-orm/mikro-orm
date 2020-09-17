@@ -1,5 +1,5 @@
 import { Utils } from '../utils/Utils';
-import { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary, AnyEntity } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
@@ -16,9 +16,11 @@ export interface FactoryOptions {
 export class EntityFactory {
 
   private readonly driver = this.em.getDriver();
+  private readonly platform = this.driver.getPlatform();
   private readonly config = this.em.config;
   private readonly metadata = this.em.getMetadata();
   private readonly hydrator = this.config.getHydrator(this, this.em);
+  private readonly eventManager = this.em.getEventManager();
 
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
@@ -63,7 +65,7 @@ export class EntityFactory {
       id = Utils.getPrimaryKeyCondFromArray(id, meta.primaryKeys);
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.driver.getPlatform(), options.convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform, options.convertCustomTypes);
 
     if (Utils.isPrimaryKey(id)) {
       id = { [meta.primaryKeys[0]]: id as Primary<T> };
@@ -87,7 +89,8 @@ export class EntityFactory {
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
       // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-      Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em, meta) });
+      const helper = new WrappedEntity(entity);
+      Object.defineProperty(entity, '__helper', { value: helper });
 
       return entity;
     }
@@ -95,7 +98,8 @@ export class EntityFactory {
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
     // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-    Object.defineProperty(entity, '__helper', { value: new WrappedEntity(entity as T, this.em, meta) });
+    const helper = new WrappedEntity(entity as T);
+    Object.defineProperty(entity, '__helper', { value: helper });
     entity.__helper!.__managed = true;
     this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 
@@ -119,21 +123,19 @@ export class EntityFactory {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.driver.getPlatform(), convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, convertCustomTypes);
 
     return this.unitOfWork.getById<T>(meta.name!, pks);
   }
 
   private processDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
-    const root = Utils.getRootEntity(this.metadata, meta);
-
-    if (!root.discriminatorColumn) {
+    if (!meta.root.discriminatorColumn) {
       return meta;
     }
 
-    const prop = meta.properties[root.discriminatorColumn];
+    const prop = meta.properties[meta.root.discriminatorColumn];
     const value = data[prop.name];
-    const type = root.discriminatorMap![value];
+    const type = meta.root.discriminatorMap![value];
     meta = type ? this.metadata.find(type)! : meta;
 
     // `prop.userDefined` is either `undefined` or `false`
@@ -148,14 +150,13 @@ export class EntityFactory {
    * denormalize PK to value required by driver (e.g. ObjectId)
    */
   private denormalizePrimaryKey<T>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T>): void {
-    const platform = this.driver.getPlatform();
-    const pk = platform.getSerializedPrimaryKeyField(primaryKey);
+    const pk = this.platform.getSerializedPrimaryKeyField(primaryKey);
 
     if (Utils.isDefined(data[pk], true) || Utils.isDefined(data[primaryKey], true)) {
       let id = data[pk] || data[primaryKey];
 
       if (prop.type.toLowerCase() === 'objectid') {
-        id = platform.denormalizePrimaryKey(id);
+        id = this.platform.denormalizePrimaryKey(id);
       }
 
       delete data[pk];
@@ -198,7 +199,7 @@ export class EntityFactory {
       hooks.forEach(hook => (entity[hook] as unknown as () => void)());
     }
 
-    this.em.getEventManager().dispatchEvent(EventType.onInit, { entity, em: this.em });
+    this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
   }
 
 }

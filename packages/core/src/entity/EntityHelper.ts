@@ -22,7 +22,7 @@ export class EntityHelper {
       EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
     }
 
-    EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+    EntityHelper.defineBaseProperties(meta, meta.prototype, em.getDriver().getPlatform());
     const prototype = meta.prototype as Dictionary;
 
     if (em.config.get('propagateToOneOwner')) {
@@ -50,17 +50,17 @@ export class EntityHelper {
     });
   }
 
-  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
+  private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, platform: Platform) {
     Object.defineProperties(prototype, {
       __entity: { value: true },
+      __meta: { value: meta },
+      __platform: { value: platform },
       __helper: {
-        get(): string {
-          if (!this.___helper) {
-            const helper = new WrappedEntity(this, em, meta);
-            Object.defineProperty(this, '___helper', { value: helper, writable: true });
-          }
+        get(): WrappedEntity<T, keyof T> {
+          const helper = new WrappedEntity(this);
+          Object.defineProperty(this, '__helper', { value: helper, writable: true });
 
-          return this.___helper;
+          return helper;
         },
       },
     });

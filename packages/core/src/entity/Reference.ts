@@ -7,10 +7,10 @@ export class Reference<T extends AnyEntity<T>> {
 
   constructor(private entity: T) {
     this.set(entity);
-    const wrapped = this.entity.__helper!;
+    const meta = this.entity.__meta!;
     Object.defineProperty(this, '__reference', { value: true });
 
-    wrapped.__meta.primaryKeys.forEach(primaryKey => {
+    meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
         get() {
           return this.entity[primaryKey];
@@ -18,8 +18,8 @@ export class Reference<T extends AnyEntity<T>> {
       });
     });
 
-    if (wrapped.__meta.serializedPrimaryKey && wrapped.__meta.primaryKeys[0] !== wrapped.__meta.serializedPrimaryKey) {
-      Object.defineProperty(this, wrapped.__meta.serializedPrimaryKey, {
+    if (meta.serializedPrimaryKey && meta.primaryKeys[0] !== meta.serializedPrimaryKey) {
+      Object.defineProperty(this, meta.serializedPrimaryKey, {
         get() {
           return this.entity.__helper!.__serializedPrimaryKey;
         },
@@ -80,6 +80,8 @@ export class Reference<T extends AnyEntity<T>> {
     }
 
     this.entity = entity;
+    Object.defineProperty(this, '__meta', { value: this.entity.__meta!, writable: true });
+    Object.defineProperty(this, '__platform', { value: this.entity.__platform!, writable: true });
     Object.defineProperty(this, '__helper', { value: this.entity.__helper!, writable: true });
     Object.defineProperty(this, '$', { value: this.entity, writable: true });
     Object.defineProperty(this, 'get', { value: () => this.entity, writable: true });
@@ -91,7 +93,7 @@ export class Reference<T extends AnyEntity<T>> {
 
   getEntity(): T {
     if (!this.isInitialized()) {
-      throw new Error(`Reference<${this.entity.__helper!.__meta.name}> ${(this.entity.__helper!.__primaryKey as Primary<T>)} not initialized`);
+      throw new Error(`Reference<${this.entity.__meta!.name}> ${(this.entity.__helper!.__primaryKey as Primary<T>)} not initialized`);
     }
 
     return this.entity;
