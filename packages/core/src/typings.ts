@@ -249,7 +249,7 @@ export interface MigrationObject {
 
 export type FilterDef<T extends AnyEntity<T>> = {
   name: string;
-  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T>);
+  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T> | Promise<FilterQuery<T>>);
   default?: boolean;
   entity?: string[];
 };
