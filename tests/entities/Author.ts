@@ -11,9 +11,11 @@ import { BaseEntity } from './BaseEntity';
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
 @Filter({
   name: 'withoutParams1',
-  cond() {
+  cond(_, type) {
+    expect(['read', 'update', 'delete'].includes(type)).toBe(true);
     return {};
   },
+  args: false,
   default: true,
 })
 export class Author extends BaseEntity<Author> {

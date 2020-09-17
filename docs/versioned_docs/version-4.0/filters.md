@@ -59,6 +59,23 @@ const books = await orm.em.find(Book, {}, {
 });
 ```
 
+### Filters without parameters
+
+If we want to have a filter condition that do not need arguments, but we want
+to access the `type` parameter, we will need to explicitly set `args: false`, 
+otherwise error will be raised due to missing parameters:
+
+```ts
+@Filter({
+  name: 'withoutParams',
+  cond(_, type) {
+    return { ... };
+  },
+  args: false,
+  default: true,
+})
+```
+
 ## Global filters
 
 We can also register filters dynamically via `EntityManager` API. We call such filters 

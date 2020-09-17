@@ -252,6 +252,7 @@ export type FilterDef<T extends AnyEntity<T>> = {
   cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete') => FilterQuery<T> | Promise<FilterQuery<T>>);
   default?: boolean;
   entity?: string[];
+  args?: boolean;
 };
 
 export type ExpandProperty<T> = T extends Reference<infer U> ? NonNullable<U> : T extends Collection<infer U> ? NonNullable<U> : NonNullable<T>;
