@@ -1,5 +1,5 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection,
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter,
   Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
 } from '@mikro-orm/core';
 
@@ -9,6 +9,13 @@ import { BaseEntity } from './BaseEntity';
 
 @Entity({ customRepository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
+@Filter({
+  name: 'withoutParams1',
+  cond() {
+    return {};
+  },
+  default: true,
+})
 export class Author extends BaseEntity<Author> {
 
   [EntityRepositoryType]: AuthorRepository;

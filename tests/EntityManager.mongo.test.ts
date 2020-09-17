@@ -2005,6 +2005,7 @@ describe('EntityManagerMongo', () => {
     const em = orm.em.fork();
     em.addFilter('writtenBy', args => ({ author: args.author }), Book, false);
     em.addFilter('tenant', args => ({ tenant: args.tenant }));
+    em.addFilter('withoutParams2', () => ({}));
     em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
 
     const author1 = new Author('n1', 'e1');

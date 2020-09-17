@@ -157,7 +157,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       if (filter.cond instanceof Function) {
         const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.filterParams[filter.name];
 
-        if (!args) {
+        if (!args && filter.cond.length > 0) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
         }
 
