@@ -70,3 +70,16 @@ const author = await orm.em.findOne(Author, 1, { populate: {
   books: [LoadStrategy.JOINED, { publisher: LoadStrategy.JOINED }]
 } });
 ```
+
+## Changing the loading strategy globally
+
+You can use `loadStrategy` option in the ORM config:
+
+```ts
+MikroORM.init({
+  loadStrategy: LoadStrategy.JOINED,
+});
+```
+
+This value will be used as the default, specifying the loading strategy on 
+property level has precedence, as well as specifying it in the `FindOptions`.

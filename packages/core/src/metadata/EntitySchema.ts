@@ -4,7 +4,7 @@ import {
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
 import { BaseEntity, EntityRepository } from '../entity';
-import { Cascade, LoadStrategy, ReferenceType } from '../enums';
+import { Cascade, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 
@@ -311,7 +311,6 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     return {
       reference,
       cascade: [Cascade.PERSIST, Cascade.MERGE],
-      strategy: LoadStrategy.SELECT_IN,
       ...options,
     };
   }

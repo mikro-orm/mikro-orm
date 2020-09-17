@@ -742,7 +742,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, populate as true);
 
     return ret.map(field => {
-      field.strategy = strategy ?? field.strategy;
+      field.strategy = strategy ?? field.strategy ?? this.config.get('loadStrategy');
       return field;
     });
   }
@@ -750,7 +750,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private preparePopulateObject<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateMap<T>, strategy?: LoadStrategy): PopulateOptions<T>[] {
     return Object.keys(populate).map(field => {
       const prop = meta.properties[field];
-      const fieldStrategy = strategy ?? (Utils.isString(populate[field]) ? populate[field] : prop.strategy);
+      const fieldStrategy = strategy ?? (Utils.isString(populate[field]) ? populate[field] : prop.strategy) ?? this.config.get('loadStrategy');
 
       if (populate[field] === true) {
         return { field, strategy: fieldStrategy };

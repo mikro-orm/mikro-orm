@@ -19,6 +19,7 @@ import { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
+import { LoadStrategy } from '../enums';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -42,6 +43,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
+    loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: false,
@@ -327,6 +329,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   timezone?: string;
   ensureIndexes: boolean;
   hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
+  loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
