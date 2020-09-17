@@ -113,7 +113,7 @@ export class CriteriaNode {
   }
 
   getPivotPath(path: string): string {
-    return path + '[pivot]';
+    return `${path}[pivot]`;
   }
 
   [inspect.custom]() {

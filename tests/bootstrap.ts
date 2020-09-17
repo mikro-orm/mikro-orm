@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, MikroORM, Options, Utils } from '@mikro-orm/core';
+import { EntityManager, JavaScriptMetadataProvider, LoadStrategy, MikroORM, Options, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -87,7 +87,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql() {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, BaseEntity2, BaseEntity22],
     dbName: `mikro_orm_test`,
@@ -98,6 +98,7 @@ export async function initORMPostgreSql() {
     autoJoinOneToOneOwner: false,
     logger: i => i,
     cache: { enabled: true },
+    loadStrategy,
   });
 
   const schemaGenerator = new SchemaGenerator(orm.em);

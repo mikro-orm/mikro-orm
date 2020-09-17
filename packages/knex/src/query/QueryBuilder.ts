@@ -370,7 +370,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         pivotAlias = oldPivotAlias ?? `e${this.aliasCounter++}`;
       }
 
-      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
+      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond, path);
       Object.assign(this._joins, joins);
       this._aliasMap[pivotAlias] = prop.pivotTable;
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
@@ -379,7 +379,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
     }
 
-    this._joins[aliasedName].path = path;
+    if (!this._joins[aliasedName].path && path) {
+      this._joins[aliasedName].path = path;
+    }
   }
 
   private prepareFields<T extends AnyEntity<T>, U extends string | Raw = string | Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {

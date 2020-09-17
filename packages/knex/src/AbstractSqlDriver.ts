@@ -134,10 +134,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         result[relation.name] = map[key][relation.name];
       } else {
         map[key] = result;
-        result[relation.name] = result[relation.name] || [];
       }
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
+        result[relation.name] = result[relation.name] || [];
         this.appendToCollection(meta2, result[relation.name], relationPojo);
       } else {
         result[relation.name] = relationPojo;

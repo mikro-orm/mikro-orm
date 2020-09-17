@@ -89,13 +89,14 @@ export class QueryBuilderHelper {
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const meta = this.metadata.find(prop.type)!;
     const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
+    const table = this.getTableName(prop.type);
+    const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
+    const inverseJoinColumns = prop.referencedColumnNames;
+    const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
 
     return {
-      prop, type, cond, ownerAlias, alias,
-      table: this.getTableName(prop.type),
-      joinColumns: prop.owner ? meta.primaryKeys : prop2.joinColumns,
-      inverseJoinColumns: prop.owner ? meta.primaryKeys : prop.referencedColumnNames,
-      primaryKeys: prop.owner ? prop.joinColumns : prop2.referencedColumnNames,
+      prop, type, cond, ownerAlias, alias, table,
+      joinColumns, inverseJoinColumns, primaryKeys,
     };
   }
 
@@ -108,7 +109,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Dictionary<JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path?: string): Dictionary<JoinOptions> {
     const ret = {
       [`${ownerAlias}.${prop.name}`]: {
         prop, type, cond, ownerAlias,
@@ -121,12 +122,20 @@ export class QueryBuilderHelper {
       } as JoinOptions,
     };
 
+    if (path) {
+      ret[`${ownerAlias}.${prop.name}`].path = path.endsWith('[pivot]') ? path : `${path}[pivot]`;
+    }
+
     if (type === 'pivotJoin') {
       return ret;
     }
 
     const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
     ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+
+    if (path) {
+      ret[`${pivotAlias}.${prop2.name}`].path = path;
+    }
 
     return ret;
   }

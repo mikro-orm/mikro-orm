@@ -59,6 +59,7 @@ export class EntityLoader {
       populate = this.lookupEagerLoadedRelationships(entityName, populate);
     }
 
+    // convert nested `field` with dot syntax to PopulateOptions with children array
     populate.forEach(p => {
       if (!p.field.includes('.')) {
         return;
@@ -68,23 +69,52 @@ export class EntityLoader {
       p.field = f;
       p.children = p.children || [];
       const prop = this.metadata.find(entityName)!.properties[f];
-      p.children.push(this.expandNestedPopulate(prop.type, parts));
+      p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy));
     });
 
-    return populate;
+    // merge same fields
+    return this.mergeNestedPopulate(populate);
+  }
+
+  /**
+   * merge multiple populates for the same entity with different children
+   */
+  private mergeNestedPopulate<T>(populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
+    const tmp = populate.reduce((ret, item) => {
+      if (!ret[item.field]) {
+        ret[item.field] = item;
+        return ret;
+      }
+
+      if (!ret[item.field].children && item.children) {
+        ret[item.field].children = item.children;
+      } else if (ret[item.field].children && item.children) {
+        ret[item.field].children!.push(...item.children!);
+      }
+
+      return ret;
+    }, {} as Dictionary<PopulateOptions<T>>);
+
+    return Object.values(tmp).map(item => {
+      if (item.children) {
+        item.children = this.mergeNestedPopulate<T>(item.children);
+      }
+
+      return item;
+    });
   }
 
   /**
    * Expands `books.perex` like populate to use `children` array instead of the dot syntax
    */
-  private expandNestedPopulate<T>(entityName: string, parts: string[]): PopulateOptions<T> {
+  private expandNestedPopulate<T>(entityName: string, parts: string[], strategy?: LoadStrategy): PopulateOptions<T> {
     const meta = this.metadata.find(entityName)!;
     const field = parts.shift()!;
     const prop = meta.properties[field];
-    const ret = { field } as PopulateOptions<T>;
+    const ret = { field, strategy } as PopulateOptions<T>;
 
     if (parts.length > 0) {
-      ret.children = [this.expandNestedPopulate(prop.type, parts)];
+      ret.children = [this.expandNestedPopulate(prop.type, parts, strategy)];
     }
 
     return ret;
@@ -285,20 +315,19 @@ export class EntityLoader {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
-    meta.relations
-      .forEach(prop => {
-        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-        const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
+    meta.relations.forEach(prop => {
+      const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+      const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
 
-        if (nested.length > 0) {
-          ret.push(...nested);
-        } else {
-          ret.push({
-            field: prefixed,
-            strategy: LoadStrategy.SELECT_IN,
-          });
-        }
-      });
+      if (nested.length > 0) {
+        ret.push(...nested);
+      } else {
+        ret.push({
+          field: prefixed,
+          strategy: this.em.config.get('loadStrategy'),
+        });
+      }
+    });
 
     return ret;
   }
@@ -322,7 +351,7 @@ export class EntityLoader {
         } else {
           populate.push({
             field: prefixed,
-            strategy: LoadStrategy.SELECT_IN,
+            strategy: this.em.config.get('loadStrategy'),
           });
         }
       });
