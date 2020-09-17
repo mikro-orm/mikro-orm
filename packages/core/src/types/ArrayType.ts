@@ -10,8 +10,8 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     super();
   }
 
-  convertToDatabaseValue(value: T[] | null, platform: Platform): string | null {
-    if (!value) {
+  convertToDatabaseValue(value: T[] | null, platform: Platform, fromQuery?: boolean): string | null {
+    if (!value || fromQuery) {
       return value as null;
     }
 

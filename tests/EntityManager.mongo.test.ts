@@ -2110,6 +2110,9 @@ describe('EntityManagerMongo', () => {
 
     expect(mock.mock.calls[1][0]).toMatch(`'$set': { metaArray: [ 'a', 'b' ] }`);
     expect(mock.mock.calls[4][0]).toMatch(`'$set': { metaArray: [ 'a', 'b', 'c' ] }`);
+
+    const b1 = await orm.em.findOne(Book, { metaArray: 'a' });
+    expect(b1).not.toBeNull();
   });
 
   // this should run in ~600ms (when running single test locally)
