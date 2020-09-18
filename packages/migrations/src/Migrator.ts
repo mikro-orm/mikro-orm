@@ -1,5 +1,5 @@
 import umzug, { Umzug, migrationsList } from 'umzug';
-import { Utils, Constructor, Dictionary } from '@mikro-orm/core';
+import { Utils, Constructor, Dictionary, Transaction } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
@@ -159,15 +159,21 @@ export class Migrator {
       return this.umzug[method](this.prefix(options as string[]));
     }
 
-    return this.driver.getConnection().transactional(async trx => {
-      this.runner.setMasterMigration(trx);
-      this.storage.setMasterMigration(trx);
-      const ret = await this.umzug[method](this.prefix(options as string[]));
-      this.runner.unsetMasterMigration();
-      this.storage.unsetMasterMigration();
+    if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
+      return this.runInTransaction(options.transaction, method, options);
+    }
 
-      return ret;
-    });
+    return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
+  }
+
+  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+    this.runner.setMasterMigration(trx);
+    this.storage.setMasterMigration(trx);
+    const ret = await this.umzug[method](this.prefix(options as string[]));
+    this.runner.unsetMasterMigration();
+    this.storage.unsetMasterMigration();
+
+    return ret;
   }
 
 }

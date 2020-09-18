@@ -123,6 +123,16 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 $ ts-node migrate
 ```
 
+## Providing transaction context
+
+In some cases you might want to control the transaction context yourself:
+
+```ts
+await orm.em.transactional(async em => {
+  await migrator.up({ transaction: em.getTransactionContext() });
+});
+```
+
 ## Importing migrations statically
 
 If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations

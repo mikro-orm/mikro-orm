@@ -77,7 +77,9 @@ describe('Migrator', () => {
   });
 
   test('generate initial migration', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
+    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
@@ -89,6 +91,8 @@ describe('Migrator', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
+    getExecutedMigrationsMock.mockResolvedValueOnce([]);
+    getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration = await migrator.createMigration(undefined, false, true);
     expect(logMigrationMock).toBeCalledWith('Migration20191013214813.ts');
     expect(migration).toMatchSnapshot('initial-migration-dump');
@@ -191,7 +195,6 @@ describe('Migrator', () => {
     const path = process.cwd() + '/temp/migrations';
 
     const migration = await migrator.createMigration(path, true);
-    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'@mikro-orm/migrations'`));
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
@@ -215,6 +218,34 @@ describe('Migrator', () => {
         .replace(/ trx\d+/, 'trx\\d+');
     });
     expect(calls).toMatchSnapshot('all-or-nothing');
+  });
+
+  test('up/down with explicit transaction', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    const path = process.cwd() + '/temp/migrations';
+
+    const migration = await migrator.createMigration(path, true);
+    const migratorMock = jest.spyOn(Migration.prototype, 'down');
+    migratorMock.mockImplementation(async () => void 0);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.transactional(async em => {
+      await migrator.up({ transaction: em.getTransactionContext() });
+      await migrator.down({ transaction: em.getTransactionContext() });
+    });
+
+    await remove(path + '/' + migration.fileName);
+    const calls = mock.mock.calls.map(call => {
+      return call[0]
+        .replace(/ \[took \d+ ms]/, '')
+        .replace(/\[query] /, '')
+        .replace(/ trx\d+/, 'trx_xx');
+    });
+    expect(calls).toMatchSnapshot('explicit-tx');
   });
 
   test('up/down params [all or nothing disabled]', async () => {

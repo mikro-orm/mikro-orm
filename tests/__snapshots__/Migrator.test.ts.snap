@@ -545,3 +545,24 @@ Array [
   "commit (via write connection '127.0.0.1')",
 ]
 `;
+
+exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
+Array [
+  "begin (via write connection '127.0.0.1')",
+  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "select 1 (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
+  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
+  "savepointtrx_xx (via write connection '127.0.0.1')",
+  "release savepointtrx_xx (via write connection '127.0.0.1')",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
+  "commit (via write connection '127.0.0.1')",
+]
+`;
