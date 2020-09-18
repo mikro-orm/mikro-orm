@@ -29,8 +29,6 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
     }
 
     meta.properties[prop.name] = prop;
-
-    return target;
   };
 }
 

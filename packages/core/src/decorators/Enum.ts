@@ -8,8 +8,6 @@ export function Enum(options: EnumOptions<AnyEntity> | (() => Dictionary) = {}) 
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     options = options instanceof Function ? { items: options } : options;
     meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR, enum: true }, options) as EntityProperty;
-
-    return target;
   };
 }
 

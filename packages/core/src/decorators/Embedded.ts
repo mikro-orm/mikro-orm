@@ -11,8 +11,6 @@ export function Embedded(options: EmbeddedOptions | (() => AnyEntity) = {}) {
     Utils.defaultValue(options, 'prefix', true);
     const property = { name: propertyName, reference: ReferenceType.EMBEDDED } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);
-
-    return target;
   };
 }
 

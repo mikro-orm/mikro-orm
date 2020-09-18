@@ -10,8 +10,6 @@ function createDecorator<T>(options: PrimaryKeyOptions<T> | SerializedPrimaryKey
     const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;
     options[k] = true;
     meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR }, options) as EntityProperty;
-
-    return target;
   };
 }
 
