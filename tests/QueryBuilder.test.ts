@@ -102,7 +102,7 @@ describe('QueryBuilder', () => {
 
     const qb2 = orm.em.createQueryBuilder(Book2);
     qb2.select('*').where({ author: { $ne: null, name: 'Jon Snow' } });
-    expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e1`.`name` = ? and `e0`.`author_id` is not null');
+    expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e0`.`author_id` is not null and `e1`.`name` = ?');
     expect(qb2.getParams()).toEqual(['Jon Snow']);
   });
 
@@ -1631,6 +1631,22 @@ describe('QueryBuilder', () => {
     if (took > 300) {
       process.stdout.write(`update test took ${took}\n`);
     }
+  });
+
+  test('joining 1:1 inverse inside $and condition (GH issue 849)', async () => {
+    const expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` in (?)';
+    const sql1 = orm.em.createQueryBuilder(FooBaz2).where({ bar: [123] }).getQuery();
+    expect(sql1).toBe(expected);
+    const sql2 = orm.em.createQueryBuilder(FooBaz2).where({ bar: { id: [123] } }).getQuery();
+    expect(sql2).toBe(expected);
+    const sql3 = orm.em.createQueryBuilder(FooBaz2).where({ bar: { id: { $in: [123] } } }).getQuery();
+    expect(sql3).toBe(expected);
+    const sql4 = orm.em.createQueryBuilder(FooBaz2).where({ $and: [{ bar: { id: { $in: [123] } } }] }).getQuery();
+    expect(sql4).toBe(expected);
+    const sql5 = orm.em.createQueryBuilder(FooBaz2).where({ $and: [{ bar: [123] }] }).getQuery();
+    expect(sql5).toBe(expected);
+    const sql6 = orm.em.createQueryBuilder(FooBaz2).where({ $and: [{ bar: { id: [123] } }] }).getQuery();
+    expect(sql6).toBe(expected);
   });
 
   afterAll(async () => orm.close(true));

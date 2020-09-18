@@ -54,7 +54,7 @@ export class CriteriaNode {
 
     switch (type) {
       case ReferenceType.MANY_TO_ONE: return false;
-      case ReferenceType.ONE_TO_ONE: return /* istanbul ignore next */ !this.prop!.owner && !this.parent?.parent;
+      case ReferenceType.ONE_TO_ONE: return operator || (/* istanbul ignore next */ !this.prop!.owner && !this.parent?.parent);
       case ReferenceType.ONE_TO_MANY: return scalar || operator;
       case ReferenceType.MANY_TO_MANY: return scalar || operator;
       default: return false;
@@ -71,24 +71,24 @@ export class CriteriaNode {
       return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
     }
 
-    const meta = this.metadata.find(this.prop!.type)!;
     const alias = qb.getAliasForJoinPath(this.getPath());
-    const pks = Utils.flatten(meta.primaryKeys.map(primaryKey => meta.properties[primaryKey].fieldNames));
-
-    return Utils.getPrimaryKeyHash(pks.map(col => `${alias}.${col}`));
+    return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 
   getPath(): string {
+    const parentPath = this.parent?.getPath();
     let ret = this.parent && this.prop ? this.prop.name : this.entityName;
+
+    if (parentPath && this.prop?.reference === ReferenceType.SCALAR) {
+      return parentPath;
+    }
 
     if (this.parent && Array.isArray(this.parent.payload) && this.parent.parent && !this.key) {
       ret = this.parent.parent.key!;
     }
 
-    const parentPath = this.parent?.getPath();
-
     if (parentPath) {
-      ret = this.parent!.getPath() + '.' + ret;
+      ret = parentPath + '.' + ret;
     } else if (this.parent?.entityName && ret) {
       ret = this.parent.entityName + '.' + ret;
     }
