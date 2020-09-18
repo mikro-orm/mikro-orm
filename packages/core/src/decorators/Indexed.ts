@@ -7,6 +7,8 @@ function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean)
     options.properties = options.properties || propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as Required<IndexOptions | UniqueOptions>);
+
+    return target;
   };
 }
 

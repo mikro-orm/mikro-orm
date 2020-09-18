@@ -10,6 +10,8 @@ function hook(type: EventType) {
     }
 
     meta.hooks[type]!.push(method);
+
+    return target;
   };
 }
 

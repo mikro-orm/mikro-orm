@@ -16,6 +16,8 @@ export function createOneToDecorator<T, O>(
     MetadataValidator.validateSingleDecorator(meta, propertyName, reference);
     const property = { name: propertyName, reference } as EntityProperty<T>;
     meta.properties[propertyName] = Object.assign(meta.properties[propertyName] ?? {}, property, options);
+
+    return target;
   };
 }
 
