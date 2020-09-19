@@ -1634,6 +1634,8 @@ describe('QueryBuilder', () => {
   });
 
   test('joining 1:1 inverse inside $and condition (GH issue 849)', async () => {
+    const sql0 = orm.em.createQueryBuilder(FooBaz2).select('*').where({ bar: 123 }).getQuery();
+    expect(sql0).toBe('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ?');
     const expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` in (?)';
     const sql1 = orm.em.createQueryBuilder(FooBaz2).where({ bar: [123] }).getQuery();
     expect(sql1).toBe(expected);
@@ -1647,6 +1649,8 @@ describe('QueryBuilder', () => {
     expect(sql5).toBe(expected);
     const sql6 = orm.em.createQueryBuilder(FooBaz2).where({ $and: [{ bar: { id: [123] } }] }).getQuery();
     expect(sql6).toBe(expected);
+    const sql7 = orm.em.createQueryBuilder(Test2).select('*').where({ book: { $in: ['123'] } }).getQuery();
+    expect(sql7).toBe('select `e0`.* from `test2` as `e0` where `e0`.`book_uuid_pk` in (?)');
   });
 
   afterAll(async () => orm.close(true));

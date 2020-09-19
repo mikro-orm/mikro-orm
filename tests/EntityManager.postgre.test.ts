@@ -1204,7 +1204,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
-      'where "e1"."name" = $1');
+      'where "e0"."author_id" is not null and "e1"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1216,7 +1216,7 @@ describe('EntityManagerPostgre', () => {
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
       'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
-      'where "e3"."name" = $1');
+      'where "e0"."author_id" is not null and "e3"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1226,7 +1226,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
-      'where "e1"."favourite_book_uuid_pk" = $1');
+      'where "e0"."author_id" is not null and "e1"."favourite_book_uuid_pk" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1238,7 +1238,7 @@ describe('EntityManagerPostgre', () => {
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
       'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
-      'where "e3"."name" = $1');
+      'where "e0"."author_id" is not null and "e3"."name" = $1');
   });
 
   test('datetime is stored in correct timezone', async () => {

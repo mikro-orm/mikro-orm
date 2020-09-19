@@ -367,10 +367,11 @@ describe('Joined loading strategy', () => {
       populate: {
         books: {
           author: true,
-          publisher: { tests: LoadStrategy.JOINED },
+          publisher: { tests: true },
         },
       },
       orderBy: { books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
+      strategy: LoadStrategy.JOINED,
     });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."name", ' +
@@ -448,7 +449,7 @@ describe('Joined loading strategy', () => {
       '"a1"."id" as "a1_id", "a1"."created_at" as "a1_created_at", "a1"."updated_at" as "a1_updated_at", "a1"."name" as "a1_name", "a1"."email" as "a1_email", "a1"."age" as "a1_age", "a1"."terms_accepted" as "a1_terms_accepted", "a1"."optional" as "a1_optional", "a1"."identities" as "a1_identities", "a1"."born" as "a1_born", "a1"."born_time" as "a1_born_time", "a1"."favourite_book_uuid_pk" as "a1_favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1_favourite_author_id", "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
-      'where "a1"."name" = $1');
+      'where "e0"."author_id" is not null and "a1"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -463,7 +464,7 @@ describe('Joined loading strategy', () => {
       'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
       'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" ' +
       'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
-      'where "a3"."name" = $1');
+      'where "e0"."author_id" is not null and "a3"."name" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -473,7 +474,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "e0".*, "e0".price * 1.19 as "price_taxed" ' +
       'from "book2" as "e0" ' +
       'left join "author2" as "e1" on "e0"."author_id" = "e1"."id" ' +
-      'where "e1"."favourite_book_uuid_pk" = $1');
+      'where "e0"."author_id" is not null and "e1"."favourite_book_uuid_pk" = $1');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -486,7 +487,7 @@ describe('Joined loading strategy', () => {
       'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
       'left join "book2" as "e2" on "a1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
       'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
-      'where "e3"."name" = $1');
+      'where "e0"."author_id" is not null and "e3"."name" = $1');
   });
 
 });

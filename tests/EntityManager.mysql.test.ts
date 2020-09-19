@@ -1840,9 +1840,9 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
     // this test was causing TS recursion errors without the type argument
     // see https://github.com/mikro-orm/mikro-orm/issues/124 and https://github.com/mikro-orm/mikro-orm/issues/208
-    await expect(orm.em.count<Book2>(Book2, [book1, book2, book3])).resolves.toBe(3);
-    await expect(orm.em.count<any>(Book2, [book1, book2, book3])).resolves.toBe(3);
-    const a = await orm.em.find<any>(Book2, [book1, book2, book3]) as Book2[];
+    await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    const a = await orm.em.find(Book2, [book1, book2, book3]) as Book2[];
     await expect(orm.em.getRepository(Book2).count([book1, book2, book3])).resolves.toBe(3);
   });
 
@@ -1875,7 +1875,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
-      'where `e1`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e1`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1890,7 +1890,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e3`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1903,7 +1903,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`favourite_book_uuid_pk` = ?');
+      'where `e0`.`author_id` is not null and `e1`.`favourite_book_uuid_pk` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1918,7 +1918,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e3`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
   });
 
   test('partial selects', async () => {
@@ -2281,7 +2281,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`name` = ? and `e0`.`author_id` is not null limit ?');
+      'where `e0`.`author_id` is not null and `e1`.`name` = ? limit ?');
   });
 
   test('custom types', async () => {

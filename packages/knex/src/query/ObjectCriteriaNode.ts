@@ -71,7 +71,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
         const tmp = payload[k];
         delete payload[k];
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
-      } else if (this.isPrefixed(k) || Utils.isOperator(k)) {
+      } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];

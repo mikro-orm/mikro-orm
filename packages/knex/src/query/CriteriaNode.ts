@@ -54,7 +54,7 @@ export class CriteriaNode {
 
     switch (type) {
       case ReferenceType.MANY_TO_ONE: return false;
-      case ReferenceType.ONE_TO_ONE: return operator || (/* istanbul ignore next */ !this.prop!.owner && !this.parent?.parent);
+      case ReferenceType.ONE_TO_ONE: return !this.prop!.owner;
       case ReferenceType.ONE_TO_MANY: return scalar || operator;
       case ReferenceType.MANY_TO_MANY: return scalar || operator;
       default: return false;
@@ -62,8 +62,9 @@ export class CriteriaNode {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
+    const alias = qb.getAliasForJoinPath(this.getPath());
+
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-      const alias = qb.getAliasForJoinPath(this.getPath());
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
@@ -71,7 +72,6 @@ export class CriteriaNode {
       return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
     }
 
-    const alias = qb.getAliasForJoinPath(this.getPath());
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 

@@ -91,7 +91,6 @@ describe('Migrator', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
-    getExecutedMigrationsMock.mockResolvedValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const migration = await migrator.createMigration(undefined, false, true);
     expect(logMigrationMock).toBeCalledWith('Migration20191013214813.ts');
