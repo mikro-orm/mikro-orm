@@ -2,6 +2,7 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { ReferenceType } from '../enums';
 import { PropertyOptions } from './Property';
 import { AnyEntity, EntityProperty } from '../typings';
+import { Utils } from '../utils/Utils';
 
 function createDecorator<T>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
   return function (target: AnyEntity, propertyName: string) {
@@ -10,6 +11,8 @@ function createDecorator<T>(options: PrimaryKeyOptions<T> | SerializedPrimaryKey
     const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;
     options[k] = true;
     meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR }, options) as EntityProperty;
+
+    return Utils.propertyDecoratorReturnValue();
   };
 }
 

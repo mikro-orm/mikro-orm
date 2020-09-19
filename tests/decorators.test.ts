@@ -54,4 +54,15 @@ describe('decorators', () => {
     expect(storage[key].properties.test3).toMatchObject({ reference: ReferenceType.SCALAR, name: 'test3' });
   });
 
+  test('babel support', () => {
+    const ret1 = Property()(new Test5(), 'test3');
+    expect(ret1).toBeUndefined();
+    process.env.BABEL_DECORATORS_COMPAT = 'true';
+    const ret2 = Property()(new Test5(), 'test3');
+    expect(ret2).not.toBeUndefined();
+    delete process.env.BABEL_DECORATORS_COMPAT;
+    const ret3 = Property()(new Test5(), 'test3');
+    expect(ret3).toBeUndefined();
+  });
+
 });

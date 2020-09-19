@@ -14,6 +14,8 @@ export function ManyToOne<T, O>(
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.MANY_TO_ONE);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;
     meta.properties[propertyName] = Object.assign(meta.properties[propertyName] ?? {}, property, options);
+
+    return Utils.propertyDecoratorReturnValue();
   };
 }
 

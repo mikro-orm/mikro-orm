@@ -573,4 +573,13 @@ export class Utils {
     }
   }
 
+  /**
+   * @see https://github.com/mikro-orm/mikro-orm/issues/840
+   */
+  static propertyDecoratorReturnValue(): any {
+    if (process.env.BABEL_DECORATORS_COMPAT) {
+      return {};
+    }
+  }
+
 }

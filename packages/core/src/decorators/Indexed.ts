@@ -1,5 +1,6 @@
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary } from '../typings';
+import { Utils } from '../utils/Utils';
 
 function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
@@ -7,6 +8,8 @@ function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean)
     options.properties = options.properties || propertyName;
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as Required<IndexOptions | UniqueOptions>);
+
+    return Utils.propertyDecoratorReturnValue();
   };
 }
 
