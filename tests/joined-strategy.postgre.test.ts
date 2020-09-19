@@ -310,7 +310,7 @@ describe('Joined loading strategy', () => {
     expect(b0.bar).toBeUndefined();
     orm.em.clear();
 
-    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: { bar: true } }))!;
+    const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: LoadStrategy.JOINED }))!;
     expect(mock.mock.calls).toHaveLength(2);
     expect(mock.mock.calls[1][0]).toMatch('select "e0"."id", "e0"."name", "e0"."version", ' +
       '"b1"."id" as "b1_id", "b1"."name" as "b1_name", "b1"."baz_id" as "b1_baz_id", "b1"."foo_bar_id" as "b1_foo_bar_id", "b1"."version" as "b1_version", "b1"."blob" as "b1_blob", "b1"."array" as "b1_array", "b1"."object" as "b1_object", (select 123) as "b1_random", "b1"."id" as "bar_id" ' +
