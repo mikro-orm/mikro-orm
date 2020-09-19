@@ -9,6 +9,10 @@ function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean)
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as Required<IndexOptions | UniqueOptions>);
 
+    if (!propertyName) {
+      return target;
+    }
+
     return Utils.propertyDecoratorReturnValue();
   };
 }
