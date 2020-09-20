@@ -778,6 +778,18 @@ describe('EntityManagerSqlite2', () => {
     expect(+a.createdAt!).toBe(+author.createdAt);
   });
 
+  test('merging results from QB to existing entity', async () => {
+    const bar = orm.em.create(FooBar4, { name: 'b1' });
+    await orm.em.persistAndFlush(bar);
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(FooBar4, { name: 'b1' });
+    expect(b1.virtual).toBeUndefined();
+
+    await orm.em.createQueryBuilder(FooBar4).select(`id, '123' as virtual`).getResultList();
+    expect(b1.virtual).toBe('123');
+  });
+
   test('custom types', async () => {
     const bar = orm.em.create(FooBar4, { name: 'b1' });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);

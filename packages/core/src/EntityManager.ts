@@ -423,7 +423,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return entity;
     }
 
-    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, convertCustomTypes });
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, refresh, convertCustomTypes });
     this.validator.validate(entity, data, this.metadata.find(entityName)!);
     this.getUnitOfWork().merge(entity);
 
