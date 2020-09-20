@@ -192,8 +192,8 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
-  indexes: { properties: string | string[]; name?: string; type?: string; options?: Dictionary }[];
-  uniques: { properties: string | string[]; name?: string; options?: Dictionary }[];
+  indexes: { properties: keyof T | (keyof T)[]; name?: string; type?: string; options?: Dictionary }[];
+  uniques: { properties: keyof T | (keyof T)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
   prototype: T;

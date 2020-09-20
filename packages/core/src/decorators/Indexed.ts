@@ -2,12 +2,12 @@ import { MetadataStorage } from '../metadata';
 import { AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils/Utils';
 
-function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean) {
+function createDecorator<T extends AnyEntity<T>>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
-    options.properties = options.properties || propertyName;
+    options.properties = options.properties || propertyName as keyof T;
     const key = unique ? 'uniques' : 'indexes';
-    meta[key].push(options as Required<IndexOptions | UniqueOptions>);
+    meta[key].push(options as any);
 
     if (!propertyName) {
       return target;
@@ -17,20 +17,20 @@ function createDecorator(options: IndexOptions | UniqueOptions, unique: boolean)
   };
 }
 
-export function Index(options: IndexOptions = {}) {
+export function Index<T>(options: IndexOptions<T> = {}) {
   return createDecorator(options, false);
 }
 
-export function Unique(options: UniqueOptions = {}) {
+export function Unique<T>(options: UniqueOptions<T> = {}) {
   return createDecorator(options, true);
 }
 
-export interface UniqueOptions {
+export interface UniqueOptions<T extends AnyEntity<T>> {
   name?: string;
-  properties?: string | string[];
+  properties?: keyof T | (keyof T)[];
   options?: Dictionary;
 }
 
-export interface IndexOptions extends UniqueOptions {
+export interface IndexOptions<T extends AnyEntity<T>> extends UniqueOptions<T> {
   type?: string;
 }
