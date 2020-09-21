@@ -118,6 +118,7 @@ const schema = new EntitySchema({
     beforeDelete: ['beforeDelete'],
     afterDelete: ['afterDelete'],
   },
+  indexes: [{ properties: ['name', 'favouriteBook'] }],
   path: __filename,
 });
 

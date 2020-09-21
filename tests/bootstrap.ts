@@ -49,7 +49,7 @@ export async function initORMMongo() {
   return orm;
 }
 
-export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}) {
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
   let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
@@ -65,21 +65,24 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations' },
-
   }, additionalOptions));
 
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
-  orm.config.set('dbName', 'mikro_orm_test_schema_2');
-  await schemaGenerator.ensureDatabase();
-  await orm.em.getDriver().reconnect();
-  await schemaGenerator.dropSchema();
-  await connection.loadFile(__dirname + '/mysql-schema.sql');
-  await orm.close(true);
-  orm.config.set('dbName', 'mikro_orm_test');
-  orm = await MikroORM.init(orm.config);
+
+  if (!simple) {
+    orm.config.set('dbName', 'mikro_orm_test_schema_2');
+    await schemaGenerator.ensureDatabase();
+    await orm.em.getDriver().reconnect();
+    await schemaGenerator.dropSchema();
+    await connection.loadFile(__dirname + '/mysql-schema.sql');
+    await orm.close(true);
+    orm.config.set('dbName', 'mikro_orm_test');
+    orm = await MikroORM.init(orm.config);
+  }
+
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;

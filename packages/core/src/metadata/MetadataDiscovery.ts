@@ -750,9 +750,14 @@ export class MetadataDiscovery {
       meta.uniques.splice(meta.uniques.indexOf(simpleUnique), 1);
     }
 
-    if (owner && this.metadata.get(prop.type).compositePK) {
+    if (owner && prop.fieldNames.length > 1) {
       meta.indexes.push({ properties: prop.name });
       prop.index = false;
+    }
+
+    if (owner && prop.fieldNames.length > 1 && prop.unique) {
+      meta.uniques.push({ properties: prop.name });
+      prop.unique = false;
     }
   }
 

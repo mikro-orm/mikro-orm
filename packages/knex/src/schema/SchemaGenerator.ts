@@ -1,8 +1,8 @@
-import { ColumnBuilder, SchemaBuilder, TableBuilder } from 'knex';
+import { ColumnBuilder, CreateTableBuilder, SchemaBuilder, TableBuilder } from 'knex';
 import { Cascade, CommitOrderCalculator, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
 import { DatabaseSchema } from './DatabaseSchema';
 import { DatabaseTable } from './DatabaseTable';
-import { Column, IsSame } from '../typings';
+import { Column, IndexDef, IsSame, TableDifference } from '../typings';
 import { SqlEntityManager } from '../SqlEntityManager';
 
 export class SchemaGenerator {
@@ -55,6 +55,13 @@ export class SchemaGenerator {
       ret += this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
     }
 
+    for (const meta of metadata) {
+      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+        meta.indexes.forEach(index => this.createIndex(table, meta, index, false));
+        meta.uniques.forEach(index => this.createIndex(table, meta, index, true));
+      }));
+    }
+
     return this.wrapSchema(ret, wrap);
   }
 
@@ -99,6 +106,10 @@ export class SchemaGenerator {
 
     for (const meta of metadata) {
       ret += this.getUpdateTableFKsSQL(meta, schema);
+    }
+
+    for (const meta of metadata) {
+      ret += this.getUpdateTableIndexesSQL(meta, schema);
     }
 
     if (!dropTables || safe) {
@@ -164,6 +175,42 @@ export class SchemaGenerator {
     return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta, create)));
   }
 
+  private getUpdateTableIndexesSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
+    const table = schema.getTable(meta.collection);
+
+    if (!table) {
+      return this.dump(this.knex.schema.alterTable(meta.collection, table => {
+        meta.indexes.forEach(index => this.createIndex(table, meta, index, false));
+        meta.uniques.forEach(index => this.createIndex(table, meta, index, true));
+      }));
+    }
+
+    let ret = '';
+    const { addIndex, dropIndex } = this.computeTableDifference(meta, table, true);
+
+    dropIndex.forEach(index => {
+      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+        if (index.unique) {
+          table.dropUnique(index.columnNames, index.keyName);
+        } else {
+          table.dropIndex(index.columnNames, index.keyName);
+        }
+      }));
+    });
+
+    addIndex.forEach(index => {
+      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+        if (index.unique) {
+          table.unique(index.columnNames, index.keyName);
+        } else {
+          table.index(index.columnNames, index.keyName);
+        }
+      }));
+    });
+
+    return ret;
+  }
+
   private async wrapSchema(sql: string, wrap = true): Promise<string> {
     if (!wrap) {
       return sql;
@@ -187,25 +234,24 @@ export class SchemaGenerator {
         const constraintName = meta.collection.includes('.') ? meta.collection.split('.').pop()! + '_pkey' : undefined;
         table.primary(Utils.flatten(meta.primaryKeys.map(prop => meta.properties[prop].fieldNames)), constraintName);
       }
+
       if (meta.comment) {
         table.comment(meta.comment);
       }
 
-      const createIndex = (index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean) => {
-        const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-        const name = Utils.isString(index.name) ? index.name : this.helper.getIndexName(meta.collection, properties, unique);
-
-        if (unique) {
-          table.unique(properties, name);
-        } else {
-          table.index(properties, name, index.type);
-        }
-      };
-
-      meta.indexes.forEach(index => createIndex(index, false));
-      meta.uniques.forEach(index => createIndex(index, true));
       this.helper.finalizeTable(table, this.config.get('charset'));
     });
+  }
+
+  private createIndex(table: CreateTableBuilder, meta: EntityMetadata, index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean): void {
+    const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+    const name = Utils.isString(index.name) ? index.name : this.helper.getIndexName(meta.collection, properties, unique ? 'unique' : 'index');
+
+    if (unique) {
+      table.unique(properties, name);
+    } else {
+      table.index(properties, name, index.type);
+    }
   }
 
   private updateTable(meta: EntityMetadata, table: DatabaseTable, safe: boolean): SchemaBuilder[] {
@@ -238,7 +284,7 @@ export class SchemaGenerator {
     return ret;
   }
 
-  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): { create: EntityProperty[]; update: { prop: EntityProperty; column: Column; diff: IsSame }[]; rename: { from: Column; to: EntityProperty }[]; remove: Column[] } {
+  private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): TableDifference {
     const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(meta, prop, true));
     const columns = table.getColumns();
     const create: EntityProperty[] = [];
@@ -250,12 +296,14 @@ export class SchemaGenerator {
     }
 
     const rename = this.findRenamedColumns(create, remove);
+    const ignore = [...remove, ...rename.filter(c => [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(c.to.reference)).map(c => c.from)];
+    const { addIndex, dropIndex } = this.findIndexDifference(meta, table, ignore);
 
     if (safe) {
-      return { create, update, rename, remove: [] };
+      return { create, update, rename, remove: [], addIndex, dropIndex };
     }
 
-    return { create, update, rename, remove };
+    return { create, update, rename, remove, addIndex, dropIndex };
   }
 
   private computeColumnDifference(table: DatabaseTable, prop: EntityProperty, create: EntityProperty[], update: { prop: EntityProperty; column: Column; diff: IsSame }[], joinColumn?: string, idx = 0): void {
@@ -376,31 +424,31 @@ export class SchemaGenerator {
     const sameNullable = alter && 'sameNullable' in alter && alter.sameNullable;
     const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
     const index = indexed && !alter?.sameIndex;
-    const indexName = this.getIndexName(meta, prop, false, columnName);
-    const uniqueName = this.getIndexName(meta, prop, true, columnName);
+    const indexName = this.getIndexName(meta, prop, 'index', [columnName]);
+    const uniqueName = this.getIndexName(meta, prop, 'unique', [columnName]);
     const sameDefault = alter && 'sameDefault' in alter ? alter.sameDefault : !prop.defaultRaw;
+    const composite = prop.fieldNames.length > 1;
 
     Utils.runIfNotEmpty(() => col.nullable(), !sameNullable && nullable);
     Utils.runIfNotEmpty(() => col.notNullable(), !sameNullable && !nullable);
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), pkProp.unsigned);
-    Utils.runIfNotEmpty(() => col.index(indexName), index);
-    Utils.runIfNotEmpty(() => col.unique(uniqueName), prop.unique);
+    Utils.runIfNotEmpty(() => col.index(indexName), !composite && index);
+    Utils.runIfNotEmpty(() => col.unique(uniqueName), !composite && prop.unique);
     Utils.runIfNotEmpty(() => col.defaultTo(prop.defaultRaw ? this.knex.raw(prop.defaultRaw) : null), !sameDefault);
     Utils.runIfNotEmpty(() => col.comment(prop.comment!), prop.comment);
 
     return col;
   }
 
-  private getIndexName<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, unique: boolean, columnName: string): string {
-    const type = unique ? 'unique' : 'index';
+  private getIndexName<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, type: 'unique' | 'index', columnNames: string[]): string {
     const value = prop[type];
 
     if (Utils.isString(value)) {
       return value;
     }
 
-    return this.helper.getIndexName(meta.collection, [columnName], unique);
+    return this.helper.getIndexName(meta.collection, columnNames, type);
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[]): void {
@@ -464,6 +512,61 @@ export class SchemaGenerator {
     });
 
     return renamed;
+  }
+
+  private findIndexDifference(meta: EntityMetadata, table: DatabaseTable, remove: Column[]): { addIndex: IndexDef[]; dropIndex: IndexDef[] } {
+    const addIndex: IndexDef[] = [];
+    const dropIndex: IndexDef[] = [];
+    const expectedIndexes = new Set();
+    const existingIndexes = new Set(Object.keys(table.getIndexes()));
+    const idxName = (name: string | boolean | undefined, columns: string[], type: 'index' | 'unique' | 'foreign') => {
+      return Utils.isString(name) ? name : this.helper.getIndexName(meta.collection, columns, type);
+    };
+
+    (['indexes', 'uniques'] as const).forEach(type => {
+      meta[type].forEach(index => {
+        const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+        const name = idxName(index.name, properties, type === 'uniques' ? 'unique' : 'index');
+        expectedIndexes.add(name);
+
+        if (!existingIndexes.has(name)) {
+          addIndex.push({
+            keyName: name,
+            columnNames: properties,
+            unique: type === 'uniques',
+          });
+        }
+      });
+    });
+
+    meta.props.forEach(prop => {
+      if (prop.index) {
+        expectedIndexes.add(idxName(prop.index, prop.fieldNames, 'index'));
+      }
+
+      if (prop.unique) {
+        expectedIndexes.add(idxName(prop.unique, prop.fieldNames, 'unique'));
+      }
+
+      if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+        expectedIndexes.add(this.helper.getIndexName(meta.collection, prop.fieldNames, 'index'));
+        expectedIndexes.add(this.helper.getIndexName(meta.collection, prop.fieldNames, 'foreign'));
+      }
+    });
+
+    Object.entries(table.getIndexes()).forEach(([name, index]) => {
+      const willBeRemoved = remove.find(col => index.some(idx => idx.columnName === col.name));
+
+      if (!expectedIndexes.has(name) && !this.helper.isImplicitIndex(name) && !willBeRemoved) {
+        dropIndex.push({
+          keyName: name,
+          columnNames: index.map(i => i.columnName),
+          unique: index[0].unique,
+        });
+      }
+    });
+
+    return { addIndex, dropIndex };
   }
 
   private getOrderedMetadata(): EntityMetadata[] {

@@ -168,12 +168,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addIndex(options: Required<Omit<IndexOptions, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
-    this._meta.indexes.push(options as Required<IndexOptions>);
+  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
+    this._meta.indexes.push(options as any);
   }
 
-  addUnique(options: Required<Omit<UniqueOptions, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
-    this._meta.uniques.push(options as Required<UniqueOptions>);
+  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
+    this._meta.uniques.push(options as any);
   }
 
   setCustomRepository(repository: () => Constructor<EntityRepository<T>>): void {

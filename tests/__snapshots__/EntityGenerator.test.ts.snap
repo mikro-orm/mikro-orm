@@ -454,7 +454,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @OneToOne({ entity: () => Car2, nullable: true, index: 'user2_favourite_car_name_favourite_car_year_index', unique: 'user2_favourite_car_year_unique' })
+  @OneToOne({ entity: () => Car2, nullable: true, index: 'user2_favourite_car_name_favourite_car_year_index' })
   favouriteCar?: Car2;
 
 }

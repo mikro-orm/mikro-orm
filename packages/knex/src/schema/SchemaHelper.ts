@@ -52,6 +52,13 @@ export abstract class SchemaHelper {
     return true;
   }
 
+  /**
+   * Implicit indexes will be ignored when diffing
+   */
+  isImplicitIndex(name: string): boolean {
+    return false;
+  }
+
   getTypeFromDefinition(type: string, defaultType: string, types?: Dictionary<string[]>): string {
     type = type.replace(/\(.+\)/, '');
 
@@ -98,8 +105,7 @@ export abstract class SchemaHelper {
   /**
    * Returns the default name of index for the given columns
    */
-  getIndexName(tableName: string, columns: string[], unique: boolean): string {
-    const type = unique ? 'unique' : 'index';
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
     return `${tableName}_${columns.join('_')}_${type}`;
   }
 

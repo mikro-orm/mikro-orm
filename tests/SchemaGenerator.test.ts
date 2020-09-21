@@ -77,7 +77,7 @@ describe('SchemaGenerator', () => {
   });
 
   test('generate schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const generator = new SchemaGenerator(orm.em);
     await generator.ensureDatabase();
     const dump = await generator.generate();
@@ -96,7 +96,7 @@ describe('SchemaGenerator', () => {
   });
 
   test('update schema [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em);
 
@@ -144,7 +144,6 @@ describe('SchemaGenerator', () => {
       primaryKey: 'id',
     } as any).init().meta;
     meta.set('NewTable', newTableMeta);
-    await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
     await generator.updateSchema();
 
@@ -166,18 +165,6 @@ describe('SchemaGenerator', () => {
     delete newTableMeta.properties.updatedAt;
     delete authorMeta.properties.favouriteBook;
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-column');
-    await generator.updateSchema();
-
-    const ageProp = authorMeta.properties.age;
-    ageProp.name = 'ageInYears';
-    ageProp.fieldNames = ['age_in_years'];
-    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
-    favouriteAuthorProp.name = 'favouriteWriter';
-    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
-    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
-    delete authorMeta.properties.favouriteAuthor;
-    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
     await generator.updateSchema();
 
     newTableMeta.properties.id = idProp;
@@ -204,8 +191,34 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('rename column [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em);
+
+    const authorMeta = meta.get('Author2');
+    const ageProp = authorMeta.properties.age;
+    ageProp.name = 'ageInYears';
+    ageProp.fieldNames = ['age_in_years'];
+    const index = authorMeta.indexes.find(i => Utils.asArray(i.properties).join() === 'name,age')!;
+    index.properties = ['name', 'ageInYears'];
+    delete authorMeta.properties.age;
+    authorMeta.properties.ageInYears = ageProp;
+    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
+    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
+    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
+    delete authorMeta.properties.favouriteAuthor;
+    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    await (generator.getUpdateSchemaSQL(false));
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
   test('update schema enums [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em);
 
@@ -531,12 +544,43 @@ describe('SchemaGenerator', () => {
   });
 
   test('update empty schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mysql-update-empty-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update indexes [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em);
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes.push({
+      properties: ['author', 'publisher'],
+    });
+
+    meta.get('Book2').uniques.push({
+      properties: ['author', 'publisher'],
+    });
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-index');
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes[0].name = 'custom_idx_123';
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-index');
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes = [];
+    meta.get('Book2').uniques = [];
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-index');
     await generator.updateSchema();
 
     await orm.close(true);

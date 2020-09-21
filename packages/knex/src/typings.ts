@@ -58,6 +58,21 @@ export interface Index {
   composite?: boolean;
 }
 
+export interface IndexDef {
+  keyName: string;
+  columnNames: string[];
+  unique: boolean;
+}
+
+export interface TableDifference {
+  create: EntityProperty[];
+  update: { prop: EntityProperty; column: Column; diff: IsSame }[];
+  rename: { from: Column; to: EntityProperty }[];
+  remove: Column[];
+  addIndex: IndexDef[];
+  dropIndex: IndexDef[];
+}
+
 export interface IsSame {
   all?: boolean;
   sameTypes?: boolean;

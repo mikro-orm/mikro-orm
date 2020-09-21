@@ -62,8 +62,7 @@ create table `car_owner2` (`id` int unsigned not null auto_increment primary key
 alter table `car_owner2` add index `car_owner2_car_name_car_year_index`(`car_name`, `car_year`);
 
 create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null, `favourite_car_name` varchar(100) null, `favourite_car_year` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table `user2` add unique `user2_favourite_car_name_unique`(`favourite_car_name`);
-alter table `user2` add unique `user2_favourite_car_year_unique`(`favourite_car_year`);
+alter table `user2` add unique `user2_favourite_car_name_favourite_car_year_unique`(`favourite_car_name`, `favourite_car_year`);
 alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
 alter table `user2` add index `user2_favourite_car_name_favourite_car_year_index`(`favourite_car_name`, `favourite_car_year`);
 

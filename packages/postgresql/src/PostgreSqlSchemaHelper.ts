@@ -61,6 +61,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return false;
   }
 
+  isImplicitIndex(name: string): boolean {
+    return false;
+  }
+
   getListTablesSQL(): string {
     return 'select table_name, table_schema as schema_name '
       + `from information_schema.tables where table_schema not like 'pg_%' and table_schema = current_schema() `
