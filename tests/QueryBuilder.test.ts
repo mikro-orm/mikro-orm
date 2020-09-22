@@ -7,6 +7,7 @@ import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, Fo
 import { initORMMySql } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { performance } from 'perf_hooks';
+import { BaseEntity22 } from './entities-sql/BaseEntity22';
 
 describe('QueryBuilder', () => {
 
@@ -1579,7 +1580,7 @@ describe('QueryBuilder', () => {
 
   test('pg array operators', async () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
-      entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, BaseEntity2, Configuration2],
+      entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Configuration2],
       dbName: `mikro_orm_test`,
       type: 'postgresql',
     });
@@ -1687,11 +1688,30 @@ describe('QueryBuilder', () => {
       'left join `test2` as `e2` on `e1`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
       'where `e2`.`id` = ?');
 
-    const sql3 = orm.em.createQueryBuilder(Book2).select('*').where({ test: { id: 1 } }).getQuery();
-    expect(sql3).toBe('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` ' +
+    const sql3 = orm.em.createQueryBuilder(Book2).count().where({ test: { id: 1 } }).getQuery();
+    expect(sql3).toBe('select count(`e0`.`uuid_pk`) as `count` ' +
       'from `book2` as `e0` ' +
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
       'where `e1`.`id` = ?');
+
+    const sql4 = orm.em.createQueryBuilder(Book2).select('*').where({ test: { id: 1 } }).getQuery();
+    expect(sql4).toBe('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
+      'where `e1`.`id` = ?');
+  });
+
+  test('deeply nested array condition without operator (GH issue 860)', async () => {
+    // 1:1 inverse -> m:n inverse -> [PK]
+    let expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` left join `test2_bars` as `e2` on `e1`.`id` = `e2`.`foo_bar2_id` where `e2`.`test2_id` in (?, ?, ?)';
+    const sql1 = orm.em.createQueryBuilder(FooBaz2).where({ bar: { tests: { $in: [1, 2, 3] } } }).getQuery();
+    expect(sql1).toBe(expected);
+    const sql2 = orm.em.createQueryBuilder(FooBaz2).where({ bar: { tests: [1, 2, 3] } }).getQuery();
+    expect(sql2).toBe(expected);
+
+    expected = 'select `e0`.* from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` left join `test2_bars` as `e2` on `e1`.`id` = `e2`.`foo_bar2_id` where `e2`.`test2_id` = ?';
+    const sql3 = orm.em.createQueryBuilder(FooBaz2).where({ bar: { tests: 3 } }).getQuery();
+    expect(sql3).toBe(expected);
   });
 
   afterAll(async () => orm.close(true));

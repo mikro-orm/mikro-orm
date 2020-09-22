@@ -311,11 +311,6 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
     const fields = Utils.splitPrimaryKeys(key);
 
-    if (key === op) { // substitute top level operators with PK
-      const meta = this.metadata.find(this.entityName)!;
-      key = meta.properties[meta.primaryKeys[0]].fieldNames[0];
-    }
-
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
       value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }

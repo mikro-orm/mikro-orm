@@ -1,15 +1,16 @@
 import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
 import { EntitySchema, ReferenceType, Utils, MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
-import { FooBar2, FooBaz2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('SchemaGenerator', () => {
 
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -25,7 +26,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -44,7 +45,7 @@ describe('SchemaGenerator', () => {
   test('create/drop database [mariadb]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -61,7 +62,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mariadb]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -378,7 +379,7 @@ describe('SchemaGenerator', () => {
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
@@ -393,7 +394,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',

@@ -6,6 +6,7 @@ drop table if exists "author_to_friend" cascade;
 drop table if exists "book_to_tag_unordered" cascade;
 drop table if exists "book2_tags" cascade;
 drop table if exists "publisher2_tests" cascade;
+drop table if exists "test2_bars" cascade;
 drop table if exists "configuration2" cascade;
 drop table if exists "test2" cascade;
 drop table if exists "book2" cascade;
@@ -66,6 +67,9 @@ alter table "configuration2" add constraint "configuration2_pkey" primary key ("
 
 create table "publisher2_tests" ("id" serial primary key, "publisher2_id" int4 not null, "test2_id" int4 not null);
 
+create table "test2_bars" ("test2_id" int4 not null, "foo_bar2_id" int4 not null);
+alter table "test2_bars" add constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id");
+
 create table "book2_tags" ("order" serial primary key, "book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null);
 
 create table "book_to_tag_unordered" ("book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null);
@@ -97,6 +101,9 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 
 alter table "publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "publisher2" ("id") on update cascade on delete cascade;
 alter table "publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
+
+alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
+alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;
 
 alter table "book2_tags" add constraint "book2_tags_book2_uuid_pk_foreign" foreign key ("book2_uuid_pk") references "book2" ("uuid_pk") on update cascade on delete cascade;
 alter table "book2_tags" add constraint "book2_tags_book_tag2_id_foreign" foreign key ("book_tag2_id") references "book_tag2" ("id") on update cascade on delete cascade;

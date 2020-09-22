@@ -1,6 +1,7 @@
-import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
+import { FooBar2 } from './FooBar2';
 
 @Entity()
 export class Test2 {
@@ -19,6 +20,9 @@ export class Test2 {
 
   @Property({ version: true })
   version!: number;
+
+  @ManyToMany(() => FooBar2)
+  bars = new Collection<FooBar2>(this);
 
   constructor(props: Partial<Test2> = {}) {
     this.id = props.id!;

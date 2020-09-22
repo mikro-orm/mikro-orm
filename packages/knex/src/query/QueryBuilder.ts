@@ -60,7 +60,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   addSelect(fields: string | string[]): this {
-    if (this.type !== QueryType.SELECT) {
+    if (this.type && this.type !== QueryType.SELECT) {
       return this;
     }
 

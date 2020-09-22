@@ -6,7 +6,7 @@ import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
 describe('EntityGenerator', () => {
 
   test('generate entities from schema [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const generator = orm.getEntityGenerator();
     const dump = await generator.generate({ save: true, baseDir: './temp/entities' });
     expect(dump).toMatchSnapshot('mysql-entity-dump');

@@ -7,6 +7,7 @@ drop table if exists `author_to_friend`;
 drop table if exists `book_to_tag_unordered`;
 drop table if exists `book2_tags`;
 drop table if exists `publisher2_tests`;
+drop table if exists `test2_bars`;
 drop table if exists `configuration2`;
 drop table if exists `test2`;
 drop table if exists `book2`;
@@ -115,6 +116,11 @@ create table `publisher2_tests` (`id` int unsigned not null auto_increment prima
 alter table `publisher2_tests` add index `publisher2_tests_publisher2_id_index`(`publisher2_id`);
 alter table `publisher2_tests` add index `publisher2_tests_test2_id_index`(`test2_id`);
 
+create table `test2_bars` (`test2_id` int(11) unsigned not null, `foo_bar2_id` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table `test2_bars` add index `test2_bars_test2_id_index`(`test2_id`);
+alter table `test2_bars` add index `test2_bars_foo_bar2_id_index`(`foo_bar2_id`);
+alter table `test2_bars` add primary key `test2_bars_pkey`(`test2_id`, `foo_bar2_id`);
+
 create table `book2_tags` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table `book2_tags` add index `book2_tags_book2_uuid_pk_index`(`book2_uuid_pk`);
 alter table `book2_tags` add index `book2_tags_book_tag2_id_index`(`book_tag2_id`);
@@ -171,6 +177,9 @@ alter table `configuration2` add constraint `configuration2_test_id_foreign` for
 
 alter table `publisher2_tests` add constraint `publisher2_tests_publisher2_id_foreign` foreign key (`publisher2_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 alter table `publisher2_tests` add constraint `publisher2_tests_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;
+
+alter table `test2_bars` add constraint `test2_bars_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;
+alter table `test2_bars` add constraint `test2_bars_foo_bar2_id_foreign` foreign key (`foo_bar2_id`) references `foo_bar2` (`id`) on update cascade on delete cascade;
 
 alter table `book2_tags` add constraint `book2_tags_book2_uuid_pk_foreign` foreign key (`book2_uuid_pk`) references `book2` (`uuid_pk`) on update cascade on delete cascade;
 alter table `book2_tags` add constraint `book2_tags_book_tag2_id_foreign` foreign key (`book_tag2_id`) references `book_tag2` (`id`) on update cascade on delete cascade;
