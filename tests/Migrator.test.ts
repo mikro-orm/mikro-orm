@@ -3,7 +3,7 @@ import umzug from 'umzug';
 import { Logger, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { remove, writeFile } from 'fs-extra';
+import { remove } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
 
 class MigrationTest1 extends Migration {
@@ -120,7 +120,9 @@ describe('Migrator', () => {
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);
     expect(downMock).toBeCalledTimes(0);
-    await migrator.down();
+    await orm.em.begin();
+    await migrator.down({ transaction: orm.em.getTransactionContext() });
+    await orm.em.commit();
     expect(upMock).toBeCalledTimes(1);
     expect(downMock).toBeCalledTimes(1);
     upMock.mockRestore();
@@ -224,20 +226,34 @@ describe('Migrator', () => {
     const migrator = new Migrator(orm.em);
     const path = process.cwd() + '/temp/migrations';
 
-    const migration = await migrator.createMigration(path, true);
-    const migratorMock = jest.spyOn(Migration.prototype, 'down');
-    migratorMock.mockImplementation(async () => void 0);
+    // @ts-ignore
+    migrator.options.disableForeignKeys = false;
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2020-09-22T10:00:01.000Z');
+    dateMock.mockReturnValueOnce('2020-09-22T10:00:02.000Z');
+    const migration1 = await migrator.createMigration(path, true);
+    const migration2 = await migrator.createMigration(path, true);
+    const migrationMock = jest.spyOn(Migration.prototype, 'down');
+    migrationMock.mockImplementation(async () => void 0);
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
     await orm.em.transactional(async em => {
-      await migrator.up({ transaction: em.getTransactionContext() });
-      await migrator.down({ transaction: em.getTransactionContext() });
+      const ret1 = await migrator.up({ transaction: em.getTransactionContext() });
+      const ret2 = await migrator.down({ transaction: em.getTransactionContext() });
+      const ret3 = await migrator.down({ transaction: em.getTransactionContext() });
+      const ret4 = await migrator.down({ transaction: em.getTransactionContext() });
+      expect(ret1).toHaveLength(2);
+      expect(ret2).toHaveLength(1);
+      expect(ret3).toHaveLength(1);
+      expect(ret4).toHaveLength(0);
     });
 
-    await remove(path + '/' + migration.fileName);
+    await remove(path + '/' + migration1.fileName);
+    await remove(path + '/' + migration2.fileName);
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
@@ -257,7 +273,6 @@ describe('Migrator', () => {
     const path = process.cwd() + '/temp/migrations';
 
     const migration = await migrator.createMigration(path, true);
-    await writeFile(path + '/' + migration.fileName, migration.code.replace(`'mikro-orm'`, `'@mikro-orm/migrations'`));
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 

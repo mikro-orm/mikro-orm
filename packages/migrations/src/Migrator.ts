@@ -134,17 +134,21 @@ export class Migrator {
     return lines;
   }
 
-  private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[] }>(options?: T): T {
+  private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options?: T): T {
     if (Utils.isString(options) || Array.isArray(options)) {
       return Utils.asArray(options).map(m => m.startsWith('Migration') ? m : 'Migration' + m) as T;
     }
 
-    if (!Utils.isObject<{ from?: string; to?: string; migrations?: string[] }>(options)) {
+    if (!Utils.isObject<{ from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options)) {
       return options as T;
     }
 
     if (options.migrations) {
       options.migrations = options.migrations.map(m => this.prefix(m));
+    }
+
+    if (options.transaction) {
+      delete options.transaction;
     }
 
     ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.prefix(options[k]));
