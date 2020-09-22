@@ -3502,10 +3502,10 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
-escaya@^0.0.47:
-  version "0.0.47"
-  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.47.tgz#4316a68fe4f7ee43681a72de17f2d4b2adcfd4ff"
-  integrity sha512-dVhBDCcUY5Rva78u3SqGxBOihUGsz4JI4l0pta8GiN5tRLMucshTZ6ntq3FPw1LBuRbjcObb45INPwYxiqEvvQ==
+escaya@^0.0.49:
+  version "0.0.49"
+  resolved "https://registry.yarnpkg.com/escaya/-/escaya-0.0.49.tgz#3295f5c3a1cb2c29cf8cd839fbf4240cc422f278"
+  integrity sha512-Wo5yFmYe+8+YSDztQzJ4LplPttNmQl4rb3TjyAR6zvZUgWiPKjacXLGvdtqprHCK+Z1mVWcAKACRKlYF9JgqDg==
 
 escodegen@^1.14.1:
   version "1.14.3"
