@@ -24,15 +24,16 @@ export class ScalarCriteriaNode extends CriteriaNode {
   }
 
   shouldJoin(): boolean {
-    if (!this.parent || !this.prop || [ReferenceType.SCALAR, ReferenceType.ONE_TO_MANY].includes(this.prop.reference)) {
+    if (!this.parent || !this.prop) {
       return false;
     }
 
-    if (this.prop.reference === ReferenceType.ONE_TO_ONE) {
-      return !this.prop.owner;
+    switch (this.prop.reference) {
+      case ReferenceType.ONE_TO_MANY: return true;
+      case ReferenceType.MANY_TO_MANY: return true;
+      case ReferenceType.ONE_TO_ONE: return !this.prop.owner;
+      default: return false; // SCALAR, MANY_TO_ONE
     }
-
-    return this.prop.reference === ReferenceType.MANY_TO_MANY;
   }
 
 }

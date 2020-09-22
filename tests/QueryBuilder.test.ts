@@ -1653,6 +1653,24 @@ describe('QueryBuilder', () => {
     expect(sql7).toBe('select `e0`.* from `test2` as `e0` where `e0`.`book_uuid_pk` in (?)');
   });
 
+  test('query by 1:m PK (GH issue 857)', async () => {
+    const sql0 = orm.em.createQueryBuilder(Author2).select('*').where({ books: '123' }).getQuery();
+    expect(sql0).toBe('select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` = ?');
+    const expected = 'select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` in (?)';
+    const sql1 = orm.em.createQueryBuilder(Author2).where({ books: [123] }).getQuery();
+    expect(sql1).toBe(expected);
+    const sql2 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: [123] } }).getQuery();
+    expect(sql2).toBe(expected);
+    const sql3 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: { $in: [123] } } }).getQuery();
+    expect(sql3).toBe(expected);
+    const sql4 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: { $in: [123] } } }] }).getQuery();
+    expect(sql4).toBe(expected);
+    const sql5 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: [123] }] }).getQuery();
+    expect(sql5).toBe(expected);
+    const sql6 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: [123] } }] }).getQuery();
+    expect(sql6).toBe(expected);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
