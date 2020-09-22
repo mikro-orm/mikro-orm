@@ -1671,6 +1671,16 @@ describe('QueryBuilder', () => {
     expect(sql6).toBe(expected);
   });
 
+  test('count query with auto-joining (GH issue 858)', async () => {
+    // m:1 -> 1:1 inverse -> PK
+    const sql = orm.em.createQueryBuilder(Author2).count().where({ favouriteBook: { test: { id: 1 } } }).getQuery();
+    expect(sql).toBe('select count(`e0`.`id`) as `count` ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`favourite_book_uuid_pk` = `e1`.`uuid_pk` ' +
+      'left join `test2` as `e2` on `e1`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e2`.`id` = ?');
+  });
+
   afterAll(async () => orm.close(true));
 
 });
