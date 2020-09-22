@@ -6,16 +6,18 @@ export class ScalarCriteriaNode extends CriteriaNode {
 
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
-      const nestedAlias = qb.getAliasForJoinPath(this.getPath()) || qb.getNextAlias();
+      const path = this.getPath();
+      const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
 
       if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-        qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
+        qb.join(field, nestedAlias, undefined, 'pivotJoin', path);
       } else {
-        qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
+        qb.join(field, nestedAlias, undefined, 'leftJoin', path);
       }
 
-      if (this.prop!.reference === ReferenceType.ONE_TO_ONE) {
+      // select the owner as virtual property when joining from 1:1 inverse side, but only if the parent is root entity
+      if (this.prop!.reference === ReferenceType.ONE_TO_ONE && !this.parent?.getPath().includes('.')) {
         qb.addSelect(field);
       }
     }

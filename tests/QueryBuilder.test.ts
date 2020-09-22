@@ -1673,12 +1673,25 @@ describe('QueryBuilder', () => {
 
   test('count query with auto-joining (GH issue 858)', async () => {
     // m:1 -> 1:1 inverse -> PK
-    const sql = orm.em.createQueryBuilder(Author2).count().where({ favouriteBook: { test: { id: 1 } } }).getQuery();
-    expect(sql).toBe('select count(`e0`.`id`) as `count` ' +
+    const sql1 = orm.em.createQueryBuilder(Author2).count().where({ favouriteBook: { test: { id: 1 } } }).getQuery();
+    expect(sql1).toBe('select count(`e0`.`id`) as `count` ' +
       'from `author2` as `e0` ' +
       'left join `book2` as `e1` on `e0`.`favourite_book_uuid_pk` = `e1`.`uuid_pk` ' +
       'left join `test2` as `e2` on `e1`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
       'where `e2`.`id` = ?');
+
+    const sql2 = orm.em.createQueryBuilder(Author2).select('*').where({ favouriteBook: { test: { id: 1 } } }).getQuery();
+    expect(sql2).toBe('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`favourite_book_uuid_pk` = `e1`.`uuid_pk` ' +
+      'left join `test2` as `e2` on `e1`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
+      'where `e2`.`id` = ?');
+
+    const sql3 = orm.em.createQueryBuilder(Book2).select('*').where({ test: { id: 1 } }).getQuery();
+    expect(sql3).toBe('select `e0`.*, `e1`.`id` as `test_id`, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
+      'where `e1`.`id` = ?');
   });
 
   afterAll(async () => orm.close(true));
