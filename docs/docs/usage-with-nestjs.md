@@ -104,6 +104,8 @@ export class PhotoService {
 
 ## Auto entities automatically
 
+> `autoLoadEntities` option was added in v4.1.0 
+
 Manually adding entities to the entities array of the connection options can be 
 tedious. In addition, referencing entities from the root module breaks application 
 domain boundaries and causes leaking implementation details to other parts of the 
@@ -140,6 +142,8 @@ object.
 > use globs there, as the CLI won't go thru webpack.
 
 ## Request scoped handlers in queues
+
+> `@UseRequestContext()` decorator was added in v4.1.0 
 
 As mentioned in the docs, we need a clean state for each request. That is handled
 automatically thanks to the `RequestContext` helper registered via middleware. 
