@@ -7,7 +7,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const path = this.getPath();
-      const parentPath = this.parent ? this.parent.getPath() : path;
+      const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`
       const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
 
