@@ -43,7 +43,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 
-  count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
+  count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
@@ -102,6 +102,9 @@ export interface FindOneOrFailOptions<T, P extends Populate<T> = Populate<T>> ex
 
 export interface CountOptions<T>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  schema?: string;
+  groupBy?: string | string[];
+  having?: QBFilterQuery<T>;
 }
 
 export interface UpdateOptions<T>  {

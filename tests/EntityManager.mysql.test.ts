@@ -81,6 +81,7 @@ describe('EntityManagerMySql', () => {
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
+    await expect(driver.count(BookTag2.name, {})).resolves.toBe(1);
     await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
 
     const conn = driver.getConnection();
@@ -424,6 +425,11 @@ describe('EntityManagerMySql', () => {
     expect(count).toBe(authors.length);
     const count2 = await orm.em.count(Author2);
     expect(count2).toBe(authors.length);
+    const count3 = await orm.em.getRepository(Author2).count({}, {
+      groupBy: ['termsAccepted'],
+      having: { termsAccepted: false },
+    });
+    expect(count3).toBe(authors.length);
 
     // identity map test
     authors.shift(); // shift the god away, as that entity is detached from IM

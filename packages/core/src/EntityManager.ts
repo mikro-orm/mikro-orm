@@ -496,7 +496,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
 
-    return this.driver.count(entityName, where, this.transactionContext);
+    return this.driver.count(entityName, where, options, this.transactionContext);
   }
 
   /**

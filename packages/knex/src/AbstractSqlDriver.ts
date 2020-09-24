@@ -1,7 +1,8 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, Value } from 'knex';
 import {
-  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType, EntityMetadata, EntityProperty, QueryFlag,
-  FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary, QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy,
+  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType,
+  EntityMetadata, EntityProperty, QueryFlag, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
+  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -162,11 +163,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  async count(entityName: string, where: any, ctx?: Transaction<KnexTransaction>): Promise<number> {
+  async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}, ctx?: Transaction<KnexTransaction>): Promise<number> {
     const pks = this.metadata.find(entityName)!.primaryKeys;
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .count(pks, true)
+      .groupBy(options.groupBy!)
+      .having(options.having!)
+      .withSchema(options.schema)
       .where(where);
     const res = await this.rethrow(qb.execute('get', false));
 

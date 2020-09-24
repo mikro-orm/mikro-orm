@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
   DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -42,7 +42,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
+  async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>, ctx?: Transaction<ClientSession>): Promise<number> {
     where = this.renameFields(entityName, where);
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }

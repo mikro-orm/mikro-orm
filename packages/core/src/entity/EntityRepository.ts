@@ -1,7 +1,7 @@
 import { EntityManager } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery } from '../typings';
 import { QueryOrderMap } from '../enums';
-import { FindOneOptions, FindOneOrFailOptions, FindOptions } from '../drivers/IDatabaseDriver';
+import { CountOptions, FindOneOptions, FindOneOrFailOptions, FindOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
 
 export class EntityRepository<T extends AnyEntity<T>> {
@@ -124,8 +124,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
     return this.em.assign(entity, data);
   }
 
-  async count(where: FilterQuery<T> = {}): Promise<number> {
-    return this.em.count<T>(this.entityName, where);
+  async count(where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
+    return this.em.count<T>(this.entityName, where, options);
   }
 
 }

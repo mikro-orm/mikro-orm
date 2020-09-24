@@ -1,6 +1,18 @@
 import {
-  Configuration, Connection, DatabaseDriver, EntityData, EntityManager, EntityRepository, FilterQuery, FindOneOptions, FindOptions, LockMode,
-  Platform, QueryResult, Transaction,
+  Configuration,
+  Connection,
+  CountOptions,
+  DatabaseDriver,
+  EntityData,
+  EntityManager,
+  EntityRepository,
+  FilterQuery,
+  FindOneOptions,
+  FindOptions,
+  LockMode,
+  Platform,
+  QueryResult,
+  Transaction,
 } from '@mikro-orm/core';
 
 class Platform1 extends Platform { }
@@ -14,7 +26,7 @@ class Driver extends DatabaseDriver<Connection> {
     super(config, dependencies);
   }
 
-  async count<T>(entityName: string, where: FilterQuery<T>, ctx: Transaction | undefined): Promise<number> {
+  async count<T>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>, ctx: Transaction | undefined): Promise<number> {
     return Promise.resolve(0);
   }
 
