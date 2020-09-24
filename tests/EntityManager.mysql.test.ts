@@ -994,7 +994,7 @@ describe('EntityManagerMySql', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persistAndFlush(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
@@ -1009,11 +1009,11 @@ describe('EntityManagerMySql', () => {
     expect(book.tags.count()).toBe(3);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();

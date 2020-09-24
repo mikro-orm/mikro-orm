@@ -78,6 +78,14 @@ describe('EntityManagerSqlite', () => {
       { id: 3, name: 'test 3', type: 'GLOBAL' },
     ]);
 
+    // multi inserts with no values
+    await driver.nativeInsertMany(Test3.name, [{}, {}]);
+    const res3 = await driver.find(Test3.name, {});
+    expect(res3).toEqual([
+      { id: 2, name: null, version: 1 },
+      { id: 3, name: null, version: 1 },
+    ]);
+
     const now = new Date();
     expect(driver.getPlatform().processDateProperty(now)).toBe(+now);
     expect(driver.getPlatform().processDateProperty(1)).toBe(1);
@@ -644,7 +652,7 @@ describe('EntityManagerSqlite', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
@@ -658,11 +666,11 @@ describe('EntityManagerSqlite', () => {
     expect(book.tags.count()).toBe(2);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();

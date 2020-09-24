@@ -7,19 +7,22 @@ export class ArrayCollection<T, O> {
 
   [k: number]: T;
 
-  protected readonly items: T[] = [];
+  protected readonly items = new Set<T>();
   protected initialized = true;
+  protected _firstItem?: T;
   private _property?: EntityProperty;
 
   constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
     if (items) {
-      this.items = items;
-      Object.assign(this, items);
+      this.items = new Set(items);
+      let i = 0;
+      items.forEach(item => this[i++] = item);
     }
 
     Object.defineProperty(this, 'items', { enumerable: false });
     Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
     Object.defineProperty(this, '_property', { enumerable: false, writable: true });
+    Object.defineProperty(this, '_firstItem', { enumerable: false, writable: true });
     Object.defineProperty(this, '__collection', { value: true });
   }
 
@@ -28,12 +31,14 @@ export class ArrayCollection<T, O> {
   }
 
   toArray(): Dictionary[] {
-    return this.getItems().map((item: AnyEntity<T>) => {
-      const meta = item.__meta!;
-      const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
+    if (this.items.size === 0) {
+      return [];
+    }
 
-      return wrap(item).toJSON(...args);
-    });
+    const meta = (this._firstItem as AnyEntity<T>).__meta!;
+    const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
+
+    return this.getItems().map(item => wrap(item).toJSON(...args));
   }
 
   toJSON(): Dictionary[] {
@@ -47,7 +52,7 @@ export class ArrayCollection<T, O> {
       return [];
     }
 
-    field = field || (this.items[0] as AnyEntity<T>).__meta!.serializedPrimaryKey;
+    field = field ?? (this._firstItem as AnyEntity<T>).__meta!.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -55,14 +60,14 @@ export class ArrayCollection<T, O> {
   add(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
+      this._firstItem = entity;
 
       if (!this.contains(entity, false)) {
-        this.items.push(entity);
+        this[this.items.size] = entity;
+        this.items.add(entity);
         this.propagate(entity, 'add');
       }
     }
-
-    Object.assign(this, this.items);
   }
 
   set(items: (T | Reference<T>)[]): void {
@@ -74,21 +79,16 @@ export class ArrayCollection<T, O> {
    * @internal
    */
   hydrate(items: T[]): void {
-    this.items.length = 0;
+    this.items.clear();
     this.add(...items);
   }
 
   remove(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
-      const idx = this.items.findIndex((i: AnyEntity<T>) => i.__helper!.__serializedPrimaryKey === (entity as AnyEntity<T>).__helper!.__serializedPrimaryKey);
-
-      if (idx !== -1) {
-        delete this[this.items.length - 1]; // remove last item
-        this.items.splice(idx, 1);
-        Object.assign(this, this.items); // reassign array access
-      }
-
+      delete this[this.items.size - 1]; // remove last item
+      this.items.delete(entity);
+      Object.assign(this, [...this.items]); // reassign array access
       this.propagate(entity, 'remove');
     }
   }
@@ -98,23 +98,17 @@ export class ArrayCollection<T, O> {
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
-    const entity = Reference.unwrapReference(item) as AnyEntity<T>;
-
-    return !!this.items.find((i: AnyEntity<T>) => {
-      const objectIdentity = i === entity;
-      const primaryKeyIdentity = i.__helper!.hasPrimaryKey() && entity.__helper!.hasPrimaryKey() && i.__helper!.__serializedPrimaryKey === entity.__helper!.__serializedPrimaryKey;
-
-      return objectIdentity || primaryKeyIdentity;
-    });
+    const entity = Reference.unwrapReference(item);
+    return this.items.has(entity);
   }
 
   count(): number {
-    return this.items.length;
+    return this.items.size;
   }
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && this.items.every((item: AnyEntity<T>) => item.__helper!.__initialized);
+      return this.initialized && [...this.items].every((item: AnyEntity<T>) => item.__helper!.__initialized);
     }
 
     return this.initialized;

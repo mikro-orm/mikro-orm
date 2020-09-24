@@ -1,13 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import {
-  AnyEntity,
-  Dictionary,
-  EntityData,
-  EntityMetadata,
-  EntityProperty,
-  FilterQuery,
-  IPrimaryKey,
-} from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
 import { EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
@@ -18,16 +10,23 @@ import { OptimisticLockError } from '../errors';
 
 export class ChangeSetPersister {
 
+  private readonly platform = this.driver.getPlatform();
+
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
               private readonly hydrator: Hydrator,
               private readonly config: Configuration) { }
 
   async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
+    if (changeSets.length > 1 && this.platform.returningMultiInsert() && this.config.get('useBatchInserts')) {
+      return this.persistNewEntities(meta, changeSets, ctx);
+    }
+
     for (const changeSet of changeSets) {
-      await this.persistNewEntity(changeSet, ctx);
+      await this.persistNewEntity(meta, changeSet, ctx);
     }
   }
 
@@ -60,8 +59,7 @@ export class ChangeSetPersister {
     }
   }
 
-  private async persistNewEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
-    const meta = this.metadata.find(changeSet.name)!;
+  private async persistNewEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const wrapped = changeSet.entity.__helper!;
     const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
 
@@ -73,15 +71,43 @@ export class ChangeSetPersister {
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
-    await this.processOptimisticLock(meta, changeSet, res, ctx);
+    await this.reloadVersionValue(meta, changeSet, ctx);
     changeSet.persisted = true;
+  }
+
+  private async persistNewEntities<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const size = this.config.get('batchSize');
+
+    for (let i = 0; i < changeSets.length; i += size) {
+      await this.persistNewEntitiesBatch(meta, changeSets.slice(i, i + size), ctx);
+    }
+  }
+
+  private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx);
+
+    for (let i = 0; i < changeSets.length; i++) {
+      const changeSet = changeSets[i];
+      const wrapped = changeSet.entity.__helper!;
+
+      if (!wrapped.hasPrimaryKey()) {
+        this.mapPrimaryKey(meta, res.rows![i][meta.primaryKeys[0]], changeSet);
+      }
+
+      this.mapReturnedValues(changeSet, res, meta);
+      this.markAsPopulated(changeSet, meta);
+      wrapped.__initialized = true;
+      wrapped.__managed = true;
+      changeSet.persisted = true;
+    }
   }
 
   private async persistManagedEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, ctx);
     this.mapReturnedValues(changeSet, res, meta);
-    await this.processOptimisticLock(meta, changeSet, res, ctx);
+    this.checkOptimisticLock(meta, changeSet, res);
+    await this.reloadVersionValue(meta, changeSet, ctx);
     changeSet.persisted = true;
   }
 
@@ -131,13 +157,15 @@ export class ChangeSetPersister {
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
   }
 
-  private async processOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res: QueryResult | undefined, ctx?: Transaction) {
+  private checkOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res?: QueryResult) {
+    if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
+      throw OptimisticLockError.lockFailed(changeSet.entity);
+    }
+  }
+
+  private async reloadVersionValue<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction) {
     if (!meta.versionProperty) {
       return;
-    }
-
-    if (changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
-      throw OptimisticLockError.lockFailed(changeSet.entity);
     }
 
     const e = await this.driver.findOne(meta.name!, changeSet.entity.__helper!.__primaryKey, {

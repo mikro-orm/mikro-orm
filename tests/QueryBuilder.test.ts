@@ -1055,6 +1055,11 @@ describe('QueryBuilder', () => {
   });
 
   test('insert query', async () => {
+    const qb0 = orm.em.createQueryBuilder(Publisher2);
+    qb0.insert([{}, {}]);
+    expect(qb0.getQuery()).toEqual('insert into `publisher2` (`id`) values (default), (default)');
+    expect(qb0.getParams()).toEqual([]);
+
     const qb1 = orm.em.createQueryBuilder(Publisher2);
     qb1.insert({ name: 'test 123', type: PublisherType.GLOBAL });
     expect(qb1.getQuery()).toEqual('insert into `publisher2` (`name`, `type`) values (?, ?)');

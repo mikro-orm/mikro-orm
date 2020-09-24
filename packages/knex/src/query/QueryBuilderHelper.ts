@@ -51,9 +51,9 @@ export class QueryBuilderHelper {
     return this.alias + '.' + ret;
   }
 
-  processData(data: Dictionary): any {
+  processData(data: Dictionary, multi = false): any {
     if (Array.isArray(data)) {
-      return data.map(d => this.processData(d));
+      return data.map(d => this.processData(d, true));
     }
 
     data = Object.assign({}, data); // copy first
@@ -82,6 +82,10 @@ export class QueryBuilderHelper {
         Utils.renameKey(data, k, prop.fieldNames[0]);
       }
     });
+
+    if (Object.keys(data).length === 0 && meta && multi) {
+      data[meta.primaryKeys[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
+    }
 
     return data;
   }
