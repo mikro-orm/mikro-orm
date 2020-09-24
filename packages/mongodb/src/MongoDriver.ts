@@ -42,7 +42,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>, ctx?: Transaction<ClientSession>): Promise<number> {
+  async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
     where = this.renameFields(entityName, where);
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }
