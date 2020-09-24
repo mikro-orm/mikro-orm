@@ -642,6 +642,16 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
 
+  test('populating a relation does save its original entity data (GH issue 864)', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const b = await orm.em.findOneOrFail(Book2, bible.uuid, ['author']);
+    expect(wrap(b.author, true).__originalEntityData).toMatchObject({ name: 'God', email: 'hello@heaven.god' });
+  });
+
   test('populate OneToOne relation', async () => {
     const bar = FooBar2.create('bar');
     const baz = new FooBaz2('baz');

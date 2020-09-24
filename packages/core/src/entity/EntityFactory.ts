@@ -44,13 +44,13 @@ export class EntityFactory {
     }
 
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
+    entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta, data, options);
 
     if (options.merge) {
-      this.unitOfWork.registerManaged(entity, data, options.refresh, options.newEntity);
+      this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
     }
 
-    entity.__helper!.__initialized = options.initialized;
     this.runHooks(entity, meta);
 
     return entity as New<T, P>;
@@ -77,7 +77,7 @@ export class EntityFactory {
       return exists;
     }
 
-    return this.create<T>(entityName, id as EntityData<T>, { initialized: false, ...options });
+    return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false });
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {

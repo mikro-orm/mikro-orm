@@ -67,7 +67,7 @@ export class UnitOfWork {
 
     entity.__helper!.__em = this.em;
 
-    if (data && (refresh || !entity.__helper!.__originalEntityData)) {
+    if (data && entity.__helper!.__initialized && (refresh || !entity.__helper!.__originalEntityData)) {
       entity.__helper!.__originalEntityData = data;
     }
 
