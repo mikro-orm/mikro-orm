@@ -44,6 +44,14 @@ export abstract class Platform {
     return true;
   }
 
+  returningMultiInsert(): boolean {
+    return false;
+  }
+
+  usesDefaultKeyword(): boolean {
+    return true;
+  }
+
   /**
    * Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
    */

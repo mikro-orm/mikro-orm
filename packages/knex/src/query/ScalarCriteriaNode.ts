@@ -10,12 +10,8 @@ export class ScalarCriteriaNode extends CriteriaNode {
       const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`
       const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
-
-      if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-        qb.join(field, nestedAlias, undefined, 'pivotJoin', path);
-      } else {
-        qb.join(field, nestedAlias, undefined, 'leftJoin', path);
-      }
+      const type = this.prop!.reference === ReferenceType.MANY_TO_MANY ? 'pivotJoin' : 'leftJoin';
+      qb.join(field, nestedAlias, undefined, type, path);
 
       // select the owner as virtual property when joining from 1:1 inverse side, but only if the parent is root entity
       if (this.prop!.reference === ReferenceType.ONE_TO_ONE && !parentPath.includes('.')) {

@@ -788,7 +788,7 @@ describe('EntityManagerPostgre', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(orm.em.getReference(BookTag2, tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persistAndFlush(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
@@ -803,11 +803,11 @@ describe('EntityManagerPostgre', () => {
     expect(book.tags.count()).toBe(3);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();
@@ -1120,15 +1120,13 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(8);
+    expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "title", "uuid_pk") values ($1, $2, $3, $4)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "title", "uuid_pk") values ($1, $2, $3, $4)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "title", "uuid_pk") values ($1, $2, $3, $4)');
-    expect(mock.mock.calls[5][0]).toMatch('update "author2" set "favourite_author_id" = $1, "updated_at" = $2 where "id" = $3');
-    expect(mock.mock.calls[6][0]).toMatch('commit');
-    expect(mock.mock.calls[7][0]).toMatch('select "e0".* from "author2" as "e0" where "e0"."id" = $1');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "title", "uuid_pk") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
+    expect(mock.mock.calls[3][0]).toMatch('update "author2" set "favourite_author_id" = $1, "updated_at" = $2 where "id" = $3');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
+    expect(mock.mock.calls[5][0]).toMatch('select "e0".* from "author2" as "e0" where "e0"."id" = $1');
   });
 
   test('EM supports smart search conditions', async () => {
@@ -1438,6 +1436,20 @@ describe('EntityManagerPostgre', () => {
     if (took > 300) {
       process.stdout.write(`delete test took ${took}\n`);
     }
+  });
+
+  // this should run in ~600ms (when running single test locally)
+  test('perf: one to many', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    for (let i = 1; i <= 1000; i++) {
+      const b = new Book2('My Life on The Wall, part ' + i, author);
+      author.books.add(b);
+    }
+
+    await orm.em.flush();
+    expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
   afterAll(async () => orm.close(true));

@@ -35,6 +35,10 @@ export class MongoPlatform extends Platform {
     return false;
   }
 
+  returningMultiInsert(): boolean {
+    return true;
+  }
+
   convertsJsonAutomatically(marshall = false): boolean {
     return true;
   }

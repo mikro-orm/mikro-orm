@@ -15,6 +15,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  usesDefaultKeyword(): boolean {
+    return false;
+  }
+
   getCurrentTimestampSQL(length: number): string {
     return super.getCurrentTimestampSQL(0);
   }

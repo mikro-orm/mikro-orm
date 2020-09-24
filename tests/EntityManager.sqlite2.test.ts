@@ -578,7 +578,7 @@ describe('EntityManagerSqlite2', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book4, book.id, ['tags']))!;
@@ -592,11 +592,11 @@ describe('EntityManagerSqlite2', () => {
     expect(book.tags.count()).toBe(2);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();
@@ -830,6 +830,20 @@ describe('EntityManagerSqlite2', () => {
 
     const b4 = await orm.em.findOneOrFail(FooBar4, bar.id);
     expect(b4.object).toBe(123);
+  });
+
+  // this should run in ~600ms (when running single test locally)
+  test('perf: one to many', async () => {
+    const author = orm.em.create(Author4, { name: 'n', email: 'e' });
+    await orm.em.persistAndFlush(author);
+
+    for (let i = 1; i <= 3_000; i++) {
+      const book = orm.em.create(Book4, { title: 'My Life on The Wall, part ' + i, author });
+      author.books.add(book);
+    }
+
+    await orm.em.flush();
+    expect(author.books.getItems().every(b => b.id)).toBe(true);
   });
 
   afterAll(async () => {

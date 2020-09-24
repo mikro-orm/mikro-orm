@@ -718,7 +718,7 @@ describe('EntityManagerMongo', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1, tag5); // tag5 will be ignored as it is not part of collection
+    book.tags.remove(tagRepository.getReference(tag1.id), tagRepository.getReference(tag5.id)); // tag5 will be ignored as it is not part of collection
     await orm.em.persistAndFlush(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book, book._id))!;
@@ -740,11 +740,11 @@ describe('EntityManagerMongo', () => {
     expect(book.tags.count()).toBe(2);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();
@@ -1488,15 +1488,13 @@ describe('EntityManagerMongo', () => {
     expect(a1.toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(8);
+    expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.commit\(\);/);
-    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.commit\(\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.find\(.*\)\.toArray\(\);/);
   });
 
   test('self referencing via another entity M:1 (1 step)', async () => {
@@ -2121,7 +2119,7 @@ describe('EntityManagerMongo', () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
 
-    for (let i = 1; i <= 300; i++) {
+    for (let i = 1; i <= 3_000; i++) {
       author.books.add(new Book('My Life on The Wall, part ' + i, author));
     }
 

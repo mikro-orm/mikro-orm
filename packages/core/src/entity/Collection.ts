@@ -18,8 +18,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
     Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
-    Object.defineProperty(this, '$', { value: this.items });
-    Object.defineProperty(this, 'get', { value: () => this.items });
+    Object.defineProperty(this, '$', { get: () => super.getItems() });
+    Object.defineProperty(this, 'get', { value: () => super.getItems() });
   }
 
   /**
@@ -68,14 +68,14 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   add(...items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.map(item => this.validateItemType(item));
+    unwrapped.forEach(item => this.validateItemType(item));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
 
   set(items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.map(item => this.validateItemType(item));
+    unwrapped.forEach(item => this.validateItemType(item));
     this.validateModification(unwrapped);
     super.set(unwrapped);
     this.setDirty();
@@ -176,15 +176,19 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
-    const items = await em.find(this.property.type, where, options.populate, orderBy);
+    const items: T[] = await em.find(this.property.type, where, options.populate, orderBy);
 
     if (!customOrder) {
       this.reorderItems(items, order);
     }
 
-    this.items.length = 0;
-    this.items.push(...items);
-    Object.assign(this, items);
+    this.items.clear();
+    let i = 0;
+    items.forEach(item => {
+      this.items.add(item);
+      this[i++] = item;
+    });
+
     this.initialized = true;
     this.dirty = false;
     this._lazyInitialized = true;
@@ -231,8 +235,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.property.pivotTable) {
-      const pk = (this.items[0] as AnyEntity<T>).__meta!.primaryKeys[0]; // we know there is at least one item as it was checked in load method
-      cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
+      // we know there is at least one item as it was checked in load method
+      const pk = (this._firstItem as AnyEntity<T>).__meta!.primaryKeys[0];
+      cond[pk] = { $in: [] };
+      this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.__primaryKey));
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
     }
