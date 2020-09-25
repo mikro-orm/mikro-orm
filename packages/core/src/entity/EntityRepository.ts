@@ -124,6 +124,14 @@ export class EntityRepository<T extends AnyEntity<T>> {
     return this.em.assign(entity, data);
   }
 
+  /**
+   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
+   * via second parameter. By default it will return already loaded entities without modifying them.
+   */
+  merge(data: T | EntityData<T>, refresh?: boolean, convertCustomTypes?: boolean): T {
+    return this.em.merge<T>(this.entityName, data, refresh, convertCustomTypes);
+  }
+
   async count(where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     return this.em.count<T>(this.entityName, where, options);
   }

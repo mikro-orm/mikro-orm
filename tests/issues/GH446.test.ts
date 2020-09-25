@@ -119,7 +119,7 @@ describe('GH issue 446', () => {
     // simulate caching by converting to JSON and back to POJO
     const cache = JSON.parse(JSON.stringify(wrap(a1).toObject()));
     expect(typeof cache.id).toBe('string');
-    const a2 = orm.em.merge(A, cache);
+    const a2 = orm.em.getRepository(A).merge(cache);
     expect(typeof a2.id).toBe('string');
     expect(a2.name).toBe('test');
   });
