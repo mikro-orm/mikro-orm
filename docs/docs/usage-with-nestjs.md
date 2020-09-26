@@ -251,7 +251,7 @@ export class MyService {
 
 ## Testing
 
-The `nestjs-mikro-orm` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
+The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
 
 ```typescript
 @Module({
