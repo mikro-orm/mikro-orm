@@ -20,7 +20,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<AnyEntity>]>();
+  private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getDriver().getPlatform();
   private readonly eventManager = this.em.getEventManager();
@@ -115,10 +115,10 @@ export class UnitOfWork {
   /**
    * Returns stored snapshot of entity state that is used for change set computation.
    */
-  getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): EntityData<T>[] | EntityData<T> | undefined {
+  getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): EntityData<AnyEntity>[] | EntityData<T> | undefined {
     if (!entity) {
       return [...this.identityMap.values()].map(e => {
-        return e.__helper!.__originalEntityData;
+        return e.__helper!.__originalEntityData!;
       });
     }
 
@@ -141,7 +141,7 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<AnyEntity>)]> {
+  getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<any> | Collection<any>)]> {
     return this.extraUpdates;
   }
 

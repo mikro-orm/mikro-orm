@@ -250,7 +250,7 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const ids = filtered.map(e => e.__helper!.__primaryKeys);
+    const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
 
     if (prop.customType) {
       ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id, this.driver.getPlatform()));

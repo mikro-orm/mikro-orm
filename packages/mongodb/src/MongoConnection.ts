@@ -5,7 +5,7 @@ import {
 import { inspect } from 'util';
 import {
   Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary,
+  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -76,7 +76,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
 
@@ -110,7 +110,7 @@ export class MongoConnection extends Connection {
     const res = await resultSet.toArray();
     this.logQuery(`${query}.toArray();`, Date.now() - now);
 
-    return res;
+    return res as EntityData<T>[];
   }
 
   async insertOne<T extends { _id: any }>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {

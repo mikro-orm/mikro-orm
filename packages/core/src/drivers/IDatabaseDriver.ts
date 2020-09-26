@@ -26,12 +26,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<T[]>;
+  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<T | null>;
+  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
   nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
@@ -47,7 +47,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate?: PopulateOptions<T>[]): T | null;
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate?: PopulateOptions<T>[]): EntityData<T> | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them

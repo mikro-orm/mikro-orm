@@ -54,7 +54,7 @@ export class ChangeSetComputer {
     const data = this.comparator.prepareEntity(entity);
 
     if (entity.__helper!.__originalEntityData) {
-      return Utils.diff(entity.__helper!.__originalEntityData, data);
+      return Utils.diff(entity.__helper!.__originalEntityData, data) as EntityData<T>;
     }
 
     return data;

@@ -131,11 +131,11 @@ export class EntityAssigner {
       return em.getReference(prop.type, item);
     }
 
-    if (Utils.isObject<T>(item) && options.merge) {
+    if (Utils.isObject<EntityData<T>>(item) && options.merge) {
       return em.merge<T>(prop.type, item);
     }
 
-    if (Utils.isObject<T>(item)) {
+    if (Utils.isObject<EntityData<T>>(item)) {
       return em.create<T>(prop.type, item);
     }
 

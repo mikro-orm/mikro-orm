@@ -78,7 +78,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
   __meta: EntityMetadata<T>;
   __data: Dictionary;
@@ -95,7 +95,7 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __serializedPrimaryKey: string & keyof T;
 }
 
-export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & {
+export type AnyEntity<T = any> = Partial<T> & {
   [PrimaryKeyType]?: unknown;
   [EntityRepositoryType]?: unknown;
   __helper?: IWrappedEntityInternal<T, keyof T>;
@@ -107,9 +107,7 @@ export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & {
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
-export type EntityDataProp<T> = T extends Scalar ? ExpandScalar<T> : (T | EntityData<T> | Primary<T>);
-export type CollectionItem<T> = T extends Collection<any> | undefined ? EntityDataProp<ExpandProperty<T>>[] : EntityDataProp<T>;
-export type EntityData<T> = T | { [K in keyof T | NonFunctionPropertyNames<T>]?: CollectionItem<T[K]> } & Dictionary;
+export type EntityData<T> = { [P in keyof T]?: T[P] | any } & Dictionary;
 export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {

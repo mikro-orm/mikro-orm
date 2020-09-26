@@ -61,13 +61,13 @@ export class EntityTransformer {
     return visible && !meta.primaryKeys.includes(prop) && !prop.startsWith('_') && !ignoreFields.includes(prop);
   }
 
-  private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
+  private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): keyof T & string {
     if (meta.properties[prop].serializedName) {
-      return meta.properties[prop].serializedName!;
+      return meta.properties[prop].serializedName as keyof T & string;
     }
 
     if (meta.properties[prop].primary && platform) {
-      return platform.getSerializedPrimaryKeyField(prop);
+      return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
     }
 
     return prop;

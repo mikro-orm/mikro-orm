@@ -235,7 +235,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
-    this.getUnitOfWork().registerManaged(entity, data, options.refresh);
+    this.getUnitOfWork().registerManaged(entity, data as EntityData<T>, options.refresh);
     await this.lockAndPopulate(entityName, entity, where, options);
 
     return entity as Loaded<T, P>;

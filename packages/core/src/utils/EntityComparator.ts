@@ -21,14 +21,14 @@ export class EntityComparator {
    */
   prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     if ((entity as Dictionary).__prepared) {
-      return entity;
+      return entity as EntityData<T>;
     }
 
     const meta = this.metadata.get<T>(entity.constructor.name);
     const ret = {} as EntityData<T>;
 
     if (meta.discriminatorValue) {
-      ret[meta.root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as T[keyof T];
+      ret[meta.root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as EntityData<T>[keyof T];
     }
 
     // copy all comparable props, ignore collections and references, process custom types

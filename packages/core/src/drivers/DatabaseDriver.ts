@@ -23,9 +23,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<T[]>;
+  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
 
-  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<T | null>;
+  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
   abstract async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
@@ -55,7 +55,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.__primaryKey, data, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
       return null;
     }
@@ -80,7 +80,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       }
     });
 
-    return ret as T;
+    return ret;
   }
 
   async connect(): Promise<C> {

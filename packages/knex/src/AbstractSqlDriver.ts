@@ -33,7 +33,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return new SqlEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<KnexTransaction>): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<KnexTransaction>): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: {}, ...options };
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[]);
@@ -67,7 +67,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return result;
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<T | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<KnexTransaction>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as PopulateOptions<T>[]);
@@ -82,7 +82,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res[0] || null;
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
     const ret = super.mapResult(result, meta);
 
     if (!ret) {
@@ -93,7 +93,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       this.mapJoinedProps<T>(ret, meta, populate, qb, ret, map);
     }
 
-    return ret as T;
+    return ret;
   }
 
   private mapJoinedProps<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
@@ -351,7 +351,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     });
   }
 
-  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>): T[] {
+  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>): EntityData<T>[] {
     // group by the root entity primary key first
     const res = rawResults.reduce((result, item) => {
       const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
@@ -361,7 +361,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return result;
     }, {}) as Dictionary<any[]>;
 
-    return Object.values(res).map((rows: Dictionary[]) => rows[0]) as T[];
+    return Object.values(res).map((rows: Dictionary[]) => rows[0]) as EntityData<T>[];
   }
 
   protected getFieldsForJoinedLoad<T extends AnyEntity<T>>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {

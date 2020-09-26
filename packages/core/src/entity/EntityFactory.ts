@@ -25,7 +25,7 @@ export class EntityFactory {
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T extends AnyEntity<T>, P extends Populate<T> = keyof T>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
     if (Utils.isEntity<T>(data)) {
