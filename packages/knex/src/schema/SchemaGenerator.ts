@@ -571,7 +571,7 @@ export class SchemaGenerator {
 
   private getOrderedMetadata(): EntityMetadata[] {
     const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = meta.root === meta;
+      const isRootEntity = !meta.root || meta.root === meta;
       return isRootEntity && !meta.embeddable;
     });
     const calc = new CommitOrderCalculator();
@@ -590,7 +590,7 @@ export class SchemaGenerator {
       meta = metadata.pop();
     }
 
-    return calc.sort().map(cls => this.metadata.get(cls));
+    return calc.sort().map(cls => this.metadata.find(cls)!);
   }
 
   private addCommitDependency(calc: CommitOrderCalculator, prop: EntityProperty, entityName: string): void {
