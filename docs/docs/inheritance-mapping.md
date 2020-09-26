@@ -19,7 +19,7 @@ mapped inheritance hierarchy (through Single Table Inheritance).
 > further support of inheritance, the single table inheritance features have to be used.
 
 ```typescript
-// do not use @Entity decorator on base classes
+// do not use @Entity decorator on base classes (mapped superclasses)
 export abstract class Person {
 
   @Property()
@@ -105,12 +105,75 @@ Things to note:
   a row as being of a certain type. In the case above a value of `person` identifies
   a row as being of type `Person` and `employee` identifies a row as being of type 
   `Employee`.
-- All entity classes that is part of the mapped entity hierarchy (including the topmost 
+- All entity classes that are part of the mapped entity hierarchy (including the topmost 
   class) should be specified in the `discriminatorMap`. In the case above `Person` class
   included.
+- We can use abstract class as the root entity - then the root class should not be part
+  of the discriminator map
 - If no discriminator map is provided, then the map is generated automatically. 
   The automatically generated discriminator map contains the table names that would be
   otherwise used in case of regular entities. 
+
+### Using `discriminatorValue` instead of `discriminatorMap`
+
+As noted above, the discriminator map can be auto-generated. In that case, we might
+want to control the tokens that will be used in the map. To do so, we can use 
+`discriminatorValue` on the child entities:
+
+```ts
+@Entity({
+  discriminatorColumn: 'discr',
+  discriminatorValue: 'person',
+})
+export class Person {
+  // ...
+}
+
+@Entity({
+  discriminatorValue: 'employee',
+})
+export class Employee extends Person {
+  // ...
+}
+```
+
+### Explicit discriminator column
+
+The `discriminatorColumn` specifies the name of special column that will be used to
+define what type of class should given row be represented with. It will be defined 
+automatically for you and it will stay hidden (it won't by hydrated as regular property). 
+
+On the other hand, it is perfectly fine to define the column explicitly. Doing so, 
+you will be able to:
+
+- querying by the type, e.g. `em.find(Person, { type: { $ne: 'employee' } }`
+- the column will be part of the serialized response
+
+Following example shows how we can define the discriminator explicitly, as well
+as a version where root entity is abstract class.
+
+```ts
+@Entity({
+  discriminatorColumn: 'discr',
+  discriminatorMap: { person: 'Person', employee: 'Employee' },
+})
+export abstract class BasePerson {
+
+  @Enum()
+  type!: 'person' | 'employee';
+
+}
+
+@Entity()
+export class Person extends Base {
+  // ...
+}
+
+@Entity()
+export class Employee extends Person {
+  // ...
+}
+```
 
 ### Design-time considerations
 
