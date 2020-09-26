@@ -7810,10 +7810,10 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
-run-rs@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.6.2.tgz#b2c43f5fb986c98804edb46da2634a9b19fba6a0"
-  integrity sha512-IHIRTWYOen2pQwMHzMEgUcJbawxw9ZzBQrj+SeeYJYdkgWs2dWrRH9skALvrQ11+TuJhZ38wtMeAWolQDcLbHw==
+run-rs@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.0.tgz#80c159f5eba7879e509837b9db0fcc91cecd0a21"
+  integrity sha512-ocZ0alMlHbeu98kUmU2TeU5a21zx/0rlPEOQgu34U6D6vRaURzrHzswZ205Xvov7sQgTYpSLIAu793b4oGupdg==
   dependencies:
     chalk "2.4.1"
     co "4.6.0"
