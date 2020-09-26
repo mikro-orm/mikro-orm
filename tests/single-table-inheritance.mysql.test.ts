@@ -7,7 +7,7 @@ describe('single table inheritance in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   async function createEntities() {

@@ -7,7 +7,7 @@ describe('QueryHelper', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   afterAll(async () => orm.close(true));
 
   test('test operators `>, <, >=, <=, !`', async () => {

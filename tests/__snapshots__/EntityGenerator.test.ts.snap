@@ -537,7 +537,7 @@ export class Author2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ columnType: 'timestamp', length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date;
 
   @Index({ name: 'custom_idx_name_123' })

@@ -13,7 +13,7 @@ describe('QueryBuilder', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
 
   test('select query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);

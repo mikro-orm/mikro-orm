@@ -7,7 +7,7 @@ describe('EntityHelperMySql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('assign() should update entity values [mysql]', async () => {

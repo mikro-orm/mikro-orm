@@ -1,7 +1,26 @@
 import { v4 } from 'uuid';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap, expr, UniqueConstraintViolationException,
-  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
+  Collection,
+  Configuration,
+  EntityManager,
+  LockMode,
+  MikroORM,
+  QueryFlag,
+  QueryOrder,
+  Reference,
+  Logger,
+  ValidationError,
+  UniqueConstraintViolationException,
+  TableNotFoundException,
+  NotNullConstraintViolationException,
+  TableExistsException,
+  SyntaxErrorException,
+  NonUniqueFieldNameException,
+  InvalidFieldNameException,
+  ChangeSetType,
+  wrap,
+  expr,
+  Subscriber, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -1436,6 +1455,41 @@ describe('EntityManagerPostgre', () => {
     if (took > 300) {
       process.stdout.write(`delete test took ${took}\n`);
     }
+  });
+
+  test('populating relations should not send update changesets when using custom types (GH issue 864)', async () => {
+    class Subscriber implements EventSubscriber {
+
+      static readonly log: ChangeSet<AnyEntity>[][] = [];
+
+      async afterFlush(args: FlushEventArgs): Promise<void> {
+        Subscriber.log.push(args.uow.getChangeSets());
+      }
+
+    }
+
+    const em = orm.em.fork();
+    em.getEventManager().registerSubscriber(new Subscriber());
+
+    const a = new Author2('1stA', 'e1');
+    a.born = new Date();
+    const b = new Book2('1stB', a);
+
+    await em.persistAndFlush(b);
+    em.clear();
+
+    // Comment this out and the test will pass
+    await em.findOneOrFail(Book2, { title: '1stB' }, ['author']);
+
+    const newA = new Author2('2ndA', 'e2');
+    a.born = new Date();
+    const newB = new Book2('2ndB', newA);
+    newB.author = newA;
+    await em.persistAndFlush(newB);
+
+    expect(Subscriber.log).toHaveLength(2);
+    const updates = Subscriber.log.reduce((x, y) => x.concat(y), []).filter(c => c.type === ChangeSetType.UPDATE);
+    expect(updates).toHaveLength(0);
   });
 
   // this should run in ~600ms (when running single test locally)

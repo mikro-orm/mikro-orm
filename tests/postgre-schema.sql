@@ -40,7 +40,7 @@ create table "publisher2" ("id" serial primary key, "name" varchar(255) not null
 
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
-create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamp(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
 create index "custom_email_index_name" on "author2" ("email");
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_terms_accepted_index" on "author2" ("terms_accepted");

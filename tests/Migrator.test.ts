@@ -36,7 +36,7 @@ describe('Migrator', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql();
+    orm = await initORMMySql('mysql', {}, true);
     await remove(process.cwd() + '/temp/migrations/Migration20191013214813.js');
     await remove(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
     await remove(process.cwd() + '/temp/migrations/migration-20191013214813.ts');
@@ -314,7 +314,7 @@ describe('Migrator - with explicit migrations', () => {
           },
         ],
       },
-    });
+    }, true);
   });
   afterAll(async () => orm.close(true));
 
