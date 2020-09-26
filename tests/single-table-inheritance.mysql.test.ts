@@ -1,4 +1,4 @@
-import { Dictionary, MetadataDiscovery, MetadataStorage, MikroORM, ReferenceType, wrap } from '@mikro-orm/core';
+import { Dictionary, Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -163,6 +163,38 @@ describe('single table inheritance in mysql', () => {
     expect(discovered.get('A').discriminatorValue).toBe('a');
     expect(discovered.get('B').discriminatorValue).toBe('b');
     expect(discovered.get('C').discriminatorValue).toBe('c');
+  });
+
+  test('non-abstract root entity', async () => {
+    @Entity({
+      discriminatorColumn: 'type',
+      discriminatorMap: {
+        person: 'Person',
+        employee: 'Employee',
+      },
+    })
+    class Person {
+
+      @PrimaryKey()
+      id!: string;
+
+    }
+
+    @Entity()
+    class Employee extends Person {
+
+      @Property()
+      number?: number;
+
+    }
+
+    const orm = await MikroORM.init({
+      entities: [Person, Employee],
+      type: 'sqlite',
+      dbName: ':memory:',
+    });
+    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL(false);
+    expect(sql).toMatchSnapshot();
   });
 
   afterAll(async () => orm.close(true));

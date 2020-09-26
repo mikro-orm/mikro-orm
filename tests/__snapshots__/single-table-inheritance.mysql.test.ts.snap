@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`single table inheritance in mysql non-abstract root entity 1`] = `
+"create table \`person\` (\`id\` varchar not null, \`type\` text check (\`type\` in ('person', 'employee')) not null, \`number\` integer null, primary key (\`id\`));
+create index \`person_type_index\` on \`person\` (\`type\`);
+
+"
+`;
