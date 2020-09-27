@@ -54,7 +54,7 @@ export class QueryHelper {
       return false;
     }
 
-    if (meta.primaryKeys.every(pk => pk in where) && Object.keys(where).length === meta.primaryKeys.length) {
+    if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
       return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => !Utils.isOperator(v, false)));
     }
 

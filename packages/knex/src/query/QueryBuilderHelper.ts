@@ -83,7 +83,7 @@ export class QueryBuilderHelper {
       }
     });
 
-    if (Object.keys(data).length === 0 && meta && multi) {
+    if (!Utils.hasObjectKeys(data) && meta && multi) {
       data[meta.primaryKeys[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
     }
 
@@ -296,7 +296,7 @@ export class QueryBuilderHelper {
     // grouped condition for one field
     let value = cond[key];
 
-    if (Object.keys(value).length > 1) {
+    if (Utils.getObjectKeysSize(value) > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
@@ -346,7 +346,7 @@ export class QueryBuilderHelper {
         const method = operator === '$or' ? 'orOn' : 'andOn';
         const m = k === '$or' ? 'orOn' : 'andOn';
         return clause[method](outer => cond[k].forEach((sub: any) => {
-          if (Object.keys(sub).length === 1) {
+          if (Utils.getObjectKeysSize(sub) === 1) {
             return this.appendJoinClause(outer, sub, k);
           }
 
@@ -379,7 +379,7 @@ export class QueryBuilderHelper {
 
   private processObjectSubClause(cond: any, key: string, clause: JoinClause, m: 'andOn' | 'orOn'): void {
     // grouped condition for one field
-    if (Object.keys(cond[key]).length > 1) {
+    if (Utils.getObjectKeysSize(cond[key]) > 1) {
       const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
     }
@@ -491,7 +491,7 @@ export class QueryBuilderHelper {
       // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
       const keys = Object.keys(sub);
       const val = sub[keys[0]];
-      const simple = !Utils.isPlainObject(val) || Object.keys(val).length === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
+      const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
 
       if (keys.length === 1 && simple) {
         return this.appendQueryCondition(type, sub, outer, operator);

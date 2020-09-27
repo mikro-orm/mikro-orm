@@ -216,7 +216,7 @@ export class ChangeSetPersister {
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
-    if (res.row && Object.keys(res.row).length > 0) {
+    if (res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
         if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(changeSet.entity[prop.name], true)) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];

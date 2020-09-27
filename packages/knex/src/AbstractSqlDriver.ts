@@ -231,7 +231,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pks[0]]: where } as FilterQuery<T>;
     }
 
-    if (Object.keys(data).length > 0) {
+    if (Utils.hasObjectKeys(data)) {
       const qb = this.createQueryBuilder<T>(entityName, ctx, true)
         .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
         .update(data)

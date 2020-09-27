@@ -43,7 +43,7 @@ export class ChangeSetComputer {
       this.processProperty(changeSet, prop);
     }
 
-    if (changeSet.type === ChangeSetType.UPDATE && Object.keys(changeSet.payload).length === 0) {
+    if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
       return null;
     }
 

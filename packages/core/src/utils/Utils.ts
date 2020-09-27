@@ -25,10 +25,48 @@ export class Utils {
 
   /**
    * Checks if the argument is instance of `Object`. Returns false for arrays.
-   * `not` argument allows to blacklist classes that should be considered as not object.
    */
-  static isObject<T = Dictionary>(o: any, not: any[] = []): o is T {
+  static isObject<T = Dictionary>(o: any): o is T {
+    return !!o && typeof o === 'object' && !Array.isArray(o);
+  }
+
+  /**
+   * Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
+   */
+  static isNotObject<T = Dictionary>(o: any, not: any[] = []): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
+  }
+
+  /**
+   * Returns the number of properties on `obj`. This is 20x faster than Object.keys(obj).length.
+   * @see https://github.com/deepkit/deepkit-framework/blob/master/packages/core/src/core.ts
+   */
+  static getObjectKeysSize(object: Dictionary): number {
+    let size = 0;
+
+    for (const key in object) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (object.hasOwnProperty(key)) {
+        size++;
+      }
+    }
+
+    return size;
+  }
+
+  /**
+   * Returns true if `obj` has at least one property. This is 20x faster than Object.keys(obj).length.
+   * @see https://github.com/deepkit/deepkit-framework/blob/master/packages/core/src/core.ts
+   */
+  static hasObjectKeys(object: Dictionary): boolean {
+    for (const key in object) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (object.hasOwnProperty(key)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -226,7 +264,7 @@ export class Utils {
       return data.__helper!.__primaryKey as Primary<T>;
     }
 
-    if (strict && meta && Object.keys(data).length !== meta.primaryKeys.length) {
+    if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
       return null;
     }
 
@@ -357,7 +395,7 @@ export class Utils {
     }
 
     if (Utils.isObject(data)) {
-      return Object.keys(data).length === 0;
+      return !Utils.hasObjectKeys(data);
     }
 
     return !data;

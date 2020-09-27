@@ -38,7 +38,7 @@ describe('Utils', () => {
     expect(Utils.isObject({})).toBe(true);
     expect(Utils.isObject(new Test())).toBe(true);
     expect(Utils.isObject(new Date())).toBe(true);
-    expect(Utils.isObject(new Date(), [Date])).toBe(false);
+    expect(Utils.isNotObject(new Date(), [Date])).toBe(false);
     expect(Utils.isObject(Test)).toBe(false);
   });
 

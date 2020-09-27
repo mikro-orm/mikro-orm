@@ -118,7 +118,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const op = operator || params as keyof typeof GroupOperator;
-    const topLevel = !op || Object.keys(this._cond).length === 0;
+    const topLevel = !op || !Utils.hasObjectKeys(this._cond);
     const criteriaNode = CriteriaNodeFactory.createNode(this.metadata, this.entityName, cond);
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {

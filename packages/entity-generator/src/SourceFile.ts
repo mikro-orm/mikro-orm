@@ -85,7 +85,7 @@ export class SourceFile {
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
 
-    if (Object.keys(options).length === 0) {
+    if (!Utils.hasObjectKeys(options)) {
       return `${decorator}()\n`;
     }
 

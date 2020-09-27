@@ -87,7 +87,7 @@ export class MongoConnection extends Connection {
     const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
-    if (orderBy && Object.keys(orderBy).length > 0) {
+    if (orderBy && Utils.hasObjectKeys(orderBy)) {
       orderBy = Object.keys(orderBy).reduce((p, c) => {
         const direction = orderBy![c];
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
