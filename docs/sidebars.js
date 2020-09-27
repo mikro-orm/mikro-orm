@@ -69,6 +69,7 @@ module.exports = {
       { type: 'link', label: 'Express + MongoDB + JavaScript', href: 'https://github.com/mikro-orm/express-js-example-app' },
       { type: 'link', label: 'Koa + SQLite + JavaScript', href: 'https://github.com/mikro-orm/koa-ts-example-app' },
       { type: 'link', label: 'Inversify + PostgreSQL', href: 'https://github.com/PodaruDragos/inversify-example-app' },
+      { type: 'link', label: 'NextJS + MySQL', href: 'https://github.com/jonahallibone/mikro-orm-nextjs' },
     ],
   },
 };
