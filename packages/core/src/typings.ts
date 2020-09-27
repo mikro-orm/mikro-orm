@@ -92,6 +92,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> exte
   __lazyInitialized: boolean;
   __primaryKey: PrimaryMap<T>;
   __primaryKeys: Primary<T>[];
+  __primaryKeyCond: Primary<T> | Primary<T>[];
   __serializedPrimaryKey: string & keyof T;
 }
 

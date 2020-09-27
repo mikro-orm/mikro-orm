@@ -345,6 +345,9 @@ export class FooParam2 {
   @Property({ length: 255 })
   value!: string;
 
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
 }
 ",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
@@ -771,6 +774,9 @@ export class FooParam2 {
 
   @Property({ length: 255 })
   value!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
 
 }
 ",

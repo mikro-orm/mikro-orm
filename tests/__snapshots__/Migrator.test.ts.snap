@@ -36,7 +36,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);');
 
-    this.addSql('create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);');
@@ -202,7 +202,7 @@ export class Migration20191013214813 extends Migration {
     "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);",
     "",
-    "create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
     "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);",

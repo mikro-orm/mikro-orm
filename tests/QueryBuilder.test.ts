@@ -1114,7 +1114,7 @@ describe('QueryBuilder', () => {
   test('update query with composite keys and auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(FooParam2);
     qb.update({ value: 'test 123' }).where({ bar: { baz: 123 } });
-    expect(qb.getQuery()).toEqual('update `foo_param2` set `value` = ? ' +
+    expect(qb.getQuery()).toEqual('update `foo_param2` set `value` = ?, `version` = current_timestamp(3) ' +
       'where (`bar_id`, `baz_id`) in (select `e0`.`bar_id`, `e0`.`baz_id` from (' +
       'select distinct `e0`.`bar_id`, `e0`.`baz_id` from `foo_param2` as `e0` left join `foo_bar2` as `e1` on `e0`.`bar_id` = `e1`.`id` where `e1`.`baz_id` = ?' +
       ') as `e0`)');

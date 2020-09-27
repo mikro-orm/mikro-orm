@@ -41,14 +41,8 @@ export class ChangeSetPersister {
   async executeDeletes<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     const meta = changeSets[0].entity.__meta!;
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-
-    if (meta.compositePK) {
-      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeys);
-      await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
-    } else {
-      const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKey as Dictionary);
-      await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
-    }
+    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
+    await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
   }
 
   private processProperties<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
@@ -71,7 +65,7 @@ export class ChangeSetPersister {
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
-    await this.reloadVersionValue(meta, changeSet, ctx);
+    await this.reloadVersionValues(meta, [changeSet], ctx);
     changeSet.persisted = true;
   }
 
@@ -79,7 +73,9 @@ export class ChangeSetPersister {
     const size = this.config.get('batchSize');
 
     for (let i = 0; i < changeSets.length; i += size) {
-      await this.persistNewEntitiesBatch(meta, changeSets.slice(i, i + size), ctx);
+      const chunk = changeSets.slice(i, i + size);
+      await this.persistNewEntitiesBatch(meta, chunk, ctx);
+      await this.reloadVersionValues(meta, chunk, ctx);
     }
   }
 
@@ -107,7 +103,7 @@ export class ChangeSetPersister {
     const res = await this.updateEntity(meta, changeSet, ctx);
     this.mapReturnedValues(changeSet, res, meta);
     this.checkOptimisticLock(meta, changeSet, res);
-    await this.reloadVersionValue(meta, changeSet, ctx);
+    await this.reloadVersionValues(meta, [changeSet], ctx);
     changeSet.persisted = true;
   }
 
@@ -163,23 +159,31 @@ export class ChangeSetPersister {
     }
   }
 
-  private async reloadVersionValue<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction) {
+  private async reloadVersionValues<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction) {
     if (!meta.versionProperty) {
       return;
     }
 
-    const e = await this.driver.findOne(meta.name!, changeSet.entity.__helper!.__primaryKey, {
+    const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
+    const data = await this.driver.find(meta.name!, { [pk]: { $in: pks } }, {
       fields: [meta.versionProperty],
     }, ctx);
+    const map = new Map<string, Date>();
+    data.forEach(e => map.set(e[pk], e[meta.versionProperty]));
 
-    // needed for sqlite
-    if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {
-      changeSet.entity[meta.versionProperty] = new Date(e![meta.versionProperty] as unknown as string) as unknown as T[keyof T & string];
-    } else {
-      changeSet.entity[meta.versionProperty] = e![meta.versionProperty];
+    for (const changeSet of changeSets) {
+      const version = map.get(changeSet.entity.__helper!.__serializedPrimaryKey);
+
+      // needed for sqlite
+      if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {
+        changeSet.entity[meta.versionProperty] = new Date(version as unknown as string) as unknown as T[keyof T & string];
+      } else {
+        changeSet.entity[meta.versionProperty] = version as unknown as T[keyof T & string];
+      }
+
+      changeSet.payload![meta.versionProperty] = version;
     }
-
-    changeSet.payload![meta.versionProperty] = e![meta.versionProperty];
   }
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {

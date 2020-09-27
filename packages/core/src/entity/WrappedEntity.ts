@@ -93,6 +93,14 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return Utils.getPrimaryKeyValues(this.entity, this.__meta.primaryKeys);
   }
 
+  get __primaryKeyCond(): Primary<T> | Primary<T>[] {
+    if (this.__meta.compositePK) {
+      return this.__primaryKeys;
+    }
+
+    return this.__primaryKey;
+  }
+
   get __serializedPrimaryKey(): Primary<T> | string {
     if (this.__meta.compositePK) {
       return Utils.getCompositeKeyHash(this.entity, this.__meta);

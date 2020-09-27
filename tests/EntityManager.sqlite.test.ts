@@ -70,7 +70,7 @@ describe('EntityManagerSqlite', () => {
     ]);
 
     // sqlite returns the last inserted id
-    expect(res).toMatchObject({ insertId: 3, affectedRows: 0, row: 3, rows: [ 3 ] });
+    expect(res).toMatchObject({ insertId: 3, affectedRows: 0, row: 3, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher3.name, {});
     expect(res2).toEqual([
       { id: 1, name: 'test 1', type: 'GLOBAL' },

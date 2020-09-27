@@ -44,8 +44,11 @@ export abstract class Platform {
     return true;
   }
 
+  /**
+   * Whether or not the driver supports retuning list of created PKs back when multi-inserting
+   */
   returningMultiInsert(): boolean {
-    return false;
+    return true;
   }
 
   usesDefaultKeyword(): boolean {

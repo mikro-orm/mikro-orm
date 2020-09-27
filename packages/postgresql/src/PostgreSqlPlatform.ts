@@ -16,10 +16,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  returningMultiInsert(): boolean {
-    return true;
-  }
-
   getCurrentTimestampSQL(length: number): string {
     return `current_timestamp(${length})`;
   }
