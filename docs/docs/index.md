@@ -54,3 +54,4 @@ hide_title: true
   - [Express + MongoDB + JavaScript](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js)
   - [GraphQL + PostgreSQL + Typescript](https://github.com/driescroons/mikro-orm-graphql-example)
   - [Inversify + PostgreSQL](https://github.com/PodaruDragos/inversify-example-app)
+  - [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
