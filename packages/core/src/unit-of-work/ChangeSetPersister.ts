@@ -39,10 +39,15 @@ export class ChangeSetPersister {
   }
 
   async executeDeletes<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const size = this.config.get('batchSize');
     const meta = changeSets[0].entity.__meta!;
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
-    await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+
+    for (let i = 0; i < changeSets.length; i += size) {
+      const chunk = changeSets.slice(i, i + size);
+      const pks = chunk.map(cs => cs.entity.__helper!.__primaryKeyCond);
+      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
+    }
   }
 
   private processProperties<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
@@ -101,7 +106,6 @@ export class ChangeSetPersister {
   private async persistManagedEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, ctx);
-    this.mapReturnedValues(changeSet, res, meta);
     this.checkOptimisticLock(meta, changeSet, res);
     await this.reloadVersionValues(meta, [changeSet], ctx);
     changeSet.persisted = true;
@@ -154,7 +158,7 @@ export class ChangeSetPersister {
   }
 
   private checkOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res?: QueryResult) {
-    if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
+    if (meta.versionProperty && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
