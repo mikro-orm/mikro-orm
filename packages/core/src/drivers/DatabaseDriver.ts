@@ -33,6 +33,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction): Promise<QueryResult> {
+    throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
+  }
+
   abstract async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
   abstract async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;

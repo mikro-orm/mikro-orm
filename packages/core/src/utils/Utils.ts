@@ -33,8 +33,8 @@ export class Utils {
   /**
    * Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
    */
-  static isNotObject<T = Dictionary>(o: any, not: any[] = []): o is T {
-    return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
+  static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {
+    return this.isObject(o) && !not.some(cls => o instanceof cls);
   }
 
   /**
@@ -45,7 +45,7 @@ export class Utils {
     let size = 0;
 
     for (const key in object) {
-      // eslint-disable-next-line no-prototype-builtins
+      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
       if (object.hasOwnProperty(key)) {
         size++;
       }
@@ -60,7 +60,7 @@ export class Utils {
    */
   static hasObjectKeys(object: Dictionary): boolean {
     for (const key in object) {
-      // eslint-disable-next-line no-prototype-builtins
+      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
       if (object.hasOwnProperty(key)) {
         return true;
       }
@@ -351,12 +351,12 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform: Platform, convertCustomTypes?: boolean): Primary<T>[] {
+  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     return meta.primaryKeys.map(pk => {
       const prop = meta.properties[pk];
 
-      if (prop.customType && convertCustomTypes) {
+      if (prop.customType && platform && convertCustomTypes) {
         return prop.customType.convertToJSValue(data[pk], platform);
       }
 

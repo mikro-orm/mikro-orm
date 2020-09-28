@@ -39,6 +39,10 @@ export class MongoPlatform extends Platform {
     return true;
   }
 
+  usesBatchUpdates(): boolean {
+    return false;
+  }
+
   marshallArray(values: string[]): string {
     return values as unknown as string;
   }

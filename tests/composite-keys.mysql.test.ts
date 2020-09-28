@@ -1,4 +1,4 @@
-import { LoadStrategy, Logger, MikroORM, wrap } from '@mikro-orm/core';
+import { LoadStrategy, Logger, MikroORM, ValidationError, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -284,6 +284,41 @@ describe('composite keys in mysql', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
     expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
+  });
+
+  test('batch updates with optimistic locking', async () => {
+    const bar1 = FooBar2.create('bar 1');
+    bar1.id = 17;
+    const baz1 = new FooBaz2('baz 1');
+    baz1.id = 13;
+    const param1 = new FooParam2(bar1, baz1, 'val 1');
+    const bar2 = FooBar2.create('bar 2');
+    bar2.id = 27;
+    const baz2 = new FooBaz2('baz 2');
+    baz2.id = 23;
+    const param2 = new FooParam2(bar2, baz2, 'val 1');
+    const bar3 = FooBar2.create('bar 3');
+    bar3.id = 37;
+    const baz3 = new FooBaz2('baz 3');
+    baz3.id = 33;
+    const param3 = new FooParam2(bar3, baz3, 'val 1');
+    await orm.em.persistAndFlush([param1, param2, param3]);
+
+    param1.value += ' changed!';
+    param2.value += ' changed!';
+    param3.value += ' changed!';
+    await orm.em.flush();
+
+    try {
+      await orm.em.nativeUpdate(FooParam2, param2, { version: new Date('2020-01-01T00:00:00Z') }); // simulate concurrent update
+      param1.value += ' changed!!';
+      param2.value += ' changed!!';
+      param3.value += ' changed!!';
+      await orm.em.flush();
+      expect(1).toBe('should be unreachable');
+    } catch (e) {
+      expect((e as ValidationError).getEntity()).toBe(param2);
+    }
   });
 
   afterAll(async () => orm.close(true));

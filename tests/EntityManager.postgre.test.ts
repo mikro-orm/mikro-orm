@@ -1506,6 +1506,23 @@ describe('EntityManagerPostgre', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
+  // this should run in ~800ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
+    const authors = new Set<Author2>();
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = new Author2(`Jon Snow ${i}`, `snow-${i}@wall.st`);
+      orm.em.persist(author);
+      authors.add(author);
+    }
+
+    await orm.em.flush();
+    authors.forEach(author => expect(author.id).toBeGreaterThan(0));
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

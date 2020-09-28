@@ -144,7 +144,7 @@ export async function initORMSqlite2() {
     propagateToOneOwner: false,
     logger: i => i,
     cache: { pretty: true },
-    batchSize: 200,
+    batchSize: 100,
   });
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.dropSchema();

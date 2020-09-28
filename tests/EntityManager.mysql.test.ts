@@ -107,6 +107,20 @@ describe('EntityManagerMySql', () => {
       { id: 2, name: 'test 2', type: PublisherType.LOCAL },
       { id: 3, name: 'test 3', type: PublisherType.GLOBAL },
     ]);
+
+    // multi updates
+    const res3 = await driver.nativeUpdateMany<Publisher2>(Publisher2.name, [1, 2, 3], [
+      { name: 'test 11', type: PublisherType.LOCAL },
+      { type: PublisherType.GLOBAL },
+      { name: 'test 33', type: PublisherType.LOCAL },
+    ]);
+
+    const res4 = await driver.find(Publisher2.name, {});
+    expect(res4).toMatchObject([
+      { id: 1, name: 'test 11', type: PublisherType.LOCAL },
+      { id: 2, name: 'test 2', type: PublisherType.GLOBAL },
+      { id: 3, name: 'test 33', type: PublisherType.LOCAL },
+    ]);
   });
 
   test('driver appends errored query', async () => {
@@ -2414,8 +2428,8 @@ describe('EntityManagerMySql', () => {
       'order by `e0`.`title` asc');
   });
 
-  // this should run in ~600ms (when running single test locally)
-  test('perf: one to many', async () => {
+  // this should run in ~800ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();
 
     for (let i = 1; i <= 1000; i++) {
@@ -2426,6 +2440,9 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.flush();
     authors.forEach(author => expect(author.id).toBeGreaterThan(0));
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
   });
 
   afterAll(async () => orm.close(true));
