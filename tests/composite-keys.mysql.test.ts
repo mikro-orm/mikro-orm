@@ -151,6 +151,26 @@ describe('composite keys in mysql', () => {
     expect(connMock).toBeCalledTimes(1);
   });
 
+  test('composite entity in m:1 relationship (multi update)', async () => {
+    const car1 = new Car2('Audi A8', 2011, 100_000);
+    const car2 = new Car2('Audi A8', 2012, 200_000);
+    const car3 = new Car2('Audi A8', 2013, 300_000);
+    const owner1 = new CarOwner2('John Doe 1');
+    const owner2 = new CarOwner2('John Doe 2');
+    owner1.car = car1;
+    owner2.car = car2;
+    await orm.em.persistAndFlush([owner1, owner2]);
+
+    owner1.car = car2;
+    owner2.car = car3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(CarOwner2, {}, { orderBy: { name: 'asc' } });
+    expect(owners[0].car.year).toBe(2012);
+    expect(owners[1].car.year).toBe(2013);
+  });
+
   test('composite entity in m:n relationship, both entities are composite', async () => {
     const car1 = new Car2('Audi A8', 2011, 100_000);
     const car2 = new Car2('Audi A8', 2012, 150_000);

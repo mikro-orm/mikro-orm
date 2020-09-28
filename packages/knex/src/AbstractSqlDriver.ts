@@ -254,7 +254,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${knex.ref(pk)} = ?`).join(' and ');
-    let res: QueryResult = { affectedRows: 0, insertId: 0, row: {} };
 
     keys.forEach(key => {
       meta.properties[key].fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
@@ -272,14 +271,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       });
     });
 
-    if (keys.size > 0) {
-      const qb = this.createQueryBuilder<T>(entityName, ctx, true)
-        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-        .update(values)
-        .where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where });
+    const qb = this.createQueryBuilder<T>(entityName, ctx, true)
+      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+      .update(values)
+      .where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where });
 
-      res = await this.rethrow(qb.execute('run', false));
-    }
+    const res = await this.rethrow(qb.execute('run', false));
 
     const pkConds = data.map((_, idx) => Utils.extractPK<T>(where[idx], meta)!);
 
