@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { AnyEntity, BaseEntity, DateType, Entity, EntityProperty, IdentifiedReference, MikroORM, OneToOne, Platform, PrimaryKey, Property, EventSubscriber, FlushEventArgs, ChangeSet, Subscriber, Type, ChangeSetType, ValidationError } from '@mikro-orm/core';
+import { AnyEntity, BaseEntity, DateType, Entity, EntityProperty, IdentifiedReference, JsonType, BlobType, BigIntType, MikroORM, OneToOne, Platform, PrimaryKey, Property, EventSubscriber, FlushEventArgs, ChangeSet, Subscriber, Type, ChangeSetType, ValidationError } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { Decimal } from 'decimal.js';
@@ -97,6 +97,15 @@ export class A extends BaseEntity<A, 'id'> {
 
   @Property({ type: DateType, nullable: true })
   aDate = new Date();
+
+  @Property({ type: JsonType })
+  anObject = { foo: 'bar', baz: 0 };
+
+  @Property({ type: BlobType })
+  aBlob = Buffer.from('some string', 'utf8');
+
+  @Property({ type: BigIntType })
+  someBigInt = '9223372036854775806';
 
 }
 
