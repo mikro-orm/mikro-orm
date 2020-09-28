@@ -1,18 +1,18 @@
-import { basename, extname } from 'path';
-import globby from 'globby';
 import c from 'ansi-colors';
-
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
-import { Utils } from '../utils/Utils';
-import { Configuration } from '../utils/Configuration';
-import { MetadataValidator } from './MetadataValidator';
-import { MetadataStorage } from './MetadataStorage';
-import { EntitySchema } from './EntitySchema';
+import globby from 'globby';
+import { basename, extname } from 'path';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
 import { ArrayType, BlobType, Type } from '../types';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
+import { Configuration } from '../utils/Configuration';
 import { EntityComparator } from '../utils/EntityComparator';
+import { Utils } from '../utils/Utils';
+import { EntitySchema } from './EntitySchema';
+import { MetadataStorage } from './MetadataStorage';
+import { MetadataValidator } from './MetadataValidator';
+
 
 export class MetadataDiscovery {
 
@@ -54,7 +54,7 @@ export class MetadataDiscovery {
       meta.props = Object.values(meta.properties);
       meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
       meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
-      meta.props.forEach(prop => this.initIndexes(meta, prop));
+      meta.name && meta.props.forEach(prop => this.initIndexes(meta, prop));
     });
 
     const diff = Date.now() - startTime;
