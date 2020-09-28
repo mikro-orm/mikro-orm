@@ -54,7 +54,7 @@ export class MetadataDiscovery {
       meta.props = Object.values(meta.properties);
       meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
       meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
-      meta.props.forEach(prop => this.initIndexes(meta, prop));
+      meta.name && meta.props.forEach(prop => this.initIndexes(meta, prop));
     });
 
     const diff = Date.now() - startTime;
