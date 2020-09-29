@@ -16,21 +16,24 @@ export class ObjectHydrator extends Hydrator {
     } else if (prop.reference === ReferenceType.EMBEDDED) {
       this.hydrateEmbeddable(entity, prop, data);
     } else { // ReferenceType.SCALAR
-      this.hydrateScalar(entity, prop, data[prop.name], convertCustomTypes);
+      this.hydrateScalar(entity, prop, data, convertCustomTypes);
     }
   }
 
-  private hydrateScalar<T>(entity: T, prop: EntityProperty, value: any, convertCustomTypes: boolean): void {
+  private hydrateScalar<T>(entity: T, prop: EntityProperty<T>, data: EntityData<T>, convertCustomTypes: boolean): void {
+    let value = data[prop.name];
+
     if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
       return;
     }
 
     if (prop.customType && convertCustomTypes) {
       value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
+      data[prop.name] = prop.customType.convertToDatabaseValue(value, this.em.getDriver().getPlatform()); // make sure the value is comparable
     }
 
     if (value && prop.type.toLowerCase() === 'date') {
-      entity[prop.name] = new Date(value);
+      entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
     } else {
       entity[prop.name] = value;
     }

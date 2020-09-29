@@ -66,7 +66,13 @@ describe('Utils', () => {
     expect(Utils.equals([1, 2, 3], [1, 2, 3, 4])).toBe(false);
     expect(Utils.equals([1, 2, 3, 4], [1, 2, 3])).toBe(false);
     expect(Utils.equals([1, 2, 3], [1, 2, 3])).toBe(true);
+    expect(Utils.equals(Buffer.from([1, 2, 3]), Buffer.from([1, 2, 3]))).toBe(true);
+    expect(Utils.equals(Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3]))).toBe(false);
+    expect(Utils.equals(Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3, 5]))).toBe(false);
+    expect(Utils.equals(NaN, NaN)).toBe(true);
     expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toBe(false);
+    expect(Utils.equals({ a: 'a', b: 'b', c: 'c' }, { a: 'b', b: 'b' })).toBe(false);
+    expect(Utils.equals({ a: 'a', b: 'b' }, { a: 'b', c: 'c' })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toBe(true);
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);

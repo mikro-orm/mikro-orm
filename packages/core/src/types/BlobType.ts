@@ -9,10 +9,11 @@ export class BlobType extends Type<Buffer | null> {
   }
 
   convertToJSValue(value: Buffer, platform: Platform): Buffer | null {
-    if (!value) {
+    if (value as unknown instanceof Buffer || !value) {
       return value;
     }
 
+    /* istanbul ignore else */
     if (value.buffer instanceof Buffer) {
       return value.buffer;
     }
