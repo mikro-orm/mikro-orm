@@ -212,8 +212,8 @@ export class MongoConnection extends Connection {
         break;
       }
       case 'bulkUpdateMany': {
-        query = log(() => `bulk = db.getCollection('${collection}').initializeOrderedBulkOp(${this.logObject(options)});\n`);
-        const bulk = this.getCollection(collection).initializeOrderedBulkOp(options);
+        query = log(() => `bulk = db.getCollection('${collection}').initializeUnorderedBulkOp(${this.logObject(options)});\n`);
+        const bulk = this.getCollection(collection).initializeUnorderedBulkOp(options);
 
         (data as T[]).forEach((row, idx) => {
           const cond = { _id: (where as Dictionary[])[idx] };
