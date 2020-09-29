@@ -136,7 +136,10 @@ export class Migrator {
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options?: T): T {
     if (Utils.isString(options) || Array.isArray(options)) {
-      return Utils.asArray(options).map(m => m.startsWith('Migration') ? m : 'Migration' + m) as T;
+      return Utils.asArray(options).map(m => {
+        const name = m.replace(/\.[jt]s$/, '');
+        return name.match(/^\d{14}$/) ? this.options.fileName!(name) : m;
+      }) as T;
     }
 
     if (!Utils.isObject<{ from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options)) {

@@ -37,9 +37,7 @@ describe('Migrator', () => {
 
   beforeAll(async () => {
     orm = await initORMMySql('mysql', {}, true);
-    await remove(process.cwd() + '/temp/migrations/Migration20191013214813.js');
-    await remove(process.cwd() + '/temp/migrations/Migration20191013214813.ts');
-    await remove(process.cwd() + '/temp/migrations/migration-20191013214813.ts');
+    await remove(process.cwd() + '/temp/migrations');
   });
   afterAll(async () => orm.close(true));
 
@@ -63,8 +61,20 @@ describe('Migrator', () => {
     const migrator = orm.getMigrator();
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
+    const upMock = jest.spyOn(umzug.prototype, 'up');
+    upMock.mockImplementation(() => void 0);
+    const downMock = jest.spyOn(umzug.prototype, 'down');
+    downMock.mockImplementation(() => void 0);
+    await migrator.up();
+    await migrator.down(migration.fileName.replace('.ts', ''));
+    await migrator.up();
+    await migrator.down(migration.fileName);
+    await migrator.up();
+    await migrator.down(migration.fileName.replace('migration-', '').replace('.ts', ''));
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    upMock.mockRestore();
+    downMock.mockRestore();
   });
 
   test('generate schema migration', async () => {
@@ -204,7 +214,7 @@ describe('Migrator', () => {
     Object.assign(orm.config, { logger });
 
     await migrator.up(migration.fileName);
-    await migrator.down(migration.fileName.replace('Migration', ''));
+    await migrator.down(migration.fileName.replace('Migration', '').replace('.ts', ''));
     await migrator.up({ migrations: [migration.fileName] });
     await migrator.down({ from: 0, to: 0 } as any);
     await migrator.up({ to: migration.fileName });
