@@ -3,7 +3,115 @@ import { ReferenceType } from '../enums';
 import { Platform } from '../platforms';
 import { Utils } from './Utils';
 
+type Comparator<T> = (a: T, b: T) => EntityData<T>;
+
+/**
+ * Checks if arguments are deeply (but not strictly) equal.
+ */
+function equals(a: any, b: any): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    if (a.constructor !== b.constructor) {
+      return false;
+    }
+
+    if (Array.isArray(a)) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      return compareArrays(a, b);
+    }
+
+    if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      return compareBuffers(a as Buffer, b as Buffer);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    return compareObjects(a, b);
+  }
+
+  // true if both NaN, false otherwise
+  return false;
+}
+
+function compareObjects(a: any, b: any) {
+  if (a === b) {
+    return true;
+  }
+
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || a.constructor !== b.constructor) {
+    return false;
+  }
+
+  if (a.valueOf !== Object.prototype.valueOf) {
+    return a.valueOf() === b.valueOf();
+  }
+
+  if (a.toString !== Object.prototype.toString) {
+    return a.toString() === b.toString();
+  }
+
+  const keys = Object.keys(a);
+  const length = keys.length;
+
+  if (length !== Object.keys(b).length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
+      return false;
+    }
+  }
+
+  for (let i = length; i-- !== 0;) {
+    const key = keys[i];
+
+    if (!equals(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function compareArrays(a: any[], b: any[]) {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (!equals(a[i], b[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function compareBuffers(a: Buffer, b: Buffer): boolean {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export class EntityComparator {
+
+  private readonly comparators = new Map<string, Comparator<any>>();
 
   constructor(private readonly metadata: IMetadataStorage,
               private readonly platform: Platform) { }
@@ -71,6 +179,80 @@ export class EntityComparator {
     Object.defineProperty(ret, '__prepared', { value: true });
 
     return ret;
+  }
+
+  getEntityComparator<T>(entityName: string): Comparator<T> {
+    if (this.comparators.has(entityName)) {
+      return this.comparators.get(entityName) as Comparator<any>;
+    }
+
+    const meta = this.metadata.find<T>(entityName)!;
+    const props: string[] = [];
+    const context = new Map<string, any>();
+    context.set('compareArrays', compareArrays);
+    context.set('compareBuffers', compareBuffers);
+    context.set('compareObjects', compareObjects);
+    context.set('equals', equals);
+
+    meta.comparableProps.forEach(prop => {
+      props.push(this.getPropertyComparator(prop));
+    });
+
+    const code = `return function(last, current) {\n  const diff = {};\n${props.join('\n')}\n  return diff;\n}`;
+    const comparator = new Function(...context.keys(), code)(...context.values()) as Comparator<T>;
+    this.comparators.set(entityName, comparator);
+
+    return comparator;
+  }
+
+  private getGenericComparator(prop: string, cond: string): string {
+    return `  if (!current.${prop} && !last.${prop}) {\n\n` +
+           `  } else if ((current.${prop} && !last.${prop}) || (!current.${prop} && last.${prop})) {\n` +
+           `    diff.${prop} = current.${prop};\n` +
+           `  } else if (${cond}) {\n` +
+           `    diff.${prop} = current.${prop};\n` +
+           `  }\n`;
+  }
+
+  private getPropertyComparator<T>(prop: EntityProperty<T>): string {
+    let type = prop.type.toLowerCase();
+
+    if (prop.reference !== ReferenceType.SCALAR) {
+      const meta2 = this.metadata.find(prop.type)!;
+
+      if (meta2.primaryKeys.length > 1) {
+        type = 'array';
+      } else {
+        type = meta2.properties[meta2.primaryKeys[0]].type.toLowerCase();
+      }
+    }
+
+    if (prop.customType) {
+      type = prop.customType.compareAsType();
+    }
+
+    if (['string', 'number', 'boolean'].includes(type)) {
+      return `  if (last.${prop.name} !== current.${prop.name}) diff.${prop.name} = current.${prop.name};`;
+    }
+
+    if (['array'].includes(type) || type.endsWith('[]')) {
+      return this.getGenericComparator(prop.name, `!compareArrays(last.${prop.name}, current.${prop.name})`);
+    }
+
+    if (['buffer', 'uint8array'].includes(type)) {
+      return this.getGenericComparator(prop.name, `!compareBuffers(last.${prop.name}, current.${prop.name})`);
+    }
+
+    if (['date'].includes(type)) {
+      return this.getGenericComparator(prop.name, `last.${prop.name}.valueOf() !== current.${prop.name}.valueOf()`);
+    }
+
+    if (['objectid'].includes(type)) {
+      const cond = `last.${prop.name}.toHexString() !== current.${prop.name}.toHexString()`;
+      return this.getGenericComparator(prop.name, cond);
+    }
+
+    return `  if (!compareObjects(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
   }
 
   /**

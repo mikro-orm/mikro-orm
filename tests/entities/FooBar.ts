@@ -26,6 +26,12 @@ export default class FooBar {
   @Property({ type: new ArrayType(i => +i), nullable: true })
   array?: number[];
 
+  @Property()
+  num?: number;
+
+  @Property()
+  str?: string;
+
   @Property({ type: JsonType, nullable: true })
   object?: { foo: string; bar: number } | any;
 

@@ -1,6 +1,7 @@
-import umzug, { Umzug, migrationsList } from 'umzug';
-import { Utils, Constructor, Dictionary, Transaction } from '@mikro-orm/core';
-import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
+import umzug, { migrationsList, Umzug } from 'umzug';
+import { ensureDir } from 'fs-extra';
+import { Constructor, Dictionary, Transaction, Utils } from '@mikro-orm/core';
+import { EntityManager, SchemaGenerator } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
@@ -62,6 +63,7 @@ export class Migrator {
   }
 
   async validateInitialMigration() {
+    await ensureDir(Utils.normalizePath(this.options.path!));
     const executed = await this.getExecutedMigrations();
     const pending = await this.getPendingMigrations();
 
