@@ -21,7 +21,7 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
-    if (changeSets.length > 1 && this.platform.returningMultiInsert() && this.config.get('useBatchInserts')) {
+    if (changeSets.length > 1 && this.config.get('useBatchInserts', this.platform.usesBatchInserts())) {
       return this.persistNewEntities(meta, changeSets, ctx);
     }
 
@@ -31,7 +31,12 @@ export class ChangeSetPersister {
   }
 
   async executeUpdates<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
+
+    if (changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
+      return this.persistManagedEntities(meta, changeSets, ctx);
+    }
 
     for (const changeSet of changeSets) {
       await this.persistManagedEntity(changeSet, ctx);
@@ -39,10 +44,15 @@ export class ChangeSetPersister {
   }
 
   async executeDeletes<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const size = this.config.get('batchSize');
     const meta = changeSets[0].entity.__meta!;
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
-    await this.driver.nativeDelete(changeSets[0].name, { [pk]: { $in: pks } }, ctx);
+
+    for (let i = 0; i < changeSets.length; i += size) {
+      const chunk = changeSets.slice(i, i + size);
+      const pks = chunk.map(cs => cs.entity.__helper!.__primaryKeyCond);
+      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
+    }
   }
 
   private processProperties<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
@@ -82,6 +92,10 @@ export class ChangeSetPersister {
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx);
 
+    if (!this.platform.usesReturningStatement()) {
+      await this.reloadVersionValues(meta, changeSets, ctx);
+    }
+
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
       const wrapped = changeSet.entity.__helper!;
@@ -91,6 +105,7 @@ export class ChangeSetPersister {
       }
 
       this.mapReturnedValues(changeSet, res, meta);
+
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;
@@ -101,10 +116,25 @@ export class ChangeSetPersister {
   private async persistManagedEntity<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, ctx);
-    this.mapReturnedValues(changeSet, res, meta);
     this.checkOptimisticLock(meta, changeSet, res);
     await this.reloadVersionValues(meta, [changeSet], ctx);
     changeSet.persisted = true;
+  }
+
+  private async persistManagedEntities<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    const size = this.config.get('batchSize');
+
+    for (let i = 0; i < changeSets.length; i += size) {
+      const chunk = changeSets.slice(i, i + size);
+      await this.persistManagedEntitiesBatch(meta, chunk, ctx);
+      await this.reloadVersionValues(meta, chunk, ctx);
+    }
+  }
+
+  private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    await this.checkOptimisticLocks(meta, changeSets, ctx);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.__primaryKey as Dictionary), changeSets.map(cs => cs.payload), ctx);
+    changeSets.forEach(cs => cs.persisted = true);
   }
 
   private mapPrimaryKey<T extends AnyEntity<T>>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
@@ -153,8 +183,27 @@ export class ChangeSetPersister {
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
   }
 
+  private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+    if (!meta.versionProperty || changeSets.every(cs => !cs.entity[meta.versionProperty])) {
+      return;
+    }
+
+    const $or = changeSets.map(cs => ({
+      ...Utils.getPrimaryKeyCond<T>(cs.entity, meta.primaryKeys),
+      [meta.versionProperty]: cs.entity[meta.versionProperty],
+    }));
+
+    const res = await this.driver.find(meta.className, { $or }, { fields: meta.primaryKeys }, ctx);
+
+    if (res.length !== changeSets.length) {
+      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
+      const entity = changeSets.find(cs => !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, meta.primaryKeys)!, row, meta.primaryKeys)))!.entity;
+      throw OptimisticLockError.lockFailed(entity);
+    }
+  }
+
   private checkOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res?: QueryResult) {
-    if (meta.versionProperty && changeSet.type === ChangeSetType.UPDATE && res && !res.affectedRows) {
+    if (meta.versionProperty && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
@@ -170,7 +219,7 @@ export class ChangeSetPersister {
       fields: [meta.versionProperty],
     }, ctx);
     const map = new Map<string, Date>();
-    data.forEach(e => map.set(e[pk], e[meta.versionProperty]));
+    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty]));
 
     for (const changeSet of changeSets) {
       const version = map.get(changeSet.entity.__helper!.__serializedPrimaryKey);

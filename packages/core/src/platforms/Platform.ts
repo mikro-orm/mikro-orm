@@ -47,7 +47,14 @@ export abstract class Platform {
   /**
    * Whether or not the driver supports retuning list of created PKs back when multi-inserting
    */
-  returningMultiInsert(): boolean {
+  usesBatchInserts(): boolean {
+    return true;
+  }
+
+  /**
+   * Whether or not the driver supports updating many records at once
+   */
+  usesBatchUpdates(): boolean {
     return true;
   }
 

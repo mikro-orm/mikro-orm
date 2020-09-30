@@ -246,6 +246,47 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+    const meta = this.metadata.get<T>(entityName);
+    const collections = data.map(d => this.extractManyToMany(entityName, d));
+    const values: Dictionary<Raw> = {};
+    const knex = this.connection.getKnex();
+    const keys = new Set<string>();
+    data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
+    const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${knex.ref(pk)} = ?`).join(' and ');
+
+    keys.forEach(key => {
+      meta.properties[key].fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
+        const params: any[] = [];
+        let sql = `case`;
+        where.forEach((cond, idx) => {
+          if (key in data[idx]) {
+            const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
+            sql += ` when (${pkCond}) then ?`;
+            params.push(...pks, meta.properties[key].fieldNames.length > 1 ? data[idx][key][fieldNameIdx] : data[idx][key]);
+          }
+        });
+        sql += ` else ${(knex.ref(fieldName))} end`;
+        values[fieldName] = knex.raw(sql, params);
+      });
+    });
+
+    const qb = this.createQueryBuilder<T>(entityName, ctx, true)
+      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+      .update(values)
+      .where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where });
+
+    const res = await this.rethrow(qb.execute('run', false));
+
+    const pkConds = data.map((_, idx) => Utils.extractPK<T>(where[idx], meta)!);
+
+    for (let i = 0; i < collections.length; i++) {
+      await this.processManyToMany<T>(meta, pkConds[i] as Primary<T>[], collections[i], false, ctx);
+    }
+
+    return res;
+  }
+
   async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
     const pks = this.getPrimaryKeyFields(entityName);
 

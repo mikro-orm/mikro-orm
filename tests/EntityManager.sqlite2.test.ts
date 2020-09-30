@@ -2,7 +2,7 @@ import { unlinkSync } from 'fs';
 import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
-import { Author4, Book4, BookTag4, FooBar4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
+import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
 describe('EntityManagerSqlite2', () => {
 
@@ -844,6 +844,23 @@ describe('EntityManagerSqlite2', () => {
 
     await orm.em.flush();
     expect(author.books.getItems().every(b => b.id)).toBe(true);
+  });
+
+  // this should run in ~400ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
+    const authors = new Set<IAuthor4>();
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = orm.em.create(Author4, { name: `Jon Snow ${i}`, email: `snow-${i}@wall.st` });
+      orm.em.persist(author);
+      authors.add(author);
+    }
+
+    await orm.em.flush();
+    authors.forEach(author => expect(author.id).toBeGreaterThan(0));
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
   });
 
   afterAll(async () => {

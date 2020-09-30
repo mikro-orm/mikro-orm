@@ -2127,6 +2127,23 @@ describe('EntityManagerMongo', () => {
     expect(author.books.getItems().every(b => b.id)).toBe(true);
   });
 
+  // this should run in ~600ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
+    const authors = new Set<Author>();
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = new Author(`Jon Snow ${i}`, `snow-${i}@wall.st`);
+      orm.em.persist(author);
+      authors.add(author);
+    }
+
+    await orm.em.flush();
+    authors.forEach(author => expect(author.id).toBeDefined());
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
+  });
+
   test('exceptions', async () => {
     const driver = orm.em.getDriver();
     await driver.nativeInsert(Author.name, { name: 'author', email: 'email' });

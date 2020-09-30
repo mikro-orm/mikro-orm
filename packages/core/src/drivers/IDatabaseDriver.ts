@@ -39,6 +39,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
 
+  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction): Promise<QueryResult>;
+
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
   syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;

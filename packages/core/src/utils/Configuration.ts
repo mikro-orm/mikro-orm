@@ -49,7 +49,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     populateAfterFlush: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
-    useBatchInserts: true,
     batchSize: 1000,
     debug: false,
     verbose: false,
@@ -330,7 +329,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   forceUtcTimezone: boolean;
   timezone?: string;
   ensureIndexes: boolean;
-  useBatchInserts: boolean;
+  useBatchInserts?: boolean;
+  useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
   loadStrategy: LoadStrategy;

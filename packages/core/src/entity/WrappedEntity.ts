@@ -109,10 +109,10 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     const value = this.entity[this.__meta.serializedPrimaryKey];
 
     if (Utils.isEntity<T>(value)) {
-      return value.__helper!.__serializedPrimaryKey as string;
+      return value.__helper!.__serializedPrimaryKey;
     }
 
-    return value as unknown as string;
+    return '' + value;
   }
 
 }
