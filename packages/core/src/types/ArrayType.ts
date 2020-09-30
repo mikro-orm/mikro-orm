@@ -34,6 +34,10 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     return value.map(i => this.hydrate(i as string));
   }
 
+  compareAsType(): string {
+    return 'array';
+  }
+
   toJSON(value: T[]): T[] {
     return value;
   }

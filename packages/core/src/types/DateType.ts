@@ -31,6 +31,10 @@ export class DateType extends Type<Date, string> {
     return date;
   }
 
+  compareAsType(): string {
+    return 'date';
+  }
+
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDateTypeDeclarationSQL(prop.length);
   }

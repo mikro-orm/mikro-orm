@@ -52,9 +52,12 @@ export class ChangeSetComputer {
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
+    const entityName = entity.__meta!.root.className;
+    const originalEntityData = entity.__helper!.__originalEntityData;
 
-    if (entity.__helper!.__originalEntityData) {
-      return Utils.diff(entity.__helper!.__originalEntityData, data) as EntityData<T>;
+    if (originalEntityData) {
+      const comparator = this.comparator.getEntityComparator(entityName);
+      return comparator(originalEntityData, data);
     }
 
     return data;

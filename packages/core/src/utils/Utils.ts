@@ -96,11 +96,11 @@ export class Utils {
       }
 
       if (Array.isArray(a)) {
-        return this.compareArrays(a, b);
+        return Utils.compareArrays(a, b);
       }
 
       if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-        return this.compareBuffers(a as Buffer, b as Buffer);
+        return Utils.compareBuffers(a as Buffer, b as Buffer);
       }
 
       if (a.valueOf !== Object.prototype.valueOf) {
@@ -111,7 +111,7 @@ export class Utils {
         return a.toString() === b.toString();
       }
 
-      return this.compareObjects(a, b);
+      return Utils.compareObjects(a, b);
     }
 
     // true if both NaN, false otherwise

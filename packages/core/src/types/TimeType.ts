@@ -13,6 +13,10 @@ export class TimeType extends Type {
     return super.convertToDatabaseValue(value, platform);
   }
 
+  compareAsType(): string {
+    return 'string';
+  }
+
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getTimeTypeDeclarationSQL(prop.length);
   }

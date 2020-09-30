@@ -22,6 +22,10 @@ export class BlobType extends Type<Buffer | null> {
     return Buffer.from(value);
   }
 
+  compareAsType(): string {
+    return 'buffer';
+  }
+
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
