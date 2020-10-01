@@ -49,7 +49,7 @@
   "dependencies": {
     "ansi-colors": "^4.1.1",
     "clone": "^2.1.2",
-    "escaya": "^0.0.55",
+    "escaya": "^0.0.58",
     "fs-extra": "^9.0.1",
     "globby": "^11.0.1",
     "reflect-metadata": "^0.1.13",
