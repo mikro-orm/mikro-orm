@@ -242,11 +242,14 @@ export class ChangeSetPersister {
       changeSet.payload[prop.name] = value.getValue();
     }
 
-    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
-      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
+    if (changeSet.type === ChangeSetType.CREATE) {
+      if (prop.onCreate) {
+        changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
+      }
 
-      if (prop.primary) {
-        this.mapPrimaryKey(changeSet.entity.__meta!, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
+      const wrapped = changeSet.entity.__helper!;
+      if (prop.primary && wrapped.__identifier) {
+        wrapped.__identifier.setValue(changeSet.entity[prop.name] as any);
       }
     }
 
