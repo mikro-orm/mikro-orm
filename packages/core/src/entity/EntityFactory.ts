@@ -34,7 +34,10 @@ export class EntityFactory {
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
+
+    if (this.platform.usesDifferentSerializedPrimaryKey()) {
+      meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
+    }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
     const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
@@ -87,23 +90,15 @@ export class EntityFactory {
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
-      const entity = new Entity(...params);
-      // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-      const helper = new WrappedEntity(entity);
-      Object.defineProperty(entity, '__helper', { value: helper });
-
-      return entity;
+      return new Entity(...params);
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
-    const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
-    // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-    const helper = new WrappedEntity(entity as T);
-    Object.defineProperty(entity, '__helper', { value: helper });
+    const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
-    this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 
-    if (!options.newEntity) {
+    if (meta.selfReferencing && !options.newEntity) {
+      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
       this.unitOfWork.registerManaged<T>(entity);
     }
 

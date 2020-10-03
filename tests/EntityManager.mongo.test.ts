@@ -848,9 +848,9 @@ describe('EntityManagerMongo', () => {
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,
-      'Book-' + book1.id,
       'BookTag-' + tag1.id,
       'BookTag-' + tag3.id,
+      'Book-' + book1.id,
     ]);
     expect(author).not.toBe(cachedAuthor);
     expect(author.id).toBe(cachedAuthor.id);

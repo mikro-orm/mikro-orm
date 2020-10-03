@@ -23,13 +23,13 @@ export class ObjectHydrator extends Hydrator {
   private hydrateScalar<T>(entity: T, prop: EntityProperty<T>, data: EntityData<T>, convertCustomTypes: boolean): void {
     let value = data[prop.name];
 
-    if (typeof value === 'undefined' || (prop.getter && !prop.setter)) {
+    if (typeof value === 'undefined') {
       return;
     }
 
     if (prop.customType && convertCustomTypes) {
-      value = prop.customType.convertToJSValue(value, this.em.getDriver().getPlatform());
-      data[prop.name] = prop.customType.convertToDatabaseValue(value, this.em.getDriver().getPlatform()); // make sure the value is comparable
+      value = prop.customType.convertToJSValue(value, this.platform);
+      data[prop.name] = prop.customType.convertToDatabaseValue(value, this.platform); // make sure the value is comparable
     }
 
     if (value && prop.type.toLowerCase() === 'date') {
@@ -56,7 +56,7 @@ export class ObjectHydrator extends Hydrator {
       const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!newEntity);
       coll.setDirty(!!newEntity);
     } else if (!entity[prop.name]) {
-      const items = this.em.getDriver().getPlatform().usesPivotTable() || !prop.owner ? undefined : [];
+      const items = this.platform.usesPivotTable() || !prop.owner ? undefined : [];
       const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!(value || newEntity));
       coll.setDirty(false);
     }
@@ -81,13 +81,10 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T, newEntity?: boolean): T {
-    const meta = this.em.getMetadata().get(prop.type);
+    const meta = this.metadata.find(prop.type)!;
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
-      const ref = this.factory.createReference<T>(prop.type, value, { merge: true });
-      this.em.getUnitOfWork().registerManaged(ref, value);
-
-      return ref;
+      return this.factory.createReference<T>(prop.type, value, { merge: true });
     }
 
     if (Utils.isEntity<T>(value)) {

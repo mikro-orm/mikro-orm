@@ -83,6 +83,10 @@ export abstract class Platform {
     return field;
   }
 
+  usesDifferentSerializedPrimaryKey(): boolean {
+    return false;
+  }
+
   /**
    * Returns the SQL specific for the platform to get the current timestamp
    */

@@ -31,6 +31,10 @@ export class MongoPlatform extends Platform {
     return 'id';
   }
 
+  usesDifferentSerializedPrimaryKey(): boolean {
+    return true;
+  }
+
   usesImplicitTransactions(): boolean {
     return false;
   }

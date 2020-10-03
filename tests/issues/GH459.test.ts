@@ -59,7 +59,7 @@ describe('GH issue 459', () => {
     orm.em.clear();
 
     const d1 = await orm.em.findOneOrFail(D, d.id);
-    expect(d1).toEqual({ id: d.id, foo: 'foo', bar: 'bar', name: 'name' });
+    expect(d1).toMatchObject({ id: d.id, foo: 'foo', bar: 'bar', name: 'name' });
   });
 
 });

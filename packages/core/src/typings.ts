@@ -191,6 +191,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
+  hydrateProps: EntityProperty<T>[]; // for Hydrator
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
@@ -201,6 +202,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   useCache: boolean;
   filters: Dictionary<FilterDef<T>>;
   comment?: string;
+  selfReferencing?: boolean;
   readonly?: boolean;
   root: EntityMetadata<T>;
 }

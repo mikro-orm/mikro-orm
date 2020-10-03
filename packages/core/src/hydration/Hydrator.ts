@@ -1,11 +1,13 @@
-import { EntityManager } from '../EntityManager';
 import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { EntityFactory } from '../entity';
+import { Platform } from '../platforms/Platform';
+import { MetadataStorage } from '../metadata/MetadataStorage';
 
 export abstract class Hydrator {
 
   constructor(protected readonly factory: EntityFactory,
-              protected readonly em: EntityManager) { }
+              protected readonly metadata: MetadataStorage,
+              protected readonly platform: Platform) { }
 
   /**
    * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
@@ -23,25 +25,17 @@ export abstract class Hydrator {
    * Hydrates primary keys only
    */
   hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, convertCustomTypes?: boolean): void {
-    const props = this.getProperties(meta, entity).filter(prop => prop.primary);
-
-    for (const prop of props) {
-      this.hydrateProperty<T>(entity, prop, data, false, convertCustomTypes);
-    }
+    meta.primaryKeys.forEach(pk => {
+      this.hydrateProperty<T>(entity, meta.properties[pk], data, false, convertCustomTypes);
+    });
   }
 
-  private getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T): EntityProperty<T>[] {
-    const metadata = this.em.getMetadata();
-
+  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T): EntityProperty<T>[] {
     if (meta.root.discriminatorColumn) {
-      meta = metadata.find(entity.constructor.name)!;
+      meta = this.metadata.find(entity.constructor.name)!;
     }
 
-    return meta.props.filter(prop => {
-      // `prop.userDefined` is either `undefined` or `false`
-      const discriminator = meta.root.discriminatorColumn === prop.name && prop.userDefined === false;
-      return !prop.inherited && !discriminator && !prop.embedded;
-    });
+    return meta.hydrateProps;
   }
 
   protected abstract hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: EntityData<T>, newEntity?: boolean, convertCustomTypes?: boolean): void;

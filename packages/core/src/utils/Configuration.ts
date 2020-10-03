@@ -159,7 +159,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of Hydrator. Hydrator cannot be cached as it would have reference to wrong (global) EntityFactory.
    */
   getHydrator(factory: EntityFactory, em: EntityManager): Hydrator {
-    return new this.options.hydrator(factory, em);
+    return new this.options.hydrator(factory, em.getMetadata(), this.platform);
   }
 
   /**
@@ -332,7 +332,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchInserts?: boolean;
   useBatchUpdates?: boolean;
   batchSize: number;
-  hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
+  hydrator: { new (factory: EntityFactory, metadata: MetadataStorage, platform: Platform): Hydrator };
   loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];

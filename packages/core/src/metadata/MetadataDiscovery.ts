@@ -51,9 +51,16 @@ export class MetadataDiscovery {
 
     this.discovered.forEach(meta => {
       const root = Utils.getRootEntity(this.metadata, meta);
-      meta.props = Object.values(meta.properties);
+      meta.props = Object.values(meta.properties).sort((a, b) => a.primary && !b.primary ? -1 : 0);
       meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
       meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
+      meta.hydrateProps = meta.props.filter(prop => {
+        // `prop.userDefined` is either `undefined` or `false`
+        const discriminator = root.discriminatorColumn === prop.name && prop.userDefined === false;
+        const onlyGetter = prop.getter && !prop.setter;
+        return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
+      });
+      meta.selfReferencing = meta.relations.some(prop => [meta.className, root.className].includes(prop.type));
       meta.name && meta.props.forEach(prop => this.initIndexes(meta, prop));
     });
 

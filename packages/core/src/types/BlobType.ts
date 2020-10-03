@@ -18,6 +18,7 @@ export class BlobType extends Type<Buffer | null> {
       return value.buffer;
     }
 
+    /* istanbul ignore next */
     return Buffer.from(value);
   }
 

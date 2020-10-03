@@ -9,6 +9,8 @@ import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
 import { ReferenceType } from '../enums';
 
+const entityHelperSymbol = Symbol('helper');
+
 export class EntityHelper {
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
@@ -55,12 +57,14 @@ export class EntityHelper {
       __entity: { value: true },
       __meta: { value: meta },
       __platform: { value: platform },
+      [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {
-          const helper = new WrappedEntity(this);
-          Object.defineProperty(this, '__helper', { value: helper, writable: true });
+          if (!this[entityHelperSymbol]) {
+            this[entityHelperSymbol] = new WrappedEntity(this);
+          }
 
-          return helper;
+          return this[entityHelperSymbol];
         },
       },
     });
@@ -89,7 +93,9 @@ export class EntityHelper {
       });
 
     meta.prototype[inspect.custom] = function (depth: number) {
-      const ret = inspect({ ...this }, { depth });
+      const object = { ...this };
+      delete object[entityHelperSymbol];
+      const ret = inspect(object, { depth });
       let name = meta.name;
 
       // distinguish not initialized entities

@@ -62,28 +62,28 @@ describe('single table inheritance in mysql', () => {
     expect(users[3]).toBeInstanceOf(CompanyOwner2);
     expect((users[3] as CompanyOwner2).favouriteEmployee).toBeInstanceOf(Employee2);
     expect((users[3] as CompanyOwner2).favouriteManager).toBeInstanceOf(Manager2);
-    expect(users[0]).toEqual({
+    expect(users[0]).toMatchObject({
       id: 2,
       firstName: 'Emp',
       lastName: '1',
       employeeProp: 1,
       type: Type.Employee,
     });
-    expect(users[1]).toEqual({
+    expect(users[1]).toMatchObject({
       id: 1,
       firstName: 'Emp',
       lastName: '2',
       employeeProp: 2,
       type: Type.Employee,
     });
-    expect(users[2]).toEqual({
+    expect(users[2]).toMatchObject({
       id: 3,
       firstName: 'Man',
       lastName: '3',
       managerProp: 'i am manager',
       type: Type.Manager,
     });
-    expect(users[3]).toEqual({
+    expect(users[3]).toMatchObject({
       id: 4,
       firstName: 'Bruce',
       lastName: 'Almighty',
@@ -93,6 +93,10 @@ describe('single table inheritance in mysql', () => {
       favouriteManager: users[2],
       type: Type.Owner,
     });
+    expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
+    expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
+    expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
+    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-2', 'BaseUser2-1', 'BaseUser2-3', 'BaseUser2-4']);
 
