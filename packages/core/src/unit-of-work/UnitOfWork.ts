@@ -31,7 +31,7 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>(), mergeData = true): void {
+  merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
     const meta = entity.__meta!;
     const wrapped = entity.__helper!;
     wrapped.__em = this.em;
@@ -46,20 +46,16 @@ export class UnitOfWork {
     }
 
     this.identityMap.set(`${meta.root.name}-${wrapped.__serializedPrimaryKey}`, entity);
+    entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
 
-    if (mergeData || !entity.__helper!.__originalEntityData) {
-      entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
-    }
-
-    this.cascade(entity, Cascade.MERGE, visited, { mergeData: false });
+    this.cascade(entity, Cascade.MERGE, visited);
   }
 
   /**
    * @internal
    */
   registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
-    const root = entity.__meta!.root;
-    this.identityMap.set(`${root.name}-${entity.__helper!.__serializedPrimaryKey}`, entity);
+    this.identityMap.set(`${entity.__meta!.root.name}-${entity.__helper!.__serializedPrimaryKey}`, entity);
 
     if (newEntity) {
       return entity;
@@ -391,7 +387,8 @@ export class UnitOfWork {
 
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
     await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
-    Object.assign(changeSet.payload, this.comparator.diffEntities<T>(copy, changeSet.entity));
+    const current = this.comparator.prepareEntity(changeSet.entity) as T;
+    Object.assign(changeSet.payload, this.comparator.diffEntities<T>(changeSet.name, copy, current));
   }
 
   private postCommitCleanup(): void {
@@ -404,7 +401,7 @@ export class UnitOfWork {
     this.working = false;
   }
 
-  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean; mergeData?: boolean } = {}): void {
+  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean } = {}): void {
     if (visited.has(entity)) {
       return;
     }
@@ -413,7 +410,7 @@ export class UnitOfWork {
 
     switch (type) {
       case Cascade.PERSIST: this.persist(entity, visited, options.checkRemoveStack); break;
-      case Cascade.MERGE: this.merge(entity, visited, options.mergeData); break;
+      case Cascade.MERGE: this.merge(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
 
@@ -422,7 +419,7 @@ export class UnitOfWork {
     }
   }
 
-  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean; mergeData?: boolean }): void {
+  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean }): void {
     this.fixMissingReference(entity, prop);
 
     if (!this.shouldCascade(prop, type)) {

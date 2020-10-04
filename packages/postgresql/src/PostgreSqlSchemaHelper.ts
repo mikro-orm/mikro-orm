@@ -130,7 +130,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       /* istanbul ignore else  */
       if (m1 && m2) {
-        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^'(.*)'/)![1]);
+        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
       }
 
       return o;
