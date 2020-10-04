@@ -1732,19 +1732,6 @@ describe('EntityManagerMySql', () => {
     expect(res9).toBe(0);
   });
 
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author2('Name 1', 'e-mail1');
-    const book = new Book2('test', author1);
-    const author2 = new Author2('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
-    expect(typeof diff.favouriteBook).toBe('string');
-    expect(diff.favouriteBook).toBe(book.uuid);
-  });
-
   test('self referencing (2 step)', async () => {
     const author = new Author2('name', 'email');
     const b1 = new Book2('b1', author);

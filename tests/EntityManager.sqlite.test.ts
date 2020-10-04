@@ -378,6 +378,16 @@ describe('EntityManagerSqlite', () => {
     }
   });
 
+  test('findOne supports optimistic locking', async () => {
+    const test = new Test3();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test3, test.id);
+    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
+  });
+
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = new Test3();
     test.name = 'test';
@@ -387,16 +397,6 @@ describe('EntityManagerSqlite', () => {
     const proxy = orm.em.getReference<any>(Test3, test.id);
     await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
     expect(proxy.isInitialized()).toBe(true);
-  });
-
-  test('findOne supports optimistic locking [versioned proxy]', async () => {
-    const test = new Test3();
-    test.name = 'test';
-    await orm.em.persistAndFlush(test);
-    orm.em.clear();
-
-    const test2 = await orm.em.findOne(Test3, test.id);
-    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
   });
 
   test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
@@ -834,18 +834,6 @@ describe('EntityManagerSqlite', () => {
 
     const res5 = await orm.em.nativeUpdate(Author3, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res5).toBe(1);
-  });
-
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author3('Name 1', 'e-mail1');
-    const book = new Book3('test', author1);
-    const author2 = new Author3('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persist([author1, author2, book]).flush();
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
-    expect(typeof diff.favouriteBook).toBe('number');
   });
 
   test('EM supports smart search conditions', async () => {

@@ -3,7 +3,6 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityPr
 import { UnitOfWork } from '../unit-of-work';
 import { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
-import { WrappedEntity } from './WrappedEntity';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -28,7 +27,7 @@ export class EntityFactory {
   create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
-    if (Utils.isEntity<T>(data)) {
+    if (data.__entity) {
       return data as New<T, P>;
     }
 
@@ -114,6 +113,10 @@ export class EntityFactory {
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {
+    if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]].customType) {
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]]);
+    }
+
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       return undefined;
     }

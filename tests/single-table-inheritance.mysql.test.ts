@@ -104,6 +104,7 @@ describe('single table inheritance in mysql', () => {
     expect(o.state).toBeUndefined();
     expect(o.baseState).toBeUndefined();
     o.firstName = 'Changed';
+    delete o.favouriteEmployee;
     await orm.em.flush();
     expect(o.state).toBe('updated');
     expect(o.baseState).toBe('updated');

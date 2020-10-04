@@ -1,26 +1,8 @@
 import { v4 } from 'uuid';
 import {
-  Collection,
-  Configuration,
-  EntityManager,
-  LockMode,
-  MikroORM,
-  QueryFlag,
-  QueryOrder,
-  Reference,
-  Logger,
-  ValidationError,
-  UniqueConstraintViolationException,
-  TableNotFoundException,
-  NotNullConstraintViolationException,
-  TableExistsException,
-  SyntaxErrorException,
-  NonUniqueFieldNameException,
-  InvalidFieldNameException,
-  ChangeSetType,
-  wrap,
-  expr,
-  Subscriber, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
+  UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
+  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -1089,19 +1071,6 @@ describe('EntityManagerPostgre', () => {
     await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.config.set('debug', ['query']);
-  });
-
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author2('Name 1', 'e-mail1');
-    const book = new Book2('test', author1);
-    const author2 = new Author2('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
-    expect(typeof diff.favouriteBook).toBe('string');
-    expect(diff.favouriteBook).toBe(book.uuid);
   });
 
   test('self referencing (2 step)', async () => {

@@ -69,7 +69,6 @@ describe('Utils', () => {
     expect(Utils.equals(Buffer.from([1, 2, 3]), Buffer.from([1, 2, 3]))).toBe(true);
     expect(Utils.equals(Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3]))).toBe(false);
     expect(Utils.equals(Buffer.from([1, 2, 3, 4]), Buffer.from([1, 2, 3, 5]))).toBe(false);
-    expect(Utils.equals(NaN, NaN)).toBe(true);
     expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'b', c: 'c' }, { a: 'b', b: 'b' })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'b' }, { a: 'b', c: 'c' })).toBe(false);
@@ -107,43 +106,6 @@ describe('Utils', () => {
     expect(Utils.diff({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined });
     expect(Utils.diff({ a: new Date() }, { a: new Date('2018-01-01') })).toEqual({ a: new Date('2018-01-01') });
     expect(Utils.diff({ a: new ObjectId('00000001885f0a3cc37dc9f0') }, { a: new ObjectId('00000001885f0a3cc37dc9f0') })).toEqual({});
-  });
-
-  test('diffEntities ignores collections', () => {
-    const author1 = new Author('Name 1', 'e-mail1');
-    author1.books = new Collection<Book>(author1);
-    const author2 = new Author('Name 2', 'e-mail2');
-    author2.books = new Collection<Book>(author2);
-
-    expect(orm.em.getComparator().diffEntities(author1, author2).books).toBeUndefined();
-  });
-
-  test('prepareEntity changes entity to string id', async () => {
-    const author1 = new Author('Name 1', 'e-mail1');
-    const book = new Book('test', author1);
-    const author2 = new Author('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persistAndFlush(author2);
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book._id });
-    expect(diff.favouriteBook instanceof ObjectId).toBe(true);
-  });
-
-  test('prepareEntity ignores properties with `persist: false` flag', async () => {
-    const author = new Author('Name 1', 'e-mail');
-    author.version = 123;
-    author.versionAsString = 'v123';
-    const o = orm.em.getComparator().prepareEntity(author);
-    expect(o.version).toBeUndefined();
-    expect(o.versionAsString).toBeUndefined();
-  });
-
-  test('prepareEntity clones object properties', async () => {
-    const author = new Author('Name 1', 'e-mail');
-    author.updatedAt = new Date();
-    const o = orm.em.getComparator().prepareEntity(author);
-    expect(o.updatedAt).not.toBe(author.updatedAt);
   });
 
   test('copy', () => {

@@ -13,6 +13,106 @@ import { Platform } from '../platforms';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
+export function compareObjects(a: any, b: any) {
+  if (a === b) {
+    return true;
+  }
+
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || a.constructor !== b.constructor) {
+    return false;
+  }
+
+  if (a.valueOf !== Object.prototype.valueOf) {
+    return a.valueOf() === b.valueOf();
+  }
+
+  if (a.toString !== Object.prototype.toString) {
+    return a.toString() === b.toString();
+  }
+
+  const keys = Object.keys(a);
+  const length = keys.length;
+
+  if (length !== Object.keys(b).length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
+      return false;
+    }
+  }
+
+  for (let i = length; i-- !== 0;) {
+    const key = keys[i];
+
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (!equals(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function compareArrays(a: any[], b: any[]) {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (!equals(a[i], b[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function compareBuffers(a: Buffer, b: Buffer): boolean {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Checks if arguments are deeply (but not strictly) equal.
+ */
+export function equals(a: any, b: any): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    if (Array.isArray(a)) {
+      return compareArrays(a, b);
+    }
+
+    if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+      return compareBuffers(a as Buffer, b as Buffer);
+    }
+
+    return compareObjects(a, b);
+  }
+
+  return false;
+}
+
+const equalsFn = equals;
+
 export class Utils {
 
   /**
@@ -86,93 +186,7 @@ export class Utils {
    * Checks if arguments are deeply (but not strictly) equal.
    */
   static equals(a: any, b: any): boolean {
-    if (a === b) {
-      return true;
-    }
-
-    if (a && b && typeof a === 'object' && typeof b === 'object') {
-      if (a.constructor !== b.constructor) {
-        return false;
-      }
-
-      if (Array.isArray(a)) {
-        return Utils.compareArrays(a, b);
-      }
-
-      if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-        return Utils.compareBuffers(a as Buffer, b as Buffer);
-      }
-
-      if (a.valueOf !== Object.prototype.valueOf) {
-        return a.valueOf() === b.valueOf();
-      }
-
-      if (a.toString !== Object.prototype.toString) {
-        return a.toString() === b.toString();
-      }
-
-      return Utils.compareObjects(a, b);
-    }
-
-    // true if both NaN, false otherwise
-    return a !== a && b !== b;
-  }
-
-  private static compareObjects(a: any, b: any) {
-    const keys = Object.keys(a);
-    const length = keys.length;
-
-    if (length !== Object.keys(b).length) {
-      return false;
-    }
-
-    for (let i = length; i-- !== 0;) {
-      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
-        return false;
-      }
-    }
-
-    for (let i = length; i-- !== 0;) {
-      const key = keys[i];
-
-      if (!Utils.equals(a[key], b[key])) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private static compareArrays(a: any[], b: any[]) {
-    const length = a.length;
-
-    if (length !== b.length) {
-      return false;
-    }
-
-    for (let i = length; i-- !== 0;) {
-      if (!Utils.equals(a[i], b[i])) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private static compareBuffers(a: Buffer, b: Buffer): boolean {
-    const length = a.length;
-
-    if (length !== b.length) {
-      return false;
-    }
-
-    for (let i = length; i-- !== 0;) {
-      if (a[i] !== b[i]) {
-        return false;
-      }
-    }
-
-    return true;
+    return equalsFn(a, b);
   }
 
   /**

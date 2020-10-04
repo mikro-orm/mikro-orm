@@ -730,18 +730,6 @@ describe('EntityManagerSqlite2', () => {
     expect(res5).toBe(1);
   });
 
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = orm.em.create(Author4, { name: 'Name 1', email: 'e-mail1' });
-    const book = orm.em.create(Book4, { title: 'test', author1 });
-    const author2 = orm.em.create(Author4, { name: 'Name 2', email: 'e-mail2' });
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persist([author1, author2, book]).flush();
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
-    expect(typeof diff.favouriteBook).toBe('number');
-  });
-
   test('EM supports smart search conditions', async () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
     const b1 = orm.em.create(Book4, { title: 'b1', author });

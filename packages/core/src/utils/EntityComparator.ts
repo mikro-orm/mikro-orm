@@ -1,126 +1,26 @@
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, IMetadataStorage } from '../typings';
+import clone from 'clone';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IMetadataStorage } from '../typings';
 import { ReferenceType } from '../enums';
 import { Platform } from '../platforms';
-import { Utils } from './Utils';
+import { Utils, compareArrays, compareBuffers, compareObjects, equals } from './Utils';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
-
-/**
- * Checks if arguments are deeply (but not strictly) equal.
- */
-function equals(a: any, b: any): boolean {
-  if (a === b) {
-    return true;
-  }
-
-  if (a && b && typeof a === 'object' && typeof b === 'object') {
-    if (a.constructor !== b.constructor) {
-      return false;
-    }
-
-    if (Array.isArray(a)) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return compareArrays(a, b);
-    }
-
-    if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      return compareBuffers(a as Buffer, b as Buffer);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return compareObjects(a, b);
-  }
-
-  // true if both NaN, false otherwise
-  return false;
-}
-
-function compareObjects(a: any, b: any) {
-  if (a === b) {
-    return true;
-  }
-
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || a.constructor !== b.constructor) {
-    return false;
-  }
-
-  if (a.valueOf !== Object.prototype.valueOf) {
-    return a.valueOf() === b.valueOf();
-  }
-
-  if (a.toString !== Object.prototype.toString) {
-    return a.toString() === b.toString();
-  }
-
-  const keys = Object.keys(a);
-  const length = keys.length;
-
-  if (length !== Object.keys(b).length) {
-    return false;
-  }
-
-  for (let i = length; i-- !== 0;) {
-    if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
-      return false;
-    }
-  }
-
-  for (let i = length; i-- !== 0;) {
-    const key = keys[i];
-
-    if (!equals(a[key], b[key])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function compareArrays(a: any[], b: any[]) {
-  const length = a.length;
-
-  if (length !== b.length) {
-    return false;
-  }
-
-  for (let i = length; i-- !== 0;) {
-    if (!equals(a[i], b[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function compareBuffers(a: Buffer, b: Buffer): boolean {
-  const length = a.length;
-
-  if (length !== b.length) {
-    return false;
-  }
-
-  for (let i = length; i-- !== 0;) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
+type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 
 export class EntityComparator {
 
   private readonly comparators = new Map<string, Comparator<any>>();
+  private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
 
   constructor(private readonly metadata: IMetadataStorage,
               private readonly platform: Platform) { }
 
   /**
-   * Computes difference between two entities. First calls `prepareEntity` on both, then uses the `diff` method.
+   * Computes difference between two entities.
    */
-  diffEntities<T extends AnyEntity<T>>(a: T, b: T): EntityData<T> {
-    return Utils.diff(this.prepareEntity(a), this.prepareEntity(b)) as EntityData<T>;
+  diffEntities<T extends EntityData<T>>(entityName: string, a: T, b: T): EntityData<T> {
+    const comparator = this.getEntityComparator<T>(entityName);
+    return comparator(a, b);
   }
 
   /**
@@ -128,62 +28,125 @@ export class EntityComparator {
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
   prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    if ((entity as Dictionary).__prepared) {
-      return entity as EntityData<T>;
+    const generator = this.getSnapshotGenerator<T>(entity.constructor.name);
+    return generator(entity);
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
+  getSnapshotGenerator<T extends AnyEntity<T>>(entityName: string): SnapshotGenerator<T> {
+    const exists = this.snapshotGenerators.get(entityName);
+
+    if (exists) {
+      return exists;
     }
 
-    const meta = this.metadata.get<T>(entity.constructor.name);
-    const ret = {} as EntityData<T>;
+    const meta = this.metadata.find<T>(entityName)!;
+    const props: string[] = [];
+    const context = new Map<string, any>();
+    context.set('clone', clone);
 
     if (meta.discriminatorValue) {
-      ret[meta.root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as EntityData<T>[keyof T];
+      props.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
     }
 
     // copy all comparable props, ignore collections and references, process custom types
     meta.comparableProps.forEach(prop => {
-      if (this.shouldIgnoreProperty(entity, prop)) {
-        return;
-      }
-
-      if (prop.reference === ReferenceType.EMBEDDED) {
-        return meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-          ret[childProp.name as keyof T] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
-        });
-      }
-
-      if (Utils.isEntity(entity[prop.name], true)) {
-        ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], this.metadata.find(prop.type)!.primaryKeys, true);
-
-        if (prop.customType) {
-          return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name], this.platform));
-        }
-
-        return;
-      }
-
-      if (prop.customType) {
-        return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], this.platform));
-      }
-
-      if (prop.type.toLowerCase() === 'date') {
-        return ret[prop.name] = Utils.copy(this.platform.processDateProperty(entity[prop.name]));
-      }
-
-      if (Array.isArray(entity[prop.name]) || Utils.isObject(entity[prop.name])) {
-        return ret[prop.name] = Utils.copy(entity[prop.name]);
-      }
-
-      ret[prop.name] = Utils.copy(entity[prop.name]);
+      props.push(this.getPropertySnapshot(meta, prop, context));
     });
 
-    Object.defineProperty(ret, '__prepared', { value: true });
+    const code = `return function(entity) {\n  const ret = {};\n${props.join('\n')}\n  return ret;\n}`;
+    const snapshotGenerator = this.createFunction(context, code);
+    this.snapshotGenerators.set(entityName, snapshotGenerator);
+
+    return snapshotGenerator;
+  }
+
+  /* istanbul ignore next */
+  private createFunction(context: Map<string, any>, code: string) {
+    try {
+      return new Function(...context.keys(), code)(...context.values());
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(code);
+      throw e;
+    }
+  }
+
+  private getPropertyCondition<T>(prop: EntityProperty<T>): string {
+    let ret = `'${prop.name}' in entity`;
+    const isRef = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference);
+    const isSetter = isRef && !!(prop.inversedBy || prop.mappedBy);
+
+    if (prop.primary || isSetter) {
+      ret += ` && entity.${prop.name} != null`;
+    }
+
+    if (isRef) {
+      ret += ` && (entity.${prop.name} == null || entity.${prop.name}.__helper.hasPrimaryKey())`;
+    }
 
     return ret;
   }
 
+  private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>): string {
+    let ret = `  if (${this.getPropertyCondition(prop)}) {\n`;
+
+    if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
+      return ret + `    ret.${prop.name} = entity.${prop.name};\n}\n`;
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED) {
+      return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
+        return `    ret.${childProp.name} = clone(entity.${prop.name}.${childProp.embedded![1]});`;
+      }).join('\n') + '\n}\n';
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
+      context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
+      ret += `    ret.${prop.name} = getPrimaryKeyValues_${prop.name}(entity.${prop.name});\n`;
+
+      if (prop.customType) {
+        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+
+        /* istanbul ignore next */
+        if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
+          return ret + `    ret.${prop.name} = convertToDatabaseValue_${prop.name}(ret.${prop.name});\n}\n`;
+        }
+
+        return ret + `    ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(ret.${prop.name}));\n}\n`;
+      }
+
+      return ret + '  }\n';
+    }
+
+    if (prop.customType) {
+      context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+
+      if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
+        return ret + `  ret.${prop.name} = convertToDatabaseValue_${prop.name}(entity.${prop.name});\n}\n`;
+      }
+
+      return ret + `  ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(entity.${prop.name}));\n}\n`;
+    }
+
+    if (prop.type.toLowerCase() === 'date') {
+      context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
+      return ret + `  ret.${prop.name} = clone(processDateProperty(entity.${prop.name}));\n}\n`;
+    }
+
+    return ret + `  ret.${prop.name} = clone(entity.${prop.name});\n}\n`;
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
   getEntityComparator<T>(entityName: string): Comparator<T> {
-    if (this.comparators.has(entityName)) {
-      return this.comparators.get(entityName) as Comparator<any>;
+    const exists = this.comparators.get(entityName);
+
+    if (exists) {
+      return exists;
     }
 
     const meta = this.metadata.find<T>(entityName)!;
@@ -199,25 +162,25 @@ export class EntityComparator {
     });
 
     const code = `return function(last, current) {\n  const diff = {};\n${props.join('\n')}\n  return diff;\n}`;
-    const comparator = new Function(...context.keys(), code)(...context.values()) as Comparator<T>;
+    const comparator = this.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 
     return comparator;
   }
 
   private getGenericComparator(prop: string, cond: string): string {
-    return `  if (!current.${prop} && !last.${prop}) {\n\n` +
-           `  } else if ((current.${prop} && !last.${prop}) || (!current.${prop} && last.${prop})) {\n` +
-           `    diff.${prop} = current.${prop};\n` +
-           `  } else if (${cond}) {\n` +
-           `    diff.${prop} = current.${prop};\n` +
-           `  }\n`;
+    return `  if (current.${prop} == null && last.${prop} == null) {\n\n` +
+      `  } else if ((current.${prop} && last.${prop} == null) || (current.${prop} == null && last.${prop})) {\n` +
+      `    diff.${prop} = current.${prop};\n` +
+      `  } else if (${cond}) {\n` +
+      `    diff.${prop} = current.${prop};\n` +
+      `  }\n`;
   }
 
   private getPropertyComparator<T>(prop: EntityProperty<T>): string {
     let type = prop.type.toLowerCase();
 
-    if (prop.reference !== ReferenceType.SCALAR) {
+    if (prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED) {
       const meta2 = this.metadata.find(prop.type)!;
 
       if (meta2.primaryKeys.length > 1) {
@@ -232,7 +195,7 @@ export class EntityComparator {
     }
 
     if (['string', 'number', 'boolean'].includes(type)) {
-      return `  if (last.${prop.name} !== current.${prop.name}) diff.${prop.name} = current.${prop.name};`;
+      return this.getGenericComparator(prop.name, `last.${prop.name} !== current.${prop.name}`);
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {
@@ -253,25 +216,6 @@ export class EntityComparator {
     }
 
     return `  if (!compareObjects(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
-  }
-
-  /**
-   * should be used only for `meta.comparableProps` that are defined based on the static `isComparable` helper
-   */
-  private shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>) {
-    if (!(prop.name in entity)) {
-      return true;
-    }
-
-    const value = entity[prop.name];
-    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.hasPrimaryKey();
-    const noPkProp = prop.primary && !Utils.isDefined(value, true);
-
-    // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
-    const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
-    const emptyRef = isSetter && value === undefined;
-
-    return noPkProp || noPkRef || emptyRef || prop.version;
   }
 
   /**
