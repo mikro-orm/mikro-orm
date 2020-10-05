@@ -154,7 +154,7 @@ as a version where root entity is abstract class.
 
 ```ts
 @Entity({
-  discriminatorColumn: 'discr',
+  discriminatorColumn: 'type',
   discriminatorMap: { person: 'Person', employee: 'Employee' },
 })
 export abstract class BasePerson {
