@@ -388,7 +388,13 @@ export class UnitOfWork {
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
     await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
     const current = this.comparator.prepareEntity(changeSet.entity) as T;
-    Object.assign(changeSet.payload, this.comparator.diffEntities<T>(changeSet.name, copy, current));
+    const diff = this.comparator.diffEntities<T>(changeSet.name, copy, current);
+    Object.assign(changeSet.payload, diff);
+    const wrapped = changeSet.entity.__helper!;
+
+    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
+      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]]);
+    }
   }
 
   private postCommitCleanup(): void {

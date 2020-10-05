@@ -147,7 +147,7 @@ export class ChangeSetPersister {
     }
 
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
-    wrapped.__identifier!.setValue(changeSet.entity[prop.name] as unknown as IPrimaryKey);
+    wrapped.__identifier!.setValue(value);
   }
 
   /**
