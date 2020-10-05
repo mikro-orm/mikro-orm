@@ -53,7 +53,7 @@ export class EntityFactory {
       this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
     }
 
-    this.runHooks(entity, meta);
+    this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
 
     return entity as New<T, P>;
   }
@@ -187,17 +187,6 @@ export class EntityFactory {
 
       return data[k];
     });
-  }
-
-  private runHooks<T>(entity: T, meta: EntityMetadata<T>): void {
-    /* istanbul ignore next */
-    const hooks = meta.hooks?.onInit || [];
-
-    if (hooks.length > 0) {
-      hooks.forEach(hook => (entity[hook] as unknown as () => void)());
-    }
-
-    this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
   }
 
 }
