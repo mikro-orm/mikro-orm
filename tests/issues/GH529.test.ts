@@ -22,10 +22,10 @@ export class Order {
   items = new Collection<OrderItem>(this);
 
   @Property()
-  paid = false;
+  paid: boolean = false;
 
   @Property()
-  shipped = false;
+  shipped: boolean = false;
 
   @Property()
   created: Date = new Date();

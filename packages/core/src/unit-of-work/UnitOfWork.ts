@@ -314,7 +314,6 @@ export class UnitOfWork {
       this.checkOrphanRemoval(changeSet);
       this.changeSets.set(entity, changeSet);
       this.persistStack.delete(entity);
-      wrapped.__originalEntityData = changeSet.payload;
     }
   }
 

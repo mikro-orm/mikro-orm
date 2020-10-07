@@ -55,28 +55,30 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
       affectedRows: 1,
-      row: {
-        count: 1,
-      },
+      row: { count: 1 },
+      rows: [{ count: 1 }],
     });
     await expect(driver.getConnection().execute('insert into test2 (name) values (?) returning id', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
-      row: {
-        id: 1,
-      },
+      row: { id: 1 },
+      rows: [{ id: 1 }],
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      row: undefined,
+      rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      row: undefined,
+      rows: [],
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: [1] } })).resolves.not.toBeNull();
+    await expect(driver.find(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
 
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
@@ -101,7 +103,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[3][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
 
     // postgres returns all the ids based on returning clause
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 0, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
@@ -112,7 +114,7 @@ describe('EntityManagerPostgre', () => {
 
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
-    const err1 = `insert into "not_existing" ("foo") values ($1) - relation "not_existing" does not exist`;
+    const err1 = `insert into "not_existing" ("foo") values ('bar') - relation "not_existing" does not exist`;
     await expect(driver.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrowError(err1);
     const err2 = `delete from "not_existing" - relation "not_existing" does not exist`;
     await expect(driver.nativeDelete('not_existing', {})).rejects.toThrowError(err2);
@@ -1111,7 +1113,7 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "title", "uuid_pk") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "author_id") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
     expect(mock.mock.calls[3][0]).toMatch('update "author2" set "favourite_author_id" = $1, "updated_at" = $2 where "id" = $3');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(mock.mock.calls[5][0]).toMatch('select "e0".* from "author2" as "e0" where "e0"."id" = $1');
@@ -1247,6 +1249,11 @@ describe('EntityManagerPostgre', () => {
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
+    const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
+    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(orm.em.merge(a1)).toBe(a1);
+    const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
+    expect(+a2.updatedAt!).toBe(+author.updatedAt);
   });
 
   test('simple derived entity', async () => {
@@ -1330,10 +1337,10 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('custom types', async () => {
-    const bar = FooBar2.create('b1');
+    const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [1, 2, 3, 4, 5];
-    bar.object = { foo: 'bar', bar: 3 };
+    bar.object = { foo: `bar 'lol' baz "foo"`, bar: 3 };
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -1343,7 +1350,7 @@ describe('EntityManagerPostgre', () => {
     expect(b1.array).toEqual([1, 2, 3, 4, 5]);
     expect(b1.array![2]).toBe(3);
     expect(b1.array).toBeInstanceOf(Array);
-    expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
+    expect(b1.object).toEqual({ foo: `bar 'lol' baz "foo"`, bar: 3 });
     expect(b1.object).toBeInstanceOf(Object);
     expect(b1.object!.bar).toBe(3);
 

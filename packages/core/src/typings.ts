@@ -185,6 +185,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   path: string;
   primaryKeys: (keyof T & string)[];
   compositePK: boolean;
+  simplePK: boolean; // PK is scalar, no custom types or composite keys
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };

@@ -44,7 +44,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly driver: AbstractSqlDriver,
               private readonly context?: Transaction,
               readonly alias = `e0`,
-              private readonly connectionType?: 'read' | 'write',
+              private connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) {
     this._aliasMap[this.alias] = this.entityName;
   }
@@ -277,6 +277,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
+    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type)) {
+      this.connectionType = 'write';
+    }
+
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
     const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
     const meta = this.metadata.find(this.entityName);

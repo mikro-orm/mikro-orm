@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import { EntityManager } from '../EntityManager';
 import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
@@ -6,7 +7,6 @@ import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import { LockMode } from '../enums';
 import { ValidationError } from '../errors';
-import { Platform } from '../platforms/Platform';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -67,7 +67,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   hasPrimaryKey(): boolean {
-    return this.__meta.primaryKeys.every(pk => {
+    return this.entity.__meta!.primaryKeys.every(pk => {
       const val = Utils.extractPK(this.entity[pk]);
       return val !== undefined && val !== null;
     });
@@ -77,24 +77,24 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return this.entity.__meta!;
   }
 
-  get __platform(): Platform {
+  get __platform() {
     return this.entity.__platform!;
   }
 
   get __primaryKey(): Primary<T> {
-    return Utils.getPrimaryKeyValue(this.entity, this.__meta.primaryKeys);
+    return Utils.getPrimaryKeyValue(this.entity, this.entity.__meta!.primaryKeys);
   }
 
   set __primaryKey(id: Primary<T>) {
-    this.entity[this.__meta.primaryKeys[0] as string] = id;
+    this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
   }
 
   get __primaryKeys(): Primary<T>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.__meta.primaryKeys);
+    return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
   get __primaryKeyCond(): Primary<T> | Primary<T>[] {
-    if (this.__meta.compositePK) {
+    if (this.entity.__meta!.compositePK) {
       return this.__primaryKeys;
     }
 
@@ -102,17 +102,25 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   get __serializedPrimaryKey(): Primary<T> | string {
-    if (this.__meta.compositePK) {
-      return Utils.getCompositeKeyHash(this.entity, this.__meta);
+    if (this.entity.__meta!.simplePK) {
+      return '' + this.entity[this.entity.__meta!.serializedPrimaryKey];
     }
 
-    const value = this.entity[this.__meta.serializedPrimaryKey];
+    if (this.entity.__meta!.compositePK) {
+      return Utils.getCompositeKeyHash(this.entity, this.entity.__meta!);
+    }
+
+    const value = this.entity[this.entity.__meta!.serializedPrimaryKey];
 
     if (Utils.isEntity<T>(value)) {
       return value.__helper!.__serializedPrimaryKey;
     }
 
     return '' + value;
+  }
+
+  [inspect.custom]() {
+    return `[WrappedEntity<${this.entity.__meta!.className}>]`;
   }
 
 }

@@ -69,6 +69,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
+  await schemaGenerator.dropSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
@@ -144,7 +145,6 @@ export async function initORMSqlite2() {
     propagateToOneOwner: false,
     logger: i => i,
     cache: { pretty: true },
-    batchSize: 100,
   });
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.dropSchema();

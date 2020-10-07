@@ -10,6 +10,7 @@ export interface IBook4 extends IBaseEntity5 {
   publisher?: Reference<IPublisher4>;
   tags: Collection<IBookTag4>;
   tagsUnordered: Collection<IBookTag4>;
+  meta: { category: string; items: number };
 }
 
 export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({
@@ -21,5 +22,6 @@ export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({
     publisher: { reference: 'm:1', entity: 'Publisher4', inversedBy: 'books', wrappedReference: true, nullable: true },
     tags: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_ordered', fixedOrder: true },
     tagsUnordered: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_unordered' },
+    meta: { type: 'json', nullable: true },
   },
 });

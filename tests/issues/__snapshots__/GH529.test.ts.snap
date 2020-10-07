@@ -8,7 +8,7 @@ create table \\"product\\" (\\"id\\" serial primary key, \\"name\\" varchar(255)
 
 create table \\"customer\\" (\\"id\\" serial primary key);
 
-create table \\"order\\" (\\"id\\" serial primary key, \\"customer_id\\" int4 not null, \\"paid\\" jsonb not null, \\"shipped\\" jsonb not null, \\"created\\" timestamptz(0) not null);
+create table \\"order\\" (\\"id\\" serial primary key, \\"customer_id\\" int4 not null, \\"paid\\" bool not null, \\"shipped\\" bool not null, \\"created\\" timestamptz(0) not null);
 
 create table \\"order_item\\" (\\"order_id\\" int4 not null, \\"product_id\\" int4 not null, \\"amount\\" int4 not null, \\"offered_price\\" int4 not null);
 alter table \\"order_item\\" add constraint \\"order_item_pkey\\" primary key (\\"order_id\\", \\"product_id\\");

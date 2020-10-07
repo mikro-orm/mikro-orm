@@ -38,6 +38,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       affectedRows: res.rowCount,
       insertId: res.rows[0] ? res.rows[0].id : 0,
       row: res.rows[0],
+      rows: res.rows,
     } as unknown as T;
   }
 

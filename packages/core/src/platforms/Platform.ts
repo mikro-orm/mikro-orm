@@ -3,10 +3,13 @@ import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
 import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary, ISchemaGenerator } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import { EntityManager } from '../EntityManager';
+import { Configuration } from '../utils/Configuration';
 
 export abstract class Platform {
 
   protected readonly exceptionConverter = new ExceptionConverter();
+  protected config!: Configuration;
+  protected timezone?: string;
 
   usesPivotTable(): boolean {
     return false;
@@ -156,6 +159,16 @@ export abstract class Platform {
 
   processDateProperty(value: unknown): string | number | Date {
     return value as string;
+  }
+
+  setConfig(config: Configuration): void {
+    this.config = config;
+
+    if (this.config.get('forceUtcTimezone')) {
+      this.timezone = 'Z';
+    } else {
+      this.timezone = this.config.get('timezone');
+    }
   }
 
 }

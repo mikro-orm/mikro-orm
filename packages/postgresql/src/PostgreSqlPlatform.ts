@@ -1,4 +1,6 @@
-import { EntityProperty } from '@mikro-orm/core';
+import { escape } from 'sqlstring';
+import { Client } from 'pg';
+import { EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -46,6 +48,33 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getJsonDeclarationSQL(): string {
     return 'jsonb';
+  }
+
+  quoteIdentifier(id: string, quote = '"'): string {
+    return Client.prototype.escapeIdentifier(id);
+  }
+
+  quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value)) {
+      value = JSON.stringify(value);
+    } else if (Array.isArray(value)) {
+      value = this.marshallArray(value);
+    }
+
+    if (typeof value === 'string') {
+      return Client.prototype.escapeLiteral(value);
+    }
+
+    if (value instanceof Date) {
+      return `'${value.toISOString()}'`;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      return `E'\\\\x${(value as Buffer).toString('hex')}'`;
+    }
+
+    return escape(value);
   }
 
 }

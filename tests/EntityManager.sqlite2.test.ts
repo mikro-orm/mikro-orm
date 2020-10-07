@@ -1,4 +1,3 @@
-import { unlinkSync } from 'fs';
 import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
@@ -461,6 +460,21 @@ describe('EntityManagerSqlite2', () => {
     }
   });
 
+  test('json properties', async () => {
+    const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
+    god.identities = ['fb-123', 'pw-231', 'tw-321'];
+    const bible = orm.em.create(Book4, { title: 'Bible', author: god });
+    bible.meta = { category: 'god like', items: 3 };
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const g = (await orm.em.findOne(Author4, god.id, ['books']))!;
+    expect(Array.isArray(g.identities)).toBe(true);
+    expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
+    expect(typeof g.books[0].meta).toBe('object');
+    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3 });
+  });
+
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author4);
     const jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
@@ -503,9 +517,9 @@ describe('EntityManagerSqlite2', () => {
 
   test('many to many relation', async () => {
     const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
-    const book1 = orm.em.create(Book4, { title: 'My Life on } The Wall, part 1', author });
-    const book2 = orm.em.create(Book4, { title: 'My Life on } The Wall, part 2', author });
-    const book3 = orm.em.create(Book4, { title: 'My Life on } The Wall, part 3', author });
+    const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1', author });
+    const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2', author });
+    const book3 = orm.em.create(Book4, { title: 'My Life on the Wall, part 3', author });
     const tag1 = orm.em.create(BookTag4, { name: 'silly' });
     const tag2 = orm.em.create(BookTag4, { name: 'funny' });
     const tag3 = orm.em.create(BookTag4, { name: 'sick' });
@@ -779,10 +793,10 @@ describe('EntityManagerSqlite2', () => {
   });
 
   test('custom types', async () => {
-    const bar = orm.em.create(FooBar4, { name: 'b1' });
+    const bar = orm.em.create(FooBar4, { name: 'b1 \'the bad\' lol' });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [1, 2, 3, 4, 5];
-    bar.object = { foo: 'bar', bar: 3 };
+    bar.object = { foo: 'bar "lol" \'wut\' escaped', bar: 3 };
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -792,7 +806,7 @@ describe('EntityManagerSqlite2', () => {
     expect(b1.array).toEqual([1, 2, 3, 4, 5]);
     expect(b1.array![2]).toBe(3);
     expect(b1.array).toBeInstanceOf(Array);
-    expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
+    expect(b1.object).toEqual({ foo: 'bar "lol" \'wut\' escaped', bar: 3 });
     expect(b1.object).toBeInstanceOf(Object);
     expect(b1.object!.bar).toBe(3);
 
@@ -853,7 +867,6 @@ describe('EntityManagerSqlite2', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    unlinkSync(orm.config.get('dbName')!);
   });
 
 });

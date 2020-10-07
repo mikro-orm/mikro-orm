@@ -1,10 +1,11 @@
 import Knex, { Config, QueryBuilder, Raw, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
-
 import { AnyEntity, Connection, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import { AbstractSqlPlatform } from './AbstractSqlPlatform';
 
 export abstract class AbstractSqlConnection extends Connection {
 
+  protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
 
   getKnex(): Knex {
@@ -42,16 +43,17 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
-      if (ctx) {
-        queryOrKnex.transacting(ctx);
-      }
-
-      return await this.executeKnex(queryOrKnex, method);
+      ctx = ctx ?? ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
+      const q = queryOrKnex.toSQL();
+      const n = q.toNative ? q.toNative() : q;
+      queryOrKnex = q.sql;
+      params = n.bindings as any[];
     }
 
-    const sql = this.getSql(this.client.raw(queryOrKnex, params));
+    const formatted = this.platform.formatQuery(queryOrKnex, params);
+    const sql = this.getSql(queryOrKnex, formatted);
     const res = await this.executeQuery<any>(sql, () => {
-      const query = this.client.raw(queryOrKnex, params);
+      const query = this.client.raw(formatted);
 
       if (ctx) {
         query.transacting(ctx);
@@ -92,43 +94,18 @@ export abstract class AbstractSqlConnection extends Connection {
     }, this.config.get('driverOptions'));
   }
 
-  protected async executeKnex(qb: QueryBuilder | Raw, method: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]> {
-    const sql = this.getSql(qb);
-    const res = await this.executeQuery(sql, () => qb as unknown as Promise<QueryResult>);
-
-    return this.transformKnexResult(res, method);
-  }
-
-  private getSql(qb: QueryBuilder | Raw): string {
+  private getSql(query: string, formatted: string): string {
     const logger = this.config.getLogger();
 
     if (!logger.isEnabled('query')) {
-      return '';
+      return query;
     }
 
     if (logger.isEnabled('query-params')) {
-      return qb.toString();
+      return formatted;
     }
 
-    const q = qb.toSQL();
-    const query = q.toNative ? q.toNative() : q;
-
-    return this.client.client.positionBindings(query.sql);
-  }
-
-  protected transformKnexResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | any | any[] {
-    if (method === 'all') {
-      return res;
-    }
-
-    if (method === 'get') {
-      return res[0];
-    }
-
-    const affectedRows = typeof res === 'number' ? res : 0;
-    const insertId = typeof res[0] === 'number' ? res[0] : 0;
-
-    return { insertId, affectedRows, row: res[0], rows: res };
+    return this.client.client.positionBindings(query);
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;

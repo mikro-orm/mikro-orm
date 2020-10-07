@@ -13,6 +13,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection> {
     const res = await super.nativeInsertMany(entityName, data, ctx);
     const pks = this.getPrimaryKeyFields(entityName);
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId + idx });
+    res.row = res.rows![0];
 
     return res;
   }

@@ -5,11 +5,13 @@ import { Platform } from '../platforms';
 import { Utils, compareArrays, compareBuffers, compareObjects, equals } from './Utils';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
+type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
 
 export class EntityComparator {
 
   private readonly comparators = new Map<string, Comparator<any>>();
+  private readonly mappers = new Map<string, ResultMapper<any>>();
   private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
 
   constructor(private readonly metadata: IMetadataStorage,
@@ -30,6 +32,14 @@ export class EntityComparator {
   prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const generator = this.getSnapshotGenerator<T>(entity.constructor.name);
     return generator(entity);
+  }
+
+  /**
+   * Maps database columns to properties.
+   */
+  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityData<T>): EntityData<T> | null {
+    const mapper = this.getResultMapper<T>(entityName);
+    return mapper(result);
   }
 
   /**
@@ -59,6 +69,51 @@ export class EntityComparator {
     const code = `return function(entity) {\n  const ret = {};\n${props.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = this.createFunction(context, code);
     this.snapshotGenerators.set(entityName, snapshotGenerator);
+
+    return snapshotGenerator;
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
+  getResultMapper<T extends AnyEntity<T>>(entityName: string): ResultMapper<T> {
+    const exists = this.mappers.get(entityName);
+
+    if (exists) {
+      return exists;
+    }
+
+    const meta = this.metadata.find<T>(entityName)!;
+
+    if (!meta) {
+      return i => i;
+    }
+
+    const props: string[] = [];
+    const context = new Map<string, any>();
+
+    props.push(`  const mapped = {};`);
+    meta.props.forEach(prop => {
+      if (prop.fieldNames) {
+        if (prop.fieldNames.length > 1) {
+          props.push(`  if (${prop.fieldNames.map(field => `result.${field} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `result.${field}`).join(', ')}];`);
+          props.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`));
+          props.push(`  } else if (${prop.fieldNames.map(field => `result.${field} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
+          props.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`), '  }');
+        } else {
+          if (prop.type === 'boolean') {
+            props.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]} == null ? result.${prop.fieldNames[0]} : !!result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+          } else {
+            props.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+          }
+        }
+      }
+    });
+    props.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
+
+    const code = `return function(result) {\n  const ret = {};\n${props.join('\n')}\n  return ret;\n}`;
+    const snapshotGenerator = this.createFunction(context, code);
+    this.mappers.set(entityName, snapshotGenerator);
 
     return snapshotGenerator;
   }

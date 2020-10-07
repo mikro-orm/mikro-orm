@@ -2,8 +2,10 @@ import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
 import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
 
-
 export class SqliteConnection extends AbstractSqlConnection {
+
+  // static readonly RUN_QUERY_RE = '^insert into|update|delete';
+  static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
 
   async connect(): Promise<void> {
     await ensureDir(dirname(this.config.get('dbName')!));
@@ -57,7 +59,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     const { Sqlite3Dialect } = MonkeyPatchable;
     const processResponse = Sqlite3Dialect.prototype.processResponse;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
-      if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
+      if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
         return obj.context;
       }
 
@@ -90,10 +92,11 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   private getCallMethod(obj: any): string {
-    if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
+    if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
       return 'run';
     }
 
+    /* istanbul ignore next */
     switch (obj.method) {
       case 'insert':
       case 'update':

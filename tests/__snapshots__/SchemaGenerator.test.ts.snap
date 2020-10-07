@@ -805,7 +805,7 @@ create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \
 create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null);
 create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
 
-create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null, \`meta\` json null);
 
 create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null);
 create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);
@@ -899,7 +899,7 @@ create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \
 create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` varchar not null, \`email\` varchar not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null);
 create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
 
-create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null);
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` varchar not null, \`meta\` json null);
 
 create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null);
 create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);

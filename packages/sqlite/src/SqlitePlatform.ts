@@ -1,3 +1,6 @@
+// @ts-ignore
+import { escape } from 'sqlstring-sqlite';
+import { Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -39,6 +42,19 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     }
 
     return value as number;
+  }
+
+  quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value) || Array.isArray(value)) {
+      return escape(JSON.stringify(value), true, this.timezone);
+    }
+
+    if (value instanceof Date) {
+      return '' + +value;
+    }
+
+    return escape(value, true, this.timezone);
   }
 
 }

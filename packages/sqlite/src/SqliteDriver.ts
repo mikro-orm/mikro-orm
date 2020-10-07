@@ -14,6 +14,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     const pks = this.getPrimaryKeyFields(entityName);
     const first = res.insertId - data.length + 1;
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? first + idx });
+    res.row = res.rows![0];
 
     return res;
   }

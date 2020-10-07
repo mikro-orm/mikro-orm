@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
-import { ArrayType, BlobType, Type } from '../types';
+import { ArrayType, BlobType, JsonType, Type } from '../types';
 import { EntityComparator } from '../utils/EntityComparator';
 
 export class MetadataDiscovery {
@@ -52,6 +52,8 @@ export class MetadataDiscovery {
     this.discovered.forEach(meta => {
       const root = Utils.getRootEntity(this.metadata, meta);
       const props = Object.values(meta.properties);
+      const pk = meta.properties[meta.primaryKeys[0]];
+      meta.simplePK = !meta.compositePK && pk?.reference === ReferenceType.SCALAR && !pk.customType;
       meta.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
       meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
       meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
@@ -662,6 +664,10 @@ export class MetadataDiscovery {
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
       prop.customType = new BlobType();
+    }
+
+    if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
+      prop.customType = new JsonType();
     }
 
     if (prop.type as unknown instanceof Type) {

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { inspect } from 'util';
 
-import { MikroORM, Reference, wrap } from '@mikro-orm/core';
+import { AnyEntity, MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -178,6 +178,7 @@ describe('EntityHelperMongo', () => {
         '}');
     }
 
+    expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
     bar.baz = orm.em.getReference(FooBaz, '5b0ff0619fbec620008d2414');
     actual = inspect(bar);
 

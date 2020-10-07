@@ -1810,6 +1810,11 @@
     "@types/lodash" "*"
     "@types/validator" "*"
 
+"@types/sqlstring@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@types/sqlstring/-/sqlstring-2.2.1.tgz#5c1459ce14be0e74bd9648097bbee58f5c669f20"
+  integrity sha512-aoPCWl1XeUuVXslgwN06FKhVyJq8rqlKk2czbEnk9+R0OQd+JPJDmOjySnULGTeZzr6YB6+3VyFrEiOlFoMgYA==
+
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
@@ -8201,6 +8206,11 @@ sqlite3@^4.2.0:
   dependencies:
     nan "^2.12.1"
     node-pre-gyp "^0.11.0"
+
+sqlstring-sqlite@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/sqlstring-sqlite/-/sqlstring-sqlite-0.1.1.tgz#c8c61810663f2e59a6b0d737b70a8752bda3a078"
+  integrity sha1-yMYYEGY/LlmmsNc3twqHUr2joHg=
 
 sqlstring@^2.3.2:
   version "2.3.2"

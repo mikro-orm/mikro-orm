@@ -85,16 +85,15 @@ export class ChangeSetPersister {
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
       await this.persistNewEntitiesBatch(meta, chunk, ctx);
-      await this.reloadVersionValues(meta, chunk, ctx);
+
+      if (!this.platform.usesReturningStatement()) {
+        await this.reloadVersionValues(meta, chunk, ctx);
+      }
     }
   }
 
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx);
-
-    if (!this.platform.usesReturningStatement()) {
-      await this.reloadVersionValues(meta, changeSets, ctx);
-    }
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -105,7 +104,6 @@ export class ChangeSetPersister {
       }
 
       this.mapReturnedValues(changeSet, res, meta);
-
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;

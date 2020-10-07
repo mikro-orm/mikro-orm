@@ -69,14 +69,17 @@ describe('EntityManagerMySql', () => {
     await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
+      rows: [],
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      rows: [],
     });
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
@@ -100,7 +103,7 @@ describe('EntityManagerMySql', () => {
     ]);
 
     // mysql returns the first inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 0, row: 1, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
@@ -1770,7 +1773,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`uuid_pk`, `created_at`, `title`, `author_id`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(mock.mock.calls[5][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
@@ -2047,14 +2050,19 @@ describe('EntityManagerMySql', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.born = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ born: string }[]>(`select date_format(born, '%Y-%m-%d %T.%f') as born from author2 where id = ${author.id}`);
-    expect(res[0].born).toBe('2000-01-01 00:00:00.000000');
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select date_format(created_at, '%Y-%m-%d %T.%f') as created_at from author2 where id = ${author.id}`);
+    expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.born!).toBe(+author.born);
+    expect(+a.createdAt!).toBe(+author.createdAt);
+    const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
+    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(orm.em.merge(a1)).toBe(a1);
+    const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
+    expect(+a2.updatedAt!).toBe(+author.updatedAt);
   });
 
   test('setting optional boolean to false', async () => {

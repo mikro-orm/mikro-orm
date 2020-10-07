@@ -4,10 +4,12 @@ import c from 'ansi-colors';
 import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { Dictionary } from '../typings';
+import { Platform } from '../platforms/Platform';
 
 export abstract class Connection {
 
   protected metadata!: MetadataStorage;
+  protected platform!: Platform;
   protected abstract client: any;
 
   constructor(protected readonly config: Configuration,
@@ -78,6 +80,10 @@ export abstract class Connection {
 
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
+  }
+
+  setPlatform(platform: Platform): void {
+    this.platform = platform;
   }
 
   protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {

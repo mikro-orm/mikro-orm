@@ -2,7 +2,7 @@ import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabase
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { Configuration, ConnectionOptions, Utils } from '../utils';
+import { Configuration, ConnectionOptions, EntityComparator, Utils } from '../utils';
 import { LockMode, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Platform } from '../platforms';
 import { Collection } from '../entity';
@@ -18,6 +18,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly replicas: C[] = [];
   protected readonly platform!: Platform;
   protected readonly logger = this.config.getLogger();
+  protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
   protected constructor(protected readonly config: Configuration,
@@ -59,32 +60,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.__primaryKey, data, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
       return null;
     }
 
-    const ret = Object.assign({}, result) as any;
-
-    meta.props.forEach(prop => {
-      if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => Utils.isDefined(ret[joinColumn], true))) {
-        const temp: any[] = [];
-        prop.fieldNames.forEach(joinColumn => {
-          temp.push(ret[joinColumn]);
-          delete ret[joinColumn];
-        });
-
-        ret[prop.name] = temp;
-      } else if (prop.fieldNames && prop.fieldNames[0] in ret) {
-        Utils.renameKey(ret, prop.fieldNames[0], prop.name);
-      }
-
-      if (prop.type === 'boolean' && ![null, undefined].includes(ret[prop.name])) {
-        ret[prop.name] = !!ret[prop.name];
-      }
-    });
-
-    return ret;
+    return this.comparator.mapResult(meta.className, result);
   }
 
   async connect(): Promise<C> {
@@ -120,7 +101,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
+    this.comparator = new EntityComparator(this.metadata, this.platform);
     this.connection.setMetadata(metadata);
+    this.connection.setPlatform(this.platform);
+    this.replicas.forEach(replica => {
+      replica.setMetadata(metadata);
+      replica.setPlatform(this.platform);
+    });
   }
 
   getDependencies(): string[] {

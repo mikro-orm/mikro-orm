@@ -49,7 +49,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     populateAfterFlush: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
-    batchSize: 1000,
+    batchSize: 300,
     debug: false,
     verbose: false,
     driverOptions: {},
@@ -99,6 +99,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
+    this.platform.setConfig(this);
     this.init();
   }
 
