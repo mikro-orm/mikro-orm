@@ -58,7 +58,7 @@ describe('GH issue 845', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
+      entities: [Base, Relation1, Child1Specific, Child1, Child2, Parent],
       dbName: ':memory:',
       type: 'sqlite',
     });

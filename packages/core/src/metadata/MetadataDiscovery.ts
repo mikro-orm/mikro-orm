@@ -36,7 +36,7 @@ export class MetadataDiscovery {
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
-    filtered.forEach(meta => this.initSingleTableInheritance(meta));
+    filtered.forEach(meta => this.initSingleTableInheritance(meta, filtered));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => this.metadata.set(meta.className, EntitySchema.fromMetadata(meta).init().meta));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
@@ -570,14 +570,21 @@ export class MetadataDiscovery {
     }
   }
 
-  private initSingleTableInheritance(meta: EntityMetadata): void {
+  private initSingleTableInheritance(meta: EntityMetadata, metadata: EntityMetadata[]): void {
+    if (meta.root !== meta && !(meta as Dictionary).__processed) {
+      meta.root = metadata.find(m => m.className === meta.root.className)!;
+      (meta.root as Dictionary).__processed = true;
+    } else {
+      delete (meta.root as Dictionary).__processed;
+    }
+
     if (!meta.root.discriminatorColumn) {
       return;
     }
 
     if (!meta.root.discriminatorMap) {
       meta.root.discriminatorMap = {} as Dictionary<string>;
-      const children = Object.values(this.metadata.getAll()).filter(m => m.root === meta.root);
+      const children = metadata.filter(m => m.root === meta.root);
       children.forEach(m => {
         const name = m.discriminatorValue || this.namingStrategy.classToTableName(m.className);
         meta.root.discriminatorMap![name] = m.className;

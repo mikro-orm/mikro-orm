@@ -467,8 +467,8 @@ export class SchemaGenerator {
 
     const columnAlreadyCreated = prop.primary && prop.reference !== ReferenceType.SCALAR && !diff;
 
-    /* istanbul ignore else */
     if (!meta.pivotTable && !columnAlreadyCreated) {
+      /* istanbul ignore next */
       this.createTableColumn(table, meta, prop, diff ?? {});
     }
 
