@@ -206,7 +206,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const pks = this.getPrimaryKeyFields(entityName);
     const set = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
-    const props = [...set].map(k => meta.properties[k]) as EntityProperty<T>[];
+    const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     let res: QueryResult;
 
@@ -214,7 +214,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const qb = this.createQueryBuilder(entityName, ctx, true);
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
-      let sql = `insert into ${this.platform.quoteIdentifier(meta.tableName)} `;
+      let sql = `insert into ${this.platform.quoteIdentifier(meta.collection)} `;
       /* istanbul ignore next */
       sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
       sql += ` values `;
@@ -231,7 +231,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       if (this.platform.usesReturningStatement()) {
         const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
         const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-        sql += ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}`;
+        sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
       }
 
       res = await this.execute<QueryResult>(sql, params, 'run', ctx);
@@ -543,9 +543,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return cond;
     });
 
+    /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      const qb2 = this.createQueryBuilder(prop.pivotTable, ctx, true);
-      await this.execute(qb2.getKnex().insert(items));
+      await this.nativeInsertMany(prop.pivotTable, items, ctx);
     } else {
       await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).insert(item).execute('run', false));
     }

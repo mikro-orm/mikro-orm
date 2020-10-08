@@ -175,7 +175,7 @@ export class ChangeSetPersister {
 
     const cond = {
       ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
-      [meta.versionProperty]: changeSet.entity[meta.versionProperty],
+      [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     } as FilterQuery<T>;
 
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
@@ -188,7 +188,7 @@ export class ChangeSetPersister {
 
     const $or = changeSets.map(cs => ({
       ...Utils.getPrimaryKeyCond<T>(cs.entity, meta.primaryKeys),
-      [meta.versionProperty]: cs.entity[meta.versionProperty],
+      [meta.versionProperty]: this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     }));
 
     const res = await this.driver.find(meta.className, { $or }, { fields: meta.primaryKeys }, ctx);

@@ -109,6 +109,14 @@ export abstract class Platform {
     return 'regexp';
   }
 
+  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    return value;
+  }
+
+  requiresValuesKeyword() {
+    return false;
+  }
+
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }

@@ -50,7 +50,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   quoteIdentifier(id: string, quote = '"'): string {
-    return Client.prototype.escapeIdentifier(id);
+    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   quoteValue(value: any): string {

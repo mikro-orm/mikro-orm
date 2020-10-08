@@ -1,17 +1,266 @@
-import { LoadStrategy, Logger, MikroORM, ValidationError, wrap } from '@mikro-orm/core';
-import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import {
+  Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
+  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy, Logger,
+} from '@mikro-orm/core';
+import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 
-describe('composite keys in mysql', () => {
+@Entity()
+export class FooBar2 {
 
-  let orm: MikroORM<MySqlDriver>;
+  @PrimaryKey()
+  id!: number;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  @Property()
+  name!: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
+@Entity()
+export class FooBaz2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
+@Entity()
+export class FooParam2 {
+
+  @ManyToOne(() => FooBar2, { primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne(() => FooBaz2, { primary: true })
+  baz!: FooBaz2;
+
+  @Property()
+  value: string;
+
+  @Property({ version: true })
+  version!: Date;
+
+  [PrimaryKeyType]: [number, number];
+
+  constructor(bar: FooBar2, baz: FooBaz2, value: string) {
+    this.bar = bar;
+    this.baz = baz;
+    this.value = value;
+  }
+
+}
+
+@Entity()
+export class Configuration2 {
+
+  @PrimaryKey()
+  property: string;
+
+  @ManyToOne('Test2', { primary: true })
+  test: any;
+
+  @Property()
+  value: string;
+
+  constructor(test: any, property: string, value: string) {
+    this.test = test;
+    this.property = property;
+    this.value = value;
+  }
+
+}
+
+@Entity()
+export class Test2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @OneToMany(() => Configuration2, config => config.test)
+  config = new Collection<Configuration2>(this);
+
+  @Property({ version: true })
+  version!: number;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  getConfiguration(): Record<string, string> {
+    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
+  }
+
+}
+
+@Entity()
+export class Author2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name: string;
+
+  @OneToOne('Address2', 'author', { cascade: [Cascade.ALL] })
+  address?: any;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
+@Entity({ comment: 'This is address table' })
+export class Address2 {
+
+  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique' })
+  author: Author2;
+
+  @Property({ comment: 'This is address property' })
+  value: string;
+
+  constructor(author: Author2, value: string) {
+    this.author = author;
+    this.value = value;
+  }
+
+}
+
+@Entity()
+export class Car2 {
+
+  @PrimaryKey({ length: 100 })
+  name: string;
+
+  @PrimaryKey()
+  year: number;
+
+  @Property()
+  price: number;
+
+  @ManyToMany('User2', 'cars')
+  users = new Collection<User2>(this);
+
+  [PrimaryKeyType]: [string, number];
+
+  constructor(name: string, year: number, price: number) {
+    this.name = name;
+    this.year = year;
+    this.price = price;
+  }
+
+}
+
+@Entity()
+export class User2 {
+
+  @PrimaryKey({ length: 100 })
+  firstName: string;
+
+  @PrimaryKey({ length: 100 })
+  lastName: string;
+
+  @Property({ nullable: true })
+  foo?: number;
+
+  @ManyToMany(() => Car2)
+  cars = new Collection<Car2>(this);
+
+  @ManyToMany('Sandwich')
+  sandwiches = new Collection<Sandwich>(this);
+
+  @OneToOne({ entity: () => Car2, nullable: true })
+  favouriteCar?: Car2;
+
+  constructor(firstName: string, lastName: string) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+
+}
+
+@Entity()
+export class Sandwich {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name: string;
+
+  @Property()
+  price: number;
+
+  @ManyToMany(() => User2, u => u.sandwiches)
+  users = new Collection<User2>(this);
+
+  constructor(name: string, price: number) {
+    this.name = name;
+    this.price = price;
+  }
+
+}
+
+@Entity()
+export class CarOwner2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name: string;
+
+  @ManyToOne(() => Car2)
+  car!: Car2;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+}
+
+describe('composite keys in sqlite', () => {
+
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      type: 'sqlite',
+      dbName: ':memory:',
+      entities: [Author2, Address2, FooBar2, FooBaz2, FooParam2, Configuration2, Test2, User2, Car2, CarOwner2, Sandwich],
+    });
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
+  });
+  beforeEach(async () => {
+    await orm.em.nativeDelete(Author2, {});
+    await orm.em.nativeDelete(Configuration2, {});
+    await orm.em.nativeDelete(FooBar2, {});
+    await orm.em.nativeDelete(FooBaz2, {});
+    await orm.em.nativeDelete(FooParam2, {});
+    await orm.em.nativeDelete(Test2, {});
+    await orm.em.nativeDelete(Address2, {});
+    await orm.em.nativeDelete(Car2, {});
+    await orm.em.nativeDelete(CarOwner2, {});
+    await orm.em.nativeDelete(User2, {});
+    await orm.em.nativeDelete(Sandwich, {});
+    orm.em.clear();
+  });
 
   test('dynamic attributes', async () => {
-    const test = Test2.create('t');
+    const test = new Test2('t');
     test.config.add(new Configuration2(test, 'foo', '1'));
     test.config.add(new Configuration2(test, 'bar', '2'));
     test.config.add(new Configuration2(test, 'baz', '3'));
@@ -27,7 +276,7 @@ describe('composite keys in mysql', () => {
   });
 
   test('working with composite entity', async () => {
-    const bar = FooBar2.create('bar');
+    const bar = new FooBar2('bar');
     bar.id = 7;
     const baz = new FooBaz2('baz');
     baz.id = 3;
@@ -63,7 +312,7 @@ describe('composite keys in mysql', () => {
   });
 
   test('simple derived entity', async () => {
-    const author = new Author2('n', 'e');
+    const author = new Author2('n');
     author.id = 5;
     author.address = new Address2(author, 'v1');
     await orm.em.persistAndFlush(author);
@@ -307,17 +556,17 @@ describe('composite keys in mysql', () => {
   });
 
   test('batch updates with optimistic locking', async () => {
-    const bar1 = FooBar2.create('bar 1');
+    const bar1 = new FooBar2('bar 1');
     bar1.id = 17;
     const baz1 = new FooBaz2('baz 1');
     baz1.id = 13;
     const param1 = new FooParam2(bar1, baz1, 'val 1');
-    const bar2 = FooBar2.create('bar 2');
+    const bar2 = new FooBar2('bar 2');
     bar2.id = 27;
     const baz2 = new FooBaz2('baz 2');
     baz2.id = 23;
     const param2 = new FooParam2(bar2, baz2, 'val 1');
-    const bar3 = FooBar2.create('bar 3');
+    const bar3 = new FooBar2('bar 3');
     bar3.id = 37;
     const baz3 = new FooBaz2('baz 3');
     baz3.id = 33;
@@ -337,6 +586,7 @@ describe('composite keys in mysql', () => {
       await orm.em.flush();
       expect(1).toBe('should be unreachable');
     } catch (e) {
+      expect(e).toBeInstanceOf(ValidationError);
       expect((e as ValidationError).getEntity()).toBe(param2);
     }
   });

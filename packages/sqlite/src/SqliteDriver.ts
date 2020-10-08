@@ -13,6 +13,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     const res = await super.nativeInsertMany(entityName, data, ctx);
     const pks = this.getPrimaryKeyFields(entityName);
     const first = res.insertId - data.length + 1;
+    res.rows = res.rows ?? [];
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? first + idx });
     res.row = res.rows![0];
 

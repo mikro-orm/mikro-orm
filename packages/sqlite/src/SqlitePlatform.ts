@@ -1,6 +1,6 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
-import { Utils } from '@mikro-orm/core';
+import { EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -12,10 +12,6 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   requiresNullableForAlteringColumn() {
     return true;
-  }
-
-  allowsMultiInsert() {
-    return false;
   }
 
   usesDefaultKeyword(): boolean {
@@ -42,6 +38,18 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     }
 
     return value as number;
+  }
+
+  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    if (prop.type.toLowerCase() === 'date') {
+      return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
+    }
+
+    return value;
+  }
+
+  requiresValuesKeyword() {
+    return true;
   }
 
   quoteValue(value: any): string {

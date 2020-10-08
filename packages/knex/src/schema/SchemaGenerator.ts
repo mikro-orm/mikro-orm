@@ -347,7 +347,7 @@ export class SchemaGenerator {
       return true;
     }
 
-    if (prop.reference !== ReferenceType.SCALAR && !this.helper.supportsSchemaConstraints() && !update) {
+    if (prop.reference !== ReferenceType.SCALAR && !prop.primary && !this.helper.supportsSchemaConstraints() && !update) {
       return false;
     }
 
@@ -458,15 +458,18 @@ export class SchemaGenerator {
       .forEach(prop => this.createForeignKey(table, meta, prop));
   }
 
-  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff: IsSame = {}): void {
+  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff?: IsSame): void {
     if (this.helper.supportsSchemaConstraints()) {
       this.createForeignKeyReference(table, prop);
 
       return;
     }
 
-    if (!meta.pivotTable) {
-      this.createTableColumn(table, meta, prop, diff);
+    const columnAlreadyCreated = prop.primary && prop.reference !== ReferenceType.SCALAR && !diff;
+
+    /* istanbul ignore else */
+    if (!meta.pivotTable && !columnAlreadyCreated) {
+      this.createTableColumn(table, meta, prop, diff ?? {});
     }
 
     // knex does not allow adding new columns with FK in sqlite

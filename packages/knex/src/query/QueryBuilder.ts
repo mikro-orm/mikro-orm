@@ -469,7 +469,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         break;
       case QueryType.UPDATE:
         qb.update(this._data);
-        this.helper.updateVersionProperty(qb);
+        this.helper.updateVersionProperty(qb, this._data);
         break;
       case QueryType.DELETE:
         qb.delete();

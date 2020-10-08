@@ -316,7 +316,8 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
+      const values = this.platform.requiresValuesKeyword() ? 'values ' : '';
+      value[op] = this.knex.raw(`${values}(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
     if (this.subQueries[key]) {
@@ -450,10 +451,10 @@ export class QueryBuilderHelper {
     }
   }
 
-  updateVersionProperty(qb: KnexQueryBuilder): void {
+  updateVersionProperty(qb: KnexQueryBuilder, data: Dictionary): void {
     const meta = this.metadata.find(this.entityName);
 
-    if (!meta || !meta.versionProperty) {
+    if (!meta || !meta.versionProperty || meta.versionProperty in data) {
       return;
     }
 
