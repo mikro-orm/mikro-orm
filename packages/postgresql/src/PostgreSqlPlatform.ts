@@ -1,4 +1,3 @@
-import { escape } from 'sqlstring';
 import { Client } from 'pg';
 import { EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
@@ -74,7 +73,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return `E'\\\\x${(value as Buffer).toString('hex')}'`;
     }
 
-    return escape(value);
+    return super.quoteValue(value);
   }
 
 }
