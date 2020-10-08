@@ -39,6 +39,8 @@ export class Migrator {
   }
 
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
+    await ensureDir(Utils.normalizePath(this.options.path!));
+
     if (initial) {
       await this.validateInitialMigration();
     }
@@ -63,7 +65,6 @@ export class Migrator {
   }
 
   async validateInitialMigration() {
-    await ensureDir(Utils.normalizePath(this.options.path!));
     const executed = await this.getExecutedMigrations();
     const pending = await this.getPendingMigrations();
 
@@ -73,11 +74,13 @@ export class Migrator {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
+    await ensureDir(Utils.normalizePath(this.options.path!));
     await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
   async getPendingMigrations(): Promise<UmzugMigration[]> {
+    await ensureDir(Utils.normalizePath(this.options.path!));
     await this.storage.ensureTable();
     return this.umzug.pending();
   }
@@ -162,6 +165,7 @@ export class Migrator {
   }
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
+    await ensureDir(Utils.normalizePath(this.options.path!));
     await this.storage.ensureTable();
 
     if (!this.options.transactional || !this.options.allOrNothing) {

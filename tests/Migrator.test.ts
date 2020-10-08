@@ -138,6 +138,12 @@ describe('Migrator', () => {
     upMock.mockRestore();
   });
 
+  test('run schema migration without existing migrations folder (GH #907)', async () => {
+    await remove(process.cwd() + '/temp/migrations');
+    const migrator = new Migrator(orm.em);
+    await migrator.up();
+  });
+
   test('ensureTable and list executed migrations', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
