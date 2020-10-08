@@ -13,8 +13,8 @@ export abstract class Hydrator {
    * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
    * mapping FKs to entity instances, as well as merging those entities.
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity?: boolean, convertCustomTypes?: boolean): void {
-    const props = this.getProperties(meta, entity);
+  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity?: boolean, convertCustomTypes?: boolean, returning?: boolean): void {
+    const props = this.getProperties(meta, entity, returning);
 
     for (const prop of props) {
       this.hydrateProperty(entity, prop, data, newEntity, convertCustomTypes);
@@ -30,9 +30,13 @@ export abstract class Hydrator {
     });
   }
 
-  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T): EntityProperty<T>[] {
+  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean): EntityProperty<T>[] {
     if (meta.root.discriminatorColumn) {
       meta = this.metadata.find(entity.constructor.name)!;
+    }
+
+    if (returning) {
+      return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
     }
 
     return meta.hydrateProps;

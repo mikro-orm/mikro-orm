@@ -263,15 +263,18 @@ export class ChangeSetPersister {
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
-    if (res.row && Utils.hasObjectKeys(res.row)) {
+    if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
-        if (prop.fieldNames && res.row![prop.fieldNames[0]] && !Utils.isDefined(changeSet.entity[prop.name], true)) {
+        if (prop.fieldNames && Utils.isDefined(res.row![prop.fieldNames[0]], true) && !Utils.isDefined(changeSet.entity[prop.name], true)) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
 
         return ret;
       }, {} as Dictionary);
-      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, false, true);
+
+      if (Utils.hasObjectKeys(data)) {
+        this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, false, true, true);
+      }
     }
   }
 

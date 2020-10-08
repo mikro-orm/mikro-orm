@@ -1,4 +1,4 @@
-import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId, MongoDriver } from '@mikro-orm/mongodb';
 
 @Embeddable()
@@ -69,13 +69,44 @@ class User {
 
 }
 
+class Parent {
+
+  _id!: number;
+  foo!: number;
+  child!: Child;
+
+}
+
+class Child {
+
+  bar!: number;
+
+}
+
+const parentSchema = new EntitySchema({
+  class: Parent,
+  properties: {
+    _id: { primary: true, type: 'number' },
+    foo: { type: 'number' },
+    child: { type: 'Child', reference: 'embedded' },
+  },
+});
+
+const childSchema = new EntitySchema({
+  class: Child,
+  embeddable: true,
+  properties: {
+    bar: { type: 'number' },
+  },
+});
+
 describe('embedded entities in mongo', () => {
 
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1, Address2, User],
+      entities: [Address1, Address2, User, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs0',
       type: 'mongo',
     });
@@ -190,6 +221,22 @@ describe('embedded entities in mongo', () => {
     const jon = new User();
     assign(jon, { address1: { city: '1', country: '2', postalCode: '3', street: '4' } });
     expect(jon.address1).toMatchObject({ city: '1', country: '2', postalCode: '3', street: '4' });
+  });
+
+  test('embeddable with zero value', async () => {
+    const parent = new Parent();
+    parent.foo = 0;
+    const child = new Child();
+    child.bar = 0;
+    parent.child = child;
+    expect(parent.foo).toBe(0);
+    expect(parent.child.bar).toBe(0);
+    await orm.em.persistAndFlush(parent);
+    expect(parent.foo).toBe(0);
+    expect(parent.child.bar).toBe(0);
+    const p = await orm.em.fork().findOneOrFail(Parent, parent);
+    expect(p.foo).toBe(0);
+    expect(p.child.bar).toBe(0);
   });
 
 });
