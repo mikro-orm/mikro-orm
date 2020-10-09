@@ -400,18 +400,6 @@ export class Utils {
     return key.split('~~~');
   }
 
-  static getPrimaryKeyValue<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]) {
-    if (primaryKeys.length > 1) {
-      return Utils.getPrimaryKeyCond(entity, primaryKeys);
-    }
-
-    if (Utils.isEntity(entity[primaryKeys[0]])) {
-      return entity[primaryKeys[0]].__helper!.__primaryKey;
-    }
-
-    return entity[primaryKeys[0]];
-  }
-
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]])) {

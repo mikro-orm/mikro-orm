@@ -81,11 +81,36 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return this.entity.__platform!;
   }
 
-  get __primaryKey(): Primary<T> {
-    return Utils.getPrimaryKeyValue(this.entity, this.entity.__meta!.primaryKeys);
+  get __primaryKey(): Primary<T> | null {
+    const primaryKeys = this.entity.__meta!.primaryKeys;
+
+    if (primaryKeys.length > 1) {
+      const cond = primaryKeys.reduce((o, pk) => {
+        if (Utils.isEntity(this.entity[pk])) {
+          o[pk] = (this.entity[pk] as AnyEntity).__helper!.__primaryKey as Primary<T>;
+        } else {
+          o[pk] = this.entity[pk];
+        }
+
+        return o;
+      }, {} as any);
+
+      /* istanbul ignore if */
+      if (Object.values(cond).some(v => v === null)) {
+        return null;
+      }
+
+      return cond;
+    }
+
+    if (Utils.isEntity(this.entity[primaryKeys[0]])) {
+      return (this.entity[primaryKeys[0]] as AnyEntity).__helper!.__primaryKey as Primary<T>;
+    }
+
+    return this.entity[primaryKeys[0]] as any;
   }
 
-  set __primaryKey(id: Primary<T>) {
+  set __primaryKey(id: Primary<T> | null) {
     this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
   }
 
@@ -93,7 +118,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
-  get __primaryKeyCond(): Primary<T> | Primary<T>[] {
+  get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
     if (this.entity.__meta!.compositePK) {
       return this.__primaryKeys;
     }

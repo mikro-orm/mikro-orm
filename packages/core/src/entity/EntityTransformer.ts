@@ -23,7 +23,7 @@ export class EntityTransformer {
         } else if (Utils.isEntity(entity[pk], true)) {
           value = EntityTransformer.processEntity(pk, entity, ignoreFields, entity.__platform!, visited);
         } else {
-          value = entity.__platform!.normalizePrimaryKey(Utils.getPrimaryKeyValue<T>(entity, [pk]));
+          value = entity.__platform!.normalizePrimaryKey(entity[pk] as unknown as IPrimaryKey);
         }
 
         return [pk, value] as [string & keyof T, string];
