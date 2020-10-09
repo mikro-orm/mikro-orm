@@ -116,7 +116,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       promises.push(...this.createIndexes(meta));
       promises.push(...this.createUniqueIndexes(meta));
 
-      for (const prop of Object.values(meta.properties)) {
+      for (const prop of meta.props) {
         promises.push(...this.createPropertyIndexes(meta, prop, 'index'));
         promises.push(...this.createPropertyIndexes(meta, prop, 'unique'));
       }
@@ -193,6 +193,16 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     Object.keys(data).forEach(k => {
+      if (Utils.isGroupOperator(k)) {
+        if (Array.isArray(data[k])) {
+          data[k] = data[k].map((v: any) => this.renameFields(entityName, v));
+        } else {
+          data[k] = this.renameFields(entityName, data[k]);
+        }
+
+        return;
+      }
+
       if (meta?.properties[k]) {
         const prop = meta.properties[k];
 
@@ -257,8 +267,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   private buildFields<T>(entityName: string, populate: PopulateOptions<T>[], fields?: string[]): string[] | undefined {
     const meta = this.metadata.find(entityName)!;
-    const props = Object.values<EntityProperty<T>>(meta.properties).filter(prop => this.shouldHaveColumn(prop, populate));
-    const lazyProps = Object.values<EntityProperty<T>>(meta.properties).filter(prop => prop.lazy && !populate.some(p => p.field === prop.name));
+    const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
+    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name));
 
     if (fields) {
       fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));

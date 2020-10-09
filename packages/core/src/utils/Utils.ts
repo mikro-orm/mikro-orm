@@ -664,6 +664,10 @@ export class Utils {
     return !!GroupOperator[key] || !!QueryOperator[key];
   }
 
+  static isGroupOperator(key: string): boolean {
+    return !!GroupOperator[key];
+  }
+
   static getGlobalStorage(namespace: string): Dictionary {
     const key = `mikro-orm-${namespace}`;
     global[key] = global[key] || {};

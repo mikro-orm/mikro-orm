@@ -1453,6 +1453,34 @@ describe('EntityManagerMongo', () => {
     expect(a4.id).toBe(author.id);
   });
 
+  test('filter by serialized PK inside group condition', async () => {
+    const author = new Author('name', 'email');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const a1 = (await orm.em.findOne(Author, { $or: [
+      { id: author.id },
+    ] } as any))!;
+    expect(a1).not.toBeNull();
+    expect(a1.id).toBe(author.id);
+
+    const a2 = (await orm.em.findOne(Author, { $or: [
+      { id: { $in: [author.id] } },
+    ] } as any))!;
+    expect(a2).not.toBeNull();
+    expect(a2.id).toBe(author.id);
+
+    const a3 = (await orm.em.findOne(Author, { $and: [
+      { id: { $in: [author.id] } },
+    ] } as any))!;
+    expect(a3).not.toBeNull();
+    expect(a3.id).toBe(author.id);
+
+    const a4 = (await orm.em.findOne(Author, { id: { $not: { $gt: author.id } } }))!;
+    expect(a4).not.toBeNull();
+    expect(a4.id).toBe(author.id);
+  });
+
   test('self referencing (2 step)', async () => {
     const author = new Author('name', 'email');
     const b1 = new Book('b1', author);
