@@ -217,7 +217,7 @@ export class ChangeSetPersister {
       fields: [meta.versionProperty],
     }, ctx);
     const map = new Map<string, Date>();
-    data.forEach(e => map.set((e as T).__helper!.getSerializedPrimaryKey(), e[meta.versionProperty]));
+    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty]));
 
     for (const changeSet of changeSets) {
       const version = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
