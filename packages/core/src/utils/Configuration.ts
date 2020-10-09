@@ -2,9 +2,9 @@ import { inspect } from 'util';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, MigrationObject } from '../typings';
-import { Hydrator, ObjectHydrator } from '../hydration';
+import { EntityRepository } from '../entity';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MigrationObject } from '../typings';
+import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace } from '../utils/Logger';
 import { Utils } from '../utils/Utils';
@@ -157,10 +157,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of Hydrator. Hydrator cannot be cached as it would have reference to wrong (global) EntityFactory.
+   * Gets instance of Hydrator.
    */
-  getHydrator(factory: EntityFactory, em: EntityManager): Hydrator {
-    return new this.options.hydrator(factory, em.getMetadata(), this.platform);
+  getHydrator(metadata: MetadataStorage): IHydrator {
+    return this.cached(this.options.hydrator, metadata, this.platform);
   }
 
   /**
@@ -333,7 +333,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchInserts?: boolean;
   useBatchUpdates?: boolean;
   batchSize: number;
-  hydrator: { new (factory: EntityFactory, metadata: MetadataStorage, platform: Platform): Hydrator };
+  hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];

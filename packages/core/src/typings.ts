@@ -1,6 +1,6 @@
 import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference } from './entity';
-import { EntitySchema } from './metadata';
+import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory } from './entity';
+import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
 
@@ -310,6 +310,7 @@ export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
 export interface Highlighter {
   highlight(text: string): string;
 }
+
 export interface IMetadataStorage {
   getAll(): Dictionary<EntityMetadata>;
   get<T extends AnyEntity<T> = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
@@ -317,4 +318,31 @@ export interface IMetadataStorage {
   has(entity: string): boolean;
   set(entity: string, meta: EntityMetadata): EntityMetadata;
   reset(entity: string): void;
+}
+
+export interface IHydrator {
+
+  /**
+   * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
+   * mapping FKs to entity instances, as well as merging those entities.
+   */
+  hydrate<T extends AnyEntity<T>>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+    factory: EntityFactory,
+    newEntity?: boolean,
+    convertCustomTypes?: boolean,
+    returning?: boolean,
+  ): void;
+
+  /**
+   * Hydrates primary keys only
+   */
+  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean): void;
+
+}
+
+export interface HydratorConstructor {
+  new (metadata: MetadataStorage, platform: Platform): IHydrator;
 }

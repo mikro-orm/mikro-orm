@@ -26,7 +26,7 @@ export class EntityComparator {
    */
   diffEntities<T extends EntityData<T>>(entityName: string, a: T, b: T): EntityData<T> {
     const comparator = this.getEntityComparator<T>(entityName);
-    return comparator(a, b);
+    return Utils.callCompiledFunction(comparator, a, b);
   }
 
   /**
@@ -35,7 +35,7 @@ export class EntityComparator {
    */
   prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const generator = this.getSnapshotGenerator<T>(entity.constructor.name);
-    return generator(entity);
+    return Utils.callCompiledFunction(generator, entity);
   }
 
   /**
@@ -43,7 +43,7 @@ export class EntityComparator {
    */
   mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityData<T>): EntityData<T> | null {
     const mapper = this.getResultMapper<T>(entityName);
-    return mapper(result);
+    return Utils.callCompiledFunction(mapper, result);
   }
 
   /**
@@ -82,7 +82,7 @@ export class EntityComparator {
     }
 
     const code = `return function(entity) {\n${lines.join('\n')}\n}`;
-    const pkSerializer = this.createFunction(context, code);
+    const pkSerializer = Utils.createFunction(context, code);
     this.pkGetters.set(meta.className, pkSerializer);
 
     return pkSerializer;
@@ -123,7 +123,7 @@ export class EntityComparator {
     }
 
     const code = `return function(entity) {\n${lines.join('\n')}\n}`;
-    const pkSerializer = this.createFunction(context, code);
+    const pkSerializer = Utils.createFunction(context, code);
     this.pkSerializers.set(meta.className, pkSerializer);
 
     return pkSerializer;
@@ -154,7 +154,7 @@ export class EntityComparator {
     });
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const snapshotGenerator = this.createFunction(context, code);
+    const snapshotGenerator = Utils.createFunction(context, code);
     this.snapshotGenerators.set(entityName, snapshotGenerator);
 
     return snapshotGenerator;
@@ -199,21 +199,10 @@ export class EntityComparator {
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
 
     const code = `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
-    const snapshotGenerator = this.createFunction(context, code);
+    const snapshotGenerator = Utils.createFunction(context, code);
     this.mappers.set(entityName, snapshotGenerator);
 
     return snapshotGenerator;
-  }
-
-  /* istanbul ignore next */
-  private createFunction(context: Map<string, any>, code: string) {
-    try {
-      return new Function(...context.keys(), code)(...context.values());
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(code);
-      throw e;
-    }
   }
 
   private getPropertyCondition<T>(prop: EntityProperty<T>): string {
@@ -304,7 +293,7 @@ export class EntityComparator {
     });
 
     const code = `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
-    const comparator = this.createFunction(context, code);
+    const comparator = Utils.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 
     return comparator;

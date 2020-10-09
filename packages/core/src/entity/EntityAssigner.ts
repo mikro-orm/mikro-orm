@@ -75,6 +75,7 @@ export class EntityAssigner {
     const meta2 = entity[prop.name].__meta! as EntityMetadata;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
+    /* istanbul ignore next */
     if (prop2 && !entity[prop.name][prop2.name]) {
       if (Reference.isReference(entity[prop.name])) {
         entity[prop.name].unwrap()[prop2.name] = Reference.wrapReference(entity, prop2);

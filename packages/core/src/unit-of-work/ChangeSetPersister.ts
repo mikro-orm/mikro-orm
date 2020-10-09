@@ -1,11 +1,10 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKey } from '../typings';
-import { EntityIdentifier } from '../entity';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import { EntityFactory, EntityIdentifier } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { QueryResult, Transaction } from '../connections';
 import { Configuration, Utils } from '../utils';
 import { IDatabaseDriver } from '../drivers';
-import { Hydrator } from '../hydration';
 import { OptimisticLockError } from '../errors';
 
 export class ChangeSetPersister {
@@ -14,7 +13,8 @@ export class ChangeSetPersister {
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
-              private readonly hydrator: Hydrator,
+              private readonly hydrator: IHydrator,
+              private readonly factory: EntityFactory,
               private readonly config: Configuration) { }
 
   async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -273,7 +273,7 @@ export class ChangeSetPersister {
       }, {} as Dictionary);
 
       if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, false, true, true);
+        this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, false, true, true);
       }
     }
   }

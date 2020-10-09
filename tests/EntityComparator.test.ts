@@ -2,20 +2,149 @@ import {
   AnyEntity,
   Collection,
   Dictionary,
-  Entity,
-  EntityData,
+  Entity, EntityAssigner,
+  EntityData, EntityFactory, EntityMetadata,
   EntityProperty,
   MetadataStorage,
   MikroORM,
-  Platform,
+  Platform, Primary,
   PrimaryKey,
-  Property,
+  Property, Reference,
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
+
+export class ObjectHydratorOld {
+
+  constructor(protected readonly metadata: MetadataStorage,
+              protected readonly platform: Platform) { }
+
+  /**
+   * @inheritDoc
+   */
+  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, newEntity = false, convertCustomTypes = false, returning = false): void {
+    const props = this.getProperties(meta, entity, returning);
+
+    for (const prop of props) {
+      this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false): void {
+    meta.primaryKeys.forEach(pk => {
+      this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
+    });
+  }
+
+  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean, reference?: boolean): EntityProperty<T>[] {
+    if (reference) {
+      return meta.primaryKeys.map(pk => meta.properties[pk]);
+    }
+
+    if (meta.root.discriminatorColumn) {
+      meta = this.metadata.find(entity.constructor.name)!;
+    }
+
+    if (returning) {
+      return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
+    }
+
+    return meta.hydrateProps;
+  }
+
+  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean): void {
+    if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+      this.hydrateToOne(data[prop.name], entity, prop, factory);
+    } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+      this.hydrateToMany(entity, prop, data[prop.name], factory, newEntity);
+    } else if (prop.reference === ReferenceType.EMBEDDED) {
+      this.hydrateEmbeddable(entity, prop, data);
+    } else { // ReferenceType.SCALAR
+      this.hydrateScalar(entity, prop, data, convertCustomTypes);
+    }
+  }
+
+  private hydrateScalar<T>(entity: T, prop: EntityProperty<T>, data: EntityData<T>, convertCustomTypes: boolean): void {
+    let value = data[prop.name];
+
+    if (typeof value === 'undefined') {
+      return;
+    }
+
+    if (prop.customType && convertCustomTypes) {
+      value = prop.customType.convertToJSValue(value, this.platform);
+      data[prop.name] = prop.customType.convertToDatabaseValue(value, this.platform); // make sure the value is comparable
+    }
+
+    if (value && prop.type.toLowerCase() === 'date') {
+      entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
+    } else {
+      entity[prop.name] = value;
+    }
+  }
+
+  private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
+    const value: Dictionary = {};
+
+    entity.__meta!.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+      value[childProp.embedded![1]] = data[childProp.name];
+    });
+
+    entity[prop.name] = Object.create(prop.embeddable.prototype);
+    Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
+  }
+
+  private hydrateToMany<T>(entity: T, prop: EntityProperty<T>, value: any, factory: EntityFactory, newEntity?: boolean): void {
+    if (Array.isArray(value)) {
+      const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value, factory, newEntity));
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!newEntity);
+      coll.setDirty(!!newEntity);
+    } else if (!entity[prop.name]) {
+      const items = this.platform.usesPivotTable() || !prop.owner ? undefined : [];
+      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!(value || newEntity));
+      coll.setDirty(false);
+    }
+  }
+
+  private hydrateToOne<T>(value: any, entity: T, prop: EntityProperty, factory: EntityFactory): void {
+    if (typeof value === 'undefined') {
+      return;
+    }
+
+    if (Utils.isPrimaryKey<T[keyof T]>(value, true)) {
+      entity[prop.name] = Reference.wrapReference(factory.createReference<T[keyof T]>(prop.type, value, { merge: true }), prop) as T[keyof T];
+    } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
+      entity[prop.name] = Reference.wrapReference(factory.create(prop.type, value, { initialized: true, merge: true }), prop) as T[keyof T];
+    } else if (value === null) {
+      entity[prop.name] = null;
+    }
+
+    if (entity[prop.name]) {
+      EntityAssigner.autoWireOneToOne(prop, entity);
+    }
+  }
+
+  private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T, factory: EntityFactory, newEntity?: boolean): T {
+    const meta = this.metadata.find(prop.type)!;
+
+    if (Utils.isPrimaryKey(value, meta.compositePK)) {
+      return factory.createReference<T>(prop.type, value, { merge: true });
+    }
+
+    if (Utils.isEntity<T>(value)) {
+      return value;
+    }
+
+    return factory.create(prop.type, value as EntityData<T>, { newEntity, merge: true });
+  }
+
+}
 
 export class EntityComparatorOld {
 
@@ -211,9 +340,16 @@ describe('EntityComparator', () => {
     const diff = comparator.getEntityComparator('User');
     const gen = comparator.getSnapshotGenerator('User');
     const entityFactory = orm.em.getEntityFactory();
+    const hydrator = orm.config.getHydrator(orm.getMetadata());
 
     const now = performance.now();
     for (let i = 0; i < 1_000_000; i++) {
+      // const d0 = hydrator.hydrate(u1, (u1 as AnyEntity).__meta!, {
+      //   name: 'b222',
+      //   id2: 12345,
+      //   ready: false,
+      //   priority: 500,
+      // }, orm.em.getEntityFactory());
       const d1 = diff(b1, b2);
       // const d2 = gen(u1);
       // const d3 = entityFactory.create('User', b0, { merge: true });
@@ -223,9 +359,16 @@ describe('EntityComparator', () => {
     //
     // const now2 = performance.now();
     // const comparatorOld = new EntityComparatorOld();
+    // const hydratorOld = new ObjectHydratorOld(orm.getMetadata(), orm.em.getDriver().getPlatform());
     // const metadata = orm.em.getMetadata();
     // const platform = orm.em.getDriver().getPlatform();
     // for (let i = 0; i < 1_000_000; i++) {
+    //   // const d0 = hydratorOld.hydrate(u1, (u1 as AnyEntity).__meta!, {
+    //   //   name: 'b222',
+    //   //   id2: 12345,
+    //   //   ready: false,
+    //   //   priority: 500,
+    //   // }, orm.em.getEntityFactory());
     //   const d1 = diffOld(b1, b2);
     //   // const d2 = comparatorOld.prepareEntity(u1, metadata, platform);
     //   // const d3 = entityFactory.createOld('User', b0, { merge: true });

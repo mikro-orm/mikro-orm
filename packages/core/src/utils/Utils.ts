@@ -705,6 +705,28 @@ export class Utils {
     }
   }
 
+  /* istanbul ignore next */
+  static createFunction(context: Map<string, any>, code: string) {
+    try {
+      return new Function(...context.keys(), code)(...context.values());
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(code);
+      throw e;
+    }
+  }
+
+  /* istanbul ignore next */
+  static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T) {
+    try {
+      return fn(...args);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
+      throw e;
+    }
+  }
+
   /**
    * @see https://github.com/mikro-orm/mikro-orm/issues/840
    */

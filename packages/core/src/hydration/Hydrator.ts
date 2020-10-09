@@ -1,36 +1,39 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
 import { EntityFactory } from '../entity';
 import { Platform } from '../platforms/Platform';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 
-export abstract class Hydrator {
+/* istanbul ignore next */
+export abstract class Hydrator implements IHydrator {
 
-  constructor(protected readonly factory: EntityFactory,
-              protected readonly metadata: MetadataStorage,
+  constructor(protected readonly metadata: MetadataStorage,
               protected readonly platform: Platform) { }
 
   /**
-   * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
-   * mapping FKs to entity instances, as well as merging those entities.
+   * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, newEntity?: boolean, convertCustomTypes?: boolean, returning?: boolean): void {
+  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean, returning?: boolean): void {
     const props = this.getProperties(meta, entity, returning);
 
     for (const prop of props) {
-      this.hydrateProperty(entity, prop, data, newEntity, convertCustomTypes);
+      this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
     }
   }
 
   /**
-   * Hydrates primary keys only
+   * @inheritDoc
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, convertCustomTypes?: boolean): void {
+  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean): void {
     meta.primaryKeys.forEach(pk => {
-      this.hydrateProperty<T>(entity, meta.properties[pk], data, false, convertCustomTypes);
+      this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
     });
   }
 
-  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean): EntityProperty<T>[] {
+  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean, reference?: boolean): EntityProperty<T>[] {
+    if (reference) {
+      return meta.primaryKeys.map(pk => meta.properties[pk]);
+    }
+
     if (meta.root.discriminatorColumn) {
       meta = this.metadata.find(entity.constructor.name)!;
     }
@@ -42,6 +45,9 @@ export abstract class Hydrator {
     return meta.hydrateProps;
   }
 
-  protected abstract hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, value: EntityData<T>, newEntity?: boolean, convertCustomTypes?: boolean): void;
+  /* istanbul ignore next */
+  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+    entity[prop.name] = data[prop.name];
+  }
 
 }

@@ -18,7 +18,7 @@ export class EntityFactory {
   private readonly platform = this.driver.getPlatform();
   private readonly config = this.em.config;
   private readonly metadata = this.em.getMetadata();
-  private readonly hydrator = this.config.getHydrator(this, this.em);
+  private readonly hydrator = this.config.getHydrator(this.metadata);
   private readonly eventManager = this.em.getEventManager();
 
   constructor(private readonly unitOfWork: UnitOfWork,
@@ -97,7 +97,7 @@ export class EntityFactory {
     entity.__helper!.__managed = true;
 
     if (meta.selfReferencing && !options.newEntity) {
-      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
       this.unitOfWork.registerManaged<T>(entity);
     }
 
@@ -106,9 +106,9 @@ export class EntityFactory {
 
   private hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, options.newEntity, options.convertCustomTypes);
+      this.hydrator.hydrate(entity, meta, data, this, options.newEntity, options.convertCustomTypes);
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
     }
   }
 
