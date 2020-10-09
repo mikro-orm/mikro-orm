@@ -52,8 +52,6 @@ export class MetadataDiscovery {
     this.discovered.forEach(meta => {
       const root = Utils.getRootEntity(this.metadata, meta);
       const props = Object.values(meta.properties);
-      const pk = meta.properties[meta.primaryKeys[0]];
-      meta.simplePK = !meta.compositePK && pk?.reference === ReferenceType.SCALAR && !pk.customType;
       meta.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
       meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
       meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));

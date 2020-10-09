@@ -131,7 +131,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.__primaryKey as Dictionary), changeSets.map(cs => cs.payload), ctx);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx);
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -141,7 +141,7 @@ export class ChangeSetPersister {
     const wrapped = changeSet.entity.__helper!;
 
     if (!wrapped.hasPrimaryKey()) {
-      wrapped.__primaryKey = insertId;
+      wrapped.setPrimaryKey(insertId);
     }
 
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
@@ -170,7 +170,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.__primaryKey as Dictionary, changeSet.payload, ctx);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx);
     }
 
     const cond = {
@@ -217,10 +217,10 @@ export class ChangeSetPersister {
       fields: [meta.versionProperty],
     }, ctx);
     const map = new Map<string, Date>();
-    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty]));
+    data.forEach(e => map.set((e as T).__helper!.getSerializedPrimaryKey(), e[meta.versionProperty]));
 
     for (const changeSet of changeSets) {
-      const version = map.get(changeSet.entity.__helper!.__serializedPrimaryKey);
+      const version = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
 
       // needed for sqlite
       if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {

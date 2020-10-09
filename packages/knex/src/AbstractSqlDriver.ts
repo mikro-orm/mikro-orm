@@ -275,7 +275,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await this.rethrow(qb.execute('run', false));
     }
 
-    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!);
+    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
     await this.processManyToMany<T>(meta, pk, collections, true, ctx);
 
     return res;
@@ -314,10 +314,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const res = await this.rethrow(qb.execute('run', false));
 
-    const pkConds = data.map((_, idx) => Utils.extractPK<T>(where[idx], meta)!);
+    const pkConds = data.map((_, idx) => Utils.extractPK<T>(where[idx], meta)!) as Primary<T>[][];
 
     for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, pkConds[i] as Primary<T>[], collections[i], false, ctx);
+      await this.processManyToMany<T>(meta, pkConds[i], collections[i], false, ctx);
     }
 
     return res;

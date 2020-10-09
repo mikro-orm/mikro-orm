@@ -115,6 +115,8 @@ const equalsFn = equals;
 
 export class Utils {
 
+  static readonly PK_SEPARATOR = '~~~';
+
   /**
    * Checks if the argument is not undefined
    */
@@ -354,13 +356,13 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
-    if (Utils.isEntity(data, true)) {
-      return data.__helper!.__primaryKey as Primary<T>;
+    if (Utils.isEntity<T>(data, true)) {
+      return data.__helper!.getPrimaryKey();
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
@@ -369,7 +371,7 @@ export class Utils {
 
     if (Utils.isObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data as T, meta) as Primary<T>;
+        return Utils.getCompositeKeyHash<T>(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -382,8 +384,9 @@ export class Utils {
     const pks = meta.primaryKeys.map(pk => {
       const value = entity[pk];
 
+      /* istanbul ignore next */
       if (Utils.isEntity<T>(value, true)) {
-        return value.__helper!.__serializedPrimaryKey;
+        return value.__helper!.getSerializedPrimaryKey();
       }
 
       return value;
@@ -393,17 +396,17 @@ export class Utils {
   }
 
   static getPrimaryKeyHash(pks: string[]): string {
-    return pks.join('~~~');
+    return pks.join(this.PK_SEPARATOR);
   }
 
   static splitPrimaryKeys(key: string): string[] {
-    return key.split('~~~');
+    return key.split(this.PK_SEPARATOR);
   }
 
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]])) {
-        return entity[primaryKeys[0]].__helper!.__primaryKey;
+        return entity[primaryKeys[0]].__helper!.getPrimaryKey();
       }
 
       return entity[primaryKeys[0]];
@@ -411,7 +414,7 @@ export class Utils {
 
     return primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk])) {
-        return entity[pk].__helper!.__primaryKey;
+        return entity[pk].__helper!.getPrimaryKey();
       }
 
       return entity[pk];

@@ -193,7 +193,7 @@ export class QueryHelper {
     const wrapped = entity.__helper!;
 
     if (root || wrapped.__meta.compositePK) {
-      return wrapped.__primaryKey;
+      return wrapped.getPrimaryKey();
     }
 
     return Utils.getPrimaryKeyCond(entity, wrapped.__meta.primaryKeys);

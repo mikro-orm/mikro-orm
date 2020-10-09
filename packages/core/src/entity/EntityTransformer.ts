@@ -111,7 +111,7 @@ export class EntityTransformer {
       return wrap(child).toJSON(...args) as T[keyof T];
     }
 
-    return platform.normalizePrimaryKey(wrapped.__primaryKey as unknown as IPrimaryKey) as unknown as T[keyof T];
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as T[keyof T];
   }
 
   private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {

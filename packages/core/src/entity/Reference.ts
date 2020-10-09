@@ -21,7 +21,7 @@ export class Reference<T extends AnyEntity<T>> {
     if (meta.serializedPrimaryKey && meta.primaryKeys[0] !== meta.serializedPrimaryKey) {
       Object.defineProperty(this, meta.serializedPrimaryKey, {
         get() {
-          return this.entity.__helper!.__serializedPrimaryKey;
+          return this.entity.__helper!.getSerializedPrimaryKey();
         },
       });
     }
@@ -93,7 +93,7 @@ export class Reference<T extends AnyEntity<T>> {
 
   getEntity(): T {
     if (!this.isInitialized()) {
-      throw new Error(`Reference<${this.entity.__meta!.name}> ${(this.entity.__helper!.__primaryKey as Primary<T>)} not initialized`);
+      throw new Error(`Reference<${this.entity.__meta!.name}> ${this.entity.__helper!.getPrimaryKey()} not initialized`);
     }
 
     return this.entity;

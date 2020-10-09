@@ -157,7 +157,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
+      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
       this._lazyInitialized = true;
 
       return this;
@@ -213,7 +213,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy as string] = this.owner.__helper!.__primaryKey;
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond as Dictionary);
     }
@@ -238,9 +238,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       // we know there is at least one item as it was checked in load method
       const pk = (this._firstItem as AnyEntity<T>).__meta!.primaryKeys[0];
       cond[pk] = { $in: [] };
-      this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.__primaryKey));
+      this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.getPrimaryKey()));
     } else {
-      cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     }
   }
 
@@ -256,7 +256,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${this.owner.__helper!.__primaryKey}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${this.owner.__helper!.getPrimaryKey()}] not initialized`);
     }
   }
 

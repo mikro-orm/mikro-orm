@@ -22,7 +22,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   /** holds wrapped primary key so we can compute change set without eager commit */
   __identifier?: EntityData<T>;
 
-  constructor(private readonly entity: T) { }
+  constructor(private readonly entity: T,
+              private readonly pkGetter: (e: T) => Primary<T>,
+              private readonly pkSerializer: (e: T) => string) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -73,45 +75,24 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     });
   }
 
+  getPrimaryKey(): Primary<T> | null {
+    return this.pkGetter(this.entity);
+  }
+
+  setPrimaryKey(id: Primary<T> | null) {
+    this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
+  }
+
+  getSerializedPrimaryKey(): string {
+    return this.pkSerializer(this.entity);
+  }
+
   get __meta(): EntityMetadata<T> {
     return this.entity.__meta!;
   }
 
   get __platform() {
     return this.entity.__platform!;
-  }
-
-  get __primaryKey(): Primary<T> | null {
-    const primaryKeys = this.entity.__meta!.primaryKeys;
-
-    if (primaryKeys.length > 1) {
-      const cond = primaryKeys.reduce((o, pk) => {
-        if (Utils.isEntity(this.entity[pk])) {
-          o[pk] = (this.entity[pk] as AnyEntity).__helper!.__primaryKey as Primary<T>;
-        } else {
-          o[pk] = this.entity[pk];
-        }
-
-        return o;
-      }, {} as any);
-
-      /* istanbul ignore if */
-      if (Object.values(cond).some(v => v === null)) {
-        return null;
-      }
-
-      return cond;
-    }
-
-    if (Utils.isEntity(this.entity[primaryKeys[0]])) {
-      return (this.entity[primaryKeys[0]] as AnyEntity).__helper!.__primaryKey as Primary<T>;
-    }
-
-    return this.entity[primaryKeys[0]] as any;
-  }
-
-  set __primaryKey(id: Primary<T> | null) {
-    this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
   }
 
   get __primaryKeys(): Primary<T>[] {
@@ -123,25 +104,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
       return this.__primaryKeys;
     }
 
-    return this.__primaryKey;
-  }
-
-  get __serializedPrimaryKey(): Primary<T> | string {
-    if (this.entity.__meta!.simplePK) {
-      return '' + this.entity[this.entity.__meta!.serializedPrimaryKey];
-    }
-
-    if (this.entity.__meta!.compositePK) {
-      return Utils.getCompositeKeyHash(this.entity, this.entity.__meta!);
-    }
-
-    const value = this.entity[this.entity.__meta!.serializedPrimaryKey];
-
-    if (Utils.isEntity<T>(value)) {
-      return value.__helper!.__serializedPrimaryKey;
-    }
-
-    return '' + value;
+    return this.getPrimaryKey();
   }
 
   [inspect.custom]() {

@@ -1,18 +1,22 @@
 import clone from 'clone';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IMetadataStorage } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import { Platform } from '../platforms';
-import { Utils, compareArrays, compareBuffers, compareObjects, equals } from './Utils';
+import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
 type SnapshotGenerator<T> = (entity: T) => EntityData<T>;
+type PkGetter<T> = (entity: T) => Primary<T>;
+type PkSerializer<T> = (entity: T) => string;
 
 export class EntityComparator {
 
   private readonly comparators = new Map<string, Comparator<any>>();
   private readonly mappers = new Map<string, ResultMapper<any>>();
   private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
+  private readonly pkGetters = new Map<string, PkGetter<any>>();
+  private readonly pkSerializers = new Map<string, PkSerializer<any>>();
 
   constructor(private readonly metadata: IMetadataStorage,
               private readonly platform: Platform) { }
@@ -45,6 +49,89 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
+  getPkGetter<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+    const exists = this.pkGetters.get(meta.className);
+
+    if (exists) {
+      return exists;
+    }
+
+    const lines: string[] = [];
+    const context = new Map<string, any>();
+
+    if (meta.primaryKeys.length > 1) {
+      lines.push(`  const cond = {`);
+      meta.primaryKeys.forEach(pk => {
+        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+          lines.push(`    ${pk}: (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getPrimaryKey() : entity.${pk},`);
+        } else {
+          lines.push(`    ${pk}: entity.${pk},`);
+        }
+      });
+      lines.push(`  };`);
+      lines.push(`  if (${meta.primaryKeys.map(pk => `cond.${pk} == null`).join(' || ')}) return null;`);
+      lines.push(`  return cond;`);
+    } else {
+      const pk = meta.primaryKeys[0];
+
+      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getPrimaryKey();`);
+      }
+
+      lines.push(`  return entity.${pk};`);
+    }
+
+    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const pkSerializer = this.createFunction(context, code);
+    this.pkGetters.set(meta.className, pkSerializer);
+
+    return pkSerializer;
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
+  getPkSerializer<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+    const exists = this.pkSerializers.get(meta.className);
+
+    if (exists) {
+      return exists;
+    }
+
+    const lines: string[] = [];
+    const context = new Map<string, any>();
+
+    if (meta.primaryKeys.length > 1) {
+      lines.push(`  const pks = [`);
+      meta.primaryKeys.forEach(pk => {
+        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+          lines.push(`    (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getSerializedPrimaryKey() : entity.${pk},`);
+        } else {
+          lines.push(`    entity.${pk},`);
+        }
+      });
+      lines.push(`  ];`);
+      lines.push(`  return pks.join('${Utils.PK_SEPARATOR}');`);
+    } else {
+      const pk = meta.primaryKeys[0];
+
+      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getSerializedPrimaryKey();`);
+      }
+
+      lines.push(`  return '' + entity.${meta.serializedPrimaryKey};`);
+    }
+
+    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const pkSerializer = this.createFunction(context, code);
+    this.pkSerializers.set(meta.className, pkSerializer);
+
+    return pkSerializer;
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
   getSnapshotGenerator<T extends AnyEntity<T>>(entityName: string): SnapshotGenerator<T> {
     const exists = this.snapshotGenerators.get(entityName);
 
@@ -53,20 +140,20 @@ export class EntityComparator {
     }
 
     const meta = this.metadata.find<T>(entityName)!;
-    const props: string[] = [];
+    const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('clone', clone);
 
     if (meta.discriminatorValue) {
-      props.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
+      lines.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
     }
 
     // copy all comparable props, ignore collections and references, process custom types
     meta.comparableProps.forEach(prop => {
-      props.push(this.getPropertySnapshot(meta, prop, context));
+      lines.push(this.getPropertySnapshot(meta, prop, context));
     });
 
-    const code = `return function(entity) {\n  const ret = {};\n${props.join('\n')}\n  return ret;\n}`;
+    const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = this.createFunction(context, code);
     this.snapshotGenerators.set(entityName, snapshotGenerator);
 
@@ -89,29 +176,29 @@ export class EntityComparator {
       return i => i;
     }
 
-    const props: string[] = [];
+    const lines: string[] = [];
     const context = new Map<string, any>();
 
-    props.push(`  const mapped = {};`);
+    lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
       if (prop.fieldNames) {
         if (prop.fieldNames.length > 1) {
-          props.push(`  if (${prop.fieldNames.map(field => `result.${field} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `result.${field}`).join(', ')}];`);
-          props.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`));
-          props.push(`  } else if (${prop.fieldNames.map(field => `result.${field} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
-          props.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`), '  }');
+          lines.push(`  if (${prop.fieldNames.map(field => `result.${field} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `result.${field}`).join(', ')}];`);
+          lines.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`));
+          lines.push(`  } else if (${prop.fieldNames.map(field => `result.${field} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
+          lines.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`), '  }');
         } else {
           if (prop.type === 'boolean') {
-            props.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]} == null ? result.${prop.fieldNames[0]} : !!result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]} == null ? result.${prop.fieldNames[0]} : !!result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
           } else {
-            props.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
           }
         }
       }
     });
-    props.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
+    lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
 
-    const code = `return function(result) {\n  const ret = {};\n${props.join('\n')}\n  return ret;\n}`;
+    const code = `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = this.createFunction(context, code);
     this.mappers.set(entityName, snapshotGenerator);
 
@@ -205,7 +292,7 @@ export class EntityComparator {
     }
 
     const meta = this.metadata.find<T>(entityName)!;
-    const props: string[] = [];
+    const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('compareArrays', compareArrays);
     context.set('compareBuffers', compareBuffers);
@@ -213,10 +300,10 @@ export class EntityComparator {
     context.set('equals', equals);
 
     meta.comparableProps.forEach(prop => {
-      props.push(this.getPropertyComparator(prop));
+      lines.push(this.getPropertyComparator(prop));
     });
 
-    const code = `return function(last, current) {\n  const diff = {};\n${props.join('\n')}\n  return diff;\n}`;
+    const code = `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const comparator = this.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 

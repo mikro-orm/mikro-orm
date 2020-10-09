@@ -194,6 +194,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     Object.keys(data).forEach(k => {
       if (Utils.isGroupOperator(k)) {
+        /* istanbul ignore else */
         if (Array.isArray(data[k])) {
           data[k] = data[k].map((v: any) => this.renameFields(entityName, v));
         } else {

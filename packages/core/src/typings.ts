@@ -24,7 +24,6 @@ export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
   ? PK | string : T extends { uuid: infer PK }
   ? PK : T extends { id: infer PK }
   ? PK : never;
-export type PrimaryMap<T extends AnyEntity<T>> = Record<keyof T, Primary<T>>;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
@@ -80,6 +79,9 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = 
 
 export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
+  getPrimaryKey(): Primary<T>;
+  setPrimaryKey(val: Primary<T>): void;
+  getSerializedPrimaryKey(): string & keyof T;
   __meta: EntityMetadata<T>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
@@ -90,10 +92,8 @@ export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> exte
   __managed: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
-  __primaryKey: PrimaryMap<T>;
   __primaryKeys: Primary<T>[];
   __primaryKeyCond: Primary<T> | Primary<T>[];
-  __serializedPrimaryKey: string & keyof T;
 }
 
 export type AnyEntity<T = any> = Partial<T> & {
@@ -185,7 +185,6 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   path: string;
   primaryKeys: (keyof T & string)[];
   compositePK: boolean;
-  simplePK: boolean; // PK is scalar, no custom types or composite keys
   versionProperty: keyof T & string;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };

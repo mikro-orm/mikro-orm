@@ -45,7 +45,7 @@ export class UnitOfWork {
       return;
     }
 
-    this.identityMap.set(`${meta.root.name}-${wrapped.__serializedPrimaryKey}`, entity);
+    this.identityMap.set(`${meta.root.name}-${wrapped.getSerializedPrimaryKey()}`, entity);
     entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
 
     this.cascade(entity, Cascade.MERGE, visited);
@@ -55,7 +55,7 @@ export class UnitOfWork {
    * @internal
    */
   registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
-    this.identityMap.set(`${entity.__meta!.root.name}-${entity.__helper!.__serializedPrimaryKey}`, entity);
+    this.identityMap.set(`${entity.__meta!.root.name}-${entity.__helper!.getSerializedPrimaryKey()}`, entity);
 
     if (newEntity) {
       return entity;
@@ -88,7 +88,7 @@ export class UnitOfWork {
       return null;
     }
 
-    return this.getById<T>(entityName, pk);
+    return this.getById<T>(entityName, pk as Primary<T>);
   }
 
   /**
@@ -252,7 +252,7 @@ export class UnitOfWork {
 
   unsetIdentity(entity: AnyEntity): void {
     const wrapped = entity.__helper!;
-    this.identityMap.delete(`${entity.__meta!.root.name}-${wrapped.__serializedPrimaryKey}`);
+    this.identityMap.delete(`${entity.__meta!.root.name}-${wrapped.getSerializedPrimaryKey()}`);
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
   }
