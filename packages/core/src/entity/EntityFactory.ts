@@ -47,7 +47,7 @@ export class EntityFactory {
 
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     entity.__helper!.__initialized = options.initialized;
-    this.hydrate(entity, meta, data, options);
+    this.hydrate(entity, meta2, data, options);
 
     if (options.merge) {
       this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
@@ -106,7 +106,7 @@ export class EntityFactory {
 
   private hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, options.newEntity, options.convertCustomTypes);
+      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes);
     } else {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
     }

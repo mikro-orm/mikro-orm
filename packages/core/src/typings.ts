@@ -331,9 +331,9 @@ export interface IHydrator {
     meta: EntityMetadata<T>,
     data: EntityData<T>,
     factory: EntityFactory,
+    type: 'full' | 'returning' | 'reference',
     newEntity?: boolean,
     convertCustomTypes?: boolean,
-    returning?: boolean,
   ): void;
 
   /**

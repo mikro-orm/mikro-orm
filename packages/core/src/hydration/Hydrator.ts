@@ -12,8 +12,8 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean, returning?: boolean): void {
-    const props = this.getProperties(meta, entity, returning);
+  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false): void {
+    const props = this.getProperties(meta, type);
 
     for (const prop of props) {
       this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
@@ -29,16 +29,12 @@ export abstract class Hydrator implements IHydrator {
     });
   }
 
-  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean, reference?: boolean): EntityProperty<T>[] {
-    if (reference) {
+  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+    if (type === 'reference') {
       return meta.primaryKeys.map(pk => meta.properties[pk]);
     }
 
-    if (meta.root.discriminatorColumn) {
-      meta = this.metadata.find(entity.constructor.name)!;
-    }
-
-    if (returning) {
+    if (type === 'returning') {
       return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
     }
 

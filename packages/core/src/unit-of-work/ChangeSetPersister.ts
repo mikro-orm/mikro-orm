@@ -273,7 +273,7 @@ export class ChangeSetPersister {
       }, {} as Dictionary);
 
       if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, false, true, true);
+        this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
       }
     }
   }
