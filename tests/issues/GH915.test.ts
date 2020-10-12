@@ -25,7 +25,6 @@ describe('GH issue 915', () => {
       entities: [A, B],
       type: 'sqlite',
       dbName: ':memory:',
-      debug: true,
     });
     await orm.getSchemaGenerator().createSchema();
 

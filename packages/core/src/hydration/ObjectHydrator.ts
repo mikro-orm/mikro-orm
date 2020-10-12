@@ -103,6 +103,7 @@ export class ObjectHydrator extends Hydrator {
       } else { // ReferenceType.SCALAR
         if (prop.type.toLowerCase() === 'date') {
           lines.push(`  if (data.${prop.name}) entity.${prop.name} = new Date(data.${prop.name});`);
+          lines.push(`  else if (data.${prop.name} === null) entity.${prop.name} = null;`);
         } else if (prop.customType) {
           context.set(`convertToJSValue_${prop.name}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
           context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
