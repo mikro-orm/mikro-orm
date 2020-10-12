@@ -277,7 +277,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     // FK used as PK, we need to cascade
     if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
-      pks[0].cascade.push(Cascade.REMOVE);
+      pks[0].onDelete = 'cascade';
     }
 
     const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);
