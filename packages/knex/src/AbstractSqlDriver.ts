@@ -289,12 +289,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
+    const params: any[] = [];
+    let sql = `update ${this.platform.quoteIdentifier(meta.collection)} set `;
 
     keys.forEach(key => {
       const prop = meta.properties[key];
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
-        let sql = `case`;
-        const params: any[] = [];
+        sql += `${this.platform.quoteIdentifier(fieldName)} = case`;
         where.forEach((cond, idx) => {
           if (key in data[idx]) {
             const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
@@ -302,22 +303,31 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
             params.push(...pks, prop.fieldNames.length > 1 ? data[idx][key][fieldNameIdx] : data[idx][key]);
           }
         });
-        sql += ` else ${this.platform.quoteIdentifier(fieldName)} end`;
-        values[fieldName] = knex.raw(sql, params);
+        sql += ` else ${this.platform.quoteIdentifier(fieldName)} end, `;
+
+        return sql;
       });
     });
 
-    const qb = this.createQueryBuilder<T>(entityName, ctx, true)
-      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-      .update(values)
-      .where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where });
+    sql = sql.substr(0, sql.length - 2) + ' where ';
+    const pks = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames));
+    sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
 
-    const res = await this.rethrow(qb.execute('run', false));
+    const conds = where.map(cond => {
+      if (pks.length > 1) {
+        meta.primaryKeys.forEach(pk => params.push(cond[pk as string]));
+        return `(${new Array(pks.length).fill('?').join(', ')})`;
+      }
 
-    const pkConds = data.map((_, idx) => Utils.extractPK<T>(where[idx], meta)!) as Primary<T>[][];
+      params.push(cond);
+      return '?';
+    });
+    const values = pks.length > 1 && this.platform.requiresValuesKeyword() ? 'values ' : '';
+    sql += ` in (${values}${conds.join(', ')})`;
+    const res = await this.rethrow(this.execute<QueryResult>(sql, params, 'run', ctx));
 
     for (let i = 0; i < collections.length; i++) {
-      await this.processManyToMany<T>(meta, pkConds[i], collections[i], false, ctx);
+      await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, ctx);
     }
 
     return res;
