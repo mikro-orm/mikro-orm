@@ -32,11 +32,10 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
 @Module({
   imports: [
     MikroOrmModule.forRoot({
-      entities: ['../dist/entities'],
-      entitiesTs: ['../src/entities'],
+      entities: ['./dist/entities'],
+      entitiesTs: ['./src/entities'],
       dbName: 'my-db-name.sqlite3',
       type: 'sqlite',
-      baseDir: __dirname,
     }),
   ],
   controllers: [AppController],

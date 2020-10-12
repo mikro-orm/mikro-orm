@@ -27,7 +27,7 @@ MikroORM.init({
   entities: ['./dist/modules/users/entities', './dist/modules/projects/entities'],
   entitiesTs: ['./src/modules/users/entities', './src/modules/projects/entities'],
   // optionally you can override the base directory (defaults to `process.cwd()`)
-  baseDir: __dirname + '/..',
+  baseDir: process.cwd(),
 });
 ```
 

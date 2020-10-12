@@ -25,7 +25,7 @@ MikroORM.init({
   // optional, more specific paths will speed up the discovery
   entitiesDirsTs: ['./src/modules/users/entities', './src/modules/projects/entities'],
   // optionally you can override the base directory (defaults to `process.cwd()`)
-  baseDir: __dirname + '/..',
+  baseDir: process.cwd(),
 });
 ```
 

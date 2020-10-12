@@ -34,7 +34,6 @@ const orm = await MikroORM.init({
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
-  baseDir: __dirname, // defaults to `process.cwd()`
   autoFlush: false, // read more here: https://mikro-orm.io/unit-of-work/
 });
 console.log(orm.em); // access EntityManager via `em` property

@@ -44,7 +44,6 @@ const orm = await MikroORM.init({
   dbName: 'my-db-name',
   type: 'mongo', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
   clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
-  baseDir: __dirname, // defaults to `process.cwd()`
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
