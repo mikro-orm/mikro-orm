@@ -52,7 +52,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx));
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<ClientSession>, processCollections = true): Promise<QueryResult> {
     data = data.map(d => this.renameFields(entityName, d));
     return this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], ctx));
   }
@@ -68,7 +68,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx));
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<ClientSession>, processCollections?: boolean): Promise<QueryResult> {
     data = data.map(row => this.renameFields(entityName, row));
     return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where, data as { _id: any }[], ctx));
   }

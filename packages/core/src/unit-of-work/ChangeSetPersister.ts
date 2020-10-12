@@ -93,7 +93,7 @@ export class ChangeSetPersister {
   }
 
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
-    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx);
+    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false);
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -131,7 +131,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false);
     changeSets.forEach(cs => cs.persisted = true);
   }
 

@@ -9,8 +9,8 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     super(config, new SqlitePlatform(), SqliteConnection, ['knex', 'sqlite3']);
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<Knex.Transaction>): Promise<QueryResult> {
-    const res = await super.nativeInsertMany(entityName, data, ctx);
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true): Promise<QueryResult> {
+    const res = await super.nativeInsertMany(entityName, data, ctx, processCollections);
     const pks = this.getPrimaryKeyFields(entityName);
     const first = res.insertId - data.length + 1;
     res.rows = res.rows ?? [];

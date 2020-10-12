@@ -52,7 +52,7 @@ describe('composite keys in mysql', () => {
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
-    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()].sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys().sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
 
     const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
     expect(p3).toBe(p2);

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import c from 'ansi-colors';
 import chalk from 'chalk';
-import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException } from '@mikro-orm/core';
+import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException, IdentityMap } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
@@ -341,7 +341,7 @@ describe('EntityManagerMongo', () => {
     repo.persist(author);
     orm.em.remove(author);
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
-    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual(new Map());
+    expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({ registry: new Map([[Author, new Map<string, Author>()]]) });
   });
 
   test('removing persisted entity via PK', async () => {
@@ -407,7 +407,7 @@ describe('EntityManagerMongo', () => {
 
     expect(fork).not.toBe(orm.em);
     expect(fork.getMetadata()).toBe(orm.em.getMetadata());
-    expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new Map());
+    expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new IdentityMap());
 
     // request context is not started so we can use UoW and EF getters
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
@@ -846,11 +846,11 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     const cachedAuthor = orm.em.merge<Author>(Author, cache);
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
-    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,
+      'Book-' + book1.id,
       'BookTag-' + tag1.id,
       'BookTag-' + tag3.id,
-      'Book-' + book1.id,
     ]);
     expect(author).not.toBe(cachedAuthor);
     expect(author.id).toBe(cachedAuthor.id);
@@ -864,10 +864,10 @@ describe('EntityManagerMongo', () => {
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
-      'BookTag-' + tag1.id,
       'Book-' + book2.id,
-      'BookTag-' + tag2.id,
       'Book-' + book3.id,
+      'BookTag-' + tag1.id,
+      'BookTag-' + tag2.id,
       'BookTag-' + tag4.id,
       'BookTag-' + tag5.id,
       'BookTag-' + tag3.id,

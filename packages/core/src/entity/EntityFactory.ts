@@ -53,7 +53,9 @@ export class EntityFactory {
       this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
     }
 
-    this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+    if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
+      this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+    }
 
     return entity as New<T, P>;
   }

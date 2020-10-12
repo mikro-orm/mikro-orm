@@ -200,9 +200,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
-    const collections = data.map(d => this.extractManyToMany(entityName, d));
+    const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
     const set = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
@@ -281,11 +281,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
-    const collections = data.map(d => this.extractManyToMany(entityName, d));
-    const values: Dictionary<Raw> = {};
-    const knex = this.connection.getKnex();
+    const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
@@ -495,17 +493,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return {};
     }
 
-    const props = this.metadata.find(entityName)!.properties;
     const ret: EntityData<T> = {};
 
-    for (const k of Object.keys(data)) {
-      const prop = props[k];
-
-      if (prop && prop.reference === ReferenceType.MANY_TO_MANY) {
-        ret[k as keyof T] = data[k].map((item: Primary<T>) => Utils.asArray(item));
-        delete data[k];
+    this.metadata.find(entityName)!.relations.forEach(prop => {
+      if (prop.reference === ReferenceType.MANY_TO_MANY && data[prop.name]) {
+        ret[prop.name as keyof T] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
+        delete data[prop.name];
       }
-    }
+    });
 
     return ret;
   }
@@ -515,10 +510,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return;
     }
 
-    const props = meta.properties;
-
-    for (const k of Object.keys(collections)) {
-      await this.rethrow(this.updateCollectionDiff(meta, props[k], pks, clear, collections[k], ctx));
+    for (const prop of meta.relations) {
+      if (collections[prop.name]) {
+        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name], ctx));
+      }
     }
   }
 

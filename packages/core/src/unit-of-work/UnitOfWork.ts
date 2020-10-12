@@ -9,11 +9,12 @@ import { EntityManager } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import { Transaction } from '../connections';
+import { IdentityMap } from './IdentityMap';
 
 export class UnitOfWork {
 
   /** map of references to managed entities */
-  private readonly identityMap = new Map<string, AnyEntity>();
+  private readonly identityMap = new IdentityMap();
 
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
@@ -32,7 +33,6 @@ export class UnitOfWork {
   constructor(private readonly em: EntityManager) { }
 
   merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
-    const meta = entity.__meta!;
     const wrapped = entity.__helper!;
     wrapped.__em = this.em;
 
@@ -45,7 +45,7 @@ export class UnitOfWork {
       return;
     }
 
-    this.identityMap.set(`${meta.root.name}-${wrapped.getSerializedPrimaryKey()}`, entity);
+    this.identityMap.store(entity);
     entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
 
     this.cascade(entity, Cascade.MERGE, visited);
@@ -55,16 +55,17 @@ export class UnitOfWork {
    * @internal
    */
   registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
-    this.identityMap.set(`${entity.__meta!.root.name}-${entity.__helper!.getSerializedPrimaryKey()}`, entity);
+    this.identityMap.store(entity);
 
     if (newEntity) {
       return entity;
     }
 
-    entity.__helper!.__em = this.em;
+    const helper = entity.__helper!;
+    helper!.__em = this.em;
 
-    if (data && entity.__helper!.__initialized && (refresh || !entity.__helper!.__originalEntityData)) {
-      entity.__helper!.__originalEntityData = data;
+    if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
+      helper!.__originalEntityData = data;
     }
 
     return entity;
@@ -75,10 +76,9 @@ export class UnitOfWork {
    */
   getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
     const root = this.metadata.find(entityName)!.root;
-    const hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : id;
-    const token = `${root.name}-${hash}`;
+    const hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
 
-    return this.identityMap.get(token) as T;
+    return this.identityMap.getByHash(root, hash);
   }
 
   tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
@@ -94,7 +94,7 @@ export class UnitOfWork {
   /**
    * Returns map of all managed entities.
    */
-  getIdentityMap(): Map<string, AnyEntity> {
+  getIdentityMap(): IdentityMap {
     return this.identityMap;
   }
 
@@ -113,7 +113,7 @@ export class UnitOfWork {
    */
   getOriginalEntityData<T extends AnyEntity<T>>(entity?: T): EntityData<AnyEntity>[] | EntityData<T> | undefined {
     if (!entity) {
-      return [...this.identityMap.values()].map(e => {
+      return this.identityMap.values().map(e => {
         return e.__helper!.__originalEntityData!;
       });
     }
@@ -251,8 +251,8 @@ export class UnitOfWork {
   }
 
   unsetIdentity(entity: AnyEntity): void {
+    this.identityMap.delete(entity);
     const wrapped = entity.__helper!;
-    this.identityMap.delete(`${entity.__meta!.root.name}-${wrapped.getSerializedPrimaryKey()}`);
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
   }
@@ -374,7 +374,7 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
-    const hasListeners = this.eventManager.hasListeners(type, changeSet.entity);
+    const hasListeners = this.eventManager.hasListeners(type, changeSet.entity.__meta!);
 
     if (!hasListeners) {
       return;
@@ -552,7 +552,8 @@ export class UnitOfWork {
       return;
     }
 
-    const props = changeSets[0].entity.__meta!.relations.filter(prop => {
+    const meta = changeSets[0].entity.__meta!;
+    const props = meta.relations.filter(prop => {
       return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
     });
 
