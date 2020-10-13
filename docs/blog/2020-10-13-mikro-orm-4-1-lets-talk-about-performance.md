@@ -1,6 +1,6 @@
 ---
 slug: mikro-orm-4-1-released
-title: MikroORM 4.1: Let’s talk about performance
+title: 'MikroORM 4.1: Let’s talk about performance'
 author: Martin Adámek
 authorTitle: Author of MikroORM
 authorURL: https://github.com/B4nan
