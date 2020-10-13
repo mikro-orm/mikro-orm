@@ -9,7 +9,11 @@ authorTwitter: B4nan
 tags: [typescript, javascript, node, sql]
 ---
 
-I just shipped version 4.1 of [MikroORM](https://github.com/mikro-orm/mikro-orm), the TypeScript ORM for Node.js, and I feel like this particular release deserves a bit more attention than a regular feature release.
+I just shipped version 4.1 of [MikroORM](https://github.com/mikro-orm/mikro-orm), 
+the TypeScript ORM for Node.js, and I feel like this particular release deserves 
+a bit more attention than a regular feature release.
+
+<!--truncate-->
 
 ![](https://cdn-images-1.medium.com/max/725/0*R2CETMgg1344gf0V.jpg)
 
