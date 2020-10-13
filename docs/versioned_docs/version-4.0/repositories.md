@@ -76,6 +76,8 @@ const repo = em.getRepository(Author); // repo has type AuthorRepository
 > You can also register custom base repository (for all entities where you do not specify 
 > `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
 
+> Note that you cannot use both `@Repository(Author)` on the repository and `{ customRepository: () => AuthorRepository }` on the entity at the same time. This will cause a circular dependency and throws an error. Either one of options achieves the same goal.
+
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
 or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts).
