@@ -378,7 +378,7 @@ describe('Joined loading strategy', () => {
       '"b1"."uuid_pk" as "b1_uuid_pk", "b1"."created_at" as "b1_created_at", "b1"."title" as "b1_title", "b1"."price" as "b1_price", "b1".price * 1.19 as "b1_price_taxed", "b1"."double" as "b1_double", "b1"."meta" as "b1_meta", "b1"."author_id" as "b1_author_id", "b1"."publisher_id" as "b1_publisher_id", ' +
       '"a3"."id" as "a3_id", "a3"."created_at" as "a3_created_at", "a3"."updated_at" as "a3_updated_at", "a3"."name" as "a3_name", "a3"."email" as "a3_email", "a3"."age" as "a3_age", "a3"."terms_accepted" as "a3_terms_accepted", "a3"."optional" as "a3_optional", "a3"."identities" as "a3_identities", "a3"."born" as "a3_born", "a3"."born_time" as "a3_born_time", "a3"."favourite_book_uuid_pk" as "a3_favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3_favourite_author_id", ' +
       '"p4"."id" as "p4_id", "p4"."name" as "p4_name", "p4"."type" as "p4_type", "p4"."type2" as "p4_type2", "p4"."enum1" as "p4_enum1", "p4"."enum2" as "p4_enum2", "p4"."enum3" as "p4_enum3", "p4"."enum4" as "p4_enum4", ' +
-      '"t5"."id" as "t5_id", "t5"."name" as "t5_name", "t5"."book_uuid_pk" as "t5_book_uuid_pk", "t5"."version" as "t5_version" ' +
+      '"t5"."id" as "t5_id", "t5"."name" as "t5_name", "t5"."book_uuid_pk" as "t5_book_uuid_pk", "t5"."parent_id" as "t5_parent_id", "t5"."version" as "t5_version" ' +
       'from "book_tag2" as "e0" ' +
       'left join "book2_tags" as "e2" on "e0"."id" = "e2"."book_tag2_id" ' +
       'left join "book2" as "b1" on "e2"."book2_uuid_pk" = "b1"."uuid_pk" ' +

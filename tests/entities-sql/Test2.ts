@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -14,6 +14,9 @@ export class Test2 {
 
   @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
   book?: Book2;
+
+  @ManyToOne({ entity: () => Test2, mapToPk: true, nullable: true })
+  parent?: number;
 
   @OneToMany(() => Configuration2, config => config.test)
   config = new Collection<Configuration2>(this);

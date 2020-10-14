@@ -102,11 +102,12 @@ alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 
-create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `parent_id` int(11) unsigned null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `test2` add index `test2_book_uuid_pk_index`(`book_uuid_pk`);
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
 alter table `test2` add index `test2_foo___bar_index`(`foo___bar`);
 alter table `test2` add unique `test2_foo___bar_unique`(`foo___bar`);
+alter table `test2` add index `test2_parent_id_index`(`parent_id`);
 
 create table `configuration2` (`property` varchar(255) not null, `test_id` int(11) unsigned not null, `value` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 alter table `configuration2` add index `configuration2_test_id_index`(`test_id`);
@@ -172,6 +173,7 @@ alter table `book2` add constraint `book2_publisher_id_foreign` foreign key (`pu
 
 alter table `test2` add constraint `test2_book_uuid_pk_foreign` foreign key (`book_uuid_pk`) references `book2` (`uuid_pk`) on delete set null;
 alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo___bar`) references `foo_bar2` (`id`) on update cascade on delete set null;
+alter table `test2` add constraint `test2_parent_id_foreign` foreign key (`parent_id`) references `test2` (`id`) on update cascade on delete set null;
 
 alter table `configuration2` add constraint `configuration2_test_id_foreign` foreign key (`test_id`) references `test2` (`id`) on update cascade;
 

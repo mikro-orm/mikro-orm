@@ -136,6 +136,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   nullable?: boolean;
   inherited?: boolean;
   unsigned: boolean;
+  mapToPk?: boolean;
   persist?: boolean;
   hidden?: boolean;
   enum?: boolean;

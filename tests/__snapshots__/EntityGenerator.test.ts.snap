@@ -415,7 +415,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Cascade, Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Cascade, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -430,6 +430,9 @@ export class Test2 {
 
   @OneToOne({ entity: () => Book2, cascade: [Cascade.MERGE], nullable: true, index: 'test2_book_uuid_pk_index', unique: 'test2_book_uuid_pk_unique' })
   book?: Book2;
+
+  @ManyToOne({ entity: () => Test2, nullable: true, index: 'test2_parent_id_index' })
+  parent?: Test2;
 
   @Property()
   version: number = 1;
@@ -842,7 +845,7 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Cascade, Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Cascade, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -856,6 +859,9 @@ export class Test2 {
 
   @OneToOne({ entity: () => Book2, cascade: [Cascade.MERGE], nullable: true, unique: 'test2_book_uuid_pk_unique' })
   book?: Book2;
+
+  @ManyToOne({ entity: () => Test2, nullable: true })
+  parent?: Test2;
 
   @Property()
   version: number = 1;

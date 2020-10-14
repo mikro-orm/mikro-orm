@@ -250,6 +250,24 @@ export const enum UserStatus {
 // export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
 
+### Mapping directly to primary keys
+
+Sometimes we might want to work only with the primary key of a relation. 
+To do that, we can use `mapToPk` option on M:1 and 1:1 relations:
+
+```ts
+@ManyToOne(() => User, { mapToPk: true })
+user: number;
+```
+
+For composite keys, this will give us ordered tuple representing the raw PKs,
+which is the internal format of composite PK:
+
+```ts
+@ManyToOne(() => User, { mapToPk: true })
+user: [string, string]; // [first_name, last_name]
+```
+
 ### Formulas
 
 `@Formula()` decorator can be used to map some SQL snippet to your entity. 
