@@ -1424,6 +1424,26 @@ describe('EntityManagerPostgre', () => {
     expect(e2.name).toBe(`?baz? uh ? wut?`);
   });
 
+  test('mapping to raw PKs instead of entities', async () => {
+    const t1 = new Test2({ name: 't1' });
+    const t2 = new Test2({ name: 't2' });
+    const t3 = new Test2({ name: 't3' });
+    await orm.em.persistAndFlush([t1, t2, t3]);
+    t1.parent = t2.id;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const tt1 = await orm.em.findOneOrFail(Test2, t1.id);
+    expect(tt1.parent).toBe(t2.id);
+
+    tt1.parent = t3.id;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const ttt1 = await orm.em.findOneOrFail(Test2, t1.id);
+    expect(ttt1.parent).toBe(t3.id);
+  });
+
   test('perf: delete', async () => {
     const start = performance.now();
     for (let i = 1; i <= 5_000; i++) {

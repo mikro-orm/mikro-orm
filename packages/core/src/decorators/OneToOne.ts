@@ -15,6 +15,7 @@ export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, 
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
   primary?: boolean;
+  mapToPk?: boolean;
   onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
   onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
 }

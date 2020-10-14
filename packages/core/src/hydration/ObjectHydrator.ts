@@ -55,7 +55,9 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`  } else if (typeof data.${prop.name} !== 'undefined') {`);
         lines.push(`    if (isPrimaryKey(data.${prop.name}, true)) {`);
 
-        if (prop.wrappedReference) {
+        if (prop.mapToPk) {
+          lines.push(`      entity.${prop.name} = data.${prop.name};`);
+        } else if (prop.wrappedReference) {
           lines.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', data.${prop.name}, { merge: true }));`);
         } else {
           lines.push(`      entity.${prop.name} = factory.createReference('${prop.type}', data.${prop.name}, { merge: true });`);
@@ -63,7 +65,9 @@ export class ObjectHydrator extends Hydrator {
 
         lines.push(`    } else if (data.${prop.name} && typeof data.${prop.name} === 'object') {`);
 
-        if (prop.wrappedReference) {
+        if (prop.mapToPk) {
+          lines.push(`      entity.${prop.name} = data.${prop.name};`);
+        } else if (prop.wrappedReference) {
           lines.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true }));`);
         } else {
           lines.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true });`);
