@@ -834,6 +834,13 @@ describe('EntityManagerSqlite2', () => {
     expect(b4.object).toBe(123);
   });
 
+  test('question marks and parameter interpolation (GH issue #920)', async () => {
+    const e = orm.em.create(Author4, { name: '?baz? uh ? wut?', email: '123' });
+    await orm.em.persistAndFlush(e);
+    const e2 = await orm.em.fork().findOneOrFail(Author4, e);
+    expect(e2.name).toBe(`?baz? uh ? wut?`);
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = orm.em.create(Author4, { name: 'n', email: 'e' });

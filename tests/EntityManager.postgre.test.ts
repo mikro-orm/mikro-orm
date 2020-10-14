@@ -1417,6 +1417,13 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
+  test('question marks and parameter interpolation (GH issue #920)', async () => {
+    const e = new FooBaz2(`?baz? uh ? wut?`);
+    await orm.em.persistAndFlush(e);
+    const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
+    expect(e2.name).toBe(`?baz? uh ? wut?`);
+  });
+
   test('perf: delete', async () => {
     const start = performance.now();
     for (let i = 1; i <= 5_000; i++) {

@@ -53,7 +53,7 @@ export abstract class AbstractSqlConnection extends Connection {
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted);
     const res = await this.executeQuery<any>(sql, () => {
-      const query = this.client.raw(formatted);
+      const query = this.client.raw(this.platform.escapeQuery(formatted));
 
       if (ctx) {
         query.transacting(ctx);

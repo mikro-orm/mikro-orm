@@ -1942,6 +1942,13 @@ describe('EntityManagerMySql', () => {
     expect(a.born).toBeUndefined();
   });
 
+  test('question marks and parameter interpolation (GH issue #920)', async () => {
+    const e = new FooBaz2(`?baz? uh ? wut?`);
+    await orm.em.persistAndFlush(e);
+    const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
+    expect(e2.name).toBe(`?baz? uh ? wut?`);
+  });
+
   test('allow undefined value in nullable properties', async () => {
     let god = new Author2('God', 'hello@heaven.god');
     god.age = 21;

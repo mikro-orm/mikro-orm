@@ -76,4 +76,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.quoteValue(value);
   }
 
+  escapeQuery(sql: string): string {
+    return sql.replace(/\?/g, '\\?');
+  }
+
 }
