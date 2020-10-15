@@ -189,20 +189,20 @@ export abstract class SchemaHelper {
   }
 
   private hasSameType(columnType: string, infoType: string, types: Dictionary<string[]>): boolean {
-    columnType = columnType.replace(/\([?\d]+\)/, '').toLowerCase();
-    infoType = infoType.replace(/\([?\d]+\)/, '').toLowerCase();
+    columnType = columnType.replace(/\([,?\d]+\)/, '').toLowerCase();
+    infoType = infoType.replace(/\([,?\d]+\)/, '').toLowerCase();
 
     if (columnType === infoType) {
       return true;
     }
 
-    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([?\d]+\)/, '').toLowerCase() === infoType));
+    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([,?\d]+\)/, '').toLowerCase() === infoType));
 
     if (!type) {
       return false;
     }
 
-    const propTypes = type.map(t => t.replace(/\([?\d]+\)/, '').toLowerCase());
+    const propTypes = type.map(t => t.replace(/\([,?\d]+\)/, '').toLowerCase());
 
     return propTypes.includes(columnType);
   }
