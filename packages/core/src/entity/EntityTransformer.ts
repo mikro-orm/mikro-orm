@@ -1,15 +1,98 @@
-import { ArrayCollection } from './ArrayCollection';
 import { Collection } from './Collection';
-import { AnyEntity, EntityData, EntityMetadata, IPrimaryKey } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, IPrimaryKey, PopulateOptions } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 
+/**
+ * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
+ * Before we process a property, we call `visit` that checks if it is not a cycle path (but allows to pass cycles that
+ * are defined in populate hint). If not, we proceed and call `leave` afterwards.
+ */
+export class SerializationContext<T extends AnyEntity<T>> {
+
+  readonly path: string[] = [];
+
+  constructor(private readonly populate: PopulateOptions<T>[]) { }
+
+  visit(prop: string): boolean {
+    if (!this.path.find(item => prop === item)) {
+      this.path.push(prop);
+      return false;
+    }
+
+    // check if the path is explicitly populated
+    if (!this.isMarkedAsPopulated(prop)) {
+      return true;
+    }
+
+    this.path.push(prop);
+    return false;
+  }
+
+  leave<U>(path: string) {
+    const last = this.path.pop();
+
+    /* istanbul ignore next */
+    if (last !== path) {
+      throw new Error(`Trying to leave wrong property: ${path} instead of ${last}`);
+    }
+  }
+
+  /**
+   * When initializing new context, we need to propagate it to the whole entity graph recursively.
+   */
+  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity): void {
+    entity.__helper!.__serializationContext.root = root;
+
+    const items: AnyEntity[] = [];
+    Object.keys(entity).forEach(key => {
+      if (Utils.isEntity(entity[key], true)) {
+        items.push(entity[key]);
+      } else if (Utils.isCollection(entity[key])) {
+        items.push(...(entity[key] as Collection<any>).getItems(false));
+      }
+    });
+
+    items
+      .filter(item => !item.__helper!.__serializationContext.root)
+      .forEach(item => this.propagate(root, item));
+  }
+
+  private isMarkedAsPopulated(path: string): boolean {
+    let populate: PopulateOptions<T>[] | undefined = this.populate;
+
+    for (const segment of this.path) {
+      if (!populate) {
+        return false;
+      }
+
+      const exists = populate.find(p => p.field === segment) as PopulateOptions<T>;
+
+      if (exists) {
+        populate = exists.children;
+      }
+    }
+
+    return !!populate?.find(p => p.field === path);
+  }
+
+}
+
 export class EntityTransformer {
 
-  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], visited = new WeakSet<AnyEntity>()): EntityData<T> {
+  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
     const wrapped = entity.__helper!;
+    let contextCreated = false;
+
+    if (!wrapped.__serializationContext.root) {
+      const root = new SerializationContext<T>(wrapped.__serializationContext.populate ?? []);
+      SerializationContext.propagate(root, entity);
+      contextCreated = true;
+    }
+
+    const root = wrapped.__serializationContext.root;
     const meta = entity.__meta!;
     const ret = {} as EntityData<T>;
 
@@ -21,7 +104,7 @@ export class EntityTransformer {
         if (meta.properties[pk].serializer) {
           value = meta.properties[pk].serializer!(entity[pk]);
         } else if (Utils.isEntity(entity[pk], true)) {
-          value = EntityTransformer.processEntity(pk, entity, ignoreFields, entity.__platform!, visited);
+          value = EntityTransformer.processEntity(pk, entity, entity.__platform!);
         } else {
           value = entity.__platform!.normalizePrimaryKey(entity[pk] as unknown as IPrimaryKey);
         }
@@ -30,16 +113,25 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[this.propertyName(meta, pk, entity.__platform!)] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && wrapped.hasPrimaryKey()) || visited.has(entity)) {
+    if ((!wrapped.isInitialized() && wrapped.hasPrimaryKey())) {
       return ret;
     }
-
-    visited.add(entity);
 
     // normal properties
     Object.keys(entity)
       .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
-      .map(prop => [prop, EntityTransformer.processProperty<T>(prop as keyof T & string, entity, ignoreFields, visited)])
+      .map(prop => {
+        const cycle = root!.visit(prop);
+
+        if (cycle) {
+          return [prop, undefined];
+        }
+
+        const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity);
+        root!.leave(prop);
+
+        return [prop, val];
+      })
       .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string)] = value as T[keyof T]);
 
@@ -52,6 +144,10 @@ export class EntityTransformer {
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
       .forEach(prop => ret[this.propertyName(meta, prop.name)] = (entity[prop.getterName!] as unknown as () => void)());
+
+    if (contextCreated) {
+      delete wrapped.__serializationContext.root;
+    }
 
     return ret;
   }
@@ -73,15 +169,18 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, ignoreFields: string[], visited: WeakSet<AnyEntity>): T[keyof T] | undefined {
-    const wrapped = entity.__helper!;
-    const property = wrapped.__meta.properties[prop];
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T): T[keyof T] | undefined {
+    const property = entity.__meta!.properties[prop];
 
     /* istanbul ignore next */
     const serializer = property?.serializer;
 
     if (serializer) {
       return serializer(entity[prop]);
+    }
+
+    if (Utils.isCollection(entity[prop])) {
+      return EntityTransformer.processCollection(prop, entity);
     }
 
     /* istanbul ignore next */
@@ -91,23 +190,19 @@ export class EntityTransformer {
       return customType.toJSON(entity[prop], entity.__platform!);
     }
 
-    if (entity[prop] as unknown instanceof ArrayCollection) {
-      return EntityTransformer.processCollection(prop, entity);
-    }
-
     if (Utils.isEntity(entity[prop], true)) {
-      return EntityTransformer.processEntity(prop, entity, ignoreFields, entity.__platform!, visited);
+      return EntityTransformer.processEntity(prop, entity, entity.__platform!);
     }
 
     return entity[prop];
   }
 
-  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, ignoreFields: string[], platform: Platform, visited: WeakSet<AnyEntity>): T[keyof T] | undefined {
+  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, platform: Platform): T[keyof T] | undefined {
     const child = entity[prop] as unknown as T | Reference<T>;
     const wrapped = (child as T).__helper!;
 
     if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
-      const args = [...wrapped.__meta.toJsonParams.map(() => undefined), ignoreFields, visited];
+      const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
       return wrap(child).toJSON(...args) as T[keyof T];
     }
 

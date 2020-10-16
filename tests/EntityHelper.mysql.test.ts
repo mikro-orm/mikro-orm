@@ -130,7 +130,16 @@ describe('EntityHelperMySql', () => {
     expect(wrap(a.baz!.bar).isInitialized()).toBe(true);
     expect(wrap(a).toJSON()).toEqual({
       baz: {
-        bar: { id: 1 }, // circular reference is simplified
+        bar: {
+          id: 1,
+          name: 'fb',
+          object: null,
+          random: 123,
+          version: a.version,
+          array: null,
+          blob: null,
+          fooBar: null,
+        }, // circular reference breaks the cycle
         id: 1,
         name: 'fz',
         version: a.baz!.version,

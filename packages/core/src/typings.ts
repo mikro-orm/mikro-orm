@@ -1,5 +1,5 @@
 import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory } from './entity';
+import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory, SerializationContext } from './entity';
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
@@ -94,6 +94,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> exte
   __lazyInitialized: boolean;
   __primaryKeys: Primary<T>[];
   __primaryKeyCond: Primary<T> | Primary<T>[];
+  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
 }
 
 export type AnyEntity<T = any> = Partial<T> & {

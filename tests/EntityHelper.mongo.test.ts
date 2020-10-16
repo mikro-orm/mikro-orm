@@ -64,7 +64,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author', 'books.publisher']))!;
+    const author = (await orm.em.findOne(Author, god.id, ['favouriteAuthor', 'books.author.books', 'books.publisher']))!;
     const json = wrap(author).toObject();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
@@ -72,6 +72,8 @@ describe('EntityHelperMongo', () => {
       author: { name: bible.author.name },
       publisher: { name: (await bible.publisher.load()).name },
     });
+    expect(json.books[0].author.books).toBeInstanceOf(Array); // even the cycle is there, as it is explicitly populated path
+    expect(json.books[0].author.books).toHaveLength(1);
   });
 
   test('BaseEntity methods', async () => {

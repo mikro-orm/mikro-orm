@@ -1087,7 +1087,11 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     tag = await orm.em.findOneOrFail(BookTag2, tag1.id, ['books']);
-    book4 = await orm.em.findOneOrFail(Book2, book4.uuid, ['tags']);
+    book4 = await orm.em.findOneOrFail(Book2, book4.uuid, ['tags.books']);
+
+    // to check that circular serialization works fine with chain of populated collections
+    expect(JSON.stringify(book4)).not.toEqual({});
+
     tag.books.add(book4);
     tag.books.add(new Book2('ttt', new Author2('aaa', 'bbb')));
     await orm.em.flush();

@@ -43,6 +43,8 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    entities.forEach(e => e.__helper!.__serializationContext.populate = e.__helper!.__serializationContext.populate ?? populate as PopulateOptions<T>[]);
+
     for (const pop of populate) {
       await this.populateField<T>(entityName, entities, pop, options as Required<Options<T>>);
     }
@@ -238,7 +240,7 @@ export class EntityLoader {
         children.push(entity[populate.field]);
       } else if (Reference.isReference(entity[populate.field])) {
         children.push(entity[populate.field].unwrap());
-      } else if (entity[populate.field] as unknown instanceof Collection) {
+      } else if (Utils.isCollection(entity[populate.field])) {
         children.push(...entity[populate.field].getItems());
       }
     }
