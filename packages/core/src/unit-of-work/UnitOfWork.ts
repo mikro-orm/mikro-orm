@@ -458,6 +458,11 @@ export class UnitOfWork {
       return true;
     }
 
+    // ignore user settings for merge, it is kept only for back compatibility, this should have never been configurable
+    if (type === Cascade.MERGE) {
+      return true;
+    }
+
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 

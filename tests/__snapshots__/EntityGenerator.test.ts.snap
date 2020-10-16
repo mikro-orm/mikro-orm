@@ -8,7 +8,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, index: 'address2_author_id_index', unique: 'address2_author_id_unique' })
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'address2_author_id_index', unique: 'address2_author_id_unique' })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -63,7 +63,7 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.MERGE, Cascade.REMOVE], nullable: true, index: 'author2_favourite_book_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true, index: 'author2_favourite_book_uuid_pk_index' })
   favouriteBook?: Book2;
 
   @ManyToOne({ entity: () => Author2, nullable: true, index: 'author2_favourite_author_id_index' })
@@ -77,10 +77,10 @@ import { Author2 } from './Author2';
 @Entity()
 export class Author2Following {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true, index: 'author2_following_author2_1_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'author2_following_author2_1_id_index' })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true, index: 'author2_following_author2_2_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'author2_following_author2_2_id_index' })
   author22!: Author2;
 
 }
@@ -91,10 +91,10 @@ import { Author2 } from './Author2';
 @Entity()
 export class AuthorToFriend {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true, index: 'author_to_friend_author2_1_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'author_to_friend_author2_1_id_index' })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true, index: 'author_to_friend_author2_2_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'author_to_friend_author2_2_id_index' })
   author22!: Author2;
 
 }
@@ -162,10 +162,10 @@ export class Book2 {
   @Property({ nullable: true })
   meta?: object;
 
-  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE], index: 'book2_author_id_index' })
+  @ManyToOne({ entity: () => Author2, cascade: [], index: 'book2_author_id_index' })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true, index: 'book2_publisher_id_index' })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, index: 'book2_publisher_id_index' })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, defaultRaw: \`lol\` })
@@ -183,10 +183,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], index: 'book2_tags_book2_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.PERSIST, Cascade.REMOVE], index: 'book2_tags_book2_uuid_pk_index' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], index: 'book2_tags_book_tag2_id_index' })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.PERSIST, Cascade.REMOVE], index: 'book2_tags_book_tag2_id_index' })
   bookTag2!: BookTag2;
 
 }
@@ -211,10 +211,10 @@ import { BookTag2 } from './BookTag2';
 @Entity()
 export class BookToTagUnordered {
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true, index: 'book_to_tag_unordered_book2_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'book_to_tag_unordered_book2_uuid_pk_index' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true, index: 'book_to_tag_unordered_book_tag2_id_index' })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'book_to_tag_unordered_book_tag2_id_index' })
   bookTag2!: BookTag2;
 
 }
@@ -391,10 +391,10 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], index: 'publisher2_tests_publisher2_id_index' })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.PERSIST, Cascade.REMOVE], index: 'publisher2_tests_publisher2_id_index' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], index: 'publisher2_tests_test2_id_index' })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.PERSIST, Cascade.REMOVE], index: 'publisher2_tests_test2_id_index' })
   test2!: Test2;
 
 }
@@ -428,7 +428,7 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [Cascade.MERGE], nullable: true, index: 'test2_book_uuid_pk_index', unique: 'test2_book_uuid_pk_unique' })
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true, index: 'test2_book_uuid_pk_index', unique: 'test2_book_uuid_pk_unique' })
   book?: Book2;
 
   @ManyToOne({ entity: () => Test2, nullable: true, index: 'test2_parent_id_index' })
@@ -452,10 +452,10 @@ import { Test2 } from './Test2';
 @Entity()
 export class Test2Bars {
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true, index: 'test2_bars_test2_id_index' })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'test2_bars_test2_id_index' })
   test2!: Test2;
 
-  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true, index: 'test2_bars_foo_bar2_id_index' })
+  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'test2_bars_foo_bar2_id_index' })
   fooBar2!: FooBar2;
 
 }
@@ -487,10 +487,10 @@ import { User2 } from './User2';
 @Entity()
 export class User2Cars {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true, index: 'user2_cars_user2_first_name_user2_last_name_index' })
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'user2_cars_user2_first_name_user2_last_name_index' })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true, index: 'user2_cars_car2_name_car2_year_index' })
+  @ManyToOne({ entity: () => Car2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'user2_cars_car2_name_car2_year_index' })
   car2!: Car2;
 
 }
@@ -502,10 +502,10 @@ import { User2 } from './User2';
 @Entity()
 export class User2Sandwiches {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_user2_first_name_user2_last_name_index' })
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'user2_sandwiches_user2_first_name_user2_last_name_index' })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_sandwich_id_index' })
+  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, index: 'user2_sandwiches_sandwich_id_index' })
   sandwich!: Sandwich;
 
 }
@@ -521,7 +521,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, unique: 'address2_author_id_unique' })
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true, unique: 'address2_author_id_unique' })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -576,7 +576,7 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: Date;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.MERGE, Cascade.REMOVE], nullable: true })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true })
   favouriteBook?: Book2;
 
   @ManyToOne({ entity: () => Author2, nullable: true })
@@ -590,10 +590,10 @@ import { Author2 } from './Author2';
 @Entity()
 export class Author2Following {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   author22!: Author2;
 
 }
@@ -604,10 +604,10 @@ import { Author2 } from './Author2';
 @Entity()
 export class AuthorToFriend {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   author22!: Author2;
 
 }
@@ -640,10 +640,10 @@ export class Book2 {
   @Property({ nullable: true })
   meta?: object;
 
-  @ManyToOne({ entity: () => Author2, cascade: [Cascade.MERGE] })
+  @ManyToOne({ entity: () => Author2, cascade: [] })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
@@ -661,10 +661,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   bookTag2!: BookTag2;
 
 }
@@ -689,10 +689,10 @@ import { BookTag2 } from './BookTag2';
 @Entity()
 export class BookToTagUnordered {
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   bookTag2!: BookTag2;
 
 }
@@ -837,10 +837,10 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
   test2!: Test2;
 
 }
@@ -857,7 +857,7 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [Cascade.MERGE], nullable: true, unique: 'test2_book_uuid_pk_unique' })
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true, unique: 'test2_book_uuid_pk_unique' })
   book?: Book2;
 
   @ManyToOne({ entity: () => Test2, nullable: true })
@@ -878,10 +878,10 @@ import { Test2 } from './Test2';
 @Entity()
 export class Test2Bars {
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   test2!: Test2;
 
-  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.PERSIST, Cascade.REMOVE], primary: true })
   fooBar2!: FooBar2;
 
 }
@@ -970,10 +970,10 @@ export class Book3Tags {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL], nullable: true, index: 'book3_tags_book3_id_index' })
+  @ManyToOne({ entity: () => Book3, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, index: 'book3_tags_book3_id_index' })
   book3?: Book3;
 
-  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL], nullable: true, index: 'book3_tags_book_tag3_id_index' })
+  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, index: 'book3_tags_book_tag3_id_index' })
   bookTag3?: BookTag3;
 
 }
@@ -1020,10 +1020,10 @@ export class Publisher3Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL], nullable: true, index: 'publisher3_tests_publisher3_id_index' })
+  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, index: 'publisher3_tests_publisher3_id_index' })
   publisher3?: Publisher3;
 
-  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL], nullable: true, index: 'publisher3_tests_test3_id_index' })
+  @ManyToOne({ entity: () => Test3, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, index: 'publisher3_tests_test3_id_index' })
   test3?: Test3;
 
 }

@@ -3,6 +3,8 @@ title: Cascading persist, merge and remove
 sidebar_label: Cascading
 ---
 
+> From v4.2, cascade merging is no longer configurable (and is kept enabled for all relations).
+
 When persisting or removing entity, all your references are by default cascade persisted. 
 This means that by persisting any entity, ORM will automatically persist all of its 
 associations. 
@@ -13,19 +15,19 @@ You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyTo
 > New entities without primary key will be always persisted, regardless of `cascade` value. 
 
 ```typescript
-// cascade persist & merge is default value
+// cascade persist is default value
 @OneToMany({ entity: () => Book, mappedBy: 'author' })
 books = new Collection<Book>(this);
 
 // same as previous definition
-@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST] })
 books = new Collection<Book>(this);
 
 // only cascade remove
 @OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.REMOVE] })
 books = new Collection<Book>(this);
 
-// cascade persist and remove (but not merge)
+// cascade persist and remove (same as `Cascade.ALL`)
 @OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
 books = new Collection<Book>(this);
 
@@ -33,12 +35,12 @@ books = new Collection<Book>(this);
 @OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [] })
 books = new Collection<Book>(this);
 
-// cascade all (persist, merge and remove)
+// cascade all (persist and remove)
 @OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.ALL] })
 books = new Collection<Book>(this);
 
 // same as previous definition
-@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.MERGE, Cascade.REMOVE] })
+@OneToMany({ entity: () => Book, mappedBy: 'author', cascade: [Cascade.PERSIST, Cascade.REMOVE] })
 books = new Collection<Book>(this);
 ```
 
@@ -56,39 +58,6 @@ await orm.em.persistAndFlush(book); // all book tags and author will be persiste
 
 > When cascade persisting collections, keep in mind only fully initialized collections 
 > will be cascade persisted.
-
-## Cascade merge
-
-When you want to merge entity and all its associations, you can use `Cascade.MERGE`. This
-comes handy when you want to clear identity map (e.g. when importing large number of entities), 
-but you also have to keep your parent entities managed (because otherwise they would be considered
-as new entities and insert-persisted, which would fail with non-unique identifier).
-
-In following example, without having `Author.favouriteBook` set to cascade merge, you would 
-get an error because it would be cascade-inserted with already taken ID. 
-
-```typescript
-const a1 = new Author(...);
-a1.favouriteBook = new Book('the best', ...);
-await orm.em.persistAndFlush(a1); // cascade persists favourite book as well
-
-for (let i = 1; i < 1000; i++) {
-  const book = new Book('...', a1);
-  orm.em.persist(book);
-  
-  // persist every 100 records
-  if (i % 100 === 0) {
-    await orm.em.flush();
-    orm.em.clear(); // this makes both a1 and his favourite book detached
-    orm.em.merge(a1); // so we need to merge them to prevent cascade-inserts
-    
-    // without cascade merge, you would need to manually merge all his associations
-    orm.em.merge(a1.favouriteBook); // not needed with Cascade.MERGE
-  }
-}
-
-await orm.em.flush();
-```
 
 ## Cascade remove
 

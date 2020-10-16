@@ -165,7 +165,7 @@ export class SourceFile {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
 
-    const cascade = ['Cascade.MERGE'];
+    const cascade = [];
 
     if (prop.onUpdateIntegrity === 'cascade') {
       cascade.push('Cascade.PERSIST');
@@ -180,8 +180,8 @@ export class SourceFile {
       cascade.push('Cascade.ALL');
     }
 
-    // do not set cascade when it matches the defaults (persist + merge)
-    if (!(cascade.length === 2 && cascade.includes('Cascade.PERSIST') && cascade.includes('Cascade.MERGE'))) {
+    // do not set cascade when it matches the defaults (persist)
+    if (!(cascade.length === 1 && cascade.includes('Cascade.PERSIST'))) {
       this.coreImports.add('Cascade');
       options.cascade = `[${cascade.sort().join(', ')}]`;
     }

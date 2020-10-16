@@ -310,7 +310,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty) {
     return {
       reference,
-      cascade: [Cascade.PERSIST, Cascade.MERGE],
+      cascade: [Cascade.PERSIST],
       ...options,
     };
   }
