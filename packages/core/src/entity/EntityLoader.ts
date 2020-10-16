@@ -150,12 +150,18 @@ export class EntityLoader {
       return this.findChildrenFromPivotTable<T>(filtered, prop, field, options.refresh, options.where[prop.name], innerOrderBy as QueryOrderMap);
     }
 
-    let subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
-    const op = Object.keys(subCond).find(key => Utils.isOperator(key, false));
+    const subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
+    const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
     const meta2 = this.metadata.find(prop.type)!;
 
-    if (op) {
-      subCond = { [Utils.getPrimaryKeyHash(meta2.primaryKeys)]: subCond };
+    if (operators.length > 0) {
+      operators.forEach(op => {
+        const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
+        /* istanbul ignore next */
+        subCond[pk] = subCond[pk] ?? {};
+        subCond[pk][op] = subCond[op];
+        delete subCond[op];
+      });
     }
 
     const data = await this.findChildren<T>(entities, prop, populate, { ...options, where: subCond, orderBy: innerOrderBy! });
