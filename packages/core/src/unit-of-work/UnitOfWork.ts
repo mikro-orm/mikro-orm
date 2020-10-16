@@ -32,7 +32,7 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
+  merge<T extends AnyEntity<T>>(entity: T, visited?: WeakSet<AnyEntity>): void {
     const wrapped = entity.__helper!;
     wrapped.__em = this.em;
     wrapped.__populated = true;
@@ -41,8 +41,9 @@ export class UnitOfWork {
       return;
     }
 
-    // skip new entities that could be linked from already persisted entity that is being re-fetched
-    if (!wrapped.__managed) {
+    // skip new entities that could be linked from already persisted entity
+    // that is being re-fetched (but allow calling `merge(e)` explicitly for those)
+    if (!wrapped.__managed && visited) {
       return;
     }
 
@@ -50,7 +51,7 @@ export class UnitOfWork {
     wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
     wrapped.__populated = true;
 
-    this.cascade(entity, Cascade.MERGE, visited);
+    this.cascade(entity, Cascade.MERGE, visited ?? new WeakSet<AnyEntity>());
   }
 
   /**

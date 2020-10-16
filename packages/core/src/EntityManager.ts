@@ -451,8 +451,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Creates new instance of given entity and populates it with given data
    */
-  create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>): New<T, P> {
-    return this.getEntityFactory().create<T, P>(entityName, data, { newEntity: true });
+  create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean } = {}): New<T, P> {
+    return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
   }
 
   /**

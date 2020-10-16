@@ -123,7 +123,7 @@ describe('UnitOfWork', () => {
 
   test('getters', async () => {
     const uow = new UnitOfWork(orm.em);
-    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
+    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' }, { managed: true });
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);
