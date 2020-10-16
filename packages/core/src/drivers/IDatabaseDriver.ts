@@ -80,6 +80,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   populate?: P;
   orderBy?: QueryOrderMap;
+  cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
   refresh?: boolean;
@@ -107,6 +108,7 @@ export interface CountOptions<T>  {
   schema?: string;
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
+  cache?: boolean | number | [string, number];
 }
 
 export interface UpdateOptions<T>  {

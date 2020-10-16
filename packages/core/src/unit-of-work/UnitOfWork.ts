@@ -35,18 +35,20 @@ export class UnitOfWork {
   merge<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
     const wrapped = entity.__helper!;
     wrapped.__em = this.em;
+    wrapped.__populated = true;
 
     if (!wrapped.hasPrimaryKey()) {
       return;
     }
 
     // skip new entities that could be linked from already persisted entity that is being re-fetched
-    if (!entity.__helper!.__managed) {
+    if (!wrapped.__managed) {
       return;
     }
 
     this.identityMap.store(entity);
-    entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
+    wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+    wrapped.__populated = true;
 
     this.cascade(entity, Cascade.MERGE, visited);
   }
@@ -441,6 +443,10 @@ export class UnitOfWork {
     const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
+      if (type === Cascade.MERGE && collection.isInitialized()) {
+        collection.populated();
+      }
+
       collection
         .getItems(false)
         .filter(item => !requireFullyInitialized || item.__helper!.__initialized)
@@ -604,7 +610,7 @@ export class UnitOfWork {
     await this.changeSetPersister.executeUpdates(changeSets, ctx);
 
     for (const changeSet of changeSets) {
-      this.merge(changeSet.entity as T);
+      changeSet.entity.__helper!.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
       await this.runHooks(EventType.afterUpdate, changeSet);
     }
   }

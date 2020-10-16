@@ -20,6 +20,7 @@ import { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
 import { LoadStrategy } from '../enums';
+import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -69,6 +70,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
+    },
+    resultCache: {
+      adapter: MemoryCacheAdapter,
+      expiration: 1000, // 1s
+      options: {},
     },
     metadataProvider: ReflectMetadataProvider,
     highlighter: new NullHighlighter(),
@@ -175,6 +181,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getCacheAdapter(): CacheAdapter {
     return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+  }
+
+  /**
+   * Gets instance of CacheAdapter for result cache. (cached)
+   */
+  getResultCacheAdapter(): CacheAdapter {
+    return this.cached(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
   }
 
   /**
@@ -350,6 +363,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   cache: {
     enabled?: boolean;
     pretty?: boolean;
+    adapter?: { new (...params: any[]): CacheAdapter };
+    options?: Dictionary;
+  };
+  resultCache: {
+    expiration?: number;
     adapter?: { new (...params: any[]): CacheAdapter };
     options?: Dictionary;
   };

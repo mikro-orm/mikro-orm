@@ -92,9 +92,11 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`     const items = data.${prop.name}.map(value => createCollectionItem_${prop.name}(value));`);
         lines.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
         lines.push(`     coll.setDirty(newEntity);`);
+        lines.push(`  } else if (!entity.${prop.name} && data.${prop.name} instanceof Collection) {`);
+        lines.push(`     entity.${prop.name} = data.${prop.name};`);
         lines.push(`  } else if (!entity.${prop.name}) {`);
         const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-        lines.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, data.${prop.name} || newEntity);`);
+        lines.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data.${prop.name} || newEntity);`);
         lines.push(`    coll.setDirty(false);`);
         lines.push(`  }`);
       } else if (prop.reference === ReferenceType.EMBEDDED) {

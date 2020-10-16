@@ -1,8 +1,8 @@
 import { inspect } from 'util';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
-import { EntityTransformer } from './EntityTransformer';
+import { EntityTransformer, SerializationContext } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import { LockMode } from '../enums';
@@ -15,6 +15,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __lazyInitialized?: boolean;
   __managed?: boolean;
   __em?: EntityManager;
+  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;

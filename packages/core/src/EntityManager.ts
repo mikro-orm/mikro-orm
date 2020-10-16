@@ -26,6 +26,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private readonly unitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
+  private readonly resultCache = this.config.getResultCacheAdapter();
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
@@ -93,9 +94,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = this.preparePopulate<T>(entityName, options.populate, options.strategy) as unknown as P;
+    const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
+
+    if (cached?.data) {
+      return cached.data;
+    }
+
     const results = await this.driver.find<T>(entityName, where, options, this.transactionContext);
 
     if (results.length === 0) {
+      await this.storeCache(options.cache, cached!, () => []);
       return [];
     }
 
@@ -109,6 +117,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const unique = Utils.unique(ret);
     await this.entityLoader.populate<T>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false });
+    await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toObject()));
 
     return unique as Loaded<T, P>[];
   }
@@ -190,9 +199,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * where first element is the array of entities and the second is the count.
    */
   async findAndCount<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
+    const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
     const [entities, count] = await Promise.all([
       this.find<T, P>(entityName, where, populate as P, orderBy, limit, offset),
-      this.count(entityName, where),
+      this.count(entityName, where, options as CountOptions<T>),
     ]);
 
     return [entities, count];
@@ -228,15 +238,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     this.validator.validateParams(where);
     options.populate = this.preparePopulate<T>(entityName, options.populate as true, options.strategy) as unknown as P;
+    const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
+
+    if (cached?.data) {
+      return cached.data;
+    }
+
     const data = await this.driver.findOne(entityName, where, options, this.transactionContext);
 
     if (!data) {
+      await this.storeCache(options.cache, cached!, () => null);
       return null;
     }
 
     entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
     this.getUnitOfWork().registerManaged(entity, data as EntityData<T>, options.refresh);
     await this.lockAndPopulate(entityName, entity, where, options);
+    await this.storeCache(options.cache, cached!, () => entity!.__helper!.toObject());
 
     return entity as Loaded<T, P>;
   }
@@ -496,7 +514,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
     this.validator.validateParams(where);
 
-    return this.driver.count(entityName, where, options, this.transactionContext);
+    const cached = await this.tryCache<T, number>(entityName, options.cache, [entityName, 'em.count', options, where]);
+
+    if (cached?.data) {
+      return cached.data as number;
+    }
+
+    const count = await this.driver.count(entityName, where, options, this.transactionContext);
+    await this.storeCache(options.cache, cached!, () => count);
+
+    return count;
   }
 
   /**
@@ -763,6 +790,45 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       return { field, strategy: fieldStrategy };
     });
+  }
+
+  /**
+   * @internal
+   */
+  async tryCache<T, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
+    if (!config) {
+      return undefined;
+    }
+
+    const cacheKey = Array.isArray(config) ? config[0] : JSON.stringify(key);
+    const cached = await this.resultCache.get(cacheKey!);
+
+    if (cached) {
+      let data: R;
+
+      if (Array.isArray(cached) && merge) {
+        data = cached.map(item => this.merge<T>(entityName, item, refresh, true)) as unknown as R;
+      } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
+        data = this.merge<T>(entityName, cached, refresh, true) as unknown as R;
+      } else {
+        data = cached;
+      }
+
+      return { key: cacheKey, data };
+    }
+
+    return { key: cacheKey };
+  }
+
+  /**
+   * @internal
+   */
+  async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: () => unknown) {
+    if (config) {
+      /* istanbul ignore next */
+      const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
+      await this.resultCache.set(key.key, data(), '', expiration);
+    }
   }
 
   [inspect.custom]() {

@@ -33,6 +33,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _having: Dictionary = {};
   private _limit?: number;
   private _offset?: number;
+  private _cache?: boolean | number | [string, number];
   private lockMode?: LockMode;
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
@@ -232,6 +233,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
+  cache(config: boolean | number | [string, number] = true): this {
+    this._cache = config;
+    return this;
+  }
+
   getKnexQuery(): KnexQueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
@@ -281,20 +287,35 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       this.connectionType = 'write';
     }
 
+    const query = this.getKnexQuery().toSQL();
+    const cached = await this.em?.tryCache<T, U>(this.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
+
+    if (cached?.data) {
+      return cached.data;
+    }
+
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context);
     const meta = this.metadata.find(this.entityName);
 
     if (!mapResults || !meta) {
+      await this.em?.storeCache(this._cache, cached!, () => res);
       return res as unknown as U;
     }
 
     if (method === 'all' && Array.isArray(res)) {
       const map: Dictionary = {};
-      return res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      const mapped = res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      await this.em?.storeCache(this._cache, cached!, () => mapped);
+
+      return mapped;
     }
 
-    return this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
+    const mapped = this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
+    /* istanbul ignore next */
+    await this.em?.storeCache(this._cache, cached!, () => mapped);
+
+    return mapped;
   }
 
   /**
@@ -342,7 +363,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', 'subQueries'];
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
     qb.finalized = false;
 

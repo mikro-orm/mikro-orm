@@ -175,7 +175,7 @@ export class SourceFile {
       cascade.push('Cascade.REMOVE');
     }
 
-    if (cascade.length === 3) {
+    if (cascade.length === 2) {
       cascade.length = 0;
       cascade.push('Cascade.ALL');
     }

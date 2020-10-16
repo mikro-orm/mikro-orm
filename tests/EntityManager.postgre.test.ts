@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs,
+  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -12,6 +12,23 @@ import { performance } from 'perf_hooks';
 describe('EntityManagerPostgre', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
+
+  async function createBooksWithTags() {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('My Life on The Wall, part 1', author);
+    const book2 = new Book2('My Life on The Wall, part 2', author);
+    const book3 = new Book2('My Life on The Wall, part 3', author);
+    const tag1 = new BookTag2('silly');
+    const tag2 = new BookTag2('funny');
+    const tag3 = new BookTag2('sick');
+    const tag4 = new BookTag2('strange');
+    const tag5 = new BookTag2('sexy');
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+  }
 
   beforeAll(async () => orm = await initORMPostgreSql());
   beforeEach(async () => wipeDatabasePostgreSql(orm.em));
@@ -856,22 +873,8 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('populating many to many relation on inverse side', async () => {
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    const book1 = new Book2('My Life on The Wall, part 1', author);
-    const book2 = new Book2('My Life on The Wall, part 2', author);
-    const book3 = new Book2('My Life on The Wall, part 3', author);
-    const tag1 = new BookTag2('silly');
-    const tag2 = new BookTag2('funny');
-    const tag3 = new BookTag2('sick');
-    const tag4 = new BookTag2('strange');
-    const tag5 = new BookTag2('sexy');
-    book1.tags.add(tag1, tag3);
-    book2.tags.add(tag1, tag2, tag5);
-    book3.tags.add(tag2, tag4, tag5);
-    await orm.em.persistAndFlush([book1, book2, book3]);
+    await createBooksWithTags();
     const repo = orm.em.getRepository(BookTag2);
-
-    orm.em.clear();
     const tags = await repo.findAll(['books']);
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
@@ -1237,6 +1240,114 @@ describe('EntityManagerPostgre', () => {
       'left join "book2" as "e2" on "e1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
       'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
       'where "e0"."author_id" is not null and "e3"."name" = $1');
+  });
+
+  test('result caching (find)', async () => {
+    await createBooksWithTags();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1);
+    orm.em.clear();
+
+    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
+    orm.em.clear();
+
+    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
+    orm.em.clear();
+
+    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
+    expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
+  });
+
+  test('result caching (findOne)', async () => {
+    await createBooksWithTags();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const res1 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1);
+    orm.em.clear();
+
+    const res2 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(wrap(res1).toObject()).toEqual(wrap(res2).toObject());
+    orm.em.clear();
+
+    const res3 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(wrap(res1).toObject()).toEqual(wrap(res3).toObject());
+    orm.em.clear();
+
+    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    const res4 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
+    expect(wrap(res1).toObject()).toEqual(wrap(res4).toObject());
+  });
+
+  test('result caching (count)', async () => {
+    await createBooksWithTags();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    expect(mock.mock.calls).toHaveLength(1);
+    orm.em.clear();
+
+    const res2 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1).toEqual(res2);
+    orm.em.clear();
+
+    const res3 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1).toEqual(res3);
+    orm.em.clear();
+
+    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    const res4 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
+    expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
+    expect(res1).toEqual(res4);
+  });
+
+  test('result caching (query builder)', async () => {
+    await createBooksWithTags();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    expect(mock.mock.calls).toHaveLength(1);
+    orm.em.clear();
+
+    const res2 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1).toEqual(res2);
+    orm.em.clear();
+
+    const res3 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
+    expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
+    expect(res1).toEqual(res3);
+    orm.em.clear();
+
+    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    const res4 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache().getResultList();
+    expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
+    expect(res1).toEqual(res4);
   });
 
   test('datetime is stored in correct timezone', async () => {
