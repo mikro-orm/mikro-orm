@@ -584,7 +584,7 @@ export class MetadataDiscovery {
 
     if (!meta.root.discriminatorMap) {
       meta.root.discriminatorMap = {} as Dictionary<string>;
-      const children = metadata.filter(m => m.root === meta.root);
+      const children = metadata.filter(m => m.root.className === meta.root.className && !m.abstract);
       children.forEach(m => {
         const name = m.discriminatorValue || this.namingStrategy.classToTableName(m.className);
         meta.root.discriminatorMap![name] = m.className;

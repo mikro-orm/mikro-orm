@@ -219,7 +219,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     this.setClass(this._meta.class);
 
-    if (this._meta.abstract) {
+    if (this._meta.abstract && !this._meta.discriminatorColumn) {
       delete this._meta.name;
     }
 

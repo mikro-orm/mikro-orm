@@ -9,7 +9,7 @@ export function Entity(options: EntityOptions<any> = {}) {
     Utils.merge(meta, options);
     meta.class = target as unknown as Constructor<T>;
 
-    if (!options.abstract) {
+    if (!options.abstract || meta.discriminatorColumn) {
       meta.name = target.name;
     }
 

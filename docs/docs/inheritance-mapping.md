@@ -20,6 +20,7 @@ mapped inheritance hierarchy (through Single Table Inheritance).
 
 ```typescript
 // do not use @Entity decorator on base classes (mapped superclasses)
+// we can also use @Entity({ abstract: true })
 export abstract class Person {
 
   @Property()
@@ -170,6 +171,32 @@ export class Person extends Base {
 }
 
 @Entity()
+export class Employee extends Person {
+  // ...
+}
+```
+
+If we wanted to use `discriminatorValue` with abstract entities, we need to mark
+the entity as `abstract: true` so it can be skipped from the discriminator map:
+
+```ts
+@Entity({
+  discriminatorColumn: 'type',
+  abstract: true,
+})
+export abstract class BasePerson {
+
+  @Enum()
+  type!: 'person' | 'employee';
+
+}
+
+@Entity({ discriminatorValue: 'person' })
+export class Person extends Base {
+  // ...
+}
+
+@Entity({ discriminatorValue: 'employee' })
 export class Employee extends Person {
   // ...
 }
