@@ -646,7 +646,13 @@ export class MetadataDiscovery {
       return;
     }
 
-    prop.defaultRaw = typeof prop.default === 'string' ? `'${prop.default}'` : '' + prop.default;
+    let val = prop.default;
+
+    if (prop.customType instanceof ArrayType && Array.isArray(prop.default)) {
+      val = prop.customType.convertToDatabaseValue(prop.default, this.platform)!;
+    }
+
+    prop.defaultRaw = typeof val === 'string' ? `'${val}'` : '' + val;
   }
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {

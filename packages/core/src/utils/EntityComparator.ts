@@ -225,13 +225,13 @@ export class EntityComparator {
     let ret = `  if (${this.getPropertyCondition(prop)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
-      return ret + `    ret.${prop.name} = entity.${prop.name};\n}\n`;
+      return ret + `    ret.${prop.name} = entity.${prop.name};\n  }\n`;
     }
 
     if (prop.reference === ReferenceType.EMBEDDED) {
       return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
         return `    ret.${childProp.name} = clone(entity.${prop.name}.${childProp.embedded![1]});`;
-      }).join('\n') + '\n}\n';
+      }).join('\n') + '\n  }\n';
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
@@ -243,10 +243,10 @@ export class EntityComparator {
 
         /* istanbul ignore next */
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-          return ret + `    ret.${prop.name} = convertToDatabaseValue_${prop.name}(ret.${prop.name});\n}\n`;
+          return ret + `    ret.${prop.name} = convertToDatabaseValue_${prop.name}(ret.${prop.name});\n  }\n`;
         }
 
-        return ret + `    ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(ret.${prop.name}));\n}\n`;
+        return ret + `    ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(ret.${prop.name}));\n  }\n`;
       }
 
       return ret + '  }\n';
@@ -256,18 +256,18 @@ export class EntityComparator {
       context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `  ret.${prop.name} = convertToDatabaseValue_${prop.name}(entity.${prop.name});\n}\n`;
+        return ret + `    ret.${prop.name} = convertToDatabaseValue_${prop.name}(entity.${prop.name});\n  }\n`;
       }
 
-      return ret + `  ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(entity.${prop.name}));\n}\n`;
+      return ret + `    ret.${prop.name} = clone(convertToDatabaseValue_${prop.name}(entity.${prop.name}));\n  }\n`;
     }
 
     if (prop.type.toLowerCase() === 'date') {
       context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
-      return ret + `  ret.${prop.name} = clone(processDateProperty(entity.${prop.name}));\n}\n`;
+      return ret + `    ret.${prop.name} = clone(processDateProperty(entity.${prop.name}));\n  }\n`;
     }
 
-    return ret + `  ret.${prop.name} = clone(entity.${prop.name});\n}\n`;
+    return ret + `    ret.${prop.name} = clone(entity.${prop.name});\n  }\n`;
   }
 
   /**

@@ -250,6 +250,21 @@ export const enum UserStatus {
 // export { OutsideEnum } from './OutsideEnum.ts';
 ``` 
 
+### Enum arrays
+
+We can also use array of values for enum, in that case, `EnumArrayType` type
+will be used automatically, that will validate items on flush. 
+
+```ts
+enum Role {
+  User = 'user',
+  Admin = 'admin',
+}
+
+@Enum({ items: () => Role, array: true, default: [Role.User] })
+roles: Role[] = [Role.User];
+```
+
 ### Mapping directly to primary keys
 
 Sometimes we might want to work only with the primary key of a relation. 

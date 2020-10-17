@@ -7,6 +7,7 @@ import { BaseEntity, EntityRepository } from '../entity';
 import { Cascade, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
+import { EnumArrayType } from '../types/EnumArrayType';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
@@ -83,6 +84,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions<T> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
+    }
+
+    // enum arrays are simple numeric/string arrays, the constrain is enforced in the custom type only
+    if (options.array && !options.customType) {
+      options.customType = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
+      (options as EntityProperty).enum = false;
     }
 
     const prop = { enum: true, ...options };

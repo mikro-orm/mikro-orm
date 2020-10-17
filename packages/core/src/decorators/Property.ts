@@ -44,7 +44,7 @@ export type PropertyOptions<T> = {
   length?: number;
   onCreate?: (entity: T) => any;
   onUpdate?: (entity: T) => any;
-  default?: string | number | boolean | null;
+  default?: string | string[] | number | number[] | boolean | null;
   defaultRaw?: string;
   formula?: string | ((alias: string) => string);
   nullable?: boolean;

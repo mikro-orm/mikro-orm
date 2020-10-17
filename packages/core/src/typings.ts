@@ -121,6 +121,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   primary: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
+  array?: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;

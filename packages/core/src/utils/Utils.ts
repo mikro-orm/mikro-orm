@@ -721,8 +721,11 @@ export class Utils {
     try {
       return fn(...args);
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
+      if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
+        // eslint-disable-next-line no-console
+        console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
+      }
+
       throw e;
     }
   }
