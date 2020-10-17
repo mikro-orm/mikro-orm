@@ -207,31 +207,31 @@ export class UnitOfWork {
       throw ValidationError.cannotCommit();
     }
 
-    await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
-    this.working = true;
-    this.computeChangeSets();
-    await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
+    try {
+      await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
+      this.working = true;
+      this.computeChangeSets();
+      await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
-    // nothing to do, do not start transaction
-    if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
+      // nothing to do, do not start transaction
+      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
+        return void await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+      }
+
+      const groups = this.getChangeSetGroups();
+      const platform = this.em.getDriver().getPlatform();
+      const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
+
+      if (runInTransaction) {
+        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx));
+      } else {
+        await this.persistToDatabase(groups, this.em.getTransactionContext());
+      }
+
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+    } finally {
       this.postCommitCleanup();
-
-      return;
     }
-
-    const groups = this.getChangeSetGroups();
-    const platform = this.em.getDriver().getPlatform();
-    const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
-
-    if (runInTransaction) {
-      await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx));
-    } else {
-      await this.persistToDatabase(groups, this.em.getTransactionContext());
-    }
-
-    await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
-    this.postCommitCleanup();
   }
 
   async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
