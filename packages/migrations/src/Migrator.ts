@@ -28,7 +28,7 @@ export class Migrator {
 
     if (this.options.migrationsList?.length) {
       const list = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
-      migrations = migrationsList(list as unknown as Required<UmzugMigration>[]);
+      migrations = migrationsList(list as any[]);
     }
 
     this.umzug = new umzug({

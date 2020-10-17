@@ -19,7 +19,6 @@ export class MongoConnection extends Connection {
   }
 
   async close(force?: boolean): Promise<void> {
-    /* istanbul ignore next */
     return this.client?.close(force);
   }
 

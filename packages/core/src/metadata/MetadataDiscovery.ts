@@ -805,8 +805,8 @@ export class MetadataDiscovery {
 
     const target = exports.default || exports[name];
 
+    /* istanbul ignore next */
     if (!target) {
-      /* istanbul ignore next */
       throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
 

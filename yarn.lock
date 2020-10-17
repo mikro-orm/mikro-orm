@@ -1820,10 +1820,10 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
   integrity sha512-l42BggppR6zLmpfU6fq9HEa2oGPEI8yrSPL3GITjfRInppYFahObbIQOQK3UGxEnyQpltZLaPe75046NOZQikw==
 
-"@types/umzug@^2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@types/umzug/-/umzug-2.2.3.tgz#f2d9c2b485538bde729a9d1502a8c98dcc93d9e3"
-  integrity sha512-mJ6xv5FR5KNa5yL4j3Q7/jLyzb3K5MMmqzUcQg/jekmvPH/g1/wraSMAu7JsEDWxXXgZcXw7rJgeZ6adWrvImg==
+"@types/umzug@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@types/umzug/-/umzug-2.3.0.tgz#74ede18cf837ed8daa257c2bcf5a54e351c2a551"
+  integrity sha512-DUwMKFa+QmApO7I5zhqpc12n9+Mqm006+PTPKrqoZ4F38rk2+iWl8K5IjVvWemERajtkfkiBkHtH/YkOPcBQjA==
   dependencies:
     "@types/mongodb" "*"
     "@types/sequelize" "*"

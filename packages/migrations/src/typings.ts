@@ -1,17 +1,5 @@
 import { Transaction } from '@mikro-orm/core';
 
-declare module 'umzug' {
-
-  interface MigrationDefinitionWithName extends UmzugMigration {
-    name: string;
-  }
-
-  interface UmzugStatic {
-    migrationsList(migrations: MigrationDefinitionWithName[], parameters?: any[]): UmzugMigration[];
-  }
-
-}
-
 export type UmzugMigration = { name?: string; path?: string; file: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 export type MigrationResult = { fileName: string; code: string; diff: string[] };
