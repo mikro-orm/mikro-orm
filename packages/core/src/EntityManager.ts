@@ -103,7 +103,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const results = await this.driver.find<T>(entityName, where, options, this.transactionContext);
 
     if (results.length === 0) {
-      await this.storeCache(options.cache, cached!, () => []);
+      await this.storeCache(options.cache, cached!, []);
       return [];
     }
 
@@ -247,7 +247,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const data = await this.driver.findOne(entityName, where, options, this.transactionContext);
 
     if (!data) {
-      await this.storeCache(options.cache, cached!, () => null);
+      await this.storeCache(options.cache, cached!, null);
       return null;
     }
 
@@ -823,11 +823,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: () => unknown) {
+  async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: unknown | (() => unknown)) {
     if (config) {
       /* istanbul ignore next */
       const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
-      await this.resultCache.set(key.key, data(), '', expiration);
+      await this.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
   }
 

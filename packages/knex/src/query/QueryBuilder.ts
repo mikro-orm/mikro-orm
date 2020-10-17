@@ -299,21 +299,21 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const meta = this.metadata.find(this.entityName);
 
     if (!mapResults || !meta) {
-      await this.em?.storeCache(this._cache, cached!, () => res);
+      await this.em?.storeCache(this._cache, cached!, res);
       return res as unknown as U;
     }
 
     if (method === 'all' && Array.isArray(res)) {
       const map: Dictionary = {};
       const mapped = res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
-      await this.em?.storeCache(this._cache, cached!, () => mapped);
+      await this.em?.storeCache(this._cache, cached!, mapped);
 
       return mapped;
     }
 
     const mapped = this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
     /* istanbul ignore next */
-    await this.em?.storeCache(this._cache, cached!, () => mapped);
+    await this.em?.storeCache(this._cache, cached!, mapped);
 
     return mapped;
   }
