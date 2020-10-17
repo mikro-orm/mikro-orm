@@ -8,7 +8,10 @@ export function Entity(options: EntityOptions<any> = {}) {
     const meta = MetadataStorage.getMetadataFromDecorator(target);
     Utils.merge(meta, options);
     meta.class = target as unknown as Constructor<T>;
-    meta.name = target.name;
+
+    if (!options.abstract) {
+      meta.name = target.name;
+    }
 
     return target;
   };
@@ -21,6 +24,7 @@ export type EntityOptions<T> = {
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: string;
   comment?: string;
+  abstract?: boolean;
   readonly?: boolean;
   customRepository?: () => Constructor<EntityRepository<T>>;
 };

@@ -31,6 +31,10 @@ export class MetadataStorage {
     return MetadataStorage.metadata;
   }
 
+  static isKnownEntity(name: string): boolean {
+    return !!Object.values(this.metadata).find(meta => meta.className === name);
+  }
+
   static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
     const path = Utils.lookupPathFromDecorator(target.name);
     const meta = MetadataStorage.getMetadata(target.name, path);

@@ -137,6 +137,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
+  /* istanbul ignore next */
   static entityNotFound(name: string, path: string): MetadataError {
     return new MetadataError(`Entity '${name}' not found in ${path}`);
   }

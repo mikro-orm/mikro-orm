@@ -121,21 +121,22 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(filename);
       const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
-      const target = this.getEntityClassOrSchema(path, name);
+      const targets = this.getEntityClassOrSchema(path, name);
 
-      if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
-        this.logger.log('discovery', `- ignoring file ${filename}`);
-        continue;
+      for (const target of targets) {
+        if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
+          this.logger.log('discovery', `- ignoring file ${filename}`);
+          continue;
+        }
+
+        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
+        const entity = this.prepare(target) as Constructor<AnyEntity>;
+        const schema = this.getSchema(entity);
+        const meta = schema.init().meta;
+        this.metadata.set(meta.className, meta);
+
+        found.push([entity, path]);
       }
-
-      this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
-
-      const entity = this.prepare(target) as Constructor<AnyEntity>;
-      const schema = this.getSchema(entity);
-      const meta = schema.init().meta;
-      this.metadata.set(meta.className, meta);
-
-      found.push([entity, path]);
     }
 
     for (const [entity, path] of found) {
@@ -225,6 +226,7 @@ export class MetadataDiscovery {
       meta.collection = this.namingStrategy.classToTableName(entityName!);
     }
 
+    delete (meta as any).root; // to allow caching (as root can contain cycles)
     await this.saveToCache(meta);
     meta.root = root;
     this.discovered.push(meta);
@@ -783,18 +785,32 @@ export class MetadataDiscovery {
   private getEntityClassOrSchema(path: string, name: string) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const exports = require(path);
-    const target = exports.default || exports[name];
-    const schema = Object.values(exports).find(item => item instanceof EntitySchema);
+    const targets = Object.values<Dictionary>(exports)
+      .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
 
-    if (schema) {
-      return schema;
+    // ignore class implementations that are linked from an EntitySchema
+    for (const item of targets) {
+      if (item instanceof EntitySchema) {
+        targets.forEach((item2, idx) => {
+          if (item.meta.class === item2) {
+            targets.splice(idx, 1);
+          }
+        });
+      }
     }
 
+    if (targets.length > 0) {
+      return targets;
+    }
+
+    const target = exports.default || exports[name];
+
     if (!target) {
+      /* istanbul ignore next */
       throw MetadataError.entityNotFound(name, path.replace(this.config.get('baseDir'), '.'));
     }
 
-    return target;
+    return [target];
   }
 
 }

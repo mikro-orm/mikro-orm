@@ -406,21 +406,8 @@ console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
 
 ### Entity file names
 
-> This limitation applies only to folder based discovery. Another way around it
-> is using `EntitySchema` for entity definition. 
-
-You are free to choose one of those formats for entity filename (for a `BookTag` entity):
-
-- `BookTag.ts`
-- `BookTag.model.ts`
-- `book-tag.ts`
-- `book-tag.model.ts`
-- `book-tag.entity.ts`
-
-Entity name is inferred from the first part of file name before first dot occurs, so you can 
-add any suffix behind the dot, not just `.model.ts` or `.entity.ts`. 
-
-> You can change this behaviour by defining custom `NamingStrategy.getClassName()` method.
+Starting with MikroORM 4.2, there is no limitation for entity file names. It is now
+also possible to define multiple entities in a single file using folder based discovery. 
 
 ### Using BaseEntity
 
@@ -446,6 +433,17 @@ export abstract class BaseEntity {
   @Property({ onUpdate: () => new Date() })
   updatedAt = new Date();
 
+}
+```
+
+There is a special case, when we need to annotate the base entity - if we are using
+folder based discovery, and the base entity is not using any decorators (e.g. it does
+not define any decorated property). In that case, we need to mark it as abstract:
+
+```ts
+@Entity({ abstract: true })
+export abstract class BaseEntity {
+  // ...
 }
 ```
 

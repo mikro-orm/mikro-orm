@@ -31,7 +31,7 @@ describe('MikroORM', () => {
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, metadataProvider: TsMorphMetadataProvider, cache: { enabled: false }, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
   test('should report connection failure', async () => {
@@ -47,11 +47,6 @@ describe('MikroORM', () => {
     expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
   });
 
-  test('should throw when multiple entities with same class name discovered', async () => {
-    const err = `Entity 'BadName' not found in ./entities-3/bad-name.model.ts`;
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities-3'] })).rejects.toThrowError(err);
-  });
-
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrowError(err);
@@ -65,6 +60,12 @@ describe('MikroORM', () => {
   test('should throw when only multiple property decorators are used', async () => {
     const err = `Multiple property decorators used on 'MultiDecorator.name' property`;
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities-4'] })).rejects.toThrowError(err);
+  });
+
+  test('folder based discover with multiple entities in single file', async () => {
+    const orm = await MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] }, false);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    await orm.close();
   });
 
   test('should use CLI config', async () => {
