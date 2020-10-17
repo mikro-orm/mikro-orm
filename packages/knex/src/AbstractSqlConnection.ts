@@ -1,12 +1,17 @@
-import Knex, { Config, QueryBuilder, Raw, Transaction as KnexTransaction } from 'knex';
+import Knex, { Config, QueryBuilder, Raw, Client, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
-import { AnyEntity, Connection, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import { AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
 
 export abstract class AbstractSqlConnection extends Connection {
 
   protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
+
+  constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
+    super(config, options, type);
+    this.patchKnexClient();
+  }
 
   getKnex(): Knex {
     return this.client;
@@ -45,15 +50,14 @@ export abstract class AbstractSqlConnection extends Connection {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
       ctx = ctx ?? ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
-      const n = q.toNative ? q.toNative() : q;
       queryOrKnex = q.sql;
-      params = n.bindings as any[];
+      params = q.bindings as any[];
     }
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted);
     const res = await this.executeQuery<any>(sql, () => {
-      const query = this.client.raw(this.platform.escapeQuery(formatted));
+      const query = this.client.raw(formatted);
 
       if (ctx) {
         query.transacting(ctx);
@@ -106,6 +110,36 @@ export abstract class AbstractSqlConnection extends Connection {
     }
 
     return this.client.client.positionBindings(query);
+  }
+
+  /**
+   * do not call `positionBindings` when there are no bindings - it was messing up with
+   * already interpolated strings containing `?`, and escaping that was not enough to
+   * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
+   */
+  private patchKnexClient(): void {
+    const query = Client.prototype.query;
+
+    /* istanbul ignore next */
+    Client.prototype.query = function (this: any, connection: any, obj: any) {
+      if (typeof obj === 'string') {
+        obj = { sql: obj };
+      }
+
+      if ((obj.bindings ?? []).length > 0) {
+        return query.call(this, connection, obj);
+      }
+
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { __knexUid, __knexTxId } = connection;
+      this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
+
+      return this._query(connection, obj).catch((err: Error) => {
+        err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message;
+        this.emit('query-error', err, Object.assign({ __knexUid, __knexTxId }, obj));
+        throw err;
+      });
+    };
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;

@@ -1947,10 +1947,12 @@ describe('EntityManagerMySql', () => {
   });
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {
-    const e = new FooBaz2(`?baz? uh ? wut?`);
+    const e = new FooBaz2(`?baz? uh \\? ? wut? \\\\ wut`);
     await orm.em.persistAndFlush(e);
     const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
-    expect(e2.name).toBe(`?baz? uh ? wut?`);
+    expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
+    const res = await orm.em.getKnex().raw('select ? as count', [1]);
+    expect(res[0][0].count).toBe(1);
   });
 
   test('allow undefined value in nullable properties', async () => {

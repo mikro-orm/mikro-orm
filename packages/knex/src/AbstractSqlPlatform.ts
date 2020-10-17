@@ -61,8 +61,4 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret;
   }
 
-  escapeQuery(sql: string): string {
-    return sql;
-  }
-
 }

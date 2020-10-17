@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "fs-extra": "^9.0.1",
-    "knex": "^0.21.1",
+    "knex": "^0.21.6",
     "sqlstring": "^2.3.2"
   },
   "devDependencies": {
@@ -60,7 +60,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "pg": "^8.0.3",
-    "sqlite3": "^4.1.1"
+    "sqlite3": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "mssql": {
