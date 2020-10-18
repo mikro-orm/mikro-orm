@@ -282,6 +282,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return `${prefix.charAt(0).toLowerCase()}${this.aliasCounter++}`;
   }
 
+  /**
+   * Executes this QB and returns the raw results, mapped to the property names (unless disabled via last parameter).
+   * Use `method` to specify what kind of result you want to get (array/single/meta).
+   */
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
     if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type)) {
       this.connectionType = 'write';

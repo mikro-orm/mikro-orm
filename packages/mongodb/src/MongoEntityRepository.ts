@@ -8,6 +8,9 @@ export class MongoEntityRepository<T> extends EntityRepository<T> {
     super(em, entityName);
   }
 
+  /**
+   * Shortcut to driver's aggregate method. Available in MongoDriver only.
+   */
   async aggregate(pipeline: any[]): Promise<any[]> {
     return this.em.aggregate(this.entityName, pipeline);
   }

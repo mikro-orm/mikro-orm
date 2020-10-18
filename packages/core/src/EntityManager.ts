@@ -122,9 +122,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return unique as Loaded<T, P>[];
   }
 
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
   addFilter<T1 extends AnyEntity<T1>>(name: string, cond: FilterQuery<T1> | ((args: Dictionary) => FilterQuery<T1>), entityName?: EntityName<T1> | [EntityName<T1>], enabled?: boolean): void;
+
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
   addFilter<T1 extends AnyEntity<T1>, T2 extends AnyEntity<T2>>(name: string, cond: FilterQuery<T1 | T2> | ((args: Dictionary) => FilterQuery<T1 | T2>), entityName?: [EntityName<T1>, EntityName<T2>], enabled?: boolean): void;
+
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
   addFilter<T1 extends AnyEntity<T1>, T2 extends AnyEntity<T2>, T3 extends AnyEntity<T3>>(name: string, cond: FilterQuery<T1 | T2 | T3> | ((args: Dictionary) => FilterQuery<T1 | T2 | T3>), entityName?: [EntityName<T1>, EntityName<T2>, EntityName<T3>], enabled?: boolean): void;
+
+  /**
+   * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
+   */
   addFilter(name: string, cond: FilterQuery<AnyEntity> | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
     const options: FilterDef<AnyEntity> = { name, cond, default: enabled };
 
@@ -135,10 +150,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     this.filters[name] = options;
   }
 
+  /**
+   * Sets filter parameter values globally inside context defined by this entity manager.
+   * If you want to set shared value for all contexts, be sure to use the root entity manager.
+   */
   setFilterParams(name: string, args: Dictionary): void {
     this.filterParams[name] = args;
   }
 
+  /**
+   * Returns filter parameters for given filter set in this context.
+   */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
     return this.filterParams[name] as T;
   }
@@ -636,9 +658,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return ret;
   }
 
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>, P extends string | keyof T | Populate<T>>(entities: T, populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>>;
+
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>, P extends string | keyof T | Populate<T>>(entities: T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>[]>;
+
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>, P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P> | Loaded<T, P>[]>;
+
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>, P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<Loaded<T, P> | Loaded<T, P>[]> {
     const entitiesArray = Utils.asArray(entities);
 
@@ -716,6 +753,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.metadata;
   }
 
+  /**
+   * Gets the EntityComparator.
+   */
   getComparator(): EntityComparator {
     return this.comparator;
   }

@@ -17,6 +17,9 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), this.getTransactionContext(), alias, type, this);
   }
 
+  /**
+   * Returns configured knex instance.
+   */
   getKnex(type?: 'read' | 'write') {
     return this.getConnection(type).getKnex();
   }

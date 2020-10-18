@@ -24,6 +24,9 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: Options<T>): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;

@@ -10,10 +10,16 @@ export class SqlEntityRepository<T> extends EntityRepository<T> {
     super(em, entityName);
   }
 
+  /**
+   * Creates a QueryBuilder instance
+   */
   createQueryBuilder(alias?: string): QueryBuilder<T> {
     return this.em.createQueryBuilder(this.entityName, alias);
   }
 
+  /**
+   * Returns configured knex instance.
+   */
   getKnex(type?: 'read' | 'write'): Knex {
     return this.em.getConnection(type).getKnex();
   }
