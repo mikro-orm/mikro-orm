@@ -118,7 +118,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use ensureIndexes`);
   }
 
-  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T): void {
+  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
     Object.keys(data).forEach(k => {
       if (Utils.isOperator(k)) {
         Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload));
@@ -126,6 +126,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
 
     meta.props.forEach(prop => {
+      if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
+        return;
+      }
+
       if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
 
@@ -136,7 +140,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
           }
 
-          data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+          if (prop.object && where) {
+            data[`${prop.name}.${props[kk].embedded![1]}`] = data[prop.name][props[kk].embedded![1]];
+          } else {
+            data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+          }
         });
         delete data[prop.name];
       }

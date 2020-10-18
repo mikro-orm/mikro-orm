@@ -225,8 +225,7 @@ export class SchemaGenerator {
 
   private createTable(meta: EntityMetadata): SchemaBuilder {
     return this.knex.schema.createTable(meta.collection, table => {
-      Object
-        .values(meta.properties)
+      meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => this.createTableColumn(table, meta, prop));
 
@@ -285,7 +284,7 @@ export class SchemaGenerator {
   }
 
   private computeTableDifference(meta: EntityMetadata, table: DatabaseTable, safe: boolean): TableDifference {
-    const props = Object.values(meta.properties).filter(prop => this.shouldHaveColumn(meta, prop, true));
+    const props = meta.props.filter(prop => this.shouldHaveColumn(meta, prop, true));
     const columns = table.getColumns();
     const create: EntityProperty[] = [];
     const update: { prop: EntityProperty; column: Column; diff: IsSame }[] = [];
@@ -343,7 +342,7 @@ export class SchemaGenerator {
       return false;
     }
 
-    if (meta.pivotTable) {
+    if (meta.pivotTable || (ReferenceType.EMBEDDED && prop.object)) {
       return true;
     }
 
@@ -355,7 +354,7 @@ export class SchemaGenerator {
   }
 
   private createTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): ColumnBuilder[] {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.reference === ReferenceType.SCALAR || (prop.reference === ReferenceType.EMBEDDED && prop.object)) {
       return [this.createSimpleTableColumn(table, meta, prop, alter)];
     }
 
@@ -422,7 +421,7 @@ export class SchemaGenerator {
   private configureColumn<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, col: ColumnBuilder, columnName: string, pkProp = prop, alter?: IsSame) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
     const sameNullable = alter && 'sameNullable' in alter && alter.sameNullable;
-    const indexed = 'index' in prop ? prop.index : (prop.reference !== ReferenceType.SCALAR && this.helper.indexForeignKeys());
+    const indexed = 'index' in prop ? prop.index : (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference) && this.helper.indexForeignKeys());
     const index = indexed && !alter?.sameIndex;
     const indexName = this.getIndexName(meta, prop, 'index', [columnName]);
     const uniqueName = this.getIndexName(meta, prop, 'unique', [columnName]);
@@ -452,7 +451,7 @@ export class SchemaGenerator {
   }
 
   private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[]): void {
-    Object.values(meta.properties)
+    meta.relations
       .filter(prop => !props || props.includes(prop))
       .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
       .forEach(prop => this.createForeignKey(table, meta, prop));
@@ -582,7 +581,7 @@ export class SchemaGenerator {
     let meta = metadata.pop();
 
     while (meta) {
-      for (const prop of Object.values(meta.properties)) {
+      for (const prop of meta.props) {
         if (!calc.hasNode(prop.type)) {
           continue;
         }

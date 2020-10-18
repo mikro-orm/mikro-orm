@@ -67,6 +67,9 @@ class User {
   @Embedded({ entity: () => Address1, prefix: false })
   address3 = new Address1();
 
+  @Embedded({ entity: () => Address1, object: true })
+  address4 = new Address1();
+
 }
 
 class Parent {
@@ -163,6 +166,7 @@ describe('embedded entities in mongo', () => {
     user.address1 = new Address1('Downing street 10', '123', 'London 1', 'UK 1');
     user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
+    user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
@@ -170,7 +174,7 @@ describe('embedded entities in mongo', () => {
     orm.config.reset('highlighter');
     await orm.em.persistAndFlush(user);
     orm.em.clear();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_postalCode: undefined, addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_postalCode: undefined, addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' } }, { session: undefined });`);
 
     const u = await orm.em.findOneOrFail(User, user.id);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('user'\)\.find\({ _id: .* }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
@@ -195,10 +199,18 @@ describe('embedded entities in mongo', () => {
       city: 'London 3',
       country: 'UK 3',
     });
+    expect(u.address4).toBeInstanceOf(Address1);
+    expect(u.address4).toEqual({
+      street: 'Downing street 13',
+      postalCode: '10',
+      city: 'London 4',
+      country: 'UK 4',
+    });
 
     u.address2!.postalCode = '111';
+    u.address4!.postalCode = '999';
     await orm.em.flush();
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { addr_postalCode: '111' } }, { session: undefined }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { addr_postalCode: '111', address4: { street: 'Downing street 13', postalCode: '999', city: 'London 4', country: 'UK 4' } } }, { session: undefined }\);/);
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
@@ -215,12 +227,16 @@ describe('embedded entities in mongo', () => {
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
+    expect(u4).toBe(u1);
   });
 
   test('#assign() works with embeddables', async () => {
     const jon = new User();
     assign(jon, { address1: { city: '1', country: '2', postalCode: '3', street: '4' } });
     expect(jon.address1).toMatchObject({ city: '1', country: '2', postalCode: '3', street: '4' });
+    assign(jon, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
+    expect(jon.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
   });
 
   test('embeddable with zero value', async () => {

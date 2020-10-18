@@ -229,6 +229,10 @@ export class EntityComparator {
     }
 
     if (prop.reference === ReferenceType.EMBEDDED) {
+      if (prop.object) {
+        return ret + `    ret.${prop.name} = clone({ ...entity.${prop.name} });\n  }\n`;
+      }
+
       return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
         return `    ret.${childProp.name} = clone(entity.${prop.name}.${childProp.embedded![1]});`;
       }).join('\n') + '\n  }\n';

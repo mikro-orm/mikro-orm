@@ -21,7 +21,7 @@ export class MetadataStorage {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
-      MetadataStorage.metadata[key] = { className: entity, path, properties: {}, hooks: {}, filters: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
+      MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });
     }
 
     if (key) {
@@ -61,7 +61,7 @@ export class MetadataStorage {
     }
 
     if (init && !this.has(entity)) {
-      this.metadata[entity] = { properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
+      this.metadata[entity] = new EntityMetadata();
     }
 
     return this.metadata[entity];

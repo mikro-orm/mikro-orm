@@ -23,10 +23,6 @@ export abstract class AbstractSqlPlatform extends Platform {
     return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
   }
 
-  quoteIdentifier(id: string, quote = '`'): string {
-    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
-  }
-
   quoteValue(value: any): string {
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || Array.isArray(value)) {

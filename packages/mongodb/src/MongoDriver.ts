@@ -24,7 +24,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
-    where = this.renameFields(entityName, where);
+    where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find(entityName)!)!);
@@ -36,14 +36,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
-    where = this.renameFields(entityName, where);
+    where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, ctx));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
   async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {
-    where = this.renameFields(entityName, where);
+    where = this.renameFields(entityName, where, true);
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }
 
@@ -62,7 +62,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    where = this.renameFields(entityName, where);
+    where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
 
     return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx));
@@ -78,7 +78,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    where = this.renameFields(entityName, where);
+    where = this.renameFields(entityName, where, true);
 
     return this.rethrow(this.getConnection('write').deleteMany(entityName, where, ctx));
   }
@@ -183,13 +183,13 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     })];
   }
 
-  private renameFields<T>(entityName: string, data: T): T {
+  private renameFields<T>(entityName: string, data: T, where = false): T {
     data = Object.assign({}, data); // copy first
     Utils.renameKey(data, 'id', '_id');
     const meta = this.metadata.find(entityName);
 
     if (meta) {
-      this.inlineEmbeddables(meta, data);
+      this.inlineEmbeddables(meta, data, where);
     }
 
     Object.keys(data).forEach(k => {
@@ -211,11 +211,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           Utils.renameKey(data, k, prop.fieldNames[0]);
         }
 
-        let isObjectId: boolean;
+        let isObjectId = false;
 
         if (prop.reference === ReferenceType.SCALAR) {
           isObjectId = prop.type.toLowerCase() === 'objectid';
-        } else {
+        } else if (prop.reference !== ReferenceType.EMBEDDED) {
           const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type.toLowerCase() === 'objectid';

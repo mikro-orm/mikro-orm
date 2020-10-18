@@ -21,4 +21,5 @@ export type EmbeddedOptions = {
   type?: string;
   prefix?: string | boolean;
   nullable?: boolean;
+  object?: boolean;
 };

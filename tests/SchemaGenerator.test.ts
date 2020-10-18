@@ -162,15 +162,15 @@ describe('SchemaGenerator', () => {
 
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
-    delete newTableMeta.properties.id;
-    delete newTableMeta.properties.updatedAt;
-    delete authorMeta.properties.favouriteBook;
+    newTableMeta.removeProperty('id');
+    newTableMeta.removeProperty('updatedAt');
+    authorMeta.removeProperty('favouriteBook');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-column');
     await generator.updateSchema();
 
-    newTableMeta.properties.id = idProp;
-    newTableMeta.properties.updatedAt = updatedAtProp;
-    authorMeta.properties.favouriteBook = favouriteBookProp;
+    newTableMeta.addProperty(idProp);
+    newTableMeta.addProperty(updatedAtProp);
+    authorMeta.addProperty(favouriteBookProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-column');
     await generator.updateSchema();
 
@@ -184,8 +184,8 @@ describe('SchemaGenerator', () => {
     // remove 1:1 relation
     const fooBarMeta = meta.get('FooBar2');
     const fooBazMeta = meta.get('FooBaz2');
-    delete fooBarMeta.properties.baz;
-    delete fooBazMeta.properties.bar;
+    fooBarMeta.removeProperty('baz');
+    fooBazMeta.removeProperty('bar');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-1:1');
     await generator.updateSchema();
 
@@ -203,14 +203,14 @@ describe('SchemaGenerator', () => {
     ageProp.fieldNames = ['age_in_years'];
     const index = authorMeta.indexes.find(i => Utils.asArray(i.properties).join() === 'name,age')!;
     index.properties = ['name', 'ageInYears'];
-    delete authorMeta.properties.age;
-    authorMeta.properties.ageInYears = ageProp;
+    authorMeta.removeProperty('age');
+    authorMeta.addProperty(ageProp);
     const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
     favouriteAuthorProp.name = 'favouriteWriter';
     favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
-    delete authorMeta.properties.favouriteAuthor;
-    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    authorMeta.removeProperty('favouriteAuthor');
+    authorMeta.addProperty(favouriteAuthorProp);
     await (generator.getUpdateSchemaSQL(false));
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
     await generator.updateSchema();
@@ -503,9 +503,9 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.name.nullable = false;
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
-    delete newTableMeta.properties.id;
-    delete newTableMeta.properties.updatedAt;
-    delete authorMeta.properties.favouriteBook;
+    newTableMeta.removeProperty('id');
+    newTableMeta.removeProperty('updatedAt');
+    authorMeta.removeProperty('favouriteBook');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-column');
     await generator.updateSchema();
 
@@ -516,14 +516,14 @@ describe('SchemaGenerator', () => {
     favouriteAuthorProp.name = 'favouriteWriter';
     favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
-    delete authorMeta.properties.favouriteAuthor;
-    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    authorMeta.removeProperty('favouriteAuthor');
+    authorMeta.addProperty(favouriteAuthorProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-rename-column');
     await generator.updateSchema();
 
-    newTableMeta.properties.id = idProp;
-    newTableMeta.properties.updatedAt = updatedAtProp;
-    authorMeta.properties.favouriteBook = favouriteBookProp;
+    newTableMeta.addProperty(idProp);
+    newTableMeta.addProperty(updatedAtProp);
+    authorMeta.addProperty(favouriteBookProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-column');
     await generator.updateSchema();
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
@@ -531,8 +531,8 @@ describe('SchemaGenerator', () => {
     // remove 1:1 relation
     const fooBarMeta = meta.get('FooBar2');
     const fooBazMeta = meta.get('FooBaz2');
-    delete fooBarMeta.properties.baz;
-    delete fooBazMeta.properties.bar;
+    fooBarMeta.removeProperty('baz');
+    fooBazMeta.removeProperty('bar');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-1:1');
     await generator.updateSchema();
 

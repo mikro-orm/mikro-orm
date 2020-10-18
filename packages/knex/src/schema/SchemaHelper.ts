@@ -235,7 +235,7 @@ export abstract class SchemaHelper {
   }
 
   private hasSameIndex(prop: EntityProperty, column: Column): boolean {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if ([ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
       return true;
     }
 

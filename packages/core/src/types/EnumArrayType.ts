@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { ArrayType } from './ArrayType';
-import { Platform } from '../platforms/Platform';
+import { Platform } from '../platforms';
 import { ValidationError } from '../errors';
 
 function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {

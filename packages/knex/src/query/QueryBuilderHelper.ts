@@ -31,6 +31,10 @@ export class QueryBuilderHelper {
     const prop = this.getProperty(field, this.alias);
     const noPrefix = prop && prop.persist === false;
 
+    if (prop?.fieldNameRaw) {
+      return this.knex.raw(this.prefix(field, true));
+    }
+
     // do not wrap custom expressions
     if (!customExpression) {
       ret = this.prefix(field);
@@ -472,9 +476,10 @@ export class QueryBuilderHelper {
     return !!field.match(/[ ?<>=()]|^\d/);
   }
 
-  private prefix(field: string): string {
+  private prefix(field: string, always = false): string {
     if (!this.isPrefixed(field)) {
-      return this.fieldName(field, this.alias);
+      const alias = always ? this.platform.quoteIdentifier(this.alias) + '.' : '';
+      return alias + this.fieldName(field, this.alias);
     }
 
     const [a, f] = field.split('.');
@@ -503,12 +508,22 @@ export class QueryBuilderHelper {
   }
 
   private isPrefixed(field: string): boolean {
-    return !!field.match(/\w+\./);
+    return !!field.match(/[\w`"[\]]+\./);
   }
 
   private fieldName(field: string, alias?: string): string {
     const prop = this.getProperty(field, alias);
-    return prop ? prop.fieldNames[0] : field;
+
+    if (!prop) {
+      return field;
+    }
+
+    if (prop.fieldNameRaw) {
+      return prop.fieldNameRaw;
+    }
+
+    /* istanbul ignore next */
+    return prop.fieldNames[0] ?? field;
   }
 
   private getProperty(field: string, alias?: string): EntityProperty | undefined {
