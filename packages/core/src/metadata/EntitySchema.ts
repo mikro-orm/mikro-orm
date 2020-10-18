@@ -27,7 +27,7 @@ type Metadata<T, U> =
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
 
-  private readonly _meta: EntityMetadata<T> = {} as EntityMetadata<T>;
+  private readonly _meta: EntityMetadata<T> = new EntityMetadata<T>();
   private internal = false;
   private initialized = false;
 
@@ -39,7 +39,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       meta.tableName = meta.collection;
     }
 
-    Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, filters: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
+    Object.assign(this._meta, { className: meta.name }, meta);
   }
 
   static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
@@ -233,6 +233,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
+    this._meta.relations = this._meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
     this.initialized = true;
 
     return this;

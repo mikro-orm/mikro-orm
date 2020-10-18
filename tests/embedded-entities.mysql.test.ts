@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Embeddable()
@@ -64,6 +64,12 @@ class User {
   @Embedded({ prefix: false })
   address3: Address1 = new Address1();
 
+  @Embedded({ object: true })
+  address4: Address1 = new Address1();
+
+  @Property({ nullable: true })
+  after?: number; // property after embeddables to verify order props in resulting schema
+
 }
 
 describe('embedded entities in mysql', () => {
@@ -78,13 +84,11 @@ describe('embedded entities in mysql', () => {
       port: 3307,
     });
     await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
   });
 
-  afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.close(true);
-  });
+  afterAll(() => orm.close(true));
 
   test('metadata', async () => {
     expect(orm.getMetadata().get('Address1').embeddable).toBe(true);
@@ -130,7 +134,7 @@ describe('embedded entities in mysql', () => {
   test('schema', async () => {
     await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 1');
     await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 3');
   });
 
   test('persist and load', async () => {
@@ -138,6 +142,7 @@ describe('embedded entities in mysql', () => {
     user.address1 = new Address1('Downing street 10', '123', 'London 1', 'UK 1');
     user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
+    user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
@@ -146,7 +151,7 @@ describe('embedded entities in mysql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`addr_city`, `addr_country`, `addr_postal_code`, `addr_street`, `address1_city`, `address1_country`, `address1_postal_code`, `address1_street`, `city`, `country`, `postal_code`, `street`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`addr_city`, `addr_country`, `addr_postal_code`, `addr_street`, `address1_city`, `address1_country`, `address1_postal_code`, `address1_street`, `address4`, `city`, `country`, `postal_code`, `street`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -172,11 +177,19 @@ describe('embedded entities in mysql', () => {
       city: 'London 3',
       country: 'UK 3',
     });
+    expect(u.address4).toBeInstanceOf(Address1);
+    expect(u.address4).toEqual({
+      street: 'Downing street 13',
+      postalCode: '10',
+      city: 'London 4',
+      country: 'UK 4',
+    });
 
     u.address2!.postalCode = '111';
+    u.address4!.postalCode = '999';
     await orm.em.flush();
     expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch('update `user` set `addr_postal_code` = ? where `id` = ?');
+    expect(mock.mock.calls[5][0]).toMatch('update `user` set `addr_postal_code` = ?, `address4` = ? where `id` = ?');
     expect(mock.mock.calls[6][0]).toMatch('commit');
     orm.em.clear();
 
@@ -196,6 +209,9 @@ describe('embedded entities in mysql', () => {
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
+    const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
+    expect(u4).toBe(u1);
+    expect(mock.mock.calls[10][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`address4`->\'$.postalCode\' = ? limit ?');
   });
 
   test('assign', async () => {
@@ -205,6 +221,8 @@ describe('embedded entities in mysql', () => {
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
     }, { em: orm.em });
+    assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
+    expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
 
     expect(user.address1).toBeInstanceOf(Address1);
     expect(user.address1).toEqual({

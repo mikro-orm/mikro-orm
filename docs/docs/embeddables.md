@@ -99,5 +99,24 @@ export class User {
 }
 ```
 
+## Storing embeddables as objects
+
+From MikroORM v4.2 we can also store the embeddable as an object instead of
+inlining its properties to the owing entity.
+
+```ts
+@Entity()
+export class User {
+
+  @Embedded({ entity: () => Address, object: true })
+  address!: Address;
+
+}
+```
+
+In SQL drivers, this will use a JSON column to store the value. 
+
+> Only MySQL and PostgreSQL drivers support searching by JSON properties currently.
+
 > This part of documentation is highly inspired by [doctrine tutorial](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/embeddables.html)
 > as the behaviour here is pretty much the same.

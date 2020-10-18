@@ -101,11 +101,12 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`  }`);
       } else if (prop.reference === ReferenceType.EMBEDDED) {
         context.set(`prototype_${prop.name}`, prop.embeddable.prototype);
+        const mapProp = <T>(childProp: EntityProperty<T>) => prop.object ? `data.${prop.name}.${childProp.embedded![1]}` : `data.${childProp.name}`;
 
         lines.push(`  entity.${prop.name} = Object.create(prototype_${prop.name});`);
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(childProp => lines.push(`  entity.${prop.name}.${childProp.embedded![1]} = data.${childProp.name};`));
+          .forEach(childProp => lines.push(`  entity.${prop.name}.${childProp.embedded![1]} = ${mapProp(childProp)};`));
       } else { // ReferenceType.SCALAR
         if (prop.type.toLowerCase() === 'date') {
           lines.push(`  if (data.${prop.name}) entity.${prop.name} = new Date(data.${prop.name});`);

@@ -12,7 +12,6 @@ import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
 import { ArrayType, BlobType, JsonType, Type } from '../types';
-import { EntityComparator } from '../utils/EntityComparator';
 
 export class MetadataDiscovery {
 
@@ -33,6 +32,11 @@ export class MetadataDiscovery {
     this.logger.log('discovery', `ORM entity discovery started, using ${c.cyan(this.metadataProvider.constructor.name)}`);
     await this.findEntities(preferTsNode);
 
+    for (const meta of this.discovered) {
+      let i = 1;
+      Object.values(meta.properties).forEach(prop => meta.propertyOrder.set(prop.name, i++));
+    }
+
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
@@ -48,22 +52,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
     filtered.forEach(meta => this.discovered.push(...this.processEntity(meta)));
-
-    this.discovered.forEach(meta => {
-      const root = Utils.getRootEntity(this.metadata, meta);
-      const props = Object.values(meta.properties);
-      meta.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
-      meta.relations = meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
-      meta.comparableProps = meta.props.filter(prop => EntityComparator.isComparable(prop, root));
-      meta.hydrateProps = meta.props.filter(prop => {
-        // `prop.userDefined` is either `undefined` or `false`
-        const discriminator = root.discriminatorColumn === prop.name && prop.userDefined === false;
-        const onlyGetter = prop.getter && !prop.setter;
-        return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
-      });
-      meta.selfReferencing = meta.relations.some(prop => [meta.className, root.className].includes(prop.type));
-      meta.name && meta.props.forEach(prop => this.initIndexes(meta, prop));
-    });
+    this.discovered.forEach(meta => meta.sync(true));
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished, found ${c.green('' + this.discovered.length)} entities, took ${c.green(`${diff} ms`)}`);
@@ -269,7 +258,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.reference === ReferenceType.SCALAR || (prop.reference === ReferenceType.EMBEDDED && prop.object)) {
       prop.fieldNames = [this.namingStrategy.propertyToColumnName(prop.name)];
     } else if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
       prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
@@ -402,16 +391,11 @@ export class MetadataDiscovery {
   }
 
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
-    const data = {
+    const data = new EntityMetadata({
       name: prop.pivotTable,
       collection: prop.pivotTable,
       pivotTable: true,
-      properties: {} as Record<string, EntityProperty>,
-      hooks: {},
-      filters: {},
-      indexes: [] as any[],
-      uniques: [] as any[],
-    } as EntityMetadata;
+    });
 
     if (prop.fixedOrder) {
       const primaryProp = this.defineFixedOrderProperty(prop);
@@ -517,15 +501,23 @@ export class MetadataDiscovery {
       });
   }
 
-  private defineBaseEntityProperties(meta: EntityMetadata): void {
+  private defineBaseEntityProperties(meta: EntityMetadata): number {
     const base = meta.extends && this.metadata.get(meta.extends);
 
     if (!base || base === meta) { // make sure we do not fall into infinite loop
-      return;
+      return 0;
     }
 
-    this.defineBaseEntityProperties(base);
+    let order = this.defineBaseEntityProperties(base);
+    const old = Object.values(meta.properties);
     meta.properties = { ...base.properties, ...meta.properties };
+
+    if (!meta.discriminatorValue) {
+      Object.values(base.properties).filter(prop => !old.includes(prop)).forEach(prop => {
+        meta.properties[prop.name] = { ...prop };
+        meta.propertyOrder.set(prop.name, (order += 0.01));
+      });
+    }
     meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
     meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
     const pks = Object.values(meta.properties).filter(p => p.primary).map(p => p.name);
@@ -545,6 +537,8 @@ export class MetadataDiscovery {
     if (meta.toJsonParams.length === 0 && base.toJsonParams.length > 0) {
       meta.toJsonParams = [...base.toJsonParams];
     }
+
+    return order;
   }
 
   private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty): void {
@@ -555,6 +549,7 @@ export class MetadataDiscovery {
     const embeddable = this.discovered.find(m => m.name === embeddedProp.type);
     embeddedProp.embeddable = embeddable!.class;
     embeddedProp.embeddedProps = {};
+    let order = meta.propertyOrder.get(embeddedProp.name)!;
 
     for (const prop of Object.values(embeddable!.properties)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
@@ -562,10 +557,17 @@ export class MetadataDiscovery {
       meta.properties[name] = Utils.copy(prop);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
+      meta.propertyOrder.set(name, (order += 0.01));
       embeddedProp.embeddedProps[prop.name] = meta.properties[name];
 
       if (embeddedProp.nullable) {
         meta.properties[name].nullable = true;
+      }
+
+      if (embeddedProp.object) {
+        this.initFieldName(embeddedProp);
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(`${embeddedProp.fieldNames[0]}->${prop.name}`); // for querying in SQL drivers
+        meta.properties[name].persist = false; // only virtual as we store the whole object
       }
     }
   }
@@ -594,7 +596,7 @@ export class MetadataDiscovery {
     meta.discriminatorValue = Object.entries(meta.root.discriminatorMap!).find(([, className]) => className === meta.className)?.[0];
 
     if (!meta.root.properties[meta.root.discriminatorColumn]) {
-      meta.root.properties[meta.root.discriminatorColumn] = this.createDiscriminatorProperty(meta.root);
+      this.createDiscriminatorProperty(meta.root);
     }
 
     Utils.defaultValue(meta.root.properties[meta.root.discriminatorColumn], 'items', Object.keys(meta.root.discriminatorMap));
@@ -606,26 +608,28 @@ export class MetadataDiscovery {
 
     Object.values(meta.properties).forEach(prop => {
       const exists = meta.root.properties[prop.name];
-      meta.root.properties[prop.name] = Utils.copy(prop);
-      meta.root.properties[prop.name].nullable = true;
+      prop = Utils.copy(prop);
+      prop.nullable = true;
 
       if (!exists) {
-        meta.root.properties[prop.name].inherited = true;
+        prop.inherited = true;
       }
+
+      meta.root.addProperty(prop);
     });
 
     meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
     meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
   }
 
-  private createDiscriminatorProperty(meta: EntityMetadata): EntityProperty {
-    return {
+  private createDiscriminatorProperty(meta: EntityMetadata): void {
+    meta.addProperty({
       name: meta.discriminatorColumn!,
       type: 'string',
       enum: true,
       reference: ReferenceType.SCALAR,
       userDefined: false,
-    } as EntityProperty;
+    } as EntityProperty);
   }
 
   private getDefaultVersionValue(prop: EntityProperty): string {
@@ -714,6 +718,11 @@ export class MetadataDiscovery {
       return;
     }
 
+    if (prop.reference === ReferenceType.EMBEDDED && prop.object && !prop.columnTypes) {
+      prop.columnTypes = [this.platform.getJsonDeclarationSQL()];
+      return;
+    }
+
     const meta = this.metadata.get(prop.type);
     prop.columnTypes = [];
     meta.primaryKeys.forEach(primaryKey => {
@@ -758,34 +767,6 @@ export class MetadataDiscovery {
     }
 
     prop.unsigned = (prop.primary || prop.unsigned) && (prop.type === 'number' || this.platform.isBigIntProperty(prop));
-  }
-
-  private initIndexes<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
-    const simpleIndex = meta.indexes.find(index => index.properties === prop.name && !index.options && !index.type);
-    const simpleUnique = meta.uniques.find(index => index.properties === prop.name && !index.options);
-    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
-
-    if (!prop.index && simpleIndex) {
-      Utils.defaultValue(simpleIndex, 'name', true);
-      prop.index = simpleIndex.name;
-      meta.indexes.splice(meta.indexes.indexOf(simpleIndex), 1);
-    }
-
-    if (!prop.unique && simpleUnique) {
-      Utils.defaultValue(simpleUnique, 'name', true);
-      prop.unique = simpleUnique.name;
-      meta.uniques.splice(meta.uniques.indexOf(simpleUnique), 1);
-    }
-
-    if (owner && prop.fieldNames.length > 1) {
-      meta.indexes.push({ properties: prop.name });
-      prop.index = false;
-    }
-
-    if (owner && prop.fieldNames.length > 1 && prop.unique) {
-      meta.uniques.push({ properties: prop.name });
-      prop.unique = false;
-    }
   }
 
   private getEntityClassOrSchema(path: string, name: string) {

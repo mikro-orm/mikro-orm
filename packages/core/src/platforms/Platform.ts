@@ -145,6 +145,10 @@ export abstract class Platform {
     return 'json';
   }
 
+  getSearchJsonPropertySQL(path: string): string {
+    return path;
+  }
+
   convertsJsonAutomatically(marshall = false): boolean {
     return !marshall;
   }
@@ -167,6 +171,10 @@ export abstract class Platform {
 
   processDateProperty(value: unknown): string | number | Date {
     return value as string;
+  }
+
+  quoteIdentifier(id: string, quote = '`'): string {
+    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
   setConfig(config: Configuration): void {

@@ -3,6 +3,7 @@ import { AssignOptions, Collection, EntityRepository, EntityIdentifier, Identifi
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
+import { EntityComparator, Utils } from './utils';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -126,6 +127,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   reference: ReferenceType;
   wrappedReference?: boolean;
   fieldNames: string[];
+  fieldNameRaw?: string;
   default?: string | number | boolean | null;
   defaultRaw?: string;
   formula?: (alias: string) => string;
@@ -133,6 +135,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   embedded?: [string, string];
   embeddable: Constructor<T>;
   embeddedProps: Dictionary<EntityProperty>;
+  object?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
   nullable?: boolean;
@@ -170,6 +173,90 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   serializedName?: string;
   comment?: string;
   userDefined?: boolean;
+}
+
+export class EntityMetadata<T extends AnyEntity<T> = any> {
+
+  readonly propertyOrder = new Map<string, number>();
+
+  constructor(meta: Partial<EntityMetadata> = {}) {
+    this.properties = {} as any;
+    this.props = [];
+    this.primaryKeys = [];
+    this.filters = {};
+    this.hooks = {};
+    this.indexes = [];
+    this.uniques = [];
+    Object.assign(this, meta);
+  }
+
+  addProperty(prop: EntityProperty<T>, sync = true) {
+    this.properties[prop.name] = prop;
+    this.propertyOrder.set(prop.name, this.props.length);
+
+    /* istanbul ignore next */
+    if (sync) {
+      this.sync();
+    }
+  }
+
+  removeProperty(name: string, sync = true) {
+    delete this.properties[name];
+    this.propertyOrder.delete(name);
+
+    /* istanbul ignore next */
+    if (sync) {
+      this.sync();
+    }
+  }
+
+  sync(initIndexes = false) {
+    this.root = this.root ?? this;
+    const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
+    this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
+    this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
+    this.hydrateProps = this.props.filter(prop => {
+      // `prop.userDefined` is either `undefined` or `false`
+      const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
+      const onlyGetter = prop.getter && !prop.setter;
+      return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
+    });
+    this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+
+    if (initIndexes && this.name) {
+      this.props.forEach(prop => this.initIndexes(prop));
+    }
+  }
+
+  private initIndexes(prop: EntityProperty<T>): void {
+    const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type);
+    const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
+    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+
+    if (!prop.index && simpleIndex) {
+      Utils.defaultValue(simpleIndex, 'name', true);
+      prop.index = simpleIndex.name;
+      this.indexes.splice(this.indexes.indexOf(simpleIndex), 1);
+    }
+
+    if (!prop.unique && simpleUnique) {
+      Utils.defaultValue(simpleUnique, 'name', true);
+      prop.unique = simpleUnique.name;
+      this.uniques.splice(this.uniques.indexOf(simpleUnique), 1);
+    }
+
+    if (owner && prop.fieldNames.length > 1) {
+      this.indexes.push({ properties: prop.name });
+      prop.index = false;
+    }
+
+    if (owner && prop.fieldNames.length > 1 && prop.unique) {
+      this.uniques.push({ properties: prop.name });
+      prop.unique = false;
+    }
+  }
+
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
