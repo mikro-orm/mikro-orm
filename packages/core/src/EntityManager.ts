@@ -110,7 +110,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, convertCustomTypes: true }) as T;
+      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, refresh: options.refresh, convertCustomTypes: true }) as T;
       this.getUnitOfWork().registerManaged(entity, data, options.refresh);
       ret.push(entity);
     }

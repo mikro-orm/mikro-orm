@@ -2311,6 +2311,24 @@ describe('EntityManagerMySql', () => {
       'where `e0`.`author_id` is not null and `e1`.`name` = ? limit ?');
   });
 
+  test('refreshing already loaded entity', async () => {
+    const god = new Author2(`God `, `hello@heaven.god`);
+    new Book2(`Bible 1`, god);
+    new Book2(`Bible 2`, god);
+    new Book2(`Bible 3`, god);
+    await orm.em.persistAndFlush(god);
+    orm.em.clear();
+
+    const r1 = await orm.em.find(Author2, god, { fields: ['id'], populate: ['books'] });
+    expect(r1).toHaveLength(1);
+    expect(r1[0].id).toBe(god.id);
+    expect(r1[0].name).toBeUndefined();
+    const r2 = await orm.em.find(Author2, god, { refresh: true, populate: ['books'] });
+    expect(r2).toHaveLength(1);
+    expect(r2[0].id).toBe(god.id);
+    expect(r2[0].name).toBe(god.name);
+  });
+
   test('custom types', async () => {
     const bar = FooBar2.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
