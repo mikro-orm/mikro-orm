@@ -321,7 +321,7 @@ type MigrationResult = { fileName: string; code: string; diff: string[] };
 type MigrationRow = { name: string; executed_at: Date };
 
 export interface IMigrator {
-  createMigration(path?: string, blank?: boolean): Promise<MigrationResult>;
+  createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
   getPendingMigrations(): Promise<UmzugMigration[]>;
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
