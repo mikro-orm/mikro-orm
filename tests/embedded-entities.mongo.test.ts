@@ -112,6 +112,7 @@ describe('embedded entities in mongo', () => {
       entities: [Address1, Address2, User, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs0',
       type: 'mongo',
+      validate: true,
     });
   });
 
@@ -171,7 +172,6 @@ describe('embedded entities in mongo', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
-    orm.config.reset('highlighter');
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_postalCode: undefined, addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' } }, { session: undefined });`);
@@ -229,6 +229,12 @@ describe('embedded entities in mongo', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
+  });
+
+  test('validation of object embeddables (GH issue #466)', async () => {
+    const user = new User();
+    user.address4.postalCode = 123 as any;
+    await expect(orm.em.persistAndFlush(user)).rejects.toThrowError(`Trying to set User.address4_postalCode of type 'string' to '123' of type 'number'`);
   });
 
   test('#assign() works with embeddables', async () => {

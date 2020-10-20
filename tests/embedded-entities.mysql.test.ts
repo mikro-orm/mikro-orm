@@ -147,7 +147,6 @@ describe('embedded entities in mysql', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
-    orm.config.reset('highlighter');
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
