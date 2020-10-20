@@ -46,7 +46,20 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
   static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
     const type = Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
-    return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use wrap(entity).assign(data, { em }) instead.`);
+    return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
+  }
+
+  static notDiscoveredEntity(data: any, meta?: EntityMetadata): ValidationError {
+    /* istanbul ignore next */
+    const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
+    let err = `Trying to persist not discovered entity of type ${type}.`;
+
+    /* istanbul ignore else */
+    if (meta) {
+      err += ` Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
+    }
+
+    return new ValidationError(err);
   }
 
   static invalidPropertyName(entityName: string, invalid: string): ValidationError {

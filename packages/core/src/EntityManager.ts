@@ -561,6 +561,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const entities = Utils.asArray(entity);
 
     for (const ent of entities) {
+      if (!Utils.isEntity(ent, true)) {
+        /* istanbul ignore next */
+        const meta = typeof ent === 'object' ? this.metadata.find(ent.constructor.name) : undefined;
+        throw ValidationError.notDiscoveredEntity(ent, meta);
+      }
+
       this.getUnitOfWork().persist(Reference.unwrapReference(ent));
     }
 
