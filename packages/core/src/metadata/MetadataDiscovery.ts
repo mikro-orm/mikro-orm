@@ -341,7 +341,8 @@ export class MetadataDiscovery {
     }
 
     if (!prop.referencedColumnNames) {
-      prop.referencedColumnNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
+      meta2.getPrimaryProps().forEach(pk => this.applyNamingStrategy(meta2, pk));
+      prop.referencedColumnNames = Utils.flatten(meta2.getPrimaryProps().map(pk => pk.fieldNames));
     }
   }
 
