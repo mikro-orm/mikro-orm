@@ -38,8 +38,16 @@ export class Migrator {
     });
   }
 
+  async ensurePrerequisites() {
+    if (this.options.migrationsList?.length) {
+      await ensureDir(Utils.normalizePath(this.options.path!));
+    }
+
+    await this.storage.ensureTable();
+  }
+
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
+    await this.ensurePrerequisites();
 
     if (initial) {
       await this.validateInitialMigration();
@@ -74,14 +82,12 @@ export class Migrator {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
-    await this.storage.ensureTable();
+    await this.ensurePrerequisites();
     return this.storage.getExecutedMigrations();
   }
 
   async getPendingMigrations(): Promise<UmzugMigration[]> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
-    await this.storage.ensureTable();
+    await this.ensurePrerequisites();
     return this.umzug.pending();
   }
 
@@ -165,8 +171,7 @@ export class Migrator {
   }
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
-    await ensureDir(Utils.normalizePath(this.options.path!));
-    await this.storage.ensureTable();
+    await this.ensurePrerequisites();
 
     if (!this.options.transactional || !this.options.allOrNothing) {
       return this.umzug[method](this.prefix(options as string[]));
