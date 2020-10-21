@@ -39,7 +39,7 @@ export class Migrator {
   }
 
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
-    await this.ensurePrerequisites();
+    await this.ensureMigrationsDirExists();
 
     if (initial) {
       await this.validateInitialMigration();
@@ -74,12 +74,14 @@ export class Migrator {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    await this.ensurePrerequisites();
+    await this.ensureMigrationsDirExists();
+    await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
   async getPendingMigrations(): Promise<UmzugMigration[]> {
-    await this.ensurePrerequisites();
+    await this.ensureMigrationsDirExists();
+    await this.storage.ensureTable();
     return this.umzug.pending();
   }
 
@@ -163,7 +165,8 @@ export class Migrator {
   }
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
-    await this.ensurePrerequisites();
+    await this.ensureMigrationsDirExists();
+    await this.storage.ensureTable();
 
     if (!this.options.transactional || !this.options.allOrNothing) {
       return this.umzug[method](this.prefix(options as string[]));
@@ -186,12 +189,10 @@ export class Migrator {
     return ret;
   }
 
-  private async ensurePrerequisites() {
+  private async ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
       await ensureDir(Utils.normalizePath(this.options.path!));
     }
-
-    await this.storage.ensureTable();
   }
 
 }
