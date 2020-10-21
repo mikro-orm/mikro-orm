@@ -1,4 +1,4 @@
-import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
+import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType, Utils, Subscriber } from '@mikro-orm/core';
 import { Test } from './entities';
 
 class Test2 {}
@@ -19,6 +19,12 @@ describe('decorators', () => {
     ManyToMany({ entity: () => Test })(new Test2(), 'test0'); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ reference: ReferenceType.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
+    Subscriber()(Test6);
+    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(1);
+    MetadataStorage.clear();
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
+    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(0);
   });
 
   test('ManyToOne', () => {

@@ -51,6 +51,11 @@ export class MetadataStorage {
     return new MetadataStorage(MetadataStorage.metadata);
   }
 
+  static clear(): void {
+    Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
+    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
+  }
+
   getAll(): Dictionary<EntityMetadata> {
     return this.metadata;
   }
