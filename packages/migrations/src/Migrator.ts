@@ -26,7 +26,7 @@ export class Migrator {
       customResolver: (file: string) => this.resolve(file),
     };
 
-    if (this.options.migrationsList?.length) {
+    if (this.options.migrationsList) {
       const list = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
       migrations = migrationsList(list as any[]);
     }
@@ -39,7 +39,7 @@ export class Migrator {
   }
 
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
+    await this.ensureMigrationsDirExists();
 
     if (initial) {
       await this.validateInitialMigration();
@@ -74,13 +74,13 @@ export class Migrator {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
+    await this.ensureMigrationsDirExists();
     await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
   async getPendingMigrations(): Promise<UmzugMigration[]> {
-    await ensureDir(Utils.normalizePath(this.options.path!));
+    await this.ensureMigrationsDirExists();
     await this.storage.ensureTable();
     return this.umzug.pending();
   }
@@ -165,7 +165,7 @@ export class Migrator {
   }
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
-    await ensureDir(Utils.normalizePath(this.options.path!));
+    await this.ensureMigrationsDirExists();
     await this.storage.ensureTable();
 
     if (!this.options.transactional || !this.options.allOrNothing) {
@@ -187,6 +187,12 @@ export class Migrator {
     this.storage.unsetMasterMigration();
 
     return ret;
+  }
+
+  private async ensureMigrationsDirExists() {
+    if (!this.options.migrationsList) {
+      await ensureDir(Utils.normalizePath(this.options.path!));
+    }
   }
 
 }
