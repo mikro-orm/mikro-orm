@@ -187,7 +187,7 @@ export class Migrator {
   }
 
   private async ensurePrerequisites() {
-    if (this.options.migrationsList?.length) {
+    if (!this.options.migrationsList?.length) {
       await ensureDir(Utils.normalizePath(this.options.path!));
     }
 
