@@ -75,7 +75,7 @@ function Footer() {
                                     style={{ marginTop: 10 }}
                                     frameBorder={0}
                                     scrolling={0}
-                                    width={100}
+                                    width={150}
                                     height={30}
                                     title="GitHub Stars"
                                     key={key}
@@ -90,7 +90,7 @@ function Footer() {
                             <iframe src="https://ghbtns.com/github-btn.html?user=B4nan&type=sponsor"
                                     frameBorder={0}
                                     scrolling={0}
-                                    width={130}
+                                    width={150}
                                     height={30}
                                     title="Sponsor B4nan" />
                           </li>
