@@ -1,8 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-import { Logger, MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { DatabaseSchema, DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
 
@@ -101,11 +101,29 @@ describe('Migrator', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
+    const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
+    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
+    schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
-    const migration = await migrator.createMigration(undefined, false, true);
+    const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author2, book2`;
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+
+    metadataMock.mockReturnValueOnce({});
+    const err3 = `No entities found`;
+    await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+
+    schemaMock.mockReturnValueOnce([]);
+    getPendingMigrationsMock.mockResolvedValueOnce([]);
+    const migration1 = await migrator.createInitialMigration(undefined);
+    expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
+    expect(migration1).toMatchSnapshot('initial-migration-dump');
+    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migration2 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).toBeCalledWith('Migration20191013214813.ts');
-    expect(migration).toMatchSnapshot('initial-migration-dump');
-    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    expect(migration2).toMatchSnapshot('initial-migration-dump');
+    await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
   });
 
   test('migration storage getter', async () => {

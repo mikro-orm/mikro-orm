@@ -1,7 +1,7 @@
 import umzug, { migrationsList, Umzug } from 'umzug';
 import { ensureDir } from 'fs-extra';
 import { Constructor, Dictionary, Transaction, Utils } from '@mikro-orm/core';
-import { EntityManager, SchemaGenerator } from '@mikro-orm/knex';
+import { DatabaseSchema, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
@@ -39,12 +39,11 @@ export class Migrator {
   }
 
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
-    await this.ensureMigrationsDirExists();
-
     if (initial) {
-      await this.validateInitialMigration();
+      return this.createInitialMigration(path);
     }
 
+    await this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(blank, initial);
 
     if (diff.length === 0) {
@@ -53,7 +52,20 @@ export class Migrator {
 
     const migration = await this.generator.generate(diff, path);
 
-    if (initial) {
+    return {
+      fileName: migration[1],
+      code: migration[0],
+      diff,
+    };
+  }
+
+  async createInitialMigration(path?: string): Promise<MigrationResult> {
+    await this.ensureMigrationsDirExists();
+    const schemaExists = await this.validateInitialMigration();
+    const diff = await this.getSchemaDiff(false, true);
+    const migration = await this.generator.generate(diff, path);
+
+    if (schemaExists) {
       await this.storage.logMigration(migration[1]);
     }
 
@@ -64,13 +76,48 @@ export class Migrator {
     };
   }
 
-  async validateInitialMigration() {
+  /**
+   * Initial migration can be created only if:
+   * 1. no previous migrations were generated or executed
+   * 2. existing schema do not contain any of the tables defined by metadata
+   *
+   * If existing schema contains all of the tables already, we return true, based on that we mark the migration as already executed.
+   * If only some of the tables are present, exception is thrown.
+   */
+  private async validateInitialMigration(): Promise<boolean> {
     const executed = await this.getExecutedMigrations();
     const pending = await this.getPendingMigrations();
 
     if (executed.length > 0 || pending.length > 0) {
       throw new Error('Initial migration cannot be created, as some migrations already exist');
     }
+
+    const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform().getSchemaHelper()!, this.config);
+    const exists = new Set<string>();
+    const expected = new Set<string>();
+
+    Object.values(this.em.getMetadata().getAll())
+      .filter(meta => meta.collection)
+      .forEach(meta => expected.add(meta.collection));
+
+    schema.getTables().forEach(table => {
+      /* istanbul ignore next */
+      const tableName = table.schema ? `${table.schema}.${table.name}` : table.name;
+
+      if (expected.has(tableName)) {
+        exists.add(tableName);
+      }
+    });
+
+    if (expected.size === 0) {
+      throw new Error('No entities found');
+    }
+
+    if (exists.size > 0 && expected.size !== exists.size) {
+      throw new Error(`Some tables already exist in your schema, remove them first to create the initial migration: ${[...exists].join(', ')}`);
+    }
+
+    return expected.size === exists.size;
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {

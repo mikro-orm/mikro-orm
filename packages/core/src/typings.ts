@@ -326,6 +326,7 @@ type MigrationRow = { name: string; executed_at: Date };
 
 export interface IMigrator {
   createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
+  createInitialMigration(path?: string): Promise<MigrationResult>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
   getPendingMigrations(): Promise<UmzugMigration[]>;
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
