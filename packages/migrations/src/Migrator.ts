@@ -26,7 +26,7 @@ export class Migrator {
       customResolver: (file: string) => this.resolve(file),
     };
 
-    if (this.options.migrationsList?.length) {
+    if (this.options.migrationsList) {
       const list = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
       migrations = migrationsList(list as any[]);
     }
@@ -187,7 +187,7 @@ export class Migrator {
   }
 
   private async ensurePrerequisites() {
-    if (!this.options.migrationsList?.length) {
+    if (!this.options.migrationsList) {
       await ensureDir(Utils.normalizePath(this.options.path!));
     }
 
