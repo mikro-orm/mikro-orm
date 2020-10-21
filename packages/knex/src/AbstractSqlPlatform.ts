@@ -33,7 +33,7 @@ export abstract class AbstractSqlPlatform extends Platform {
     return escape(value, true, this.timezone);
   }
 
-  formatQuery(sql: string, params: any[]): string {
+  formatQuery(sql: string, params: readonly any[]): string {
     if (params.length === 0) {
       return sql;
     }

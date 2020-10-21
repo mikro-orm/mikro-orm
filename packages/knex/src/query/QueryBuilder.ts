@@ -259,12 +259,26 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
+  /**
+   * Returns the query with parameters as wildcards.
+   */
   getQuery(): string {
     return this.getKnexQuery().toSQL().toNative().sql;
   }
 
+  /**
+   * Returns the list of all parameters for this query.
+   */
   getParams(): readonly Value[] {
     return this.getKnexQuery().toSQL().toNative().bindings;
+  }
+
+  /**
+   * Returns raw interpolated query string with all the parameters inlined.
+   */
+  getFormattedQuery(): string {
+    const query = this.getKnexQuery().toSQL().toNative();
+    return this.platform.formatQuery(query.sql, query.bindings);
   }
 
   getAliasForJoinPath(path: string): string | undefined {

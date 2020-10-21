@@ -38,7 +38,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly eventManager = new EventManager(config.get('subscribers'))) { }
 
   /**
-   * Gets the Driver instance used by this EntityManager
+   * Gets the Driver instance used by this EntityManager.
+   * Driver is singleton, for one MikroORM instance, only one driver is created.
    */
   getDriver(): D {
     return this.driver;
@@ -49,6 +50,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
     return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
+  }
+
+  /**
+   * Gets the platform instance. Just like the driver, platform is singleton, one for a MikroORM instance.
+   */
+  getPlatform(): ReturnType<D['getPlatform']> {
+    return this.driver.getPlatform() as ReturnType<D['getPlatform']>;
   }
 
   /**

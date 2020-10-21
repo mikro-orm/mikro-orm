@@ -305,6 +305,12 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([false]);
   });
 
+  test('select with boolean in relation (GH issue #940)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.select('*').where({ author: { termsAccepted: true } });
+    expect(qb.getFormattedQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where `e1`.`terms_accepted` = true');
+  });
+
   test('select with custom expression', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({ 'json_contains(`e0`.`meta`, ?)': [{ foo: 'bar' }] });
