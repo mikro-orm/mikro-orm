@@ -82,7 +82,7 @@ export class ConfigurationLoader {
 
   static async getTsConfig(tsConfigPath: string): Promise<Dictionary> {
     const json = await readFile(tsConfigPath);
-    return JSON.parse(stripJsonComments(json.toString()));
+    return JSON.parse(stripJsonComments(JSON.stringify(json)));
   }
 
 }
