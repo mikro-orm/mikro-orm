@@ -38,14 +38,6 @@ export class Migrator {
     });
   }
 
-  async ensurePrerequisites() {
-    if (this.options.migrationsList?.length) {
-      await ensureDir(Utils.normalizePath(this.options.path!));
-    }
-
-    await this.storage.ensureTable();
-  }
-
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
     await this.ensurePrerequisites();
 
@@ -192,6 +184,14 @@ export class Migrator {
     this.storage.unsetMasterMigration();
 
     return ret;
+  }
+
+  private async ensurePrerequisites() {
+    if (this.options.migrationsList?.length) {
+      await ensureDir(Utils.normalizePath(this.options.path!));
+    }
+
+    await this.storage.ensureTable();
   }
 
 }
