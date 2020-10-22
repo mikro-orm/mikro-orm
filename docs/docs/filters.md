@@ -33,6 +33,13 @@ const books2 = await orm.em.find(Book, {}, {
 });
 ```
 
+## Properties of filter
+
+There are three parameters you can use:
+- `name` - can be used to enable a filter on the query can also used to pass a parameter
+- `cond` - is the condition that should be added to the query when the filter is enabled. This can be a callback, even async
+- `default` - indicates if the filter is enabled by default on the query
+
 ## Parameters
 
 You can define the `cond` dynamically as a callback. This callback can be also 
