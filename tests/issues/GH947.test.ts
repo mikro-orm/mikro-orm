@@ -24,8 +24,8 @@ describe('GH issue 947', () => {
     await orm.getSchemaGenerator().dropSchema();
     await orm.getSchemaGenerator().createSchema();
 
-    await orm.em.transactional(async () => {
-      await orm.em.find(A, {});
+    await orm.em.transactional(async transactionalEm => {
+      await transactionalEm.find(A, {});
     });
 
     await orm.close();
