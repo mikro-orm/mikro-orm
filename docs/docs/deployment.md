@@ -177,7 +177,7 @@ for (const devDependency of Object.keys(devDependencies)) {
 const optionalModules = new Set([
   ...Object.keys(require('knex/package.json').browser),
   ...Object.keys(require('@mikro-orm/core/package.json').peerDependencies),
-  ...Object.keys(require('@mikro-orm/core/package.json').devDependencies)
+  ...Object.keys(require('@mikro-orm/core/package.json').devDependencies || {})
 ]);
 
 module.exports = {
@@ -239,7 +239,7 @@ module.exports = {
     new EnvironmentPlugin({ WEBPACK: true }),
     new IgnorePlugin({
       checkResource: resource => {
-        const [baseResource] = resource.split('/');
+        const baseResource = resource.split('/', resource[0] === '@' ? 2 : 1).join('/');
 
         if (optionalModules.has(baseResource)) {
           try {
