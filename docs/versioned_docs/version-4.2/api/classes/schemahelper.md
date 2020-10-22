@@ -14,7 +14,7 @@ sidebar_label: "SchemaHelper"
 
 ▸ **databaseExists**(`connection`: Connection, `name`: string): Promise&#60;boolean>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:178](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L178)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:178](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L178)*
 
 #### Parameters:
 
@@ -31,7 +31,7 @@ ___
 
 ▸ **finalizeTable**(`table`: TableBuilder, `charset`: string): void
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L16)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L16)*
 
 #### Parameters:
 
@@ -48,7 +48,7 @@ ___
 
 ▸ **getColumns**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `tableName`: string, `schemaName?`: string): Promise&#60;any[]>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L93)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L93)*
 
 #### Parameters:
 
@@ -66,7 +66,7 @@ ___
 
 ▸ **getCreateDatabaseSQL**(`name`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:154](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L154)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:154](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L154)*
 
 #### Parameters:
 
@@ -82,7 +82,7 @@ ___
 
 ▸ **getDatabaseExistsSQL**(`name`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:162](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L162)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:162](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L162)*
 
 #### Parameters:
 
@@ -98,7 +98,7 @@ ___
 
 ▸ **getDatabaseNotExistsError**(`dbName`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:166](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L166)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:166](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L166)*
 
 #### Parameters:
 
@@ -114,7 +114,7 @@ ___
 
 ▸ **getDefaultEmptyString**(): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:174](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L174)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:174](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L174)*
 
 **Returns:** string
 
@@ -124,7 +124,7 @@ ___
 
 ▸ **getDropDatabaseSQL**(`name`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:158](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L158)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:158](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L158)*
 
 #### Parameters:
 
@@ -140,7 +140,7 @@ ___
 
 ▸ **getEnumDefinitions**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `tableName`: string, `schemaName?`: string): Promise&#60;[Dictionary](../index.md#dictionary)>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:81](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L81)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:81](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L81)*
 
 #### Parameters:
 
@@ -158,7 +158,7 @@ ___
 
 ▸ **getForeignKeys**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `tableName`: string, `schemaName?`: string): Promise&#60;[Dictionary](../index.md#dictionary)>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L76)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L76)*
 
 #### Parameters:
 
@@ -176,7 +176,7 @@ ___
 
 ▸ **getForeignKeysSQL**(`tableName`: string, `schemaName?`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L101)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L101)*
 
 #### Parameters:
 
@@ -193,7 +193,7 @@ ___
 
 ▸ **getIndexName**(`tableName`: string, `columns`: string[], `type`: &#34;index&#34; \| &#34;unique&#34; \| &#34;foreign&#34;): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L108)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L108)*
 
 Returns the default name of index for the given columns
 
@@ -213,7 +213,7 @@ ___
 
 ▸ **getIndexes**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `tableName`: string, `schemaName?`: string): Promise&#60;[Index](../interfaces/index.md)[]>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L97)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L97)*
 
 #### Parameters:
 
@@ -231,7 +231,7 @@ ___
 
 ▸ **getListTablesSQL**(): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L85)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L85)*
 
 **Returns:** string
 
@@ -241,7 +241,7 @@ ___
 
 ▸ **getManagementDbName**(): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:170](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L170)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:170](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L170)*
 
 **Returns:** string
 
@@ -251,7 +251,7 @@ ___
 
 ▸ **getPrimaryKeys**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `indexes`: [Index](../interfaces/index.md)[], `tableName`: string, `schemaName?`: string): Promise&#60;string[]>
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L72)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L72)*
 
 #### Parameters:
 
@@ -270,7 +270,7 @@ ___
 
 ▸ **getRenameColumnSQL**(`tableName`: string, `from`: [Column](../interfaces/column.md), `to`: EntityProperty, `idx?`: number, `quote?`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L89)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L89)*
 
 #### Parameters:
 
@@ -290,7 +290,7 @@ ___
 
 ▸ **getSchemaBeginning**(`charset`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L8)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L8)*
 
 #### Parameters:
 
@@ -306,7 +306,7 @@ ___
 
 ▸ **getSchemaEnd**(): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L12)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L12)*
 
 **Returns:** string
 
@@ -316,7 +316,7 @@ ___
 
 ▸ **getTypeDefinition**(`prop`: EntityProperty, `types?`: [Dictionary](../index.md#dictionary)&#60;string[]>, `lengths?`: [Dictionary](../index.md#dictionary)&#60;number>, `allowZero?`: boolean): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L20)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L20)*
 
 #### Parameters:
 
@@ -335,7 +335,7 @@ ___
 
 ▸ **getTypeFromDefinition**(`type`: string, `defaultType`: string, `types?`: [Dictionary](../index.md#dictionary)&#60;string[]>): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:62](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L62)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:62](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L62)*
 
 #### Parameters:
 
@@ -353,7 +353,7 @@ ___
 
 ▸ `Private`**hasSameDefaultValue**(`info`: [Column](../interfaces/column.md), `prop`: EntityProperty, `defaultValues`: [Dictionary](../index.md#dictionary)&#60;string[]>): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:210](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L210)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:210](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L210)*
 
 #### Parameters:
 
@@ -371,7 +371,7 @@ ___
 
 ▸ `Private`**hasSameEnumDefinition**(`prop`: EntityProperty, `column`: [Column](../interfaces/column.md)): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:247](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L247)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:247](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L247)*
 
 #### Parameters:
 
@@ -388,7 +388,7 @@ ___
 
 ▸ `Private`**hasSameIndex**(`prop`: EntityProperty, `column`: [Column](../interfaces/column.md)): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:237](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L237)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:237](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L237)*
 
 #### Parameters:
 
@@ -405,7 +405,7 @@ ___
 
 ▸ `Private`**hasSameType**(`columnType`: string, `infoType`: string, `types`: [Dictionary](../index.md#dictionary)&#60;string[]>): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:191](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L191)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:191](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L191)*
 
 #### Parameters:
 
@@ -423,7 +423,7 @@ ___
 
 ▸ **indexForeignKeys**(): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L51)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L51)*
 
 **Returns:** boolean
 
@@ -433,7 +433,7 @@ ___
 
 ▸ **isImplicitIndex**(`name`: string): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L58)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L58)*
 
 Implicit indexes will be ignored when diffing
 
@@ -451,7 +451,7 @@ ___
 
 ▸ **isSame**(`prop`: EntityProperty, `column`: [Column](../interfaces/column.md), `idx?`: number, `types?`: [Dictionary](../index.md#dictionary)&#60;string[]>, `defaultValues?`: [Dictionary](../index.md#dictionary)&#60;string[]>): [IsSame](../interfaces/issame.md)
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L36)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L36)*
 
 #### Parameters:
 
@@ -471,7 +471,7 @@ ___
 
 ▸ **mapForeignKeys**(`fks`: any[]): [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:112](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L112)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:112](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L112)*
 
 #### Parameters:
 
@@ -487,7 +487,7 @@ ___
 
 ▸ **normalizeDefaultValue**(`defaultValue`: string, `length`: number, `defaultValues?`: [Dictionary](../index.md#dictionary)&#60;string[]>): string \| number
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L143)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L143)*
 
 #### Parameters:
 
@@ -505,7 +505,7 @@ ___
 
 ▸ `Private`**processTypeWildCard**(`prop`: EntityProperty, `lengths`: [Dictionary](../index.md#dictionary)&#60;number>, `propType`: string, `allowZero`: boolean, `type`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:127](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L127)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:127](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L127)*
 
 #### Parameters:
 
@@ -525,7 +525,7 @@ ___
 
 ▸ **supportsColumnAlter**(): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:139](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L139)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:139](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L139)*
 
 **Returns:** boolean
 
@@ -535,6 +535,6 @@ ___
 
 ▸ **supportsSchemaConstraints**(): boolean
 
-*Defined in [packages/knex/src/schema/SchemaHelper.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaHelper.ts#L47)*
+*Defined in [packages/knex/src/schema/SchemaHelper.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaHelper.ts#L47)*
 
 **Returns:** boolean

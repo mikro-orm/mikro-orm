@@ -164,7 +164,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[connect](abstractsqlconnection.md#connect)*
 
-*Defined in [packages/mysql-base/src/MySqlConnection.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlConnection.ts#L5)*
+*Defined in [packages/mysql-base/src/MySqlConnection.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlConnection.ts#L5)*
 
 **Returns:** Promise&#60;void>
 
@@ -260,7 +260,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getConnectionOptions](abstractsqlconnection.md#getconnectionoptions)*
 
-*Defined in [packages/mysql-base/src/MySqlConnection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlConnection.ts#L13)*
+*Defined in [packages/mysql-base/src/MySqlConnection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlConnection.ts#L13)*
 
 **Returns:** MySqlConnectionConfig
 
@@ -272,7 +272,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getDefaultClientUrl](abstractsqlconnection.md#getdefaultclienturl)*
 
-*Defined in [packages/mysql-base/src/MySqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlConnection.ts#L9)*
+*Defined in [packages/mysql-base/src/MySqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlConnection.ts#L9)*
 
 **Returns:** string
 
@@ -452,7 +452,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlConnection.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlConnection.ts#L34)*
+*Defined in [packages/mysql-base/src/MySqlConnection.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlConnection.ts#L34)*
 
 #### Type parameters:
 

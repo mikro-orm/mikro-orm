@@ -21,7 +21,7 @@ Name | Type | Default |
 
 \+ **new EntitySchema**(`meta`: [Metadata](../index.md#metadata)&#60;T, U>): [EntitySchema](entityschema.md)
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L32)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L32)*
 
 #### Parameters:
 
@@ -37,7 +37,7 @@ Name | Type |
 
 • `Private` `Readonly` **\_meta**: [EntityMetadata](entitymetadata.md)&#60;T> = new EntityMetadata&#60;T>()
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L30)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L30)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • `Private` **initialized**: boolean = false
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L32)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L32)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • `Private` **internal**: boolean = false
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L31)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L31)*
 
 ## Accessors
 
@@ -61,7 +61,7 @@ ___
 
 • get **meta**(): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:206](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L206)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:206](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L206)*
 
 **Returns:** [EntityMetadata](entitymetadata.md)&#60;T>
 
@@ -71,7 +71,7 @@ ___
 
 • get **name**(): [EntityName](../index.md#entityname)&#60;T>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:210](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L210)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:210](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L210)*
 
 **Returns:** [EntityName](../index.md#entityname)&#60;T>
 
@@ -81,7 +81,7 @@ ___
 
 ▸ **addEmbedded**&#60;K>(`name`: string & keyof T, `options`: [EmbeddedOptions](../index.md#embeddedoptions)): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:112](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L112)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:112](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L112)*
 
 #### Type parameters:
 
@@ -104,7 +104,7 @@ ___
 
 ▸ **addEnum**(`name`: string & keyof T, `type?`: [TypeType](../index.md#typetype), `options?`: [EnumOptions](../interfaces/enumoptions.md)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L84)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L84)*
 
 #### Parameters:
 
@@ -122,7 +122,7 @@ ___
 
 ▸ **addIndex**&#60;T>(`options`: Required&#60;Omit&#60;[IndexOptions](../interfaces/indexoptions.md)&#60;T>, &#34;name&#34; \| &#34;type&#34; \| &#34;options&#34;>> & { name?: string ; options?: [Dictionary](../index.md#dictionary) ; type?: string  }): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:178](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L178)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:178](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L178)*
 
 #### Type parameters:
 
@@ -144,7 +144,7 @@ ___
 
 ▸ **addManyToMany**&#60;K>(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options`: [ManyToManyOptions](../interfaces/manytomanyoptions.md)&#60;K, T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:137](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L137)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:137](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L137)*
 
 #### Type parameters:
 
@@ -168,7 +168,7 @@ ___
 
 ▸ **addManyToOne**&#60;K>(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options`: [ManyToOneOptions](../interfaces/manytooneoptions.md)&#60;K, T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:122](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L122)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:122](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L122)*
 
 #### Type parameters:
 
@@ -192,7 +192,7 @@ ___
 
 ▸ **addOneToMany**&#60;K>(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options`: [OneToManyOptions](../index.md#onetomanyoptions)&#60;K, T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:152](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L152)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:152](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L152)*
 
 #### Type parameters:
 
@@ -216,7 +216,7 @@ ___
 
 ▸ **addOneToOne**&#60;K>(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options`: [OneToOneOptions](../interfaces/onetooneoptions.md)&#60;K, T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:157](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L157)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:157](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L157)*
 
 #### Type parameters:
 
@@ -240,7 +240,7 @@ ___
 
 ▸ **addPrimaryKey**(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options?`: [PrimaryKeyOptions](../interfaces/primarykeyoptions.md)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L103)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L103)*
 
 #### Parameters:
 
@@ -258,7 +258,7 @@ ___
 
 ▸ **addProperty**(`name`: string & keyof T, `type?`: [TypeType](../index.md#typetype), `options?`: [PropertyOptions](../index.md#propertyoptions)&#60;T> \| [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L52)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L52)*
 
 #### Parameters:
 
@@ -276,7 +276,7 @@ ___
 
 ▸ **addSerializedPrimaryKey**(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options?`: [SerializedPrimaryKeyOptions](../interfaces/serializedprimarykeyoptions.md)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:107](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L107)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:107](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L107)*
 
 #### Parameters:
 
@@ -294,7 +294,7 @@ ___
 
 ▸ **addUnique**&#60;T>(`options`: Required&#60;Omit&#60;[UniqueOptions](../interfaces/uniqueoptions.md)&#60;T>, &#34;name&#34; \| &#34;options&#34;>> & { name?: string ; options?: [Dictionary](../index.md#dictionary)  }): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:182](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L182)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:182](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L182)*
 
 #### Type parameters:
 
@@ -316,7 +316,7 @@ ___
 
 ▸ **addVersion**(`name`: string & keyof T, `type`: [TypeType](../index.md#typetype), `options?`: [PropertyOptions](../index.md#propertyoptions)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L99)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L99)*
 
 #### Parameters:
 
@@ -334,7 +334,7 @@ ___
 
 ▸ `Private`**createProperty**&#60;T>(`reference`: [ReferenceType](../enums/referencetype.md), `options`: [PropertyOptions](../index.md#propertyoptions)&#60;T> \| [EntityProperty](../interfaces/entityproperty.md)): { cascade: [Cascade](../enums/cascade.md)[] = [Cascade.PERSIST]; reference: [ReferenceType](../enums/referencetype.md)  } \| { cascade: [Cascade](../enums/cascade.md)[] = [Cascade.PERSIST]; reference: [ReferenceType](../enums/referencetype.md)  }
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:318](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L318)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:318](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L318)*
 
 #### Type parameters:
 
@@ -357,7 +357,7 @@ ___
 
 ▸ **init**(): this
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:217](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L217)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:217](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L217)*
 
 **`internal`** 
 
@@ -369,7 +369,7 @@ ___
 
 ▸ `Private`**initPrimaryKeys**(): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:278](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L278)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:278](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L278)*
 
 **Returns:** void
 
@@ -379,7 +379,7 @@ ___
 
 ▸ `Private`**initProperties**(): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:242](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L242)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:242](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L242)*
 
 **Returns:** void
 
@@ -389,7 +389,7 @@ ___
 
 ▸ `Private`**normalizeType**(`options`: [PropertyOptions](../index.md#propertyoptions)&#60;T> \| [EntityProperty](../interfaces/entityproperty.md), `type?`: string \| any \| [Constructor](../index.md#constructor)&#60;[Type](type.md)>): any
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:298](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L298)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:298](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L298)*
 
 #### Parameters:
 
@@ -406,7 +406,7 @@ ___
 
 ▸ **setClass**(`proto`: [Constructor](../index.md#constructor)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:194](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L194)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:194](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L194)*
 
 #### Parameters:
 
@@ -422,7 +422,7 @@ ___
 
 ▸ **setCustomRepository**(`repository`: () => [Constructor](../index.md#constructor)&#60;[EntityRepository](entityrepository.md)&#60;T>>): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:186](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L186)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:186](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L186)*
 
 #### Parameters:
 
@@ -438,7 +438,7 @@ ___
 
 ▸ **setExtends**(`base`: string): void
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:190](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L190)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:190](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L190)*
 
 #### Parameters:
 
@@ -454,7 +454,7 @@ ___
 
 ▸ `Static`**fromMetadata**&#60;T, U>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T> \| [DeepPartial](../index.md#deeppartial)&#60;[EntityMetadata](entitymetadata.md)&#60;T>>): [EntitySchema](entityschema.md)&#60;T, U>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L45)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L45)*
 
 #### Type parameters:
 

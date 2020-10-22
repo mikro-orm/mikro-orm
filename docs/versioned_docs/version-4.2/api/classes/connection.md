@@ -14,7 +14,7 @@ sidebar_label: "Connection"
 
 \+ **new Connection**(`config`: [Configuration](configuration.md), `options?`: [ConnectionOptions](../interfaces/connectionoptions.md), `type?`: &#34;read&#34; \| &#34;write&#34;): [Connection](connection.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L13)*
+*Defined in [packages/core/src/connections/Connection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L13)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ Name | Type | Default value |
 
 • `Protected` `Abstract` **client**: any
 
-*Defined in [packages/core/src/connections/Connection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L13)*
+*Defined in [packages/core/src/connections/Connection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L13)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Protected` `Readonly` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L15)*
+*Defined in [packages/core/src/connections/Connection.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L15)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Protected` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L11)*
+*Defined in [packages/core/src/connections/Connection.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L11)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Protected` `Optional` `Readonly` **options**: [ConnectionOptions](../interfaces/connectionoptions.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L16)*
+*Defined in [packages/core/src/connections/Connection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L16)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • `Protected` **platform**: [Platform](platform.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L12)*
+*Defined in [packages/core/src/connections/Connection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L12)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 • `Protected` `Readonly` **type**: &#34;read&#34; \| &#34;write&#34;
 
-*Defined in [packages/core/src/connections/Connection.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L17)*
+*Defined in [packages/core/src/connections/Connection.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L17)*
 
 ## Methods
 
@@ -80,7 +80,7 @@ ___
 
 ▸ **begin**(`ctx?`: [Transaction](../index.md#transaction)): Promise&#60;unknown>
 
-*Defined in [packages/core/src/connections/Connection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L48)*
+*Defined in [packages/core/src/connections/Connection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L48)*
 
 #### Parameters:
 
@@ -96,7 +96,7 @@ ___
 
 ▸ `Abstract`**close**(`force?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/connections/Connection.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L37)*
+*Defined in [packages/core/src/connections/Connection.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L37)*
 
 Closes the database connection (aka disconnect)
 
@@ -114,7 +114,7 @@ ___
 
 ▸ **commit**(`ctx`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/connections/Connection.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L52)*
+*Defined in [packages/core/src/connections/Connection.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L52)*
 
 #### Parameters:
 
@@ -130,7 +130,7 @@ ___
 
 ▸ `Abstract`**connect**(): Promise&#60;void>
 
-*Defined in [packages/core/src/connections/Connection.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L27)*
+*Defined in [packages/core/src/connections/Connection.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L27)*
 
 Establishes connection to database
 
@@ -142,7 +142,7 @@ ___
 
 ▸ `Abstract`**execute**(`query`: string, `params?`: any[], `method?`: &#34;all&#34; \| &#34;get&#34; \| &#34;run&#34;, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[QueryResult](../interfaces/queryresult.md) \| any \| any[]>
 
-*Defined in [packages/core/src/connections/Connection.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L60)*
+*Defined in [packages/core/src/connections/Connection.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L60)*
 
 #### Parameters:
 
@@ -161,7 +161,7 @@ ___
 
 ▸ `Protected`**executeQuery**&#60;T>(`query`: string, `cb`: () => Promise&#60;T>): Promise&#60;T>
 
-*Defined in [packages/core/src/connections/Connection.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L89)*
+*Defined in [packages/core/src/connections/Connection.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L89)*
 
 #### Type parameters:
 
@@ -184,7 +184,7 @@ ___
 
 ▸ **getClientUrl**(): string
 
-*Defined in [packages/core/src/connections/Connection.ts:74](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L74)*
+*Defined in [packages/core/src/connections/Connection.ts:74](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L74)*
 
 **Returns:** string
 
@@ -194,7 +194,7 @@ ___
 
 ▸ **getConnectionOptions**(): [ConnectionConfig](../interfaces/connectionconfig.md)
 
-*Defined in [packages/core/src/connections/Connection.ts:62](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L62)*
+*Defined in [packages/core/src/connections/Connection.ts:62](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L62)*
 
 **Returns:** [ConnectionConfig](../interfaces/connectionconfig.md)
 
@@ -204,7 +204,7 @@ ___
 
 ▸ `Abstract`**getDefaultClientUrl**(): string
 
-*Defined in [packages/core/src/connections/Connection.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L42)*
+*Defined in [packages/core/src/connections/Connection.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L42)*
 
 Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
 
@@ -216,7 +216,7 @@ ___
 
 ▸ `Abstract`**isConnected**(): Promise&#60;boolean>
 
-*Defined in [packages/core/src/connections/Connection.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L32)*
+*Defined in [packages/core/src/connections/Connection.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L32)*
 
 Are we connected to the database
 
@@ -228,7 +228,7 @@ ___
 
 ▸ `Protected`**logQuery**(`query`: string, `took?`: number): void
 
-*Defined in [packages/core/src/connections/Connection.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L103)*
+*Defined in [packages/core/src/connections/Connection.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L103)*
 
 #### Parameters:
 
@@ -245,7 +245,7 @@ ___
 
 ▸ **rollback**(`ctx`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/connections/Connection.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L56)*
+*Defined in [packages/core/src/connections/Connection.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L56)*
 
 #### Parameters:
 
@@ -261,7 +261,7 @@ ___
 
 ▸ **setMetadata**(`metadata`: [MetadataStorage](metadatastorage.md)): void
 
-*Defined in [packages/core/src/connections/Connection.ts:81](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L81)*
+*Defined in [packages/core/src/connections/Connection.ts:81](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L81)*
 
 #### Parameters:
 
@@ -277,7 +277,7 @@ ___
 
 ▸ **setPlatform**(`platform`: [Platform](platform.md)): void
 
-*Defined in [packages/core/src/connections/Connection.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L85)*
+*Defined in [packages/core/src/connections/Connection.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L85)*
 
 #### Parameters:
 
@@ -293,7 +293,7 @@ ___
 
 ▸ **transactional**&#60;T>(`cb`: (trx: [Transaction](../index.md#transaction)) => Promise&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;T>
 
-*Defined in [packages/core/src/connections/Connection.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L44)*
+*Defined in [packages/core/src/connections/Connection.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L44)*
 
 #### Type parameters:
 

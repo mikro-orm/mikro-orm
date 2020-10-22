@@ -14,7 +14,7 @@ sidebar_label: "IMetadataStorage"
 
 ▸ **find**&#60;T>(`entity`: string): [EntityMetadata](../classes/entitymetadata.md)&#60;T> \| undefined
 
-*Defined in [packages/core/src/typings.ts:407](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L407)*
+*Defined in [packages/core/src/typings.ts:407](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L407)*
 
 #### Type parameters:
 
@@ -36,7 +36,7 @@ ___
 
 ▸ **get**&#60;T>(`entity`: string, `init?`: boolean, `validate?`: boolean): [EntityMetadata](../classes/entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:406](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L406)*
+*Defined in [packages/core/src/typings.ts:406](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L406)*
 
 #### Type parameters:
 
@@ -60,7 +60,7 @@ ___
 
 ▸ **getAll**(): [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](../classes/entitymetadata.md)>
 
-*Defined in [packages/core/src/typings.ts:405](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L405)*
+*Defined in [packages/core/src/typings.ts:405](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L405)*
 
 **Returns:** [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](../classes/entitymetadata.md)>
 
@@ -70,7 +70,7 @@ ___
 
 ▸ **has**(`entity`: string): boolean
 
-*Defined in [packages/core/src/typings.ts:408](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L408)*
+*Defined in [packages/core/src/typings.ts:408](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L408)*
 
 #### Parameters:
 
@@ -86,7 +86,7 @@ ___
 
 ▸ **reset**(`entity`: string): void
 
-*Defined in [packages/core/src/typings.ts:410](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L410)*
+*Defined in [packages/core/src/typings.ts:410](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L410)*
 
 #### Parameters:
 
@@ -102,7 +102,7 @@ ___
 
 ▸ **set**(`entity`: string, `meta`: [EntityMetadata](../classes/entitymetadata.md)): [EntityMetadata](../classes/entitymetadata.md)
 
-*Defined in [packages/core/src/typings.ts:409](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L409)*
+*Defined in [packages/core/src/typings.ts:409](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L409)*
 
 #### Parameters:
 

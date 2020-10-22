@@ -28,7 +28,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[exceptionConverter](abstractsqlplatform.md#exceptionconverter)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L8)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L8)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[convertsJsonAutomatically](abstractsqlplatform.md#convertsjsonautomatically)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L42)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L42)*
 
 #### Parameters:
 
@@ -78,7 +78,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[denormalizePrimaryKey](abstractsqlplatform.md#denormalizeprimarykey)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L26)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L26)*
 
 #### Parameters:
 
@@ -206,7 +206,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getNamingStrategy](abstractsqlplatform.md#getnamingstrategy)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L10)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L10)*
 
 **Returns:** object
 
@@ -234,7 +234,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L14)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L14)*
 
 #### Type parameters:
 
@@ -300,7 +300,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getSerializedPrimaryKeyField](abstractsqlplatform.md#getserializedprimarykeyfield)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L30)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L30)*
 
 #### Parameters:
 
@@ -354,7 +354,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[marshallArray](abstractsqlplatform.md#marshallarray)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L46)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L46)*
 
 #### Parameters:
 
@@ -372,7 +372,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[normalizePrimaryKey](abstractsqlplatform.md#normalizeprimarykey)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L18)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L18)*
 
 #### Type parameters:
 
@@ -576,7 +576,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[usesDifferentSerializedPrimaryKey](abstractsqlplatform.md#usesdifferentserializedprimarykey)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L34)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L34)*
 
 **Returns:** boolean
 
@@ -588,7 +588,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[usesImplicitTransactions](abstractsqlplatform.md#usesimplicittransactions)*
 
-*Defined in [packages/mongodb/src/MongoPlatform.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoPlatform.ts#L38)*
+*Defined in [packages/mongodb/src/MongoPlatform.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoPlatform.ts#L38)*
 
 **Returns:** boolean
 

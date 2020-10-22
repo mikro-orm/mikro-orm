@@ -14,7 +14,7 @@ sidebar_label: "ChangeSetComputer"
 
 \+ **new ChangeSetComputer**(`validator`: [EntityValidator](entityvalidator.md), `collectionUpdates`: Set&#60;[Collection](collection.md)&#60;[AnyEntity](../index.md#anyentity)>>, `removeStack`: Set&#60;[AnyEntity](../index.md#anyentity)>, `metadata`: [MetadataStorage](metadatastorage.md), `platform`: [Platform](platform.md), `config`: [Configuration](configuration.md)): [ChangeSetComputer](changesetcomputer.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L12)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L12)*
 
 #### Parameters:
 
@@ -35,7 +35,7 @@ Name | Type |
 
 • `Private` `Readonly` **collectionUpdates**: Set&#60;[Collection](collection.md)&#60;[AnyEntity](../index.md#anyentity)>>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L15)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L15)*
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 • `Private` `Readonly` **comparator**: [EntityComparator](entitycomparator.md) = new EntityComparator(this.metadata, this.platform)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L12)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L12)*
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 • `Private` `Readonly` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L19)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L19)*
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 • `Private` `Readonly` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L17)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L17)*
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 • `Private` `Readonly` **platform**: [Platform](platform.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L18)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L18)*
 
 ___
 
@@ -75,7 +75,7 @@ ___
 
 • `Private` `Readonly` **removeStack**: Set&#60;[AnyEntity](../index.md#anyentity)>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L16)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L16)*
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 • `Private` `Readonly` **validator**: [EntityValidator](entityvalidator.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L14)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L14)*
 
 ## Methods
 
@@ -91,7 +91,7 @@ ___
 
 ▸ **computeChangeSet**&#60;T>(`entity`: T): [ChangeSet](../interfaces/changeset.md)&#60;T> \| null
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L21)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L21)*
 
 #### Type parameters:
 
@@ -113,7 +113,7 @@ ___
 
 ▸ `Private`**computePayload**&#60;T>(`entity`: T): [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L53)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L53)*
 
 #### Type parameters:
 
@@ -135,7 +135,7 @@ ___
 
 ▸ `Private`**processProperty**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:66](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L66)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:66](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L66)*
 
 #### Type parameters:
 
@@ -158,7 +158,7 @@ ___
 
 ▸ `Private`**processToMany**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L86)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L86)*
 
 #### Type parameters:
 
@@ -181,7 +181,7 @@ ___
 
 ▸ `Private`**processToOne**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetComputer.ts#L76)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetComputer.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetComputer.ts#L76)*
 
 #### Type parameters:
 

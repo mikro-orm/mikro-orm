@@ -18,7 +18,7 @@ sidebar_label: "DateType"
 
 *Overrides [Type](type.md).[compareAsType](type.md#compareastype)*
 
-*Defined in [packages/core/src/types/DateType.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/DateType.ts#L34)*
+*Defined in [packages/core/src/types/DateType.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/DateType.ts#L34)*
 
 **Returns:** string
 
@@ -30,7 +30,7 @@ ___
 
 *Overrides [Type](type.md).[convertToDatabaseValue](type.md#converttodatabasevalue)*
 
-*Defined in [packages/core/src/types/DateType.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/DateType.ts#L8)*
+*Defined in [packages/core/src/types/DateType.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/DateType.ts#L8)*
 
 #### Parameters:
 
@@ -49,7 +49,7 @@ ___
 
 *Overrides [Type](type.md).[convertToJSValue](type.md#converttojsvalue)*
 
-*Defined in [packages/core/src/types/DateType.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/DateType.ts#L20)*
+*Defined in [packages/core/src/types/DateType.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/DateType.ts#L20)*
 
 #### Parameters:
 
@@ -68,7 +68,7 @@ ___
 
 *Overrides [Type](type.md).[getColumnType](type.md#getcolumntype)*
 
-*Defined in [packages/core/src/types/DateType.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/DateType.ts#L38)*
+*Defined in [packages/core/src/types/DateType.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/DateType.ts#L38)*
 
 #### Parameters:
 
@@ -87,7 +87,7 @@ ___
 
 *Overrides [Type](type.md).[toJSON](type.md#tojson)*
 
-*Defined in [packages/core/src/types/DateType.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/DateType.ts#L42)*
+*Defined in [packages/core/src/types/DateType.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/DateType.ts#L42)*
 
 #### Parameters:
 
@@ -106,7 +106,7 @@ ___
 
 *Inherited from [Type](type.md).[getType](type.md#gettype)*
 
-*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L46)*
+*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L46)*
 
 #### Type parameters:
 

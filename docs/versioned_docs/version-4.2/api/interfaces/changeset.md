@@ -20,7 +20,7 @@ Name | Type |
 
 •  **collection**: string
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L5)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L5)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 •  **entity**: T
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L7)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L7)*
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 •  **name**: string
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L4)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L4)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 • `Optional` **originalEntity**: [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L10)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L10)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 •  **payload**: [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L8)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L8)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 •  **persisted**: boolean
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L9)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L9)*
 
 ___
 
@@ -68,4 +68,4 @@ ___
 
 •  **type**: [ChangeSetType](../enums/changesettype.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSet.ts#L6)*
+*Defined in [packages/core/src/unit-of-work/ChangeSet.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSet.ts#L6)*

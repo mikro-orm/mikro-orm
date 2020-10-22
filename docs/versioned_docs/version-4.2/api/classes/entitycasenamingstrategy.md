@@ -26,7 +26,7 @@ This strategy keeps original entity/property names for table/column.
 
 *Inherited from [AbstractNamingStrategy](abstractnamingstrategy.md).[classToMigrationName](abstractnamingstrategy.md#classtomigrationname)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L12)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L12)*
 
 #### Parameters:
 
@@ -46,7 +46,7 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[classToTableName](abstractnamingstrategy.md#classtotablename)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L8)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L8)*
 
 #### Parameters:
 
@@ -66,7 +66,7 @@ ___
 
 *Inherited from [AbstractNamingStrategy](abstractnamingstrategy.md).[getClassName](abstractnamingstrategy.md#getclassname)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L5)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L5)*
 
 #### Parameters:
 
@@ -87,7 +87,7 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[joinColumnName](abstractnamingstrategy.md#joincolumnname)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L12)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L12)*
 
 #### Parameters:
 
@@ -107,7 +107,7 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[joinKeyColumnName](abstractnamingstrategy.md#joinkeycolumnname)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L16)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L16)*
 
 #### Parameters:
 
@@ -129,7 +129,7 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[joinTableName](abstractnamingstrategy.md#jointablename)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L26)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L26)*
 
 #### Parameters:
 
@@ -151,7 +151,7 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[propertyToColumnName](abstractnamingstrategy.md#propertytocolumnname)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L30)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L30)*
 
 #### Parameters:
 
@@ -171,6 +171,6 @@ ___
 
 *Overrides [AbstractNamingStrategy](abstractnamingstrategy.md).[referenceColumnName](abstractnamingstrategy.md#referencecolumnname)*
 
-*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L34)*
+*Defined in [packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/EntityCaseNamingStrategy.ts#L34)*
 
 **Returns:** string

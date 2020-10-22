@@ -20,7 +20,7 @@ Name |
 
 • `Optional` **\_fields**: [Field](../index.md#field)&#60;T>[]
 
-*Defined in [packages/knex/src/typings.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L88)*
+*Defined in [packages/knex/src/typings.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L88)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • `Readonly` **alias**: string
 
-*Defined in [packages/knex/src/typings.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L86)*
+*Defined in [packages/knex/src/typings.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L86)*
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 • `Readonly` **type**: [QueryType](../enums/querytype.md)
 
-*Defined in [packages/knex/src/typings.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L87)*
+*Defined in [packages/knex/src/typings.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L87)*
 
 ## Methods
 
@@ -44,7 +44,7 @@ ___
 
 ▸ **addSelect**(`fields`: string \| string[]): this
 
-*Defined in [packages/knex/src/typings.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L90)*
+*Defined in [packages/knex/src/typings.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L90)*
 
 #### Parameters:
 
@@ -60,7 +60,7 @@ ___
 
 ▸ **andWhere**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>): this
 
-*Defined in [packages/knex/src/typings.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L101)*
+*Defined in [packages/knex/src/typings.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L101)*
 
 #### Parameters:
 
@@ -72,7 +72,7 @@ Name | Type |
 
 ▸ **andWhere**(`cond`: string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/typings.ts:102](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L102)*
+*Defined in [packages/knex/src/typings.ts:102](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L102)*
 
 #### Parameters:
 
@@ -89,7 +89,7 @@ ___
 
 ▸ **count**(`field?`: string \| string[], `distinct?`: boolean): this
 
-*Defined in [packages/knex/src/typings.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L95)*
+*Defined in [packages/knex/src/typings.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L95)*
 
 #### Parameters:
 
@@ -106,7 +106,7 @@ ___
 
 ▸ **delete**(`cond?`: [QBFilterQuery](../index.md#qbfilterquery)): this
 
-*Defined in [packages/knex/src/typings.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L93)*
+*Defined in [packages/knex/src/typings.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L93)*
 
 #### Parameters:
 
@@ -122,7 +122,7 @@ ___
 
 ▸ **getAliasForJoinPath**(`path`: string): string \| undefined
 
-*Defined in [packages/knex/src/typings.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L108)*
+*Defined in [packages/knex/src/typings.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L108)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 ▸ **getNextAlias**(`prefix?`: string): string
 
-*Defined in [packages/knex/src/typings.ts:109](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L109)*
+*Defined in [packages/knex/src/typings.ts:109](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L109)*
 
 #### Parameters:
 
@@ -154,7 +154,7 @@ ___
 
 ▸ **groupBy**(`fields`: string \| keyof T \| (string \| keyof T)[]): this
 
-*Defined in [packages/knex/src/typings.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L106)*
+*Defined in [packages/knex/src/typings.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L106)*
 
 #### Parameters:
 
@@ -170,7 +170,7 @@ ___
 
 ▸ **having**(`cond?`: [QBFilterQuery](../index.md#qbfilterquery) \| string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/typings.ts:107](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L107)*
+*Defined in [packages/knex/src/typings.ts:107](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L107)*
 
 #### Parameters:
 
@@ -187,7 +187,7 @@ ___
 
 ▸ **insert**(`data`: any): this
 
-*Defined in [packages/knex/src/typings.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L91)*
+*Defined in [packages/knex/src/typings.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L91)*
 
 #### Parameters:
 
@@ -203,7 +203,7 @@ ___
 
 ▸ **join**(`field`: string, `alias`: string, `cond?`: [QBFilterQuery](../index.md#qbfilterquery), `type?`: &#34;leftJoin&#34; \| &#34;innerJoin&#34; \| &#34;pivotJoin&#34;, `path?`: string): this
 
-*Defined in [packages/knex/src/typings.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L96)*
+*Defined in [packages/knex/src/typings.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L96)*
 
 #### Parameters:
 
@@ -223,7 +223,7 @@ ___
 
 ▸ **leftJoin**(`field`: string, `alias`: string, `cond?`: [QBFilterQuery](../index.md#qbfilterquery)): this
 
-*Defined in [packages/knex/src/typings.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L97)*
+*Defined in [packages/knex/src/typings.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L97)*
 
 #### Parameters:
 
@@ -241,7 +241,7 @@ ___
 
 ▸ **orWhere**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>): this
 
-*Defined in [packages/knex/src/typings.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L103)*
+*Defined in [packages/knex/src/typings.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L103)*
 
 #### Parameters:
 
@@ -253,7 +253,7 @@ Name | Type |
 
 ▸ **orWhere**(`cond`: string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/typings.ts:104](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L104)*
+*Defined in [packages/knex/src/typings.ts:104](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L104)*
 
 #### Parameters:
 
@@ -270,7 +270,7 @@ ___
 
 ▸ **orderBy**(`orderBy`: QueryOrderMap): this
 
-*Defined in [packages/knex/src/typings.ts:105](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L105)*
+*Defined in [packages/knex/src/typings.ts:105](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L105)*
 
 #### Parameters:
 
@@ -286,7 +286,7 @@ ___
 
 ▸ **select**(`fields`: [Field](../index.md#field)&#60;T> \| [Field](../index.md#field)&#60;T>[], `distinct?`: boolean): this
 
-*Defined in [packages/knex/src/typings.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L89)*
+*Defined in [packages/knex/src/typings.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L89)*
 
 #### Parameters:
 
@@ -303,7 +303,7 @@ ___
 
 ▸ **truncate**(): this
 
-*Defined in [packages/knex/src/typings.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L94)*
+*Defined in [packages/knex/src/typings.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L94)*
 
 **Returns:** this
 
@@ -313,7 +313,7 @@ ___
 
 ▸ **update**(`data`: any): this
 
-*Defined in [packages/knex/src/typings.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L92)*
+*Defined in [packages/knex/src/typings.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L92)*
 
 #### Parameters:
 
@@ -329,7 +329,7 @@ ___
 
 ▸ **where**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>, `operator?`: keyof *typeof* GroupOperator): this
 
-*Defined in [packages/knex/src/typings.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L99)*
+*Defined in [packages/knex/src/typings.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L99)*
 
 #### Parameters:
 
@@ -342,7 +342,7 @@ Name | Type |
 
 ▸ **where**(`cond`: string, `params?`: any[], `operator?`: keyof *typeof* GroupOperator): this
 
-*Defined in [packages/knex/src/typings.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L100)*
+*Defined in [packages/knex/src/typings.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L100)*
 
 #### Parameters:
 
@@ -360,7 +360,7 @@ ___
 
 ▸ **withSubQuery**(`subQuery`: KnexQueryBuilder, `alias`: string): this
 
-*Defined in [packages/knex/src/typings.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L98)*
+*Defined in [packages/knex/src/typings.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L98)*
 
 #### Parameters:
 

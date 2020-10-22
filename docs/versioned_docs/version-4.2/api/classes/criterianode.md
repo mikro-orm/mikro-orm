@@ -23,7 +23,7 @@ Auto-joins relations and converts payload from { books: { publisher: { name: '..
 
 \+ **new CriteriaNode**(`metadata`: MetadataStorage, `entityName`: string, `parent?`: [ICriteriaNode](../interfaces/icriterianode.md), `key?`: string, `validate?`: boolean): [CriteriaNode](criterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L12)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L12)*
 
 #### Parameters:
 
@@ -43,7 +43,7 @@ Name | Type | Default value |
 
 • `Readonly` **entityName**: string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L15)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L15)*
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 • `Optional` `Readonly` **key**: string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L17)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L17)*
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 • `Protected` `Readonly` **metadata**: MetadataStorage
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L14)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L14)*
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 • `Optional` `Readonly` **parent**: [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L16)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L16)*
 
 ___
 
@@ -75,7 +75,7 @@ ___
 
 •  **payload**: any
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L11)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L11)*
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 • `Optional` **prop**: EntityProperty
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L12)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L12)*
 
 ## Methods
 
@@ -91,7 +91,7 @@ ___
 
 ▸ **[inspect.custom]**(): string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:119](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L119)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:119](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L119)*
 
 **Returns:** string
 
@@ -101,7 +101,7 @@ ___
 
 ▸ **getPath**(): string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L78)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L78)*
 
 **Returns:** string
 
@@ -111,7 +111,7 @@ ___
 
 ▸ **getPivotPath**(`path`: string): string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L115)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L115)*
 
 #### Parameters:
 
@@ -127,7 +127,7 @@ ___
 
 ▸ `Private`**isPivotJoin**(): boolean
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L103)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L103)*
 
 **Returns:** boolean
 
@@ -137,7 +137,7 @@ ___
 
 ▸ **process**&#60;T>(`qb`: [IQueryBuilder](../interfaces/iquerybuilder.md)&#60;T>, `alias?`: string): any
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L32)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L32)*
 
 #### Type parameters:
 
@@ -160,7 +160,7 @@ ___
 
 ▸ **renameFieldToPK**&#60;T>(`qb`: [IQueryBuilder](../interfaces/iquerybuilder.md)&#60;T>): string
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L64)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L64)*
 
 #### Type parameters:
 
@@ -182,7 +182,7 @@ ___
 
 ▸ **shouldInline**(`payload`: any): boolean
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L36)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L36)*
 
 #### Parameters:
 
@@ -198,7 +198,7 @@ ___
 
 ▸ **shouldRename**(`payload`: any): boolean
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L44)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L44)*
 
 #### Parameters:
 
@@ -214,7 +214,7 @@ ___
 
 ▸ **willAutoJoin**&#60;T>(`qb`: [IQueryBuilder](../interfaces/iquerybuilder.md)&#60;T>, `alias?`: string): boolean
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L40)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L40)*
 
 #### Type parameters:
 
@@ -237,7 +237,7 @@ ___
 
 ▸ `Static`**isCustomExpression**(`field`: string): boolean
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L123)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L123)*
 
 #### Parameters:
 

@@ -14,7 +14,7 @@ sidebar_label: "CriteriaNodeFactory"
 
 ▸ `Static`**createArrayNode**(`metadata`: MetadataStorage, `entityName`: string, `payload`: any[], `parent?`: [ICriteriaNode](../interfaces/icriterianode.md), `key?`: string): [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNodeFactory.ts#L32)*
+*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNodeFactory.ts#L32)*
 
 #### Parameters:
 
@@ -34,7 +34,7 @@ ___
 
 ▸ `Static`**createNode**(`metadata`: MetadataStorage, `entityName`: string, `payload`: any, `parent?`: [ICriteriaNode](../interfaces/icriterianode.md), `key?`: string): [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNodeFactory.ts#L10)*
+*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNodeFactory.ts#L10)*
 
 #### Parameters:
 
@@ -54,7 +54,7 @@ ___
 
 ▸ `Static`**createObjectItemNode**(`metadata`: MetadataStorage, `entityName`: string, `node`: [ICriteriaNode](../interfaces/icriterianode.md), `payload`: [Dictionary](../index.md#dictionary), `item`: string, `meta?`: EntityMetadata): [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNodeFactory.ts#L55)*
+*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNodeFactory.ts#L55)*
 
 #### Parameters:
 
@@ -75,7 +75,7 @@ ___
 
 ▸ `Static`**createObjectNode**(`metadata`: MetadataStorage, `entityName`: string, `payload`: [Dictionary](../index.md#dictionary), `parent?`: [ICriteriaNode](../interfaces/icriterianode.md), `key?`: string): [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNodeFactory.ts#L39)*
+*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNodeFactory.ts#L39)*
 
 #### Parameters:
 
@@ -95,7 +95,7 @@ ___
 
 ▸ `Static`**createScalarNode**(`metadata`: MetadataStorage, `entityName`: string, `payload`: any, `parent?`: [ICriteriaNode](../interfaces/icriterianode.md), `key?`: string): [ICriteriaNode](../interfaces/icriterianode.md)
 
-*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNodeFactory.ts#L25)*
+*Defined in [packages/knex/src/query/CriteriaNodeFactory.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNodeFactory.ts#L25)*
 
 #### Parameters:
 

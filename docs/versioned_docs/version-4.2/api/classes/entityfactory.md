@@ -14,7 +14,7 @@ sidebar_label: "EntityFactory"
 
 \+ **new EntityFactory**(`unitOfWork`: [UnitOfWork](unitofwork.md), `em`: [EntityManager](entitymanager.md)): [EntityFactory](entityfactory.md)
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L22)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L22)*
 
 #### Parameters:
 
@@ -31,7 +31,7 @@ Name | Type |
 
 • `Private` `Readonly` **config**: [Configuration](configuration.md)&#60;[IDatabaseDriver](../interfaces/idatabasedriver.md)&#60;[Connection](connection.md)>> = this.em.config
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L19)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L19)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Private` `Readonly` **driver**: [IDatabaseDriver](../interfaces/idatabasedriver.md)&#60;[Connection](connection.md)> = this.em.getDriver()
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L17)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L17)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Private` `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L25)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L25)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 • `Private` `Readonly` **eventManager**: [EventManager](eventmanager.md) = this.em.getEventManager()
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L22)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L22)*
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 • `Private` `Readonly` **hydrator**: [IHydrator](../interfaces/ihydrator.md) = this.config.getHydrator(this.metadata)
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L21)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L21)*
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 • `Private` `Readonly` **metadata**: [MetadataStorage](metadatastorage.md) = this.em.getMetadata()
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L20)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L20)*
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 • `Private` `Readonly` **platform**: [Platform](platform.md) = this.driver.getPlatform()
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L18)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L18)*
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 • `Private` `Readonly` **unitOfWork**: [UnitOfWork](unitofwork.md)
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L24)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L24)*
 
 ## Methods
 
@@ -95,7 +95,7 @@ ___
 
 ▸ **create**&#60;T, P>(`entityName`: [EntityName](../index.md#entityname)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>, `options?`: [FactoryOptions](../interfaces/factoryoptions.md)): [New](../index.md#new)&#60;T, P>
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L27)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L27)*
 
 #### Type parameters:
 
@@ -120,7 +120,7 @@ ___
 
 ▸ `Private`**createEntity**&#60;T>(`data`: [EntityData](../index.md#entitydata)&#60;T>, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `options`: [FactoryOptions](../interfaces/factoryoptions.md)): T
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L87)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L87)*
 
 #### Type parameters:
 
@@ -144,7 +144,7 @@ ___
 
 ▸ **createReference**&#60;T>(`entityName`: [EntityName](../index.md#entityname)&#60;T>, `id`: [Primary](../index.md#primary)&#60;T> \| [Primary](../index.md#primary)&#60;T>[] \| Record&#60;string, [Primary](../index.md#primary)&#60;T>>, `options?`: Pick&#60;[FactoryOptions](../interfaces/factoryoptions.md), &#34;merge&#34; \| &#34;convertCustomTypes&#34;>): T
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L63)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L63)*
 
 #### Type parameters:
 
@@ -168,7 +168,7 @@ ___
 
 ▸ `Private`**denormalizePrimaryKey**&#60;T>(`data`: [EntityData](../index.md#entitydata)&#60;T>, `primaryKey`: string, `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>): void
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:152](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L152)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:152](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L152)*
 
 denormalize PK to value required by driver (e.g. ObjectId)
 
@@ -194,7 +194,7 @@ ___
 
 ▸ `Private`**extractConstructorParams**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>): T[keyof T][]
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:170](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L170)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:170](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L170)*
 
 returns parameters for entity constructor, creating references from plain ids
 
@@ -219,7 +219,7 @@ ___
 
 ▸ `Private`**findEntity**&#60;T>(`data`: [EntityData](../index.md#entitydata)&#60;T>, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `convertCustomTypes?`: boolean): T \| undefined
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:117](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L117)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:117](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L117)*
 
 #### Type parameters:
 
@@ -243,7 +243,7 @@ ___
 
 ▸ `Private`**hydrate**&#60;T>(`entity`: T, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>, `options`: [FactoryOptions](../interfaces/factoryoptions.md)): void
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:109](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L109)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:109](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L109)*
 
 #### Type parameters:
 
@@ -268,7 +268,7 @@ ___
 
 ▸ `Private`**processDiscriminatorColumn**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:131](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L131)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:131](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L131)*
 
 #### Type parameters:
 

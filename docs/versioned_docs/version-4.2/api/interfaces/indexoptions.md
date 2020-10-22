@@ -24,7 +24,7 @@ Name | Type |
 
 *Inherited from [UniqueOptions](uniqueoptions.md).[name](uniqueoptions.md#name)*
 
-*Defined in [packages/core/src/decorators/Indexed.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L29)*
+*Defined in [packages/core/src/decorators/Indexed.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L29)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 *Inherited from [UniqueOptions](uniqueoptions.md).[options](uniqueoptions.md#options)*
 
-*Defined in [packages/core/src/decorators/Indexed.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L31)*
+*Defined in [packages/core/src/decorators/Indexed.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L31)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 *Inherited from [UniqueOptions](uniqueoptions.md).[properties](uniqueoptions.md#properties)*
 
-*Defined in [packages/core/src/decorators/Indexed.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L30)*
+*Defined in [packages/core/src/decorators/Indexed.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L30)*
 
 ___
 
@@ -52,4 +52,4 @@ ___
 
 • `Optional` **type**: string
 
-*Defined in [packages/core/src/decorators/Indexed.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L35)*
+*Defined in [packages/core/src/decorators/Indexed.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L35)*

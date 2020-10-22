@@ -24,7 +24,7 @@ Name | Type | Default |
 
 *Overrides [ArrayType](arraytype.md).[constructor](arraytype.md#constructor)*
 
-*Defined in [packages/core/src/types/EnumArrayType.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/EnumArrayType.ts#L14)*
+*Defined in [packages/core/src/types/EnumArrayType.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/EnumArrayType.ts#L14)*
 
 #### Parameters:
 
@@ -42,7 +42,7 @@ Name | Type | Default value |
 
 • `Private` `Optional` `Readonly` **items**: T[]
 
-*Defined in [packages/core/src/types/EnumArrayType.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/EnumArrayType.ts#L17)*
+*Defined in [packages/core/src/types/EnumArrayType.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/EnumArrayType.ts#L17)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • `Private` `Readonly` **owner**: string
 
-*Defined in [packages/core/src/types/EnumArrayType.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/EnumArrayType.ts#L16)*
+*Defined in [packages/core/src/types/EnumArrayType.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/EnumArrayType.ts#L16)*
 
 ## Methods
 
@@ -62,7 +62,7 @@ ___
 
 *Overrides [Type](type.md).[compareAsType](type.md#compareastype)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L37)*
+*Defined in [packages/core/src/types/ArrayType.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L37)*
 
 **Returns:** string
 
@@ -74,7 +74,7 @@ ___
 
 *Overrides [ArrayType](arraytype.md).[convertToDatabaseValue](arraytype.md#converttodatabasevalue)*
 
-*Defined in [packages/core/src/types/EnumArrayType.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/EnumArrayType.ts#L22)*
+*Defined in [packages/core/src/types/EnumArrayType.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/EnumArrayType.ts#L22)*
 
 #### Parameters:
 
@@ -96,7 +96,7 @@ ___
 
 *Overrides [Type](type.md).[convertToJSValue](type.md#converttojsvalue)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L25)*
+*Defined in [packages/core/src/types/ArrayType.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L25)*
 
 #### Parameters:
 
@@ -117,7 +117,7 @@ ___
 
 *Overrides [Type](type.md).[getColumnType](type.md#getcolumntype)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L45)*
+*Defined in [packages/core/src/types/ArrayType.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L45)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 *Overrides [Type](type.md).[toJSON](type.md#tojson)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L41)*
+*Defined in [packages/core/src/types/ArrayType.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L41)*
 
 #### Parameters:
 
@@ -156,7 +156,7 @@ ___
 
 *Inherited from [Type](type.md).[getType](type.md#gettype)*
 
-*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L46)*
+*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L46)*
 
 #### Type parameters:
 

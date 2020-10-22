@@ -14,7 +14,7 @@ sidebar_label: "EntityValidator"
 
 \+ **new EntityValidator**(`strict`: boolean): [EntityValidator](entityvalidator.md)
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L6)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L6)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` **strict**: boolean
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L8)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L8)*
 
 ## Methods
 
@@ -38,7 +38,7 @@ Name | Type |
 
 ▸ `Private`**fixBooleanType**(`givenValue`: number): boolean \| number
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L143)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L143)*
 
 #### Parameters:
 
@@ -54,7 +54,7 @@ ___
 
 ▸ `Private`**fixDateType**(`givenValue`: string): Date \| string
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:126](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L126)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:126](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L126)*
 
 #### Parameters:
 
@@ -70,7 +70,7 @@ ___
 
 ▸ `Private`**fixNumberType**(`givenValue`: string): number \| string
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:138](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L138)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:138](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L138)*
 
 #### Parameters:
 
@@ -86,7 +86,7 @@ ___
 
 ▸ `Private`**fixTypes**(`expectedType`: string, `givenType`: string, `givenValue`: any): any
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L110)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L110)*
 
 #### Parameters:
 
@@ -104,7 +104,7 @@ ___
 
 ▸ `Private`**getValue**(`o`: [Dictionary](../index.md#dictionary), `prop`: [EntityProperty](../interfaces/entityproperty.md)): any
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L87)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L87)*
 
 #### Parameters:
 
@@ -121,7 +121,7 @@ ___
 
 ▸ `Private`**setValue**(`o`: [Dictionary](../index.md#dictionary), `prop`: [EntityProperty](../interfaces/entityproperty.md), `v`: any): any
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L95)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L95)*
 
 #### Parameters:
 
@@ -139,7 +139,7 @@ ___
 
 ▸ **validate**&#60;T>(`entity`: T, `payload`: any, `meta`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L10)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L10)*
 
 #### Type parameters:
 
@@ -163,7 +163,7 @@ ___
 
 ▸ `Private`**validateCollection**&#60;T>(`entity`: T, `prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:104](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L104)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:104](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L104)*
 
 #### Type parameters:
 
@@ -186,7 +186,7 @@ ___
 
 ▸ **validateEmptyWhere**&#60;T>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>): void
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:81](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L81)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:81](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L81)*
 
 #### Type parameters:
 
@@ -208,7 +208,7 @@ ___
 
 ▸ **validateParams**(`params`: any, `type?`: string, `field?`: string): void
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L57)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L57)*
 
 #### Parameters:
 
@@ -226,7 +226,7 @@ ___
 
 ▸ **validatePrimaryKey**&#60;T>(`entity`: [EntityData](../index.md#entitydata)&#60;T>, `meta`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L73)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L73)*
 
 #### Type parameters:
 
@@ -249,7 +249,7 @@ ___
 
 ▸ **validateProperty**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md), `givenValue`: any, `entity`: T): any
 
-*Defined in [packages/core/src/entity/EntityValidator.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityValidator.ts#L36)*
+*Defined in [packages/core/src/entity/EntityValidator.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityValidator.ts#L36)*
 
 #### Type parameters:
 

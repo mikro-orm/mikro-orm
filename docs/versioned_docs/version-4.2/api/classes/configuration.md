@@ -20,7 +20,7 @@ Name | Type | Default |
 
 \+ **new Configuration**(`options`: [Options](../index.md#options), `validate?`: boolean): [Configuration](configuration.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L95)*
+*Defined in [packages/core/src/utils/Configuration.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L95)*
 
 #### Parameters:
 
@@ -37,7 +37,7 @@ Name | Type | Default value |
 
 • `Private` `Readonly` **cache**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/utils/Configuration.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L95)*
+*Defined in [packages/core/src/utils/Configuration.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L95)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • `Private` `Readonly` **driver**: D
 
-*Defined in [packages/core/src/utils/Configuration.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L93)*
+*Defined in [packages/core/src/utils/Configuration.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L93)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • `Private` `Readonly` **logger**: [Logger](logger.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L92)*
+*Defined in [packages/core/src/utils/Configuration.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L92)*
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 • `Private` `Readonly` **options**: [MikroORMOptions](../interfaces/mikroormoptions.md)&#60;D>
 
-*Defined in [packages/core/src/utils/Configuration.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L91)*
+*Defined in [packages/core/src/utils/Configuration.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L91)*
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • `Private` `Readonly` **platform**: [Platform](platform.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L94)*
+*Defined in [packages/core/src/utils/Configuration.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L94)*
 
 ## Methods
 
@@ -77,7 +77,7 @@ ___
 
 ▸ `Private`**cached**&#60;T>(`cls`: T, ...`args`: ConstructorParameters&#60;T>): InstanceType&#60;T>
 
-*Defined in [packages/core/src/utils/Configuration.ts:262](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L262)*
+*Defined in [packages/core/src/utils/Configuration.ts:262](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L262)*
 
 #### Type parameters:
 
@@ -100,7 +100,7 @@ ___
 
 ▸ **get**&#60;T, U>(`key`: T, `defaultValue?`: U): U
 
-*Defined in [packages/core/src/utils/Configuration.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L115)*
+*Defined in [packages/core/src/utils/Configuration.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L115)*
 
 Gets specific configuration option. Falls back to specified `defaultValue` if provided.
 
@@ -126,7 +126,7 @@ ___
 
 ▸ **getCacheAdapter**(): [CacheAdapter](../interfaces/cacheadapter.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:182](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L182)*
+*Defined in [packages/core/src/utils/Configuration.ts:182](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L182)*
 
 Gets instance of CacheAdapter. (cached)
 
@@ -138,7 +138,7 @@ ___
 
 ▸ **getClientUrl**(`hidePassword?`: boolean): string
 
-*Defined in [packages/core/src/utils/Configuration.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L143)*
+*Defined in [packages/core/src/utils/Configuration.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L143)*
 
 Gets current client URL (connection string).
 
@@ -156,7 +156,7 @@ ___
 
 ▸ **getDriver**(): D
 
-*Defined in [packages/core/src/utils/Configuration.ts:154](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L154)*
+*Defined in [packages/core/src/utils/Configuration.ts:154](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L154)*
 
 Gets current database driver instance.
 
@@ -168,7 +168,7 @@ ___
 
 ▸ **getHydrator**(`metadata`: [MetadataStorage](metadatastorage.md)): [IHydrator](../interfaces/ihydrator.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:168](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L168)*
+*Defined in [packages/core/src/utils/Configuration.ts:168](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L168)*
 
 Gets instance of Hydrator.
 
@@ -186,7 +186,7 @@ ___
 
 ▸ **getLogger**(): [Logger](logger.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L136)*
+*Defined in [packages/core/src/utils/Configuration.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L136)*
 
 Gets Logger instance.
 
@@ -198,7 +198,7 @@ ___
 
 ▸ **getMetadataProvider**(): [MetadataProvider](metadataprovider.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:175](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L175)*
+*Defined in [packages/core/src/utils/Configuration.ts:175](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L175)*
 
 Gets instance of MetadataProvider. (cached)
 
@@ -210,7 +210,7 @@ ___
 
 ▸ **getNamingStrategy**(): [NamingStrategy](../interfaces/namingstrategy.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:161](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L161)*
+*Defined in [packages/core/src/utils/Configuration.ts:161](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L161)*
 
 Gets instance of NamingStrategy. (cached)
 
@@ -222,7 +222,7 @@ ___
 
 ▸ **getRepositoryClass**(`customRepository`: EntityOptions&#60;any>[&#34;customRepository&#34;]): MikroORMOptions&#60;D>[&#34;entityRepository&#34;]
 
-*Defined in [packages/core/src/utils/Configuration.ts:196](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L196)*
+*Defined in [packages/core/src/utils/Configuration.ts:196](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L196)*
 
 Gets EntityRepository class to be instantiated.
 
@@ -240,7 +240,7 @@ ___
 
 ▸ **getResultCacheAdapter**(): [CacheAdapter](../interfaces/cacheadapter.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:189](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L189)*
+*Defined in [packages/core/src/utils/Configuration.ts:189](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L189)*
 
 Gets instance of CacheAdapter for result cache. (cached)
 
@@ -252,7 +252,7 @@ ___
 
 ▸ `Private`**init**(): void
 
-*Defined in [packages/core/src/utils/Configuration.ts:208](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L208)*
+*Defined in [packages/core/src/utils/Configuration.ts:208](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L208)*
 
 **Returns:** void
 
@@ -262,7 +262,7 @@ ___
 
 ▸ `Private`**initDriver**(): D
 
-*Defined in [packages/core/src/utils/Configuration.ts:253](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L253)*
+*Defined in [packages/core/src/utils/Configuration.ts:253](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L253)*
 
 **Returns:** D
 
@@ -272,7 +272,7 @@ ___
 
 ▸ **reset**&#60;T, U>(`key`: T): void
 
-*Defined in [packages/core/src/utils/Configuration.ts:129](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L129)*
+*Defined in [packages/core/src/utils/Configuration.ts:129](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L129)*
 
 Resets the configuration to its default value
 
@@ -297,7 +297,7 @@ ___
 
 ▸ **set**&#60;T, U>(`key`: T, `value`: U): void
 
-*Defined in [packages/core/src/utils/Configuration.ts:122](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L122)*
+*Defined in [packages/core/src/utils/Configuration.ts:122](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L122)*
 
 Overrides specified configuration value.
 
@@ -323,7 +323,7 @@ ___
 
 ▸ `Private`**validateOptions**(): void
 
-*Defined in [packages/core/src/utils/Configuration.ts:239](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L239)*
+*Defined in [packages/core/src/utils/Configuration.ts:239](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L239)*
 
 **Returns:** void
 
@@ -333,7 +333,7 @@ ___
 
 ▪ `Static` `Readonly` **DEFAULTS**: object
 
-*Defined in [packages/core/src/utils/Configuration.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L27)*
+*Defined in [packages/core/src/utils/Configuration.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L27)*
 
 #### Properties:
 
@@ -374,7 +374,7 @@ ___
 
 ▪ `Static` `Readonly` **PLATFORMS**: object
 
-*Defined in [packages/core/src/utils/Configuration.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L83)*
+*Defined in [packages/core/src/utils/Configuration.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L83)*
 
 #### Properties:
 

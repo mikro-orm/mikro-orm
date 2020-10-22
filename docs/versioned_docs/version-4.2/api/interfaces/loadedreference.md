@@ -25,7 +25,7 @@ Name | Type | Default |
 
 *Inherited from [Reference](../classes/reference.md).[constructor](../classes/reference.md#constructor)*
 
-*Defined in [packages/core/src/entity/Reference.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L6)*
+*Defined in [packages/core/src/entity/Reference.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L6)*
 
 #### Parameters:
 
@@ -41,7 +41,7 @@ Name | Type |
 
 •  **$**: T & P
 
-*Defined in [packages/core/src/typings.ts:362](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L362)*
+*Defined in [packages/core/src/typings.ts:362](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L362)*
 
 ## Methods
 
@@ -49,7 +49,7 @@ Name | Type |
 
 ▸ **get**(): T & P
 
-*Defined in [packages/core/src/typings.ts:363](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L363)*
+*Defined in [packages/core/src/typings.ts:363](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L363)*
 
 **Returns:** T & P
 
@@ -61,7 +61,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[getEntity](../classes/reference.md#getentity)*
 
-*Defined in [packages/core/src/entity/Reference.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L94)*
+*Defined in [packages/core/src/entity/Reference.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L94)*
 
 **Returns:** T
 
@@ -73,7 +73,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[getProperty](../classes/reference.md#getproperty)*
 
-*Defined in [packages/core/src/entity/Reference.ts:102](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L102)*
+*Defined in [packages/core/src/entity/Reference.ts:102](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L102)*
 
 #### Type parameters:
 
@@ -97,7 +97,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[isInitialized](../classes/reference.md#isinitialized)*
 
-*Defined in [packages/core/src/entity/Reference.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L106)*
+*Defined in [packages/core/src/entity/Reference.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L106)*
 
 **Returns:** boolean
 
@@ -109,7 +109,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[load](../classes/reference.md#load)*
 
-*Defined in [packages/core/src/entity/Reference.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L63)*
+*Defined in [packages/core/src/entity/Reference.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L63)*
 
 **Returns:** Promise&#60;T>
 
@@ -117,7 +117,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[load](../classes/reference.md#load)*
 
-*Defined in [packages/core/src/entity/Reference.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L64)*
+*Defined in [packages/core/src/entity/Reference.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L64)*
 
 #### Type parameters:
 
@@ -141,7 +141,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[populated](../classes/reference.md#populated)*
 
-*Defined in [packages/core/src/entity/Reference.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L110)*
+*Defined in [packages/core/src/entity/Reference.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L110)*
 
 #### Parameters:
 
@@ -159,7 +159,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[set](../classes/reference.md#set)*
 
-*Defined in [packages/core/src/entity/Reference.ts:77](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L77)*
+*Defined in [packages/core/src/entity/Reference.ts:77](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L77)*
 
 #### Parameters:
 
@@ -177,7 +177,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[toJSON](../classes/reference.md#tojson)*
 
-*Defined in [packages/core/src/entity/Reference.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L114)*
+*Defined in [packages/core/src/entity/Reference.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L114)*
 
 #### Parameters:
 
@@ -195,7 +195,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[unwrap](../classes/reference.md#unwrap)*
 
-*Defined in [packages/core/src/entity/Reference.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L90)*
+*Defined in [packages/core/src/entity/Reference.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L90)*
 
 **Returns:** T
 
@@ -207,7 +207,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[create](../classes/reference.md#create)*
 
-*Defined in [packages/core/src/entity/Reference.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L30)*
+*Defined in [packages/core/src/entity/Reference.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L30)*
 
 #### Type parameters:
 
@@ -232,7 +232,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[isReference](../classes/reference.md#isreference)*
 
-*Defined in [packages/core/src/entity/Reference.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L41)*
+*Defined in [packages/core/src/entity/Reference.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L41)*
 
 Checks whether the argument is instance or `Reference` wrapper.
 
@@ -258,7 +258,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[unwrapReference](../classes/reference.md#unwrapreference)*
 
-*Defined in [packages/core/src/entity/Reference.ts:59](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L59)*
+*Defined in [packages/core/src/entity/Reference.ts:59](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L59)*
 
 Returns wrapped entity.
 
@@ -284,7 +284,7 @@ ___
 
 *Inherited from [Reference](../classes/reference.md).[wrapReference](../classes/reference.md#wrapreference)*
 
-*Defined in [packages/core/src/entity/Reference.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L48)*
+*Defined in [packages/core/src/entity/Reference.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L48)*
 
 Wraps the entity in a `Reference` wrapper if the property is defined as `wrappedReference`.
 

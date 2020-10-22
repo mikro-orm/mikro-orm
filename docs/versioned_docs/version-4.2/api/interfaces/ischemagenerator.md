@@ -14,7 +14,7 @@ sidebar_label: "ISchemaGenerator"
 
 ▸ **createDatabase**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:309](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L309)*
+*Defined in [packages/core/src/typings.ts:309](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L309)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ ___
 
 ▸ **createSchema**(`wrap?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:302](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L302)*
+*Defined in [packages/core/src/typings.ts:302](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L302)*
 
 #### Parameters:
 
@@ -46,7 +46,7 @@ ___
 
 ▸ **dropDatabase**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:310](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L310)*
+*Defined in [packages/core/src/typings.ts:310](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L310)*
 
 #### Parameters:
 
@@ -62,7 +62,7 @@ ___
 
 ▸ **dropSchema**(`wrap?`: boolean, `dropMigrationsTable?`: boolean, `dropDb?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:305](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L305)*
+*Defined in [packages/core/src/typings.ts:305](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L305)*
 
 #### Parameters:
 
@@ -80,7 +80,7 @@ ___
 
 ▸ **ensureDatabase**(): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:303](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L303)*
+*Defined in [packages/core/src/typings.ts:303](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L303)*
 
 **Returns:** Promise&#60;void>
 
@@ -90,7 +90,7 @@ ___
 
 ▸ **execute**(`sql`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:311](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L311)*
+*Defined in [packages/core/src/typings.ts:311](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L311)*
 
 #### Parameters:
 
@@ -106,7 +106,7 @@ ___
 
 ▸ **generate**(): Promise&#60;string>
 
-*Defined in [packages/core/src/typings.ts:301](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L301)*
+*Defined in [packages/core/src/typings.ts:301](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L301)*
 
 **Returns:** Promise&#60;string>
 
@@ -116,7 +116,7 @@ ___
 
 ▸ **getCreateSchemaSQL**(`wrap?`: boolean): Promise&#60;string>
 
-*Defined in [packages/core/src/typings.ts:304](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L304)*
+*Defined in [packages/core/src/typings.ts:304](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L304)*
 
 #### Parameters:
 
@@ -132,7 +132,7 @@ ___
 
 ▸ **getDropSchemaSQL**(`wrap?`: boolean, `dropMigrationsTable?`: boolean): Promise&#60;string>
 
-*Defined in [packages/core/src/typings.ts:306](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L306)*
+*Defined in [packages/core/src/typings.ts:306](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L306)*
 
 #### Parameters:
 
@@ -149,7 +149,7 @@ ___
 
 ▸ **getUpdateSchemaSQL**(`wrap?`: boolean, `safe?`: boolean, `dropDb?`: boolean, `dropTables?`: boolean): Promise&#60;string>
 
-*Defined in [packages/core/src/typings.ts:308](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L308)*
+*Defined in [packages/core/src/typings.ts:308](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L308)*
 
 #### Parameters:
 
@@ -168,7 +168,7 @@ ___
 
 ▸ **updateSchema**(`wrap?`: boolean, `safe?`: boolean, `dropDb?`: boolean, `dropTables?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:307](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L307)*
+*Defined in [packages/core/src/typings.ts:307](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L307)*
 
 #### Parameters:
 

@@ -25,7 +25,7 @@ Name | Type |
 
 \+ **new BaseEntity**(): [BaseEntity](baseentity.md)
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L5)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L5)*
 
 **Returns:** [BaseEntity](baseentity.md)
 
@@ -35,7 +35,7 @@ Name | Type |
 
 ▸ **assign**(`data`: [EntityData](../index.md#entitydata)&#60;T>, `options?`: [AssignOptions](../interfaces/assignoptions.md)): T
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L31)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L31)*
 
 #### Parameters:
 
@@ -52,7 +52,7 @@ ___
 
 ▸ **init**(`populated?`: boolean): Promise&#60;T>
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L35)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L35)*
 
 #### Parameters:
 
@@ -70,7 +70,7 @@ ___
 
 *Implementation of [IWrappedEntity](../interfaces/iwrappedentity.md)*
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L11)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L11)*
 
 **Returns:** boolean
 
@@ -82,7 +82,7 @@ ___
 
 *Implementation of [IWrappedEntity](../interfaces/iwrappedentity.md)*
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L15)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L15)*
 
 #### Parameters:
 
@@ -100,7 +100,7 @@ ___
 
 *Implementation of [IWrappedEntity](../interfaces/iwrappedentity.md)*
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L27)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L27)*
 
 #### Parameters:
 
@@ -118,7 +118,7 @@ ___
 
 *Implementation of [IWrappedEntity](../interfaces/iwrappedentity.md)*
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L23)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L23)*
 
 #### Parameters:
 
@@ -136,7 +136,7 @@ ___
 
 *Implementation of [IWrappedEntity](../interfaces/iwrappedentity.md)*
 
-*Defined in [packages/core/src/entity/BaseEntity.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/BaseEntity.ts#L19)*
+*Defined in [packages/core/src/entity/BaseEntity.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/BaseEntity.ts#L19)*
 
 #### Type parameters:
 

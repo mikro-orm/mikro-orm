@@ -14,7 +14,7 @@ sidebar_label: "MigrationRunner"
 
 \+ **new MigrationRunner**(`driver`: AbstractSqlDriver, `options`: [MigrationsOptions](../index.md#migrationsoptions), `config`: Configuration): [MigrationRunner](migrationrunner.md)
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L9)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L9)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ Name | Type |
 
 • `Protected` `Readonly` **config**: Configuration
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L13)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L13)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Private` `Readonly` **connection**: AbstractSqlConnection = this.driver.getConnection()
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L7)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L7)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Protected` `Readonly` **driver**: AbstractSqlDriver
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L11)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L11)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Private` `Readonly` **helper**: SchemaHelper = this.driver.getPlatform().getSchemaHelper()!
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L8)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L8)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • `Private` `Optional` **masterTransaction**: [Transaction](../index.md#transaction)
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L9)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L9)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 • `Protected` `Readonly` **options**: [MigrationsOptions](../index.md#migrationsoptions)
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L12)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L12)*
 
 ## Methods
 
@@ -80,7 +80,7 @@ ___
 
 ▸ `Private`**getQueries**(`migration`: Migration, `method`: &#34;up&#34; \| &#34;down&#34;): Promise&#60;[Query](../index.md#query)[]>
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L38)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L38)*
 
 #### Parameters:
 
@@ -97,7 +97,7 @@ ___
 
 ▸ **run**(`migration`: Migration, `method`: &#34;up&#34; \| &#34;down&#34;): Promise&#60;void>
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L15)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L15)*
 
 #### Parameters:
 
@@ -114,7 +114,7 @@ ___
 
 ▸ **setMasterMigration**(`trx`: [Transaction](../index.md#transaction)): void
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L30)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L30)*
 
 #### Parameters:
 
@@ -130,6 +130,6 @@ ___
 
 ▸ **unsetMasterMigration**(): void
 
-*Defined in [packages/migrations/src/MigrationRunner.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationRunner.ts#L34)*
+*Defined in [packages/migrations/src/MigrationRunner.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationRunner.ts#L34)*
 
 **Returns:** void

@@ -21,7 +21,7 @@ Name | Type | Default |
 
 • `Optional` **cache**: boolean \| number \| [string, number]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L83)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L83)*
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 • `Optional` **convertCustomTypes**: boolean
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L87)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L87)*
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 • `Optional` **fields**: string[]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L88)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L88)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • `Optional` **filters**: [Dictionary](../index.md#dictionary)&#60;boolean \| [Dictionary](../index.md#dictionary)> \| string[] \| boolean
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L94)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L94)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 • `Optional` **flags**: [QueryFlag](../enums/queryflag.md)[]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L90)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L90)*
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 • `Optional` **groupBy**: string \| string[]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L91)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L91)*
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 • `Optional` **having**: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L92)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L92)*
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 • `Optional` **limit**: number
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L84)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L84)*
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 • `Optional` **offset**: number
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L85)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L85)*
 
 ___
 
@@ -93,7 +93,7 @@ ___
 
 • `Optional` **orderBy**: [QueryOrderMap](queryordermap.md)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L82)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L82)*
 
 ___
 
@@ -101,7 +101,7 @@ ___
 
 • `Optional` **populate**: P
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:81](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L81)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:81](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L81)*
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 • `Optional` **refresh**: boolean
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L86)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L86)*
 
 ___
 
@@ -117,7 +117,7 @@ ___
 
 • `Optional` **schema**: string
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L89)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L89)*
 
 ___
 
@@ -125,4 +125,4 @@ ___
 
 • `Optional` **strategy**: [LoadStrategy](../enums/loadstrategy.md)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L93)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L93)*

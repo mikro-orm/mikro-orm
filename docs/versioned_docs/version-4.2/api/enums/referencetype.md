@@ -10,7 +10,7 @@ sidebar_label: "ReferenceType"
 
 •  **EMBEDDED**:  = "embedded"
 
-*Defined in [packages/core/src/enums.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L73)*
+*Defined in [packages/core/src/enums.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L73)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **MANY\_TO\_MANY**:  = "m:n"
 
-*Defined in [packages/core/src/enums.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L72)*
+*Defined in [packages/core/src/enums.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L72)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **MANY\_TO\_ONE**:  = "m:1"
 
-*Defined in [packages/core/src/enums.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L71)*
+*Defined in [packages/core/src/enums.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L71)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 •  **ONE\_TO\_MANY**:  = "1:m"
 
-*Defined in [packages/core/src/enums.ts:70](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L70)*
+*Defined in [packages/core/src/enums.ts:70](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L70)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 •  **ONE\_TO\_ONE**:  = "1:1"
 
-*Defined in [packages/core/src/enums.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L69)*
+*Defined in [packages/core/src/enums.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L69)*
 
 ___
 
@@ -50,4 +50,4 @@ ___
 
 •  **SCALAR**:  = "scalar"
 
-*Defined in [packages/core/src/enums.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L68)*
+*Defined in [packages/core/src/enums.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L68)*

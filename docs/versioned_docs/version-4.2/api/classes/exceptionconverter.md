@@ -14,7 +14,7 @@ sidebar_label: "ExceptionConverter"
 
 ▸ **convertException**(`exception`: [Error](driverexception.md#error) & [Dictionary](../index.md#dictionary)): [DriverException](driverexception.md)
 
-*Defined in [packages/core/src/platforms/ExceptionConverter.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/ExceptionConverter.ts#L7)*
+*Defined in [packages/core/src/platforms/ExceptionConverter.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/ExceptionConverter.ts#L7)*
 
 #### Parameters:
 

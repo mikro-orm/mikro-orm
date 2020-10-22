@@ -24,7 +24,7 @@ Name | Type | Default |
 
 *Inherited from [ValidationError](validationerror.md).[constructor](validationerror.md#constructor)*
 
-*Defined in [packages/core/src/errors.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L4)*
+*Defined in [packages/core/src/errors.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L4)*
 
 #### Parameters:
 
@@ -73,7 +73,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[getEntity](validationerror.md#getentity)*
 
-*Defined in [packages/core/src/errors.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L17)*
+*Defined in [packages/core/src/errors.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L17)*
 
 Gets instance of entity that caused this error.
 
@@ -87,7 +87,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[cannotCommit](validationerror.md#cannotcommit)*
 
-*Defined in [packages/core/src/errors.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L92)*
+*Defined in [packages/core/src/errors.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L92)*
 
 **Returns:** [ValidationError](validationerror.md)
 
@@ -99,7 +99,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[cannotModifyInverseCollection](validationerror.md#cannotmodifyinversecollection)*
 
-*Defined in [packages/core/src/errors.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L79)*
+*Defined in [packages/core/src/errors.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L79)*
 
 #### Parameters:
 
@@ -118,7 +118,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[cannotUseOperatorsInsideEmbeddables](validationerror.md#cannotuseoperatorsinsideembeddables)*
 
-*Defined in [packages/core/src/errors.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L96)*
+*Defined in [packages/core/src/errors.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L96)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[entityNotManaged](validationerror.md#entitynotmanaged)*
 
-*Defined in [packages/core/src/errors.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L43)*
+*Defined in [packages/core/src/errors.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L43)*
 
 #### Parameters:
 
@@ -154,7 +154,7 @@ ___
 
 ▸ `Static`**findOneFailed**(`name`: string, `where`: [Dictionary](../index.md#dictionary) \| [IPrimaryKey](../index.md#iprimarykey)): [NotFoundError](notfounderror.md)
 
-*Defined in [packages/core/src/errors.ts:207](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L207)*
+*Defined in [packages/core/src/errors.ts:207](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L207)*
 
 #### Parameters:
 
@@ -173,7 +173,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[fromCollectionNotInitialized](validationerror.md#fromcollectionnotinitialized)*
 
-*Defined in [packages/core/src/errors.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L28)*
+*Defined in [packages/core/src/errors.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L28)*
 
 #### Parameters:
 
@@ -192,7 +192,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[fromMergeWithoutPK](validationerror.md#frommergewithoutpk)*
 
-*Defined in [packages/core/src/errors.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L35)*
+*Defined in [packages/core/src/errors.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L35)*
 
 #### Parameters:
 
@@ -210,7 +210,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[fromWrongPropertyType](validationerror.md#fromwrongpropertytype)*
 
-*Defined in [packages/core/src/errors.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L21)*
+*Defined in [packages/core/src/errors.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L21)*
 
 #### Parameters:
 
@@ -232,7 +232,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[invalidCompositeIdentifier](validationerror.md#invalidcompositeidentifier)*
 
-*Defined in [packages/core/src/errors.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L88)*
+*Defined in [packages/core/src/errors.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L88)*
 
 #### Parameters:
 
@@ -250,7 +250,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[invalidPropertyName](validationerror.md#invalidpropertyname)*
 
-*Defined in [packages/core/src/errors.ts:65](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L65)*
+*Defined in [packages/core/src/errors.ts:65](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L65)*
 
 #### Parameters:
 
@@ -269,7 +269,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[invalidType](validationerror.md#invalidtype)*
 
-*Defined in [packages/core/src/errors.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L69)*
+*Defined in [packages/core/src/errors.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L69)*
 
 #### Parameters:
 
@@ -289,7 +289,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[notDiscoveredEntity](validationerror.md#notdiscoveredentity)*
 
-*Defined in [packages/core/src/errors.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L52)*
+*Defined in [packages/core/src/errors.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L52)*
 
 #### Parameters:
 
@@ -308,7 +308,7 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[notEntity](validationerror.md#notentity)*
 
-*Defined in [packages/core/src/errors.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L47)*
+*Defined in [packages/core/src/errors.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L47)*
 
 #### Parameters:
 
@@ -328,6 +328,6 @@ ___
 
 *Inherited from [ValidationError](validationerror.md).[transactionRequired](validationerror.md#transactionrequired)*
 
-*Defined in [packages/core/src/errors.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L39)*
+*Defined in [packages/core/src/errors.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L39)*
 
 **Returns:** [ValidationError](validationerror.md)

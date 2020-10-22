@@ -14,7 +14,7 @@ sidebar_label: "HydratorConstructor"
 
 \+ **new HydratorConstructor**(`metadata`: [MetadataStorage](../classes/metadatastorage.md), `platform`: [Platform](../classes/platform.md)): [IHydrator](ihydrator.md)
 
-*Defined in [packages/core/src/typings.ts:436](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L436)*
+*Defined in [packages/core/src/typings.ts:436](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L436)*
 
 #### Parameters:
 

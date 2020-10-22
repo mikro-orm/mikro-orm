@@ -14,7 +14,7 @@ sidebar_label: "ForeignKey"
 
 •  **columnName**: string
 
-*Defined in [packages/knex/src/typings.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L45)*
+*Defined in [packages/knex/src/typings.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L45)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **constraintName**: string
 
-*Defined in [packages/knex/src/typings.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L46)*
+*Defined in [packages/knex/src/typings.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L46)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 •  **deleteRule**: string
 
-*Defined in [packages/knex/src/typings.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L50)*
+*Defined in [packages/knex/src/typings.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L50)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 •  **referencedColumnName**: string
 
-*Defined in [packages/knex/src/typings.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L48)*
+*Defined in [packages/knex/src/typings.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L48)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 •  **referencedTableName**: string
 
-*Defined in [packages/knex/src/typings.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L47)*
+*Defined in [packages/knex/src/typings.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L47)*
 
 ___
 
@@ -54,4 +54,4 @@ ___
 
 •  **updateRule**: string
 
-*Defined in [packages/knex/src/typings.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L49)*
+*Defined in [packages/knex/src/typings.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L49)*

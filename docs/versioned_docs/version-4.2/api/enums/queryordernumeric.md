@@ -10,7 +10,7 @@ sidebar_label: "QueryOrderNumeric"
 
 •  **ASC**:  = 1
 
-*Defined in [packages/core/src/enums.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L42)*
+*Defined in [packages/core/src/enums.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L42)*
 
 ___
 
@@ -18,4 +18,4 @@ ___
 
 •  **DESC**:  = -1
 
-*Defined in [packages/core/src/enums.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L43)*
+*Defined in [packages/core/src/enums.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L43)*

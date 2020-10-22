@@ -14,7 +14,7 @@ sidebar_label: "Table"
 
 • `Optional` **schema\_name**: string
 
-*Defined in [packages/knex/src/typings.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L7)*
+*Defined in [packages/knex/src/typings.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L7)*
 
 ___
 
@@ -22,4 +22,4 @@ ___
 
 •  **table\_name**: string
 
-*Defined in [packages/knex/src/typings.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L6)*
+*Defined in [packages/knex/src/typings.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L6)*

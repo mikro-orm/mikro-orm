@@ -28,7 +28,7 @@ Name | Type | Default |
 
 ▸ **assign**(`data`: any, `options?`: [AssignOptions](assignoptions.md) \| boolean): T
 
-*Defined in [packages/core/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L78)*
+*Defined in [packages/core/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L78)*
 
 #### Parameters:
 
@@ -45,7 +45,7 @@ ___
 
 ▸ **init**&#60;P>(`populated?`: boolean, `populate?`: P, `lockMode?`: [LockMode](../enums/lockmode.md)): Promise&#60;T>
 
-*Defined in [packages/core/src/typings.ts:74](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L74)*
+*Defined in [packages/core/src/typings.ts:74](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L74)*
 
 #### Type parameters:
 
@@ -69,7 +69,7 @@ ___
 
 ▸ **isInitialized**(): boolean
 
-*Defined in [packages/core/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L72)*
+*Defined in [packages/core/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L72)*
 
 **Returns:** boolean
 
@@ -79,7 +79,7 @@ ___
 
 ▸ **populated**(`populated?`: boolean): void
 
-*Defined in [packages/core/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L73)*
+*Defined in [packages/core/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L73)*
 
 #### Parameters:
 
@@ -95,7 +95,7 @@ ___
 
 ▸ **toJSON**(...`args`: any[]): [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L77)*
+*Defined in [packages/core/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L77)*
 
 #### Parameters:
 
@@ -111,7 +111,7 @@ ___
 
 ▸ **toObject**(`ignoreFields?`: string[]): [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/typings.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L76)*
+*Defined in [packages/core/src/typings.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L76)*
 
 #### Parameters:
 
@@ -127,7 +127,7 @@ ___
 
 ▸ **toReference**&#60;PK2, P2>(): [IdentifiedReference](../index.md#identifiedreference)&#60;T, PK2> & [LoadedReference](loadedreference.md)&#60;T, P2>
 
-*Defined in [packages/core/src/typings.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L75)*
+*Defined in [packages/core/src/typings.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L75)*
 
 #### Type parameters:
 

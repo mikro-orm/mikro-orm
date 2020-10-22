@@ -22,7 +22,7 @@ sidebar_label: "MariaDbDriver"
 
 *Overrides void*
 
-*Defined in [packages/mariadb/src/MariaDbDriver.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mariadb/src/MariaDbDriver.ts#L5)*
+*Defined in [packages/mariadb/src/MariaDbDriver.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mariadb/src/MariaDbDriver.ts#L5)*
 
 #### Parameters:
 
@@ -858,7 +858,7 @@ ___
 
 *Overrides [PostgreSqlDriver](postgresqldriver.md).[nativeInsertMany](postgresqldriver.md#nativeinsertmany)*
 
-*Defined in [packages/mariadb/src/MariaDbDriver.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mariadb/src/MariaDbDriver.ts#L11)*
+*Defined in [packages/mariadb/src/MariaDbDriver.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mariadb/src/MariaDbDriver.ts#L11)*
 
 #### Type parameters:
 

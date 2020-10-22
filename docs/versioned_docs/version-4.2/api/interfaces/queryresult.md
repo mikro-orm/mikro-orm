@@ -14,7 +14,7 @@ sidebar_label: "QueryResult"
 
 •  **affectedRows**: number
 
-*Defined in [packages/core/src/connections/Connection.ts:126](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L126)*
+*Defined in [packages/core/src/connections/Connection.ts:126](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L126)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **insertId**: number
 
-*Defined in [packages/core/src/connections/Connection.ts:127](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L127)*
+*Defined in [packages/core/src/connections/Connection.ts:127](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L127)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **row**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/connections/Connection.ts:128](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L128)*
+*Defined in [packages/core/src/connections/Connection.ts:128](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L128)*
 
 ___
 
@@ -38,4 +38,4 @@ ___
 
 • `Optional` **rows**: [Dictionary](../index.md#dictionary)[]
 
-*Defined in [packages/core/src/connections/Connection.ts:129](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L129)*
+*Defined in [packages/core/src/connections/Connection.ts:129](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L129)*

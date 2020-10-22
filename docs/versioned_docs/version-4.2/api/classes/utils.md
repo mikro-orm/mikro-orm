@@ -14,7 +14,7 @@ sidebar_label: "Utils"
 
 ▪ `Static` `Readonly` **PK\_SEPARATOR**: &#34;~~~&#34; = "~~~"
 
-*Defined in [packages/core/src/utils/Utils.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L118)*
+*Defined in [packages/core/src/utils/Utils.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L118)*
 
 ## Methods
 
@@ -22,7 +22,7 @@ sidebar_label: "Utils"
 
 ▸ `Static`**absolutePath**(`path`: string, `baseDir?`: string): string
 
-*Defined in [packages/core/src/utils/Utils.ts:598](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L598)*
+*Defined in [packages/core/src/utils/Utils.ts:598](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L598)*
 
 #### Parameters:
 
@@ -39,7 +39,7 @@ ___
 
 ▸ `Static`**asArray**&#60;T>(`data?`: T \| T[], `strict?`: boolean): T[]
 
-*Defined in [packages/core/src/utils/Utils.ts:271](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L271)*
+*Defined in [packages/core/src/utils/Utils.ts:271](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L271)*
 
 Normalize the argument to always be an array.
 
@@ -64,7 +64,7 @@ ___
 
 ▸ `Static`**callCompiledFunction**&#60;T, R>(`fn`: (...args: T) => R, ...`args`: T): R
 
-*Defined in [packages/core/src/utils/Utils.ts:720](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L720)*
+*Defined in [packages/core/src/utils/Utils.ts:720](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L720)*
 
 #### Type parameters:
 
@@ -88,7 +88,7 @@ ___
 
 ▸ `Static`**className**&#60;T>(`classOrName`: [EntityName](../index.md#entityname)&#60;T>): string
 
-*Defined in [packages/core/src/utils/Utils.ts:497](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L497)*
+*Defined in [packages/core/src/utils/Utils.ts:497](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L497)*
 
 Gets string name of given class.
 
@@ -112,7 +112,7 @@ ___
 
 ▸ `Static`**copy**&#60;T>(`entity`: T): T
 
-*Defined in [packages/core/src/utils/Utils.ts:264](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L264)*
+*Defined in [packages/core/src/utils/Utils.ts:264](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L264)*
 
 Creates deep copy of given entity.
 
@@ -136,7 +136,7 @@ ___
 
 ▸ `Static`**createFunction**(`context`: Map&#60;string, any>, `code`: string): any
 
-*Defined in [packages/core/src/utils/Utils.ts:709](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L709)*
+*Defined in [packages/core/src/utils/Utils.ts:709](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L709)*
 
 #### Parameters:
 
@@ -153,7 +153,7 @@ ___
 
 ▸ `Static`**defaultValue**&#60;T>(`prop`: T, `option`: keyof T, `defaultValue`: any): void
 
-*Defined in [packages/core/src/utils/Utils.ts:620](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L620)*
+*Defined in [packages/core/src/utils/Utils.ts:620](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L620)*
 
 #### Type parameters:
 
@@ -177,7 +177,7 @@ ___
 
 ▸ `Static`**detectTsNode**(): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:508](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L508)*
+*Defined in [packages/core/src/utils/Utils.ts:508](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L508)*
 
 Tries to detect `ts-node` runtime.
 
@@ -189,7 +189,7 @@ ___
 
 ▸ `Static`**diff**(`a`: [Dictionary](../index.md#dictionary), `b`: [Dictionary](../index.md#dictionary)): Record&#60;keyof *typeof* a & *typeof* b, any>
 
-*Defined in [packages/core/src/utils/Utils.ts:247](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L247)*
+*Defined in [packages/core/src/utils/Utils.ts:247](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L247)*
 
 Computes difference between two objects, ignoring items missing in `b`.
 
@@ -208,7 +208,7 @@ ___
 
 ▸ `Static`**equals**(`a`: any, `b`: any): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:190](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L190)*
+*Defined in [packages/core/src/utils/Utils.ts:190](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L190)*
 
 Checks if arguments are deeply (but not strictly) equal.
 
@@ -227,7 +227,7 @@ ___
 
 ▸ `Static`**extractEnumValues**(`target`: [Dictionary](../index.md#dictionary)): (string \| number)[]
 
-*Defined in [packages/core/src/utils/Utils.ts:646](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L646)*
+*Defined in [packages/core/src/utils/Utils.ts:646](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L646)*
 
 Extracts all possible values of a TS enum. Works with both string and numeric enums.
 
@@ -245,7 +245,7 @@ ___
 
 ▸ `Static`**extractPK**&#60;T>(`data`: any, `meta?`: [EntityMetadata](entitymetadata.md)&#60;T>, `strict?`: boolean): [Primary](../index.md#primary)&#60;T> \| string \| null
 
-*Defined in [packages/core/src/utils/Utils.ts:359](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L359)*
+*Defined in [packages/core/src/utils/Utils.ts:359](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L359)*
 
 Extracts primary key from `data`. Accepts objects or primary keys directly.
 
@@ -271,7 +271,7 @@ ___
 
 ▸ `Static`**findDuplicates**&#60;T>(`items`: T[]): T[]
 
-*Defined in [packages/core/src/utils/Utils.ts:624](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L624)*
+*Defined in [packages/core/src/utils/Utils.ts:624](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L624)*
 
 #### Type parameters:
 
@@ -293,7 +293,7 @@ ___
 
 ▸ `Static`**flatten**&#60;T>(`arrays`: T[][]): T[]
 
-*Defined in [packages/core/src/utils/Utils.ts:658](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L658)*
+*Defined in [packages/core/src/utils/Utils.ts:658](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L658)*
 
 #### Type parameters:
 
@@ -315,7 +315,7 @@ ___
 
 ▸ `Static`**getCompositeKeyHash**&#60;T>(`entity`: T, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>): string
 
-*Defined in [packages/core/src/utils/Utils.ts:383](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L383)*
+*Defined in [packages/core/src/utils/Utils.ts:383](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L383)*
 
 #### Type parameters:
 
@@ -338,7 +338,7 @@ ___
 
 ▸ `Static`**getGlobalStorage**(`namespace`: string): [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/utils/Utils.ts:674](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L674)*
+*Defined in [packages/core/src/utils/Utils.ts:674](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L674)*
 
 #### Parameters:
 
@@ -354,7 +354,7 @@ ___
 
 ▸ `Static`**getORMVersion**(): string
 
-*Defined in [packages/core/src/utils/Utils.ts:695](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L695)*
+*Defined in [packages/core/src/utils/Utils.ts:695](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L695)*
 
 **Returns:** string
 
@@ -364,7 +364,7 @@ ___
 
 ▸ `Static`**getObjectKeysSize**(`object`: [Dictionary](../index.md#dictionary)): number
 
-*Defined in [packages/core/src/utils/Utils.ts:145](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L145)*
+*Defined in [packages/core/src/utils/Utils.ts:145](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L145)*
 
 Returns the number of properties on `obj`. This is 20x faster than Object.keys(obj).length.
 
@@ -384,7 +384,7 @@ ___
 
 ▸ `Static`**getObjectType**(`value`: any): string
 
-*Defined in [packages/core/src/utils/Utils.ts:541](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L541)*
+*Defined in [packages/core/src/utils/Utils.ts:541](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L541)*
 
 Gets the type of the argument.
 
@@ -402,7 +402,7 @@ ___
 
 ▸ `Static`**getOrderedPrimaryKeys**&#60;T>(`id`: [Primary](../index.md#primary)&#60;T> \| Record&#60;string, [Primary](../index.md#primary)&#60;T>>, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `platform?`: [Platform](platform.md), `convertCustomTypes?`: boolean): [Primary](../index.md#primary)&#60;T>[]
 
-*Defined in [packages/core/src/utils/Utils.ts:444](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L444)*
+*Defined in [packages/core/src/utils/Utils.ts:444](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L444)*
 
 #### Type parameters:
 
@@ -427,7 +427,7 @@ ___
 
 ▸ `Static`**getParamNames**(`func`: { toString: () => string  } \| string, `methodName?`: string): string[]
 
-*Defined in [packages/core/src/utils/Utils.ts:295](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L295)*
+*Defined in [packages/core/src/utils/Utils.ts:295](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L295)*
 
 Returns array of functions argument names. Uses `escaya` for source code analysis.
 
@@ -446,7 +446,7 @@ ___
 
 ▸ `Static`**getPrimaryKeyCond**&#60;T>(`entity`: T, `primaryKeys`: string[]): Record&#60;string, [Primary](../index.md#primary)&#60;T>> \| null
 
-*Defined in [packages/core/src/utils/Utils.ts:424](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L424)*
+*Defined in [packages/core/src/utils/Utils.ts:424](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L424)*
 
 #### Type parameters:
 
@@ -469,7 +469,7 @@ ___
 
 ▸ `Static`**getPrimaryKeyCondFromArray**&#60;T>(`pks`: [Primary](../index.md#primary)&#60;T>[], `primaryKeys`: string[]): Record&#60;string, [Primary](../index.md#primary)&#60;T>>
 
-*Defined in [packages/core/src/utils/Utils.ts:437](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L437)*
+*Defined in [packages/core/src/utils/Utils.ts:437](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L437)*
 
 #### Type parameters:
 
@@ -492,7 +492,7 @@ ___
 
 ▸ `Static`**getPrimaryKeyHash**(`pks`: string[]): string
 
-*Defined in [packages/core/src/utils/Utils.ts:398](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L398)*
+*Defined in [packages/core/src/utils/Utils.ts:398](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L398)*
 
 #### Parameters:
 
@@ -508,7 +508,7 @@ ___
 
 ▸ `Static`**getPrimaryKeyValues**&#60;T>(`entity`: T, `primaryKeys`: string[], `allowScalar?`: boolean): any
 
-*Defined in [packages/core/src/utils/Utils.ts:406](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L406)*
+*Defined in [packages/core/src/utils/Utils.ts:406](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L406)*
 
 #### Type parameters:
 
@@ -532,7 +532,7 @@ ___
 
 ▸ `Static`**getRootEntity**(`metadata`: [IMetadataStorage](../interfaces/imetadatastorage.md), `meta`: [EntityMetadata](entitymetadata.md)): [EntityMetadata](entitymetadata.md)
 
-*Defined in [packages/core/src/utils/Utils.ts:228](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L228)*
+*Defined in [packages/core/src/utils/Utils.ts:228](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L228)*
 
 #### Parameters:
 
@@ -549,7 +549,7 @@ ___
 
 ▸ `Static`**hasObjectKeys**(`object`: [Dictionary](../index.md#dictionary)): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:162](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L162)*
+*Defined in [packages/core/src/utils/Utils.ts:162](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L162)*
 
 Returns true if `obj` has at least one property. This is 20x faster than Object.keys(obj).length.
 
@@ -569,7 +569,7 @@ ___
 
 ▸ `Static`**hash**(`data`: string): string
 
-*Defined in [packages/core/src/utils/Utils.ts:610](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L610)*
+*Defined in [packages/core/src/utils/Utils.ts:610](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L610)*
 
 #### Parameters:
 
@@ -585,7 +585,7 @@ ___
 
 ▸ `Static`**isCollection**&#60;T, O>(`item`: any, `prop?`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `type?`: [ReferenceType](../enums/referencetype.md)): item is Collection&#60;T, O>
 
-*Defined in [packages/core/src/utils/Utils.ts:567](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L567)*
+*Defined in [packages/core/src/utils/Utils.ts:567](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L567)*
 
 #### Type parameters:
 
@@ -610,7 +610,7 @@ ___
 
 ▸ `Static`**isDefined**&#60;T>(`data`: any, `considerNullUndefined?`: boolean): data is T
 
-*Defined in [packages/core/src/utils/Utils.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L123)*
+*Defined in [packages/core/src/utils/Utils.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L123)*
 
 Checks if the argument is not undefined
 
@@ -635,7 +635,7 @@ ___
 
 ▸ `Static`**isEmpty**(`data`: any): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:482](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L482)*
+*Defined in [packages/core/src/utils/Utils.ts:482](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L482)*
 
 Checks whether the argument is empty (array without items, object without keys or falsy value).
 
@@ -653,7 +653,7 @@ ___
 
 ▸ `Static`**isEntity**&#60;T>(`data`: any, `allowReference?`: boolean): data is T
 
-*Defined in [packages/core/src/utils/Utils.ts:460](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L460)*
+*Defined in [packages/core/src/utils/Utils.ts:460](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L460)*
 
 Checks whether given object is an entity instance.
 
@@ -678,7 +678,7 @@ ___
 
 ▸ `Static`**isGroupOperator**(`key`: string): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:670](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L670)*
+*Defined in [packages/core/src/utils/Utils.ts:670](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L670)*
 
 #### Parameters:
 
@@ -694,7 +694,7 @@ ___
 
 ▸ `Static`**isNotObject**&#60;T>(`o`: any, `not`: any[]): o is T
 
-*Defined in [packages/core/src/utils/Utils.ts:137](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L137)*
+*Defined in [packages/core/src/utils/Utils.ts:137](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L137)*
 
 Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
 
@@ -719,7 +719,7 @@ ___
 
 ▸ `Static`**isNumber**&#60;T>(`s`: any): s is T
 
-*Defined in [packages/core/src/utils/Utils.ts:183](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L183)*
+*Defined in [packages/core/src/utils/Utils.ts:183](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L183)*
 
 Checks if the argument is number
 
@@ -743,7 +743,7 @@ ___
 
 ▸ `Static`**isObject**&#60;T>(`o`: any): o is T
 
-*Defined in [packages/core/src/utils/Utils.ts:130](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L130)*
+*Defined in [packages/core/src/utils/Utils.ts:130](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L130)*
 
 Checks if the argument is instance of `Object`. Returns false for arrays.
 
@@ -767,7 +767,7 @@ ___
 
 ▸ `Static`**isObjectID**(`key`: any): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:475](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L475)*
+*Defined in [packages/core/src/utils/Utils.ts:475](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L475)*
 
 Checks whether the argument is ObjectId instance
 
@@ -785,7 +785,7 @@ ___
 
 ▸ `Static`**isOperator**(`key`: string, `includeGroupOperators?`: boolean): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:662](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L662)*
+*Defined in [packages/core/src/utils/Utils.ts:662](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L662)*
 
 #### Parameters:
 
@@ -802,7 +802,7 @@ ___
 
 ▸ `Static`**isPlainObject**(`value`: any): value is Dictionary
 
-*Defined in [packages/core/src/utils/Utils.ts:549](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L549)*
+*Defined in [packages/core/src/utils/Utils.ts:549](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L549)*
 
 Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
 
@@ -820,7 +820,7 @@ ___
 
 ▸ `Static`**isPrimaryKey**&#60;T>(`key`: any, `allowComposite?`: boolean): key is Primary&#60;T>
 
-*Defined in [packages/core/src/utils/Utils.ts:348](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L348)*
+*Defined in [packages/core/src/utils/Utils.ts:348](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L348)*
 
 Checks whether the argument looks like primary key (string, number or ObjectId).
 
@@ -845,7 +845,7 @@ ___
 
 ▸ `Static`**isString**(`s`: any): s is string
 
-*Defined in [packages/core/src/utils/Utils.ts:176](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L176)*
+*Defined in [packages/core/src/utils/Utils.ts:176](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L176)*
 
 Checks if the argument is string
 
@@ -863,7 +863,7 @@ ___
 
 ▸ `Static`**lookupPathFromDecorator**(`name`: string, `stack?`: string[]): string
 
-*Defined in [packages/core/src/utils/Utils.ts:520](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L520)*
+*Defined in [packages/core/src/utils/Utils.ts:520](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L520)*
 
 Uses some dark magic to get source path to caller where decorator is used.
 Analyses stack trace of error created inside the function call.
@@ -883,7 +883,7 @@ ___
 
 ▸ `Static`**merge**(`target`: any, ...`sources`: any[]): any
 
-*Defined in [packages/core/src/utils/Utils.ts:204](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L204)*
+*Defined in [packages/core/src/utils/Utils.ts:204](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L204)*
 
 Merges all sources into the target recursively.
 
@@ -902,7 +902,7 @@ ___
 
 ▸ `Static`**normalizePath**(...`parts`: string[]): string
 
-*Defined in [packages/core/src/utils/Utils.ts:575](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L575)*
+*Defined in [packages/core/src/utils/Utils.ts:575](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L575)*
 
 #### Parameters:
 
@@ -918,7 +918,7 @@ ___
 
 ▸ `Static`**pathExists**(`path`: string, `options?`: GlobbyOptions): Promise&#60;boolean>
 
-*Defined in [packages/core/src/utils/Utils.ts:634](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L634)*
+*Defined in [packages/core/src/utils/Utils.ts:634](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L634)*
 
 #### Parameters:
 
@@ -935,7 +935,7 @@ ___
 
 ▸ `Static`**propertyDecoratorReturnValue**(): any
 
-*Defined in [packages/core/src/utils/Utils.ts:736](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L736)*
+*Defined in [packages/core/src/utils/Utils.ts:736](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L736)*
 
 **`see`** https://github.com/mikro-orm/mikro-orm/issues/840
 
@@ -947,7 +947,7 @@ ___
 
 ▸ `Static`**randomInt**(`min`: number, `max`: number): number
 
-*Defined in [packages/core/src/utils/Utils.ts:630](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L630)*
+*Defined in [packages/core/src/utils/Utils.ts:630](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L630)*
 
 #### Parameters:
 
@@ -964,7 +964,7 @@ ___
 
 ▸ `Static`**relativePath**(`path`: string, `relativeTo`: string): string
 
-*Defined in [packages/core/src/utils/Utils.ts:582](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L582)*
+*Defined in [packages/core/src/utils/Utils.ts:582](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L582)*
 
 #### Parameters:
 
@@ -981,7 +981,7 @@ ___
 
 ▸ `Static`**renameKey**&#60;T>(`payload`: T, `from`: string \| keyof T, `to`: string): void
 
-*Defined in [packages/core/src/utils/Utils.ts:282](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L282)*
+*Defined in [packages/core/src/utils/Utils.ts:282](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L282)*
 
 Renames object key, keeps order of properties.
 
@@ -1007,7 +1007,7 @@ ___
 
 ▸ `Static`**requireFrom**(`id`: string, `from`: string): any
 
-*Defined in [packages/core/src/utils/Utils.ts:686](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L686)*
+*Defined in [packages/core/src/utils/Utils.ts:686](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L686)*
 
 Require a module from a specific location
 
@@ -1026,7 +1026,7 @@ ___
 
 ▸ `Static`**runIfNotEmpty**(`clause`: () => any, `data`: any): void
 
-*Defined in [packages/core/src/utils/Utils.ts:614](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L614)*
+*Defined in [packages/core/src/utils/Utils.ts:614](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L614)*
 
 #### Parameters:
 
@@ -1043,7 +1043,7 @@ ___
 
 ▸ `Static`**runSerial**&#60;T, U>(`items`: Iterable&#60;U>, `cb`: (item: U) => Promise&#60;T>): Promise&#60;T[]>
 
-*Defined in [packages/core/src/utils/Utils.ts:557](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L557)*
+*Defined in [packages/core/src/utils/Utils.ts:557](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L557)*
 
 Executes the `cb` promise serially on every element of the `items` array and returns array of resolved values.
 
@@ -1069,7 +1069,7 @@ ___
 
 ▸ `Static`**splitPrimaryKeys**(`key`: string): string[]
 
-*Defined in [packages/core/src/utils/Utils.ts:402](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L402)*
+*Defined in [packages/core/src/utils/Utils.ts:402](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L402)*
 
 #### Parameters:
 
@@ -1085,7 +1085,7 @@ ___
 
 ▸ `Static`**unique**&#60;T>(`items`: T[]): T[]
 
-*Defined in [packages/core/src/utils/Utils.ts:197](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L197)*
+*Defined in [packages/core/src/utils/Utils.ts:197](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L197)*
 
 Gets array without duplicates.
 
@@ -1109,7 +1109,7 @@ ___
 
 ▸ `Static` `Private`**walkNode**(`node`: [Dictionary](../index.md#dictionary), `checkNode`: (node: [Dictionary](../index.md#dictionary)) => void): void
 
-*Defined in [packages/core/src/utils/Utils.ts:327](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L327)*
+*Defined in [packages/core/src/utils/Utils.ts:327](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L327)*
 
 #### Parameters:
 

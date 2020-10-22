@@ -38,7 +38,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L13)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L13)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Protected` **db**: Db
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L14)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L14)*
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 ▸ **aggregate**(`collection`: string, `pipeline`: any[], `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;any[]>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L136)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L136)*
 
 #### Parameters:
 
@@ -124,7 +124,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:168](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L168)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:168](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L168)*
 
 #### Parameters:
 
@@ -140,7 +140,7 @@ ___
 
 ▸ **bulkUpdateMany**&#60;T>(`collection`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>[], `data`: Partial&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;QueryResult>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:128](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L128)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:128](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L128)*
 
 #### Type parameters:
 
@@ -167,7 +167,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L21)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L21)*
 
 #### Parameters:
 
@@ -185,7 +185,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:176](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L176)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:176](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L176)*
 
 #### Parameters:
 
@@ -203,7 +203,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[connect](abstractsqlconnection.md#connect)*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L16)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L16)*
 
 **Returns:** Promise&#60;void>
 
@@ -213,7 +213,7 @@ ___
 
 ▸ **countDocuments**&#60;T>(`collection`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;number>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:147](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L147)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:147](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L147)*
 
 #### Type parameters:
 
@@ -237,7 +237,7 @@ ___
 
 ▸ **createCollection**(`name`: [EntityName](../index.md#entityname)&#60;[AnyEntity](../index.md#anyentity)>): Promise&#60;Collection>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L34)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L34)*
 
 #### Parameters:
 
@@ -253,7 +253,7 @@ ___
 
 ▸ **deleteMany**&#60;T>(`collection`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;QueryResult>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:132](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L132)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:132](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L132)*
 
 #### Type parameters:
 
@@ -277,7 +277,7 @@ ___
 
 ▸ **dropCollection**(`name`: [EntityName](../index.md#entityname)&#60;[AnyEntity](../index.md#anyentity)>): Promise&#60;boolean>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L43)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L43)*
 
 #### Parameters:
 
@@ -295,7 +295,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L75)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L75)*
 
 #### Parameters:
 
@@ -336,7 +336,7 @@ ___
 
 ▸ **find**&#60;T>(`collection`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: QueryOrderMap, `limit?`: number, `offset?`: number, `fields?`: string[], `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;[EntityData](../index.md#entitydata)&#60;T>[]>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L79)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L79)*
 
 #### Type parameters:
 
@@ -366,7 +366,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getClientUrl](abstractsqlconnection.md#getclienturl)*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L63)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L63)*
 
 **Returns:** string
 
@@ -376,7 +376,7 @@ ___
 
 ▸ **getCollection**(`name`: [EntityName](../index.md#entityname)&#60;[AnyEntity](../index.md#anyentity)>): Collection
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L30)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L30)*
 
 #### Parameters:
 
@@ -392,7 +392,7 @@ ___
 
 ▸ `Private`**getCollectionName**(`name`: [EntityName](../index.md#entityname)&#60;[AnyEntity](../index.md#anyentity)>): string
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:254](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L254)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:254](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L254)*
 
 #### Parameters:
 
@@ -410,7 +410,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getConnectionOptions](abstractsqlconnection.md#getconnectionoptions)*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L51)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L51)*
 
 **Returns:** MongoClientOptions & ConnectionConfig
 
@@ -420,7 +420,7 @@ ___
 
 ▸ **getDb**(): Db
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L71)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L71)*
 
 **Returns:** Db
 
@@ -432,7 +432,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getDefaultClientUrl](abstractsqlconnection.md#getdefaultclienturl)*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L47)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L47)*
 
 **Returns:** string
 
@@ -442,7 +442,7 @@ ___
 
 ▸ **insertMany**&#60;T>(`collection`: string, `data`: Partial&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;QueryResult>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:120](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L120)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:120](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L120)*
 
 #### Type parameters:
 
@@ -466,7 +466,7 @@ ___
 
 ▸ **insertOne**&#60;T>(`collection`: string, `data`: Partial&#60;T>, `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;QueryResult>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:116](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L116)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:116](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L116)*
 
 #### Type parameters:
 
@@ -492,7 +492,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L25)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L25)*
 
 **Returns:** Promise&#60;boolean>
 
@@ -502,7 +502,7 @@ ___
 
 ▸ **listCollections**(): Promise&#60;string[]>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L38)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L38)*
 
 **Returns:** Promise&#60;string[]>
 
@@ -512,7 +512,7 @@ ___
 
 ▸ `Private`**logObject**(`o`: any): string
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:261](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L261)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:261](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L261)*
 
 #### Parameters:
 
@@ -530,7 +530,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:186](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L186)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:186](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L186)*
 
 #### Parameters:
 
@@ -549,7 +549,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:181](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L181)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:181](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L181)*
 
 #### Parameters:
 
@@ -565,7 +565,7 @@ ___
 
 ▸ `Private`**runQuery**&#60;T, U>(`method`: &#34;insertOne&#34; \| &#34;insertMany&#34; \| &#34;updateMany&#34; \| &#34;bulkUpdateMany&#34; \| &#34;deleteMany&#34; \| &#34;countDocuments&#34;, `collection`: string, `data?`: Partial&#60;T> \| Partial&#60;T>[], `where?`: [FilterQuery](../index.md#filterquery)&#60;T> \| [FilterQuery](../index.md#filterquery)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;U>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:190](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L190)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:190](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L190)*
 
 #### Type parameters:
 
@@ -630,7 +630,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:151](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L151)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:151](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L151)*
 
 #### Type parameters:
 
@@ -653,7 +653,7 @@ ___
 
 ▸ `Private`**transformResult**(`res`: any): QueryResult
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:245](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L245)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:245](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L245)*
 
 #### Parameters:
 
@@ -669,7 +669,7 @@ ___
 
 ▸ **updateMany**&#60;T>(`collection`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `data`: Partial&#60;T>, `ctx?`: [Transaction](../index.md#transaction)&#60;ClientSession>): Promise&#60;QueryResult>
 
-*Defined in [packages/mongodb/src/MongoConnection.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoConnection.ts#L124)*
+*Defined in [packages/mongodb/src/MongoConnection.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoConnection.ts#L124)*
 
 #### Type parameters:
 

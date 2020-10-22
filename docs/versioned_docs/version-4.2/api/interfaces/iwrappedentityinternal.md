@@ -24,7 +24,7 @@ Name | Type | Default |
 
 •  **\_\_data**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/typings.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L87)*
+*Defined in [packages/core/src/typings.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L87)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • `Optional` **\_\_em**: any
 
-*Defined in [packages/core/src/typings.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L88)*
+*Defined in [packages/core/src/typings.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L88)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Optional` **\_\_identifier**: [EntityIdentifier](../classes/entityidentifier.md)
 
-*Defined in [packages/core/src/typings.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L92)*
+*Defined in [packages/core/src/typings.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L92)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 •  **\_\_initialized**: boolean
 
-*Defined in [packages/core/src/typings.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L90)*
+*Defined in [packages/core/src/typings.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L90)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 •  **\_\_lazyInitialized**: boolean
 
-*Defined in [packages/core/src/typings.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L95)*
+*Defined in [packages/core/src/typings.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L95)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 •  **\_\_managed**: boolean
 
-*Defined in [packages/core/src/typings.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L93)*
+*Defined in [packages/core/src/typings.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L93)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 •  **\_\_meta**: [EntityMetadata](../classes/entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L86)*
+*Defined in [packages/core/src/typings.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L86)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 • `Optional` **\_\_originalEntityData**: [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L91)*
+*Defined in [packages/core/src/typings.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L91)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 •  **\_\_platform**: [Platform](../classes/platform.md)
 
-*Defined in [packages/core/src/typings.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L89)*
+*Defined in [packages/core/src/typings.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L89)*
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 •  **\_\_populated**: boolean
 
-*Defined in [packages/core/src/typings.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L94)*
+*Defined in [packages/core/src/typings.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L94)*
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 •  **\_\_primaryKeyCond**: [Primary](../index.md#primary)&#60;T> \| [Primary](../index.md#primary)&#60;T>[]
 
-*Defined in [packages/core/src/typings.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L97)*
+*Defined in [packages/core/src/typings.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L97)*
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 •  **\_\_primaryKeys**: [Primary](../index.md#primary)&#60;T>[]
 
-*Defined in [packages/core/src/typings.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L96)*
+*Defined in [packages/core/src/typings.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L96)*
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 •  **\_\_serializationContext**: { populate?: [PopulateOptions](../index.md#populateoptions)&#60;T>[] ; root?: [SerializationContext](../classes/serializationcontext.md)&#60;T>  }
 
-*Defined in [packages/core/src/typings.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L98)*
+*Defined in [packages/core/src/typings.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L98)*
 
 #### Type declaration:
 
@@ -137,7 +137,7 @@ Name | Type |
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[assign](iwrappedentity.md#assign)*
 
-*Defined in [packages/core/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L78)*
+*Defined in [packages/core/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L78)*
 
 #### Parameters:
 
@@ -154,7 +154,7 @@ ___
 
 ▸ **getPrimaryKey**(): [Primary](../index.md#primary)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L83)*
+*Defined in [packages/core/src/typings.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L83)*
 
 **Returns:** [Primary](../index.md#primary)&#60;T>
 
@@ -164,7 +164,7 @@ ___
 
 ▸ **getSerializedPrimaryKey**(): string & keyof T
 
-*Defined in [packages/core/src/typings.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L85)*
+*Defined in [packages/core/src/typings.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L85)*
 
 **Returns:** string & keyof T
 
@@ -174,7 +174,7 @@ ___
 
 ▸ **hasPrimaryKey**(): boolean
 
-*Defined in [packages/core/src/typings.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L82)*
+*Defined in [packages/core/src/typings.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L82)*
 
 **Returns:** boolean
 
@@ -186,7 +186,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[init](iwrappedentity.md#init)*
 
-*Defined in [packages/core/src/typings.ts:74](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L74)*
+*Defined in [packages/core/src/typings.ts:74](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L74)*
 
 #### Type parameters:
 
@@ -212,7 +212,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[isInitialized](iwrappedentity.md#isinitialized)*
 
-*Defined in [packages/core/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L72)*
+*Defined in [packages/core/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L72)*
 
 **Returns:** boolean
 
@@ -224,7 +224,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[populated](iwrappedentity.md#populated)*
 
-*Defined in [packages/core/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L73)*
+*Defined in [packages/core/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L73)*
 
 #### Parameters:
 
@@ -240,7 +240,7 @@ ___
 
 ▸ **setPrimaryKey**(`val`: [Primary](../index.md#primary)&#60;T>): void
 
-*Defined in [packages/core/src/typings.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L84)*
+*Defined in [packages/core/src/typings.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L84)*
 
 #### Parameters:
 
@@ -258,7 +258,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[toJSON](iwrappedentity.md#tojson)*
 
-*Defined in [packages/core/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L77)*
+*Defined in [packages/core/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L77)*
 
 #### Parameters:
 
@@ -276,7 +276,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[toObject](iwrappedentity.md#toobject)*
 
-*Defined in [packages/core/src/typings.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L76)*
+*Defined in [packages/core/src/typings.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L76)*
 
 #### Parameters:
 
@@ -294,7 +294,7 @@ ___
 
 *Inherited from [IWrappedEntity](iwrappedentity.md).[toReference](iwrappedentity.md#toreference)*
 
-*Defined in [packages/core/src/typings.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L75)*
+*Defined in [packages/core/src/typings.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L75)*
 
 #### Type parameters:
 

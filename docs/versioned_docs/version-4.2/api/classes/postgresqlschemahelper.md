@@ -56,7 +56,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:74](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L74)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:74](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L74)*
 
 #### Parameters:
 
@@ -94,7 +94,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[getDatabaseExistsSQL](mysqlschemahelper.md#getdatabaseexistssql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:158](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L158)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:158](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L158)*
 
 #### Parameters:
 
@@ -112,7 +112,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[getDatabaseNotExistsError](mysqlschemahelper.md#getdatabasenotexistserror)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:162](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L162)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:162](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L162)*
 
 #### Parameters:
 
@@ -160,7 +160,7 @@ ___
 
 *Overrides [SqliteSchemaHelper](sqliteschemahelper.md).[getEnumDefinitions](sqliteschemahelper.md#getenumdefinitions)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L118)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L118)*
 
 #### Parameters:
 
@@ -200,7 +200,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L100)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L100)*
 
 #### Parameters:
 
@@ -241,7 +241,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L88)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L88)*
 
 #### Parameters:
 
@@ -259,7 +259,7 @@ ___
 
 ▸ `Private`**getIndexesSQL**(`tableName`: string, `schemaName`: string): string
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:170](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L170)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:170](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L170)*
 
 #### Parameters:
 
@@ -278,7 +278,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L68)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L68)*
 
 **Returns:** string
 
@@ -290,7 +290,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[getManagementDbName](mysqlschemahelper.md#getmanagementdbname)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:166](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L166)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:166](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L166)*
 
 **Returns:** string
 
@@ -345,7 +345,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L40)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L40)*
 
 #### Parameters:
 
@@ -363,7 +363,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L44)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L44)*
 
 **Returns:** string
 
@@ -375,7 +375,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L48)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L48)*
 
 #### Parameters:
 
@@ -393,7 +393,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L52)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L52)*
 
 #### Parameters:
 
@@ -412,7 +412,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[indexForeignKeys](mysqlschemahelper.md#indexforeignkeys)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L60)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L60)*
 
 **Returns:** boolean
 
@@ -424,7 +424,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[isImplicitIndex](mysqlschemahelper.md#isimplicitindex)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L64)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L64)*
 
 #### Parameters:
 
@@ -442,7 +442,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L56)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L56)*
 
 #### Parameters:
 
@@ -480,7 +480,7 @@ ___
 
 *Overrides [SqliteSchemaHelper](sqliteschemahelper.md).[normalizeDefaultValue](sqliteschemahelper.md#normalizedefaultvalue)*
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L140)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L140)*
 
 #### Parameters:
 
@@ -521,7 +521,7 @@ ___
 
 ▪ `Static` `Readonly` **DEFAULT\_TYPE\_LENGTHS**: object
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L25)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L25)*
 
 #### Properties:
 
@@ -536,7 +536,7 @@ ___
 
 ▪ `Static` `Readonly` **DEFAULT\_VALUES**: object
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L30)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L30)*
 
 #### Properties:
 
@@ -556,7 +556,7 @@ ___
 
 ▪ `Static` `Readonly` **TYPES**: object
 
-*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L6)*
+*Defined in [packages/postgresql/src/PostgreSqlSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlSchemaHelper.ts#L6)*
 
 #### Properties:
 

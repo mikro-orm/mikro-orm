@@ -16,4 +16,4 @@ sidebar_label: "FlushEventArgs"
 
 •  **uow**: [UnitOfWork](../classes/unitofwork.md)
 
-*Defined in [packages/core/src/events/EventSubscriber.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventSubscriber.ts#L12)*
+*Defined in [packages/core/src/events/EventSubscriber.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventSubscriber.ts#L12)*

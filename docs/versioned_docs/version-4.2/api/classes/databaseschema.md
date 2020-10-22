@@ -14,7 +14,7 @@ sidebar_label: "DatabaseSchema"
 
 • `Private` `Readonly` **tables**: [DatabaseTable](databasetable.md)[] = []
 
-*Defined in [packages/knex/src/schema/DatabaseSchema.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/DatabaseSchema.ts#L9)*
+*Defined in [packages/knex/src/schema/DatabaseSchema.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/DatabaseSchema.ts#L9)*
 
 ## Methods
 
@@ -22,7 +22,7 @@ sidebar_label: "DatabaseSchema"
 
 ▸ **addTable**(`name`: string, `schema`: string \| undefined): [DatabaseTable](databasetable.md)
 
-*Defined in [packages/knex/src/schema/DatabaseSchema.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/DatabaseSchema.ts#L11)*
+*Defined in [packages/knex/src/schema/DatabaseSchema.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/DatabaseSchema.ts#L11)*
 
 #### Parameters:
 
@@ -39,7 +39,7 @@ ___
 
 ▸ **getTable**(`name`: string): [DatabaseTable](databasetable.md) \| undefined
 
-*Defined in [packages/knex/src/schema/DatabaseSchema.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/DatabaseSchema.ts#L22)*
+*Defined in [packages/knex/src/schema/DatabaseSchema.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/DatabaseSchema.ts#L22)*
 
 #### Parameters:
 
@@ -55,7 +55,7 @@ ___
 
 ▸ **getTables**(): [DatabaseTable](databasetable.md)[]
 
-*Defined in [packages/knex/src/schema/DatabaseSchema.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/DatabaseSchema.ts#L18)*
+*Defined in [packages/knex/src/schema/DatabaseSchema.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/DatabaseSchema.ts#L18)*
 
 **Returns:** [DatabaseTable](databasetable.md)[]
 
@@ -65,7 +65,7 @@ ___
 
 ▸ `Static`**create**(`connection`: [AbstractSqlConnection](abstractsqlconnection.md), `helper`: [SchemaHelper](schemahelper.md), `config`: Configuration): Promise&#60;[DatabaseSchema](databaseschema.md)>
 
-*Defined in [packages/knex/src/schema/DatabaseSchema.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/DatabaseSchema.ts#L26)*
+*Defined in [packages/knex/src/schema/DatabaseSchema.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/DatabaseSchema.ts#L26)*
 
 #### Parameters:
 

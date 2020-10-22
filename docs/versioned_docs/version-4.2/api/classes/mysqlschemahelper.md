@@ -37,7 +37,7 @@ ___
 
 *Overrides [PostgreSqlSchemaHelper](postgresqlschemahelper.md).[finalizeTable](postgresqlschemahelper.md#finalizetable)*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L42)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L42)*
 
 #### Parameters:
 
@@ -56,7 +56,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L82)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L82)*
 
 #### Parameters:
 
@@ -160,7 +160,7 @@ ___
 
 *Overrides [SqliteSchemaHelper](sqliteschemahelper.md).[getEnumDefinitions](sqliteschemahelper.md#getenumdefinitions)*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L71)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L71)*
 
 #### Parameters:
 
@@ -200,7 +200,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L64)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L64)*
 
 #### Parameters:
 
@@ -241,7 +241,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L98)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L98)*
 
 #### Parameters:
 
@@ -261,7 +261,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L55)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L55)*
 
 **Returns:** string
 
@@ -306,7 +306,7 @@ ___
 
 *Overrides [PostgreSqlSchemaHelper](postgresqlschemahelper.md).[getRenameColumnSQL](postgresqlschemahelper.md#getrenamecolumnsql)*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:59](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L59)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:59](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L59)*
 
 #### Parameters:
 
@@ -327,7 +327,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L34)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L34)*
 
 #### Parameters:
 
@@ -345,7 +345,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L38)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L38)*
 
 **Returns:** string
 
@@ -357,7 +357,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L47)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L47)*
 
 #### Parameters:
 
@@ -375,7 +375,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L51)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L51)*
 
 #### Parameters:
 
@@ -426,7 +426,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L110)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L110)*
 
 #### Parameters:
 
@@ -464,7 +464,7 @@ ___
 
 *Overrides [SqliteSchemaHelper](sqliteschemahelper.md).[normalizeDefaultValue](sqliteschemahelper.md#normalizedefaultvalue)*
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L114)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L114)*
 
 #### Parameters:
 
@@ -505,7 +505,7 @@ ___
 
 ▪ `Static` `Readonly` **DEFAULT\_TYPE\_LENGTHS**: object
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L22)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L22)*
 
 #### Properties:
 
@@ -521,7 +521,7 @@ ___
 
 ▪ `Static` `Readonly` **DEFAULT\_VALUES**: object
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L28)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L28)*
 
 #### Properties:
 
@@ -537,7 +537,7 @@ ___
 
 ▪ `Static` `Readonly` **TYPES**: object
 
-*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlSchemaHelper.ts#L6)*
+*Defined in [packages/mysql-base/src/MySqlSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlSchemaHelper.ts#L6)*
 
 #### Properties:
 

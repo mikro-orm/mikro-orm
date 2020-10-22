@@ -347,7 +347,7 @@ ___
 
 ▸ **createQueryBuilder**&#60;T>(`entityName`: [EntityName](../index.md#entityname)&#60;T>, `alias?`: string, `type?`: &#34;read&#34; \| &#34;write&#34;): [QueryBuilder](querybuilder.md)&#60;T>
 
-*Defined in [packages/knex/src/SqlEntityManager.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityManager.ts#L15)*
+*Defined in [packages/knex/src/SqlEntityManager.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityManager.ts#L15)*
 
 Creates a QueryBuilder instance
 
@@ -373,7 +373,7 @@ ___
 
 ▸ **execute**&#60;T>(`queryOrKnex`: string \| KnexQueryBuilder \| Raw, `params?`: any[], `method?`: &#34;all&#34; \| &#34;get&#34; \| &#34;run&#34;): Promise&#60;T>
 
-*Defined in [packages/knex/src/SqlEntityManager.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityManager.ts#L27)*
+*Defined in [packages/knex/src/SqlEntityManager.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityManager.ts#L27)*
 
 #### Type parameters:
 
@@ -763,7 +763,7 @@ ___
 
 ▸ **getKnex**(`type?`: &#34;read&#34; \| &#34;write&#34;): any
 
-*Defined in [packages/knex/src/SqlEntityManager.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityManager.ts#L23)*
+*Defined in [packages/knex/src/SqlEntityManager.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityManager.ts#L23)*
 
 Returns configured knex instance.
 
@@ -900,7 +900,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/SqlEntityManager.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityManager.ts#L31)*
+*Defined in [packages/knex/src/SqlEntityManager.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityManager.ts#L31)*
 
 #### Type parameters:
 

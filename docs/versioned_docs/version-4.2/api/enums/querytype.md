@@ -10,7 +10,7 @@ sidebar_label: "QueryType"
 
 •  **COUNT**:  = "COUNT"
 
-*Defined in [packages/knex/src/query/enums.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L4)*
+*Defined in [packages/knex/src/query/enums.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L4)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **DELETE**:  = "DELETE"
 
-*Defined in [packages/knex/src/query/enums.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L7)*
+*Defined in [packages/knex/src/query/enums.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L7)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **INSERT**:  = "INSERT"
 
-*Defined in [packages/knex/src/query/enums.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L5)*
+*Defined in [packages/knex/src/query/enums.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L5)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 •  **SELECT**:  = "SELECT"
 
-*Defined in [packages/knex/src/query/enums.ts:3](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L3)*
+*Defined in [packages/knex/src/query/enums.ts:3](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L3)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 •  **TRUNCATE**:  = "TRUNCATE"
 
-*Defined in [packages/knex/src/query/enums.ts:2](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L2)*
+*Defined in [packages/knex/src/query/enums.ts:2](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L2)*
 
 ___
 
@@ -50,4 +50,4 @@ ___
 
 •  **UPDATE**:  = "UPDATE"
 
-*Defined in [packages/knex/src/query/enums.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/enums.ts#L6)*
+*Defined in [packages/knex/src/query/enums.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/enums.ts#L6)*

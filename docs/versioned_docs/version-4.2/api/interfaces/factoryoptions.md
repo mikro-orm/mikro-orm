@@ -14,7 +14,7 @@ sidebar_label: "FactoryOptions"
 
 • `Optional` **convertCustomTypes**: boolean
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L12)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L12)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Optional` **initialized**: boolean
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L8)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L8)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **merge**: boolean
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L10)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L10)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Optional` **newEntity**: boolean
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L9)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L9)*
 
 ___
 
@@ -46,4 +46,4 @@ ___
 
 • `Optional` **refresh**: boolean
 
-*Defined in [packages/core/src/entity/EntityFactory.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityFactory.ts#L11)*
+*Defined in [packages/core/src/entity/EntityFactory.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityFactory.ts#L11)*

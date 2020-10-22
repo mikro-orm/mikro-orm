@@ -18,7 +18,7 @@ sidebar_label: "SqliteSchemaHelper"
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[databaseExists](mysqlschemahelper.md#databaseexists)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L110)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L110)*
 
 #### Parameters:
 
@@ -56,7 +56,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L49)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L49)*
 
 #### Parameters:
 
@@ -200,7 +200,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L88)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L88)*
 
 #### Parameters:
 
@@ -240,7 +240,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L68)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L68)*
 
 #### Parameters:
 
@@ -260,7 +260,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L44)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L44)*
 
 **Returns:** string
 
@@ -284,7 +284,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[getPrimaryKeys](mysqlschemahelper.md#getprimarykeys)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L61)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L61)*
 
 #### Parameters:
 
@@ -305,7 +305,7 @@ ___
 
 *Overrides [PostgreSqlSchemaHelper](postgresqlschemahelper.md).[getRenameColumnSQL](postgresqlschemahelper.md#getrenamecolumnsql)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L84)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L84)*
 
 #### Parameters:
 
@@ -326,7 +326,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L19)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L19)*
 
 #### Parameters:
 
@@ -344,7 +344,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L23)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L23)*
 
 **Returns:** string
 
@@ -356,7 +356,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L31)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L31)*
 
 #### Parameters:
 
@@ -374,7 +374,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L36)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L36)*
 
 #### Parameters:
 
@@ -405,7 +405,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[isImplicitIndex](mysqlschemahelper.md#isimplicitindex)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L114)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L114)*
 
 #### Parameters:
 
@@ -423,7 +423,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L27)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L27)*
 
 #### Parameters:
 
@@ -443,7 +443,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[mapForeignKeys](mysqlschemahelper.md#mapforeignkeys)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L92)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L92)*
 
 #### Parameters:
 
@@ -481,7 +481,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[supportsColumnAlter](mysqlschemahelper.md#supportscolumnalter)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L106)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L106)*
 
 **Returns:** boolean
 
@@ -493,7 +493,7 @@ ___
 
 *Overrides [MySqlSchemaHelper](mysqlschemahelper.md).[supportsSchemaConstraints](mysqlschemahelper.md#supportsschemaconstraints)*
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L40)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L40)*
 
 **Returns:** boolean
 
@@ -503,7 +503,7 @@ ___
 
 ▪ `Static` `Readonly` **TYPES**: object
 
-*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteSchemaHelper.ts#L6)*
+*Defined in [packages/sqlite/src/SqliteSchemaHelper.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteSchemaHelper.ts#L6)*
 
 #### Properties:
 

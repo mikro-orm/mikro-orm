@@ -10,7 +10,7 @@ sidebar_label: "LoadStrategy"
 
 •  **JOINED**:  = "joined"
 
-*Defined in [packages/core/src/enums.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L85)*
+*Defined in [packages/core/src/enums.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L85)*
 
 ___
 
@@ -18,4 +18,4 @@ ___
 
 •  **SELECT\_IN**:  = "select-in"
 
-*Defined in [packages/core/src/enums.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L84)*
+*Defined in [packages/core/src/enums.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L84)*

@@ -24,7 +24,7 @@ Name |
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoEntityRepository.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityRepository.ts#L4)*
+*Defined in [packages/mongodb/src/MongoEntityRepository.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityRepository.ts#L4)*
 
 #### Parameters:
 
@@ -43,7 +43,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoEntityRepository.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityRepository.ts#L6)*
+*Defined in [packages/mongodb/src/MongoEntityRepository.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityRepository.ts#L6)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoEntityRepository.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityRepository.ts#L7)*
+*Defined in [packages/mongodb/src/MongoEntityRepository.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityRepository.ts#L7)*
 
 ## Methods
 
@@ -61,7 +61,7 @@ ___
 
 ▸ **aggregate**(`pipeline`: any[]): Promise&#60;any[]>
 
-*Defined in [packages/mongodb/src/MongoEntityRepository.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityRepository.ts#L14)*
+*Defined in [packages/mongodb/src/MongoEntityRepository.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityRepository.ts#L14)*
 
 Shortcut to driver's aggregate method. Available in MongoDriver only.
 

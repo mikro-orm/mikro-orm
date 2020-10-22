@@ -14,7 +14,7 @@ sidebar_label: "Migrator"
 
 \+ **new Migrator**(`em`: [EntityManager](entitymanager.md)): [Migrator](migrator.md)
 
-*Defined in [packages/migrations/src/Migrator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L20)*
+*Defined in [packages/migrations/src/Migrator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L20)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` `Readonly` **config**: Configuration&#60;IDatabaseDriver&#60;Connection>> = this.em.config
 
-*Defined in [packages/migrations/src/Migrator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L16)*
+*Defined in [packages/migrations/src/Migrator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L16)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Private` `Readonly` **driver**: AbstractSqlDriver&#60;AbstractSqlConnection> = this.em.getDriver()
 
-*Defined in [packages/migrations/src/Migrator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L14)*
+*Defined in [packages/migrations/src/Migrator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L14)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Private` `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/migrations/src/Migrator.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L22)*
+*Defined in [packages/migrations/src/Migrator.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L22)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Private` `Readonly` **generator**: [MigrationGenerator](migrationgenerator.md) = new MigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options)
 
-*Defined in [packages/migrations/src/Migrator.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L19)*
+*Defined in [packages/migrations/src/Migrator.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L19)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Private` `Readonly` **options**: [MigrationsOptions](../index.md#migrationsoptions) = this.config.get('migrations')
 
-*Defined in [packages/migrations/src/Migrator.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L17)*
+*Defined in [packages/migrations/src/Migrator.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L17)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Private` `Readonly` **runner**: [MigrationRunner](migrationrunner.md) = new MigrationRunner(this.driver, this.options, this.config)
 
-*Defined in [packages/migrations/src/Migrator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L18)*
+*Defined in [packages/migrations/src/Migrator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L18)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • `Private` `Readonly` **schemaGenerator**: SchemaGenerator = new SchemaGenerator(this.em)
 
-*Defined in [packages/migrations/src/Migrator.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L15)*
+*Defined in [packages/migrations/src/Migrator.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L15)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 • `Private` `Readonly` **storage**: [MigrationStorage](migrationstorage.md) = new MigrationStorage(this.driver, this.options)
 
-*Defined in [packages/migrations/src/Migrator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L20)*
+*Defined in [packages/migrations/src/Migrator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L20)*
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 • `Private` `Readonly` **umzug**: Umzug
 
-*Defined in [packages/migrations/src/Migrator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L13)*
+*Defined in [packages/migrations/src/Migrator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L13)*
 
 ## Methods
 
@@ -102,7 +102,7 @@ ___
 
 ▸ **createMigration**(`path?`: string, `blank?`: boolean, `initial?`: boolean): Promise&#60;[MigrationResult](../index.md#migrationresult)>
 
-*Defined in [packages/migrations/src/Migrator.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L41)*
+*Defined in [packages/migrations/src/Migrator.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L41)*
 
 #### Parameters:
 
@@ -120,7 +120,7 @@ ___
 
 ▸ **down**(`options?`: string \| string[] \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L92)*
+*Defined in [packages/migrations/src/Migrator.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L92)*
 
 #### Parameters:
 
@@ -136,7 +136,7 @@ ___
 
 ▸ **getExecutedMigrations**(): Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L76)*
+*Defined in [packages/migrations/src/Migrator.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L76)*
 
 **Returns:** Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
@@ -146,7 +146,7 @@ ___
 
 ▸ **getPendingMigrations**(): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L82)*
+*Defined in [packages/migrations/src/Migrator.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L82)*
 
 **Returns:** Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
@@ -156,7 +156,7 @@ ___
 
 ▸ `Private`**getSchemaDiff**(`blank`: boolean, `initial`: boolean): Promise&#60;string[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L118)*
+*Defined in [packages/migrations/src/Migrator.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L118)*
 
 #### Parameters:
 
@@ -173,7 +173,7 @@ ___
 
 ▸ **getStorage**(): [MigrationStorage](migrationstorage.md)
 
-*Defined in [packages/migrations/src/Migrator.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L96)*
+*Defined in [packages/migrations/src/Migrator.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L96)*
 
 **Returns:** [MigrationStorage](migrationstorage.md)
 
@@ -183,7 +183,7 @@ ___
 
 ▸ `Protected`**initialize**(`MigrationClass`: [Constructor](../index.md#constructor)&#60;Migration>, `name?`: string): object
 
-*Defined in [packages/migrations/src/Migrator.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L108)*
+*Defined in [packages/migrations/src/Migrator.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L108)*
 
 #### Parameters:
 
@@ -206,7 +206,7 @@ ___
 
 ▸ `Private`**prefix**&#60;T>(`options?`: T): T
 
-*Defined in [packages/migrations/src/Migrator.ts:142](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L142)*
+*Defined in [packages/migrations/src/Migrator.ts:142](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L142)*
 
 #### Type parameters:
 
@@ -228,7 +228,7 @@ ___
 
 ▸ `Protected`**resolve**(`file`: string): object
 
-*Defined in [packages/migrations/src/Migrator.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L100)*
+*Defined in [packages/migrations/src/Migrator.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L100)*
 
 #### Parameters:
 
@@ -250,7 +250,7 @@ ___
 
 ▸ `Private`**runInTransaction**(`trx`: [Transaction](../index.md#transaction), `method`: &#34;up&#34; \| &#34;down&#34;, `options`: string \| string[] \| undefined \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;Migration[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:182](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L182)*
+*Defined in [packages/migrations/src/Migrator.ts:182](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L182)*
 
 #### Parameters:
 
@@ -268,7 +268,7 @@ ___
 
 ▸ `Private`**runMigrations**(`method`: &#34;up&#34; \| &#34;down&#34;, `options?`: string \| string[] \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;Migration[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:167](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L167)*
+*Defined in [packages/migrations/src/Migrator.ts:167](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L167)*
 
 #### Parameters:
 
@@ -285,7 +285,7 @@ ___
 
 ▸ **up**(`options?`: string \| string[] \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/migrations/src/Migrator.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L88)*
+*Defined in [packages/migrations/src/Migrator.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L88)*
 
 #### Parameters:
 
@@ -301,6 +301,6 @@ ___
 
 ▸ **validateInitialMigration**(): Promise&#60;void>
 
-*Defined in [packages/migrations/src/Migrator.ts:67](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migrator.ts#L67)*
+*Defined in [packages/migrations/src/Migrator.ts:67](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migrator.ts#L67)*
 
 **Returns:** Promise&#60;void>

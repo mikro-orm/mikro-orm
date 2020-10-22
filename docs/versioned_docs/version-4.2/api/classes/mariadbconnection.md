@@ -164,7 +164,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mariadb/src/MariaDbConnection.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mariadb/src/MariaDbConnection.ts#L6)*
+*Defined in [packages/mariadb/src/MariaDbConnection.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mariadb/src/MariaDbConnection.ts#L6)*
 
 **Returns:** Promise&#60;void>
 
@@ -260,7 +260,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mariadb/src/MariaDbConnection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mariadb/src/MariaDbConnection.ts#L10)*
+*Defined in [packages/mariadb/src/MariaDbConnection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mariadb/src/MariaDbConnection.ts#L10)*
 
 **Returns:** MySqlConnectionConfig
 
@@ -314,7 +314,7 @@ ___
 
 ▸ `Private`**getPatchedDialect**(): any
 
-*Defined in [packages/mariadb/src/MariaDbConnection.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mariadb/src/MariaDbConnection.ts#L17)*
+*Defined in [packages/mariadb/src/MariaDbConnection.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mariadb/src/MariaDbConnection.ts#L17)*
 
 **Returns:** any
 

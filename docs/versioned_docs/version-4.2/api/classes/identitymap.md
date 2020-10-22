@@ -14,7 +14,7 @@ sidebar_label: "IdentityMap"
 
 • `Private` `Readonly` **registry**: Map&#60;[Constructor](../index.md#constructor)&#60;[AnyEntity](../index.md#anyentity)&#60;any>>, Map&#60;string, [AnyEntity](../index.md#anyentity)&#60;any>>> = new Map&#60;Constructor&#60;AnyEntity>, Map&#60;string, AnyEntity>>()
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L5)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L5)*
 
 ## Methods
 
@@ -22,7 +22,7 @@ sidebar_label: "IdentityMap"
 
 ▸ **clear**(): void
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L33)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L33)*
 
 **Returns:** void
 
@@ -32,7 +32,7 @@ ___
 
 ▸ **delete**&#60;T>(`item`: T): void
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L11)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L11)*
 
 #### Type parameters:
 
@@ -54,7 +54,7 @@ ___
 
 ▸ **get**&#60;T>(`hash`: string): T \| undefined
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L60)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L60)*
 
 For back compatibility only.
 
@@ -78,7 +78,7 @@ ___
 
 ▸ **getByHash**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `hash`: string): T \| undefined
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L15)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L15)*
 
 #### Type parameters:
 
@@ -101,7 +101,7 @@ ___
 
 ▸ **getStore**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>): Map&#60;string, T>
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L20)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L20)*
 
 #### Type parameters:
 
@@ -123,7 +123,7 @@ ___
 
 ▸ **keys**(): string[]
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L47)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L47)*
 
 **Returns:** string[]
 
@@ -133,7 +133,7 @@ ___
 
 ▸ **store**&#60;T>(`item`: T): void
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L7)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L7)*
 
 #### Type parameters:
 
@@ -155,6 +155,6 @@ ___
 
 ▸ **values**(): [AnyEntity](../index.md#anyentity)[]
 
-*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/IdentityMap.ts#L37)*
+*Defined in [packages/core/src/unit-of-work/IdentityMap.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/IdentityMap.ts#L37)*
 
 **Returns:** [AnyEntity](../index.md#anyentity)[]

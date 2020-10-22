@@ -23,7 +23,7 @@ Name |
 
 • `Optional` **inversedBy**: string & keyof T \| (e: T) => any
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L15)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L15)*
 
 ___
 
@@ -31,7 +31,7 @@ ___
 
 • `Optional` **mapToPk**: boolean
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L18)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L18)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Optional` **onDelete**: &#34;cascade&#34; \| &#34;no action&#34; \| &#34;set null&#34; \| &#34;set default&#34; \| string
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L19)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L19)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Optional` **onUpdateIntegrity**: &#34;cascade&#34; \| &#34;no action&#34; \| &#34;set null&#34; \| &#34;set default&#34; \| string
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L20)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L20)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 • `Optional` **owner**: boolean
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L14)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L14)*
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 • `Optional` **primary**: boolean
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L17)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L17)*
 
 ___
 
@@ -71,4 +71,4 @@ ___
 
 • `Optional` **wrappedReference**: boolean
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L16)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L16)*

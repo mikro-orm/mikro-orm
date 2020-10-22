@@ -18,7 +18,7 @@ sidebar_label: "ScalarCriteriaNode"
 
 *Inherited from [CriteriaNode](criterianode.md).[constructor](criterianode.md#constructor)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L12)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L12)*
 
 #### Parameters:
 
@@ -40,7 +40,7 @@ Name | Type | Default value |
 
 *Inherited from [CriteriaNode](criterianode.md).[entityName](criterianode.md#entityname)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L15)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L15)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[key](criterianode.md#key)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L17)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L17)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[metadata](criterianode.md#metadata)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L14)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L14)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[parent](criterianode.md#parent)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L16)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L16)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[payload](criterianode.md#payload)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L11)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L11)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[prop](criterianode.md#prop)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L12)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L12)*
 
 ## Methods
 
@@ -100,7 +100,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[[inspect.custom]](criterianode.md#[inspect.custom])*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:119](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L119)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:119](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L119)*
 
 **Returns:** string
 
@@ -112,7 +112,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[getPath](criterianode.md#getpath)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L78)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L78)*
 
 **Returns:** string
 
@@ -124,7 +124,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[getPivotPath](criterianode.md#getpivotpath)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L115)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L115)*
 
 #### Parameters:
 
@@ -142,7 +142,7 @@ ___
 
 *Overrides [CriteriaNode](criterianode.md).[process](criterianode.md#process)*
 
-*Defined in [packages/knex/src/query/ScalarCriteriaNode.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/ScalarCriteriaNode.ts#L7)*
+*Defined in [packages/knex/src/query/ScalarCriteriaNode.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/ScalarCriteriaNode.ts#L7)*
 
 #### Type parameters:
 
@@ -167,7 +167,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[renameFieldToPK](criterianode.md#renamefieldtopk)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L64)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L64)*
 
 #### Type parameters:
 
@@ -191,7 +191,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[shouldInline](criterianode.md#shouldinline)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L36)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L36)*
 
 #### Parameters:
 
@@ -207,7 +207,7 @@ ___
 
 ▸ **shouldJoin**(): boolean
 
-*Defined in [packages/knex/src/query/ScalarCriteriaNode.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/ScalarCriteriaNode.ts#L25)*
+*Defined in [packages/knex/src/query/ScalarCriteriaNode.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/ScalarCriteriaNode.ts#L25)*
 
 **Returns:** boolean
 
@@ -219,7 +219,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[shouldRename](criterianode.md#shouldrename)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L44)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L44)*
 
 #### Parameters:
 
@@ -237,7 +237,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[willAutoJoin](criterianode.md#willautojoin)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L40)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L40)*
 
 #### Type parameters:
 
@@ -262,7 +262,7 @@ ___
 
 *Inherited from [CriteriaNode](criterianode.md).[isCustomExpression](criterianode.md#iscustomexpression)*
 
-*Defined in [packages/knex/src/query/CriteriaNode.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/CriteriaNode.ts#L123)*
+*Defined in [packages/knex/src/query/CriteriaNode.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/CriteriaNode.ts#L123)*
 
 #### Parameters:
 

@@ -14,7 +14,7 @@ sidebar_label: "PoolConfig"
 
 • `Optional` **Promise**: any
 
-*Defined in [packages/core/src/utils/Configuration.ts:321](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L321)*
+*Defined in [packages/core/src/utils/Configuration.ts:321](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L321)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Optional` **acquireTimeoutMillis**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:315](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L315)*
+*Defined in [packages/core/src/utils/Configuration.ts:315](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L315)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **afterCreate**: (...a: unknown[]) => unknown
 
-*Defined in [packages/core/src/utils/Configuration.ts:302](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L302)*
+*Defined in [packages/core/src/utils/Configuration.ts:302](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L302)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Optional` **autostart**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:317](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L317)*
+*Defined in [packages/core/src/utils/Configuration.ts:317](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L317)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Optional` **evictionRunIntervalMillis**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:318](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L318)*
+*Defined in [packages/core/src/utils/Configuration.ts:318](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L318)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Optional` **fifo**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:316](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L316)*
+*Defined in [packages/core/src/utils/Configuration.ts:316](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L316)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Optional` **idleTimeoutMillis**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:306](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L306)*
+*Defined in [packages/core/src/utils/Configuration.ts:306](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L306)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Optional` **log**: (message: string, logLevel: string) => void
 
-*Defined in [packages/core/src/utils/Configuration.ts:310](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L310)*
+*Defined in [packages/core/src/utils/Configuration.ts:310](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L310)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • `Optional` **max**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:304](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L304)*
+*Defined in [packages/core/src/utils/Configuration.ts:304](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L304)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 • `Optional` **maxWaitingClients**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:313](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L313)*
+*Defined in [packages/core/src/utils/Configuration.ts:313](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L313)*
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 • `Optional` **min**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:303](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L303)*
+*Defined in [packages/core/src/utils/Configuration.ts:303](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L303)*
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 • `Optional` **name**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:301](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L301)*
+*Defined in [packages/core/src/utils/Configuration.ts:301](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L301)*
 
 ___
 
@@ -110,7 +110,7 @@ ___
 
 • `Optional` **numTestsPerRun**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:319](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L319)*
+*Defined in [packages/core/src/utils/Configuration.ts:319](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L319)*
 
 ___
 
@@ -118,7 +118,7 @@ ___
 
 • `Optional` **priorityRange**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:309](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L309)*
+*Defined in [packages/core/src/utils/Configuration.ts:309](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L309)*
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 • `Optional` **reapIntervalMillis**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:307](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L307)*
+*Defined in [packages/core/src/utils/Configuration.ts:307](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L307)*
 
 ___
 
@@ -134,7 +134,7 @@ ___
 
 • `Optional` **refreshIdle**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:305](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L305)*
+*Defined in [packages/core/src/utils/Configuration.ts:305](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L305)*
 
 ___
 
@@ -142,7 +142,7 @@ ___
 
 • `Optional` **returnToHead**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:308](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L308)*
+*Defined in [packages/core/src/utils/Configuration.ts:308](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L308)*
 
 ___
 
@@ -150,7 +150,7 @@ ___
 
 • `Optional` **softIdleTimeoutMillis**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:320](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L320)*
+*Defined in [packages/core/src/utils/Configuration.ts:320](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L320)*
 
 ___
 
@@ -158,4 +158,4 @@ ___
 
 • `Optional` **testOnBorrow**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:314](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L314)*
+*Defined in [packages/core/src/utils/Configuration.ts:314](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L314)*

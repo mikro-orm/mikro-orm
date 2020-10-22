@@ -354,7 +354,7 @@ slug: "/api"
 
 Ƭ  **AnyEntity**&#60;T>: Partial&#60;T> & { [EntityRepositoryType]?: unknown ; [PrimaryKeyType]?: unknown ; __helper?: [IWrappedEntityInternal](interfaces/iwrappedentityinternal.md)&#60;T, keyof T> ; __meta?: [EntityMetadata](classes/entitymetadata.md)&#60;T> ; __platform?: [Platform](classes/platform.md)  }
 
-*Defined in [packages/core/src/typings.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L101)*
+*Defined in [packages/core/src/typings.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L101)*
 
 #### Type parameters:
 
@@ -368,7 +368,7 @@ ___
 
 Ƭ  **CliUpDownOptions**: { from?: string \| number ; only?: string ; to?: string \| number  }
 
-*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:186](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/MigrationCommandFactory.ts#L186)*
+*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:186](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/MigrationCommandFactory.ts#L186)*
 
 #### Type declaration:
 
@@ -384,7 +384,7 @@ ___
 
 Ƭ  **Comparator**&#60;T>: (a: T, b: T) => [EntityData](index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/utils/EntityComparator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/EntityComparator.ts#L7)*
+*Defined in [packages/core/src/utils/EntityComparator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/EntityComparator.ts#L7)*
 
 #### Type parameters:
 
@@ -398,7 +398,7 @@ ___
 
 Ƭ  **Constructor**&#60;T>: {}
 
-*Defined in [packages/core/src/typings.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L8)*
+*Defined in [packages/core/src/typings.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L8)*
 
 #### Type parameters:
 
@@ -412,7 +412,7 @@ ___
 
 Ƭ  **DeepPartial**&#60;T>: T & {}
 
-*Defined in [packages/core/src/typings.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L13)*
+*Defined in [packages/core/src/typings.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L13)*
 
 #### Type parameters:
 
@@ -426,7 +426,7 @@ ___
 
 Ƭ  **Dictionary**&#60;T>: { [k:string]: T;  }
 
-*Defined in [packages/core/src/typings.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L9)*
+*Defined in [packages/core/src/typings.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L9)*
 
 #### Type parameters:
 
@@ -440,7 +440,7 @@ ___
 
 Ƭ  **EmbeddedOptions**: { entity?: string \| () => [AnyEntity](index.md#anyentity) ; nullable?: boolean ; object?: boolean ; prefix?: string \| boolean ; type?: string  }
 
-*Defined in [packages/core/src/decorators/Embedded.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Embedded.ts#L19)*
+*Defined in [packages/core/src/decorators/Embedded.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Embedded.ts#L19)*
 
 #### Type declaration:
 
@@ -458,7 +458,7 @@ ___
 
 Ƭ  **EntityClass**&#60;T>: Function & { prototype: T  }
 
-*Defined in [packages/core/src/typings.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L110)*
+*Defined in [packages/core/src/typings.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L110)*
 
 #### Type parameters:
 
@@ -472,7 +472,7 @@ ___
 
 Ƭ  **EntityClassGroup**&#60;T>: { entity: [EntityClass](index.md#entityclass)&#60;T> ; schema: [EntityMetadata](classes/entitymetadata.md)&#60;T> \| [EntitySchema](classes/entityschema.md)&#60;T>  }
 
-*Defined in [packages/core/src/typings.ts:111](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L111)*
+*Defined in [packages/core/src/typings.ts:111](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L111)*
 
 #### Type parameters:
 
@@ -493,7 +493,7 @@ ___
 
 Ƭ  **EntityData**&#60;T>: {} & [Dictionary](index.md#dictionary)
 
-*Defined in [packages/core/src/typings.ts:113](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L113)*
+*Defined in [packages/core/src/typings.ts:113](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L113)*
 
 #### Type parameters:
 
@@ -507,7 +507,7 @@ ___
 
 Ƭ  **EntityHydrator**&#60;T>: (entity: T, data: [EntityData](index.md#entitydata)&#60;T>, factory: [EntityFactory](classes/entityfactory.md), newEntity: boolean, convertCustomTypes: boolean) => void
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L9)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L9)*
 
 #### Type parameters:
 
@@ -521,7 +521,7 @@ ___
 
 Ƭ  **EntityName**&#60;T>: string \| [EntityClass](index.md#entityclass)&#60;T> \| [EntitySchema](classes/entityschema.md)&#60;T, any>
 
-*Defined in [packages/core/src/typings.ts:112](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L112)*
+*Defined in [packages/core/src/typings.ts:112](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L112)*
 
 #### Type parameters:
 
@@ -535,7 +535,7 @@ ___
 
 Ƭ  **EntityOptions**&#60;T>: { abstract?: boolean ; collection?: string ; comment?: string ; customRepository?: () => [Constructor](index.md#constructor)&#60;[EntityRepository](classes/entityrepository.md)&#60;T>> ; discriminatorColumn?: string ; discriminatorMap?: [Dictionary](index.md#dictionary)&#60;string> ; discriminatorValue?: string ; readonly?: boolean ; tableName?: string  }
 
-*Defined in [packages/core/src/decorators/Entity.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Entity.ts#L20)*
+*Defined in [packages/core/src/decorators/Entity.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Entity.ts#L20)*
 
 #### Type parameters:
 
@@ -563,7 +563,7 @@ ___
 
 Ƭ  **ExpandObject**&#60;U>: {} \| [FilterValue](index.md#filtervalue)&#60;[ExpandProperty](index.md#expandproperty)&#60;U>>
 
-*Defined in [packages/core/src/typings.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L61)*
+*Defined in [packages/core/src/typings.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L61)*
 
 #### Type parameters:
 
@@ -577,7 +577,7 @@ ___
 
 Ƭ  **ExpandProperty**&#60;T>: T *extends* Reference&#60;*infer* U> ? NonNullable&#60;U> : T *extends* Collection&#60;*infer* U> ? NonNullable&#60;U> : NonNullable&#60;T>
 
-*Defined in [packages/core/src/typings.ts:349](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L349)*
+*Defined in [packages/core/src/typings.ts:349](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L349)*
 
 #### Type parameters:
 
@@ -591,7 +591,7 @@ ___
 
 Ƭ  **ExpandScalar**&#60;T>: null \| T *extends* string ? string \| RegExp : T *extends* Date ? Date \| string : T
 
-*Defined in [packages/core/src/typings.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L33)*
+*Defined in [packages/core/src/typings.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L33)*
 
 #### Type parameters:
 
@@ -605,7 +605,7 @@ ___
 
 Ƭ  **Field**&#60;T>: string \| keyof T \| [KnexStringRef](index.md#knexstringref) \| KnexQueryBuilder
 
-*Defined in [packages/knex/src/typings.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L14)*
+*Defined in [packages/knex/src/typings.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L14)*
 
 #### Type parameters:
 
@@ -619,7 +619,7 @@ ___
 
 Ƭ  **FilterDef**&#60;T>: { args?: boolean ; cond: [FilterQuery](index.md#filterquery)&#60;T> \| (args: [Dictionary](index.md#dictionary), type: &#34;read&#34; \| &#34;update&#34; \| &#34;delete&#34;) => [FilterQuery](index.md#filterquery)&#60;T> \| Promise&#60;[FilterQuery](index.md#filterquery)&#60;T>> ; default?: boolean ; entity?: string[] ; name: string  }
 
-*Defined in [packages/core/src/typings.ts:341](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L341)*
+*Defined in [packages/core/src/typings.ts:341](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L341)*
 
 #### Type parameters:
 
@@ -643,7 +643,7 @@ ___
 
 Ƭ  **FilterQuery**&#60;T>: NonNullable&#60;[Query](index.md#query)&#60;T>> \| { [PrimaryKeyType]?: any  }
 
-*Defined in [packages/core/src/typings.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L68)*
+*Defined in [packages/core/src/typings.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L68)*
 
 #### Type parameters:
 
@@ -657,7 +657,7 @@ ___
 
 Ƭ  **FilterValue**&#60;T>: [OperatorMap](index.md#operatormap)&#60;[FilterValue2](index.md#filtervalue2)&#60;T>> \| [FilterValue2](index.md#filtervalue2)&#60;T> \| [FilterValue2](index.md#filtervalue2)&#60;T>[] \| null
 
-*Defined in [packages/core/src/typings.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L60)*
+*Defined in [packages/core/src/typings.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L60)*
 
 #### Type parameters:
 
@@ -671,7 +671,7 @@ ___
 
 Ƭ  **FilterValue2**&#60;T>: T \| [ExpandScalar](index.md#expandscalar)&#60;T> \| [Primary](index.md#primary)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:59](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L59)*
+*Defined in [packages/core/src/typings.ts:59](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L59)*
 
 #### Type parameters:
 
@@ -685,7 +685,7 @@ ___
 
 Ƭ  **GenerateOptions**: { blank?: boolean ; disableFkChecks?: boolean ; dump?: boolean ; initial?: boolean ; path?: string  }
 
-*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:187](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/MigrationCommandFactory.ts#L187)*
+*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:187](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/MigrationCommandFactory.ts#L187)*
 
 #### Type declaration:
 
@@ -703,7 +703,7 @@ ___
 
 Ƭ  **GetRepository**&#60;T, U>: T[*typeof* EntityRepositoryType] *extends* EntityRepository&#60;any> \| undefined ? NonNullable&#60;T[*typeof* EntityRepositoryType]> : U
 
-*Defined in [packages/core/src/typings.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L114)*
+*Defined in [packages/core/src/typings.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L114)*
 
 #### Type parameters:
 
@@ -718,7 +718,7 @@ ___
 
 Ƭ  **IPrimaryKey**&#60;T>: T
 
-*Defined in [packages/core/src/typings.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L29)*
+*Defined in [packages/core/src/typings.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L29)*
 
 #### Type parameters:
 
@@ -732,7 +732,7 @@ ___
 
 Ƭ  **IPrimaryKeyValue**: number \| string \| bigint \| Date \| { toHexString: () => string  }
 
-*Defined in [packages/core/src/typings.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L28)*
+*Defined in [packages/core/src/typings.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L28)*
 
 ___
 
@@ -740,7 +740,7 @@ ___
 
 Ƭ  **IdentifiedReference**&#60;T, PK>: {} & [Reference](classes/reference.md)&#60;T>
 
-*Defined in [packages/core/src/entity/Reference.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Reference.ts#L4)*
+*Defined in [packages/core/src/entity/Reference.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Reference.ts#L4)*
 
 #### Type parameters:
 
@@ -755,7 +755,7 @@ ___
 
 Ƭ  **KnexStringRef**: Ref&#60;string, { [alias:string]: string;  }>
 
-*Defined in [packages/knex/src/typings.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L10)*
+*Defined in [packages/knex/src/typings.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L10)*
 
 ___
 
@@ -763,7 +763,7 @@ ___
 
 Ƭ  **Loaded**&#60;T, P>: unknown *extends* P ? T : T & {}
 
-*Defined in [packages/core/src/typings.ts:390](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L390)*
+*Defined in [packages/core/src/typings.ts:390](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L390)*
 
 #### Type parameters:
 
@@ -778,7 +778,7 @@ ___
 
 Ƭ  **LoadedIfInKeyHint**&#60;T, K, H>: K *extends* H ? MarkLoaded&#60;T, T[K]> : T[K]
 
-*Defined in [packages/core/src/typings.ts:377](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L377)*
+*Defined in [packages/core/src/typings.ts:377](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L377)*
 
 #### Type parameters:
 
@@ -794,7 +794,7 @@ ___
 
 Ƭ  **LoadedIfInNestedHint**&#60;T, K, H>: K *extends* keyof H ? MarkLoaded&#60;T, T[K], H[K]> : T[K]
 
-*Defined in [packages/core/src/typings.ts:379](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L379)*
+*Defined in [packages/core/src/typings.ts:379](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L379)*
 
 #### Type parameters:
 
@@ -810,7 +810,7 @@ ___
 
 Ƭ  **LoggerNamespace**: &#34;query&#34; \| &#34;query-params&#34; \| &#34;discovery&#34; \| &#34;info&#34;
 
-*Defined in [packages/core/src/utils/Logger.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Logger.ts#L34)*
+*Defined in [packages/core/src/utils/Logger.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Logger.ts#L34)*
 
 ___
 
@@ -818,7 +818,7 @@ ___
 
 Ƭ  **MarkLoaded**&#60;T, P, H>: P *extends* Reference&#60;*infer* U> ? LoadedReference&#60;U, Loaded&#60;U, H>> : P *extends* Collection&#60;*infer* U> ? LoadedCollection&#60;U, Loaded&#60;U, H>> : P
 
-*Defined in [packages/core/src/typings.ts:371](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L371)*
+*Defined in [packages/core/src/typings.ts:371](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L371)*
 
 #### Type parameters:
 
@@ -834,7 +834,7 @@ ___
 
 Ƭ  **Metadata**&#60;T, U>: Omit&#60;Partial&#60;[EntityMetadata](classes/entitymetadata.md)&#60;T>>, &#34;name&#34; \| &#34;properties&#34;> & { name: string  } \| { class: [Constructor](index.md#constructor)&#60;T> ; name?: string  } & { properties?: {}  }
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L23)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L23)*
 
 #### Type parameters:
 
@@ -849,9 +849,9 @@ ___
 
 Ƭ  **MigrateOptions**: { from?: string \| number ; migrations?: string[] ; to?: string \| number ; transaction?: [Transaction](index.md#transaction)  }
 
-*Defined in [packages/core/src/typings.ts:319](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L319)*
+*Defined in [packages/core/src/typings.ts:319](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L319)*
 
-*Defined in [packages/migrations/src/typings.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/typings.ts#L4)*
+*Defined in [packages/migrations/src/typings.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/typings.ts#L4)*
 
 #### Type declaration:
 
@@ -868,9 +868,9 @@ ___
 
 Ƭ  **MigrationResult**: { code: string ; diff: string[] ; fileName: string  }
 
-*Defined in [packages/core/src/typings.ts:320](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L320)*
+*Defined in [packages/core/src/typings.ts:320](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L320)*
 
-*Defined in [packages/migrations/src/typings.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/typings.ts#L5)*
+*Defined in [packages/migrations/src/typings.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/typings.ts#L5)*
 
 #### Type declaration:
 
@@ -886,9 +886,9 @@ ___
 
 Ƭ  **MigrationRow**: { executed_at: Date ; name: string  }
 
-*Defined in [packages/core/src/typings.ts:321](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L321)*
+*Defined in [packages/core/src/typings.ts:321](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L321)*
 
-*Defined in [packages/migrations/src/typings.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/typings.ts#L6)*
+*Defined in [packages/migrations/src/typings.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/typings.ts#L6)*
 
 #### Type declaration:
 
@@ -903,7 +903,7 @@ ___
 
 Ƭ  **MigrationsOptions**: { allOrNothing?: boolean ; disableForeignKeys?: boolean ; dropTables?: boolean ; emit?: &#34;js&#34; \| &#34;ts&#34; ; fileName?: (timestamp: string) => string ; migrationsList?: [MigrationObject](interfaces/migrationobject.md)[] ; path?: string ; pattern?: RegExp ; safe?: boolean ; tableName?: string ; transactional?: boolean  }
 
-*Defined in [packages/core/src/utils/Configuration.ts:286](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L286)*
+*Defined in [packages/core/src/utils/Configuration.ts:286](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L286)*
 
 #### Type declaration:
 
@@ -927,7 +927,7 @@ ___
 
 Ƭ  **MigratorMethod**: &#34;create&#34; \| &#34;up&#34; \| &#34;down&#34; \| &#34;list&#34; \| &#34;pending&#34;
 
-*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:185](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/MigrationCommandFactory.ts#L185)*
+*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:185](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/MigrationCommandFactory.ts#L185)*
 
 ___
 
@@ -935,7 +935,7 @@ ___
 
 Ƭ  **NestedLoadHint**&#60;T>: {}
 
-*Defined in [packages/core/src/typings.ts:386](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L386)*
+*Defined in [packages/core/src/typings.ts:386](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L386)*
 
 #### Type parameters:
 
@@ -949,7 +949,7 @@ ___
 
 Ƭ  **New**&#60;T, P>: [Loaded](index.md#loaded)&#60;T, P>
 
-*Defined in [packages/core/src/typings.ts:398](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L398)*
+*Defined in [packages/core/src/typings.ts:398](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L398)*
 
 #### Type parameters:
 
@@ -964,7 +964,7 @@ ___
 
 Ƭ  **NonFunctionPropertyNames**&#60;T>: NonNullable&#60;{}[keyof T]>
 
-*Defined in [packages/core/src/typings.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L11)*
+*Defined in [packages/core/src/typings.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L11)*
 
 #### Type parameters:
 
@@ -978,7 +978,7 @@ ___
 
 Ƭ  **ORMDomain**: Domain & { __mikro_orm_context?: [RequestContext](classes/requestcontext.md)  }
 
-*Defined in [packages/core/src/utils/RequestContext.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L5)*
+*Defined in [packages/core/src/utils/RequestContext.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L5)*
 
 ___
 
@@ -986,7 +986,7 @@ ___
 
 Ƭ  **OneToManyOptions**&#60;T, O>: [ReferenceOptions](interfaces/referenceoptions.md)&#60;T, O> & { entity?: string \| () => [EntityName](index.md#entityname)&#60;T> ; inverseJoinColumn?: string ; inverseJoinColumns?: string[] ; joinColumn?: string ; joinColumns?: string[] ; mappedBy: string & keyof T \| (e: T) => any ; orderBy?: { [field:string]: [QueryOrder](enums/queryorder.md);  } ; orphanRemoval?: boolean ; referenceColumnName?: string  }
 
-*Defined in [packages/core/src/decorators/OneToMany.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToMany.ts#L40)*
+*Defined in [packages/core/src/decorators/OneToMany.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToMany.ts#L40)*
 
 #### Type parameters:
 
@@ -1001,7 +1001,7 @@ ___
 
 Ƭ  **OperatorMap**&#60;T>: { $and?: [Query](index.md#query)&#60;T>[] ; $contained?: string[] ; $contains?: string[] ; $eq?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $gt?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $gte?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $ilike?: string ; $in?: [ExpandScalar](index.md#expandscalar)&#60;T>[] ; $like?: string ; $lt?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $lte?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $ne?: [ExpandScalar](index.md#expandscalar)&#60;T> ; $nin?: [ExpandScalar](index.md#expandscalar)&#60;T>[] ; $not?: [Query](index.md#query)&#60;T> ; $or?: [Query](index.md#query)&#60;T>[] ; $overlap?: string[] ; $re?: string  }
 
-*Defined in [packages/core/src/typings.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L39)*
+*Defined in [packages/core/src/typings.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L39)*
 
 #### Type parameters:
 
@@ -1037,15 +1037,15 @@ ___
 
 Ƭ  **Options**&#60;T, D>: Pick&#60;[MikroORMOptions](interfaces/mikroormoptions.md)&#60;D>, Exclude&#60;keyof [MikroORMOptions](interfaces/mikroormoptions.md)&#60;D>, keyof *typeof* [DEFAULTS](classes/configuration.md#defaults)>> & Partial&#60;[MikroORMOptions](interfaces/mikroormoptions.md)&#60;D>>
 
-*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateEntitiesCommand.ts#L6)*
+*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateEntitiesCommand.ts#L6)*
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L118)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L118)*
 
-*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:188](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/MigrationCommandFactory.ts#L188)*
+*Defined in [packages/cli/src/commands/MigrationCommandFactory.ts:188](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/MigrationCommandFactory.ts#L188)*
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L10)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L10)*
 
-*Defined in [packages/core/src/utils/Configuration.ts:377](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L377)*
+*Defined in [packages/core/src/utils/Configuration.ts:377](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L377)*
 
 #### Type parameters:
 
@@ -1060,7 +1060,7 @@ ___
 
 Ƭ  **PkGetter**&#60;T>: (entity: T) => [Primary](index.md#primary)&#60;T>
 
-*Defined in [packages/core/src/utils/EntityComparator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/EntityComparator.ts#L10)*
+*Defined in [packages/core/src/utils/EntityComparator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/EntityComparator.ts#L10)*
 
 #### Type parameters:
 
@@ -1074,7 +1074,7 @@ ___
 
 Ƭ  **PkSerializer**&#60;T>: (entity: T) => string
 
-*Defined in [packages/core/src/utils/EntityComparator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/EntityComparator.ts#L11)*
+*Defined in [packages/core/src/utils/EntityComparator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/EntityComparator.ts#L11)*
 
 #### Type parameters:
 
@@ -1088,7 +1088,7 @@ ___
 
 Ƭ  **Populate**&#60;T>: readonly keyof T[] \| readonly string[] \| boolean \| [PopulateMap](index.md#populatemap)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:352](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L352)*
+*Defined in [packages/core/src/typings.ts:352](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L352)*
 
 #### Type parameters:
 
@@ -1102,7 +1102,7 @@ ___
 
 Ƭ  **PopulateChildren**&#60;T>: {}
 
-*Defined in [packages/core/src/typings.ts:350](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L350)*
+*Defined in [packages/core/src/typings.ts:350](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L350)*
 
 #### Type parameters:
 
@@ -1116,7 +1116,7 @@ ___
 
 Ƭ  **PopulateMap**&#60;T>: boolean \| [LoadStrategy](enums/loadstrategy.md) \| [PopulateChildren](index.md#populatechildren)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:351](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L351)*
+*Defined in [packages/core/src/typings.ts:351](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L351)*
 
 #### Type parameters:
 
@@ -1130,7 +1130,7 @@ ___
 
 Ƭ  **PopulateOptions**&#60;T>: { all?: boolean ; children?: [PopulateOptions](index.md#populateoptions)&#60;T[keyof T]>[] ; field: string ; strategy?: [LoadStrategy](enums/loadstrategy.md)  }
 
-*Defined in [packages/core/src/typings.ts:354](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L354)*
+*Defined in [packages/core/src/typings.ts:354](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L354)*
 
 #### Type parameters:
 
@@ -1153,7 +1153,7 @@ ___
 
 Ƭ  **Primary**&#60;T>: T *extends* { [PrimaryKeyType]: *infer* PK  } ? PK : T *extends* { _id: *infer* PK  } ? PK \| string : T *extends* { uuid: *infer* PK  } ? PK : T *extends* { id: *infer* PK  } ? PK : never
 
-*Defined in [packages/core/src/typings.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L23)*
+*Defined in [packages/core/src/typings.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L23)*
 
 #### Type parameters:
 
@@ -1167,7 +1167,7 @@ ___
 
 Ƭ  **Property**&#60;T, O>: { reference: [MANY\_TO\_ONE](enums/referencetype.md#many_to_one) \| &#34;m:1&#34;  } & [TypeDef](index.md#typedef)&#60;T> & [ManyToOneOptions](interfaces/manytooneoptions.md)&#60;T, O> \| { reference: [ONE\_TO\_ONE](enums/referencetype.md#one_to_one) \| &#34;1:1&#34;  } & [TypeDef](index.md#typedef)&#60;T> & [OneToOneOptions](interfaces/onetooneoptions.md)&#60;T, O> \| { reference: [ONE\_TO\_MANY](enums/referencetype.md#one_to_many) \| &#34;1:m&#34;  } & [TypeDef](index.md#typedef)&#60;T> & [OneToManyOptions](index.md#onetomanyoptions)&#60;T, O> \| { reference: [MANY\_TO\_MANY](enums/referencetype.md#many_to_many) \| &#34;m:n&#34;  } & [TypeDef](index.md#typedef)&#60;T> & [ManyToManyOptions](interfaces/manytomanyoptions.md)&#60;T, O> \| { reference: [EMBEDDED](enums/referencetype.md#embedded) \| &#34;embedded&#34;  } & [TypeDef](index.md#typedef)&#60;T> & [EmbeddedOptions](index.md#embeddedoptions) & [PropertyOptions](index.md#propertyoptions)&#60;O> \| { enum: true  } & [EnumOptions](interfaces/enumoptions.md)&#60;O> \| [TypeDef](index.md#typedef)&#60;T> & [PropertyOptions](index.md#propertyoptions)&#60;O>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L14)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L14)*
 
 #### Type parameters:
 
@@ -1182,7 +1182,7 @@ ___
 
 Ƭ  **PropertyKey**&#60;T, U>: [NonFunctionPropertyNames](index.md#nonfunctionpropertynames)&#60;Omit&#60;T, keyof U>>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L22)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L22)*
 
 #### Type parameters:
 
@@ -1197,7 +1197,7 @@ ___
 
 Ƭ  **PropertyOptions**&#60;T>: { columnType?: string ; comment?: string ; customType?: [Type](classes/type.md)&#60;any> ; default?: string \| string[] \| number \| number[] \| boolean \| null ; defaultRaw?: string ; fieldName?: string ; fieldNames?: string[] ; formula?: string \| (alias: string) => string ; hidden?: boolean ; index?: boolean \| string ; lazy?: boolean ; length?: number ; name?: string ; nullable?: boolean ; onCreate?: (entity: T) => any ; onUpdate?: (entity: T) => any ; persist?: boolean ; primary?: boolean ; serializedName?: string ; serializedPrimaryKey?: boolean ; serializer?: (value: any) => any ; type?: &#34;string&#34; \| &#34;number&#34; \| &#34;boolean&#34; \| &#34;bigint&#34; \| &#34;ObjectId&#34; \| string \| unknown \| bigint \| Date \| [Constructor](index.md#constructor)&#60;[Type](classes/type.md)&#60;any>> \| [Type](classes/type.md)&#60;any> ; unique?: boolean \| string ; unsigned?: boolean ; version?: boolean  }
 
-*Defined in [packages/core/src/decorators/Property.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L37)*
+*Defined in [packages/core/src/decorators/Property.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L37)*
 
 #### Type parameters:
 
@@ -1241,7 +1241,7 @@ ___
 
 Ƭ  **QBFilterQuery**&#60;T>: [FilterQuery](index.md#filterquery)&#60;T> & [Dictionary](index.md#dictionary) \| [FilterQuery](index.md#filterquery)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L69)*
+*Defined in [packages/core/src/typings.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L69)*
 
 #### Type parameters:
 
@@ -1255,9 +1255,9 @@ ___
 
 Ƭ  **Query**&#60;T>: string \| QueryBuilder \| Raw
 
-*Defined in [packages/core/src/typings.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L63)*
+*Defined in [packages/core/src/typings.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L63)*
 
-*Defined in [packages/migrations/src/Migration.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L4)*
+*Defined in [packages/migrations/src/Migration.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L4)*
 
 #### Type parameters:
 
@@ -1271,7 +1271,7 @@ ___
 
 Ƭ  **QueryOrderKeys**: [QueryOrderKeysFlat](index.md#queryorderkeysflat) \| [QueryOrderMap](interfaces/queryordermap.md)
 
-*Defined in [packages/core/src/enums.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L47)*
+*Defined in [packages/core/src/enums.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L47)*
 
 ___
 
@@ -1279,7 +1279,7 @@ ___
 
 Ƭ  **QueryOrderKeysFlat**: [QueryOrder](enums/queryorder.md) \| [QueryOrderNumeric](enums/queryordernumeric.md) \| keyof *typeof* [QueryOrder](enums/queryorder.md)
 
-*Defined in [packages/core/src/enums.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L46)*
+*Defined in [packages/core/src/enums.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L46)*
 
 ___
 
@@ -1287,7 +1287,7 @@ ___
 
 Ƭ  **RelationsIn**&#60;T>: [SubType](index.md#subtype)&#60;T, [Collection](classes/collection.md)&#60;any> \| [Reference](classes/reference.md)&#60;any> \| undefined>
 
-*Defined in [packages/core/src/typings.ts:384](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L384)*
+*Defined in [packages/core/src/typings.ts:384](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L384)*
 
 #### Type parameters:
 
@@ -1301,7 +1301,7 @@ ___
 
 Ƭ  **ResultMapper**&#60;T>: (result: [EntityData](index.md#entitydata)&#60;T>) => [EntityData](index.md#entitydata)&#60;T> \| null
 
-*Defined in [packages/core/src/utils/EntityComparator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/EntityComparator.ts#L8)*
+*Defined in [packages/core/src/utils/EntityComparator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/EntityComparator.ts#L8)*
 
 #### Type parameters:
 
@@ -1315,7 +1315,7 @@ ___
 
 Ƭ  **Scalar**: boolean \| number \| string \| bigint \| symbol \| Date \| RegExp \| Buffer \| { toHexString: () => string  }
 
-*Defined in [packages/core/src/typings.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L31)*
+*Defined in [packages/core/src/typings.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L31)*
 
 ___
 
@@ -1323,7 +1323,7 @@ ___
 
 Ƭ  **SnapshotGenerator**&#60;T>: (entity: T) => [EntityData](index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/utils/EntityComparator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/EntityComparator.ts#L9)*
+*Defined in [packages/core/src/utils/EntityComparator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/EntityComparator.ts#L9)*
 
 #### Type parameters:
 
@@ -1337,7 +1337,7 @@ ___
 
 Ƭ  **SubType**&#60;T, C>: Pick&#60;T, {}[keyof T]>
 
-*Defined in [packages/core/src/typings.ts:382](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L382)*
+*Defined in [packages/core/src/typings.ts:382](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L382)*
 
 #### Type parameters:
 
@@ -1352,7 +1352,7 @@ ___
 
 Ƭ  **Transaction**&#60;T>: T
 
-*Defined in [packages/core/src/connections/Connection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L140)*
+*Defined in [packages/core/src/connections/Connection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L140)*
 
 #### Type parameters:
 
@@ -1366,7 +1366,7 @@ ___
 
 Ƭ  **TypeDef**&#60;T>: { type: [TypeType](index.md#typetype)  } \| { customType: [Type](classes/type.md)&#60;any>  } \| { entity: string \| () => string \| [EntityName](index.md#entityname)&#60;T>  }
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L13)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L13)*
 
 #### Type parameters:
 
@@ -1380,7 +1380,7 @@ ___
 
 Ƭ  **TypeType**: string \| NumberConstructor \| StringConstructor \| BooleanConstructor \| DateConstructor \| ArrayConstructor \| [Constructor](index.md#constructor)&#60;[Type](classes/type.md)&#60;any>>
 
-*Defined in [packages/core/src/metadata/EntitySchema.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/EntitySchema.ts#L12)*
+*Defined in [packages/core/src/metadata/EntitySchema.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/EntitySchema.ts#L12)*
 
 ___
 
@@ -1388,9 +1388,9 @@ ___
 
 Ƭ  **UmzugMigration**: { file: string ; name?: string ; path?: string  }
 
-*Defined in [packages/core/src/typings.ts:318](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L318)*
+*Defined in [packages/core/src/typings.ts:318](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L318)*
 
-*Defined in [packages/migrations/src/typings.ts:3](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/typings.ts#L3)*
+*Defined in [packages/migrations/src/typings.ts:3](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/typings.ts#L3)*
 
 #### Type declaration:
 
@@ -1406,7 +1406,7 @@ Name | Type |
 
 • `Const` **ARRAY\_OPERATORS**: string[] = ['$overlap', '$contains', '$contained']
 
-*Defined in [packages/core/src/enums.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L24)*
+*Defined in [packages/core/src/enums.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L24)*
 
 ___
 
@@ -1414,7 +1414,7 @@ ___
 
 • `Const` **EntityManagerType**: unique symbol = Symbol('EntityManagerType')
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L10)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L10)*
 
 ___
 
@@ -1422,7 +1422,7 @@ ___
 
 • `Const` **EntityRepositoryType**: unique symbol = Symbol('EntityRepositoryType')
 
-*Defined in [packages/core/src/typings.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L21)*
+*Defined in [packages/core/src/typings.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L21)*
 
 ___
 
@@ -1430,7 +1430,7 @@ ___
 
 • `Const` **ObjectBindingPattern**: unique symbol = Symbol('ObjectBindingPattern')
 
-*Defined in [packages/core/src/utils/Utils.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L14)*
+*Defined in [packages/core/src/utils/Utils.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L14)*
 
 ___
 
@@ -1438,7 +1438,7 @@ ___
 
 • `Const` **PrimaryKeyType**: unique symbol = Symbol('PrimaryKeyType')
 
-*Defined in [packages/core/src/typings.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L22)*
+*Defined in [packages/core/src/typings.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L22)*
 
 ___
 
@@ -1446,7 +1446,7 @@ ___
 
 • `Const` **SCALAR\_TYPES**: string[] = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp']
 
-*Defined in [packages/core/src/enums.ts:65](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L65)*
+*Defined in [packages/core/src/enums.ts:65](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L65)*
 
 ___
 
@@ -1454,7 +1454,7 @@ ___
 
 • `Const` **assign**: [assign](classes/entityassigner.md#assign) = EntityAssigner.assign
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:151](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L151)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:151](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L151)*
 
 ___
 
@@ -1462,7 +1462,7 @@ ___
 
 • `Const` **entityHelperSymbol**: unique symbol = Symbol('helper')
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L12)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L12)*
 
 ___
 
@@ -1470,7 +1470,7 @@ ___
 
 • `Const` **equalsFn**: [equals](index.md#equals) = equals
 
-*Defined in [packages/core/src/utils/Utils.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L114)*
+*Defined in [packages/core/src/utils/Utils.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L114)*
 
 ___
 
@@ -1478,7 +1478,7 @@ ___
 
 • `Const` **validator**: [EntityValidator](classes/entityvalidator.md) = new EntityValidator(false)
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L10)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L10)*
 
 ## Functions
 
@@ -1486,7 +1486,7 @@ ___
 
 ▸ **AfterCreate**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L20)*
+*Defined in [packages/core/src/decorators/hooks.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L20)*
 
 **Returns:** (Anonymous function)
 
@@ -1496,7 +1496,7 @@ ___
 
 ▸ **AfterDelete**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L46)*
+*Defined in [packages/core/src/decorators/hooks.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L46)*
 
 Called after deleting entity, but only when providing initialized entity to EM#remove()
 
@@ -1508,7 +1508,7 @@ ___
 
 ▸ **AfterUpdate**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L28)*
+*Defined in [packages/core/src/decorators/hooks.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L28)*
 
 **Returns:** (Anonymous function)
 
@@ -1518,7 +1518,7 @@ ___
 
 ▸ **BeforeCreate**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L16)*
+*Defined in [packages/core/src/decorators/hooks.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L16)*
 
 **Returns:** (Anonymous function)
 
@@ -1528,7 +1528,7 @@ ___
 
 ▸ **BeforeDelete**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L39)*
+*Defined in [packages/core/src/decorators/hooks.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L39)*
 
 Called before deleting entity, but only when providing initialized entity to EM#remove()
 
@@ -1540,7 +1540,7 @@ ___
 
 ▸ **BeforeUpdate**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L24)*
+*Defined in [packages/core/src/decorators/hooks.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L24)*
 
 **Returns:** (Anonymous function)
 
@@ -1550,7 +1550,7 @@ ___
 
 ▸ **Embeddable**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Embeddable.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Embeddable.ts#L4)*
+*Defined in [packages/core/src/decorators/Embeddable.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Embeddable.ts#L4)*
 
 **Returns:** (Anonymous function)
 
@@ -1560,7 +1560,7 @@ ___
 
 ▸ **Embedded**(`options?`: [EmbeddedOptions](index.md#embeddedoptions) \| () => [AnyEntity](index.md#anyentity)): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Embedded.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Embedded.ts#L6)*
+*Defined in [packages/core/src/decorators/Embedded.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Embedded.ts#L6)*
 
 #### Parameters:
 
@@ -1576,7 +1576,7 @@ ___
 
 ▸ **Entity**(`options?`: [EntityOptions](index.md#entityoptions)&#60;any>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Entity.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Entity.ts#L6)*
+*Defined in [packages/core/src/decorators/Entity.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Entity.ts#L6)*
 
 #### Parameters:
 
@@ -1592,7 +1592,7 @@ ___
 
 ▸ **Enum**(`options?`: [EnumOptions](interfaces/enumoptions.md)&#60;[AnyEntity](index.md#anyentity)> \| () => [Dictionary](index.md#dictionary)): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Enum.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Enum.ts#L7)*
+*Defined in [packages/core/src/decorators/Enum.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Enum.ts#L7)*
 
 #### Parameters:
 
@@ -1608,7 +1608,7 @@ ___
 
 ▸ **Filter**&#60;T>(`options`: [FilterDef](index.md#filterdef)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Filter.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Filter.ts#L4)*
+*Defined in [packages/core/src/decorators/Filter.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Filter.ts#L4)*
 
 #### Type parameters:
 
@@ -1630,7 +1630,7 @@ ___
 
 ▸ **Formula**(`formula`: string \| (alias: string) => string): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Formula.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Formula.ts#L6)*
+*Defined in [packages/core/src/decorators/Formula.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Formula.ts#L6)*
 
 #### Parameters:
 
@@ -1646,7 +1646,7 @@ ___
 
 ▸ **Index**&#60;T>(`options?`: [IndexOptions](interfaces/indexoptions.md)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Indexed.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L20)*
+*Defined in [packages/core/src/decorators/Indexed.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L20)*
 
 #### Type parameters:
 
@@ -1668,7 +1668,7 @@ ___
 
 ▸ **ManyToMany**&#60;T, O>(`entity?`: [ManyToManyOptions](interfaces/manytomanyoptions.md)&#60;T, O> \| string \| () => [EntityName](index.md#entityname)&#60;T>, `mappedBy?`: string & keyof T \| (e: T) => any, `options?`: Partial&#60;[ManyToManyOptions](interfaces/manytomanyoptions.md)&#60;T, O>>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/ManyToMany.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/ManyToMany.ts#L7)*
+*Defined in [packages/core/src/decorators/ManyToMany.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/ManyToMany.ts#L7)*
 
 #### Type parameters:
 
@@ -1693,7 +1693,7 @@ ___
 
 ▸ **ManyToOne**&#60;T, O>(`entity?`: [ManyToOneOptions](interfaces/manytooneoptions.md)&#60;T, O> \| string \| (e?: any) => [EntityName](index.md#entityname)&#60;T>, `options?`: Partial&#60;[ManyToOneOptions](interfaces/manytooneoptions.md)&#60;T, O>>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/ManyToOne.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/ManyToOne.ts#L7)*
+*Defined in [packages/core/src/decorators/ManyToOne.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/ManyToOne.ts#L7)*
 
 #### Type parameters:
 
@@ -1717,7 +1717,7 @@ ___
 
 ▸ **OnInit**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L32)*
+*Defined in [packages/core/src/decorators/hooks.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L32)*
 
 **Returns:** (Anonymous function)
 
@@ -1727,7 +1727,7 @@ ___
 
 ▸ **OneToMany**&#60;T, O>(`entity`: string \| (e?: any) => [EntityName](index.md#entityname)&#60;T>, `mappedBy`: string & keyof T \| (e: T) => any, `options?`: Partial&#60;[OneToManyOptions](index.md#onetomanyoptions)&#60;T, O>>): function
 
-*Defined in [packages/core/src/decorators/OneToMany.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToMany.ts#L24)*
+*Defined in [packages/core/src/decorators/OneToMany.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToMany.ts#L24)*
 
 #### Type parameters:
 
@@ -1748,7 +1748,7 @@ Name | Type |
 
 ▸ **OneToMany**&#60;T, O>(`options`: [OneToManyOptions](index.md#onetomanyoptions)&#60;T, O>): function
 
-*Defined in [packages/core/src/decorators/OneToMany.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToMany.ts#L29)*
+*Defined in [packages/core/src/decorators/OneToMany.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToMany.ts#L29)*
 
 #### Type parameters:
 
@@ -1771,7 +1771,7 @@ ___
 
 ▸ **OneToOne**&#60;T, O>(`entity?`: [OneToOneOptions](interfaces/onetooneoptions.md)&#60;T, O> \| string \| (e?: any) => [EntityName](index.md#entityname)&#60;T>, `mappedBy?`: string & keyof T \| (e: T) => any, `options?`: Partial&#60;[OneToOneOptions](interfaces/onetooneoptions.md)&#60;T, O>>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/OneToOne.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToOne.ts#L5)*
+*Defined in [packages/core/src/decorators/OneToOne.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToOne.ts#L5)*
 
 #### Type parameters:
 
@@ -1796,7 +1796,7 @@ ___
 
 ▸ **PrimaryKey**&#60;T>(`options?`: [PrimaryKeyOptions](interfaces/primarykeyoptions.md)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/PrimaryKey.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/PrimaryKey.ts#L19)*
+*Defined in [packages/core/src/decorators/PrimaryKey.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/PrimaryKey.ts#L19)*
 
 #### Type parameters:
 
@@ -1818,7 +1818,7 @@ ___
 
 ▸ **Property**&#60;T>(`options?`: [PropertyOptions](index.md#propertyoptions)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Property.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L7)*
+*Defined in [packages/core/src/decorators/Property.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L7)*
 
 #### Type parameters:
 
@@ -1840,7 +1840,7 @@ ___
 
 ▸ **Repository**&#60;T>(`entity`: [EntityClass](index.md#entityclass)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Repository.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Repository.ts#L5)*
+*Defined in [packages/core/src/decorators/Repository.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Repository.ts#L5)*
 
 #### Type parameters:
 
@@ -1862,7 +1862,7 @@ ___
 
 ▸ **SerializedPrimaryKey**&#60;T>(`options?`: [SerializedPrimaryKeyOptions](interfaces/serializedprimarykeyoptions.md)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/PrimaryKey.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/PrimaryKey.ts#L23)*
+*Defined in [packages/core/src/decorators/PrimaryKey.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/PrimaryKey.ts#L23)*
 
 #### Type parameters:
 
@@ -1884,7 +1884,7 @@ ___
 
 ▸ **Subscriber**(): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Subscriber.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Subscriber.ts#L5)*
+*Defined in [packages/core/src/decorators/Subscriber.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Subscriber.ts#L5)*
 
 **Returns:** (Anonymous function)
 
@@ -1894,7 +1894,7 @@ ___
 
 ▸ **Unique**&#60;T>(`options?`: [UniqueOptions](interfaces/uniqueoptions.md)&#60;T>): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/Indexed.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Indexed.ts#L24)*
+*Defined in [packages/core/src/decorators/Indexed.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Indexed.ts#L24)*
 
 #### Type parameters:
 
@@ -1916,7 +1916,7 @@ ___
 
 ▸ **compareArrays**(`a`: any[], `b`: any[]): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L58)*
+*Defined in [packages/core/src/utils/Utils.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L58)*
 
 #### Parameters:
 
@@ -1933,7 +1933,7 @@ ___
 
 ▸ **compareBuffers**(`a`: Buffer, `b`: Buffer): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L75)*
+*Defined in [packages/core/src/utils/Utils.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L75)*
 
 #### Parameters:
 
@@ -1950,7 +1950,7 @@ ___
 
 ▸ **compareObjects**(`a`: any, `b`: any): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L16)*
+*Defined in [packages/core/src/utils/Utils.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L16)*
 
 #### Parameters:
 
@@ -1967,7 +1967,7 @@ ___
 
 ▸ **createDecorator**&#60;T>(`options`: [PrimaryKeyOptions](interfaces/primarykeyoptions.md)&#60;T> \| [SerializedPrimaryKeyOptions](interfaces/serializedprimarykeyoptions.md)&#60;T>, `serialized`: boolean): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/PrimaryKey.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/PrimaryKey.ts#L7)*
+*Defined in [packages/core/src/decorators/PrimaryKey.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/PrimaryKey.ts#L7)*
 
 #### Type parameters:
 
@@ -1990,7 +1990,7 @@ ___
 
 ▸ **createOneToDecorator**&#60;T, O>(`entity`: [OneToManyOptions](index.md#onetomanyoptions)&#60;T, O> \| string \| (e?: any) => [EntityName](index.md#entityname)&#60;T>, `mappedBy`: string & keyof T \| (e: T) => any \| undefined, `options`: Partial&#60;[OneToManyOptions](index.md#onetomanyoptions)&#60;T, O>>, `reference`: [ReferenceType](enums/referencetype.md)): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/OneToMany.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/OneToMany.ts#L7)*
+*Defined in [packages/core/src/decorators/OneToMany.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/OneToMany.ts#L7)*
 
 #### Type parameters:
 
@@ -2016,7 +2016,7 @@ ___
 
 ▸ **equals**(`a`: any, `b`: any): boolean
 
-*Defined in [packages/core/src/utils/Utils.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Utils.ts#L94)*
+*Defined in [packages/core/src/utils/Utils.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Utils.ts#L94)*
 
 Checks if arguments are deeply (but not strictly) equal.
 
@@ -2035,7 +2035,7 @@ ___
 
 ▸ `Const`**expr**(`sql`: string): string
 
-*Defined in [packages/core/src/utils/QueryHelper.ts:220](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/QueryHelper.ts#L220)*
+*Defined in [packages/core/src/utils/QueryHelper.ts:220](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/QueryHelper.ts#L220)*
 
 #### Parameters:
 
@@ -2051,7 +2051,7 @@ ___
 
 ▸ **hook**(`type`: [EventType](enums/eventtype.md)): (Anonymous function)
 
-*Defined in [packages/core/src/decorators/hooks.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/hooks.ts#L4)*
+*Defined in [packages/core/src/decorators/hooks.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/hooks.ts#L4)*
 
 #### Parameters:
 
@@ -2067,7 +2067,7 @@ ___
 
 ▸ **mapHydrator**&#60;T>(`items`: T[] \| undefined, `hydrate`: (i: string) => T): function
 
-*Defined in [packages/core/src/types/EnumArrayType.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/EnumArrayType.ts#L6)*
+*Defined in [packages/core/src/types/EnumArrayType.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/EnumArrayType.ts#L6)*
 
 #### Type parameters:
 
@@ -2090,7 +2090,7 @@ ___
 
 ▸ **wrap**&#60;T, PK>(`entity`: T, `preferHelper`: true): [IWrappedEntityInternal](interfaces/iwrappedentityinternal.md)&#60;T, PK>
 
-*Defined in [packages/core/src/entity/wrap.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/wrap.ts#L6)*
+*Defined in [packages/core/src/entity/wrap.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/wrap.ts#L6)*
 
 returns WrappedEntity instance associated with this entity. This includes all the internal properties like `__meta` or `__em`.
 
@@ -2112,7 +2112,7 @@ Name | Type |
 
 ▸ **wrap**&#60;T, PK>(`entity`: T, `preferHelper?`: false): [IWrappedEntity](interfaces/iwrappedentity.md)&#60;T, PK>
 
-*Defined in [packages/core/src/entity/wrap.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/wrap.ts#L11)*
+*Defined in [packages/core/src/entity/wrap.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/wrap.ts#L11)*
 
 wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
 
@@ -2138,7 +2138,7 @@ Name | Type |
 
 ▪ `Const` **MonkeyPatchable**: object
 
-*Defined in [packages/knex/src/MonkeyPatchable.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/MonkeyPatchable.ts#L14)*
+*Defined in [packages/knex/src/MonkeyPatchable.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/MonkeyPatchable.ts#L14)*
 
 #### Properties:
 

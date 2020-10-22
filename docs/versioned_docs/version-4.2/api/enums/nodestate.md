@@ -10,7 +10,7 @@ sidebar_label: "NodeState"
 
 •  **IN\_PROGRESS**:  = 1
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L5)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L5)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **NOT\_VISITED**:  = 0
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L4)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L4)*
 
 ___
 
@@ -26,4 +26,4 @@ ___
 
 •  **VISITED**:  = 2
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L6)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L6)*

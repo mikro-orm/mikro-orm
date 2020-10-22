@@ -14,7 +14,7 @@ sidebar_label: "IEntityGenerator"
 
 ▸ **generate**(`options?`: { baseDir?: string ; save?: boolean  }): Promise&#60;string[]>
 
-*Defined in [packages/core/src/typings.ts:315](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L315)*
+*Defined in [packages/core/src/typings.ts:315](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L315)*
 
 #### Parameters:
 

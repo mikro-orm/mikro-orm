@@ -22,7 +22,7 @@ sidebar_label: "MongoDriver"
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L15)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L15)*
 
 #### Parameters:
 
@@ -40,7 +40,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L12)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L12)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L14)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L14)*
 
 ___
 
@@ -110,7 +110,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L15)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L15)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 *Overrides [AbstractSqlDriver](abstractsqldriver.md).[aggregate](abstractsqldriver.md#aggregate)*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L86)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L86)*
 
 #### Parameters:
 
@@ -148,7 +148,7 @@ ___
 
 ▸ `Private`**buildFields**&#60;T>(`entityName`: string, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `fields?`: string[]): string[] \| undefined
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:269](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L269)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:269](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L269)*
 
 #### Type parameters:
 
@@ -172,7 +172,7 @@ ___
 
 ▸ `Private`**buildFilterById**&#60;T>(`entityName`: string, `id`: string): [FilterQuery](../index.md#filterquery)&#60;T>
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:259](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L259)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:259](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L259)*
 
 #### Type parameters:
 
@@ -245,7 +245,7 @@ ___
 
 ▸ `Private`**convertObjectIds**&#60;T>(`data`: T): T
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:237](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L237)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:237](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L237)*
 
 #### Type parameters:
 
@@ -269,7 +269,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L45)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L45)*
 
 #### Type parameters:
 
@@ -294,7 +294,7 @@ ___
 
 ▸ **createCollections**(): Promise&#60;void>
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L90)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L90)*
 
 **Returns:** Promise&#60;void>
 
@@ -306,7 +306,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L21)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L21)*
 
 #### Type parameters:
 
@@ -328,7 +328,7 @@ ___
 
 ▸ `Private`**createIndexes**(`meta`: EntityMetadata): Promise&#60;string>[]
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:128](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L128)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:128](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L128)*
 
 #### Parameters:
 
@@ -344,7 +344,7 @@ ___
 
 ▸ `Private`**createPropertyIndexes**(`meta`: EntityMetadata, `prop`: EntityProperty, `type`: &#34;index&#34; \| &#34;unique&#34;): Promise&#60;string>[]
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:172](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L172)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:172](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L172)*
 
 #### Parameters:
 
@@ -380,7 +380,7 @@ ___
 
 ▸ `Private`**createUniqueIndexes**(`meta`: EntityMetadata): Promise&#60;string>[]
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:157](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L157)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:157](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L157)*
 
 #### Parameters:
 
@@ -396,7 +396,7 @@ ___
 
 ▸ **dropCollections**(): Promise&#60;void>
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L100)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L100)*
 
 **Returns:** Promise&#60;void>
 
@@ -408,7 +408,7 @@ ___
 
 *Overrides [AbstractSqlDriver](abstractsqldriver.md).[ensureIndexes](abstractsqldriver.md#ensureindexes)*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:111](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L111)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:111](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L111)*
 
 **Returns:** Promise&#60;void>
 
@@ -420,7 +420,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L25)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L25)*
 
 #### Type parameters:
 
@@ -447,7 +447,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L33)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L33)*
 
 #### Type parameters:
 
@@ -678,7 +678,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L76)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L76)*
 
 #### Type parameters:
 
@@ -704,7 +704,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L50)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L50)*
 
 #### Type parameters:
 
@@ -730,7 +730,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L55)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L55)*
 
 #### Type parameters:
 
@@ -757,7 +757,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L60)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L60)*
 
 #### Type parameters:
 
@@ -784,7 +784,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L71)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L71)*
 
 #### Type parameters:
 
@@ -822,7 +822,7 @@ ___
 
 ▸ `Private`**renameFields**&#60;T>(`entityName`: string, `data`: T, `where?`: boolean): T
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:186](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L186)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:186](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L186)*
 
 #### Type parameters:
 
@@ -890,7 +890,7 @@ ___
 
 *Overrides [AbstractSqlDriver](abstractsqldriver.md).[shouldHaveColumn](abstractsqldriver.md#shouldhavecolumn)*
 
-*Defined in [packages/mongodb/src/MongoDriver.ts:283](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoDriver.ts#L283)*
+*Defined in [packages/mongodb/src/MongoDriver.ts:283](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoDriver.ts#L283)*
 
 #### Type parameters:
 

@@ -14,7 +14,7 @@ sidebar_label: "EntityLoader"
 
 \+ **new EntityLoader**(`em`: [EntityManager](entitymanager.md)): [EntityLoader](entityloader.md)
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L23)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L23)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` `Readonly` **driver**: [IDatabaseDriver](../interfaces/idatabasedriver.md)&#60;[Connection](connection.md)> = this.em.getDriver()
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L23)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L23)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Private` `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L25)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L25)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Private` `Readonly` **metadata**: [MetadataStorage](metadatastorage.md) = this.em.getMetadata()
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L22)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L22)*
 
 ## Methods
 
@@ -54,7 +54,7 @@ ___
 
 ▸ `Private`**expandNestedPopulate**&#60;T>(`entityName`: string, `parts`: string[], `strategy?`: [LoadStrategy](../enums/loadstrategy.md)): [PopulateOptions](../index.md#populateoptions)&#60;T>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L115)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L115)*
 
 Expands `books.perex` like populate to use `children` array instead of the dot syntax
 
@@ -80,7 +80,7 @@ ___
 
 ▸ `Private`**filterCollections**&#60;T>(`entities`: T[], `field`: keyof T, `refresh`: boolean): T[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:302](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L302)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:302](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L302)*
 
 #### Type parameters:
 
@@ -104,7 +104,7 @@ ___
 
 ▸ `Private`**filterReferences**&#60;T>(`entities`: T[], `field`: keyof T, `refresh`: boolean): T[keyof T][]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:310](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L310)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:310](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L310)*
 
 #### Type parameters:
 
@@ -128,7 +128,7 @@ ___
 
 ▸ `Private`**findChildren**&#60;T>(`entities`: T[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>, `options`: Required&#60;[Options](../index.md#options)&#60;T>>): Promise&#60;[AnyEntity](../index.md#anyentity)[]>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:202](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L202)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:202](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L202)*
 
 #### Type parameters:
 
@@ -153,7 +153,7 @@ ___
 
 ▸ `Private`**findChildrenFromPivotTable**&#60;T>(`filtered`: T[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `field`: keyof T, `refresh`: boolean, `where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): Promise&#60;[AnyEntity](../index.md#anyentity)[]>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:263](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L263)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:263](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L263)*
 
 #### Type parameters:
 
@@ -180,7 +180,7 @@ ___
 
 ▸ `Private`**getChildReferences**&#60;T>(`entities`: T[], `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `refresh`: boolean): [AnyEntity](../index.md#anyentity)[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:285](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L285)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:285](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L285)*
 
 #### Type parameters:
 
@@ -204,7 +204,7 @@ ___
 
 ▸ `Private`**initializeCollections**&#60;T>(`filtered`: T[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `field`: keyof T, `children`: [AnyEntity](../index.md#anyentity)[]): void
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:178](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L178)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:178](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L178)*
 
 #### Type parameters:
 
@@ -229,7 +229,7 @@ ___
 
 ▸ `Private`**initializeManyToMany**&#60;T>(`filtered`: T[], `children`: [AnyEntity](../index.md#anyentity)[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `field`: keyof T): void
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:195](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L195)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:195](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L195)*
 
 #### Type parameters:
 
@@ -254,7 +254,7 @@ ___
 
 ▸ `Private`**initializeOneToMany**&#60;T>(`filtered`: T[], `children`: [AnyEntity](../index.md#anyentity)[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `field`: keyof T): void
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:188](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L188)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:188](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L188)*
 
 #### Type parameters:
 
@@ -279,7 +279,7 @@ ___
 
 ▸ `Private`**lookupAllRelationships**&#60;T>(`entityName`: string, `prefix?`: string, `visited?`: string[]): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:320](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L320)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:320](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L320)*
 
 #### Type parameters:
 
@@ -303,7 +303,7 @@ ___
 
 ▸ `Private`**lookupEagerLoadedRelationships**&#60;T>(`entityName`: string, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `prefix?`: string, `visited?`: string[]): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:346](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L346)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:346](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L346)*
 
 #### Type parameters:
 
@@ -328,7 +328,7 @@ ___
 
 ▸ `Private`**mergeNestedPopulate**&#60;T>(`populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[]): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L87)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L87)*
 
 merge multiple populates for the same entity with different children
 
@@ -352,7 +352,7 @@ ___
 
 ▸ **normalizePopulate**&#60;T>(`entityName`: string, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[] \| true, `lookup?`: boolean): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L56)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L56)*
 
 #### Type parameters:
 
@@ -376,7 +376,7 @@ ___
 
 ▸ **populate**&#60;T>(`entityName`: string, `entities`: T[], `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[] \| boolean, `options`: [Options](../index.md#options)&#60;T>): Promise&#60;void>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L30)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L30)*
 
 Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
 
@@ -403,7 +403,7 @@ ___
 
 ▸ `Private`**populateField**&#60;T>(`entityName`: string, `entities`: T[], `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>, `options`: Required&#60;[Options](../index.md#options)&#60;T>>): Promise&#60;void>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:233](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L233)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:233](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L233)*
 
 #### Type parameters:
 
@@ -428,7 +428,7 @@ ___
 
 ▸ `Private`**populateMany**&#60;T>(`entityName`: string, `entities`: T[], `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>, `options`: Required&#60;[Options](../index.md#options)&#60;T>>): Promise&#60;[AnyEntity](../index.md#anyentity)[]>
 
-*Defined in [packages/core/src/entity/EntityLoader.ts:131](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityLoader.ts#L131)*
+*Defined in [packages/core/src/entity/EntityLoader.ts:131](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityLoader.ts#L131)*
 
 preload everything in one call (this will update already existing references in IM)
 

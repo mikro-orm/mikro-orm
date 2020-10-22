@@ -14,7 +14,7 @@ sidebar_label: "TableDifference"
 
 •  **addIndex**: [IndexDef](indexdef.md)[]
 
-*Defined in [packages/knex/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L72)*
+*Defined in [packages/knex/src/typings.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L72)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **create**: EntityProperty[]
 
-*Defined in [packages/knex/src/typings.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L68)*
+*Defined in [packages/knex/src/typings.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L68)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 •  **dropIndex**: [IndexDef](indexdef.md)[]
 
-*Defined in [packages/knex/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L73)*
+*Defined in [packages/knex/src/typings.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L73)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 •  **remove**: [Column](column.md)[]
 
-*Defined in [packages/knex/src/typings.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L71)*
+*Defined in [packages/knex/src/typings.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L71)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 •  **rename**: { from: [Column](column.md) ; to: EntityProperty  }[]
 
-*Defined in [packages/knex/src/typings.ts:70](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L70)*
+*Defined in [packages/knex/src/typings.ts:70](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L70)*
 
 ___
 
@@ -54,4 +54,4 @@ ___
 
 •  **update**: { column: [Column](column.md) ; diff: [IsSame](issame.md) ; prop: EntityProperty  }[]
 
-*Defined in [packages/knex/src/typings.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L69)*
+*Defined in [packages/knex/src/typings.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L69)*

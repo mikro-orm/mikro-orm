@@ -18,7 +18,7 @@ sidebar_label: "MongoExceptionConverter"
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoExceptionConverter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoExceptionConverter.ts#L9)*
+*Defined in [packages/mongodb/src/MongoExceptionConverter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoExceptionConverter.ts#L9)*
 
 **`link`** https://gist.github.com/rluvaton/a97a8da46ab6541a3e5702e83b9d357b
 

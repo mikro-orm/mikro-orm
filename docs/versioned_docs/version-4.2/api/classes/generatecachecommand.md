@@ -18,7 +18,7 @@ sidebar_label: "GenerateCacheCommand"
 
 •  **command**: string = "cache:generate"
 
-*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateCacheCommand.ts#L8)*
+*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateCacheCommand.ts#L8)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **describe**: string = "Generate metadata cache for production"
 
-*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateCacheCommand.ts#L9)*
+*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateCacheCommand.ts#L9)*
 
 ## Methods
 
@@ -34,7 +34,7 @@ ___
 
 ▸ **handler**(`args`: Arguments): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateCacheCommand.ts#L14)*
+*Defined in [packages/cli/src/commands/GenerateCacheCommand.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateCacheCommand.ts#L14)*
 
 **`inheritdoc`** 
 

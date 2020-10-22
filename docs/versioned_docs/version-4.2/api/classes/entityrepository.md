@@ -20,7 +20,7 @@ Name | Type |
 
 \+ **new EntityRepository**(`em`: [EntityManager](entitymanager.md), `entityName`: [EntityName](../index.md#entityname)&#60;T>): [EntityRepository](entityrepository.md)
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L7)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L7)*
 
 #### Parameters:
 
@@ -37,7 +37,7 @@ Name | Type |
 
 • `Protected` `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L9)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L9)*
 
 ___
 
@@ -45,7 +45,7 @@ ___
 
 • `Protected` `Readonly` **entityName**: [EntityName](../index.md#entityname)&#60;T>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L10)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L10)*
 
 ## Methods
 
@@ -53,7 +53,7 @@ ___
 
 ▸ **assign**(`entity`: T, `data`: [EntityData](../index.md#entitydata)&#60;T>): T
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:260](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L260)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:260](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L260)*
 
 Shortcut for `wrap(entity).assign(data, { em })`
 
@@ -72,7 +72,7 @@ ___
 
 ▸ **canPopulate**(`property`: string): boolean
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:224](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L224)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:224](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L224)*
 
 Checks whether given property can be populated on the entity.
 
@@ -90,7 +90,7 @@ ___
 
 ▸ **count**(`where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [CountOptions](../interfaces/countoptions.md)&#60;T>): Promise&#60;number>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:275](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L275)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:275](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L275)*
 
 Returns total number of entities matching your `where` query.
 
@@ -109,7 +109,7 @@ ___
 
 ▸ **create**&#60;P>(`data`: [EntityData](../index.md#entitydata)&#60;T>): [New](../index.md#new)&#60;T, P>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:253](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L253)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:253](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L253)*
 
 Creates new instance of given entity and populates it with given data
 
@@ -133,7 +133,7 @@ ___
 
 ▸ **find**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [FindOptions](../interfaces/findoptions.md)&#60;T, P>): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L82)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L82)*
 
 Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
 
@@ -154,7 +154,7 @@ Name | Type |
 
 ▸ **find**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: P, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `limit?`: number, `offset?`: number): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L87)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L87)*
 
 Finds all entities matching your `where` query.
 
@@ -182,7 +182,7 @@ ___
 
 ▸ **findAll**&#60;P>(`options?`: [FindOptions](../interfaces/findoptions.md)&#60;T, P>): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:119](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L119)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:119](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L119)*
 
 Finds all entities of given type. You can pass additional options via the `options` parameter.
 
@@ -202,7 +202,7 @@ Name | Type |
 
 ▸ **findAll**&#60;P>(`populate?`: P, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `limit?`: number, `offset?`: number): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L124)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L124)*
 
 Finds all entities of given type.
 
@@ -229,7 +229,7 @@ ___
 
 ▸ **findAndCount**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [FindOptions](../interfaces/findoptions.md)&#60;T>): Promise&#60;[[Loaded](../index.md#loaded)&#60;T, P>[], number]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L100)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L100)*
 
 Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
 where first element is the array of entities and the second is the count.
@@ -251,7 +251,7 @@ Name | Type |
 
 ▸ **findAndCount**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: P, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `limit?`: number, `offset?`: number): Promise&#60;[[Loaded](../index.md#loaded)&#60;T, P>[], number]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L106)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L106)*
 
 Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
 where first element is the array of entities and the second is the count.
@@ -280,7 +280,7 @@ ___
 
 ▸ **findOne**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: P, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P> \| null>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L41)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L41)*
 
 Finds first entity matching your `where` query.
 
@@ -302,7 +302,7 @@ Name | Type |
 
 ▸ **findOne**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: [FindOneOptions](../interfaces/findoneoptions.md)&#60;T, P>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P> \| null>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L46)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L46)*
 
 Finds first entity matching your `where` query.
 
@@ -328,7 +328,7 @@ ___
 
 ▸ **findOneOrFail**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: P, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L61)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L61)*
 
 Finds first entity matching your `where` query. If nothing found, it will throw an error.
 You can override the factory for creating this method via `options.failHandler` locally
@@ -352,7 +352,7 @@ Name | Type |
 
 ▸ **findOneOrFail**&#60;P>(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `populate?`: [FindOneOrFailOptions](../interfaces/findoneorfailoptions.md)&#60;T, P>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L68)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L68)*
 
 Finds first entity matching your `where` query. If nothing found, it will throw an error.
 You can override the factory for creating this method via `options.failHandler` locally
@@ -380,7 +380,7 @@ ___
 
 ▸ **flush**(): Promise&#60;void>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:167](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L167)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:167](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L167)*
 
 Flushes all changes to objects that have been queued up to now to the database.
 This effectively synchronizes the in-memory state of managed objects with the database.
@@ -395,7 +395,7 @@ ___
 
 ▸ **getReference**&#60;PK>(`id`: [Primary](../index.md#primary)&#60;T>, `wrapped`: true): [IdentifiedReference](../index.md#identifiedreference)&#60;T, PK>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:202](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L202)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:202](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L202)*
 
 Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
 
@@ -416,7 +416,7 @@ Name | Type |
 
 ▸ **getReference**&#60;PK>(`id`: [Primary](../index.md#primary)&#60;T>): T
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:207](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L207)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:207](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L207)*
 
 Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
 
@@ -436,7 +436,7 @@ Name | Type |
 
 ▸ **getReference**&#60;PK>(`id`: [Primary](../index.md#primary)&#60;T>, `wrapped`: false): T
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:212](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L212)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:212](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L212)*
 
 Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
 
@@ -461,7 +461,7 @@ ___
 
 ▸ **map**(`result`: [EntityData](../index.md#entitydata)&#60;T>): T
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:195](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L195)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:195](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L195)*
 
 Maps raw database result to an entity and merges it to this EntityManager.
 
@@ -479,7 +479,7 @@ ___
 
 ▸ **merge**(`data`: T \| [EntityData](../index.md#entitydata)&#60;T>, `refresh?`: boolean, `convertCustomTypes?`: boolean): T
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:268](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L268)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:268](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L268)*
 
 Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
 via second parameter. By default it will return already loaded entities without modifying them.
@@ -500,7 +500,7 @@ ___
 
 ▸ **nativeDelete**(`where`: [FilterQuery](../index.md#filterquery)&#60;T> \| any): Promise&#60;number>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:188](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L188)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:188](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L188)*
 
 Fires native delete query. Calling this has no side effects on the context (identity map).
 
@@ -518,7 +518,7 @@ ___
 
 ▸ **nativeInsert**(`data`: [EntityData](../index.md#entitydata)&#60;T>): Promise&#60;[Primary](../index.md#primary)&#60;T>>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:174](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L174)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:174](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L174)*
 
 Fires native insert query. Calling this has no side effects on the context (identity map).
 
@@ -536,7 +536,7 @@ ___
 
 ▸ **nativeUpdate**(`where`: [FilterQuery](../index.md#filterquery)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>): Promise&#60;number>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:181](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L181)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:181](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L181)*
 
 Fires native update query. Calling this has no side effects on the context (identity map).
 
@@ -555,7 +555,7 @@ ___
 
 ▸ **persist**(`entity`: [AnyEntity](../index.md#anyentity) \| [AnyEntity](../index.md#anyentity)[]): [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L16)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L16)*
 
 Tells the EntityManager to make an instance managed and persistent.
 The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
@@ -574,7 +574,7 @@ ___
 
 ▸ **persistAndFlush**(`entity`: [AnyEntity](../index.md#anyentity) \| [AnyEntity](../index.md#anyentity)[]): Promise&#60;void>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L24)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L24)*
 
 Persists your entity immediately, flushing all not yet persisted changes to the database too.
 Equivalent to `em.persist(e).flush()`.
@@ -593,7 +593,7 @@ ___
 
 ▸ **persistLater**(`entity`: [AnyEntity](../index.md#anyentity) \| [AnyEntity](../index.md#anyentity)[]): void
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L34)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L34)*
 
 Tells the EntityManager to make an instance managed and persistent.
 The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
@@ -614,7 +614,7 @@ ___
 
 ▸ **populate**&#60;P>(`entities`: T, `populate`: P, `where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `refresh?`: boolean, `validate?`: boolean): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:231](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L231)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:231](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L231)*
 
 Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
 
@@ -639,7 +639,7 @@ Name | Type |
 
 ▸ **populate**&#60;P>(`entities`: T[], `populate`: P, `where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `refresh?`: boolean, `validate?`: boolean): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:236](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L236)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:236](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L236)*
 
 Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
 
@@ -664,7 +664,7 @@ Name | Type |
 
 ▸ **populate**&#60;P>(`entities`: T \| T[], `populate`: P, `where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md), `refresh?`: boolean, `validate?`: boolean): Promise&#60;[Loaded](../index.md#loaded)&#60;T, P> \| [Loaded](../index.md#loaded)&#60;T, P>[]>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:241](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L241)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:241](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L241)*
 
 Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
 
@@ -693,7 +693,7 @@ ___
 
 ▸ **remove**(`entity`: [AnyEntity](../index.md#anyentity)): [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:139](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L139)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:139](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L139)*
 
 Marks entity for removal.
 A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
@@ -714,7 +714,7 @@ ___
 
 ▸ **removeAndFlush**(`entity`: [AnyEntity](../index.md#anyentity)): Promise&#60;void>
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:147](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L147)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:147](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L147)*
 
 Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
 Equivalent to `em.remove(e).flush()`
@@ -733,7 +733,7 @@ ___
 
 ▸ **removeLater**(`entity`: [AnyEntity](../index.md#anyentity)): void
 
-*Defined in [packages/core/src/entity/EntityRepository.ts:157](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityRepository.ts#L157)*
+*Defined in [packages/core/src/entity/EntityRepository.ts:157](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityRepository.ts#L157)*
 
 Marks entity for removal.
 A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.

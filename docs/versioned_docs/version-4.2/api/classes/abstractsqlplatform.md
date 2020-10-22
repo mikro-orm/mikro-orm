@@ -36,7 +36,7 @@ ___
 
 • `Protected` `Optional` `Readonly` **schemaHelper**: [SchemaHelper](schemahelper.md)
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L8)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L8)*
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 ▸ **formatQuery**(`sql`: string, `params`: any[]): string
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L36)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L36)*
 
 #### Parameters:
 
@@ -261,7 +261,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L14)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L14)*
 
 #### Type parameters:
 
@@ -279,7 +279,7 @@ ___
 
 *Overrides [MongoPlatform](mongoplatform.md).[getSchemaGenerator](mongoplatform.md#getschemagenerator)*
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L22)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L22)*
 
 #### Parameters:
 
@@ -297,7 +297,7 @@ ___
 
 *Overrides [MongoPlatform](mongoplatform.md).[getSchemaHelper](mongoplatform.md#getschemahelper)*
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L18)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L18)*
 
 **Returns:** [SchemaHelper](schemahelper.md) \| undefined
 
@@ -462,7 +462,7 @@ ___
 
 ▸ **quoteValue**(`value`: any): string
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L26)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L26)*
 
 #### Parameters:
 
@@ -647,7 +647,7 @@ ___
 
 *Overrides [MongoPlatform](mongoplatform.md).[usesPivotTable](mongoplatform.md#usespivottable)*
 
-*Defined in [packages/knex/src/AbstractSqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlPlatform.ts#L10)*
+*Defined in [packages/knex/src/AbstractSqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlPlatform.ts#L10)*
 
 **Returns:** boolean
 

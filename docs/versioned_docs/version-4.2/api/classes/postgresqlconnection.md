@@ -102,7 +102,7 @@ ___
 
 ▸ `Private`**addColumn**(`this`: any, `col`: [Dictionary](../index.md#dictionary), `that`: [PostgreSqlConnection](postgresqlconnection.md)): void
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:65](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L65)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:65](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L65)*
 
 #### Parameters:
 
@@ -120,7 +120,7 @@ ___
 
 ▸ `Private`**alterColumnDefault**(`this`: any, `col`: [Dictionary](../index.md#dictionary), `colName`: string): void
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L98)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L98)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 ▸ `Private`**alterColumnNullable**(`this`: any, `col`: [Dictionary](../index.md#dictionary), `colName`: string): void
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L83)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L83)*
 
 #### Parameters:
 
@@ -218,7 +218,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[connect](abstractsqlconnection.md#connect)*
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L7)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L7)*
 
 **Returns:** Promise&#60;void>
 
@@ -314,7 +314,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getConnectionOptions](abstractsqlconnection.md#getconnectionoptions)*
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L16)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L16)*
 
 **Returns:** PgConnectionConfig
 
@@ -326,7 +326,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getDefaultClientUrl](abstractsqlconnection.md#getdefaultclienturl)*
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L12)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L12)*
 
 **Returns:** string
 
@@ -421,7 +421,7 @@ ___
 
 ▸ `Private`**patchKnex**(): void
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L48)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L48)*
 
 monkey patch knex' postgres dialect so it correctly handles column updates (especially enums)
 
@@ -518,7 +518,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlConnection.ts#L28)*
+*Defined in [packages/postgresql/src/PostgreSqlConnection.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlConnection.ts#L28)*
 
 #### Type parameters:
 

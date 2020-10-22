@@ -14,7 +14,7 @@ sidebar_label: "MetadataDiscovery"
 
 \+ **new MetadataDiscovery**(`metadata`: [MetadataStorage](metadatastorage.md), `platform`: [Platform](platform.md), `config`: [Configuration](configuration.md)): [MetadataDiscovery](metadatadiscovery.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L24)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L24)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ Name | Type |
 
 • `Private` `Readonly` **cache**: [CacheAdapter](../interfaces/cacheadapter.md) = this.config.getCacheAdapter()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L20)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L20)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Private` `Readonly` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L28)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L28)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Private` `Readonly` **discovered**: [EntityMetadata](entitymetadata.md)[] = []
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L24)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L24)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Private` `Readonly` **logger**: [Logger](logger.md) = this.config.getLogger()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L21)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L21)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • `Private` `Readonly` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L26)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L26)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 • `Private` `Readonly` **metadataProvider**: [MetadataProvider](metadataprovider.md) = this.config.getMetadataProvider()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L19)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L19)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 • `Private` `Readonly` **namingStrategy**: [NamingStrategy](../interfaces/namingstrategy.md) = this.config.getNamingStrategy()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L18)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L18)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 • `Private` `Readonly` **platform**: [Platform](platform.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L27)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L27)*
 
 ___
 
@@ -96,7 +96,7 @@ ___
 
 • `Private` `Readonly` **schemaHelper**: { getTypeDefinition: (prop: [EntityProperty](../interfaces/entityproperty.md), types?: [Dictionary](../index.md#dictionary)&#60;string[]>, lengths?: [Dictionary](../index.md#dictionary)&#60;number>, allowZero?: boolean) => string  } = this.platform.getSchemaHelper()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L22)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L22)*
 
 #### Type declaration:
 
@@ -110,7 +110,7 @@ ___
 
 • `Private` `Readonly` **validator**: [MetadataValidator](metadatavalidator.md) = new MetadataValidator()
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L23)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L23)*
 
 ## Methods
 
@@ -118,7 +118,7 @@ ___
 
 ▸ `Private`**applyNamingStrategy**(`meta`: [EntityMetadata](entitymetadata.md), `prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:238](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L238)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:238](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L238)*
 
 #### Parameters:
 
@@ -135,7 +135,7 @@ ___
 
 ▸ `Private`**autoWireBidirectionalProperties**(`meta`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:491](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L491)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:491](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L491)*
 
 #### Parameters:
 
@@ -151,7 +151,7 @@ ___
 
 ▸ `Private`**createDiscriminatorProperty**(`meta`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:625](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L625)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:625](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L625)*
 
 #### Parameters:
 
@@ -167,7 +167,7 @@ ___
 
 ▸ `Private`**defineBaseEntityProperties**(`meta`: [EntityMetadata](entitymetadata.md)): number
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:504](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L504)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:504](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L504)*
 
 #### Parameters:
 
@@ -183,7 +183,7 @@ ___
 
 ▸ `Private`**defineFixedOrderProperty**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): [EntityProperty](../interfaces/entityproperty.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:427](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L427)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:427](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L427)*
 
 #### Parameters:
 
@@ -199,7 +199,7 @@ ___
 
 ▸ `Private`**definePivotProperty**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `name`: string, `type`: string, `inverse`: string, `owner`: boolean): [EntityProperty](../interfaces/entityproperty.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:450](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L450)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:450](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L450)*
 
 #### Parameters:
 
@@ -219,7 +219,7 @@ ___
 
 ▸ `Private`**definePivotTableEntity**(`meta`: [EntityMetadata](entitymetadata.md), `prop`: [EntityProperty](../interfaces/entityproperty.md)): [EntityMetadata](entitymetadata.md)
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:393](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L393)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:393](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L393)*
 
 #### Parameters:
 
@@ -236,7 +236,7 @@ ___
 
 ▸ **discover**(`preferTsNode?`: boolean): Promise&#60;[MetadataStorage](metadatastorage.md)>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L30)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L30)*
 
 #### Parameters:
 
@@ -252,7 +252,7 @@ ___
 
 ▸ `Private`**discoverDirectories**(`paths`: string[]): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L87)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L87)*
 
 #### Parameters:
 
@@ -268,7 +268,7 @@ ___
 
 ▸ `Private`**discoverEntity**&#60;T>(`entity`: [EntityClass](../index.md#entityclass)&#60;T> \| [EntityClassGroup](../index.md#entityclassgroup)&#60;T> \| [EntitySchema](entityschema.md)&#60;T>, `path?`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:190](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L190)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:190](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L190)*
 
 #### Type parameters:
 
@@ -291,7 +291,7 @@ ___
 
 ▸ `Private`**discoverReferences**(`refs`: [Constructor](../index.md#constructor)&#60;[AnyEntity](../index.md#anyentity)>[]): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L136)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L136)*
 
 #### Parameters:
 
@@ -307,7 +307,7 @@ ___
 
 ▸ `Private`**findEntities**(`preferTsNode`: boolean): Promise&#60;[EntityMetadata](entitymetadata.md)[]>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L69)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L69)*
 
 #### Parameters:
 
@@ -323,7 +323,7 @@ ___
 
 ▸ `Private`**getDefaultVersionValue**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): string
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:635](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L635)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:635](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L635)*
 
 #### Parameters:
 
@@ -339,7 +339,7 @@ ___
 
 ▸ `Private`**getEntityClassOrSchema**(`path`: string, `name`: string): any[]
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:772](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L772)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:772](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L772)*
 
 #### Parameters:
 
@@ -356,7 +356,7 @@ ___
 
 ▸ `Private`**getSchema**&#60;T>(`entity`: [Constructor](../index.md#constructor)&#60;T> \| [EntitySchema](entityschema.md)&#60;T>): [EntitySchema](entityschema.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:167](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L167)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:167](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L167)*
 
 #### Type parameters:
 
@@ -378,7 +378,7 @@ ___
 
 ▸ `Private`**initColumnType**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `path?`: string): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:707](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L707)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:707](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L707)*
 
 #### Parameters:
 
@@ -395,7 +395,7 @@ ___
 
 ▸ `Private`**initCustomType**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:671](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L671)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:671](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L671)*
 
 #### Parameters:
 
@@ -411,7 +411,7 @@ ___
 
 ▸ `Private`**initDefaultValue**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:648](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L648)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:648](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L648)*
 
 #### Parameters:
 
@@ -427,7 +427,7 @@ ___
 
 ▸ `Private`**initEmbeddables**(`meta`: [EntityMetadata](entitymetadata.md), `embeddedProp`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:544](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L544)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:544](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L544)*
 
 #### Parameters:
 
@@ -444,7 +444,7 @@ ___
 
 ▸ `Private`**initEnumValues**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `path`: string): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:743](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L743)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:743](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L743)*
 
 #### Parameters:
 
@@ -461,7 +461,7 @@ ___
 
 ▸ `Private`**initFactoryField**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:382](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L382)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:382](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L382)*
 
 #### Type parameters:
 
@@ -483,7 +483,7 @@ ___
 
 ▸ `Private`**initFieldName**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:256](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L256)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:256](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L256)*
 
 #### Parameters:
 
@@ -499,7 +499,7 @@ ___
 
 ▸ `Private`**initManyToManyFieldName**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `name`: string): string[]
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:285](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L285)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:285](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L285)*
 
 #### Parameters:
 
@@ -516,7 +516,7 @@ ___
 
 ▸ `Private`**initManyToManyFields**(`meta`: [EntityMetadata](entitymetadata.md), `prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:290](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L290)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:290](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L290)*
 
 #### Parameters:
 
@@ -533,7 +533,7 @@ ___
 
 ▸ `Private`**initManyToOneFieldName**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `name`: string): string[]
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:270](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L270)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:270](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L270)*
 
 #### Parameters:
 
@@ -550,7 +550,7 @@ ___
 
 ▸ `Private`**initManyToOneFields**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:322](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L322)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:322](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L322)*
 
 #### Parameters:
 
@@ -566,7 +566,7 @@ ___
 
 ▸ `Private`**initOneToManyFields**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:336](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L336)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:336](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L336)*
 
 #### Parameters:
 
@@ -582,7 +582,7 @@ ___
 
 ▸ `Private`**initSingleTableInheritance**(`meta`: [EntityMetadata](entitymetadata.md), `metadata`: [EntityMetadata](entitymetadata.md)[]): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:575](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L575)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:575](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L575)*
 
 #### Parameters:
 
@@ -599,7 +599,7 @@ ___
 
 ▸ `Private`**initUnsigned**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:757](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L757)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:757](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L757)*
 
 #### Parameters:
 
@@ -615,7 +615,7 @@ ___
 
 ▸ `Private`**initVersionProperty**(`meta`: [EntityMetadata](entitymetadata.md), `prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:662](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L662)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:662](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L662)*
 
 #### Parameters:
 
@@ -632,7 +632,7 @@ ___
 
 ▸ `Private`**prepare**&#60;T>(`entity`: [EntityClass](../index.md#entityclass)&#60;T> \| [EntityClassGroup](../index.md#entityclassgroup)&#60;T> \| [EntitySchema](entityschema.md)&#60;T>): [EntityClass](../index.md#entityclass)&#60;T> \| [EntitySchema](entityschema.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:151](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L151)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:151](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L151)*
 
 #### Type parameters:
 
@@ -654,7 +654,7 @@ ___
 
 ▸ `Private`**processEntity**(`meta`: [EntityMetadata](entitymetadata.md)): [EntityMetadata](entitymetadata.md)[]
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:348](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L348)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:348](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L348)*
 
 #### Parameters:
 
@@ -670,7 +670,7 @@ ___
 
 ▸ `Private`**saveToCache**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:224](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataDiscovery.ts#L224)*
+*Defined in [packages/core/src/metadata/MetadataDiscovery.ts:224](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataDiscovery.ts#L224)*
 
 #### Type parameters:
 

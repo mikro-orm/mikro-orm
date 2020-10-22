@@ -10,7 +10,7 @@ sidebar_label: "EventType"
 
 •  **afterCreate**:  = "afterCreate"
 
-*Defined in [packages/core/src/enums.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L98)*
+*Defined in [packages/core/src/enums.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L98)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **afterDelete**:  = "afterDelete"
 
-*Defined in [packages/core/src/enums.ts:102](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L102)*
+*Defined in [packages/core/src/enums.ts:102](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L102)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **afterFlush**:  = "afterFlush"
 
-*Defined in [packages/core/src/enums.ts:105](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L105)*
+*Defined in [packages/core/src/enums.ts:105](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L105)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 •  **afterUpdate**:  = "afterUpdate"
 
-*Defined in [packages/core/src/enums.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L100)*
+*Defined in [packages/core/src/enums.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L100)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 •  **beforeCreate**:  = "beforeCreate"
 
-*Defined in [packages/core/src/enums.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L97)*
+*Defined in [packages/core/src/enums.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L97)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 •  **beforeDelete**:  = "beforeDelete"
 
-*Defined in [packages/core/src/enums.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L101)*
+*Defined in [packages/core/src/enums.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L101)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 •  **beforeFlush**:  = "beforeFlush"
 
-*Defined in [packages/core/src/enums.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L103)*
+*Defined in [packages/core/src/enums.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L103)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 •  **beforeUpdate**:  = "beforeUpdate"
 
-*Defined in [packages/core/src/enums.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L99)*
+*Defined in [packages/core/src/enums.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L99)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 •  **onFlush**:  = "onFlush"
 
-*Defined in [packages/core/src/enums.ts:104](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L104)*
+*Defined in [packages/core/src/enums.ts:104](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L104)*
 
 ___
 
@@ -82,4 +82,4 @@ ___
 
 •  **onInit**:  = "onInit"
 
-*Defined in [packages/core/src/enums.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L96)*
+*Defined in [packages/core/src/enums.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L96)*

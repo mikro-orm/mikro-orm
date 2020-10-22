@@ -18,7 +18,7 @@ sidebar_label: "AbstractSqlConnection"
 
 *Overrides [MongoConnection](mongoconnection.md).[constructor](mongoconnection.md#constructor)*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L9)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L9)*
 
 #### Parameters:
 
@@ -38,7 +38,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L9)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L9)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 *Overrides [MongoConnection](mongoconnection.md).[platform](mongoconnection.md#platform)*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L8)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L8)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L37)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L37)*
 
 #### Parameters:
 
@@ -116,7 +116,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L20)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L20)*
 
 #### Parameters:
 
@@ -134,7 +134,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L41)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L41)*
 
 #### Parameters:
 
@@ -164,7 +164,7 @@ ___
 
 ▸ `Protected`**createKnexClient**(`type`: string): Knex
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:84](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L84)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:84](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L84)*
 
 #### Parameters:
 
@@ -182,7 +182,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L49)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L49)*
 
 #### Type parameters:
 
@@ -270,7 +270,7 @@ ___
 
 ▸ **getKnex**(): Knex
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L16)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L16)*
 
 **Returns:** Knex
 
@@ -280,7 +280,7 @@ ___
 
 ▸ `Protected`**getKnexOptions**(`type`: string): Config
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L93)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L93)*
 
 #### Parameters:
 
@@ -296,7 +296,7 @@ ___
 
 ▸ `Private`**getSql**(`query`: string, `formatted`: string): string
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L101)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L101)*
 
 #### Parameters:
 
@@ -315,7 +315,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L24)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L24)*
 
 **Returns:** Promise&#60;boolean>
 
@@ -325,7 +325,7 @@ ___
 
 ▸ **loadFile**(`path`: string): Promise&#60;void>
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L75)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L75)*
 
 Execute raw SQL queries from file
 
@@ -345,7 +345,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:80](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L80)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:80](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L80)*
 
 #### Parameters:
 
@@ -362,7 +362,7 @@ ___
 
 ▸ `Private`**patchKnexClient**(): void
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:120](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L120)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:120](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L120)*
 
 do not call `positionBindings` when there are no bindings - it was messing up with
 already interpolated strings containing `?`, and escaping that was not enough to
@@ -378,7 +378,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L45)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L45)*
 
 #### Parameters:
 
@@ -432,7 +432,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L33)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L33)*
 
 #### Type parameters:
 
@@ -455,7 +455,7 @@ ___
 
 ▸ `Protected` `Abstract`**transformRawResult**&#60;T>(`res`: any, `method`: &#34;all&#34; \| &#34;get&#34; \| &#34;run&#34;): T
 
-*Defined in [packages/knex/src/AbstractSqlConnection.ts:145](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlConnection.ts#L145)*
+*Defined in [packages/knex/src/AbstractSqlConnection.ts:145](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlConnection.ts#L145)*
 
 #### Type parameters:
 

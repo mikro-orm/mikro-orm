@@ -44,7 +44,7 @@ ___
 
 • `Private` `Readonly` **project**: Project = new Project({ compilerOptions: { strictNullChecks: true, }, })
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L6)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L6)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 • `Private` **sources**: SourceFile[]
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L12)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L12)*
 
 ## Methods
 
@@ -60,7 +60,7 @@ ___
 
 ▸ `Private`**extractType**(`prop`: EntityProperty): string
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L49)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L49)*
 
 #### Parameters:
 
@@ -76,7 +76,7 @@ ___
 
 ▸ **getExistingSourceFile**(`path`: string, `ext?`: string, `validate?`: boolean): Promise&#60;SourceFile>
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L26)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L26)*
 
 #### Parameters:
 
@@ -94,7 +94,7 @@ ___
 
 ▸ `Private`**getSourceFile**(`tsPath`: string, `validate`: boolean): Promise&#60;SourceFile \| undefined>
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L99)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L99)*
 
 #### Parameters:
 
@@ -113,7 +113,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L36)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L36)*
 
 #### Parameters:
 
@@ -129,7 +129,7 @@ ___
 
 ▸ `Private`**initPropertyType**(`meta`: EntityMetadata, `prop`: EntityProperty): Promise&#60;void>
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L61)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L61)*
 
 #### Parameters:
 
@@ -146,7 +146,7 @@ ___
 
 ▸ `Private`**initSourceFiles**(): Promise&#60;void>
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:127](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L127)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:127](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L127)*
 
 **Returns:** Promise&#60;void>
 
@@ -158,7 +158,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L18)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L18)*
 
 #### Parameters:
 
@@ -194,7 +194,7 @@ ___
 
 ▸ `Private`**processWrapper**(`prop`: EntityProperty, `wrapper`: string): void
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:113](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L113)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:113](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L113)*
 
 #### Parameters:
 
@@ -211,7 +211,7 @@ ___
 
 ▸ `Private`**readTypeFromSource**(`meta`: EntityMetadata, `prop`: EntityProperty): Promise&#60;{ optional?: boolean ; type: string  }>
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:73](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L73)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:73](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L73)*
 
 #### Parameters:
 
@@ -230,6 +230,6 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/reflection/src/TsMorphMetadataProvider.ts#L14)*
+*Defined in [packages/reflection/src/TsMorphMetadataProvider.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/reflection/src/TsMorphMetadataProvider.ts#L14)*
 
 **Returns:** boolean

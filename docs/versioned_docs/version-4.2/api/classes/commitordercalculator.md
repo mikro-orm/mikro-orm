@@ -22,7 +22,7 @@ Based on https://github.com/doctrine/orm/blob/master/lib/Doctrine/ORM/Internal/C
 
 • `Private` **nodes**: [Dictionary](../index.md#dictionary)&#60;[Node](../interfaces/node.md)>
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L33)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L33)*
 
 Matrix of nodes, keys are provided hashes and values are the node definition objects.
 
@@ -32,7 +32,7 @@ ___
 
 • `Private` **sortedNodeList**: string[] = []
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L36)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L36)*
 
 Volatile variable holding calculated nodes during sorting process.
 
@@ -42,7 +42,7 @@ Volatile variable holding calculated nodes during sorting process.
 
 ▸ **addDependency**(`from`: string, `to`: string, `weight`: number): void
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L55)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L55)*
 
 Adds a new dependency (edge) to the graph using their hashes.
 
@@ -62,7 +62,7 @@ ___
 
 ▸ **addNode**(`hash`: string): void
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L48)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L48)*
 
 Adds a new node to the graph, assigning its hash.
 
@@ -80,7 +80,7 @@ ___
 
 ▸ **hasNode**(`hash`: string): boolean
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L41)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L41)*
 
 Checks for node existence in graph.
 
@@ -98,7 +98,7 @@ ___
 
 ▸ **sort**(): string[]
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:65](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L65)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:65](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L65)*
 
 Return a valid order list of all current nodes.
 The desired topological sorting is the reverse post order of these searches.
@@ -113,7 +113,7 @@ ___
 
 ▸ `Private`**visit**(`node`: [Node](../interfaces/node.md)): void
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L86)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L86)*
 
 Visit a given node definition for reordering.
 
@@ -133,7 +133,7 @@ ___
 
 ▸ `Private`**visitOpenNode**(`node`: [Node](../interfaces/node.md), `target`: [Node](../interfaces/node.md), `edge`: [Edge](../interfaces/edge.md)): void
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L108)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L108)*
 
 Visits all target's dependencies if in cycle with given node
 

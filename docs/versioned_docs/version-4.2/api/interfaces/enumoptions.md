@@ -22,7 +22,7 @@ Name |
 
 • `Optional` **array**: boolean
 
-*Defined in [packages/core/src/decorators/Enum.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Enum.ts#L19)*
+*Defined in [packages/core/src/decorators/Enum.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Enum.ts#L19)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 *Inherited from __type.columnType*
 
-*Defined in [packages/core/src/decorators/Property.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L42)*
+*Defined in [packages/core/src/decorators/Property.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L42)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 *Inherited from __type.comment*
 
-*Defined in [packages/core/src/decorators/Property.ts:62](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L62)*
+*Defined in [packages/core/src/decorators/Property.ts:62](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L62)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 *Inherited from __type.customType*
 
-*Defined in [packages/core/src/decorators/Property.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L41)*
+*Defined in [packages/core/src/decorators/Property.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L41)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 *Inherited from __type.default*
 
-*Defined in [packages/core/src/decorators/Property.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L47)*
+*Defined in [packages/core/src/decorators/Property.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L47)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 *Inherited from __type.defaultRaw*
 
-*Defined in [packages/core/src/decorators/Property.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L48)*
+*Defined in [packages/core/src/decorators/Property.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L48)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 *Inherited from __type.fieldName*
 
-*Defined in [packages/core/src/decorators/Property.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L39)*
+*Defined in [packages/core/src/decorators/Property.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L39)*
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 *Inherited from __type.fieldNames*
 
-*Defined in [packages/core/src/decorators/Property.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L40)*
+*Defined in [packages/core/src/decorators/Property.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L40)*
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 *Inherited from __type.formula*
 
-*Defined in [packages/core/src/decorators/Property.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L49)*
+*Defined in [packages/core/src/decorators/Property.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L49)*
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 *Inherited from __type.hidden*
 
-*Defined in [packages/core/src/decorators/Property.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L53)*
+*Defined in [packages/core/src/decorators/Property.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L53)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 *Inherited from __type.index*
 
-*Defined in [packages/core/src/decorators/Property.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L55)*
+*Defined in [packages/core/src/decorators/Property.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L55)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 • `Optional` **items**: (number \| string)[] \| () => [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/decorators/Enum.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Enum.ts#L18)*
+*Defined in [packages/core/src/decorators/Enum.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Enum.ts#L18)*
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 *Inherited from __type.lazy*
 
-*Defined in [packages/core/src/decorators/Property.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L57)*
+*Defined in [packages/core/src/decorators/Property.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L57)*
 
 ___
 
@@ -150,7 +150,7 @@ ___
 
 *Inherited from __type.length*
 
-*Defined in [packages/core/src/decorators/Property.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L44)*
+*Defined in [packages/core/src/decorators/Property.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L44)*
 
 ___
 
@@ -160,7 +160,7 @@ ___
 
 *Inherited from __type.name*
 
-*Defined in [packages/core/src/decorators/Property.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L38)*
+*Defined in [packages/core/src/decorators/Property.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L38)*
 
 ___
 
@@ -170,7 +170,7 @@ ___
 
 *Inherited from __type.nullable*
 
-*Defined in [packages/core/src/decorators/Property.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L50)*
+*Defined in [packages/core/src/decorators/Property.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L50)*
 
 ___
 
@@ -180,7 +180,7 @@ ___
 
 *Inherited from __type.onCreate*
 
-*Defined in [packages/core/src/decorators/Property.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L45)*
+*Defined in [packages/core/src/decorators/Property.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L45)*
 
 ___
 
@@ -190,7 +190,7 @@ ___
 
 *Inherited from __type.onUpdate*
 
-*Defined in [packages/core/src/decorators/Property.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L46)*
+*Defined in [packages/core/src/decorators/Property.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L46)*
 
 ___
 
@@ -200,7 +200,7 @@ ___
 
 *Inherited from __type.persist*
 
-*Defined in [packages/core/src/decorators/Property.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L52)*
+*Defined in [packages/core/src/decorators/Property.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L52)*
 
 ___
 
@@ -210,7 +210,7 @@ ___
 
 *Inherited from __type.primary*
 
-*Defined in [packages/core/src/decorators/Property.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L58)*
+*Defined in [packages/core/src/decorators/Property.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L58)*
 
 ___
 
@@ -220,7 +220,7 @@ ___
 
 *Inherited from __type.serializedName*
 
-*Defined in [packages/core/src/decorators/Property.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L61)*
+*Defined in [packages/core/src/decorators/Property.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L61)*
 
 ___
 
@@ -230,7 +230,7 @@ ___
 
 *Inherited from __type.serializedPrimaryKey*
 
-*Defined in [packages/core/src/decorators/Property.ts:59](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L59)*
+*Defined in [packages/core/src/decorators/Property.ts:59](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L59)*
 
 ___
 
@@ -240,7 +240,7 @@ ___
 
 *Inherited from __type.serializer*
 
-*Defined in [packages/core/src/decorators/Property.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L60)*
+*Defined in [packages/core/src/decorators/Property.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L60)*
 
 ___
 
@@ -250,7 +250,7 @@ ___
 
 *Inherited from __type.type*
 
-*Defined in [packages/core/src/decorators/Property.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L43)*
+*Defined in [packages/core/src/decorators/Property.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L43)*
 
 ___
 
@@ -260,7 +260,7 @@ ___
 
 *Inherited from __type.unique*
 
-*Defined in [packages/core/src/decorators/Property.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L56)*
+*Defined in [packages/core/src/decorators/Property.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L56)*
 
 ___
 
@@ -270,7 +270,7 @@ ___
 
 *Inherited from __type.unsigned*
 
-*Defined in [packages/core/src/decorators/Property.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L51)*
+*Defined in [packages/core/src/decorators/Property.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L51)*
 
 ___
 
@@ -280,4 +280,4 @@ ___
 
 *Inherited from __type.version*
 
-*Defined in [packages/core/src/decorators/Property.ts:54](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/decorators/Property.ts#L54)*
+*Defined in [packages/core/src/decorators/Property.ts:54](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/decorators/Property.ts#L54)*

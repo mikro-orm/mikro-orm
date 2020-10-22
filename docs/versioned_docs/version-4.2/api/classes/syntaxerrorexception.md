@@ -20,7 +20,7 @@ Exception for a syntax error in a statement detected in the driver.
 
 *Inherited from [DriverException](driverexception.md).[constructor](driverexception.md#constructor)*
 
-*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L10)*
+*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L10)*
 
 #### Parameters:
 
@@ -38,7 +38,7 @@ Name | Type |
 
 *Inherited from [DriverException](driverexception.md).[code](driverexception.md#code)*
 
-*Defined in [packages/core/src/exceptions.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L6)*
+*Defined in [packages/core/src/exceptions.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L6)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 *Inherited from [DriverException](driverexception.md).[errmsg](driverexception.md#errmsg)*
 
-*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L10)*
+*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L10)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 *Inherited from [DriverException](driverexception.md).[errno](driverexception.md#errno)*
 
-*Defined in [packages/core/src/exceptions.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L7)*
+*Defined in [packages/core/src/exceptions.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L7)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 *Inherited from [DriverException](driverexception.md).[sqlMessage](driverexception.md#sqlmessage)*
 
-*Defined in [packages/core/src/exceptions.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L9)*
+*Defined in [packages/core/src/exceptions.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L9)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 *Inherited from [DriverException](driverexception.md).[sqlState](driverexception.md#sqlstate)*
 
-*Defined in [packages/core/src/exceptions.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L8)*
+*Defined in [packages/core/src/exceptions.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L8)*
 
 ___
 

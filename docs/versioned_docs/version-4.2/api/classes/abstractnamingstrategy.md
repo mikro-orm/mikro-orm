@@ -26,7 +26,7 @@ sidebar_label: "AbstractNamingStrategy"
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L12)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L12)*
 
 #### Parameters:
 
@@ -44,7 +44,7 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L16)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L16)*
 
 #### Parameters:
 
@@ -62,7 +62,7 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L5)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L5)*
 
 #### Parameters:
 
@@ -81,7 +81,7 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L18)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L18)*
 
 #### Parameters:
 
@@ -97,7 +97,7 @@ ___
 
 ▸ `Abstract`**joinKeyColumnName**(`entityName`: string, `referencedColumnName?`: string): string
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L20)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L20)*
 
 #### Parameters:
 
@@ -116,7 +116,7 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L22)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L22)*
 
 #### Parameters:
 
@@ -136,7 +136,7 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L24)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L24)*
 
 #### Parameters:
 
@@ -154,6 +154,6 @@ ___
 
 *Implementation of [NamingStrategy](../interfaces/namingstrategy.md)*
 
-*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L26)*
+*Defined in [packages/core/src/naming-strategy/AbstractNamingStrategy.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/naming-strategy/AbstractNamingStrategy.ts#L26)*
 
 **Returns:** string

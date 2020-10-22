@@ -14,7 +14,7 @@ sidebar_label: "Column"
 
 •  **defaultValue**: string \| null
 
-*Defined in [packages/knex/src/typings.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L40)*
+*Defined in [packages/knex/src/typings.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L40)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **enumItems**: string[]
 
-*Defined in [packages/knex/src/typings.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L41)*
+*Defined in [packages/knex/src/typings.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L41)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 •  **fk**: [ForeignKey](foreignkey.md)
 
-*Defined in [packages/knex/src/typings.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L33)*
+*Defined in [packages/knex/src/typings.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L33)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 •  **fks**: [ForeignKey](foreignkey.md)[]
 
-*Defined in [packages/knex/src/typings.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L34)*
+*Defined in [packages/knex/src/typings.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L34)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 •  **indexes**: [Index](index.md)[]
 
-*Defined in [packages/knex/src/typings.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L35)*
+*Defined in [packages/knex/src/typings.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L35)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 •  **maxLength**: number
 
-*Defined in [packages/knex/src/typings.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L39)*
+*Defined in [packages/knex/src/typings.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L39)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 •  **name**: string
 
-*Defined in [packages/knex/src/typings.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L31)*
+*Defined in [packages/knex/src/typings.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L31)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 •  **nullable**: boolean
 
-*Defined in [packages/knex/src/typings.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L38)*
+*Defined in [packages/knex/src/typings.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L38)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 •  **primary**: boolean
 
-*Defined in [packages/knex/src/typings.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L36)*
+*Defined in [packages/knex/src/typings.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L36)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 •  **type**: string
 
-*Defined in [packages/knex/src/typings.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L32)*
+*Defined in [packages/knex/src/typings.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L32)*
 
 ___
 
@@ -94,4 +94,4 @@ ___
 
 •  **unique**: boolean
 
-*Defined in [packages/knex/src/typings.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L37)*
+*Defined in [packages/knex/src/typings.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L37)*

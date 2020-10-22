@@ -20,7 +20,7 @@ Name | Type | Default |
 
 • `Optional` **array**: boolean
 
-*Defined in [packages/core/src/typings.ts:125](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L125)*
+*Defined in [packages/core/src/typings.ts:125](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L125)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 •  **cascade**: [Cascade](../enums/cascade.md)[]
 
-*Defined in [packages/core/src/typings.ts:154](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L154)*
+*Defined in [packages/core/src/typings.ts:154](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L154)*
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 •  **columnTypes**: string[]
 
-*Defined in [packages/core/src/typings.ts:120](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L120)*
+*Defined in [packages/core/src/typings.ts:120](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L120)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 • `Optional` **comment**: string
 
-*Defined in [packages/core/src/typings.ts:174](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L174)*
+*Defined in [packages/core/src/typings.ts:174](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L174)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 •  **customType**: [Type](../classes/type.md)&#60;any>
 
-*Defined in [packages/core/src/typings.ts:121](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L121)*
+*Defined in [packages/core/src/typings.ts:121](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L121)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 • `Optional` **default**: string \| number \| boolean \| null
 
-*Defined in [packages/core/src/typings.ts:131](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L131)*
+*Defined in [packages/core/src/typings.ts:131](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L131)*
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 • `Optional` **defaultRaw**: string
 
-*Defined in [packages/core/src/typings.ts:132](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L132)*
+*Defined in [packages/core/src/typings.ts:132](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L132)*
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 • `Optional` **eager**: boolean
 
-*Defined in [packages/core/src/typings.ts:150](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L150)*
+*Defined in [packages/core/src/typings.ts:150](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L150)*
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 •  **embeddable**: [Constructor](../index.md#constructor)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L136)*
+*Defined in [packages/core/src/typings.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L136)*
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 • `Optional` **embedded**: [string, string]
 
-*Defined in [packages/core/src/typings.ts:135](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L135)*
+*Defined in [packages/core/src/typings.ts:135](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L135)*
 
 ___
 
@@ -100,7 +100,7 @@ ___
 
 •  **embeddedProps**: [Dictionary](../index.md#dictionary)&#60;[EntityProperty](entityproperty.md)>
 
-*Defined in [packages/core/src/typings.ts:137](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L137)*
+*Defined in [packages/core/src/typings.ts:137](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L137)*
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 •  **entity**: () => [EntityName](../index.md#entityname)&#60;T>
 
-*Defined in [packages/core/src/typings.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L118)*
+*Defined in [packages/core/src/typings.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L118)*
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 • `Optional` **enum**: boolean
 
-*Defined in [packages/core/src/typings.ts:147](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L147)*
+*Defined in [packages/core/src/typings.ts:147](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L147)*
 
 ___
 
@@ -124,7 +124,7 @@ ___
 
 • `Optional` **fieldNameRaw**: string
 
-*Defined in [packages/core/src/typings.ts:130](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L130)*
+*Defined in [packages/core/src/typings.ts:130](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L130)*
 
 ___
 
@@ -132,7 +132,7 @@ ___
 
 •  **fieldNames**: string[]
 
-*Defined in [packages/core/src/typings.ts:129](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L129)*
+*Defined in [packages/core/src/typings.ts:129](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L129)*
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 • `Optional` **fixedOrder**: boolean
 
-*Defined in [packages/core/src/typings.ts:165](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L165)*
+*Defined in [packages/core/src/typings.ts:165](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L165)*
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 • `Optional` **fixedOrderColumn**: string
 
-*Defined in [packages/core/src/typings.ts:166](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L166)*
+*Defined in [packages/core/src/typings.ts:166](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L166)*
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 • `Optional` **formula**: (alias: string) => string
 
-*Defined in [packages/core/src/typings.ts:133](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L133)*
+*Defined in [packages/core/src/typings.ts:133](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L133)*
 
 ___
 
@@ -164,7 +164,7 @@ ___
 
 • `Optional` **getter**: boolean
 
-*Defined in [packages/core/src/typings.ts:152](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L152)*
+*Defined in [packages/core/src/typings.ts:152](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L152)*
 
 ___
 
@@ -172,7 +172,7 @@ ___
 
 • `Optional` **getterName**: keyof T
 
-*Defined in [packages/core/src/typings.ts:153](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L153)*
+*Defined in [packages/core/src/typings.ts:153](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L153)*
 
 ___
 
@@ -180,7 +180,7 @@ ___
 
 • `Optional` **hidden**: boolean
 
-*Defined in [packages/core/src/typings.ts:146](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L146)*
+*Defined in [packages/core/src/typings.ts:146](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L146)*
 
 ___
 
@@ -188,7 +188,7 @@ ___
 
 • `Optional` **index**: boolean \| string
 
-*Defined in [packages/core/src/typings.ts:139](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L139)*
+*Defined in [packages/core/src/typings.ts:139](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L139)*
 
 ___
 
@@ -196,7 +196,7 @@ ___
 
 • `Optional` **inherited**: boolean
 
-*Defined in [packages/core/src/typings.ts:142](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L142)*
+*Defined in [packages/core/src/typings.ts:142](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L142)*
 
 ___
 
@@ -204,7 +204,7 @@ ___
 
 •  **inverseJoinColumns**: string[]
 
-*Defined in [packages/core/src/typings.ts:169](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L169)*
+*Defined in [packages/core/src/typings.ts:169](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L169)*
 
 ___
 
@@ -212,7 +212,7 @@ ___
 
 •  **inversedBy**: string
 
-*Defined in [packages/core/src/typings.ts:162](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L162)*
+*Defined in [packages/core/src/typings.ts:162](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L162)*
 
 ___
 
@@ -220,7 +220,7 @@ ___
 
 • `Optional` **items**: (number \| string)[]
 
-*Defined in [packages/core/src/typings.ts:148](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L148)*
+*Defined in [packages/core/src/typings.ts:148](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L148)*
 
 ___
 
@@ -228,7 +228,7 @@ ___
 
 •  **joinColumns**: string[]
 
-*Defined in [packages/core/src/typings.ts:168](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L168)*
+*Defined in [packages/core/src/typings.ts:168](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L168)*
 
 ___
 
@@ -236,7 +236,7 @@ ___
 
 • `Optional` **lazy**: boolean
 
-*Defined in [packages/core/src/typings.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L124)*
+*Defined in [packages/core/src/typings.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L124)*
 
 ___
 
@@ -244,7 +244,7 @@ ___
 
 • `Optional` **length**: any
 
-*Defined in [packages/core/src/typings.ts:126](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L126)*
+*Defined in [packages/core/src/typings.ts:126](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L126)*
 
 ___
 
@@ -252,7 +252,7 @@ ___
 
 • `Optional` **mapToPk**: boolean
 
-*Defined in [packages/core/src/typings.ts:144](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L144)*
+*Defined in [packages/core/src/typings.ts:144](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L144)*
 
 ___
 
@@ -260,7 +260,7 @@ ___
 
 •  **mappedBy**: string
 
-*Defined in [packages/core/src/typings.ts:163](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L163)*
+*Defined in [packages/core/src/typings.ts:163](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L163)*
 
 ___
 
@@ -268,7 +268,7 @@ ___
 
 •  **name**: string & keyof T
 
-*Defined in [packages/core/src/typings.ts:117](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L117)*
+*Defined in [packages/core/src/typings.ts:117](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L117)*
 
 ___
 
@@ -276,7 +276,7 @@ ___
 
 • `Optional` **nullable**: boolean
 
-*Defined in [packages/core/src/typings.ts:141](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L141)*
+*Defined in [packages/core/src/typings.ts:141](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L141)*
 
 ___
 
@@ -284,7 +284,7 @@ ___
 
 • `Optional` **object**: boolean
 
-*Defined in [packages/core/src/typings.ts:138](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L138)*
+*Defined in [packages/core/src/typings.ts:138](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L138)*
 
 ___
 
@@ -292,7 +292,7 @@ ___
 
 • `Optional` **onCreate**: (entity: T) => any
 
-*Defined in [packages/core/src/typings.ts:156](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L156)*
+*Defined in [packages/core/src/typings.ts:156](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L156)*
 
 ___
 
@@ -300,7 +300,7 @@ ___
 
 • `Optional` **onDelete**: &#34;cascade&#34; \| &#34;no action&#34; \| &#34;set null&#34; \| &#34;set default&#34; \| string
 
-*Defined in [packages/core/src/typings.ts:158](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L158)*
+*Defined in [packages/core/src/typings.ts:158](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L158)*
 
 ___
 
@@ -308,7 +308,7 @@ ___
 
 • `Optional` **onUpdate**: (entity: T) => any
 
-*Defined in [packages/core/src/typings.ts:157](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L157)*
+*Defined in [packages/core/src/typings.ts:157](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L157)*
 
 ___
 
@@ -316,7 +316,7 @@ ___
 
 • `Optional` **onUpdateIntegrity**: &#34;cascade&#34; \| &#34;no action&#34; \| &#34;set null&#34; \| &#34;set default&#34; \| string
 
-*Defined in [packages/core/src/typings.ts:159](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L159)*
+*Defined in [packages/core/src/typings.ts:159](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L159)*
 
 ___
 
@@ -324,7 +324,7 @@ ___
 
 • `Optional` **orderBy**: { [field:string]: [QueryOrder](../enums/queryorder.md);  }
 
-*Defined in [packages/core/src/typings.ts:164](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L164)*
+*Defined in [packages/core/src/typings.ts:164](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L164)*
 
 ___
 
@@ -332,7 +332,7 @@ ___
 
 • `Optional` **orphanRemoval**: boolean
 
-*Defined in [packages/core/src/typings.ts:155](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L155)*
+*Defined in [packages/core/src/typings.ts:155](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L155)*
 
 ___
 
@@ -340,7 +340,7 @@ ___
 
 •  **owner**: boolean
 
-*Defined in [packages/core/src/typings.ts:161](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L161)*
+*Defined in [packages/core/src/typings.ts:161](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L161)*
 
 ___
 
@@ -348,7 +348,7 @@ ___
 
 • `Optional` **persist**: boolean
 
-*Defined in [packages/core/src/typings.ts:145](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L145)*
+*Defined in [packages/core/src/typings.ts:145](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L145)*
 
 ___
 
@@ -356,7 +356,7 @@ ___
 
 •  **pivotTable**: string
 
-*Defined in [packages/core/src/typings.ts:167](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L167)*
+*Defined in [packages/core/src/typings.ts:167](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L167)*
 
 ___
 
@@ -364,7 +364,7 @@ ___
 
 • `Optional` **prefix**: string \| boolean
 
-*Defined in [packages/core/src/typings.ts:134](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L134)*
+*Defined in [packages/core/src/typings.ts:134](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L134)*
 
 ___
 
@@ -372,7 +372,7 @@ ___
 
 •  **primary**: boolean
 
-*Defined in [packages/core/src/typings.ts:122](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L122)*
+*Defined in [packages/core/src/typings.ts:122](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L122)*
 
 ___
 
@@ -380,7 +380,7 @@ ___
 
 •  **reference**: [ReferenceType](../enums/referencetype.md)
 
-*Defined in [packages/core/src/typings.ts:127](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L127)*
+*Defined in [packages/core/src/typings.ts:127](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L127)*
 
 ___
 
@@ -388,7 +388,7 @@ ___
 
 •  **referencedColumnNames**: string[]
 
-*Defined in [packages/core/src/typings.ts:170](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L170)*
+*Defined in [packages/core/src/typings.ts:170](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L170)*
 
 ___
 
@@ -396,7 +396,7 @@ ___
 
 •  **referencedTableName**: string
 
-*Defined in [packages/core/src/typings.ts:171](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L171)*
+*Defined in [packages/core/src/typings.ts:171](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L171)*
 
 ___
 
@@ -404,7 +404,7 @@ ___
 
 • `Optional` **serializedName**: string
 
-*Defined in [packages/core/src/typings.ts:173](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L173)*
+*Defined in [packages/core/src/typings.ts:173](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L173)*
 
 ___
 
@@ -412,7 +412,7 @@ ___
 
 •  **serializedPrimaryKey**: boolean
 
-*Defined in [packages/core/src/typings.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L123)*
+*Defined in [packages/core/src/typings.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L123)*
 
 ___
 
@@ -420,7 +420,7 @@ ___
 
 • `Optional` **serializer**: (value: any) => any
 
-*Defined in [packages/core/src/typings.ts:172](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L172)*
+*Defined in [packages/core/src/typings.ts:172](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L172)*
 
 ___
 
@@ -428,7 +428,7 @@ ___
 
 • `Optional` **setter**: boolean
 
-*Defined in [packages/core/src/typings.ts:151](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L151)*
+*Defined in [packages/core/src/typings.ts:151](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L151)*
 
 ___
 
@@ -436,7 +436,7 @@ ___
 
 • `Optional` **strategy**: [LoadStrategy](../enums/loadstrategy.md)
 
-*Defined in [packages/core/src/typings.ts:160](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L160)*
+*Defined in [packages/core/src/typings.ts:160](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L160)*
 
 ___
 
@@ -444,7 +444,7 @@ ___
 
 •  **type**: string
 
-*Defined in [packages/core/src/typings.ts:119](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L119)*
+*Defined in [packages/core/src/typings.ts:119](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L119)*
 
 ___
 
@@ -452,7 +452,7 @@ ___
 
 • `Optional` **unique**: boolean \| string
 
-*Defined in [packages/core/src/typings.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L140)*
+*Defined in [packages/core/src/typings.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L140)*
 
 ___
 
@@ -460,7 +460,7 @@ ___
 
 •  **unsigned**: boolean
 
-*Defined in [packages/core/src/typings.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L143)*
+*Defined in [packages/core/src/typings.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L143)*
 
 ___
 
@@ -468,7 +468,7 @@ ___
 
 • `Optional` **userDefined**: boolean
 
-*Defined in [packages/core/src/typings.ts:175](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L175)*
+*Defined in [packages/core/src/typings.ts:175](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L175)*
 
 ___
 
@@ -476,7 +476,7 @@ ___
 
 • `Optional` **version**: boolean
 
-*Defined in [packages/core/src/typings.ts:149](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L149)*
+*Defined in [packages/core/src/typings.ts:149](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L149)*
 
 ___
 
@@ -484,4 +484,4 @@ ___
 
 • `Optional` **wrappedReference**: boolean
 
-*Defined in [packages/core/src/typings.ts:128](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L128)*
+*Defined in [packages/core/src/typings.ts:128](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L128)*

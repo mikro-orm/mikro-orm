@@ -14,7 +14,7 @@ sidebar_label: "MetadataStorage"
 
 \+ **new MetadataStorage**(`metadata?`: [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>): [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L12)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L12)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type | Default value |
 
 • `Private` `Readonly` **metadata**: [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L12)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L12)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 ▪ `Static` `Private` `Readonly` **metadata**: [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)> = Utils.getGlobalStorage('metadata')
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L10)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L10)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 ▪ `Static` `Private` `Readonly` **subscribers**: [Dictionary](../index.md#dictionary)&#60;[EventSubscriber](../interfaces/eventsubscriber.md)> = Utils.getGlobalStorage('subscribers')
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L11)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L11)*
 
 ## Methods
 
@@ -54,7 +54,7 @@ ___
 
 ▸ **decorate**(`em`: [EntityManager](entitymanager.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:86](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L86)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:86](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L86)*
 
 #### Parameters:
 
@@ -70,7 +70,7 @@ ___
 
 ▸ **find**&#60;T>(`entity`: string): [EntityMetadata](entitymetadata.md)&#60;T> \| undefined
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:70](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L70)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:70](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L70)*
 
 #### Type parameters:
 
@@ -92,7 +92,7 @@ ___
 
 ▸ **get**&#60;T>(`entity`: string, `init?`: boolean, `validate?`: boolean): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L58)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L58)*
 
 #### Type parameters:
 
@@ -116,7 +116,7 @@ ___
 
 ▸ **getAll**(): [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:54](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L54)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:54](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L54)*
 
 **Returns:** [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>
 
@@ -126,7 +126,7 @@ ___
 
 ▸ **has**(`entity`: string): boolean
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:74](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L74)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:74](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L74)*
 
 #### Parameters:
 
@@ -142,7 +142,7 @@ ___
 
 ▸ **reset**(`entity`: string): void
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L82)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L82)*
 
 #### Parameters:
 
@@ -158,7 +158,7 @@ ___
 
 ▸ **set**(`entity`: string, `meta`: [EntityMetadata](entitymetadata.md)): [EntityMetadata](entitymetadata.md)
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L78)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L78)*
 
 #### Parameters:
 
@@ -175,13 +175,13 @@ ___
 
 ▸ `Static`**getMetadata**(): [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L18)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L18)*
 
 **Returns:** [Dictionary](../index.md#dictionary)&#60;[EntityMetadata](entitymetadata.md)>
 
 ▸ `Static`**getMetadata**&#60;T>(`entity`: string, `path`: string): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L19)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L19)*
 
 #### Type parameters:
 
@@ -204,7 +204,7 @@ ___
 
 ▸ `Static`**getMetadataFromDecorator**&#60;T>(`target`: T & [Dictionary](../index.md#dictionary)): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L38)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L38)*
 
 #### Type parameters:
 
@@ -226,7 +226,7 @@ ___
 
 ▸ `Static`**getSubscriberMetadata**(): [Dictionary](../index.md#dictionary)&#60;[EventSubscriber](../interfaces/eventsubscriber.md)>
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L46)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L46)*
 
 **Returns:** [Dictionary](../index.md#dictionary)&#60;[EventSubscriber](../interfaces/eventsubscriber.md)>
 
@@ -236,7 +236,7 @@ ___
 
 ▸ `Static`**init**(): [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L50)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L50)*
 
 **Returns:** [MetadataStorage](metadatastorage.md)
 
@@ -246,7 +246,7 @@ ___
 
 ▸ `Static`**isKnownEntity**(`name`: string): boolean
 
-*Defined in [packages/core/src/metadata/MetadataStorage.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataStorage.ts#L34)*
+*Defined in [packages/core/src/metadata/MetadataStorage.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataStorage.ts#L34)*
 
 #### Parameters:
 

@@ -24,7 +24,7 @@ Name | Type | Default |
 
 •  **[EntityManagerType]**: [EntityManager](../classes/entitymanager.md)&#60;this>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L14)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L14)*
 
 ## Methods
 
@@ -32,7 +32,7 @@ Name | Type | Default |
 
 ▸ **aggregate**(`entityName`: string, `pipeline`: any[]): Promise&#60;any[]>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L50)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L50)*
 
 #### Parameters:
 
@@ -49,7 +49,7 @@ ___
 
 ▸ **close**(`force?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L20)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L20)*
 
 #### Parameters:
 
@@ -65,7 +65,7 @@ ___
 
 ▸ **connect**(): Promise&#60;C>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L18)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L18)*
 
 **Returns:** Promise&#60;C>
 
@@ -75,7 +75,7 @@ ___
 
 ▸ **convertException**(`exception`: [Error](../classes/driverexception.md#error)): [DriverException](../classes/driverexception.md)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L76)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L76)*
 
 Converts native db errors to standardized driver exceptions
 
@@ -93,7 +93,7 @@ ___
 
 ▸ **count**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [CountOptions](countoptions.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;number>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L48)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L48)*
 
 #### Type parameters:
 
@@ -118,7 +118,7 @@ ___
 
 ▸ **createEntityManager**&#60;D>(`useContext?`: boolean): D[*typeof* EntityManagerType]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L16)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L16)*
 
 #### Type parameters:
 
@@ -140,7 +140,7 @@ ___
 
 ▸ **ensureIndexes**(): Promise&#60;void>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L63)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L63)*
 
 **Returns:** Promise&#60;void>
 
@@ -150,7 +150,7 @@ ___
 
 ▸ **find**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [FindOptions](findoptions.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[EntityData](../index.md#entitydata)&#60;T>[]>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L29)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L29)*
 
 Finds selection of entities
 
@@ -177,7 +177,7 @@ ___
 
 ▸ **findOne**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `options?`: [FindOneOptions](findoneoptions.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[EntityData](../index.md#entitydata)&#60;T> \| null>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L34)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L34)*
 
 Finds single entity (table row, document)
 
@@ -204,7 +204,7 @@ ___
 
 ▸ **getConnection**(`type?`: &#34;read&#34; \| &#34;write&#34;): C
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L24)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L24)*
 
 #### Parameters:
 
@@ -220,7 +220,7 @@ ___
 
 ▸ **getDependencies**(): string[]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L69)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L69)*
 
 Returns name of the underlying database dependencies (e.g. `mongodb` or `mysql2`)
 for SQL drivers it also returns `knex` in the array as connectors are not used directly there
@@ -233,7 +233,7 @@ ___
 
 ▸ **getPlatform**(): [Platform](../classes/platform.md)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:59](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L59)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:59](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L59)*
 
 **Returns:** [Platform](../classes/platform.md)
 
@@ -243,7 +243,7 @@ ___
 
 ▸ **loadFromPivotTable**&#60;T, O>(`prop`: [EntityProperty](entityproperty.md), `owners`: [Primary](../index.md#primary)&#60;O>[][], `where?`: [FilterQuery](../index.md#filterquery)&#60;T>, `orderBy?`: [QueryOrderMap](queryordermap.md), `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[Dictionary](../index.md#dictionary)&#60;T[]>>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L57)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L57)*
 
 When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
 
@@ -272,7 +272,7 @@ ___
 
 ▸ **lockPessimistic**&#60;T>(`entity`: T, `mode`: [LockMode](../enums/lockmode.md), `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L71)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L71)*
 
 #### Type parameters:
 
@@ -296,7 +296,7 @@ ___
 
 ▸ **mapResult**&#60;T>(`result`: [EntityData](../index.md#entitydata)&#60;T>, `meta`: [EntityMetadata](../classes/entitymetadata.md), `populate?`: [PopulateOptions](../index.md#populateoptions)&#60;T>[]): [EntityData](../index.md#entitydata)&#60;T> \| null
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L52)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L52)*
 
 #### Type parameters:
 
@@ -320,7 +320,7 @@ ___
 
 ▸ **nativeDelete**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[QueryResult](queryresult.md)>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L44)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L44)*
 
 #### Type parameters:
 
@@ -344,7 +344,7 @@ ___
 
 ▸ **nativeInsert**&#60;T>(`entityName`: string, `data`: [EntityData](../index.md#entitydata)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[QueryResult](queryresult.md)>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L36)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L36)*
 
 #### Type parameters:
 
@@ -368,7 +368,7 @@ ___
 
 ▸ **nativeInsertMany**&#60;T>(`entityName`: string, `data`: [EntityData](../index.md#entitydata)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction), `processCollections?`: boolean): Promise&#60;[QueryResult](queryresult.md)>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L38)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L38)*
 
 #### Type parameters:
 
@@ -393,7 +393,7 @@ ___
 
 ▸ **nativeUpdate**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>, `data`: [EntityData](../index.md#entitydata)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[QueryResult](queryresult.md)>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L40)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L40)*
 
 #### Type parameters:
 
@@ -418,7 +418,7 @@ ___
 
 ▸ **nativeUpdateMany**&#60;T>(`entityName`: string, `where`: [FilterQuery](../index.md#filterquery)&#60;T>[], `data`: [EntityData](../index.md#entitydata)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction), `processCollections?`: boolean): Promise&#60;[QueryResult](queryresult.md)>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L42)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L42)*
 
 #### Type parameters:
 
@@ -444,7 +444,7 @@ ___
 
 ▸ **reconnect**(): Promise&#60;C>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L22)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L22)*
 
 **Returns:** Promise&#60;C>
 
@@ -454,7 +454,7 @@ ___
 
 ▸ **setMetadata**(`metadata`: [MetadataStorage](../classes/metadatastorage.md)): void
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L61)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L61)*
 
 #### Parameters:
 
@@ -470,7 +470,7 @@ ___
 
 ▸ **syncCollection**&#60;T, O>(`collection`: [Collection](../classes/collection.md)&#60;T, O>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L46)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L46)*
 
 #### Type parameters:
 

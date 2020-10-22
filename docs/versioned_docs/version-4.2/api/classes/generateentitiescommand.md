@@ -24,7 +24,7 @@ Name | Type | Default |
 
 •  **command**: string = "generate-entities"
 
-*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateEntitiesCommand.ts#L10)*
+*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateEntitiesCommand.ts#L10)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 •  **describe**: string = "Generate entities based on current database schema"
 
-*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateEntitiesCommand.ts#L11)*
+*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateEntitiesCommand.ts#L11)*
 
 ## Methods
 
@@ -40,7 +40,7 @@ ___
 
 ▸ **builder**(`args`: Argv): Argv&#60;U>
 
-*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateEntitiesCommand.ts#L16)*
+*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateEntitiesCommand.ts#L16)*
 
 **`inheritdoc`** 
 
@@ -58,7 +58,7 @@ ___
 
 ▸ **handler**(`args`: Arguments&#60;U>): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/GenerateEntitiesCommand.ts#L39)*
+*Defined in [packages/cli/src/commands/GenerateEntitiesCommand.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/GenerateEntitiesCommand.ts#L39)*
 
 **`inheritdoc`** 
 

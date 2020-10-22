@@ -24,7 +24,7 @@ Name |
 
 *Overrides void*
 
-*Defined in [packages/knex/src/SqlEntityRepository.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityRepository.ts#L6)*
+*Defined in [packages/knex/src/SqlEntityRepository.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityRepository.ts#L6)*
 
 #### Parameters:
 
@@ -43,7 +43,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/knex/src/SqlEntityRepository.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityRepository.ts#L8)*
+*Defined in [packages/knex/src/SqlEntityRepository.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityRepository.ts#L8)*
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/SqlEntityRepository.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityRepository.ts#L9)*
+*Defined in [packages/knex/src/SqlEntityRepository.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityRepository.ts#L9)*
 
 ## Methods
 
@@ -149,7 +149,7 @@ ___
 
 ▸ **createQueryBuilder**(`alias?`: string): [QueryBuilder](querybuilder.md)&#60;T>
 
-*Defined in [packages/knex/src/SqlEntityRepository.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityRepository.ts#L16)*
+*Defined in [packages/knex/src/SqlEntityRepository.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityRepository.ts#L16)*
 
 Creates a QueryBuilder instance
 
@@ -451,7 +451,7 @@ ___
 
 ▸ **getKnex**(`type?`: &#34;read&#34; \| &#34;write&#34;): Knex
 
-*Defined in [packages/knex/src/SqlEntityRepository.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/SqlEntityRepository.ts#L23)*
+*Defined in [packages/knex/src/SqlEntityRepository.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/SqlEntityRepository.ts#L23)*
 
 Returns configured knex instance.
 

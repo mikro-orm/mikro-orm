@@ -28,7 +28,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[exceptionConverter](abstractsqlplatform.md#exceptionconverter)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L11)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L11)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L10)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L10)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[convertsJsonAutomatically](abstractsqlplatform.md#convertsjsonautomatically)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L25)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L25)*
 
 **Returns:** boolean
 
@@ -157,7 +157,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getCurrentTimestampSQL](abstractsqlplatform.md#getcurrenttimestampsql)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L21)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L21)*
 
 #### Parameters:
 
@@ -429,7 +429,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[processDateProperty](abstractsqlplatform.md#processdateproperty)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L35)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L35)*
 
 This is used to narrow the value of Date properties as they will be stored as timestamps in sqlite.
 We use this method to convert Dates to timestamps when computing the changeset, so we have the right
@@ -471,7 +471,7 @@ ___
 
 *Overrides [MySqlPlatform](mysqlplatform.md).[quoteValue](mysqlplatform.md#quotevalue)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L55)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L55)*
 
 #### Parameters:
 
@@ -489,7 +489,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[quoteVersionValue](abstractsqlplatform.md#quoteversionvalue)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L43)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L43)*
 
 #### Parameters:
 
@@ -508,7 +508,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[requiresNullableForAlteringColumn](abstractsqlplatform.md#requiresnullableforalteringcolumn)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L13)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L13)*
 
 **Returns:** boolean
 
@@ -520,7 +520,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[requiresValuesKeyword](abstractsqlplatform.md#requiresvalueskeyword)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L51)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L51)*
 
 **Returns:** boolean
 
@@ -620,7 +620,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[usesDefaultKeyword](abstractsqlplatform.md#usesdefaultkeyword)*
 
-*Defined in [packages/sqlite/src/SqlitePlatform.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqlitePlatform.ts#L17)*
+*Defined in [packages/sqlite/src/SqlitePlatform.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqlitePlatform.ts#L17)*
 
 **Returns:** boolean
 

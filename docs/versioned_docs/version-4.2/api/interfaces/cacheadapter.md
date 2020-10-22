@@ -20,7 +20,7 @@ sidebar_label: "CacheAdapter"
 
 ▸ **clear**(): Promise&#60;void>
 
-*Defined in [packages/core/src/cache/CacheAdapter.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/CacheAdapter.ts#L16)*
+*Defined in [packages/core/src/cache/CacheAdapter.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/CacheAdapter.ts#L16)*
 
 Clears all items stored in the cache.
 
@@ -32,7 +32,7 @@ ___
 
 ▸ **get**(`name`: string): Promise&#60;any>
 
-*Defined in [packages/core/src/cache/CacheAdapter.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/CacheAdapter.ts#L6)*
+*Defined in [packages/core/src/cache/CacheAdapter.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/CacheAdapter.ts#L6)*
 
 Gets the items under `name` key from the cache.
 
@@ -50,7 +50,7 @@ ___
 
 ▸ **set**(`name`: string, `data`: any, `origin`: string, `expiration?`: number): Promise&#60;void>
 
-*Defined in [packages/core/src/cache/CacheAdapter.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/CacheAdapter.ts#L11)*
+*Defined in [packages/core/src/cache/CacheAdapter.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/CacheAdapter.ts#L11)*
 
 Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.
 

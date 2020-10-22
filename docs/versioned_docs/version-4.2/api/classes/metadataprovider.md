@@ -18,7 +18,7 @@ sidebar_label: "MetadataProvider"
 
 \+ **new MetadataProvider**(`config`: [IConfiguration](../interfaces/iconfiguration.md)): [MetadataProvider](metadataprovider.md)
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L9)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L9)*
 
 #### Parameters:
 
@@ -34,7 +34,7 @@ Name | Type |
 
 • `Protected` `Readonly` **config**: [IConfiguration](../interfaces/iconfiguration.md)
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L11)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L11)*
 
 ## Methods
 
@@ -42,7 +42,7 @@ Name | Type |
 
 ▸ `Protected`**initProperties**(`meta`: [EntityMetadata](entitymetadata.md), `fallback`: (prop: [EntityProperty](../interfaces/entityproperty.md)) => void \| Promise&#60;void>): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L23)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L23)*
 
 #### Parameters:
 
@@ -59,7 +59,7 @@ ___
 
 ▸ `Abstract`**loadEntityMetadata**(`meta`: [EntityMetadata](entitymetadata.md), `name`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L13)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L13)*
 
 #### Parameters:
 
@@ -76,7 +76,7 @@ ___
 
 ▸ **loadFromCache**(`meta`: [EntityMetadata](entitymetadata.md), `cache`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L15)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L15)*
 
 #### Parameters:
 
@@ -93,6 +93,6 @@ ___
 
 ▸ **useCache**(): boolean
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L19)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L19)*
 
 **Returns:** boolean

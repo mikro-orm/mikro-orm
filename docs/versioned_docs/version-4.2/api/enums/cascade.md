@@ -10,7 +10,7 @@ sidebar_label: "Cascade"
 
 •  **ALL**:  = "all"
 
-*Defined in [packages/core/src/enums.ts:80](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L80)*
+*Defined in [packages/core/src/enums.ts:80](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L80)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **MERGE**:  = "merge"
 
-*Defined in [packages/core/src/enums.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L78)*
+*Defined in [packages/core/src/enums.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L78)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **PERSIST**:  = "persist"
 
-*Defined in [packages/core/src/enums.ts:77](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L77)*
+*Defined in [packages/core/src/enums.ts:77](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L77)*
 
 ___
 
@@ -34,4 +34,4 @@ ___
 
 •  **REMOVE**:  = "remove"
 
-*Defined in [packages/core/src/enums.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L79)*
+*Defined in [packages/core/src/enums.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L79)*

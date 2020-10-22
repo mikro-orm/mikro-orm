@@ -14,7 +14,7 @@ sidebar_label: "ConnectionConfig"
 
 • `Optional` **database**: string
 
-*Defined in [packages/core/src/connections/Connection.ts:137](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L137)*
+*Defined in [packages/core/src/connections/Connection.ts:137](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L137)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Optional` **host**: string
 
-*Defined in [packages/core/src/connections/Connection.ts:133](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L133)*
+*Defined in [packages/core/src/connections/Connection.ts:133](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L133)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **password**: string
 
-*Defined in [packages/core/src/connections/Connection.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L136)*
+*Defined in [packages/core/src/connections/Connection.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L136)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Optional` **port**: number
 
-*Defined in [packages/core/src/connections/Connection.ts:134](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L134)*
+*Defined in [packages/core/src/connections/Connection.ts:134](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L134)*
 
 ___
 
@@ -46,4 +46,4 @@ ___
 
 • `Optional` **user**: string
 
-*Defined in [packages/core/src/connections/Connection.ts:135](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/connections/Connection.ts#L135)*
+*Defined in [packages/core/src/connections/Connection.ts:135](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/connections/Connection.ts#L135)*

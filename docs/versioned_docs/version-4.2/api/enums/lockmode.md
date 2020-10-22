@@ -10,7 +10,7 @@ sidebar_label: "LockMode"
 
 •  **NONE**:  = 0
 
-*Defined in [packages/core/src/enums.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L89)*
+*Defined in [packages/core/src/enums.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L89)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **OPTIMISTIC**:  = 1
 
-*Defined in [packages/core/src/enums.ts:90](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L90)*
+*Defined in [packages/core/src/enums.ts:90](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L90)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **PESSIMISTIC\_READ**:  = 2
 
-*Defined in [packages/core/src/enums.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L91)*
+*Defined in [packages/core/src/enums.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L91)*
 
 ___
 
@@ -34,4 +34,4 @@ ___
 
 •  **PESSIMISTIC\_WRITE**:  = 3
 
-*Defined in [packages/core/src/enums.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L92)*
+*Defined in [packages/core/src/enums.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L92)*

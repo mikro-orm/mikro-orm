@@ -18,7 +18,7 @@ sidebar_label: "SqliteExceptionConverter"
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteExceptionConverter.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteExceptionConverter.ts#L14)*
+*Defined in [packages/sqlite/src/SqliteExceptionConverter.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteExceptionConverter.ts#L14)*
 
 **`inheritdoc`** 
 

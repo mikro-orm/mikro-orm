@@ -14,7 +14,7 @@ sidebar_label: "MigrationStorage"
 
 \+ **new MigrationStorage**(`driver`: AbstractSqlDriver, `options`: [MigrationsOptions](../index.md#migrationsoptions)): [MigrationStorage](migrationstorage.md)
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L10)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L10)*
 
 #### Parameters:
 
@@ -31,7 +31,7 @@ Name | Type |
 
 • `Private` `Readonly` **connection**: AbstractSqlConnection = this.driver.getConnection()
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L7)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L7)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Protected` `Readonly` **driver**: AbstractSqlDriver
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L12)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L12)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Private` `Readonly` **helper**: SchemaHelper = this.driver.getPlatform().getSchemaHelper()!
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L9)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L9)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 • `Private` `Readonly` **knex**: any = this.connection.getKnex()
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L8)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L8)*
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 • `Private` `Optional` **masterTransaction**: [Transaction](../index.md#transaction)
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L10)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L10)*
 
 ___
 
@@ -71,7 +71,7 @@ ___
 
 • `Protected` `Readonly` **options**: [MigrationsOptions](../index.md#migrationsoptions)
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L13)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L13)*
 
 ## Methods
 
@@ -79,7 +79,7 @@ ___
 
 ▸ **ensureTable**(): Promise&#60;void>
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L38)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L38)*
 
 **Returns:** Promise&#60;void>
 
@@ -89,7 +89,7 @@ ___
 
 ▸ **executed**(): Promise&#60;string[]>
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L15)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L15)*
 
 **Returns:** Promise&#60;string[]>
 
@@ -99,7 +99,7 @@ ___
 
 ▸ **getExecutedMigrations**(): Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L28)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L28)*
 
 **Returns:** Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
@@ -109,7 +109,7 @@ ___
 
 ▸ **logMigration**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L20)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L20)*
 
 #### Parameters:
 
@@ -125,7 +125,7 @@ ___
 
 ▸ **setMasterMigration**(`trx`: [Transaction](../index.md#transaction)): void
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L52)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L52)*
 
 #### Parameters:
 
@@ -141,7 +141,7 @@ ___
 
 ▸ **unlogMigration**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L24)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L24)*
 
 #### Parameters:
 
@@ -157,6 +157,6 @@ ___
 
 ▸ **unsetMasterMigration**(): void
 
-*Defined in [packages/migrations/src/MigrationStorage.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationStorage.ts#L56)*
+*Defined in [packages/migrations/src/MigrationStorage.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationStorage.ts#L56)*
 
 **Returns:** void

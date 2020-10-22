@@ -21,7 +21,7 @@ Name | Type |
 
 \+ **new WrappedEntity**(`entity`: T, `pkGetter`: (e: T) => [Primary](../index.md#primary)&#60;T>, `pkSerializer`: (e: T) => string): [WrappedEntity](wrappedentity.md)
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L24)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L24)*
 
 #### Parameters:
 
@@ -39,7 +39,7 @@ Name | Type |
 
 • `Optional` **\_\_em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L17)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L17)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Optional` **\_\_identifier**: [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L24)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L24)*
 
 holds wrapped primary key so we can compute change set without eager commit
 
@@ -57,7 +57,7 @@ ___
 
 •  **\_\_initialized**: boolean = true
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L13)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L13)*
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 • `Optional` **\_\_lazyInitialized**: boolean
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L15)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L15)*
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 • `Optional` **\_\_managed**: boolean
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L16)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L16)*
 
 ___
 
@@ -81,7 +81,7 @@ ___
 
 • `Optional` **\_\_originalEntityData**: [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L21)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L21)*
 
 holds last entity data snapshot so we can compute changes when persisting managed entities
 
@@ -91,7 +91,7 @@ ___
 
 • `Optional` **\_\_populated**: boolean
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L14)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L14)*
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 •  **\_\_serializationContext**: { populate?: [PopulateOptions](../index.md#populateoptions)&#60;T>[] ; root?: [SerializationContext](serializationcontext.md)&#60;T>  }
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L18)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L18)*
 
 #### Type declaration:
 
@@ -114,7 +114,7 @@ ___
 
 • `Private` `Readonly` **entity**: T
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L26)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L26)*
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 • `Private` `Readonly` **pkGetter**: (e: T) => [Primary](../index.md#primary)&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L27)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L27)*
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 • `Private` `Readonly` **pkSerializer**: (e: T) => string
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L28)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L28)*
 
 ## Accessors
 
@@ -138,7 +138,7 @@ ___
 
 • get **__meta**(): [EntityMetadata](entitymetadata.md)&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:91](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L91)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:91](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L91)*
 
 **Returns:** [EntityMetadata](entitymetadata.md)&#60;T>
 
@@ -148,7 +148,7 @@ ___
 
 • get **__platform**(): [Platform](platform.md)
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L95)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L95)*
 
 **Returns:** [Platform](platform.md)
 
@@ -158,7 +158,7 @@ ___
 
 • get **__primaryKeyCond**(): [Primary](../index.md#primary)&#60;T> \| [Primary](../index.md#primary)&#60;T>[] \| null
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L103)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L103)*
 
 **Returns:** [Primary](../index.md#primary)&#60;T> \| [Primary](../index.md#primary)&#60;T>[] \| null
 
@@ -168,7 +168,7 @@ ___
 
 • get **__primaryKeys**(): [Primary](../index.md#primary)&#60;T>[]
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L99)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L99)*
 
 **Returns:** [Primary](../index.md#primary)&#60;T>[]
 
@@ -178,7 +178,7 @@ ___
 
 ▸ **[inspect.custom]**(): string
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:111](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L111)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:111](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L111)*
 
 **Returns:** string
 
@@ -188,7 +188,7 @@ ___
 
 ▸ **assign**(`data`: [EntityData](../index.md#entitydata)&#60;T>, `options?`: [AssignOptions](../interfaces/assignoptions.md)): T
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L52)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L52)*
 
 #### Parameters:
 
@@ -205,7 +205,7 @@ ___
 
 ▸ **getPrimaryKey**(): [Primary](../index.md#primary)&#60;T> \| null
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L79)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L79)*
 
 **Returns:** [Primary](../index.md#primary)&#60;T> \| null
 
@@ -215,7 +215,7 @@ ___
 
 ▸ **getSerializedPrimaryKey**(): string
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L87)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L87)*
 
 **Returns:** string
 
@@ -225,7 +225,7 @@ ___
 
 ▸ **hasPrimaryKey**(): boolean
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:72](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L72)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:72](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L72)*
 
 **Returns:** boolean
 
@@ -235,7 +235,7 @@ ___
 
 ▸ **init**&#60;P>(`populated?`: boolean, `populate?`: P, `lockMode?`: [LockMode](../enums/lockmode.md)): Promise&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L60)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L60)*
 
 #### Type parameters:
 
@@ -259,7 +259,7 @@ ___
 
 ▸ **isInitialized**(): boolean
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L30)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L30)*
 
 **Returns:** boolean
 
@@ -269,7 +269,7 @@ ___
 
 ▸ **populated**(`populated?`: boolean): void
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L34)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L34)*
 
 #### Parameters:
 
@@ -285,7 +285,7 @@ ___
 
 ▸ **setPrimaryKey**(`id`: [Primary](../index.md#primary)&#60;T> \| null): void
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L83)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L83)*
 
 #### Parameters:
 
@@ -301,7 +301,7 @@ ___
 
 ▸ **toJSON**(...`args`: any[]): [EntityData](../index.md#entitydata)&#60;T> & [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L47)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L47)*
 
 #### Parameters:
 
@@ -317,7 +317,7 @@ ___
 
 ▸ **toObject**(`ignoreFields?`: string[]): [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L43)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L43)*
 
 #### Parameters:
 
@@ -333,6 +333,6 @@ ___
 
 ▸ **toReference**(): [IdentifiedReference](../index.md#identifiedreference)&#60;T, PK>
 
-*Defined in [packages/core/src/entity/WrappedEntity.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/WrappedEntity.ts#L39)*
+*Defined in [packages/core/src/entity/WrappedEntity.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/WrappedEntity.ts#L39)*
 
 **Returns:** [IdentifiedReference](../index.md#identifiedreference)&#60;T, PK>

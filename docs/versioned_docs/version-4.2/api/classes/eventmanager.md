@@ -14,7 +14,7 @@ sidebar_label: "EventManager"
 
 \+ **new EventManager**(`subscribers`: [EventSubscriber](../interfaces/eventsubscriber.md)[]): [EventManager](eventmanager.md)
 
-*Defined in [packages/core/src/events/EventManager.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L9)*
+*Defined in [packages/core/src/events/EventManager.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L9)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` `Readonly` **entities**: Map&#60;[EventSubscriber](../interfaces/eventsubscriber.md), string[]> = new Map()
 
-*Defined in [packages/core/src/events/EventManager.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L9)*
+*Defined in [packages/core/src/events/EventManager.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L9)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Private` `Readonly` **listeners**: Partial&#60;Record&#60;[EventType](../enums/eventtype.md), [EventSubscriber](../interfaces/eventsubscriber.md)[]>>
 
-*Defined in [packages/core/src/events/EventManager.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L8)*
+*Defined in [packages/core/src/events/EventManager.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L8)*
 
 ## Methods
 
@@ -46,7 +46,7 @@ ___
 
 ▸ **dispatchEvent**&#60;T>(`event`: [onInit](../enums/eventtype.md#oninit), `args`: Partial&#60;[EventArgs](../interfaces/eventargs.md)&#60;T>>): unknown
 
-*Defined in [packages/core/src/events/EventManager.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L25)*
+*Defined in [packages/core/src/events/EventManager.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L25)*
 
 #### Type parameters:
 
@@ -65,7 +65,7 @@ Name | Type |
 
 ▸ **dispatchEvent**&#60;T>(`event`: [EventType](../enums/eventtype.md), `args`: Partial&#60;[EventArgs](../interfaces/eventargs.md)&#60;T> \| [FlushEventArgs](../interfaces/flusheventargs.md)>): Promise&#60;unknown>
 
-*Defined in [packages/core/src/events/EventManager.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L26)*
+*Defined in [packages/core/src/events/EventManager.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L26)*
 
 #### Type parameters:
 
@@ -88,7 +88,7 @@ ___
 
 ▸ `Private`**getSubscribedEntities**(`listener`: [EventSubscriber](../interfaces/eventsubscriber.md)): string[]
 
-*Defined in [packages/core/src/events/EventManager.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L69)*
+*Defined in [packages/core/src/events/EventManager.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L69)*
 
 #### Parameters:
 
@@ -104,7 +104,7 @@ ___
 
 ▸ **hasListeners**&#60;T>(`event`: [EventType](../enums/eventtype.md), `meta`: [EntityMetadata](entitymetadata.md)&#60;T>): boolean
 
-*Defined in [packages/core/src/events/EventManager.ts:50](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L50)*
+*Defined in [packages/core/src/events/EventManager.ts:50](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L50)*
 
 #### Type parameters:
 
@@ -127,7 +127,7 @@ ___
 
 ▸ **registerSubscriber**(`subscriber`: [EventSubscriber](../interfaces/eventsubscriber.md)): void
 
-*Defined in [packages/core/src/events/EventManager.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventManager.ts#L15)*
+*Defined in [packages/core/src/events/EventManager.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventManager.ts#L15)*
 
 #### Parameters:
 

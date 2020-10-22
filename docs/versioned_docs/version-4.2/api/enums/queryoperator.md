@@ -10,7 +10,7 @@ sidebar_label: "QueryOperator"
 
 •  **$contained**:  = "&#60;@"
 
-*Defined in [packages/core/src/enums.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L21)*
+*Defined in [packages/core/src/enums.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L21)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **$contains**:  = "@>"
 
-*Defined in [packages/core/src/enums.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L20)*
+*Defined in [packages/core/src/enums.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L20)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **$eq**:  = "="
 
-*Defined in [packages/core/src/enums.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L7)*
+*Defined in [packages/core/src/enums.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L7)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 •  **$gt**:  = ">"
 
-*Defined in [packages/core/src/enums.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L10)*
+*Defined in [packages/core/src/enums.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L10)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 •  **$gte**:  = ">="
 
-*Defined in [packages/core/src/enums.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L11)*
+*Defined in [packages/core/src/enums.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L11)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 •  **$ilike**:  = "ilike"
 
-*Defined in [packages/core/src/enums.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L18)*
+*Defined in [packages/core/src/enums.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L18)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 •  **$in**:  = "in"
 
-*Defined in [packages/core/src/enums.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L8)*
+*Defined in [packages/core/src/enums.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L8)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 •  **$like**:  = "like"
 
-*Defined in [packages/core/src/enums.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L16)*
+*Defined in [packages/core/src/enums.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L16)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 •  **$lt**:  = "&#60;"
 
-*Defined in [packages/core/src/enums.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L12)*
+*Defined in [packages/core/src/enums.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L12)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 •  **$lte**:  = "&#60;="
 
-*Defined in [packages/core/src/enums.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L13)*
+*Defined in [packages/core/src/enums.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L13)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 •  **$ne**:  = "!="
 
-*Defined in [packages/core/src/enums.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L14)*
+*Defined in [packages/core/src/enums.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L14)*
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 •  **$nin**:  = "not in"
 
-*Defined in [packages/core/src/enums.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L9)*
+*Defined in [packages/core/src/enums.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L9)*
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 •  **$not**:  = "not"
 
-*Defined in [packages/core/src/enums.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L15)*
+*Defined in [packages/core/src/enums.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L15)*
 
 ___
 
@@ -114,7 +114,7 @@ ___
 
 •  **$overlap**:  = "&&"
 
-*Defined in [packages/core/src/enums.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L19)*
+*Defined in [packages/core/src/enums.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L19)*
 
 ___
 
@@ -122,4 +122,4 @@ ___
 
 •  **$re**:  = "regexp"
 
-*Defined in [packages/core/src/enums.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L17)*
+*Defined in [packages/core/src/enums.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L17)*

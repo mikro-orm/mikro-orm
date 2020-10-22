@@ -14,7 +14,7 @@ sidebar_label: "IndexDef"
 
 •  **columnNames**: string[]
 
-*Defined in [packages/knex/src/typings.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L63)*
+*Defined in [packages/knex/src/typings.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L63)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **keyName**: string
 
-*Defined in [packages/knex/src/typings.ts:62](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L62)*
+*Defined in [packages/knex/src/typings.ts:62](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L62)*
 
 ___
 
@@ -30,4 +30,4 @@ ___
 
 •  **unique**: boolean
 
-*Defined in [packages/knex/src/typings.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L64)*
+*Defined in [packages/knex/src/typings.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L64)*

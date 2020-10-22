@@ -14,7 +14,7 @@ sidebar_label: "IMigrator"
 
 ▸ **createMigration**(`path?`: string, `blank?`: boolean, `initial?`: boolean): Promise&#60;[MigrationResult](../index.md#migrationresult)>
 
-*Defined in [packages/core/src/typings.ts:324](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L324)*
+*Defined in [packages/core/src/typings.ts:324](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L324)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ ___
 
 ▸ **down**(`options?`: string \| string[] \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/core/src/typings.ts:328](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L328)*
+*Defined in [packages/core/src/typings.ts:328](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L328)*
 
 #### Parameters:
 
@@ -48,7 +48,7 @@ ___
 
 ▸ **getExecutedMigrations**(): Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
-*Defined in [packages/core/src/typings.ts:325](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L325)*
+*Defined in [packages/core/src/typings.ts:325](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L325)*
 
 **Returns:** Promise&#60;[MigrationRow](../index.md#migrationrow)[]>
 
@@ -58,7 +58,7 @@ ___
 
 ▸ **getPendingMigrations**(): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/core/src/typings.ts:326](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L326)*
+*Defined in [packages/core/src/typings.ts:326](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L326)*
 
 **Returns:** Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
@@ -68,7 +68,7 @@ ___
 
 ▸ **up**(`options?`: string \| string[] \| [MigrateOptions](../index.md#migrateoptions)): Promise&#60;[UmzugMigration](../index.md#umzugmigration)[]>
 
-*Defined in [packages/core/src/typings.ts:327](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L327)*
+*Defined in [packages/core/src/typings.ts:327](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L327)*
 
 #### Parameters:
 

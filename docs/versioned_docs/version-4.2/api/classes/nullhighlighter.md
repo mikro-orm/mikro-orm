@@ -20,7 +20,7 @@ sidebar_label: "NullHighlighter"
 
 *Implementation of [Highlighter](../interfaces/highlighter.md)*
 
-*Defined in [packages/core/src/utils/NullHighlighter.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/NullHighlighter.ts#L5)*
+*Defined in [packages/core/src/utils/NullHighlighter.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/NullHighlighter.ts#L5)*
 
 #### Parameters:
 

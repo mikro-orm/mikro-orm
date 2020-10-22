@@ -33,7 +33,7 @@ Name | Default |
 
 ▪ `Static` `Private` `Readonly` **types**: Map&#60;any, any> = new Map()
 
-*Defined in [packages/core/src/types/Type.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L6)*
+*Defined in [packages/core/src/types/Type.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L6)*
 
 ## Methods
 
@@ -41,7 +41,7 @@ Name | Default |
 
 ▸ **compareAsType**(): string
 
-*Defined in [packages/core/src/types/Type.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L26)*
+*Defined in [packages/core/src/types/Type.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L26)*
 
 How should the raw database values be compared? Used in `EntityComparator`.
 Possible values: string | number | boolean | date | any | buffer | array
@@ -54,7 +54,7 @@ ___
 
 ▸ **convertToDatabaseValue**(`value`: JSType \| DBType, `platform`: [Platform](platform.md), `fromQuery?`: boolean): DBType
 
-*Defined in [packages/core/src/types/Type.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L11)*
+*Defined in [packages/core/src/types/Type.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L11)*
 
 Converts a value from its JS representation to its database representation of this type.
 
@@ -74,7 +74,7 @@ ___
 
 ▸ **convertToJSValue**(`value`: JSType \| DBType, `platform`: [Platform](platform.md)): JSType
 
-*Defined in [packages/core/src/types/Type.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L18)*
+*Defined in [packages/core/src/types/Type.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L18)*
 
 Converts a value from its database representation to its JS representation of this type.
 
@@ -93,7 +93,7 @@ ___
 
 ▸ **getColumnType**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `platform`: [Platform](platform.md)): string
 
-*Defined in [packages/core/src/types/Type.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L41)*
+*Defined in [packages/core/src/types/Type.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L41)*
 
 Gets the SQL declaration snippet for a field of this type.
 
@@ -112,7 +112,7 @@ ___
 
 ▸ **toJSON**(`value`: JSType, `platform`: [Platform](platform.md)): JSType \| DBType
 
-*Defined in [packages/core/src/types/Type.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L34)*
+*Defined in [packages/core/src/types/Type.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L34)*
 
 Converts a value from its JS representation to its serialized JSON form of this type.
 By default uses the runtime value.
@@ -132,7 +132,7 @@ ___
 
 ▸ `Static`**getType**&#60;JSType, DBType>(`cls`: [Constructor](../index.md#constructor)&#60;[Type](type.md)&#60;JSType, DBType>>): [Type](type.md)&#60;JSType, DBType>
 
-*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L46)*
+*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L46)*
 
 #### Type parameters:
 

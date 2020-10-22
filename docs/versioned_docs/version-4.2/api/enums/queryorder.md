@@ -10,7 +10,7 @@ sidebar_label: "QueryOrder"
 
 •  **ASC**:  = "ASC"
 
-*Defined in [packages/core/src/enums.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L27)*
+*Defined in [packages/core/src/enums.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L27)*
 
 ___
 
@@ -18,7 +18,7 @@ ___
 
 •  **ASC\_NULLS\_FIRST**:  = "ASC NULLS FIRST"
 
-*Defined in [packages/core/src/enums.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L29)*
+*Defined in [packages/core/src/enums.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L29)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **ASC\_NULLS\_LAST**:  = "ASC NULLS LAST"
 
-*Defined in [packages/core/src/enums.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L28)*
+*Defined in [packages/core/src/enums.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L28)*
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 •  **DESC**:  = "DESC"
 
-*Defined in [packages/core/src/enums.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L30)*
+*Defined in [packages/core/src/enums.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L30)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 •  **DESC\_NULLS\_FIRST**:  = "DESC NULLS FIRST"
 
-*Defined in [packages/core/src/enums.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L32)*
+*Defined in [packages/core/src/enums.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L32)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 •  **DESC\_NULLS\_LAST**:  = "DESC NULLS LAST"
 
-*Defined in [packages/core/src/enums.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L31)*
+*Defined in [packages/core/src/enums.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L31)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 •  **asc**:  = "asc"
 
-*Defined in [packages/core/src/enums.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L33)*
+*Defined in [packages/core/src/enums.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L33)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 •  **asc\_nulls\_first**:  = "asc nulls first"
 
-*Defined in [packages/core/src/enums.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L35)*
+*Defined in [packages/core/src/enums.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L35)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 •  **asc\_nulls\_last**:  = "asc nulls last"
 
-*Defined in [packages/core/src/enums.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L34)*
+*Defined in [packages/core/src/enums.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L34)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 •  **desc**:  = "desc"
 
-*Defined in [packages/core/src/enums.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L36)*
+*Defined in [packages/core/src/enums.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L36)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 •  **desc\_nulls\_first**:  = "desc nulls first"
 
-*Defined in [packages/core/src/enums.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L38)*
+*Defined in [packages/core/src/enums.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L38)*
 
 ___
 
@@ -98,4 +98,4 @@ ___
 
 •  **desc\_nulls\_last**:  = "desc nulls last"
 
-*Defined in [packages/core/src/enums.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L37)*
+*Defined in [packages/core/src/enums.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L37)*

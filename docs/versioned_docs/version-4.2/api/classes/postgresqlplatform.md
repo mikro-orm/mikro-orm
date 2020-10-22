@@ -28,7 +28,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[exceptionConverter](abstractsqlplatform.md#exceptionconverter)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L10)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L10)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L9)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L9)*
 
 ___
 
@@ -127,7 +127,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getArrayDeclarationSQL](abstractsqlplatform.md#getarraydeclarationsql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L36)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L36)*
 
 **Returns:** string
 
@@ -151,7 +151,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getBlobDeclarationSQL](abstractsqlplatform.md#getblobdeclarationsql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L44)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L44)*
 
 **Returns:** string
 
@@ -163,7 +163,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getCurrentTimestampSQL](abstractsqlplatform.md#getcurrenttimestampsql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L20)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L20)*
 
 #### Parameters:
 
@@ -223,7 +223,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getJsonDeclarationSQL](abstractsqlplatform.md#getjsondeclarationsql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L48)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L48)*
 
 **Returns:** string
 
@@ -251,7 +251,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getRegExpOperator](abstractsqlplatform.md#getregexpoperator)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L28)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L28)*
 
 **Returns:** string
 
@@ -355,7 +355,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getTimeTypeDeclarationSQL](abstractsqlplatform.md#gettimetypedeclarationsql)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L24)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L24)*
 
 **Returns:** string
 
@@ -367,7 +367,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[isBigIntProperty](abstractsqlplatform.md#isbigintproperty)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L32)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L32)*
 
 #### Parameters:
 
@@ -385,7 +385,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[marshallArray](abstractsqlplatform.md#marshallarray)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L40)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L40)*
 
 #### Parameters:
 
@@ -447,7 +447,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[quoteIdentifier](abstractsqlplatform.md#quoteidentifier)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L52)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L52)*
 
 #### Parameters:
 
@@ -466,7 +466,7 @@ ___
 
 *Overrides [MySqlPlatform](mysqlplatform.md).[quoteValue](mysqlplatform.md#quotevalue)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:56](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L56)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:56](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L56)*
 
 #### Parameters:
 
@@ -603,7 +603,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[usesCascadeStatement](abstractsqlplatform.md#usescascadestatement)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L16)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L16)*
 
 **Returns:** boolean
 
@@ -665,6 +665,6 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[usesReturningStatement](abstractsqlplatform.md#usesreturningstatement)*
 
-*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlPlatform.ts#L12)*
+*Defined in [packages/postgresql/src/PostgreSqlPlatform.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlPlatform.ts#L12)*
 
 **Returns:** boolean

@@ -14,7 +14,7 @@ sidebar_label: "Migration"
 
 \+ **new Migration**(`driver`: AbstractSqlDriver, `config`: Configuration): [Migration](migration.md)
 
-*Defined in [packages/migrations/src/Migration.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L9)*
+*Defined in [packages/migrations/src/Migration.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L9)*
 
 #### Parameters:
 
@@ -31,7 +31,7 @@ Name | Type |
 
 • `Protected` `Readonly` **config**: Configuration
 
-*Defined in [packages/migrations/src/Migration.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L12)*
+*Defined in [packages/migrations/src/Migration.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L12)*
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 • `Protected` `Optional` **ctx**: Transaction&#60;Transaction>
 
-*Defined in [packages/migrations/src/Migration.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L9)*
+*Defined in [packages/migrations/src/Migration.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L9)*
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 • `Protected` `Readonly` **driver**: AbstractSqlDriver
 
-*Defined in [packages/migrations/src/Migration.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L11)*
+*Defined in [packages/migrations/src/Migration.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L11)*
 
 ___
 
@@ -55,7 +55,7 @@ ___
 
 • `Private` `Readonly` **queries**: [Query](../index.md#query)[] = []
 
-*Defined in [packages/migrations/src/Migration.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L8)*
+*Defined in [packages/migrations/src/Migration.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L8)*
 
 ## Methods
 
@@ -63,7 +63,7 @@ ___
 
 ▸ **addSql**(`sql`: [Query](../index.md#query)): void
 
-*Defined in [packages/migrations/src/Migration.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L24)*
+*Defined in [packages/migrations/src/Migration.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L24)*
 
 #### Parameters:
 
@@ -79,7 +79,7 @@ ___
 
 ▸ **down**(): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:333](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L333)*
+*Defined in [packages/core/src/typings.ts:333](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L333)*
 
 **Returns:** Promise&#60;void>
 
@@ -89,7 +89,7 @@ ___
 
 ▸ **execute**(`sql`: [Query](../index.md#query)): Promise&#60;[EntityData](../index.md#entitydata)&#60;[AnyEntity](../index.md#anyentity)&#60;any>>[]>
 
-*Defined in [packages/migrations/src/Migration.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L37)*
+*Defined in [packages/migrations/src/Migration.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L37)*
 
 #### Parameters:
 
@@ -105,7 +105,7 @@ ___
 
 ▸ **getKnex**(): any
 
-*Defined in [packages/migrations/src/Migration.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L41)*
+*Defined in [packages/migrations/src/Migration.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L41)*
 
 **Returns:** any
 
@@ -115,7 +115,7 @@ ___
 
 ▸ **getQueries**(): [Query](../index.md#query)[]
 
-*Defined in [packages/migrations/src/Migration.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L45)*
+*Defined in [packages/migrations/src/Migration.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L45)*
 
 **Returns:** [Query](../index.md#query)[]
 
@@ -125,7 +125,7 @@ ___
 
 ▸ **isTransactional**(): boolean
 
-*Defined in [packages/migrations/src/Migration.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L20)*
+*Defined in [packages/migrations/src/Migration.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L20)*
 
 **Returns:** boolean
 
@@ -135,7 +135,7 @@ ___
 
 ▸ **reset**(): void
 
-*Defined in [packages/migrations/src/Migration.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L28)*
+*Defined in [packages/migrations/src/Migration.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L28)*
 
 **Returns:** void
 
@@ -145,7 +145,7 @@ ___
 
 ▸ **setTransactionContext**(`ctx`: [Transaction](../index.md#transaction)): void
 
-*Defined in [packages/migrations/src/Migration.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L33)*
+*Defined in [packages/migrations/src/Migration.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L33)*
 
 #### Parameters:
 
@@ -161,12 +161,12 @@ ___
 
 ▸ `Abstract`**up**(): Promise&#60;void>
 
-*Defined in [packages/core/src/typings.ts:332](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L332)*
+*Defined in [packages/core/src/typings.ts:332](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L332)*
 
 **Returns:** Promise&#60;void>
 
 ▸ `Abstract`**up**(): Promise&#60;void>
 
-*Defined in [packages/migrations/src/Migration.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/Migration.ts#L14)*
+*Defined in [packages/migrations/src/Migration.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/Migration.ts#L14)*
 
 **Returns:** Promise&#60;void>

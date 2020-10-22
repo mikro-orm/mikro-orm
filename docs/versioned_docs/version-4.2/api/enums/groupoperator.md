@@ -10,7 +10,7 @@ sidebar_label: "GroupOperator"
 
 •  **$and**:  = "and"
 
-*Defined in [packages/core/src/enums.ts:2](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L2)*
+*Defined in [packages/core/src/enums.ts:2](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L2)*
 
 ___
 
@@ -18,4 +18,4 @@ ___
 
 •  **$or**:  = "or"
 
-*Defined in [packages/core/src/enums.ts:3](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/enums.ts#L3)*
+*Defined in [packages/core/src/enums.ts:3](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/enums.ts#L3)*

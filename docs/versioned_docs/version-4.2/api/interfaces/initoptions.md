@@ -20,7 +20,7 @@ Name |
 
 • `Optional` **orderBy**: [QueryOrderMap](queryordermap.md)
 
-*Defined in [packages/core/src/entity/Collection.ts:314](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L314)*
+*Defined in [packages/core/src/entity/Collection.ts:314](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L314)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • `Optional` **populate**: [Populate](../index.md#populate)&#60;T>
 
-*Defined in [packages/core/src/entity/Collection.ts:313](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L313)*
+*Defined in [packages/core/src/entity/Collection.ts:313](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L313)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 • `Optional` **where**: [FilterQuery](../index.md#filterquery)&#60;T>
 
-*Defined in [packages/core/src/entity/Collection.ts:315](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L315)*
+*Defined in [packages/core/src/entity/Collection.ts:315](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L315)*

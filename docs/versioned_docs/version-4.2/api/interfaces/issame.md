@@ -14,7 +14,7 @@ sidebar_label: "IsSame"
 
 • `Optional` **all**: boolean
 
-*Defined in [packages/knex/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L77)*
+*Defined in [packages/knex/src/typings.ts:77](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L77)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Optional` **sameDefault**: boolean
 
-*Defined in [packages/knex/src/typings.ts:80](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L80)*
+*Defined in [packages/knex/src/typings.ts:80](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L80)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **sameEnums**: boolean
 
-*Defined in [packages/knex/src/typings.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L82)*
+*Defined in [packages/knex/src/typings.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L82)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Optional` **sameIndex**: boolean
 
-*Defined in [packages/knex/src/typings.ts:81](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L81)*
+*Defined in [packages/knex/src/typings.ts:81](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L81)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Optional` **sameNullable**: boolean
 
-*Defined in [packages/knex/src/typings.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L79)*
+*Defined in [packages/knex/src/typings.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L79)*
 
 ___
 
@@ -54,4 +54,4 @@ ___
 
 • `Optional` **sameTypes**: boolean
 
-*Defined in [packages/knex/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L78)*
+*Defined in [packages/knex/src/typings.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L78)*

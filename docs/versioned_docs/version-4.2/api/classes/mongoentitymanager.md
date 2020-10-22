@@ -160,7 +160,7 @@ ___
 
 ▸ **aggregate**(`entityName`: [EntityName](../index.md#entityname)&#60;any>, `pipeline`: any[]): Promise&#60;any[]>
 
-*Defined in [packages/mongodb/src/MongoEntityManager.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityManager.ts#L14)*
+*Defined in [packages/mongodb/src/MongoEntityManager.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityManager.ts#L14)*
 
 Shortcut to driver's aggregate method. Available in MongoDriver only.
 
@@ -632,7 +632,7 @@ ___
 
 ▸ **getCollection**(`entityName`: [EntityName](../index.md#entityname)&#60;any>): Collection
 
-*Defined in [packages/mongodb/src/MongoEntityManager.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityManager.ts#L19)*
+*Defined in [packages/mongodb/src/MongoEntityManager.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityManager.ts#L19)*
 
 #### Parameters:
 
@@ -867,7 +867,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mongodb/src/MongoEntityManager.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mongodb/src/MongoEntityManager.ts#L23)*
+*Defined in [packages/mongodb/src/MongoEntityManager.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mongodb/src/MongoEntityManager.ts#L23)*
 
 #### Type parameters:
 

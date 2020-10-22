@@ -18,7 +18,7 @@ sidebar_label: "PostgreSqlExceptionConverter"
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlExceptionConverter.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlExceptionConverter.ts#L14)*
+*Defined in [packages/postgresql/src/PostgreSqlExceptionConverter.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlExceptionConverter.ts#L14)*
 
 **`link`** http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
 

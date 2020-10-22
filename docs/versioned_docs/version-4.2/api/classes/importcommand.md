@@ -18,7 +18,7 @@ sidebar_label: "ImportCommand"
 
 •  **command**: string = "database:import &#60;file>"
 
-*Defined in [packages/cli/src/commands/ImportCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ImportCommand.ts#L9)*
+*Defined in [packages/cli/src/commands/ImportCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ImportCommand.ts#L9)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **describe**: string = "Imports the SQL file to the database"
 
-*Defined in [packages/cli/src/commands/ImportCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ImportCommand.ts#L10)*
+*Defined in [packages/cli/src/commands/ImportCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ImportCommand.ts#L10)*
 
 ## Methods
 
@@ -34,7 +34,7 @@ ___
 
 ▸ **handler**(`args`: Arguments): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/ImportCommand.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ImportCommand.ts#L15)*
+*Defined in [packages/cli/src/commands/ImportCommand.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ImportCommand.ts#L15)*
 
 **`inheritdoc`** 
 

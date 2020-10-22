@@ -28,7 +28,7 @@ Name | Type | Default |
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L19)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L19)*
 
 #### Parameters:
 
@@ -49,7 +49,7 @@ Name | Type |
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L15)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L15)*
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L17)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L17)*
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L19)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L19)*
 
 ___
 
@@ -129,7 +129,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[replicas](mongodriver.md#replicas)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L18)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L18)*
 
 ## Methods
 
@@ -156,7 +156,7 @@ ___
 
 ▸ `Private`**appendToCollection**&#60;T>(`meta`: EntityMetadata&#60;T>, `collection`: [EntityData](../index.md#entitydata)&#60;T>[], `relationPojo`: [EntityData](../index.md#entitydata)&#60;T>): void
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:153](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L153)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:153](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L153)*
 
 #### Type parameters:
 
@@ -180,7 +180,7 @@ ___
 
 ▸ `Protected`**autoJoinOneToOneOwner**&#60;T>(`meta`: EntityMetadata, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `fields?`: string[]): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:417](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L417)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:417](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L417)*
 
 1:1 owner side needs to be marked for population so QB auto-joins the owner id
 
@@ -206,7 +206,7 @@ ___
 
 ▸ `Protected`**buildFields**&#60;T>(`meta`: EntityMetadata&#60;T>, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `joinedProps`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `qb`: [QueryBuilder](querybuilder.md)&#60;T>, `fields?`: [Field](../index.md#field)&#60;T>[]): [Field](../index.md#field)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:567](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L567)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:567](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L567)*
 
 #### Type parameters:
 
@@ -284,7 +284,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:167](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L167)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:167](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L167)*
 
 #### Type parameters:
 
@@ -311,7 +311,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L32)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L32)*
 
 #### Type parameters:
 
@@ -333,7 +333,7 @@ ___
 
 ▸ `Protected`**createQueryBuilder**&#60;T>(`entityName`: string, `ctx?`: Transaction&#60;KnexTransaction>, `write?`: boolean): [QueryBuilder](querybuilder.md)&#60;T>
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:487](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L487)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:487](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L487)*
 
 #### Type parameters:
 
@@ -387,7 +387,7 @@ ___
 
 ▸ **execute**&#60;T>(`queryOrKnex`: string \| KnexQueryBuilder \| Raw, `params?`: any[], `method?`: &#34;all&#34; \| &#34;get&#34; \| &#34;run&#34;, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;T>
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:410](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L410)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:410](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L410)*
 
 #### Type parameters:
 
@@ -412,7 +412,7 @@ ___
 
 ▸ `Protected`**extractManyToMany**&#60;T>(`entityName`: string, `data`: [EntityData](../index.md#entitydata)&#60;T>): [EntityData](../index.md#entitydata)&#60;T>
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:491](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L491)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:491](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L491)*
 
 #### Type parameters:
 
@@ -437,7 +437,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L36)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L36)*
 
 #### Type parameters:
 
@@ -464,7 +464,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:70](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L70)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:70](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L70)*
 
 #### Type parameters:
 
@@ -519,7 +519,7 @@ ___
 
 ▸ `Protected`**getFieldsForJoinedLoad**&#60;T>(`qb`: [QueryBuilder](querybuilder.md)&#60;T>, `meta`: EntityMetadata&#60;T>, `populate?`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `parentTableAlias?`: string, `parentJoinPath?`: string): [Field](../index.md#field)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:450](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L450)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:450](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L450)*
 
 #### Type parameters:
 
@@ -584,7 +584,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[getPlatform](mongodriver.md#getplatform)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L28)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L28)*
 
 **Returns:** [AbstractSqlPlatform](abstractsqlplatform.md)
 
@@ -638,7 +638,7 @@ ___
 
 ▸ `Protected`**joinedProps**&#60;T>(`meta`: EntityMetadata, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[]): [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:430](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L430)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:430](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L430)*
 
 #### Type parameters:
 
@@ -663,7 +663,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[loadFromPivotTable](mongodriver.md#loadfrompivottable)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:380](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L380)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:380](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L380)*
 
 #### Type parameters:
 
@@ -692,7 +692,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[lockPessimistic](mongodriver.md#lockpessimistic)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:559](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L559)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:559](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L559)*
 
 #### Type parameters:
 
@@ -716,7 +716,7 @@ ___
 
 ▸ `Private`**mapJoinedProps**&#60;T>(`result`: [EntityData](../index.md#entitydata)&#60;T>, `meta`: EntityMetadata&#60;T>, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `qb`: [QueryBuilder](querybuilder.md)&#60;T>, `root`: [EntityData](../index.md#entitydata)&#60;T>, `map`: [Dictionary](../index.md#dictionary), `parentJoinPath?`: string): void
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L100)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L100)*
 
 #### Type parameters:
 
@@ -744,7 +744,7 @@ ___
 
 ▸ `Protected`**mapPropToFieldNames**&#60;T>(`qb`: [QueryBuilder](querybuilder.md)&#60;T>, `prop`: EntityProperty&#60;T>, `tableAlias?`: string): [Field](../index.md#field)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:472](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L472)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:472](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L472)*
 
 #### Type parameters:
 
@@ -770,7 +770,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[mapResult](mongodriver.md#mapresult)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L85)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L85)*
 
 #### Type parameters:
 
@@ -796,7 +796,7 @@ ___
 
 ▸ `Protected`**mergeJoinedResult**&#60;T>(`rawResults`: [Dictionary](../index.md#dictionary)[], `meta`: EntityMetadata&#60;T>): [EntityData](../index.md#entitydata)&#60;T>[]
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:437](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L437)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:437](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L437)*
 
 #### Type parameters:
 
@@ -821,7 +821,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:334](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L334)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:334](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L334)*
 
 #### Type parameters:
 
@@ -847,7 +847,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:181](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L181)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:181](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L181)*
 
 #### Type parameters:
 
@@ -873,7 +873,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:203](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L203)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:203](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L203)*
 
 #### Type parameters:
 
@@ -900,7 +900,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:259](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L259)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:259](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L259)*
 
 #### Type parameters:
 
@@ -927,7 +927,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:284](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L284)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:284](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L284)*
 
 #### Type parameters:
 
@@ -953,7 +953,7 @@ ___
 
 ▸ `Protected`**processManyToMany**&#60;T>(`meta`: EntityMetadata&#60;T> \| undefined, `pks`: [Primary](../index.md#primary)&#60;T>[], `collections`: [EntityData](../index.md#entitydata)&#60;T>, `clear`: boolean, `ctx?`: Transaction&#60;KnexTransaction>): Promise&#60;void>
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:508](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L508)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:508](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L508)*
 
 #### Type parameters:
 
@@ -1061,7 +1061,7 @@ ___
 
 *Overrides [MongoDriver](mongodriver.md).[syncCollection](mongodriver.md#synccollection)*
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:346](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L346)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:346](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L346)*
 
 #### Type parameters:
 
@@ -1085,7 +1085,7 @@ ___
 
 ▸ `Protected`**updateCollectionDiff**&#60;T, O>(`meta`: EntityMetadata&#60;O>, `prop`: EntityProperty&#60;T>, `pks`: [Primary](../index.md#primary)&#60;O>[], `deleteDiff`: [Primary](../index.md#primary)&#60;T>[][] \| boolean, `insertDiff`: [Primary](../index.md#primary)&#60;T>[][], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/knex/src/AbstractSqlDriver.ts:520](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/AbstractSqlDriver.ts#L520)*
+*Defined in [packages/knex/src/AbstractSqlDriver.ts:520](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/AbstractSqlDriver.ts#L520)*
 
 #### Type parameters:
 

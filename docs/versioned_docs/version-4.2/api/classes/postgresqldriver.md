@@ -22,7 +22,7 @@ sidebar_label: "PostgreSqlDriver"
 
 *Overrides void*
 
-*Defined in [packages/postgresql/src/PostgreSqlDriver.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/postgresql/src/PostgreSqlDriver.ts#L6)*
+*Defined in [packages/postgresql/src/PostgreSqlDriver.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/postgresql/src/PostgreSqlDriver.ts#L6)*
 
 #### Parameters:
 

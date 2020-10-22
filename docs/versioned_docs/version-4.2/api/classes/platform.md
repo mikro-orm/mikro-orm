@@ -14,7 +14,7 @@ sidebar_label: "Platform"
 
 • `Protected` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/platforms/Platform.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L11)*
+*Defined in [packages/core/src/platforms/Platform.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L11)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Protected` `Readonly` **exceptionConverter**: [ExceptionConverter](exceptionconverter.md) = new ExceptionConverter()
 
-*Defined in [packages/core/src/platforms/Platform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L10)*
+*Defined in [packages/core/src/platforms/Platform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L10)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Protected` `Optional` **timezone**: string
 
-*Defined in [packages/core/src/platforms/Platform.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L12)*
+*Defined in [packages/core/src/platforms/Platform.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L12)*
 
 ## Methods
 
@@ -38,7 +38,7 @@ ___
 
 ▸ **allowsMultiInsert**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L46)*
+*Defined in [packages/core/src/platforms/Platform.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L46)*
 
 **Returns:** boolean
 
@@ -48,7 +48,7 @@ ___
 
 ▸ **convertsJsonAutomatically**(`marshall?`: boolean): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:152](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L152)*
+*Defined in [packages/core/src/platforms/Platform.ts:152](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L152)*
 
 #### Parameters:
 
@@ -64,7 +64,7 @@ ___
 
 ▸ **denormalizePrimaryKey**(`data`: [IPrimaryKey](../index.md#iprimarykey)): [IPrimaryKey](../index.md#iprimarykey)
 
-*Defined in [packages/core/src/platforms/Platform.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L78)*
+*Defined in [packages/core/src/platforms/Platform.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L78)*
 
 Converts scalar primary key representation to native driver wrapper (e.g. string to mongodb's ObjectId)
 
@@ -82,7 +82,7 @@ ___
 
 ▸ **getArrayDeclarationSQL**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:128](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L128)*
+*Defined in [packages/core/src/platforms/Platform.ts:128](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L128)*
 
 **Returns:** string
 
@@ -92,7 +92,7 @@ ___
 
 ▸ **getBigIntTypeDeclarationSQL**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L124)*
+*Defined in [packages/core/src/platforms/Platform.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L124)*
 
 **Returns:** string
 
@@ -102,7 +102,7 @@ ___
 
 ▸ **getBlobDeclarationSQL**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L140)*
+*Defined in [packages/core/src/platforms/Platform.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L140)*
 
 **Returns:** string
 
@@ -112,7 +112,7 @@ ___
 
 ▸ **getCurrentTimestampSQL**(`length`: number): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L96)*
+*Defined in [packages/core/src/platforms/Platform.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L96)*
 
 Returns the SQL specific for the platform to get the current timestamp
 
@@ -130,7 +130,7 @@ ___
 
 ▸ **getDateTypeDeclarationSQL**(`length`: number): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:100](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L100)*
+*Defined in [packages/core/src/platforms/Platform.ts:100](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L100)*
 
 #### Parameters:
 
@@ -146,7 +146,7 @@ ___
 
 ▸ **getDefaultCharset**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:160](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L160)*
+*Defined in [packages/core/src/platforms/Platform.ts:160](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L160)*
 
 **Returns:** string
 
@@ -156,7 +156,7 @@ ___
 
 ▸ **getExceptionConverter**(): [ExceptionConverter](exceptionconverter.md)
 
-*Defined in [packages/core/src/platforms/Platform.ts:164](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L164)*
+*Defined in [packages/core/src/platforms/Platform.ts:164](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L164)*
 
 **Returns:** [ExceptionConverter](exceptionconverter.md)
 
@@ -166,7 +166,7 @@ ___
 
 ▸ **getJsonDeclarationSQL**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:144](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L144)*
+*Defined in [packages/core/src/platforms/Platform.ts:144](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L144)*
 
 **Returns:** string
 
@@ -176,7 +176,7 @@ ___
 
 ▸ **getNamingStrategy**(): object
 
-*Defined in [packages/core/src/platforms/Platform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L26)*
+*Defined in [packages/core/src/platforms/Platform.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L26)*
 
 **Returns:** object
 
@@ -190,7 +190,7 @@ ___
 
 ▸ **getRegExpOperator**(): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L108)*
+*Defined in [packages/core/src/platforms/Platform.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L108)*
 
 **Returns:** string
 
@@ -200,7 +200,7 @@ ___
 
 ▸ **getRepositoryClass**&#60;T>(): [Constructor](../index.md#constructor)&#60;[EntityRepository](entityrepository.md)&#60;T>>
 
-*Defined in [packages/core/src/platforms/Platform.ts:156](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L156)*
+*Defined in [packages/core/src/platforms/Platform.ts:156](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L156)*
 
 #### Type parameters:
 
@@ -216,7 +216,7 @@ ___
 
 ▸ **getSchemaGenerator**(`em`: [EntityManager](entitymanager.md)): [ISchemaGenerator](../interfaces/ischemagenerator.md)
 
-*Defined in [packages/core/src/platforms/Platform.ts:168](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L168)*
+*Defined in [packages/core/src/platforms/Platform.ts:168](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L168)*
 
 #### Parameters:
 
@@ -232,7 +232,7 @@ ___
 
 ▸ **getSchemaHelper**(): { getTypeDefinition: (prop: [EntityProperty](../interfaces/entityproperty.md), types?: [Dictionary](../index.md#dictionary)&#60;string[]>, lengths?: [Dictionary](../index.md#dictionary)&#60;number>, allowZero?: boolean) => string  } \| undefined
 
-*Defined in [packages/core/src/platforms/Platform.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L38)*
+*Defined in [packages/core/src/platforms/Platform.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L38)*
 
 **Returns:** { getTypeDefinition: (prop: [EntityProperty](../interfaces/entityproperty.md), types?: [Dictionary](../index.md#dictionary)&#60;string[]>, lengths?: [Dictionary](../index.md#dictionary)&#60;number>, allowZero?: boolean) => string  } \| undefined
 
@@ -242,7 +242,7 @@ ___
 
 ▸ **getSearchJsonPropertySQL**(`path`: string): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:148](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L148)*
+*Defined in [packages/core/src/platforms/Platform.ts:148](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L148)*
 
 #### Parameters:
 
@@ -258,7 +258,7 @@ ___
 
 ▸ **getSerializedPrimaryKeyField**(`field`: string): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:85](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L85)*
+*Defined in [packages/core/src/platforms/Platform.ts:85](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L85)*
 
 Used when serializing via toObject and toJSON methods, allows to use different PK field name (like `id` instead of `_id`)
 
@@ -276,7 +276,7 @@ ___
 
 ▸ **getTimeTypeDeclarationSQL**(`length`: number): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:104](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L104)*
+*Defined in [packages/core/src/platforms/Platform.ts:104](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L104)*
 
 #### Parameters:
 
@@ -292,7 +292,7 @@ ___
 
 ▸ **isBigIntProperty**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:120](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L120)*
+*Defined in [packages/core/src/platforms/Platform.ts:120](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L120)*
 
 #### Parameters:
 
@@ -308,7 +308,7 @@ ___
 
 ▸ **marshallArray**(`values`: string[]): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:132](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L132)*
+*Defined in [packages/core/src/platforms/Platform.ts:132](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L132)*
 
 #### Parameters:
 
@@ -324,7 +324,7 @@ ___
 
 ▸ **normalizePrimaryKey**&#60;T>(`data`: [Primary](../index.md#primary)&#60;T> \| [IPrimaryKey](../index.md#iprimarykey)): T
 
-*Defined in [packages/core/src/platforms/Platform.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L71)*
+*Defined in [packages/core/src/platforms/Platform.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L71)*
 
 Normalizes primary key wrapper to scalar value (e.g. mongodb's ObjectId to string)
 
@@ -348,7 +348,7 @@ ___
 
 ▸ **processDateProperty**(`value`: unknown): string \| number \| Date
 
-*Defined in [packages/core/src/platforms/Platform.ts:172](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L172)*
+*Defined in [packages/core/src/platforms/Platform.ts:172](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L172)*
 
 #### Parameters:
 
@@ -364,7 +364,7 @@ ___
 
 ▸ **quoteIdentifier**(`id`: string, `quote?`: string): string
 
-*Defined in [packages/core/src/platforms/Platform.ts:176](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L176)*
+*Defined in [packages/core/src/platforms/Platform.ts:176](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L176)*
 
 #### Parameters:
 
@@ -381,7 +381,7 @@ ___
 
 ▸ **quoteVersionValue**(`value`: Date \| number, `prop`: [EntityProperty](../interfaces/entityproperty.md)): Date \| string \| number
 
-*Defined in [packages/core/src/platforms/Platform.ts:112](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L112)*
+*Defined in [packages/core/src/platforms/Platform.ts:112](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L112)*
 
 #### Parameters:
 
@@ -398,7 +398,7 @@ ___
 
 ▸ **requiresNullableForAlteringColumn**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L42)*
+*Defined in [packages/core/src/platforms/Platform.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L42)*
 
 **Returns:** boolean
 
@@ -408,7 +408,7 @@ ___
 
 ▸ **requiresValuesKeyword**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:116](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L116)*
+*Defined in [packages/core/src/platforms/Platform.ts:116](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L116)*
 
 **Returns:** boolean
 
@@ -418,7 +418,7 @@ ___
 
 ▸ **setConfig**(`config`: [Configuration](configuration.md)): void
 
-*Defined in [packages/core/src/platforms/Platform.ts:180](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L180)*
+*Defined in [packages/core/src/platforms/Platform.ts:180](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L180)*
 
 #### Parameters:
 
@@ -434,7 +434,7 @@ ___
 
 ▸ **supportsTransactions**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L18)*
+*Defined in [packages/core/src/platforms/Platform.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L18)*
 
 **Returns:** boolean
 
@@ -444,7 +444,7 @@ ___
 
 ▸ **unmarshallArray**(`value`: string): string[]
 
-*Defined in [packages/core/src/platforms/Platform.ts:136](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L136)*
+*Defined in [packages/core/src/platforms/Platform.ts:136](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L136)*
 
 #### Parameters:
 
@@ -460,7 +460,7 @@ ___
 
 ▸ **usesBatchInserts**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L53)*
+*Defined in [packages/core/src/platforms/Platform.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L53)*
 
 Whether or not the driver supports retuning list of created PKs back when multi-inserting
 
@@ -472,7 +472,7 @@ ___
 
 ▸ **usesBatchUpdates**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:60](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L60)*
+*Defined in [packages/core/src/platforms/Platform.ts:60](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L60)*
 
 Whether or not the driver supports updating many records at once
 
@@ -484,7 +484,7 @@ ___
 
 ▸ **usesCascadeStatement**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L34)*
+*Defined in [packages/core/src/platforms/Platform.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L34)*
 
 **Returns:** boolean
 
@@ -494,7 +494,7 @@ ___
 
 ▸ **usesDefaultKeyword**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:64](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L64)*
+*Defined in [packages/core/src/platforms/Platform.ts:64](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L64)*
 
 **Returns:** boolean
 
@@ -504,7 +504,7 @@ ___
 
 ▸ **usesDifferentSerializedPrimaryKey**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L89)*
+*Defined in [packages/core/src/platforms/Platform.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L89)*
 
 **Returns:** boolean
 
@@ -514,7 +514,7 @@ ___
 
 ▸ **usesImplicitTransactions**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L22)*
+*Defined in [packages/core/src/platforms/Platform.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L22)*
 
 **Returns:** boolean
 
@@ -524,7 +524,7 @@ ___
 
 ▸ **usesPivotTable**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L14)*
+*Defined in [packages/core/src/platforms/Platform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L14)*
 
 **Returns:** boolean
 
@@ -534,6 +534,6 @@ ___
 
 ▸ **usesReturningStatement**(): boolean
 
-*Defined in [packages/core/src/platforms/Platform.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/platforms/Platform.ts#L30)*
+*Defined in [packages/core/src/platforms/Platform.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/platforms/Platform.ts#L30)*
 
 **Returns:** boolean

@@ -14,7 +14,7 @@ sidebar_label: "Node"
 
 •  **dependencies**: [Dictionary](../index.md#dictionary)&#60;[Edge](edge.md)>
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L12)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L12)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **hash**: string
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L10)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L10)*
 
 ___
 
@@ -30,4 +30,4 @@ ___
 
 •  **state**: [NodeState](../enums/nodestate.md)
 
-*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L11)*
+*Defined in [packages/core/src/unit-of-work/CommitOrderCalculator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/CommitOrderCalculator.ts#L11)*

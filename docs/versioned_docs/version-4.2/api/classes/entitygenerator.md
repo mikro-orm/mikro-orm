@@ -14,7 +14,7 @@ sidebar_label: "EntityGenerator"
 
 \+ **new EntityGenerator**(`em`: [EntityManager](entitymanager.md)): [EntityGenerator](entitygenerator.md)
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L14)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L14)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` `Readonly` **config**: Configuration&#60;IDatabaseDriver&#60;Connection>> = this.em.config
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L8)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L8)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Private` `Readonly` **connection**: AbstractSqlConnection = this.driver.getConnection()
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L12)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L12)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Private` `Readonly` **driver**: AbstractSqlDriver&#60;AbstractSqlConnection> = this.em.getDriver()
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L9)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L9)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Private` `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L16)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L16)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Private` `Readonly` **helper**: SchemaHelper = this.platform.getSchemaHelper()!
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L11)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L11)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Private` `Readonly` **namingStrategy**: NamingStrategy = this.config.getNamingStrategy()
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L13)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L13)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • `Private` `Readonly` **platform**: AbstractSqlPlatform = this.driver.getPlatform()
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L10)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L10)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 • `Private` `Readonly` **sources**: [SourceFile](sourcefile.md)[] = []
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L14)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L14)*
 
 ## Methods
 
@@ -94,7 +94,7 @@ ___
 
 ▸ **createEntity**(`table`: DatabaseTable): void
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L31)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L31)*
 
 #### Parameters:
 
@@ -110,7 +110,7 @@ ___
 
 ▸ **generate**(`options?`: { baseDir?: string ; save?: boolean  }): Promise&#60;string[]>
 
-*Defined in [packages/entity-generator/src/EntityGenerator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/EntityGenerator.ts#L18)*
+*Defined in [packages/entity-generator/src/EntityGenerator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/EntityGenerator.ts#L18)*
 
 #### Parameters:
 

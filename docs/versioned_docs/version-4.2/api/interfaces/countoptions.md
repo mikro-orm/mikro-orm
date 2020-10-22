@@ -20,7 +20,7 @@ Name |
 
 • `Optional` **cache**: boolean \| number \| [string, number]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:111](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L111)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:111](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L111)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 • `Optional` **filters**: [Dictionary](../index.md#dictionary)&#60;boolean \| [Dictionary](../index.md#dictionary)> \| string[] \| boolean
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:107](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L107)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:107](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L107)*
 
 ___
 
@@ -36,7 +36,7 @@ ___
 
 • `Optional` **groupBy**: string \| string[]
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:109](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L109)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:109](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L109)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 • `Optional` **having**: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L110)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L110)*
 
 ___
 
@@ -52,4 +52,4 @@ ___
 
 • `Optional` **schema**: string
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L108)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L108)*

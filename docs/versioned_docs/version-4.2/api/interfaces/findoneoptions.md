@@ -25,7 +25,7 @@ Name | Type | Default |
 
 • `Optional` **lockMode**: [LockMode](../enums/lockmode.md)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L98)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L98)*
 
 ___
 
@@ -33,4 +33,4 @@ ___
 
 • `Optional` **lockVersion**: number \| Date
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L99)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L99)*

@@ -18,7 +18,7 @@ sidebar_label: "DebugCommand"
 
 •  **command**: string = "debug"
 
-*Defined in [packages/cli/src/commands/DebugCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/DebugCommand.ts#L9)*
+*Defined in [packages/cli/src/commands/DebugCommand.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/DebugCommand.ts#L9)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **describe**: string = "Debug CLI configuration"
 
-*Defined in [packages/cli/src/commands/DebugCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/DebugCommand.ts#L10)*
+*Defined in [packages/cli/src/commands/DebugCommand.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/DebugCommand.ts#L10)*
 
 ## Methods
 
@@ -34,7 +34,7 @@ ___
 
 ▸ **handler**(): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/DebugCommand.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/DebugCommand.ts#L15)*
+*Defined in [packages/cli/src/commands/DebugCommand.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/DebugCommand.ts#L15)*
 
 **`inheritdoc`** 
 
@@ -46,7 +46,7 @@ ___
 
 ▸ `Static` `Private`**checkPaths**(`paths`: string[], `failedColor`: &#34;red&#34; \| &#34;yellow&#34;, `baseDir?`: string, `onlyDirectories?`: boolean): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/DebugCommand.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/DebugCommand.ts#L47)*
+*Defined in [packages/cli/src/commands/DebugCommand.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/DebugCommand.ts#L47)*
 
 #### Parameters:
 

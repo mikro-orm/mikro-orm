@@ -20,7 +20,7 @@ Name |
 
 • `Optional` **changeSet**: [ChangeSet](changeset.md)&#60;T>
 
-*Defined in [packages/core/src/events/EventSubscriber.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventSubscriber.ts#L8)*
+*Defined in [packages/core/src/events/EventSubscriber.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventSubscriber.ts#L8)*
 
 ___
 
@@ -28,7 +28,7 @@ ___
 
 •  **em**: [EntityManager](../classes/entitymanager.md)
 
-*Defined in [packages/core/src/events/EventSubscriber.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventSubscriber.ts#L7)*
+*Defined in [packages/core/src/events/EventSubscriber.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventSubscriber.ts#L7)*
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 •  **entity**: T
 
-*Defined in [packages/core/src/events/EventSubscriber.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/events/EventSubscriber.ts#L6)*
+*Defined in [packages/core/src/events/EventSubscriber.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/events/EventSubscriber.ts#L6)*

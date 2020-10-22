@@ -18,7 +18,7 @@ For node 14 and above it is suggested to use `AsyncLocalStorage` instead,
 
 \+ **new RequestContext**(`em`: [EntityManager](entitymanager.md)): [RequestContext](requestcontext.md)
 
-*Defined in [packages/core/src/utils/RequestContext.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L13)*
+*Defined in [packages/core/src/utils/RequestContext.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L13)*
 
 #### Parameters:
 
@@ -34,7 +34,7 @@ Name | Type |
 
 • `Readonly` **em**: [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/utils/RequestContext.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L15)*
+*Defined in [packages/core/src/utils/RequestContext.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L15)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 • `Readonly` **id**: number = this.em.id
 
-*Defined in [packages/core/src/utils/RequestContext.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L13)*
+*Defined in [packages/core/src/utils/RequestContext.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L13)*
 
 ## Methods
 
@@ -50,7 +50,7 @@ ___
 
 ▸ `Static`**create**(`em`: [EntityManager](entitymanager.md), `next`: (...args: any[]) => void): void
 
-*Defined in [packages/core/src/utils/RequestContext.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L20)*
+*Defined in [packages/core/src/utils/RequestContext.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L20)*
 
 Creates new RequestContext instance and runs the code inside its domain.
 
@@ -69,7 +69,7 @@ ___
 
 ▸ `Static`**createAsync**(`em`: [EntityManager](entitymanager.md), `next`: (...args: any[]) => Promise&#60;void>): Promise&#60;void>
 
-*Defined in [packages/core/src/utils/RequestContext.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L31)*
+*Defined in [packages/core/src/utils/RequestContext.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L31)*
 
 Creates new RequestContext instance and runs the code inside its domain.
 Async variant, when the `next` handler needs to be awaited (like in Koa).
@@ -89,7 +89,7 @@ ___
 
 ▸ `Static`**currentRequestContext**(): [RequestContext](requestcontext.md) \| undefined
 
-*Defined in [packages/core/src/utils/RequestContext.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L43)*
+*Defined in [packages/core/src/utils/RequestContext.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L43)*
 
 Returns current RequestContext (if available).
 
@@ -101,7 +101,7 @@ ___
 
 ▸ `Static`**getEntityManager**(): [EntityManager](entitymanager.md) \| undefined
 
-*Defined in [packages/core/src/utils/RequestContext.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/RequestContext.ts#L51)*
+*Defined in [packages/core/src/utils/RequestContext.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/RequestContext.ts#L51)*
 
 Returns current EntityManager (if available).
 

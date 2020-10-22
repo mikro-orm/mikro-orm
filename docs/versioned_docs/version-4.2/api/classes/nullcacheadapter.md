@@ -20,7 +20,7 @@ sidebar_label: "NullCacheAdapter"
 
 *Implementation of [CacheAdapter](../interfaces/cacheadapter.md)*
 
-*Defined in [packages/core/src/cache/NullCacheAdapter.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/NullCacheAdapter.ts#L22)*
+*Defined in [packages/core/src/cache/NullCacheAdapter.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/NullCacheAdapter.ts#L22)*
 
 Clears all items stored in the cache.
 
@@ -34,7 +34,7 @@ ___
 
 *Implementation of [CacheAdapter](../interfaces/cacheadapter.md)*
 
-*Defined in [packages/core/src/cache/NullCacheAdapter.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/NullCacheAdapter.ts#L8)*
+*Defined in [packages/core/src/cache/NullCacheAdapter.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/NullCacheAdapter.ts#L8)*
 
 Gets the items under `name` key from the cache.
 
@@ -52,7 +52,7 @@ ___
 
 ▸ **set**(`name`: string, `data`: any, `origin`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/cache/NullCacheAdapter.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/NullCacheAdapter.ts#L15)*
+*Defined in [packages/core/src/cache/NullCacheAdapter.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/NullCacheAdapter.ts#L15)*
 
 **`inheritdoc`** 
 

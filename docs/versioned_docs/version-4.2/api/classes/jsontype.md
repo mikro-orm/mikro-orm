@@ -18,7 +18,7 @@ sidebar_label: "JsonType"
 
 *Inherited from [Type](type.md).[compareAsType](type.md#compareastype)*
 
-*Defined in [packages/core/src/types/Type.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L26)*
+*Defined in [packages/core/src/types/Type.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L26)*
 
 How should the raw database values be compared? Used in `EntityComparator`.
 Possible values: string | number | boolean | date | any | buffer | array
@@ -33,7 +33,7 @@ ___
 
 *Overrides [Type](type.md).[convertToDatabaseValue](type.md#converttodatabasevalue)*
 
-*Defined in [packages/core/src/types/JsonType.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/JsonType.ts#L8)*
+*Defined in [packages/core/src/types/JsonType.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/JsonType.ts#L8)*
 
 #### Parameters:
 
@@ -52,7 +52,7 @@ ___
 
 *Overrides [Type](type.md).[convertToJSValue](type.md#converttojsvalue)*
 
-*Defined in [packages/core/src/types/JsonType.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/JsonType.ts#L16)*
+*Defined in [packages/core/src/types/JsonType.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/JsonType.ts#L16)*
 
 #### Parameters:
 
@@ -71,7 +71,7 @@ ___
 
 *Overrides [Type](type.md).[getColumnType](type.md#getcolumntype)*
 
-*Defined in [packages/core/src/types/JsonType.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/JsonType.ts#L24)*
+*Defined in [packages/core/src/types/JsonType.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/JsonType.ts#L24)*
 
 #### Parameters:
 
@@ -90,7 +90,7 @@ ___
 
 *Inherited from [Type](type.md).[toJSON](type.md#tojson)*
 
-*Defined in [packages/core/src/types/Type.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L34)*
+*Defined in [packages/core/src/types/Type.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L34)*
 
 Converts a value from its JS representation to its serialized JSON form of this type.
 By default uses the runtime value.
@@ -112,7 +112,7 @@ ___
 
 *Inherited from [Type](type.md).[getType](type.md#gettype)*
 
-*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L46)*
+*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L46)*
 
 #### Type parameters:
 

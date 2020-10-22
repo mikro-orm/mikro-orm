@@ -18,7 +18,7 @@ sidebar_label: "ClearCacheCommand"
 
 •  **command**: string = "cache:clear"
 
-*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ClearCacheCommand.ts#L7)*
+*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ClearCacheCommand.ts#L7)*
 
 ___
 
@@ -26,7 +26,7 @@ ___
 
 •  **describe**: string = "Clear metadata cache"
 
-*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ClearCacheCommand.ts#L8)*
+*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ClearCacheCommand.ts#L8)*
 
 ## Methods
 
@@ -34,7 +34,7 @@ ___
 
 ▸ **handler**(`args`: Arguments): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/ClearCacheCommand.ts#L13)*
+*Defined in [packages/cli/src/commands/ClearCacheCommand.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/ClearCacheCommand.ts#L13)*
 
 **`inheritdoc`** 
 

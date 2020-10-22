@@ -22,7 +22,7 @@ Base class for all errors detected in the driver.
 
 \+ **new DriverException**(`previous`: [Error](driverexception.md#error)): [DriverException](driverexception.md)
 
-*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L10)*
+*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L10)*
 
 #### Parameters:
 
@@ -38,7 +38,7 @@ Name | Type |
 
 • `Optional` **code**: string
 
-*Defined in [packages/core/src/exceptions.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L6)*
+*Defined in [packages/core/src/exceptions.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L6)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Optional` **errmsg**: string
 
-*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L10)*
+*Defined in [packages/core/src/exceptions.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L10)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Optional` **errno**: number
 
-*Defined in [packages/core/src/exceptions.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L7)*
+*Defined in [packages/core/src/exceptions.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L7)*
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 • `Optional` **sqlMessage**: string
 
-*Defined in [packages/core/src/exceptions.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L9)*
+*Defined in [packages/core/src/exceptions.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L9)*
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 • `Optional` **sqlState**: string
 
-*Defined in [packages/core/src/exceptions.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/exceptions.ts#L8)*
+*Defined in [packages/core/src/exceptions.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/exceptions.ts#L8)*
 
 ___
 

@@ -24,7 +24,7 @@ Name | Type |
 
 \+ `Protected`**new DatabaseDriver**(`config`: [Configuration](configuration.md), `dependencies`: string[]): [DatabaseDriver](databasedriver.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L22)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L22)*
 
 #### Parameters:
 
@@ -43,7 +43,7 @@ Name | Type |
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md).[[EntityManagerType]](../interfaces/idatabasedriver.md#[entitymanagertype])*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L15)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L15)*
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 • `Protected` **comparator**: [EntityComparator](entitycomparator.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L21)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L21)*
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 • `Protected` `Readonly` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L24)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L24)*
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 • `Protected` `Readonly` **connection**: C
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L17)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L17)*
 
 ___
 
@@ -75,7 +75,7 @@ ___
 
 • `Protected` `Readonly` **dependencies**: string[]
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L25)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L25)*
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 • `Protected` `Readonly` **logger**: [Logger](logger.md) = this.config.getLogger()
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L20)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L20)*
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 • `Protected` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L22)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L22)*
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 • `Protected` `Readonly` **platform**: [Platform](platform.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L19)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L19)*
 
 ___
 
@@ -107,7 +107,7 @@ ___
 
 • `Protected` `Readonly` **replicas**: C[] = []
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L18)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L18)*
 
 ## Methods
 
@@ -117,7 +117,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L49)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L49)*
 
 #### Parameters:
 
@@ -136,7 +136,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L93)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L93)*
 
 #### Parameters:
 
@@ -154,7 +154,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L71)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L71)*
 
 **Returns:** Promise&#60;C>
 
@@ -166,7 +166,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:226](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L226)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:226](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L226)*
 
 Converts native db errors to standardized driver exceptions
 
@@ -186,7 +186,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L43)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L43)*
 
 #### Type parameters:
 
@@ -213,7 +213,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L45)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L45)*
 
 #### Type parameters:
 
@@ -235,7 +235,7 @@ ___
 
 ▸ `Protected`**createReplicas**(`cb`: (c: [ConnectionOptions](../interfaces/connectionoptions.md)) => C): C[]
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:190](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L190)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:190](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L190)*
 
 #### Parameters:
 
@@ -253,7 +253,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:117](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L117)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:117](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L117)*
 
 **Returns:** Promise&#60;void>
 
@@ -265,7 +265,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L27)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L27)*
 
 #### Type parameters:
 
@@ -292,7 +292,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L29)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L29)*
 
 #### Type parameters:
 
@@ -319,7 +319,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L83)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L83)*
 
 #### Parameters:
 
@@ -337,7 +337,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:113](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L113)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:113](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L113)*
 
 **Returns:** string[]
 
@@ -347,7 +347,7 @@ ___
 
 ▸ `Protected`**getPivotInverseProperty**(`prop`: [EntityProperty](../interfaces/entityproperty.md)): [EntityProperty](../interfaces/entityproperty.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:175](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L175)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:175](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L175)*
 
 #### Parameters:
 
@@ -363,7 +363,7 @@ ___
 
 ▸ `Protected`**getPivotOrderBy**(`prop`: [EntityProperty](../interfaces/entityproperty.md), `orderBy?`: [QueryOrderMap](../interfaces/queryordermap.md)): [QueryOrderMap](../interfaces/queryordermap.md)
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:154](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L154)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:154](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L154)*
 
 #### Parameters:
 
@@ -382,7 +382,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L98)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L98)*
 
 **Returns:** [Platform](platform.md)
 
@@ -392,7 +392,7 @@ ___
 
 ▸ `Protected`**getPrimaryKeyFields**(`entityName`: string): string[]
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:170](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L170)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:170](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L170)*
 
 #### Parameters:
 
@@ -408,7 +408,7 @@ ___
 
 ▸ `Protected`**inlineEmbeddables**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `data`: T, `where?`: boolean): void
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:121](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L121)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:121](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L121)*
 
 #### Type parameters:
 
@@ -434,7 +434,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L53)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L53)*
 
 #### Type parameters:
 
@@ -463,7 +463,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:203](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L203)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:203](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L203)*
 
 #### Type parameters:
 
@@ -489,7 +489,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L63)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L63)*
 
 #### Type parameters:
 
@@ -515,7 +515,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L41)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L41)*
 
 #### Type parameters:
 
@@ -541,7 +541,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L31)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L31)*
 
 #### Type parameters:
 
@@ -567,7 +567,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L33)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L33)*
 
 #### Type parameters:
 
@@ -594,7 +594,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L35)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L35)*
 
 #### Type parameters:
 
@@ -621,7 +621,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L37)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L37)*
 
 #### Type parameters:
 
@@ -649,7 +649,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L78)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L78)*
 
 **Returns:** Promise&#60;C>
 
@@ -659,7 +659,7 @@ ___
 
 ▸ `Protected`**rethrow**&#60;T>(`promise`: Promise&#60;T>): Promise&#60;T>
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:234](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L234)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:234](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L234)*
 
 #### Type parameters:
 
@@ -683,7 +683,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:102](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L102)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:102](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L102)*
 
 #### Parameters:
 
@@ -699,7 +699,7 @@ ___
 
 ▸ `Protected`**shouldHaveColumn**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[], `includeFormulas?`: boolean): boolean
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:207](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L207)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:207](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L207)*
 
 #### Type parameters:
 
@@ -725,7 +725,7 @@ ___
 
 *Implementation of [IDatabaseDriver](../interfaces/idatabasedriver.md)*
 
-*Defined in [packages/core/src/drivers/DatabaseDriver.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/DatabaseDriver.ts#L57)*
+*Defined in [packages/core/src/drivers/DatabaseDriver.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/DatabaseDriver.ts#L57)*
 
 #### Type parameters:
 

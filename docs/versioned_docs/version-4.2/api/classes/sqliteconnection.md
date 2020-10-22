@@ -102,7 +102,7 @@ ___
 
 ▪ `Static` `Readonly` **RUN\_QUERY\_RE**: RegExp = /^insert into\|^update\|^delete\|^truncate/
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L8)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L8)*
 
 ## Methods
 
@@ -172,7 +172,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[connect](abstractsqlconnection.md#connect)*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L10)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L10)*
 
 **Returns:** Promise&#60;void>
 
@@ -254,7 +254,7 @@ ___
 
 ▸ `Private`**getCallMethod**(`obj`: any): string
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L94)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L94)*
 
 #### Parameters:
 
@@ -272,7 +272,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getClientUrl](abstractsqlconnection.md#getclienturl)*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L20)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L20)*
 
 **Returns:** string
 
@@ -296,7 +296,7 @@ ___
 
 *Overrides [AbstractSqlConnection](abstractsqlconnection.md).[getDefaultClientUrl](abstractsqlconnection.md#getdefaultclienturl)*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L16)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L16)*
 
 **Returns:** string
 
@@ -320,7 +320,7 @@ ___
 
 *Overrides [MariaDbConnection](mariadbconnection.md).[getKnexOptions](mariadbconnection.md#getknexoptions)*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L30)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L30)*
 
 #### Parameters:
 
@@ -336,7 +336,7 @@ ___
 
 ▸ `Private`**getPatchedDialect**(): any
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L58)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L58)*
 
 monkey patch knex' sqlite Dialect so it returns inserted id when doing raw insert query
 
@@ -364,7 +364,7 @@ ___
 
 *Overrides [MariaDbConnection](mariadbconnection.md).[loadFile](mariadbconnection.md#loadfile)*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L24)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L24)*
 
 #### Parameters:
 
@@ -486,7 +486,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/sqlite/src/SqliteConnection.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/sqlite/src/SqliteConnection.ts#L40)*
+*Defined in [packages/sqlite/src/SqliteConnection.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/sqlite/src/SqliteConnection.ts#L40)*
 
 #### Type parameters:
 

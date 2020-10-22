@@ -14,7 +14,7 @@ sidebar_label: "EntityHelper"
 
 ▸ `Static`**decorate**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `em`: [EntityManager](entitymanager.md)): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L16)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L16)*
 
 #### Type parameters:
 
@@ -37,7 +37,7 @@ ___
 
 ▸ `Static` `Private`**defineBaseProperties**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `prototype`: T, `em`: [EntityManager](entitymanager.md)): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:55](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L55)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:55](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L55)*
 
 #### Type parameters:
 
@@ -61,7 +61,7 @@ ___
 
 ▸ `Static` `Private`**defineIdProperty**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `platform`: [Platform](platform.md)): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L44)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L44)*
 
 defines magic id property getter/setter if PK property is `_id` and there is no `id` property defined
 
@@ -86,7 +86,7 @@ ___
 
 ▸ `Static` `Private`**defineReferenceProperties**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L79)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L79)*
 
 Defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of
 changes to the inverse side of bi-directional relations.
@@ -113,7 +113,7 @@ ___
 
 ▸ `Static` `Private`**defineReferenceProperty**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>, `ref`: T, `val`: [AnyEntity](../index.md#anyentity)): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L110)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:110](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L110)*
 
 #### Type parameters:
 
@@ -137,7 +137,7 @@ ___
 
 ▸ `Static` `Private`**propagate**&#60;T, O>(`entity`: T, `owner`: O, `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;O>): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:126](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L126)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:126](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L126)*
 
 #### Type parameters:
 
@@ -162,7 +162,7 @@ ___
 
 ▸ `Static` `Private`**propagateOneToOne**&#60;T, O>(`entity`: T, `owner`: O, `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;O>): void
 
-*Defined in [packages/core/src/entity/EntityHelper.ts:138](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityHelper.ts#L138)*
+*Defined in [packages/core/src/entity/EntityHelper.ts:138](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityHelper.ts#L138)*
 
 #### Type parameters:
 

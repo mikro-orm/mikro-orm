@@ -14,7 +14,7 @@ sidebar_label: "SourceFile"
 
 \+ **new SourceFile**(`meta`: EntityMetadata, `namingStrategy`: NamingStrategy, `helper`: SchemaHelper): [SourceFile](sourcefile.md)
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L7)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L7)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ Name | Type |
 
 • `Private` `Readonly` **coreImports**: Set&#60;string> = new Set&#60;string>()
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L6)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L6)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Private` `Readonly` **entityImports**: Set&#60;string> = new Set&#60;string>()
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L7)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L7)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Private` `Readonly` **helper**: SchemaHelper
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L11)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L11)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Private` `Readonly` **meta**: EntityMetadata
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L9)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L9)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • `Private` `Readonly` **namingStrategy**: NamingStrategy
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L10)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L10)*
 
 ## Methods
 
@@ -72,7 +72,7 @@ ___
 
 ▸ **generate**(): string
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L13)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L13)*
 
 **Returns:** string
 
@@ -82,7 +82,7 @@ ___
 
 ▸ **getBaseName**(): string
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L53)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L53)*
 
 **Returns:** string
 
@@ -92,7 +92,7 @@ ___
 
 ▸ `Private`**getCommonDecoratorOptions**(`options`: [Dictionary](../index.md#dictionary), `prop`: EntityProperty, `columnType`: string \| undefined): void
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L123)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L123)*
 
 #### Parameters:
 
@@ -110,7 +110,7 @@ ___
 
 ▸ `Private`**getDecoratorType**(`prop`: EntityProperty): string
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:194](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L194)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:194](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L194)*
 
 #### Parameters:
 
@@ -126,7 +126,7 @@ ___
 
 ▸ `Private`**getForeignKeyDecoratorOptions**(`options`: [Dictionary](../index.md#dictionary), `prop`: EntityProperty): void
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:159](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L159)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:159](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L159)*
 
 #### Parameters:
 
@@ -143,7 +143,7 @@ ___
 
 ▸ `Private`**getPropertyDecorator**(`prop`: EntityProperty, `padLeft`: number): string
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L71)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L71)*
 
 #### Parameters:
 
@@ -160,7 +160,7 @@ ___
 
 ▸ `Private`**getPropertyDefinition**(`prop`: EntityProperty, `padLeft`: number): string
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L57)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L57)*
 
 #### Parameters:
 
@@ -177,7 +177,7 @@ ___
 
 ▸ `Private`**getPropertyIndexes**(`prop`: EntityProperty, `options`: [Dictionary](../index.md#dictionary)): string[]
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L95)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L95)*
 
 #### Parameters:
 
@@ -194,7 +194,7 @@ ___
 
 ▸ `Private`**getScalarPropertyDecoratorOptions**(`options`: [Dictionary](../index.md#dictionary), `prop`: EntityProperty, `columnType`: string \| undefined): void
 
-*Defined in [packages/entity-generator/src/SourceFile.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/entity-generator/src/SourceFile.ts#L143)*
+*Defined in [packages/entity-generator/src/SourceFile.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/entity-generator/src/SourceFile.ts#L143)*
 
 #### Parameters:
 

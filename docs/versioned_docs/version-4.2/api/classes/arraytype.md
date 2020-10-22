@@ -24,7 +24,7 @@ Name | Type | Default |
 
 \+ **new ArrayType**(`hydrate?`: (i: string) => T): [ArrayType](arraytype.md)
 
-*Defined in [packages/core/src/types/ArrayType.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L7)*
+*Defined in [packages/core/src/types/ArrayType.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L7)*
 
 #### Parameters:
 
@@ -40,7 +40,7 @@ Name | Type | Default value |
 
 • `Private` `Readonly` **hydrate**: (i: string) => T
 
-*Defined in [packages/core/src/types/ArrayType.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L9)*
+*Defined in [packages/core/src/types/ArrayType.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L9)*
 
 ## Methods
 
@@ -50,7 +50,7 @@ Name | Type | Default value |
 
 *Overrides [Type](type.md).[compareAsType](type.md#compareastype)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L37)*
+*Defined in [packages/core/src/types/ArrayType.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L37)*
 
 **Returns:** string
 
@@ -62,7 +62,7 @@ ___
 
 *Overrides [Type](type.md).[convertToDatabaseValue](type.md#converttodatabasevalue)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L13)*
+*Defined in [packages/core/src/types/ArrayType.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L13)*
 
 #### Parameters:
 
@@ -82,7 +82,7 @@ ___
 
 *Overrides [Type](type.md).[convertToJSValue](type.md#converttojsvalue)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L25)*
+*Defined in [packages/core/src/types/ArrayType.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L25)*
 
 #### Parameters:
 
@@ -101,7 +101,7 @@ ___
 
 *Overrides [Type](type.md).[getColumnType](type.md#getcolumntype)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L45)*
+*Defined in [packages/core/src/types/ArrayType.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L45)*
 
 #### Parameters:
 
@@ -120,7 +120,7 @@ ___
 
 *Overrides [Type](type.md).[toJSON](type.md#tojson)*
 
-*Defined in [packages/core/src/types/ArrayType.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/ArrayType.ts#L41)*
+*Defined in [packages/core/src/types/ArrayType.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/ArrayType.ts#L41)*
 
 #### Parameters:
 
@@ -138,7 +138,7 @@ ___
 
 *Inherited from [Type](type.md).[getType](type.md#gettype)*
 
-*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/types/Type.ts#L46)*
+*Defined in [packages/core/src/types/Type.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/types/Type.ts#L46)*
 
 #### Type parameters:
 

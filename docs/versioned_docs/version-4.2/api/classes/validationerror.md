@@ -28,7 +28,7 @@ Name | Type | Default |
 
 \+ **new ValidationError**(`message`: string, `entity?`: T): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:4](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L4)*
+*Defined in [packages/core/src/errors.ts:4](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L4)*
 
 #### Parameters:
 
@@ -45,7 +45,7 @@ Name | Type |
 
 • `Private` `Optional` `Readonly` **entity**: T
 
-*Defined in [packages/core/src/errors.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L6)*
+*Defined in [packages/core/src/errors.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L6)*
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 ▸ **getEntity**(): [AnyEntity](../index.md#anyentity) \| undefined
 
-*Defined in [packages/core/src/errors.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L17)*
+*Defined in [packages/core/src/errors.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L17)*
 
 Gets instance of entity that caused this error.
 
@@ -103,7 +103,7 @@ ___
 
 ▸ `Static`**cannotCommit**(): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:92](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L92)*
+*Defined in [packages/core/src/errors.ts:92](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L92)*
 
 **Returns:** [ValidationError](validationerror.md)
 
@@ -113,7 +113,7 @@ ___
 
 ▸ `Static`**cannotModifyInverseCollection**(`owner`: [AnyEntity](../index.md#anyentity), `property`: [EntityProperty](../interfaces/entityproperty.md)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L79)*
+*Defined in [packages/core/src/errors.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L79)*
 
 #### Parameters:
 
@@ -130,7 +130,7 @@ ___
 
 ▸ `Static`**cannotUseOperatorsInsideEmbeddables**(`className`: string, `propName`: string, `payload`: [Dictionary](../index.md#dictionary)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L96)*
+*Defined in [packages/core/src/errors.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L96)*
 
 #### Parameters:
 
@@ -148,7 +148,7 @@ ___
 
 ▸ `Static`**entityNotManaged**(`entity`: [AnyEntity](../index.md#anyentity)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L43)*
+*Defined in [packages/core/src/errors.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L43)*
 
 #### Parameters:
 
@@ -164,7 +164,7 @@ ___
 
 ▸ `Static`**fromCollectionNotInitialized**(`entity`: [AnyEntity](../index.md#anyentity), `prop`: [EntityProperty](../interfaces/entityproperty.md)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L28)*
+*Defined in [packages/core/src/errors.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L28)*
 
 #### Parameters:
 
@@ -181,7 +181,7 @@ ___
 
 ▸ `Static`**fromMergeWithoutPK**(`meta`: [EntityMetadata](entitymetadata.md)): void
 
-*Defined in [packages/core/src/errors.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L35)*
+*Defined in [packages/core/src/errors.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L35)*
 
 #### Parameters:
 
@@ -197,7 +197,7 @@ ___
 
 ▸ `Static`**fromWrongPropertyType**(`entity`: [AnyEntity](../index.md#anyentity), `property`: string, `expectedType`: string, `givenType`: string, `givenValue`: string): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L21)*
+*Defined in [packages/core/src/errors.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L21)*
 
 #### Parameters:
 
@@ -217,7 +217,7 @@ ___
 
 ▸ `Static`**invalidCompositeIdentifier**(`meta`: [EntityMetadata](entitymetadata.md)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L88)*
+*Defined in [packages/core/src/errors.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L88)*
 
 #### Parameters:
 
@@ -233,7 +233,7 @@ ___
 
 ▸ `Static`**invalidPropertyName**(`entityName`: string, `invalid`: string): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:65](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L65)*
+*Defined in [packages/core/src/errors.ts:65](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L65)*
 
 #### Parameters:
 
@@ -250,7 +250,7 @@ ___
 
 ▸ `Static`**invalidType**(`type`: [Constructor](../index.md#constructor)&#60;any>, `value`: any, `mode`: string): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L69)*
+*Defined in [packages/core/src/errors.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L69)*
 
 #### Parameters:
 
@@ -268,7 +268,7 @@ ___
 
 ▸ `Static`**notDiscoveredEntity**(`data`: any, `meta?`: [EntityMetadata](entitymetadata.md)): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:52](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L52)*
+*Defined in [packages/core/src/errors.ts:52](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L52)*
 
 #### Parameters:
 
@@ -285,7 +285,7 @@ ___
 
 ▸ `Static`**notEntity**(`owner`: [AnyEntity](../index.md#anyentity), `prop`: [EntityProperty](../interfaces/entityproperty.md), `data`: any): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L47)*
+*Defined in [packages/core/src/errors.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L47)*
 
 #### Parameters:
 
@@ -303,6 +303,6 @@ ___
 
 ▸ `Static`**transactionRequired**(): [ValidationError](validationerror.md)
 
-*Defined in [packages/core/src/errors.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/errors.ts#L39)*
+*Defined in [packages/core/src/errors.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/errors.ts#L39)*
 
 **Returns:** [ValidationError](validationerror.md)

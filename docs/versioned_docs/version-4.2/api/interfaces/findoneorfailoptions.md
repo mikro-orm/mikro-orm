@@ -23,7 +23,7 @@ Name | Type | Default |
 
 • `Optional` **failHandler**: (entityName: string, where: [Dictionary](../index.md#dictionary) \| [IPrimaryKey](../index.md#iprimarykey) \| any) => [Error](../classes/driverexception.md#error)
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:103](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L103)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:103](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L103)*
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 *Inherited from [FindOneOptions](findoneoptions.md).[lockMode](findoneoptions.md#lockmode)*
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L98)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L98)*
 
 ___
 
@@ -43,4 +43,4 @@ ___
 
 *Inherited from [FindOneOptions](findoneoptions.md).[lockVersion](findoneoptions.md#lockversion)*
 
-*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:99](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/drivers/IDatabaseDriver.ts#L99)*
+*Defined in [packages/core/src/drivers/IDatabaseDriver.ts:99](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/drivers/IDatabaseDriver.ts#L99)*

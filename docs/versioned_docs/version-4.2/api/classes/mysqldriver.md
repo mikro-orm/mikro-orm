@@ -22,7 +22,7 @@ sidebar_label: "MySqlDriver"
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlDriver.ts:6](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlDriver.ts#L6)*
+*Defined in [packages/mysql-base/src/MySqlDriver.ts:6](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlDriver.ts#L6)*
 
 #### Parameters:
 
@@ -858,7 +858,7 @@ ___
 
 *Overrides [PostgreSqlDriver](postgresqldriver.md).[nativeInsertMany](postgresqldriver.md#nativeinsertmany)*
 
-*Defined in [packages/mysql-base/src/MySqlDriver.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlDriver.ts#L12)*
+*Defined in [packages/mysql-base/src/MySqlDriver.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlDriver.ts#L12)*
 
 #### Type parameters:
 

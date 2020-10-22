@@ -32,7 +32,7 @@ Name | Type | Default |
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[constructor](../classes/arraycollection.md#constructor)*
 
-*Defined in [packages/core/src/entity/Collection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L13)*
+*Defined in [packages/core/src/entity/Collection.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L13)*
 
 #### Parameters:
 
@@ -50,7 +50,7 @@ Name | Type | Default value |
 
 •  **$**: readonly T & P[]
 
-*Defined in [packages/core/src/typings.ts:367](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L367)*
+*Defined in [packages/core/src/typings.ts:367](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L367)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[_firstItem](../classes/arraycollection.md#_firstitem)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L12)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L12)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[initialized](../classes/arraycollection.md#initialized)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L11)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L11)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[items](../classes/arraycollection.md#items)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L10)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L10)*
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 • `Readonly` **owner**: O & [AnyEntity](../index.md#anyentity)&#60;O>
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L15)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L15)*
 
 ## Accessors
 
@@ -98,7 +98,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[length](../classes/arraycollection.md#length)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:117](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L117)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:117](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L117)*
 
 **Returns:** number
 
@@ -110,7 +110,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[property](../classes/arraycollection.md#property)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:130](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L130)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:130](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L130)*
 
 **`internal`** 
 
@@ -124,7 +124,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[[Symbol.iterator]](../classes/arraycollection.md#[symbol.iterator])*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:121](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L121)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:121](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L121)*
 
 **Returns:** IterableIterator&#60;T>
 
@@ -138,7 +138,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[add](../classes/arraycollection.md#add)*
 
-*Defined in [packages/core/src/entity/Collection.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L69)*
+*Defined in [packages/core/src/entity/Collection.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L69)*
 
 #### Parameters:
 
@@ -158,7 +158,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[contains](../classes/arraycollection.md#contains)*
 
-*Defined in [packages/core/src/entity/Collection.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L118)*
+*Defined in [packages/core/src/entity/Collection.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L118)*
 
 #### Parameters:
 
@@ -179,7 +179,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[count](../classes/arraycollection.md#count)*
 
-*Defined in [packages/core/src/entity/Collection.ts:126](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L126)*
+*Defined in [packages/core/src/entity/Collection.ts:126](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L126)*
 
 **Returns:** number
 
@@ -189,7 +189,7 @@ ___
 
 ▸ **get**(): readonly T & P[]
 
-*Defined in [packages/core/src/typings.ts:368](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L368)*
+*Defined in [packages/core/src/typings.ts:368](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L368)*
 
 **Returns:** readonly T & P[]
 
@@ -201,7 +201,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[getIdentifiers](../classes/arraycollection.md#getidentifiers)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L48)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L48)*
 
 #### Type parameters:
 
@@ -227,7 +227,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[getItems](../classes/arraycollection.md#getitems)*
 
-*Defined in [packages/core/src/entity/Collection.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L53)*
+*Defined in [packages/core/src/entity/Collection.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L53)*
 
 Returns the items (the collection must be initialized)
 
@@ -247,7 +247,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[getSnapshot](../classes/collection.md#getsnapshot)*
 
-*Defined in [packages/core/src/entity/Collection.ts:210](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L210)*
+*Defined in [packages/core/src/entity/Collection.ts:210](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L210)*
 
 **`internal`** 
 
@@ -263,7 +263,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[hydrate](../classes/arraycollection.md#hydrate)*
 
-*Defined in [packages/core/src/entity/Collection.ts:88](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L88)*
+*Defined in [packages/core/src/entity/Collection.ts:88](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L88)*
 
 **`internal`** 
 
@@ -285,7 +285,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[init](../classes/collection.md#init)*
 
-*Defined in [packages/core/src/entity/Collection.ts:148](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L148)*
+*Defined in [packages/core/src/entity/Collection.ts:148](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L148)*
 
 #### Parameters:
 
@@ -299,7 +299,7 @@ Name | Type |
 
 *Inherited from [Collection](../classes/collection.md).[init](../classes/collection.md#init)*
 
-*Defined in [packages/core/src/entity/Collection.ts:149](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L149)*
+*Defined in [packages/core/src/entity/Collection.ts:149](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L149)*
 
 #### Parameters:
 
@@ -319,7 +319,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[isDirty](../classes/collection.md#isdirty)*
 
-*Defined in [packages/core/src/entity/Collection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L140)*
+*Defined in [packages/core/src/entity/Collection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L140)*
 
 **Returns:** boolean
 
@@ -331,7 +331,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[isInitialized](../classes/arraycollection.md#isinitialized)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:109](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L109)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:109](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L109)*
 
 #### Parameters:
 
@@ -349,7 +349,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[loadItems](../classes/collection.md#loaditems)*
 
-*Defined in [packages/core/src/entity/Collection.ts:42](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L42)*
+*Defined in [packages/core/src/entity/Collection.ts:42](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L42)*
 
 Initializes the collection and returns the items
 
@@ -363,7 +363,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[populated](../classes/collection.md#populated)*
 
-*Defined in [packages/core/src/entity/Collection.ts:135](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L135)*
+*Defined in [packages/core/src/entity/Collection.ts:135](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L135)*
 
 #### Parameters:
 
@@ -381,7 +381,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[propagate](../classes/arraycollection.md#propagate)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L140)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L140)*
 
 #### Parameters:
 
@@ -400,7 +400,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[propagateToInverseSide](../classes/arraycollection.md#propagatetoinverseside)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:148](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L148)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:148](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L148)*
 
 #### Parameters:
 
@@ -419,7 +419,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[propagateToOwningSide](../classes/arraycollection.md#propagatetoowningside)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:156](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L156)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:156](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L156)*
 
 #### Parameters:
 
@@ -440,7 +440,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[remove](../classes/arraycollection.md#remove)*
 
-*Defined in [packages/core/src/entity/Collection.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L106)*
+*Defined in [packages/core/src/entity/Collection.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L106)*
 
 #### Parameters:
 
@@ -458,7 +458,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[removeAll](../classes/arraycollection.md#removeall)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:96](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L96)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:96](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L96)*
 
 **Returns:** void
 
@@ -472,7 +472,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[set](../classes/arraycollection.md#set)*
 
-*Defined in [packages/core/src/entity/Collection.ts:76](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L76)*
+*Defined in [packages/core/src/entity/Collection.ts:76](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L76)*
 
 #### Parameters:
 
@@ -490,7 +490,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[setDirty](../classes/collection.md#setdirty)*
 
-*Defined in [packages/core/src/entity/Collection.ts:144](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L144)*
+*Defined in [packages/core/src/entity/Collection.ts:144](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L144)*
 
 #### Parameters:
 
@@ -508,7 +508,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[shouldPopulate](../classes/collection.md#shouldpopulate)*
 
-*Defined in [packages/core/src/entity/Collection.ts:131](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L131)*
+*Defined in [packages/core/src/entity/Collection.ts:131](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L131)*
 
 **Returns:** boolean
 
@@ -520,7 +520,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[shouldPropagateToCollection](../classes/arraycollection.md#shouldpropagatetocollection)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:166](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L166)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:166](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L166)*
 
 #### Parameters:
 
@@ -539,7 +539,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[takeSnapshot](../classes/collection.md#takesnapshot)*
 
-*Defined in [packages/core/src/entity/Collection.ts:202](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L202)*
+*Defined in [packages/core/src/entity/Collection.ts:202](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L202)*
 
 **`internal`** 
 
@@ -553,7 +553,7 @@ ___
 
 *Inherited from [ArrayCollection](../classes/arraycollection.md).[toArray](../classes/arraycollection.md#toarray)*
 
-*Defined in [packages/core/src/entity/ArrayCollection.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/ArrayCollection.ts#L33)*
+*Defined in [packages/core/src/entity/ArrayCollection.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/ArrayCollection.ts#L33)*
 
 **Returns:** [Dictionary](../index.md#dictionary)[]
 
@@ -567,7 +567,7 @@ ___
 
 *Overrides [ArrayCollection](../classes/arraycollection.md).[toJSON](../classes/arraycollection.md#tojson)*
 
-*Defined in [packages/core/src/entity/Collection.ts:61](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L61)*
+*Defined in [packages/core/src/entity/Collection.ts:61](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L61)*
 
 **Returns:** [Dictionary](../index.md#dictionary)[]
 
@@ -579,7 +579,7 @@ ___
 
 *Inherited from [Collection](../classes/collection.md).[create](../classes/collection.md#create)*
 
-*Defined in [packages/core/src/entity/Collection.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/Collection.ts#L28)*
+*Defined in [packages/core/src/entity/Collection.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/Collection.ts#L28)*
 
 Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
 

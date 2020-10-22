@@ -14,7 +14,7 @@ sidebar_label: "SchemaGenerator"
 
 \+ **new SchemaGenerator**(`em`: [SqlEntityManager](sqlentitymanager.md)): [SchemaGenerator](schemagenerator.md)
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L16)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L16)*
 
 #### Parameters:
 
@@ -30,7 +30,7 @@ Name | Type |
 
 • `Private` `Readonly` **config**: Configuration&#60;IDatabaseDriver&#60;Connection>> = this.em.config
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L10)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L10)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Private` `Readonly` **connection**: [AbstractSqlConnection](abstractsqlconnection.md) = this.driver.getConnection()
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L15)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L15)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Private` `Readonly` **driver**: [AbstractSqlDriver](abstractsqldriver.md)&#60;[AbstractSqlConnection](abstractsqlconnection.md)> = this.em.getDriver()
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L11)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L11)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 • `Private` `Readonly` **em**: [SqlEntityManager](sqlentitymanager.md)
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L18)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L18)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Private` `Readonly` **helper**: [SchemaHelper](schemahelper.md) = this.platform.getSchemaHelper()!
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L14)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L14)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Private` `Readonly` **knex**: any = this.connection.getKnex()
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L16)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L16)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 • `Private` `Readonly` **metadata**: MetadataStorage = this.em.getMetadata()
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L12)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L12)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 • `Private` `Readonly` **platform**: [AbstractSqlPlatform](abstractsqlplatform.md) = this.driver.getPlatform()
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L13)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L13)*
 
 ## Methods
 
@@ -94,7 +94,7 @@ ___
 
 ▸ `Private`**addCommitDependency**(`calc`: CommitOrderCalculator, `prop`: EntityProperty, `entityName`: string): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:598](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L598)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:598](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L598)*
 
 #### Parameters:
 
@@ -112,7 +112,7 @@ ___
 
 ▸ `Private`**computeColumnDifference**(`table`: [DatabaseTable](databasetable.md), `prop`: EntityProperty, `create`: EntityProperty[], `update`: { column: [Column](../interfaces/column.md) ; diff: [IsSame](../interfaces/issame.md) ; prop: EntityProperty  }[], `joinColumn?`: string, `idx?`: number): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:308](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L308)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:308](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L308)*
 
 #### Parameters:
 
@@ -133,7 +133,7 @@ ___
 
 ▸ `Private`**computeTableDifference**(`meta`: EntityMetadata, `table`: [DatabaseTable](databasetable.md), `safe`: boolean): [TableDifference](../interfaces/tabledifference.md)
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:286](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L286)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:286](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L286)*
 
 #### Parameters:
 
@@ -151,7 +151,7 @@ ___
 
 ▸ `Private`**configureColumn**&#60;T>(`meta`: EntityMetadata&#60;T>, `prop`: EntityProperty&#60;T>, `col`: ColumnBuilder, `columnName`: string, `pkProp?`: EntityProperty&#60;T>, `alter?`: [IsSame](../interfaces/issame.md)): ColumnBuilder
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:421](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L421)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:421](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L421)*
 
 #### Type parameters:
 
@@ -178,7 +178,7 @@ ___
 
 ▸ **createDatabase**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:132](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L132)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:132](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L132)*
 
 creates new database and connects to it
 
@@ -196,7 +196,7 @@ ___
 
 ▸ `Private`**createForeignKey**(`table`: TableBuilder, `meta`: EntityMetadata, `prop`: EntityProperty, `diff?`: [IsSame](../interfaces/issame.md)): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:460](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L460)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:460](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L460)*
 
 #### Parameters:
 
@@ -215,7 +215,7 @@ ___
 
 ▸ `Private`**createForeignKeyReference**(`table`: TableBuilder, `prop`: EntityProperty): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:480](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L480)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:480](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L480)*
 
 #### Parameters:
 
@@ -232,7 +232,7 @@ ___
 
 ▸ `Private`**createForeignKeys**(`table`: TableBuilder, `meta`: EntityMetadata, `props?`: EntityProperty[]): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:453](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L453)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:453](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L453)*
 
 #### Parameters:
 
@@ -250,7 +250,7 @@ ___
 
 ▸ `Private`**createIndex**(`table`: CreateTableBuilder, `meta`: EntityMetadata, `index`: { name?: string \| boolean ; properties: string \| string[] ; type?: string  }, `unique`: boolean): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:245](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L245)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:245](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L245)*
 
 #### Parameters:
 
@@ -269,7 +269,7 @@ ___
 
 ▸ **createSchema**(`wrap?`: boolean): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L29)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L29)*
 
 #### Parameters:
 
@@ -285,7 +285,7 @@ ___
 
 ▸ `Private`**createSimpleTableColumn**(`table`: TableBuilder, `meta`: EntityMetadata, `prop`: EntityProperty, `alter?`: [IsSame](../interfaces/issame.md)): ColumnBuilder
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:369](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L369)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:369](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L369)*
 
 #### Parameters:
 
@@ -304,7 +304,7 @@ ___
 
 ▸ `Private`**createTable**(`meta`: EntityMetadata): SchemaBuilder
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:226](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L226)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:226](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L226)*
 
 #### Parameters:
 
@@ -320,7 +320,7 @@ ___
 
 ▸ `Private`**createTableColumn**(`table`: TableBuilder, `meta`: EntityMetadata, `prop`: EntityProperty, `alter?`: [IsSame](../interfaces/issame.md)): ColumnBuilder[]
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:356](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L356)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:356](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L356)*
 
 #### Parameters:
 
@@ -339,7 +339,7 @@ ___
 
 ▸ **dropDatabase**(`name`: string): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:138](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L138)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:138](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L138)*
 
 #### Parameters:
 
@@ -355,7 +355,7 @@ ___
 
 ▸ **dropSchema**(`wrap?`: boolean, `dropMigrationsTable?`: boolean, `dropDb?`: boolean): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:68](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L68)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:68](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L68)*
 
 #### Parameters:
 
@@ -373,7 +373,7 @@ ___
 
 ▸ `Private`**dropTable**(`name`: string): SchemaBuilder
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:330](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L330)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:330](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L330)*
 
 #### Parameters:
 
@@ -389,7 +389,7 @@ ___
 
 ▸ `Private`**dropTableColumn**(`table`: TableBuilder, `column`: [Column](../interfaces/column.md)): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:405](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L405)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:405](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L405)*
 
 #### Parameters:
 
@@ -406,7 +406,7 @@ ___
 
 ▸ `Private`**dump**(`builder`: SchemaBuilder, `append?`: string): string
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:606](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L606)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:606](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L606)*
 
 #### Parameters:
 
@@ -425,7 +425,7 @@ ___
 
 ▸ **ensureDatabase**(): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L35)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L35)*
 
 **Returns:** Promise&#60;void>
 
@@ -435,7 +435,7 @@ ___
 
 ▸ **execute**(`sql`: string): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:144](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L144)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:144](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L144)*
 
 #### Parameters:
 
@@ -451,7 +451,7 @@ ___
 
 ▸ `Private`**findIndexDifference**(`meta`: EntityMetadata, `table`: [DatabaseTable](databasetable.md), `remove`: [Column](../interfaces/column.md)[]): object
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:519](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L519)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:519](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L519)*
 
 #### Parameters:
 
@@ -474,7 +474,7 @@ ___
 
 ▸ `Private`**findRenamedColumns**(`create`: EntityProperty[], `remove`: [Column](../interfaces/column.md)[]): { from: [Column](../interfaces/column.md) ; to: EntityProperty  }[]
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:493](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L493)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:493](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L493)*
 
 #### Parameters:
 
@@ -491,7 +491,7 @@ ___
 
 ▸ **generate**(): Promise&#60;string>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L20)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L20)*
 
 **Returns:** Promise&#60;string>
 
@@ -501,7 +501,7 @@ ___
 
 ▸ **getCreateSchemaSQL**(`wrap?`: boolean): Promise&#60;string>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L46)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L46)*
 
 #### Parameters:
 
@@ -517,7 +517,7 @@ ___
 
 ▸ **getDropSchemaSQL**(`wrap?`: boolean, `dropMigrationsTable?`: boolean): Promise&#60;string>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:78](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L78)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:78](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L78)*
 
 #### Parameters:
 
@@ -534,7 +534,7 @@ ___
 
 ▸ `Private`**getIndexName**&#60;T>(`meta`: EntityMetadata&#60;T>, `prop`: EntityProperty&#60;T>, `type`: &#34;unique&#34; \| &#34;index&#34;, `columnNames`: string[]): string
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:443](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L443)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:443](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L443)*
 
 #### Type parameters:
 
@@ -559,7 +559,7 @@ ___
 
 ▸ `Private`**getOrderedMetadata**(): EntityMetadata[]
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:574](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L574)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:574](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L574)*
 
 **Returns:** EntityMetadata[]
 
@@ -569,7 +569,7 @@ ___
 
 ▸ **getUpdateSchemaSQL**(`wrap?`: boolean, `safe?`: boolean, `dropTables?`: boolean): Promise&#60;string>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L98)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L98)*
 
 #### Parameters:
 
@@ -587,7 +587,7 @@ ___
 
 ▸ `Private`**getUpdateTableFKsSQL**(`meta`: EntityMetadata, `schema`: [DatabaseSchema](databaseschema.md)): string
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:162](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L162)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:162](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L162)*
 
 #### Parameters:
 
@@ -604,7 +604,7 @@ ___
 
 ▸ `Private`**getUpdateTableIndexesSQL**(`meta`: EntityMetadata, `schema`: [DatabaseSchema](databaseschema.md)): string
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:178](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L178)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:178](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L178)*
 
 #### Parameters:
 
@@ -621,7 +621,7 @@ ___
 
 ▸ `Private`**getUpdateTableSQL**(`meta`: EntityMetadata, `schema`: [DatabaseSchema](databaseschema.md), `safe`: boolean): string
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:152](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L152)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:152](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L152)*
 
 #### Parameters:
 
@@ -639,7 +639,7 @@ ___
 
 ▸ `Private`**shouldHaveColumn**(`meta`: EntityMetadata, `prop`: EntityProperty, `update?`: boolean): boolean
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:340](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L340)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:340](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L340)*
 
 #### Parameters:
 
@@ -657,7 +657,7 @@ ___
 
 ▸ **updateSchema**(`wrap?`: boolean, `safe?`: boolean, `dropTables?`: boolean): Promise&#60;void>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:93](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L93)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:93](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L93)*
 
 #### Parameters:
 
@@ -675,7 +675,7 @@ ___
 
 ▸ `Private`**updateTable**(`meta`: EntityMetadata, `table`: [DatabaseTable](databasetable.md), `safe`: boolean): SchemaBuilder[]
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:256](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L256)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:256](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L256)*
 
 #### Parameters:
 
@@ -693,7 +693,7 @@ ___
 
 ▸ `Private`**updateTableColumn**(`table`: TableBuilder, `meta`: EntityMetadata, `prop`: EntityProperty, `column`: [Column](../interfaces/column.md), `diff`: [IsSame](../interfaces/issame.md)): void
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:387](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L387)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:387](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L387)*
 
 #### Parameters:
 
@@ -713,7 +713,7 @@ ___
 
 ▸ `Private`**wrapSchema**(`sql`: string, `wrap?`: boolean): Promise&#60;string>
 
-*Defined in [packages/knex/src/schema/SchemaGenerator.ts:214](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/schema/SchemaGenerator.ts#L214)*
+*Defined in [packages/knex/src/schema/SchemaGenerator.ts:214](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/schema/SchemaGenerator.ts#L214)*
 
 #### Parameters:
 

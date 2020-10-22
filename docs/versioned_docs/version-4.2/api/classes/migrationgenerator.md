@@ -14,7 +14,7 @@ sidebar_label: "MigrationGenerator"
 
 \+ **new MigrationGenerator**(`driver`: AbstractSqlDriver, `namingStrategy`: NamingStrategy, `options`: [MigrationsOptions](../index.md#migrationsoptions)): [MigrationGenerator](migrationgenerator.md)
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:5](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L5)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:5](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L5)*
 
 #### Parameters:
 
@@ -32,7 +32,7 @@ Name | Type |
 
 • `Protected` `Readonly` **driver**: AbstractSqlDriver
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L7)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L7)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Protected` `Readonly` **namingStrategy**: NamingStrategy
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L8)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L8)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Protected` `Readonly` **options**: [MigrationsOptions](../index.md#migrationsoptions)
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L9)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L9)*
 
 ## Methods
 
@@ -56,7 +56,7 @@ ___
 
 ▸ **createStatement**(`sql`: string, `padLeft`: number): string
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L30)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L30)*
 
 #### Parameters:
 
@@ -73,7 +73,7 @@ ___
 
 ▸ **generate**(`diff`: string[], `path?`: string): Promise&#60;[string, string]>
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L11)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L11)*
 
 #### Parameters:
 
@@ -90,7 +90,7 @@ ___
 
 ▸ **generateJSMigrationFile**(`className`: string, `diff`: string[]): string
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L39)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L39)*
 
 #### Parameters:
 
@@ -107,7 +107,7 @@ ___
 
 ▸ **generateTSMigrationFile**(`className`: string, `diff`: string[]): string
 
-*Defined in [packages/migrations/src/MigrationGenerator.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/migrations/src/MigrationGenerator.ts#L53)*
+*Defined in [packages/migrations/src/MigrationGenerator.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/migrations/src/MigrationGenerator.ts#L53)*
 
 #### Parameters:
 

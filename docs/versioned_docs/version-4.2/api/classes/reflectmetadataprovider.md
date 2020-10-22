@@ -18,7 +18,7 @@ sidebar_label: "ReflectMetadataProvider"
 
 *Inherited from [MetadataProvider](metadataprovider.md).[constructor](metadataprovider.md#constructor)*
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L9)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L9)*
 
 #### Parameters:
 
@@ -36,7 +36,7 @@ Name | Type |
 
 *Inherited from [MetadataProvider](metadataprovider.md).[config](metadataprovider.md#config)*
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L11)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L11)*
 
 ## Methods
 
@@ -46,7 +46,7 @@ Name | Type |
 
 *Inherited from [MetadataProvider](metadataprovider.md).[initProperties](metadataprovider.md#initproperties)*
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L23)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L23)*
 
 #### Parameters:
 
@@ -63,7 +63,7 @@ ___
 
 ▸ `Protected`**initPropertyType**(`meta`: [EntityMetadata](entitymetadata.md), `prop`: [EntityProperty](../interfaces/entityproperty.md)): void
 
-*Defined in [packages/core/src/metadata/ReflectMetadataProvider.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/ReflectMetadataProvider.ts#L12)*
+*Defined in [packages/core/src/metadata/ReflectMetadataProvider.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/ReflectMetadataProvider.ts#L12)*
 
 #### Parameters:
 
@@ -82,7 +82,7 @@ ___
 
 *Overrides [MetadataProvider](metadataprovider.md).[loadEntityMetadata](metadataprovider.md#loadentitymetadata)*
 
-*Defined in [packages/core/src/metadata/ReflectMetadataProvider.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/ReflectMetadataProvider.ts#L8)*
+*Defined in [packages/core/src/metadata/ReflectMetadataProvider.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/ReflectMetadataProvider.ts#L8)*
 
 #### Parameters:
 
@@ -101,7 +101,7 @@ ___
 
 *Inherited from [MetadataProvider](metadataprovider.md).[loadFromCache](metadataprovider.md#loadfromcache)*
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L15)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L15)*
 
 #### Parameters:
 
@@ -120,6 +120,6 @@ ___
 
 *Inherited from [MetadataProvider](metadataprovider.md).[useCache](metadataprovider.md#usecache)*
 
-*Defined in [packages/core/src/metadata/MetadataProvider.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/metadata/MetadataProvider.ts#L19)*
+*Defined in [packages/core/src/metadata/MetadataProvider.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/metadata/MetadataProvider.ts#L19)*
 
 **Returns:** boolean

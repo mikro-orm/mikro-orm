@@ -18,7 +18,7 @@ sidebar_label: "Highlighter"
 
 ▸ **highlight**(`text`: string): string
 
-*Defined in [packages/core/src/typings.ts:401](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/typings.ts#L401)*
+*Defined in [packages/core/src/typings.ts:401](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/typings.ts#L401)*
 
 #### Parameters:
 

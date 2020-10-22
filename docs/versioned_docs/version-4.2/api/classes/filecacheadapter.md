@@ -18,7 +18,7 @@ sidebar_label: "FileCacheAdapter"
 
 \+ **new FileCacheAdapter**(`options`: { cacheDir: string  }, `baseDir`: string, `pretty?`: boolean): [FileCacheAdapter](filecacheadapter.md)
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L9)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L9)*
 
 #### Parameters:
 
@@ -36,7 +36,7 @@ Name | Type | Default value |
 
 • `Private` `Readonly` **VERSION**: string = Utils.getORMVersion()
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L9)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L9)*
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 • `Private` `Readonly` **baseDir**: string
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L12)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L12)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 • `Private` `Readonly` **options**: { cacheDir: string  }
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:11](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L11)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:11](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L11)*
 
 #### Type declaration:
 
@@ -66,7 +66,7 @@ ___
 
 • `Private` `Readonly` **pretty**: boolean
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L13)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L13)*
 
 ## Methods
 
@@ -76,7 +76,7 @@ ___
 
 *Implementation of [CacheAdapter](../interfaces/cacheadapter.md)*
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:51](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L51)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:51](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L51)*
 
 Clears all items stored in the cache.
 
@@ -90,7 +90,7 @@ ___
 
 *Implementation of [CacheAdapter](../interfaces/cacheadapter.md)*
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L18)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L18)*
 
 Gets the items under `name` key from the cache.
 
@@ -108,7 +108,7 @@ ___
 
 ▸ `Private`**getHash**(`origin`: string): Promise&#60;string \| null>
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:62](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L62)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:62](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L62)*
 
 #### Parameters:
 
@@ -124,7 +124,7 @@ ___
 
 ▸ `Private`**path**(`name`: string): Promise&#60;string>
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:57](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L57)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:57](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L57)*
 
 #### Parameters:
 
@@ -140,7 +140,7 @@ ___
 
 ▸ **set**(`name`: string, `data`: any, `origin`: string): Promise&#60;void>
 
-*Defined in [packages/core/src/cache/FileCacheAdapter.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/cache/FileCacheAdapter.ts#L38)*
+*Defined in [packages/core/src/cache/FileCacheAdapter.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/cache/FileCacheAdapter.ts#L38)*
 
 **`inheritdoc`** 
 

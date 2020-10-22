@@ -22,7 +22,7 @@ sidebar_label: "ObjectHydrator"
 
 *Inherited from [Hydrator](hydrator.md).[constructor](hydrator.md#constructor)*
 
-*Defined in [packages/core/src/hydration/Hydrator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/Hydrator.ts#L7)*
+*Defined in [packages/core/src/hydration/Hydrator.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/Hydrator.ts#L7)*
 
 #### Parameters:
 
@@ -41,7 +41,7 @@ Name | Type |
 
 *Inherited from [Hydrator](hydrator.md).[metadata](hydrator.md#metadata)*
 
-*Defined in [packages/core/src/hydration/Hydrator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/Hydrator.ts#L9)*
+*Defined in [packages/core/src/hydration/Hydrator.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/Hydrator.ts#L9)*
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 *Inherited from [Hydrator](hydrator.md).[platform](hydrator.md#platform)*
 
-*Defined in [packages/core/src/hydration/Hydrator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/Hydrator.ts#L10)*
+*Defined in [packages/core/src/hydration/Hydrator.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/Hydrator.ts#L10)*
 
 ## Methods
 
@@ -59,7 +59,7 @@ ___
 
 ▸ `Private`**createCollectionItemMapper**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md)): string[]
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:140](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L140)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:140](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L140)*
 
 #### Type parameters:
 
@@ -81,7 +81,7 @@ ___
 
 ▸ `Private`**getEntityHydrator**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `type`: &#34;full&#34; \| &#34;returning&#34; \| &#34;reference&#34;): [EntityHydrator](../index.md#entityhydrator)&#60;T>
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L38)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L38)*
 
 **`internal`** Highly performance-sensitive method.
 
@@ -108,7 +108,7 @@ ___
 
 *Inherited from [Hydrator](hydrator.md).[getProperties](hydrator.md#getproperties)*
 
-*Defined in [packages/core/src/hydration/Hydrator.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/Hydrator.ts#L32)*
+*Defined in [packages/core/src/hydration/Hydrator.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/Hydrator.ts#L32)*
 
 #### Type parameters:
 
@@ -135,7 +135,7 @@ ___
 
 *Overrides [Hydrator](hydrator.md).[hydrate](hydrator.md#hydrate)*
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L22)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L22)*
 
 Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
 mapping FKs to entity instances, as well as merging those entities.
@@ -168,7 +168,7 @@ ___
 
 *Inherited from [Hydrator](hydrator.md).[hydrateProperty](hydrator.md#hydrateproperty)*
 
-*Defined in [packages/core/src/hydration/Hydrator.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/Hydrator.ts#L45)*
+*Defined in [packages/core/src/hydration/Hydrator.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/Hydrator.ts#L45)*
 
 #### Type parameters:
 
@@ -199,7 +199,7 @@ ___
 
 *Overrides [Hydrator](hydrator.md).[hydrateReference](hydrator.md#hydratereference)*
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L30)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L30)*
 
 Hydrates primary keys only
 
@@ -227,7 +227,7 @@ Name | Type | Default value |
 
 ▪ `Private` `Readonly` **hydrators**: object
 
-*Defined in [packages/core/src/hydration/ObjectHydrator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/hydration/ObjectHydrator.ts#L13)*
+*Defined in [packages/core/src/hydration/ObjectHydrator.ts:13](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/hydration/ObjectHydrator.ts#L13)*
 
 #### Properties:
 

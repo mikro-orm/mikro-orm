@@ -14,7 +14,7 @@ sidebar_label: "SchemaCommandFactory"
 
 ▸ `Static`**configureSchemaCommand**(`args`: Argv, `command`: &#34;create&#34; \| &#34;update&#34; \| &#34;drop&#34;): Argv&#60;{}>
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L32)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L32)*
 
 #### Parameters:
 
@@ -31,7 +31,7 @@ ___
 
 ▸ `Static`**create**&#60;U>(`command`: &#34;create&#34; \| &#34;update&#34; \| &#34;drop&#34;): CommandModule&#60;unknown, U> & { builder: (args: Argv) => Argv&#60;U> ; handler: (args: Arguments&#60;U>) => Promise&#60;void>  }
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L21)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L21)*
 
 #### Type parameters:
 
@@ -53,7 +53,7 @@ ___
 
 ▸ `Static` `Private`**getOrderedParams**(`args`: Arguments&#60;[Options](../index.md#options)>, `method`: &#34;create&#34; \| &#34;update&#34; \| &#34;drop&#34;): any[]
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:98](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L98)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:98](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L98)*
 
 #### Parameters:
 
@@ -70,7 +70,7 @@ ___
 
 ▸ `Static`**handleSchemaCommand**(`args`: Arguments&#60;[Options](../index.md#options)>, `method`: &#34;create&#34; \| &#34;update&#34; \| &#34;drop&#34;, `successMessage`: string): Promise&#60;void>
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L75)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L75)*
 
 #### Parameters:
 
@@ -88,7 +88,7 @@ Name | Type |
 
 ▪ `Static` `Readonly` **DESCRIPTIONS**: object
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:9](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L9)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:9](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L9)*
 
 #### Properties:
 
@@ -104,7 +104,7 @@ ___
 
 ▪ `Static` `Readonly` **SUCCESS\_MESSAGES**: object
 
-*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/cli/src/commands/SchemaCommandFactory.ts#L15)*
+*Defined in [packages/cli/src/commands/SchemaCommandFactory.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/cli/src/commands/SchemaCommandFactory.ts#L15)*
 
 #### Properties:
 

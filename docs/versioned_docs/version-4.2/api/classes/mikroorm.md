@@ -22,7 +22,7 @@ Name | Type | Default |
 
 \+ **new MikroORM**(`options`: [Options](../index.md#options)&#60;D> \| [Configuration](configuration.md)&#60;D>): [MikroORM](mikroorm.md)
 
-*Defined in [packages/core/src/MikroORM.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L47)*
+*Defined in [packages/core/src/MikroORM.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L47)*
 
 #### Parameters:
 
@@ -38,7 +38,7 @@ Name | Type |
 
 • `Readonly` **config**: [Configuration](configuration.md)&#60;D>
 
-*Defined in [packages/core/src/MikroORM.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L16)*
+*Defined in [packages/core/src/MikroORM.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L16)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Private` `Readonly` **driver**: D
 
-*Defined in [packages/core/src/MikroORM.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L18)*
+*Defined in [packages/core/src/MikroORM.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L18)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 •  **em**: D[*typeof* EntityManagerType] & [EntityManager](entitymanager.md)
 
-*Defined in [packages/core/src/MikroORM.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L15)*
+*Defined in [packages/core/src/MikroORM.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L15)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Private` `Readonly` **logger**: [Logger](logger.md)
 
-*Defined in [packages/core/src/MikroORM.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L19)*
+*Defined in [packages/core/src/MikroORM.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L19)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Private` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/MikroORM.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L17)*
+*Defined in [packages/core/src/MikroORM.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L17)*
 
 ## Methods
 
@@ -78,7 +78,7 @@ ___
 
 ▸ **close**(`force?`: boolean): Promise&#60;void>
 
-*Defined in [packages/core/src/MikroORM.ts:94](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L94)*
+*Defined in [packages/core/src/MikroORM.ts:94](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L94)*
 
 Closes the database connection.
 
@@ -96,7 +96,7 @@ ___
 
 ▸ **connect**(): Promise&#60;D>
 
-*Defined in [packages/core/src/MikroORM.ts:69](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L69)*
+*Defined in [packages/core/src/MikroORM.ts:69](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L69)*
 
 Connects to the database.
 
@@ -108,7 +108,7 @@ ___
 
 ▸ **getEntityGenerator**&#60;T>(): T
 
-*Defined in [packages/core/src/MikroORM.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L115)*
+*Defined in [packages/core/src/MikroORM.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L115)*
 
 Gets the EntityGenerator.
 
@@ -126,7 +126,7 @@ ___
 
 ▸ **getMetadata**(): [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/MikroORM.ts:101](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L101)*
+*Defined in [packages/core/src/MikroORM.ts:101](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L101)*
 
 Gets the MetadataStorage.
 
@@ -138,7 +138,7 @@ ___
 
 ▸ **getMigrator**&#60;T>(): T
 
-*Defined in [packages/core/src/MikroORM.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L124)*
+*Defined in [packages/core/src/MikroORM.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L124)*
 
 Gets the Migrator.
 
@@ -156,7 +156,7 @@ ___
 
 ▸ **getSchemaGenerator**&#60;T>(): T
 
-*Defined in [packages/core/src/MikroORM.ts:108](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L108)*
+*Defined in [packages/core/src/MikroORM.ts:108](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L108)*
 
 Gets the SchemaGenerator.
 
@@ -174,7 +174,7 @@ ___
 
 ▸ **isConnected**(): Promise&#60;boolean>
 
-*Defined in [packages/core/src/MikroORM.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L87)*
+*Defined in [packages/core/src/MikroORM.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L87)*
 
 Checks whether the database connection is active.
 
@@ -186,7 +186,7 @@ ___
 
 ▸ `Static`**init**&#60;D>(`options?`: [Options](../index.md#options)&#60;D> \| [Configuration](configuration.md)&#60;D>, `connect?`: boolean): Promise&#60;[MikroORM](mikroorm.md)&#60;D>>
 
-*Defined in [packages/core/src/MikroORM.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/MikroORM.ts#L25)*
+*Defined in [packages/core/src/MikroORM.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/MikroORM.ts#L25)*
 
 Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
 If you omit the `options` parameter, your CLI config will be used.

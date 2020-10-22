@@ -14,7 +14,7 @@ sidebar_label: "ICriteriaNode"
 
 • `Readonly` **entityName**: string
 
-*Defined in [packages/knex/src/typings.ts:113](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L113)*
+*Defined in [packages/knex/src/typings.ts:113](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L113)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 • `Optional` `Readonly` **key**: string \| undefined
 
-*Defined in [packages/knex/src/typings.ts:115](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L115)*
+*Defined in [packages/knex/src/typings.ts:115](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L115)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` `Readonly` **parent**: [ICriteriaNode](icriterianode.md) \| undefined
 
-*Defined in [packages/knex/src/typings.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L114)*
+*Defined in [packages/knex/src/typings.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L114)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 •  **payload**: any
 
-*Defined in [packages/knex/src/typings.ts:116](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L116)*
+*Defined in [packages/knex/src/typings.ts:116](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L116)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Optional` **prop**: EntityProperty
 
-*Defined in [packages/knex/src/typings.ts:117](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L117)*
+*Defined in [packages/knex/src/typings.ts:117](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L117)*
 
 ## Methods
 
@@ -54,7 +54,7 @@ ___
 
 ▸ **getPath**(): string
 
-*Defined in [packages/knex/src/typings.ts:123](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L123)*
+*Defined in [packages/knex/src/typings.ts:123](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L123)*
 
 **Returns:** string
 
@@ -64,7 +64,7 @@ ___
 
 ▸ **getPivotPath**(`path`: string): string
 
-*Defined in [packages/knex/src/typings.ts:124](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L124)*
+*Defined in [packages/knex/src/typings.ts:124](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L124)*
 
 #### Parameters:
 
@@ -80,7 +80,7 @@ ___
 
 ▸ **process**&#60;T>(`qb`: [IQueryBuilder](iquerybuilder.md)&#60;T>, `alias?`: string): any
 
-*Defined in [packages/knex/src/typings.ts:118](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L118)*
+*Defined in [packages/knex/src/typings.ts:118](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L118)*
 
 #### Type parameters:
 
@@ -103,7 +103,7 @@ ___
 
 ▸ **renameFieldToPK**&#60;T>(`qb`: [IQueryBuilder](iquerybuilder.md)&#60;T>): string
 
-*Defined in [packages/knex/src/typings.ts:122](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L122)*
+*Defined in [packages/knex/src/typings.ts:122](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L122)*
 
 #### Type parameters:
 
@@ -125,7 +125,7 @@ ___
 
 ▸ **shouldInline**(`payload`: any): boolean
 
-*Defined in [packages/knex/src/typings.ts:119](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L119)*
+*Defined in [packages/knex/src/typings.ts:119](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L119)*
 
 #### Parameters:
 
@@ -141,7 +141,7 @@ ___
 
 ▸ **shouldRename**(`payload`: any): boolean
 
-*Defined in [packages/knex/src/typings.ts:121](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L121)*
+*Defined in [packages/knex/src/typings.ts:121](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L121)*
 
 #### Parameters:
 
@@ -157,7 +157,7 @@ ___
 
 ▸ **willAutoJoin**&#60;T>(`qb`: [IQueryBuilder](iquerybuilder.md)&#60;T>, `alias?`: string): boolean
 
-*Defined in [packages/knex/src/typings.ts:120](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L120)*
+*Defined in [packages/knex/src/typings.ts:120](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L120)*
 
 #### Type parameters:
 

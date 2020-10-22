@@ -16,7 +16,7 @@ sidebar_label: "ConnectionOptions"
 
 • `Optional` **charset**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:281](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L281)*
+*Defined in [packages/core/src/utils/Configuration.ts:281](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L281)*
 
 ___
 
@@ -24,7 +24,7 @@ ___
 
 • `Optional` **clientUrl**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:276](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L276)*
+*Defined in [packages/core/src/utils/Configuration.ts:276](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L276)*
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 • `Optional` **dbName**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:274](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L274)*
+*Defined in [packages/core/src/utils/Configuration.ts:274](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L274)*
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 • `Optional` **host**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:277](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L277)*
+*Defined in [packages/core/src/utils/Configuration.ts:277](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L277)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Optional` **multipleStatements**: boolean
 
-*Defined in [packages/core/src/utils/Configuration.ts:282](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L282)*
+*Defined in [packages/core/src/utils/Configuration.ts:282](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L282)*
 
 ___
 
@@ -56,7 +56,7 @@ ___
 
 • `Optional` **name**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:275](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L275)*
+*Defined in [packages/core/src/utils/Configuration.ts:275](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L275)*
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 • `Optional` **password**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:280](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L280)*
+*Defined in [packages/core/src/utils/Configuration.ts:280](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L280)*
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 • `Optional` **pool**: [PoolConfig](poolconfig.md)
 
-*Defined in [packages/core/src/utils/Configuration.ts:283](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L283)*
+*Defined in [packages/core/src/utils/Configuration.ts:283](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L283)*
 
 ___
 
@@ -80,7 +80,7 @@ ___
 
 • `Optional` **port**: number
 
-*Defined in [packages/core/src/utils/Configuration.ts:278](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L278)*
+*Defined in [packages/core/src/utils/Configuration.ts:278](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L278)*
 
 ___
 
@@ -88,4 +88,4 @@ ___
 
 • `Optional` **user**: string
 
-*Defined in [packages/core/src/utils/Configuration.ts:279](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/utils/Configuration.ts#L279)*
+*Defined in [packages/core/src/utils/Configuration.ts:279](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/utils/Configuration.ts#L279)*

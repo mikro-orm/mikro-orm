@@ -22,7 +22,7 @@ Name | Type | Default |
 
 \+ **new QueryBuilder**(`entityName`: string, `metadata`: MetadataStorage, `driver`: [AbstractSqlDriver](abstractsqldriver.md), `context?`: Transaction, `alias?`: string, `connectionType?`: &#34;read&#34; \| &#34;write&#34;, `em?`: [SqlEntityManager](sqlentitymanager.md)): [QueryBuilder](querybuilder.md)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L41)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L41)*
 
 #### Parameters:
 
@@ -44,7 +44,7 @@ Name | Type | Default value |
 
 • `Private` **\_aliasMap**: [Dictionary](../index.md#dictionary)&#60;string>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L27)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L27)*
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 • `Private` `Optional` **\_cache**: boolean \| number \| [string, number]
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:36](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L36)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:36](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L36)*
 
 ___
 
@@ -60,7 +60,7 @@ ___
 
 • `Private` **\_cond**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:29](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L29)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:29](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L29)*
 
 ___
 
@@ -68,7 +68,7 @@ ___
 
 • `Private` **\_data**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:30](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L30)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:30](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L30)*
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 • `Optional` **\_fields**: [Field](../index.md#field)&#60;T>[]
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L19)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L19)*
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 • `Private` **\_groupBy**: [Field](../index.md#field)&#60;T>[] = []
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:32](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L32)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:32](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L32)*
 
 ___
 
@@ -92,7 +92,7 @@ ___
 
 • `Private` **\_having**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L33)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L33)*
 
 ___
 
@@ -100,7 +100,7 @@ ___
 
 • `Private` **\_joins**: [Dictionary](../index.md#dictionary)&#60;[JoinOptions](../interfaces/joinoptions.md)>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L26)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L26)*
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 • `Private` `Optional` **\_limit**: number
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L34)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L34)*
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 • `Private` `Optional` **\_offset**: number
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:35](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L35)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:35](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L35)*
 
 ___
 
@@ -124,7 +124,7 @@ ___
 
 • `Private` **\_orderBy**: QueryOrderMap
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:31](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L31)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:31](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L31)*
 
 ___
 
@@ -132,7 +132,7 @@ ___
 
 •  **\_populate**: [PopulateOptions](../index.md#populateoptions)&#60;T>[] = []
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L20)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L20)*
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 •  **\_populateMap**: [Dictionary](../index.md#dictionary)&#60;string>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L21)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L21)*
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 • `Private` `Optional` **\_schema**: string
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:28](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L28)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:28](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L28)*
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 • `Readonly` **alias**: string
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:47](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L47)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:47](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L47)*
 
 ___
 
@@ -164,7 +164,7 @@ ___
 
 • `Private` **aliasCounter**: number = 1
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L23)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L23)*
 
 ___
 
@@ -172,7 +172,7 @@ ___
 
 • `Private` `Optional` **connectionType**: &#34;read&#34; \| &#34;write&#34;
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:48](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L48)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:48](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L48)*
 
 ___
 
@@ -180,7 +180,7 @@ ___
 
 • `Private` `Optional` `Readonly` **context**: Transaction
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L46)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L46)*
 
 ___
 
@@ -188,7 +188,7 @@ ___
 
 • `Private` `Readonly` **driver**: [AbstractSqlDriver](abstractsqldriver.md)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:45](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L45)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:45](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L45)*
 
 ___
 
@@ -196,7 +196,7 @@ ___
 
 • `Private` `Optional` `Readonly` **em**: [SqlEntityManager](sqlentitymanager.md)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:49](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L49)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:49](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L49)*
 
 ___
 
@@ -204,7 +204,7 @@ ___
 
 • `Private` `Readonly` **entityName**: string
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:43](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L43)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:43](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L43)*
 
 ___
 
@@ -212,7 +212,7 @@ ___
 
 • `Private` **finalized**: boolean = false
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L25)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L25)*
 
 ___
 
@@ -220,7 +220,7 @@ ___
 
 • `Private` **flags**: Set&#60;[QueryFlag](../enums/queryflag.md)> = new Set([QueryFlag.CONVERT\_CUSTOM\_TYPES])
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L24)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L24)*
 
 ___
 
@@ -228,7 +228,7 @@ ___
 
 • `Private` `Readonly` **helper**: [QueryBuilderHelper](querybuilderhelper.md) = new QueryBuilderHelper(this.entityName, this.alias, this.\_aliasMap, this.subQueries, this.metadata, this.knex, this.platform)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:41](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L41)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:41](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L41)*
 
 ___
 
@@ -236,7 +236,7 @@ ___
 
 • `Private` `Readonly` **knex**: any = this.driver.getConnection(this.connectionType).getKnex()
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:40](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L40)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:40](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L40)*
 
 ___
 
@@ -244,7 +244,7 @@ ___
 
 • `Private` `Optional` **lockMode**: [LockMode](../enums/lockmode.md)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:37](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L37)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:37](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L37)*
 
 ___
 
@@ -252,7 +252,7 @@ ___
 
 • `Private` `Readonly` **metadata**: MetadataStorage
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:44](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L44)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:44](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L44)*
 
 ___
 
@@ -260,7 +260,7 @@ ___
 
 • `Private` `Readonly` **platform**: [AbstractSqlPlatform](abstractsqlplatform.md) = this.driver.getPlatform()
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:39](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L39)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:39](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L39)*
 
 ___
 
@@ -268,7 +268,7 @@ ___
 
 • `Private` **subQueries**: [Dictionary](../index.md#dictionary)&#60;string>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:38](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L38)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:38](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L38)*
 
 ___
 
@@ -276,7 +276,7 @@ ___
 
 •  **type**: [QueryType](../enums/querytype.md)
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L18)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L18)*
 
 ## Methods
 
@@ -284,7 +284,7 @@ ___
 
 ▸ **addSelect**(`fields`: string \| string[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L63)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L63)*
 
 #### Parameters:
 
@@ -300,7 +300,7 @@ ___
 
 ▸ **andWhere**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:143](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L143)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:143](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L143)*
 
 #### Parameters:
 
@@ -312,7 +312,7 @@ Name | Type |
 
 ▸ **andWhere**(`cond`: string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:144](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L144)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:144](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L144)*
 
 #### Parameters:
 
@@ -329,7 +329,7 @@ ___
 
 ▸ **as**(`alias`: string): KnexQueryBuilder
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:352](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L352)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:352](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L352)*
 
 Returns knex instance with sub-query aliased with given alias.
 You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
@@ -348,7 +348,7 @@ ___
 
 ▸ `Private`**autoJoinPivotTable**(`field`: string): void
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:595](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L595)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:595](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L595)*
 
 #### Parameters:
 
@@ -364,7 +364,7 @@ ___
 
 ▸ **cache**(`config?`: boolean \| number \| [string, number]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:236](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L236)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:236](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L236)*
 
 #### Parameters:
 
@@ -380,7 +380,7 @@ ___
 
 ▸ **clone**(): [QueryBuilder](querybuilder.md)&#60;T>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:365](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L365)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:365](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L365)*
 
 **Returns:** [QueryBuilder](querybuilder.md)&#60;T>
 
@@ -390,7 +390,7 @@ ___
 
 ▸ **count**(`field?`: string \| string[], `distinct?`: boolean): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:87](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L87)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:87](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L87)*
 
 #### Parameters:
 
@@ -407,7 +407,7 @@ ___
 
 ▸ **delete**(`cond?`: [QBFilterQuery](../index.md#qbfilterquery)): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:79](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L79)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:79](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L79)*
 
 #### Parameters:
 
@@ -423,7 +423,7 @@ ___
 
 ▸ **execute**&#60;U>(`method?`: &#34;all&#34; \| &#34;get&#34; \| &#34;run&#34;, `mapResults?`: boolean): Promise&#60;U>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:289](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L289)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:289](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L289)*
 
 Executes this QB and returns the raw results, mapped to the property names (unless disabled via last parameter).
 Use `method` to specify what kind of result you want to get (array/single/meta).
@@ -449,7 +449,7 @@ ___
 
 ▸ `Private`**finalize**(): void
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:510](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L510)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:510](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L510)*
 
 **Returns:** void
 
@@ -459,7 +459,7 @@ ___
 
 ▸ **getAliasForJoinPath**(`path`: string): string \| undefined
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:270](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L270)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:270](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L270)*
 
 #### Parameters:
 
@@ -475,7 +475,7 @@ ___
 
 ▸ **getKnex**(): KnexQueryBuilder
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:377](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L377)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:377](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L377)*
 
 **Returns:** KnexQueryBuilder
 
@@ -485,7 +485,7 @@ ___
 
 ▸ **getKnexQuery**(): KnexQueryBuilder
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:241](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L241)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:241](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L241)*
 
 **Returns:** KnexQueryBuilder
 
@@ -495,7 +495,7 @@ ___
 
 ▸ **getNextAlias**(`prefix?`: string): string
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:280](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L280)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:280](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L280)*
 
 #### Parameters:
 
@@ -511,7 +511,7 @@ ___
 
 ▸ **getParams**(): readonly Value[]
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:266](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L266)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:266](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L266)*
 
 **Returns:** readonly Value[]
 
@@ -521,7 +521,7 @@ ___
 
 ▸ **getQuery**(): string
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:262](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L262)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:262](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L262)*
 
 **Returns:** string
 
@@ -531,7 +531,7 @@ ___
 
 ▸ `Private`**getQueryBase**(): KnexQueryBuilder
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:469](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L469)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:469](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L469)*
 
 **Returns:** KnexQueryBuilder
 
@@ -541,7 +541,7 @@ ___
 
 ▸ **getResult**(): Promise&#60;T[]>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:328](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L328)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:328](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L328)*
 
 Alias for `qb.getResultList()`
 
@@ -553,7 +553,7 @@ ___
 
 ▸ **getResultList**(): Promise&#60;T[]>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:335](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L335)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:335](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L335)*
 
 Executes the query, returning array of results
 
@@ -565,7 +565,7 @@ ___
 
 ▸ **getSingleResult**(): Promise&#60;T \| null>
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:343](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L343)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:343](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L343)*
 
 Executes the query, returning the first result or null
 
@@ -577,7 +577,7 @@ ___
 
 ▸ **groupBy**(`fields`: string \| keyof T \| (string \| keyof T)[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:161](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L161)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:161](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L161)*
 
 #### Parameters:
 
@@ -593,7 +593,7 @@ ___
 
 ▸ **having**(`cond?`: [QBFilterQuery](../index.md#qbfilterquery) \| string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:166](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L166)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:166](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L166)*
 
 #### Parameters:
 
@@ -610,7 +610,7 @@ ___
 
 ▸ `Private`**init**(`type`: [QueryType](../enums/querytype.md), `data?`: any, `cond?`: any): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:450](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L450)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:450](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L450)*
 
 #### Parameters:
 
@@ -628,7 +628,7 @@ ___
 
 ▸ **insert**(`data`: any): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L71)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L71)*
 
 #### Parameters:
 
@@ -644,7 +644,7 @@ ___
 
 ▸ **join**(`field`: string, `alias`: string, `cond?`: [QBFilterQuery](../index.md#qbfilterquery), `type?`: &#34;leftJoin&#34; \| &#34;innerJoin&#34; \| &#34;pivotJoin&#34;, `path?`: string): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L97)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L97)*
 
 #### Parameters:
 
@@ -664,7 +664,7 @@ ___
 
 ▸ `Private`**joinReference**(`field`: string, `alias`: string, `cond`: [Dictionary](../index.md#dictionary), `type`: &#34;leftJoin&#34; \| &#34;innerJoin&#34; \| &#34;pivotJoin&#34;, `path?`: string): void
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:388](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L388)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:388](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L388)*
 
 #### Parameters:
 
@@ -684,7 +684,7 @@ ___
 
 ▸ **leftJoin**(`field`: string, `alias`: string, `cond?`: [QBFilterQuery](../index.md#qbfilterquery)): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:102](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L102)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:102](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L102)*
 
 #### Parameters:
 
@@ -702,7 +702,7 @@ ___
 
 ▸ **limit**(`limit?`: number, `offset?`: number): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:195](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L195)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:195](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L195)*
 
 #### Parameters:
 
@@ -719,7 +719,7 @@ ___
 
 ▸ **offset**(`offset?`: number): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:205](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L205)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:205](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L205)*
 
 #### Parameters:
 
@@ -735,7 +735,7 @@ ___
 
 ▸ **orWhere**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:149](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L149)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:149](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L149)*
 
 #### Parameters:
 
@@ -747,7 +747,7 @@ Name | Type |
 
 ▸ **orWhere**(`cond`: string, `params?`: any[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:150](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L150)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:150](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L150)*
 
 #### Parameters:
 
@@ -764,7 +764,7 @@ ___
 
 ▸ **orderBy**(`orderBy`: QueryOrderMap): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:155](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L155)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:155](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L155)*
 
 #### Parameters:
 
@@ -780,7 +780,7 @@ ___
 
 ▸ **populate**(`populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[]): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:178](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L178)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:178](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L178)*
 
 **`internal`** 
 
@@ -798,7 +798,7 @@ ___
 
 ▸ `Private`**prepareFields**&#60;T, U>(`fields`: [Field](../index.md#field)&#60;T>[], `type?`: &#34;where&#34; \| &#34;groupBy&#34; \| &#34;sub-query&#34;): U[]
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:420](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L420)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:420](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L420)*
 
 #### Type parameters:
 
@@ -822,7 +822,7 @@ ___
 
 ▸ **raw**(`sql`: string): Raw
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:191](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L191)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:191](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L191)*
 
 #### Parameters:
 
@@ -838,7 +838,7 @@ ___
 
 ▸ **ref**(`field`: string): any
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:187](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L187)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:187](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L187)*
 
 **`internal`** 
 
@@ -856,7 +856,7 @@ ___
 
 ▸ **select**(`fields`: [Field](../index.md#field)&#60;T> \| [Field](../index.md#field)&#60;T>[], `distinct?`: boolean): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:53](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L53)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:53](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L53)*
 
 #### Parameters:
 
@@ -873,7 +873,7 @@ ___
 
 ▸ **setFlag**(`flag`: [QueryFlag](../enums/queryflag.md)): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:226](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L226)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:226](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L226)*
 
 #### Parameters:
 
@@ -889,7 +889,7 @@ ___
 
 ▸ **setLockMode**(`mode?`: [LockMode](../enums/lockmode.md)): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:216](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L216)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:216](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L216)*
 
 #### Parameters:
 
@@ -905,7 +905,7 @@ ___
 
 ▸ **truncate**(): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:83](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L83)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:83](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L83)*
 
 **Returns:** this
 
@@ -915,7 +915,7 @@ ___
 
 ▸ **unsetFlag**(`flag`: [QueryFlag](../enums/queryflag.md)): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:231](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L231)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:231](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L231)*
 
 #### Parameters:
 
@@ -931,7 +931,7 @@ ___
 
 ▸ **update**(`data`: any): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:75](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L75)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:75](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L75)*
 
 #### Parameters:
 
@@ -947,7 +947,7 @@ ___
 
 ▸ **where**(`cond`: [QBFilterQuery](../index.md#qbfilterquery)&#60;T>, `operator?`: keyof *typeof* GroupOperator): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:111](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L111)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:111](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L111)*
 
 #### Parameters:
 
@@ -960,7 +960,7 @@ Name | Type |
 
 ▸ **where**(`cond`: string, `params?`: any[], `operator?`: keyof *typeof* GroupOperator): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:112](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L112)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:112](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L112)*
 
 #### Parameters:
 
@@ -978,7 +978,7 @@ ___
 
 ▸ **withSchema**(`schema?`: string): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:210](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L210)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:210](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L210)*
 
 #### Parameters:
 
@@ -994,7 +994,7 @@ ___
 
 ▸ **withSubQuery**(`subQuery`: KnexQueryBuilder, `alias`: string): this
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:106](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L106)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:106](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L106)*
 
 #### Parameters:
 
@@ -1011,7 +1011,7 @@ ___
 
 ▸ `Private`**wrapModifySubQuery**(`meta`: EntityMetadata): void
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:581](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L581)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:581](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L581)*
 
 #### Parameters:
 
@@ -1027,7 +1027,7 @@ ___
 
 ▸ `Private`**wrapPaginateSubQuery**(`meta`: EntityMetadata): void
 
-*Defined in [packages/knex/src/query/QueryBuilder.ts:561](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/query/QueryBuilder.ts#L561)*
+*Defined in [packages/knex/src/query/QueryBuilder.ts:561](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/query/QueryBuilder.ts#L561)*
 
 #### Parameters:
 

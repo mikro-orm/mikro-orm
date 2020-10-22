@@ -18,7 +18,7 @@ sidebar_label: "MySqlExceptionConverter"
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlExceptionConverter.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlExceptionConverter.ts#L15)*
+*Defined in [packages/mysql-base/src/MySqlExceptionConverter.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlExceptionConverter.ts#L15)*
 
 **`link`** http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
 

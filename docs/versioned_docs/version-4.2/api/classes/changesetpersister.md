@@ -14,7 +14,7 @@ sidebar_label: "ChangeSetPersister"
 
 \+ **new ChangeSetPersister**(`driver`: [IDatabaseDriver](../interfaces/idatabasedriver.md), `metadata`: [MetadataStorage](metadatastorage.md), `hydrator`: [IHydrator](../interfaces/ihydrator.md), `factory`: [EntityFactory](entityfactory.md), `config`: [Configuration](configuration.md)): [ChangeSetPersister](changesetpersister.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L12)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L12)*
 
 #### Parameters:
 
@@ -34,7 +34,7 @@ Name | Type |
 
 • `Private` `Readonly` **config**: [Configuration](configuration.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L18)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L18)*
 
 ___
 
@@ -42,7 +42,7 @@ ___
 
 • `Private` `Readonly` **driver**: [IDatabaseDriver](../interfaces/idatabasedriver.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L14)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L14)*
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 • `Private` `Readonly` **factory**: [EntityFactory](entityfactory.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L17)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L17)*
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 • `Private` `Readonly` **hydrator**: [IHydrator](../interfaces/ihydrator.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:16](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L16)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:16](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L16)*
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 • `Private` `Readonly` **metadata**: [MetadataStorage](metadatastorage.md)
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L15)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L15)*
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 • `Private` `Readonly` **platform**: [Platform](platform.md) = this.driver.getPlatform()
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:12](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L12)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:12](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L12)*
 
 ## Methods
 
@@ -82,7 +82,7 @@ ___
 
 ▸ `Private`**checkOptimisticLock**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `res?`: [QueryResult](../interfaces/queryresult.md)): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:203](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L203)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:203](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L203)*
 
 #### Type parameters:
 
@@ -106,7 +106,7 @@ ___
 
 ▸ `Private`**checkOptimisticLocks**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:184](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L184)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:184](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L184)*
 
 #### Type parameters:
 
@@ -130,7 +130,7 @@ ___
 
 ▸ **executeDeletes**&#60;T>(`changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L46)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L46)*
 
 #### Type parameters:
 
@@ -153,7 +153,7 @@ ___
 
 ▸ **executeInserts**&#60;T>(`changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L20)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L20)*
 
 #### Type parameters:
 
@@ -176,7 +176,7 @@ ___
 
 ▸ **executeUpdates**&#60;T>(`changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:33](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L33)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:33](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L33)*
 
 #### Type parameters:
 
@@ -199,7 +199,7 @@ ___
 
 ▸ `Private`**mapPrimaryKey**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `value`: [IPrimaryKey](../index.md#iprimarykey), `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:138](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L138)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:138](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L138)*
 
 #### Type parameters:
 
@@ -223,7 +223,7 @@ ___
 
 ▸ `Private`**mapReturnedValues**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `res`: [QueryResult](../interfaces/queryresult.md), `meta`: [EntityMetadata](entitymetadata.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:265](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L265)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:265](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L265)*
 
 Maps values returned via `returning` statement (postgres) or the inserted id (other sql drivers).
 No need to handle composite keys here as they need to be set upfront.
@@ -251,7 +251,7 @@ ___
 
 ▸ `Private`**markAsPopulated**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `meta`: [EntityMetadata](entitymetadata.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:154](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L154)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:154](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L154)*
 
 Sets populate flag to new entities so they are serialized like if they were loaded from the db
 
@@ -276,7 +276,7 @@ ___
 
 ▸ `Private`**persistManagedEntities**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:122](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L122)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:122](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L122)*
 
 #### Type parameters:
 
@@ -300,7 +300,7 @@ ___
 
 ▸ `Private`**persistManagedEntitiesBatch**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:132](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L132)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:132](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L132)*
 
 #### Type parameters:
 
@@ -324,7 +324,7 @@ ___
 
 ▸ `Private`**persistManagedEntity**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L114)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L114)*
 
 #### Type parameters:
 
@@ -347,7 +347,7 @@ ___
 
 ▸ `Private`**persistNewEntities**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:82](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L82)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:82](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L82)*
 
 #### Type parameters:
 
@@ -371,7 +371,7 @@ ___
 
 ▸ `Private`**persistNewEntitiesBatch**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:95](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L95)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:95](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L95)*
 
 #### Type parameters:
 
@@ -395,7 +395,7 @@ ___
 
 ▸ `Private`**persistNewEntity**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:66](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L66)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:66](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L66)*
 
 #### Type parameters:
 
@@ -419,7 +419,7 @@ ___
 
 ▸ `Private`**processProperties**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:58](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L58)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:58](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L58)*
 
 #### Type parameters:
 
@@ -441,7 +441,7 @@ ___
 
 ▸ `Private`**processProperty**&#60;T>(`changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `prop`: [EntityProperty](../interfaces/entityproperty.md)&#60;T>): void
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:236](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L236)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:236](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L236)*
 
 #### Type parameters:
 
@@ -464,7 +464,7 @@ ___
 
 ▸ `Private`**reloadVersionValues**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSets`: [ChangeSet](../interfaces/changeset.md)&#60;T>[], `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;void>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:209](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L209)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:209](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L209)*
 
 #### Type parameters:
 
@@ -488,7 +488,7 @@ ___
 
 ▸ `Private`**updateEntity**&#60;T>(`meta`: [EntityMetadata](entitymetadata.md)&#60;T>, `changeSet`: [ChangeSet](../interfaces/changeset.md)&#60;T>, `ctx?`: [Transaction](../index.md#transaction)): Promise&#60;[QueryResult](../interfaces/queryresult.md)>
 
-*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:171](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/unit-of-work/ChangeSetPersister.ts#L171)*
+*Defined in [packages/core/src/unit-of-work/ChangeSetPersister.ts:171](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/unit-of-work/ChangeSetPersister.ts#L171)*
 
 #### Type parameters:
 

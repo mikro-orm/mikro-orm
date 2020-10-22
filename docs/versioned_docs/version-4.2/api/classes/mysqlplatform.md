@@ -28,7 +28,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[exceptionConverter](abstractsqlplatform.md#exceptionconverter)*
 
-*Defined in [packages/mysql-base/src/MySqlPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlPlatform.ts#L8)*
+*Defined in [packages/mysql-base/src/MySqlPlatform.ts:8](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlPlatform.ts#L8)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 *Overrides void*
 
-*Defined in [packages/mysql-base/src/MySqlPlatform.ts:7](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlPlatform.ts#L7)*
+*Defined in [packages/mysql-base/src/MySqlPlatform.ts:7](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlPlatform.ts#L7)*
 
 ___
 
@@ -201,7 +201,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getDefaultCharset](abstractsqlplatform.md#getdefaultcharset)*
 
-*Defined in [packages/mysql-base/src/MySqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlPlatform.ts#L10)*
+*Defined in [packages/mysql-base/src/MySqlPlatform.ts:10](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlPlatform.ts#L10)*
 
 **Returns:** string
 
@@ -319,7 +319,7 @@ ___
 
 *Overrides [AbstractSqlPlatform](abstractsqlplatform.md).[getSearchJsonPropertySQL](abstractsqlplatform.md#getsearchjsonpropertysql)*
 
-*Defined in [packages/mysql-base/src/MySqlPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/mysql-base/src/MySqlPlatform.ts#L14)*
+*Defined in [packages/mysql-base/src/MySqlPlatform.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/mysql-base/src/MySqlPlatform.ts#L14)*
 
 #### Parameters:
 

@@ -24,7 +24,7 @@ Name | Type |
 
 \+ **new SerializationContext**(`populate`: [PopulateOptions](../index.md#populateoptions)&#60;T>[]): [SerializationContext](serializationcontext.md)
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L15)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L15)*
 
 #### Parameters:
 
@@ -40,7 +40,7 @@ Name | Type |
 
 • `Readonly` **path**: string[] = []
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L15)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L15)*
 
 ___
 
@@ -48,7 +48,7 @@ ___
 
 • `Private` `Readonly` **populate**: [PopulateOptions](../index.md#populateoptions)&#60;T>[]
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L17)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L17)*
 
 ## Methods
 
@@ -56,7 +56,7 @@ ___
 
 ▸ `Private`**isMarkedAsPopulated**(`path`: string): boolean
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:63](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L63)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:63](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L63)*
 
 #### Parameters:
 
@@ -72,7 +72,7 @@ ___
 
 ▸ **leave**&#60;U>(`path`: string): void
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:34](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L34)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:34](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L34)*
 
 #### Type parameters:
 
@@ -94,7 +94,7 @@ ___
 
 ▸ **visit**(`prop`: string): boolean
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L19)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L19)*
 
 #### Parameters:
 
@@ -110,7 +110,7 @@ ___
 
 ▸ `Static`**propagate**(`root`: [SerializationContext](serializationcontext.md)&#60;[AnyEntity](../index.md#anyentity)>, `entity`: [AnyEntity](../index.md#anyentity)): void
 
-*Defined in [packages/core/src/entity/EntityTransformer.ts:46](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityTransformer.ts#L46)*
+*Defined in [packages/core/src/entity/EntityTransformer.ts:46](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityTransformer.ts#L46)*
 
 When initializing new context, we need to propagate it to the whole entity graph recursively.
 

@@ -14,7 +14,7 @@ sidebar_label: "JoinOptions"
 
 •  **alias**: string
 
-*Defined in [packages/knex/src/typings.ts:19](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L19)*
+*Defined in [packages/knex/src/typings.ts:19](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L19)*
 
 ___
 
@@ -22,7 +22,7 @@ ___
 
 •  **cond**: [Dictionary](../index.md#dictionary)
 
-*Defined in [packages/knex/src/typings.ts:27](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L27)*
+*Defined in [packages/knex/src/typings.ts:27](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L27)*
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 • `Optional` **inverseAlias**: string
 
-*Defined in [packages/knex/src/typings.ts:21](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L21)*
+*Defined in [packages/knex/src/typings.ts:21](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L21)*
 
 ___
 
@@ -38,7 +38,7 @@ ___
 
 • `Optional` **inverseJoinColumns**: string[]
 
-*Defined in [packages/knex/src/typings.ts:23](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L23)*
+*Defined in [packages/knex/src/typings.ts:23](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L23)*
 
 ___
 
@@ -46,7 +46,7 @@ ___
 
 • `Optional` **joinColumns**: string[]
 
-*Defined in [packages/knex/src/typings.ts:22](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L22)*
+*Defined in [packages/knex/src/typings.ts:22](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L22)*
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 •  **ownerAlias**: string
 
-*Defined in [packages/knex/src/typings.ts:20](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L20)*
+*Defined in [packages/knex/src/typings.ts:20](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L20)*
 
 ___
 
@@ -62,7 +62,7 @@ ___
 
 • `Optional` **path**: string
 
-*Defined in [packages/knex/src/typings.ts:25](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L25)*
+*Defined in [packages/knex/src/typings.ts:25](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L25)*
 
 ___
 
@@ -70,7 +70,7 @@ ___
 
 • `Optional` **primaryKeys**: string[]
 
-*Defined in [packages/knex/src/typings.ts:24](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L24)*
+*Defined in [packages/knex/src/typings.ts:24](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L24)*
 
 ___
 
@@ -78,7 +78,7 @@ ___
 
 •  **prop**: EntityProperty
 
-*Defined in [packages/knex/src/typings.ts:26](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L26)*
+*Defined in [packages/knex/src/typings.ts:26](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L26)*
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 •  **table**: string
 
-*Defined in [packages/knex/src/typings.ts:17](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L17)*
+*Defined in [packages/knex/src/typings.ts:17](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L17)*
 
 ___
 
@@ -94,4 +94,4 @@ ___
 
 •  **type**: &#34;leftJoin&#34; \| &#34;innerJoin&#34; \| &#34;pivotJoin&#34;
 
-*Defined in [packages/knex/src/typings.ts:18](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/knex/src/typings.ts#L18)*
+*Defined in [packages/knex/src/typings.ts:18](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/knex/src/typings.ts#L18)*

@@ -14,7 +14,7 @@ sidebar_label: "EntityAssigner"
 
 ▸ `Static`**assign**&#60;T>(`entity`: T, `data`: [EntityData](../index.md#entitydata)&#60;T>, `options?`: [AssignOptions](../interfaces/assignoptions.md)): T
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:14](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L14)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:14](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L14)*
 
 #### Type parameters:
 
@@ -34,7 +34,7 @@ Name | Type |
 
 ▸ `Static`**assign**&#60;T>(`entity`: T, `data`: [EntityData](../index.md#entitydata)&#60;T>, `onlyProperties?`: boolean): T
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:15](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L15)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:15](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L15)*
 
 #### Type parameters:
 
@@ -58,7 +58,7 @@ ___
 
 ▸ `Static` `Private`**assignCollection**&#60;T, U>(`entity`: T, `collection`: [Collection](collection.md)&#60;U>, `value`: any[], `prop`: [EntityProperty](../interfaces/entityproperty.md), `em`: [EntityManager](entitymanager.md), `options`: [AssignOptions](../interfaces/assignoptions.md)): void
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:114](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L114)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:114](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L114)*
 
 #### Type parameters:
 
@@ -86,7 +86,7 @@ ___
 
 ▸ `Static` `Private`**assignReference**&#60;T>(`entity`: T, `value`: any, `prop`: [EntityProperty](../interfaces/entityproperty.md), `em`: [EntityManager](entitymanager.md), `options`: [AssignOptions](../interfaces/assignoptions.md)): void
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:97](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L97)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:97](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L97)*
 
 #### Type parameters:
 
@@ -112,7 +112,7 @@ ___
 
 ▸ `Static`**autoWireOneToOne**&#60;T>(`prop`: [EntityProperty](../interfaces/entityproperty.md), `entity`: T): void
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:71](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L71)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:71](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L71)*
 
 auto-wire 1:1 inverse side with owner as in no-sql drivers it can't be joined
 also makes sure the link is bidirectional when creating new entities from nested structures
@@ -140,7 +140,7 @@ ___
 
 ▸ `Static` `Private`**createCollectionItem**&#60;T>(`item`: any, `em`: [EntityManager](entitymanager.md), `prop`: [EntityProperty](../interfaces/entityproperty.md), `invalid`: any[], `options`: [AssignOptions](../interfaces/assignoptions.md)): T
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:127](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L127)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:127](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L127)*
 
 #### Type parameters:
 
@@ -166,7 +166,7 @@ ___
 
 ▸ `Static` `Private`**validateEM**(`em?`: [EntityManager](entitymanager.md)): boolean
 
-*Defined in [packages/core/src/entity/EntityAssigner.ts:89](https://github.com/mikro-orm/mikro-orm/blob/c7aaca40d/packages/core/src/entity/EntityAssigner.ts#L89)*
+*Defined in [packages/core/src/entity/EntityAssigner.ts:89](https://github.com/mikro-orm/mikro-orm/blob/8766baa31/packages/core/src/entity/EntityAssigner.ts#L89)*
 
 #### Parameters:
 
