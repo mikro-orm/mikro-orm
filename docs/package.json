@@ -6,7 +6,7 @@
     "start": "docusaurus start",
     "build": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy"
+    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.63",
