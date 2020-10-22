@@ -402,7 +402,7 @@ export class SchemaGenerator {
     }
 
     if (column.fk && !diff.sameIndex && equalDefinition) {
-      return this.createForeignKey(table, meta, prop, diff, createdColumns);
+      return this.createForeignKey(table, meta, prop, createdColumns, diff);
     }
 
     this.createTableColumn(table, meta, prop, diff).map(col => col.alter());
@@ -460,10 +460,10 @@ export class SchemaGenerator {
     meta.relations
       .filter(prop => !props || props.includes(prop))
       .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
-      .forEach(prop => this.createForeignKey(table, meta, prop, undefined, createdColumns));
+      .forEach(prop => this.createForeignKey(table, meta, prop, createdColumns));
   }
 
-  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff?: IsSame, createdColumns: string[]): void {
+  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, createdColumns: string[], diff?: IsSame): void {
     if (this.helper.supportsSchemaConstraints()) {
       this.createForeignKeyReference(table, prop);
 
