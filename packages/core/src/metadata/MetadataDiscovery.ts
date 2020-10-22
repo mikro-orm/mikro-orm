@@ -289,6 +289,7 @@ export class MetadataDiscovery {
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
+    prop.referencedPKs = meta2.primaryKeys;
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -321,6 +322,7 @@ export class MetadataDiscovery {
 
   private initManyToOneFields(prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
+    prop.referencedPKs = meta2.primaryKeys;
     const fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
     Utils.defaultValue(prop, 'referencedTableName', meta2.collection);
 
@@ -335,6 +337,7 @@ export class MetadataDiscovery {
 
   private initOneToManyFields(prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
+    prop.referencedPKs = meta2.primaryKeys;
 
     if (!prop.joinColumns) {
       prop.joinColumns = [this.namingStrategy.joinColumnName(prop.name)];

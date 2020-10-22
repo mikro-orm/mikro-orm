@@ -177,7 +177,12 @@ export class QueryHelper {
   static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Object.keys(cond).reduce((o, k) => {
-        o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
+        if (Utils.isOperator(k, true) || prop.referencedPKs.includes(k)) {
+          o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
+        } else {
+          o[k] = cond[k];
+        }
+
         return o;
       }, {});
     }

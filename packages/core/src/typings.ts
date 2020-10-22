@@ -169,6 +169,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
+  referencedPKs: string[];
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;

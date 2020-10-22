@@ -463,7 +463,7 @@ export class SchemaGenerator {
       .forEach(prop => this.createForeignKey(table, meta, prop, undefined, createdColumns));
   }
 
-  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff?: IsSame, createdColumns: string[] = []): void {
+  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, diff?: IsSame, createdColumns: string[]): void {
     if (this.helper.supportsSchemaConstraints()) {
       this.createForeignKeyReference(table, prop);
 
