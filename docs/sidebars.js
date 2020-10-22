@@ -73,4 +73,5 @@ module.exports = {
       { type: 'link', label: 'NextJS + MySQL', href: 'https://github.com/jonahallibone/mikro-orm-nextjs' },
     ],
   },
+  API: require('./typedoc-sidebar.js'),
 };
