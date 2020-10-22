@@ -239,7 +239,7 @@ module.exports = {
     new EnvironmentPlugin({ WEBPACK: true }),
     new IgnorePlugin({
       checkResource: resource => {
-        const [baseResource] = resource.split("/", resource[0] === "@" ? 2 : 1).join("/");
+        const baseResource = resource.split("/", resource[0] === "@" ? 2 : 1).join("/");
 
         if (optionalModules.has(baseResource)) {
           try {
