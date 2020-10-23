@@ -236,7 +236,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.property.pivotTable) {
       // we know there is at least one item as it was checked in load method
-      const pk = (this._firstItem as AnyEntity<T>).__meta!.primaryKeys[0];
+      const pk = this.property.targetMeta!.primaryKeys[0];
       cond[pk] = { $in: [] };
       this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.getPrimaryKey()));
     } else {

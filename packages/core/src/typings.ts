@@ -117,6 +117,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
   type: string;
+  targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
   primary: boolean;
