@@ -8,6 +8,7 @@ class A {
 
 }
 
+
 describe('GH issue 947', () => {
 
   test(`transactional works with a single postgres connection`, async () => {
@@ -25,7 +26,9 @@ describe('GH issue 947', () => {
     await orm.getSchemaGenerator().createSchema();
 
     await orm.em.transactional(async transactionalEm => {
-      await transactionalEm.find(A, {});
+      // Comment this line out and the test will pass.
+      await transactionalEm.getConnection().execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE`);
+      await transactionalEm.persistAndFlush(new A());
     });
 
     await orm.close();
