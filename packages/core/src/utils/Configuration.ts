@@ -232,6 +232,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.charset = this.platform.getDefaultCharset();
     }
 
+    Object.keys(this.options.filters).forEach(key => {
+      this.options.filters[key].default = this.options.filters[key].default ?? true;
+    });
+
     const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
     this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
   }
