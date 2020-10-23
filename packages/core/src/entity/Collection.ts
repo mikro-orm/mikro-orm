@@ -48,6 +48,23 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   /**
+   * Counts the number of entries in the database
+   */
+  async loadCount(refresh = false): Promise<number> {
+    const em = this.owner.__helper!.__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.owner);
+    }
+
+    if (refresh || !Utils.isDefined(this._count)) {
+      this._count = await em.count(this.property.type, this.createCondition());
+    }
+
+    return this._count!;
+  }
+
+  /**
    * Returns the items (the collection must be initialized)
    */
   getItems(check = true): T[] {

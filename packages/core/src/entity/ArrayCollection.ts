@@ -2,6 +2,7 @@ import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
+import { Utils } from '../utils';
 
 export class ArrayCollection<T, O> {
 
@@ -9,6 +10,7 @@ export class ArrayCollection<T, O> {
 
   protected readonly items = new Set<T>();
   protected initialized = true;
+  protected _count?: number;
   private _property?: EntityProperty;
 
   constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
@@ -21,7 +23,12 @@ export class ArrayCollection<T, O> {
     Object.defineProperty(this, 'items', { enumerable: false });
     Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
     Object.defineProperty(this, '_property', { enumerable: false, writable: true });
+    Object.defineProperty(this, '_count', { enumerable: false, writable: true });
     Object.defineProperty(this, '__collection', { value: true });
+  }
+
+  async loadCount(): Promise<number> {
+    return this.items.size;
   }
 
   getItems(): T[] {
@@ -60,6 +67,7 @@ export class ArrayCollection<T, O> {
       const entity = Reference.unwrapReference(item);
 
       if (!this.contains(entity, false)) {
+        this.incrementCount(1);
         this[this.items.size] = entity;
         this.items.add(entity);
         this.propagate(entity, 'add');
@@ -77,10 +85,14 @@ export class ArrayCollection<T, O> {
    */
   hydrate(items: T[]): void {
     this.items.clear();
+    if (Utils.isDefined(this._count)) {
+      this._count = 0;
+    }
     this.add(...items);
   }
 
   remove(...items: (T | Reference<T>)[]): void {
+    this.incrementCount(-items.length);
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
       delete this[this.items.size - 1]; // remove last item
@@ -171,6 +183,12 @@ export class ArrayCollection<T, O> {
 
     // remove
     return collection.contains(this.owner, false);
+  }
+
+  protected incrementCount(value: number) {
+    if (Utils.isDefined<number>(this._count)) {
+      this._count += value;
+    }
   }
 
 }
