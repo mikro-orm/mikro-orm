@@ -28,7 +28,7 @@ describe('GH issue 947', () => {
     await orm.em.transactional(async transactionalEm => {
       // Comment this line out and the test will pass.
       const ctx = transactionalEm.getTransactionContext();
-      await transactionalEm.getConnection().execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE`, ctx);
+      await transactionalEm.getConnection().execute(`SET TRANSACTION ISOLATION LEVEL SERIALIZABLE`, undefined, undefined, ctx);
       await transactionalEm.persistAndFlush(new A());
     });
 
