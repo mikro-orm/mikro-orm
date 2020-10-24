@@ -2,7 +2,6 @@ import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
-import { Utils } from '../utils';
 
 export class ArrayCollection<T, O> {
 
