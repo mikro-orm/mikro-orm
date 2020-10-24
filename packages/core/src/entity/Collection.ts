@@ -59,14 +59,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (refresh || !Utils.isDefined(this._count)) {
-      const condition = {};
-      if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-        condition[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
-      } else {
-        condition[this.property.inversedBy] = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper?.getPrimaryKey();
-      }
-
-      this._count = await em.count(this.property.type, condition);
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
     }
 
     return this._count!;
@@ -267,6 +260,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     }
+  }
+
+  private createLoadCountCondition(cond: Dictionary) {
+    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+    } else {
+      cond[this.property.inversedBy] = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper?.getPrimaryKey();
+    }
+    return cond;
   }
 
   private modify(method: 'add' | 'remove', items: T[]): void {
