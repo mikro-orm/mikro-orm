@@ -168,7 +168,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const pks = this.metadata.find(entityName)!.primaryKeys;
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-      .count(pks[0], true)
+      .count(pks, true)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(options.schema)
