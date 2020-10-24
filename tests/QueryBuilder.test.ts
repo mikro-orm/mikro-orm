@@ -1456,6 +1456,16 @@ describe('QueryBuilder', () => {
     qb4.select('*').withSubQuery(qb3, 'a.booksTotal').where({ 'a.booksTotal': 1 });
     expect(qb4.getQuery()).toEqual('select `a`.* from `author2` as `a` where (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) = ?');
     expect(qb4.getParams()).toEqual([1]);
+
+    const qb5 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+    const qb6 = orm.em.createQueryBuilder(Author2, 'a').select('*').where(`id in (${qb5.getFormattedQuery()})`);
+    expect(qb6.getQuery()).toEqual('select `a`.* from `author2` as `a` where (id in (select `b`.`author_id` from `book2` as `b` where `b`.`price` > 100))');
+    expect(qb6.getParams()).toEqual([]);
+
+    const qb7 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+    const qb8 = orm.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb7.getKnexQuery() } });
+    expect(qb8.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`id` in (select `b`.`author_id` from `book2` as `b` where `b`.`price` > ?)');
+    expect(qb8.getParams()).toEqual([100]);
   });
 
   test('CriteriaNode', async () => {
@@ -1616,6 +1626,16 @@ describe('QueryBuilder', () => {
     qb4.select('*').where({ name: { $ilike: 'test' } });
     expect(qb4.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" ilike $1');
     expect(qb4.getParams()).toEqual(['test']);
+
+    const qb5 = pg.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+    const qb6 = pg.em.createQueryBuilder(Author2, 'a').select('*').where(`id in (${qb5.getFormattedQuery()})`);
+    expect(qb6.getQuery()).toEqual('select "a".* from "author2" as "a" where (id in (select "b"."author_id" from "book2" as "b" where "b"."price" > 100))');
+    expect(qb6.getParams()).toEqual([]);
+
+    const qb7 = pg.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+    const qb8 = pg.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb7.getKnexQuery() } });
+    expect(qb8.getQuery()).toEqual('select "a".* from "author2" as "a" where "a"."id" in (select "b"."author_id" from "book2" as "b" where "b"."price" > $1)');
+    expect(qb8.getParams()).toEqual([100]);
 
     await pg.close(true);
   });
