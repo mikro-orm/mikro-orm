@@ -183,7 +183,7 @@ export class ArrayCollection<T, O> {
   }
 
   protected incrementCount(value: number) {
-    if (Utils.isDefined<number>(this._count)) {
+    if (typeof this._count === 'number') {
       this._count += value;
     }
   }
