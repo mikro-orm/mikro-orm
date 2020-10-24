@@ -84,9 +84,7 @@ export class ArrayCollection<T, O> {
    */
   hydrate(items: T[]): void {
     this.items.clear();
-    if (Utils.isDefined(this._count)) {
-      this._count = 0;
-    }
+    this._count = 0;
     this.add(...items);
   }
 
