@@ -48,6 +48,7 @@ console.log(author.books[1]); // Book
 console.log(author.books[12345]); // undefined, even if the collection is not initialized
 
 const author = orm.em.findOne(Author, '...'); // books collection has not been populated
+const count = await author.books.loadCount(); // gets the count of collection items from database instead of counting loaded items
 console.log(author.books.getItems()); // throws because the collection has not been initialized
 // initialize collection if not already loaded and return its items as array
 console.log(await author.books.loadItems()); // Book[]
