@@ -266,7 +266,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else {
-      cond[this.property.inversedBy] = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper?.getPrimaryKey();
+      cond[this.property.owner ? this.property.inversedBy : this.property.mappedBy] = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper?.getPrimaryKey();
     }
     return cond;
   }
