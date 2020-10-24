@@ -59,7 +59,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (refresh || !Utils.isDefined(this._count)) {
-      this._count = await em.count(this.property.type, this.createCondition());
+      this._count = await em.count(this.property.type,{ [this.property.mappedBy || this.property.inversedBy]: this.owner.__helper!.getPrimaryKey() });
     }
 
     return this._count!;

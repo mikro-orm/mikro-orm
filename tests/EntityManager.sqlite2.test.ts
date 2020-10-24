@@ -928,12 +928,20 @@ describe('EntityManagerSqlite2', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    // Fails due to 'TypeError: Cannot read property '__meta' of undefined' (fixed for #956)
     taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
     expect(taggedBook.tags.isInitialized()).toBe(false);
     await taggedBook.tags.init();
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
+    const removing  = taggedBook.tags[0];
+    taggedBook.tags.remove(removing);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
+    await expect(taggedBook.tags.loadCount(true)).resolves.toEqual(tags.length);
+    await orm.em.flush();
+    orm.em.clear();
+
+    taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
   });
 
   afterAll(async () => {
