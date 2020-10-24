@@ -48,7 +48,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   /**
-   * Counts the number of entries in the database
+   * Gets the count of collection items from database instead of counting loaded items.
+   * The value is cached, use `refresh = true` to force reload it.
    */
   async loadCount(refresh = false): Promise<number> {
     const em = this.owner.__helper!.__em;
