@@ -874,7 +874,7 @@ describe('EntityManagerSqlite2', () => {
     await orm.em.flush();
   });
 
-  test('loadCount (GH issue #949)', async () => {
+  test('loadCount to get the number of entries without initializing the collection (GH issue #949)', async () => {
     let author = orm.em.create(Author4, { name: 'Jon Doe', email: 'doe-jon@wall.st' });
     author.books.add(orm.em.create(Book4, { title: 'bo1' }));
     // Entity not managed yet
@@ -893,7 +893,7 @@ describe('EntityManagerSqlite2', () => {
 
     // Force refresh
     expect(await author.books.loadCount(true)).toEqual(1);
-    // Testing array collection implemntation
+    // Testing array collection implementation
     await orm.em.flush();
     orm.em.clear();
 

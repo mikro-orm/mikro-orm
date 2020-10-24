@@ -59,7 +59,14 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (refresh || !Utils.isDefined(this._count)) {
-      this._count = await em.count(this.property.type,{ [this.property.mappedBy || this.property.inversedBy]: this.owner.__helper!.getPrimaryKey() });
+      const condition = {};
+      if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+        condition[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+      } else {
+        condition[this.property.inversedBy] = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper?.getPrimaryKey();
+      }
+
+      this._count = await em.count(this.property.type, condition);
     }
 
     return this._count!;
