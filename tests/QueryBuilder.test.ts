@@ -1599,6 +1599,7 @@ describe('QueryBuilder', () => {
     const qb1 = pg.em.createQueryBuilder(Publisher2);
     qb1.select('*').where({ name: { $contains: 'test' } });
     expect(qb1.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" @> $1');
+    expect(qb1.getFormattedQuery()).toEqual(`select "e0".* from "publisher2" as "e0" where "e0"."name" @> 'test'`);
     expect(qb1.getParams()).toEqual(['test']);
 
     const qb2 = pg.em.createQueryBuilder(Publisher2);

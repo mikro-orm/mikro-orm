@@ -277,7 +277,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Returns raw interpolated query string with all the parameters inlined.
    */
   getFormattedQuery(): string {
-    const query = this.getKnexQuery().toSQL().toNative();
+    const query = this.getKnexQuery().toSQL();
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 
