@@ -93,9 +93,11 @@
     "extends": [
       "config:base"
     ],
-    "sourceUrlPrefixes": [
-      "https://github.com/lerna/lerna"
-    ]
+    "packageRules": [{
+      "sourceUrlPrefixes": [
+        "https://github.com/mikro-orm/mikro-orm"
+      ]
+    }]
   },
   "engines": {
     "node": ">= 10.13.0"
