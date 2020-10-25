@@ -12,11 +12,12 @@ export class TransactionContext {
 
   /**
    * Creates new TransactionContext instance and runs the code inside its domain.
-   * Async variant, when the `next` handler needs to be awaited (like in Koa).
    */
   static async createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
     const context = new TransactionContext(em);
+    const old = (domain as Dictionary).active;
     const d = domain.create() as TXDomain;
+    Object.assign(d, old);
     d.__mikro_orm_tx_context = context;
 
     return new Promise((resolve, reject) => {
