@@ -35,6 +35,8 @@ const res = await orm.em.find(Author, {
 
 Another way to do this by including the operator in your keys:
 
+> This approach is deprecated and will be removed in future versions.
+
 ```typescript
 const res = await orm.em.find(Author, { $and: [
   { 'id:in': [1, 2, 7] },
