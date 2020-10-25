@@ -93,11 +93,14 @@
     "extends": [
       "config:base"
     ],
-    "packageRules": [{
-      "sourceUrlPrefixes": [
-        "https://github.com/mikro-orm/mikro-orm"
-      ]
-    }]
+    "semanticCommits": true,
+    "packageRules": [
+      {
+        "depTypeList": ["devDependencies"],
+        "automerge": true
+      }
+    ],
+    "schedule": ["every weekday"]
   },
   "engines": {
     "node": ">= 10.13.0"
