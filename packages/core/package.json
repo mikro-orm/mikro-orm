@@ -47,13 +47,13 @@
     "access": "public"
   },
   "dependencies": {
-    "ansi-colors": "^4.1.1",
-    "clone": "^2.1.2",
-    "escaya": "^0.0.61",
-    "fs-extra": "^9.0.1",
-    "globby": "^11.0.1",
-    "reflect-metadata": "^0.1.13",
-    "strip-json-comments": "^3.1.1"
+    "ansi-colors": "4.1.1",
+    "clone": "2.1.2",
+    "escaya": "0.0.61",
+    "fs-extra": "9.0.1",
+    "globby": "11.0.1",
+    "reflect-metadata": "0.1.13",
+    "strip-json-comments": "3.1.1"
   },
   "peerDependencies": {
     "@mikro-orm/entity-generator": "^4.0.0",

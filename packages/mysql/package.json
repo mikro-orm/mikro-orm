@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/mysql-base": "^4.2.3",
-    "mysql2": "^2.2.5"
+    "mysql2": "2.2.5"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.2.3"

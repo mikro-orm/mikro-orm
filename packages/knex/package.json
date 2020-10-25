@@ -47,9 +47,9 @@
     "access": "public"
   },
   "dependencies": {
-    "fs-extra": "^9.0.1",
-    "knex": "^0.21.6",
-    "sqlstring": "^2.3.2"
+    "fs-extra": "9.0.1",
+    "knex": "0.21.6",
+    "sqlstring": "2.3.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.2.3"

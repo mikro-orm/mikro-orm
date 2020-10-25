@@ -54,11 +54,11 @@
     "@mikro-orm/entity-generator": "^4.2.3",
     "@mikro-orm/knex": "^4.2.3",
     "@mikro-orm/migrations": "^4.2.3",
-    "ansi-colors": "^4.1.1",
-    "cli-table3": "^0.6.0",
-    "fs-extra": "^9.0.1",
-    "tsconfig-paths": "^3.9.0",
-    "yargonaut": "^1.1.4",
-    "yargs": "^15.3.1"
+    "ansi-colors": "4.1.1",
+    "cli-table3": "0.6.0",
+    "fs-extra": "9.0.1",
+    "tsconfig-paths": "3.9.0",
+    "yargonaut": "1.1.4",
+    "yargs": "15.3.1"
   }
 }
