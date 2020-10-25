@@ -92,8 +92,7 @@
   "renovate": {
     "extends": [
       "config:base"
-    ],
-    "pinVersions": false
+    ]
   },
   "engines": {
     "node": ">= 10.13.0"
