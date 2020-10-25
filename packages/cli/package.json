@@ -59,6 +59,6 @@
     "fs-extra": "9.0.1",
     "tsconfig-paths": "3.9.0",
     "yargonaut": "1.1.4",
-    "yargs": "15.3.1"
+    "yargs": "15.4.1"
   }
 }
