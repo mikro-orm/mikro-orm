@@ -6,7 +6,7 @@ import { IdentifiedReference, Reference } from './Reference';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 
-  constructor(protected readonly em: EntityManager,
+  constructor(protected readonly _em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
 
   /**
@@ -51,7 +51,6 @@ export class EntityRepository<T extends AnyEntity<T>> {
   async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null> {
     return this.em.findOne<T, P>(this.entityName, where, populate as P, orderBy);
   }
-
 
   /**
    * Finds first entity matching your `where` query. If nothing found, it will throw an error.
@@ -274,6 +273,10 @@ export class EntityRepository<T extends AnyEntity<T>> {
    */
   async count(where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     return this.em.count<T>(this.entityName, where, options);
+  }
+
+  protected get em(): EntityManager {
+    return this._em.getContext();
   }
 
 }

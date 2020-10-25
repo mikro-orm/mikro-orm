@@ -69,6 +69,26 @@ describe('EntityManagerSqlite2', () => {
     }
   });
 
+  test('transactions respect the tx context', async () => {
+    const god1 = await orm.em.nativeInsert(Author4, { name: 'God1', email: 'hello@heaven1.god' });
+
+    // this repo is based on `orm.em`, but thanks `TransactionContext` helper,
+    // it will use the right EM behind the scenes when used inside `em.transactional()`
+    const repo = orm.em.getRepository(Author4);
+
+    await orm.em.transactional(async () => {
+      const a = await repo.findOneOrFail(god1);
+      a.name = 'abc';
+    });
+
+    orm.em.clear();
+    const res1 = await orm.em.findOne(Author4, { name: 'God1' });
+    expect(res1).toBeNull();
+
+    const res2 = await orm.em.findOne(Author4, { name: 'abc' });
+    expect(res2).not.toBeNull();
+  });
+
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
       const god1 = orm.em.create(Author4, { name: 'God1', email: 'hello1@heaven.god' });

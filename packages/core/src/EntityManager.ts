@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 
-import { Configuration, QueryHelper, Utils } from './utils';
+import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
@@ -326,13 +326,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, ctx = this.transactionContext): Promise<T> {
     const em = this.fork(false);
-    return em.getConnection().transactional(async trx => {
-      em.transactionContext = trx;
-      const ret = await cb(em);
-      await em.flush();
 
-      return ret;
-    }, ctx);
+    return TransactionContext.createAsync(em, async () => {
+      return em.getConnection().transactional(async trx => {
+        em.transactionContext = trx;
+        const ret = await cb(em);
+        await em.flush();
+
+        return ret;
+      }, ctx);
+    });
   }
 
   /**
@@ -730,7 +733,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
   getUnitOfWork(): UnitOfWork {
-    const em = this.useContext ? (this.config.get('context')() || this) : this;
+    const em = this.getContext();
     return em.unitOfWork;
   }
 
@@ -738,8 +741,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityFactory used by the EntityManager.
    */
   getEntityFactory(): EntityFactory {
-    const em = this.useContext ? (this.config.get('context')() || this) : this;
+    const em = this.getContext();
     return em.entityFactory;
+  }
+
+  /**
+   * Gets the EntityManager based on current transaction/request context.
+   */
+  getContext(): EntityManager {
+    let em = TransactionContext.getEntityManager(); // prefer the tx context
+
+    if (!em) {
+      // no explicit tx started
+      em = this.useContext ? (this.config.get('context')() || this) : this;
+    }
+
+    return em;
   }
 
   getEventManager(): EventManager {
