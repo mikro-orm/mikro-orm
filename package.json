@@ -115,7 +115,7 @@
     "@types/jest": "26.0.15",
     "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
     "@types/node": "14.6.2",
-    "@types/pg": "7.14.4",
+    "@types/pg": "7.14.5",
     "@types/sqlstring": "2.2.1",
     "@types/uuid": "8.3.0",
     "@types/webpack-env": "1.15.2",
