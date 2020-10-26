@@ -9,7 +9,7 @@
     "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.63",
+    "@docusaurus/core": "2.0.0-alpha.66",
     "@docusaurus/plugin-client-redirects": "2.0.0-alpha.63",
     "@docusaurus/preset-classic": "2.0.0-alpha.63",
     "classnames": "2.2.6",
