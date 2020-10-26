@@ -1798,10 +1798,10 @@
   resolved "https://registry.yarnpkg.com/@types/pg-types/-/pg-types-1.11.5.tgz#1eebbe62b6772fcc75c18957a90f933d155e005b"
   integrity sha512-L8ogeT6vDzT1vxlW3KITTCt+BVXXVkLXfZ/XNm6UqbcJgxf+KPO7yjWx7dQQE8RW07KopL10x2gNMs41+IkMGQ==
 
-"@types/pg@7.14.4":
-  version "7.14.4"
-  resolved "https://registry.yarnpkg.com/@types/pg/-/pg-7.14.4.tgz#15cfcfd9300f94fd44e6191a1b0ba18d2de209f6"
-  integrity sha512-yCKVMCcFPZSFHGg+8qjY368uf3ruyDBPjxvOU2ZcGa/vRFo5Ti5Y6z6vl+2hxtwm9VMWUGb6TWkIk3cIV8C0Cw==
+"@types/pg@7.14.5":
+  version "7.14.5"
+  resolved "https://registry.yarnpkg.com/@types/pg/-/pg-7.14.5.tgz#07638c7aa69061abe4be31267028cc5c3fc35f98"
+  integrity sha512-wqTKZmqkqXd1YiVRBT2poRrMIojwEi2bKTAAjUX6nEbzr98jc3cfR/7o7ZtubhH5xT7YJ6LRdRr1GZOgs8OUjg==
   dependencies:
     "@types/node" "*"
     "@types/pg-types" "*"
