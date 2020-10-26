@@ -181,6 +181,28 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 2, 1]);
   });
 
+  test('complex select with mapping of joined results', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
+    qb.select('*').leftJoinAndSelect('fb1.baz', 'fz');
+
+    const err = `Trying to join fz.fooBar, but fooBar is not a defined relation on FooBaz2`;
+    expect(() => qb.leftJoinAndSelect('fz.fooBar', 'fb2')).toThrowError(err);
+
+    qb.leftJoinAndSelect('fz.bar', 'fb2')
+      .where({ 'fz.name': 'baz' })
+      .limit(1);
+    const sql = 'select `fb1`.*, ' +
+      '`fz`.`id` as `fz_id`, `fz`.`name` as `fz_name`, `fz`.`version` as `fz_version`, ' +
+      '`fb2`.`id` as `fb2_id`, `fb2`.`name` as `fb2_name`, `fb2`.`baz_id` as `fb2_baz_id`, `fb2`.`foo_bar_id` as `fb2_foo_bar_id`, `fb2`.`version` as `fb2_version`, `fb2`.`blob` as `fb2_blob`, `fb2`.`array` as `fb2_array`, `fb2`.`object` as `fb2_object`, (select 123) as `fb2_random`, ' +
+      '(select 123) as `random` from `foo_bar2` as `fb1` ' +
+      'left join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
+      'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
+      'where `fz`.`name` = ? ' +
+      'limit ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['baz', 1]);
+  });
+
   test('select leftJoin 1:1 inverse', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2, 'fz');
     qb.select(['fb.*', 'fz.*'])

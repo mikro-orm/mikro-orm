@@ -117,7 +117,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path?: string): Dictionary<JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string): Dictionary<JoinOptions> {
     const ret = {
       [`${ownerAlias}.${prop.name}`]: {
         prop, type, cond, ownerAlias,
@@ -127,12 +127,10 @@ export class QueryBuilderHelper {
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
         table: prop.pivotTable,
+        path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
 
-    if (path) {
-      ret[`${ownerAlias}.${prop.name}`].path = path.endsWith('[pivot]') ? path : `${path}[pivot]`;
-    }
 
     if (type === 'pivotJoin') {
       return ret;
@@ -140,10 +138,7 @@ export class QueryBuilderHelper {
 
     const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
     ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
-
-    if (path) {
-      ret[`${pivotAlias}.${prop2.name}`].path = path;
-    }
+    ret[`${pivotAlias}.${prop2.name}`].path = path;
 
     return ret;
   }

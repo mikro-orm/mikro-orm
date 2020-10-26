@@ -177,6 +177,21 @@ console.log(qb.getQuery());
 // limit ? offset ?
 ```
 
+## Mapping joined results
+
+To select multiple entities and map them from `QueryBuilder`, we can use
+`joinAndSelect` or `leftJoinAndSelect` method:
+
+```ts
+// `res` will contain array of authors, with books and their tags populated
+const res = await orm.em.createQueryBuilder(Author, 'a')
+  .select('*')
+  .leftJoinAndSelect('a.books', 'b')
+  .leftJoinAndSelect('b.tags', 't')
+  .where({ 't.name': ['sick', 'sexy'] })
+  .getResultList();
+```
+
 ## Complex Where Conditions
 
 There are multiple ways to construct complex query conditions. You can either write parts of SQL

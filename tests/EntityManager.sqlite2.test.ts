@@ -854,6 +854,44 @@ describe('EntityManagerSqlite2', () => {
     expect(b4.object).toBe(123);
   });
 
+  test('mapping joined results from query builder', async () => {
+    const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1', author });
+    const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2', author });
+    const book3 = orm.em.create(Book4, { title: 'My Life on the Wall, part 3', author });
+    const tag1 = orm.em.create(BookTag4, { name: 'silly' });
+    const tag2 = orm.em.create(BookTag4, { name: 'funny' });
+    const tag3 = orm.em.create(BookTag4, { name: 'sick' });
+    const tag4 = orm.em.create(BookTag4, { name: 'strange' });
+    const tag5 = orm.em.create(BookTag4, { name: 'sexy' });
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    await orm.em.persist([book1, book2, book3]).flush();
+    orm.em.clear();
+
+    const qb = orm.em.createQueryBuilder(Author4, 'a');
+    qb.select('*')
+      .leftJoinAndSelect('a.books', 'b')
+      .leftJoinAndSelect('b.tags', 't')
+      .where({ 't.name': ['sick', 'sexy'] });
+    const sql = 'select `a`.*, ' +
+      '`b`.`id` as `b_id`, `b`.`created_at` as `b_created_at`, `b`.`updated_at` as `b_updated_at`, `b`.`title` as `b_title`, `b`.`author_id` as `b_author_id`, `b`.`publisher_id` as `b_publisher_id`, `b`.`meta` as `b_meta`, ' +
+      '`t`.`id` as `t_id`, `t`.`created_at` as `t_created_at`, `t`.`updated_at` as `t_updated_at`, `t`.`name` as `t_name`, `t`.`version` as `t_version` ' +
+      'from `author4` as `a` ' +
+      'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
+      'left join `tags_ordered` as `e1` on `b`.`id` = `e1`.`book4_id` ' +
+      'left join `book_tag4` as `t` on `e1`.`book_tag4_id` = `t`.`id` ' +
+      'where `t`.`name` in (\'sick\', \'sexy\')';
+    expect(qb.getFormattedQuery()).toEqual(sql);
+    const res = await qb.getSingleResult();
+    expect(res).not.toBeNull();
+    expect(res!.books[0]).not.toBeNull();
+    expect(res!.books[0].title).toBe('My Life on the Wall, part 1');
+    expect(res!.books[0].tags[0].name).toBe('sick');
+  });
+
   test('question marks and parameter interpolation (GH issue #920)', async () => {
     const e = orm.em.create(Author4, { name: `?baz? uh \\? ? wut? \\\\ wut`, email: '123' });
     await orm.em.persistAndFlush(e);

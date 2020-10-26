@@ -434,7 +434,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     });
   }
 
-  protected mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>): EntityData<T>[] {
+  /**
+   * @internal
+   */
+  mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>): EntityData<T>[] {
     // group by the root entity primary key first
     const res = rawResults.reduce((result, item) => {
       const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
@@ -469,7 +472,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return fields;
   }
 
-  protected mapPropToFieldNames<T extends AnyEntity<T>>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
+  /**
+   * @internal
+   */
+  mapPropToFieldNames<T extends AnyEntity<T>>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
     if (prop.formula) {
       const alias = qb.ref(tableAlias ?? qb.alias).toString();
       const aliased = qb.ref(tableAlias ? `${tableAlias}_${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();

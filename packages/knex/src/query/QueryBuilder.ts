@@ -1,7 +1,7 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityMetadata, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
-  PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError,
+  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, EntityData,
+  PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError, LoadStrategy,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -33,6 +33,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _having: Dictionary = {};
   private _limit?: number;
   private _offset?: number;
+  private _joinedProps = new Map<string, PopulateOptions<any>>();
   private _cache?: boolean | number | [string, number];
   private lockMode?: LockMode;
   private subQueries: Dictionary<string> = {};
@@ -60,7 +61,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.SELECT);
   }
 
-  addSelect(fields: string | string[]): this {
+  addSelect(fields: Field<T> | Field<T>[]): this {
     if (this.type && this.type !== QueryType.SELECT) {
       return this;
     }
@@ -101,6 +102,38 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   leftJoin(field: string, alias: string, cond: QBFilterQuery = {}): this {
     return this.join(field, alias, cond, 'leftJoin');
+  }
+
+  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
+    const prop = this.joinReference(field, alias, cond, type, path);
+    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
+    const [fromAlias] = this.helper.splitField(field);
+    const populate = this._joinedProps.get(fromAlias);
+    const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
+
+    if (populate) {
+      populate.children!.push(item);
+    } else { // root entity
+      this._populate.push(item);
+    }
+
+    this._joinedProps.set(alias, item);
+
+    return this;
+  }
+
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): this {
+    return this.joinAndSelect(field, alias, cond, 'leftJoin');
+  }
+
+  protected getFieldsForJoinedLoad<U extends AnyEntity<U>>(prop: EntityProperty<U>, alias: string): Field<U>[] {
+    const fields: Field<U>[] = [];
+    const meta2 = this.metadata.find<U>(prop.type)!;
+    meta2.props
+      .filter(prop => this.driver.shouldHaveColumn(prop, this._populate))
+      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
+
+    return fields;
   }
 
   withSubQuery(subQuery: KnexQueryBuilder, alias: string): this {
@@ -347,7 +380,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Executes the query, returning array of results
    */
   async getResultList(): Promise<T[]> {
-    const res = await this.execute<T[]>('all', true);
+    let res = await this.execute<EntityData<T>[]>('all', true);
+
+    if (this._joinedProps.size > 0) {
+      res = this.driver.mergeJoinedResult(res, this.metadata.find(this.entityName)!);
+    }
+
     return res.map(r => this.em!.map<T>(this.entityName, r));
   }
 
@@ -355,7 +393,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Executes the query, returning the first result or null
    */
   async getSingleResult(): Promise<T | null> {
-    const res = await this.getResult();
+    const res = await this.getResultList();
     return res[0] || null;
   }
 
@@ -381,7 +419,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
     qb.finalized = false;
 
@@ -399,13 +437,20 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): void {
+  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): EntityProperty {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
-    const prop = this.metadata.get(entityName).properties[fromField];
+    const meta = this.metadata.get(entityName);
+    const prop = meta.properties[fromField];
+
+    if (!prop) {
+      throw new Error(`Trying to join ${field}, but ${fromField} is not a defined relation on ${meta.className}`);
+    }
+
     this._aliasMap[alias] = prop.type;
     cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
+    path = path ?? `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
@@ -429,6 +474,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     if (!this._joins[aliasedName].path && path) {
       this._joins[aliasedName].path = path;
     }
+
+    return prop;
   }
 
   private prepareFields<T extends AnyEntity<T>, U extends string | Raw = string | Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {

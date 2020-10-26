@@ -280,7 +280,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return fields;
   }
 
-  protected shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
     if (super.shouldHaveColumn(prop, populate)) {
       return true;
     }
