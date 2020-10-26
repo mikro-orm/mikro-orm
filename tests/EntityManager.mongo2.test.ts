@@ -44,6 +44,18 @@ describe('EntityManagerMongo2', () => {
     book5.publisher = wrapped0;
   });
 
+  test('loadCount counts the entities without loading the collection', async () => {
+    let bible = new Book('Bible');
+    bible.tags.add(new BookTag('t1'), new BookTag('t2'), new BookTag('t3'));
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    bible = await orm.em.findOneOrFail(Book, bible.id);
+    // Shouldn't this return 3 instead of 0 ?
+    await expect(orm.em.count(BookTag, { books: [bible.id] })).resolves.toEqual(3);
+    await expect(bible.tags.loadCount()).resolves.toEqual(3);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

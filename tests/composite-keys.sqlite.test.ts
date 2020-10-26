@@ -591,7 +591,6 @@ describe('composite keys in sqlite', () => {
     }
   });
 
-  // F
   test('loadCount for composite keys', async () => {
     const car = new Car2('Audi A8', 2010, 200_000);
     const user = new User2('John', 'Doe');

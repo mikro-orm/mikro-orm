@@ -341,6 +341,15 @@ describe('composite keys in mysql', () => {
     }
   });
 
+  test('loadCount for composite keys', async () => {
+    const car = new Car2('Audi A8', 2010, 200_000);
+    const user = new User2('John', 'Doe');
+    user.cars.add(car);
+    await orm.em.persistAndFlush(user);
+    await expect(car.users.loadCount()).resolves.toEqual(1);
+    await expect(user.cars.loadCount()).resolves.toEqual(1);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
