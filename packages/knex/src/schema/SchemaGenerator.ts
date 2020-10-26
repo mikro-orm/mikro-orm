@@ -530,10 +530,10 @@ export class SchemaGenerator {
     const idxName = (name: string | boolean | undefined, columns: string[], type: 'index' | 'unique' | 'foreign') => {
       return Utils.isString(name) ? name : this.helper.getIndexName(meta.collection, columns, type);
     };
-    const expectIndex = (keyName: string, columnNames: string[], unique: boolean) => {
+    const expectIndex = (keyName: string, columnNames: string[], unique: boolean, add: boolean) => {
       expectedIndexes.add(keyName);
 
-      if (!existingIndexes.has(keyName)) {
+      if (add && !existingIndexes.has(keyName)) {
         addIndex.push({ keyName, columnNames, unique });
       }
     };
@@ -542,19 +542,19 @@ export class SchemaGenerator {
       meta[type].forEach(index => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
         const name = idxName(index.name, properties, type === 'uniques' ? 'unique' : 'index');
-        expectIndex(name, properties, type === 'uniques');
+        expectIndex(name, properties, type === 'uniques', true);
       });
     });
 
     meta.props.forEach(prop => {
       if (prop.index) {
         const name = idxName(prop.index, prop.fieldNames, 'index');
-        expectIndex(name, prop.fieldNames, false);
+        expectIndex(name, prop.fieldNames, false, prop.reference === ReferenceType.SCALAR);
       }
 
       if (prop.unique) {
         const name = idxName(prop.unique, prop.fieldNames, 'unique');
-        expectIndex(name, prop.fieldNames, true);
+        expectIndex(name, prop.fieldNames, true, prop.reference === ReferenceType.SCALAR);
       }
 
       if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
