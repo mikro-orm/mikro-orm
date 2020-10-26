@@ -38,7 +38,8 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     strict: false,
     validate: false,
-    context: () => RequestContext.getEntityManager(),
+    context: (name: string) => RequestContext.getEntityManager(name),
+    contextName: 'default',
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
@@ -356,7 +357,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
-  context: () => EntityManager | undefined;
+  context: (name: string) => EntityManager | undefined;
+  contextName: string;
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];

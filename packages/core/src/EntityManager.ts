@@ -20,6 +20,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private static counter = 1;
   readonly id = EntityManager.counter++;
+  readonly name = this.config.get('contextName');
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
@@ -733,16 +734,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
   getUnitOfWork(): UnitOfWork {
-    const em = this.getContext();
-    return em.unitOfWork;
+    return this.getContext().unitOfWork;
   }
 
   /**
    * Gets the EntityFactory used by the EntityManager.
    */
   getEntityFactory(): EntityFactory {
-    const em = this.getContext();
-    return em.entityFactory;
+    return this.getContext().entityFactory;
   }
 
   /**
@@ -753,7 +752,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!em) {
       // no explicit tx started
-      em = this.useContext ? (this.config.get('context')() || this) : this;
+      em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
     }
 
     return em;

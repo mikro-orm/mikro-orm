@@ -10,17 +10,23 @@ export type ORMDomain = Domain & { __mikro_orm_context?: RequestContext };
  */
 export class RequestContext {
 
-  readonly id = this.em.id;
+  private static counter = 1;
+  readonly id = RequestContext.counter++;
 
-  constructor(readonly em: EntityManager) { }
+  constructor(readonly map: Map<string, EntityManager>) { }
+
+  /**
+   * Returns default EntityManager.
+   */
+  get em(): EntityManager | undefined {
+    return this.map.get('default');
+  }
 
   /**
    * Creates new RequestContext instance and runs the code inside its domain.
    */
-  static create(em: EntityManager, next: (...args: any[]) => void): void {
-    const context = new RequestContext(em.fork(true, true));
-    const d = domain.create() as ORMDomain;
-    d.__mikro_orm_context = context;
+  static create(em: EntityManager | EntityManager[], next: (...args: any[]) => void): void {
+    const d = this.createDomain(em);
     d.run(next);
   }
 
@@ -28,10 +34,8 @@ export class RequestContext {
    * Creates new RequestContext instance and runs the code inside its domain.
    * Async variant, when the `next` handler needs to be awaited (like in Koa).
    */
-  static async createAsync(em: EntityManager, next: (...args: any[]) => Promise<void>): Promise<void> {
-    const context = new RequestContext(em.fork(true, true));
-    const d = domain.create() as ORMDomain;
-    d.__mikro_orm_context = context;
+  static async createAsync(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<void>): Promise<void> {
+    const d = this.createDomain(em);
     await new Promise((resolve, reject) => {
       d.run(() => next().then(resolve).catch(reject));
     });
@@ -48,9 +52,25 @@ export class RequestContext {
   /**
    * Returns current EntityManager (if available).
    */
-  static getEntityManager(): EntityManager | undefined {
+  static getEntityManager(name = 'default'): EntityManager | undefined {
     const context = RequestContext.currentRequestContext();
-    return context ? context.em : undefined;
+    return context ? context.map.get(name) : undefined;
+  }
+
+  private static createDomain(em: EntityManager | EntityManager[]): ORMDomain {
+    const forks = new Map<string, EntityManager>();
+
+    if (Array.isArray(em)) {
+      em.forEach(em => forks.set(em.name, em.fork(true, true)));
+    } else {
+      forks.set(em.name, em.fork(true, true));
+    }
+
+    const context = new RequestContext(forks);
+    const d = domain.create() as ORMDomain;
+    d.__mikro_orm_context = context;
+
+    return d;
   }
 
 }
