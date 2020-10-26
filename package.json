@@ -129,7 +129,7 @@
     "husky": "4.2.5",
     "jest": "26.4.2",
     "lerna": "3.22.1",
-    "lint-staged": "10.2.13",
+    "lint-staged": "10.4.2",
     "rimraf": "3.0.2",
     "run-rs": "0.6.2",
     "ts-jest": "26.3.0",
