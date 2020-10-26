@@ -1309,6 +1309,18 @@ alter table \`author2\` add constraint \`author2_favourite_book_uuid_pk_foreign\
 "
 `;
 
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-index 1`] = `
+"alter table \`book2\` add index \`new_title_idx\`(\`title\`);
+
+"
+`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-unique 1`] = `
+"alter table \`book2\` add unique \`book2_title_unique\`(\`title\`);
+
+"
+`;
+
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-alter-column 1`] = `
 "alter table \`author2\` modify \`age\` int(11) default 42, modify \`born\` int not null default 42;
 alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
@@ -1352,6 +1364,12 @@ alter table \`author2\` drop \`favourite_book_uuid_pk\`;
 "
 `;
 
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-index 1`] = `
+"alter table \`book2\` drop index \`new_title_idx\`;
+
+"
+`;
+
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table 1`] = `
 "drop table if exists \`author2\`;
 
@@ -1363,6 +1381,12 @@ drop table if exists \`new_table\`;
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-disabled 1`] = `""`;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-table-safe 1`] = `""`;
+
+exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-drop-unique 1`] = `
+"alter table \`book2\` drop index \`book2_title_unique\`;
+
+"
+`;
 
 exports[`SchemaGenerator update schema [postgres]: postgres-update-schema-add-column 1`] = `
 "alter table \\"new_table\\" add column \\"id\\" serial primary key, add column \\"updated_at\\" timestamp(3) not null default current_timestamp(3);

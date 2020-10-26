@@ -525,34 +525,36 @@ export class SchemaGenerator {
     const addIndex: IndexDef[] = [];
     const dropIndex: IndexDef[] = [];
     const expectedIndexes = new Set();
-    const existingIndexes = new Set(Object.keys(table.getIndexes()));
+    const indexes = table.getIndexes();
+    const existingIndexes = new Set(Object.keys(indexes));
     const idxName = (name: string | boolean | undefined, columns: string[], type: 'index' | 'unique' | 'foreign') => {
       return Utils.isString(name) ? name : this.helper.getIndexName(meta.collection, columns, type);
+    };
+    const expectIndex = (keyName: string, columnNames: string[], unique: boolean) => {
+      expectedIndexes.add(keyName);
+
+      if (!existingIndexes.has(keyName)) {
+        addIndex.push({ keyName, columnNames, unique });
+      }
     };
 
     (['indexes', 'uniques'] as const).forEach(type => {
       meta[type].forEach(index => {
         const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
         const name = idxName(index.name, properties, type === 'uniques' ? 'unique' : 'index');
-        expectedIndexes.add(name);
-
-        if (!existingIndexes.has(name)) {
-          addIndex.push({
-            keyName: name,
-            columnNames: properties,
-            unique: type === 'uniques',
-          });
-        }
+        expectIndex(name, properties, type === 'uniques');
       });
     });
 
     meta.props.forEach(prop => {
       if (prop.index) {
-        expectedIndexes.add(idxName(prop.index, prop.fieldNames, 'index'));
+        const name = idxName(prop.index, prop.fieldNames, 'index');
+        expectIndex(name, prop.fieldNames, false);
       }
 
       if (prop.unique) {
-        expectedIndexes.add(idxName(prop.unique, prop.fieldNames, 'unique'));
+        const name = idxName(prop.unique, prop.fieldNames, 'unique');
+        expectIndex(name, prop.fieldNames, true);
       }
 
       if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
@@ -561,7 +563,7 @@ export class SchemaGenerator {
       }
     });
 
-    Object.entries(table.getIndexes()).forEach(([name, index]) => {
+    Object.entries(indexes).forEach(([name, index]) => {
       const willBeRemoved = remove.find(col => index.some(idx => idx.columnName === col.name));
 
       if (!expectedIndexes.has(name) && !this.helper.isImplicitIndex(name) && !willBeRemoved) {

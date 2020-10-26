@@ -148,6 +148,21 @@ describe('SchemaGenerator', () => {
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
     await generator.updateSchema();
 
+    // add scalar property index
+    const bookMeta = meta.get('Book2');
+    bookMeta.properties.title.index = 'new_title_idx';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-index');
+    await generator.updateSchema();
+    bookMeta.properties.title.unique = true;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-unique');
+    await generator.updateSchema();
+    bookMeta.properties.title.index = false;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-index');
+    await generator.updateSchema();
+    bookMeta.properties.title.unique = false;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-unique');
+    await generator.updateSchema();
+
     const authorMeta = meta.get('Author2');
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.born.type = 'number';
