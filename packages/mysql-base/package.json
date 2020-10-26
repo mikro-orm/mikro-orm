@@ -54,7 +54,7 @@
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0",
-    "mysql2": "2.1.0"
+    "mysql2": "2.2.5"
   },
   "peerDependenciesMeta": {
     "mysql2": {
