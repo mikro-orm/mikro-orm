@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/migrations",
-  "version": "4.2.2",
+  "version": "4.2.3",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,13 +47,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^4.2.2",
+    "@mikro-orm/knex": "^4.2.3",
     "@types/umzug": "^2.3.0",
     "fs-extra": "^9.0.1",
     "umzug": "^2.3.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.2.2"
+    "@mikro-orm/core": "^4.2.3"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0"

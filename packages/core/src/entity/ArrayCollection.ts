@@ -10,7 +10,6 @@ export class ArrayCollection<T, O> {
 
   protected readonly items = new Set<T>();
   protected initialized = true;
-  protected _firstItem?: T;
   protected _count?: number;
   private _property?: EntityProperty;
 
@@ -24,7 +23,6 @@ export class ArrayCollection<T, O> {
     Object.defineProperty(this, 'items', { enumerable: false });
     Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
     Object.defineProperty(this, '_property', { enumerable: false, writable: true });
-    Object.defineProperty(this, '_firstItem', { enumerable: false, writable: true });
     Object.defineProperty(this, '_count', { enumerable: false, writable: true });
     Object.defineProperty(this, '__collection', { value: true });
   }
@@ -42,7 +40,7 @@ export class ArrayCollection<T, O> {
       return [];
     }
 
-    const meta = (this._firstItem as AnyEntity<T>).__meta!;
+    const meta = this.property.targetMeta!;
     const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
 
     return this.getItems().map(item => wrap(item).toJSON(...args));
@@ -59,7 +57,7 @@ export class ArrayCollection<T, O> {
       return [];
     }
 
-    field = field ?? (this._firstItem as AnyEntity<T>).__meta!.serializedPrimaryKey;
+    field = field ?? this.property.targetMeta!.serializedPrimaryKey;
 
     return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
   }
@@ -67,7 +65,6 @@ export class ArrayCollection<T, O> {
   add(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
       const entity = Reference.unwrapReference(item);
-      this._firstItem = entity;
 
       if (!this.contains(entity, false)) {
         this.incrementCount(1);
@@ -88,9 +85,7 @@ export class ArrayCollection<T, O> {
    */
   hydrate(items: T[]): void {
     this.items.clear();
-    if (Utils.isDefined(this._count)) {
-      this._count = 0;
-    }
+    this._count = 0;
     this.add(...items);
   }
 
@@ -189,7 +184,7 @@ export class ArrayCollection<T, O> {
   }
 
   protected incrementCount(value: number) {
-    if (Utils.isDefined<number>(this._count)) {
+    if (typeof this._count === 'number') {
       this._count += value;
     }
   }

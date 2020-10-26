@@ -48,7 +48,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   /**
-   * Counts the number of entries in the database
+   * Gets the count of collection items from database instead of counting loaded items.
+   * The value is cached, use `refresh = true` to force reload it.
    */
   async loadCount(refresh = false): Promise<number> {
     const em = this.owner.__helper!.__em;
@@ -58,7 +59,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (refresh || !Utils.isDefined(this._count)) {
-      this._count = await em.count(this.property.type, this.createCondition());
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
     }
 
     return this._count!;
@@ -253,12 +254,23 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.property.pivotTable) {
       // we know there is at least one item as it was checked in load method
-      const pk = (this._firstItem as AnyEntity<T>).__meta!.primaryKeys[0];
+      const pk = this.property.targetMeta!.primaryKeys[0];
       cond[pk] = { $in: [] };
       this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.getPrimaryKey()));
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     }
+  }
+
+  private createLoadCountCondition(cond: Dictionary) {
+    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+    } else {
+      const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
+      const value = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+      cond[key] = value;
+    }
+    return cond;
   }
 
   private modify(method: 'add' | 'remove', items: T[]): void {

@@ -289,7 +289,6 @@ export class MetadataDiscovery {
 
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
-    prop.referencedPKs = meta2.primaryKeys;
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -322,7 +321,6 @@ export class MetadataDiscovery {
 
   private initManyToOneFields(prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
-    prop.referencedPKs = meta2.primaryKeys;
     const fieldNames = Utils.flatten(meta2.primaryKeys.map(primaryKey => meta2.properties[primaryKey].fieldNames));
     Utils.defaultValue(prop, 'referencedTableName', meta2.collection);
 
@@ -337,7 +335,6 @@ export class MetadataDiscovery {
 
   private initOneToManyFields(prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
-    prop.referencedPKs = meta2.primaryKeys;
 
     if (!prop.joinColumns) {
       prop.joinColumns = [this.namingStrategy.joinColumnName(prop.name)];
@@ -362,6 +359,7 @@ export class MetadataDiscovery {
       this.initVersionProperty(meta, prop);
       this.initCustomType(prop);
       this.initColumnType(prop, meta.path);
+      this.initRelation(prop);
     });
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKeys[0]);
     const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
@@ -706,6 +704,16 @@ export class MetadataDiscovery {
     if (prop.customType as unknown instanceof Type && prop.reference === ReferenceType.SCALAR) {
       prop.type = prop.customType.constructor.name;
     }
+  }
+
+  private initRelation(prop: EntityProperty): void {
+    if (prop.reference === ReferenceType.SCALAR) {
+      return;
+    }
+
+    const meta2 = this.discovered.find(m => m.className === prop.type)!;
+    prop.referencedPKs = meta2.primaryKeys;
+    prop.targetMeta = meta2;
   }
 
   private initColumnType(prop: EntityProperty, path?: string): void {
