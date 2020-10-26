@@ -81,7 +81,7 @@ Let's say there are 2 endpoints
 1. `GET /book/:id` that returns just the book, without populating anything
 2. `GET /book-with-author/:id` that returns the book and its author populated
 
-Now when someone requests same book via both of those endpoints, you could end up with both 
+Now when someone requests the same book via both of those endpoints, you could end up with both 
 returning the same output:
  
 1. `GET /book/1` returns `Book` without populating its property `author` property
