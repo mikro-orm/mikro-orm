@@ -45,13 +45,19 @@ export abstract class AbstractSqlPlatform extends Platform {
 
     while (pos < sql.length) {
       const idx = sql.indexOf('?', pos + 1);
+
       if (idx === -1) {
         ret += sql.substring(pos, sql.length);
         break;
       }
 
-      ret += sql.substr(pos, idx - pos) + this.quoteValue(params[j++]);
-      pos = idx + 1;
+      if (sql.substr(idx, 2) === '??') {
+        ret += sql.substr(pos, idx - pos) + this.quoteIdentifier(params[j++]);
+        pos = idx + 2;
+      } else {
+        ret += sql.substr(pos, idx - pos) + this.quoteValue(params[j++]);
+        pos = idx + 1;
+      }
     }
 
     return ret;
