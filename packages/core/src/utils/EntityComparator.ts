@@ -170,12 +170,7 @@ export class EntityComparator {
       return exists;
     }
 
-    const meta = this.metadata.find<T>(entityName)!;
-
-    if (!meta) {
-      return i => i;
-    }
-
+    const meta = this.metadata.get<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
 
