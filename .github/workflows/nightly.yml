@@ -18,29 +18,13 @@ jobs:
       uses: actions/setup-node@v2-beta
       with:
         node-version: 15
-        registry-url: 'https://registry.npmjs.org'
-
-    - name: Set git identity
-      run: |
-        git config --global user.name "Martin Adámek"
-        git config --global user.email "banan23@gmail.com"
-
-    - name: Create .npmrc
-      run: |
-        echo -e "access=public" >> .npmrc
-        echo -e "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> .npmrc
-        pwd
-        cat "$(pwd)/.npmrc"
+        registry-url: https://registry.npmjs.org/
 
     - name: Install libkrb5-dev (for mongo)
       run: sudo apt install libkrb5-dev
 
     - name: Release nightly
-      run: |
-        pwd
-        cat "$(pwd)/.npmrc"
-        npm whoami --loglevel silly
-        yarn
-        yarn release:next --yes --loglevel silly
+    - run: yarn
+    - run: yarn release:next --yes --loglevel silly
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
