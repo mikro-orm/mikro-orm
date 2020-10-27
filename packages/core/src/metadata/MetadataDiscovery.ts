@@ -511,11 +511,11 @@ export class MetadataDiscovery {
     }
 
     let order = this.defineBaseEntityProperties(base);
-    const old = Object.values(meta.properties);
+    const old = Object.values(meta.properties).map(x => x.name);
     meta.properties = { ...base.properties, ...meta.properties };
 
     if (!meta.discriminatorValue) {
-      Object.values(base.properties).filter(prop => !old.includes(prop)).forEach(prop => {
+      Object.values(base.properties).filter(prop => !old.includes(prop.name)).forEach(prop => {
         meta.properties[prop.name] = { ...prop };
         meta.propertyOrder.set(prop.name, (order += 0.01));
       });
