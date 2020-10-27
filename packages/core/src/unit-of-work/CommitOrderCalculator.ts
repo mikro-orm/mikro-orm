@@ -62,6 +62,7 @@ export class CommitOrderCalculator {
       return;
     }
 
+    /* istanbul ignore next */
     const propertyType = prop.targetMeta?.root.className;
 
     if (!propertyType || !this.hasNode(propertyType)) {
