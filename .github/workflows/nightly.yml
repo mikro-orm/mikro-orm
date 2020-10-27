@@ -1,12 +1,8 @@
 name: nightly
 
 on:
-  push:
-    branches:
-      - master # for initial testing only
-#on:
-#  schedule:
-#    - cron:  '0 6 * * *'
+  schedule:
+    - cron:  '0 6 * * *'
 
 jobs:
   release:
@@ -30,8 +26,6 @@ jobs:
         yarn
         echo "access=public" >> .npmrc
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-#        echo "access=public" >> $NPM_CONFIG_USERCONFIG
-#        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $NPM_CONFIG_USERCONFIG
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
