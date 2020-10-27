@@ -23,8 +23,12 @@ jobs:
     - name: Install libkrb5-dev (for mongo)
       run: sudo apt install libkrb5-dev
 
+    - name: Install
+      run: |
+        yarn
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+
     - name: Release nightly
-    - run: yarn
-    - run: yarn release:next --yes --loglevel silly
+      run: yarn release:next --yes --loglevel silly
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
