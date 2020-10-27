@@ -1,0 +1,42 @@
+name: nightly
+
+on:
+  push:
+    branches:
+      - master # for initial testing only
+#on:
+#  schedule:
+#    - cron:  '0 6 * * *'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 14
+      uses: actions/setup-node@v2-beta
+      with:
+        node-version: 14
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Set git identity
+      run: |
+        git config --global user.name "Martin Adámek"
+        git config --global user.email "banan23@gmail.com"
+
+#    - name: Create .npmrc
+#      run: |
+#        echo -e "access=public" >> ~/.npmrc
+#        echo -e "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
+
+    - name: Install libkrb5-dev (for mongo)
+      run: sudo apt install libkrb5-dev
+
+    - name: Release nightly
+      run: |
+        yarn
+#        npm whoami --loglevel silly
+        yarn release:next --yes --loglevel silly
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
