@@ -1,4 +1,4 @@
-import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap } from '@mikro-orm/core';
+import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap, ArrayCollection } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
@@ -930,6 +930,76 @@ describe('EntityManagerSqlite2', () => {
 
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
+  });
+
+  test('loadCount to get the number of entries without initializing the collection (GH issue #949)', async () => {
+    let author = orm.em.create(Author4, { name: 'Jon Doe', email: 'doe-jon@wall.st' });
+    author.books.add(orm.em.create(Book4, { title: 'bo1' }));
+    // Entity not managed yet
+    expect(() => author.books.loadCount()).rejects.toThrow(ValidationError);
+
+    await orm.em.persistAndFlush(author);
+
+    const reloadedBook = await author.books.loadCount();
+    expect(reloadedBook).toBe(1);
+
+    // Adding new items
+    const laterRemoved = orm.em.create(Book4, { title: 'bo2' });
+    author.books.add(laterRemoved, orm.em.create(Book4, { title: 'bo3' }));
+    const threeItms = await author.books.loadCount();
+    expect(threeItms).toEqual(3);
+
+    // Force refresh
+    expect(await author.books.loadCount(true)).toEqual(1);
+    // Testing array collection implementation
+    await orm.em.flush();
+    orm.em.clear();
+
+
+    // Updates when removing an item
+    author = (await orm.em.findOneOrFail(Author4, author.id));
+    expect(await author.books.loadCount()).toEqual(3);
+    await author.books.init();
+    author.books.remove(author.books[0]);
+    expect(await author.books.loadCount()).toEqual(2);
+    expect(await author.books.loadCount(true)).toEqual(3);
+    await orm.em.flush();
+    orm.em.clear();
+
+    // Resets the counter when hydrating
+    author = (await orm.em.findOneOrFail(Author4, author.id));
+    await author.books.loadCount();
+    author.books.hydrate([]);
+    expect(await author.books.loadCount()).toEqual(0);
+    expect(await author.books.loadCount(true)).toEqual(2);
+
+    // Code coverage ?
+    const arryCollection = new ArrayCollection(author);
+    expect(await arryCollection.loadCount()).toEqual(0);
+
+    // n:m relations
+    let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
+    await orm.em.persistAndFlush(taggedBook);
+    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })];
+    taggedBook.tags.add(...tags);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(0);
+    await orm.em.flush();
+    orm.em.clear();
+
+    taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
+    expect(taggedBook.tags.isInitialized()).toBe(false);
+    await taggedBook.tags.init();
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length);
+    const removing  = taggedBook.tags[0];
+    taggedBook.tags.remove(removing);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
+    await expect(taggedBook.tags.loadCount(true)).resolves.toEqual(tags.length);
+    await orm.em.flush();
+    orm.em.clear();
+
+    taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
+    await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
   });
 
   afterAll(async () => {

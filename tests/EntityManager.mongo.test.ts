@@ -2178,6 +2178,16 @@ describe('EntityManagerMongo', () => {
     await expect(driver.nativeInsert(Author.name, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
   });
 
+  test('loadCount with 1:n relationships', async () => {
+    let author = new Author('Jon Snow', 'snow@wall.st');
+    author.books.add(new Book('b1'), new Book('b2'), new Book('b3'), new Book('b4'));
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    author = await orm.em.findOneOrFail(Author, author.id);
+    await expect(author.books.loadCount()).resolves.toEqual(4);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

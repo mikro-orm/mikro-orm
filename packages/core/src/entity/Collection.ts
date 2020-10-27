@@ -48,6 +48,28 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   /**
+   * Gets the count of collection items from database instead of counting loaded items.
+   * The value is cached, use `refresh = true` to force reload it.
+   */
+  async loadCount(refresh = false): Promise<number> {
+    const em = this.owner.__helper!.__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.owner);
+    }
+
+    if (refresh || !Utils.isDefined(this._count)) {
+      if (!em.getDriver().getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+        this._count = this.length;
+      } else {
+        this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
+      }
+    }
+
+    return this._count!;
+  }
+
+  /**
    * Returns the items (the collection must be initialized)
    */
   getItems(check = true): T[] {
@@ -242,6 +264,16 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     } else {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     }
+  }
+
+  private createLoadCountCondition(cond: Dictionary) {
+    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+    } else {
+      const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
+      cond[key] = this.owner.__meta!.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+    }
+    return cond;
   }
 
   private modify(method: 'add' | 'remove', items: T[]): void {

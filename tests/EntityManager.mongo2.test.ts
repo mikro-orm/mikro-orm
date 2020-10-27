@@ -44,6 +44,18 @@ describe('EntityManagerMongo2', () => {
     book5.publisher = wrapped0;
   });
 
+  test('loadCount with m:n relationships', async () => {
+    let bible = new Book('Bible');
+    bible.tags.add(new BookTag('t1'), new BookTag('t2'), new BookTag('t3'));
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    bible = await orm.em.findOneOrFail(Book, bible.id);
+    await expect(bible.tags.loadCount()).resolves.toEqual(3);
+    bible.tags.removeAll();
+    await expect(bible.tags.loadCount()).resolves.toEqual(0);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
