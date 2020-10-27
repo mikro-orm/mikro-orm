@@ -9,6 +9,10 @@ export class EntityValidator {
 
   validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
     meta.props.forEach(prop => {
+      if (prop.inherited) {
+        return;
+      }
+
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
       }
