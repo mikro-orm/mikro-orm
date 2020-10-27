@@ -14,6 +14,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Use Node.js 15
       uses: actions/setup-node@v2-beta
       with:
@@ -28,8 +30,8 @@ jobs:
         yarn
         echo "access=public" >> .npmrc
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-        echo "access=public" >> $NPM_CONFIG_USERCONFIG
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $NPM_CONFIG_USERCONFIG
+#        echo "access=public" >> $NPM_CONFIG_USERCONFIG
+#        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> $NPM_CONFIG_USERCONFIG
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
