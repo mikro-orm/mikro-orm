@@ -36,7 +36,6 @@ jobs:
     - name: Release nightly
       run: |
         yarn
-#        npm whoami --loglevel silly
         yarn release:next --yes --loglevel silly
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
