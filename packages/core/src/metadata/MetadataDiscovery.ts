@@ -395,6 +395,7 @@ export class MetadataDiscovery {
   private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
     const data = new EntityMetadata({
       name: prop.pivotTable,
+      className: prop.pivotTable,
       collection: prop.pivotTable,
       pivotTable: true,
     });
@@ -460,6 +461,7 @@ export class MetadataDiscovery {
     } as EntityProperty;
 
     const meta = this.metadata.get(type);
+    ret.targetMeta = meta;
     ret.joinColumns = [];
     ret.inverseJoinColumns = [];
     ret.referencedTableName = meta.collection;

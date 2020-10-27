@@ -280,7 +280,7 @@ export class UnitOfWork {
 
     for (const entity of this.removeStack) {
       const meta = this.metadata.find(entity.constructor.name)!;
-      this.changeSets.set(entity, { entity, type: ChangeSetType.DELETE, name: meta.name, collection: meta.collection, payload: {} } as ChangeSet<AnyEntity>);
+      this.changeSets.set(entity, new ChangeSet(entity, ChangeSetType.DELETE, {}, meta));
     }
   }
 
@@ -645,8 +645,8 @@ export class UnitOfWork {
 
     this.changeSets.forEach(cs => {
       const group = groups[cs.type];
-      group[cs.name] = group[cs.name] ?? [];
-      group[cs.name].push(cs);
+      group[cs.rootName] = group[cs.rootName] ?? [];
+      group[cs.rootName].push(cs);
     });
 
     return groups;
@@ -655,28 +655,16 @@ export class UnitOfWork {
   private getCommitOrder(): string[] {
     const calc = new CommitOrderCalculator();
     const set = new Set<string>();
-    this.changeSets.forEach(cs => set.add(cs.name));
+    this.changeSets.forEach(cs => set.add(cs.rootName));
     set.forEach(entityName => calc.addNode(entityName));
 
     for (const entityName of set) {
       for (const prop of this.metadata.find(entityName)!.props) {
-        if (!calc.hasNode(prop.type)) {
-          continue;
-        }
-
-        this.addCommitDependency(calc, prop, entityName);
+        calc.discoverProperty(prop, entityName);
       }
     }
 
     return calc.sort();
-  }
-
-  private addCommitDependency(calc: CommitOrderCalculator, prop: EntityProperty, entityName: string): void {
-    if (!(prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) && prop.reference !== ReferenceType.MANY_TO_ONE) {
-      return;
-    }
-
-    calc.addDependency(prop.type, entityName, prop.nullable ? 0 : 1);
   }
 
 }

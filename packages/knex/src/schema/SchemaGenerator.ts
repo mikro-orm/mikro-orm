@@ -580,34 +580,22 @@ export class SchemaGenerator {
 
   private getOrderedMetadata(): EntityMetadata[] {
     const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = !meta.root || meta.root === meta;
+      const isRootEntity = meta.root.className === meta.className;
       return isRootEntity && !meta.embeddable;
     });
     const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.name!));
+    metadata.forEach(meta => calc.addNode(meta.root.className));
     let meta = metadata.pop();
 
     while (meta) {
       for (const prop of meta.props) {
-        if (!calc.hasNode(prop.type)) {
-          continue;
-        }
-
-        this.addCommitDependency(calc, prop, meta.name!);
+        calc.discoverProperty(prop, meta.root.className);
       }
 
       meta = metadata.pop();
     }
 
     return calc.sort().map(cls => this.metadata.find(cls)!);
-  }
-
-  private addCommitDependency(calc: CommitOrderCalculator, prop: EntityProperty, entityName: string): void {
-    if (!(prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) && prop.reference !== ReferenceType.MANY_TO_ONE) {
-      return;
-    }
-
-    calc.addDependency(prop.type, entityName, prop.nullable ? 0 : 1);
   }
 
   private dump(builder: SchemaBuilder, append = '\n\n'): string {

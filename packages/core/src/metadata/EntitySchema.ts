@@ -40,6 +40,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
 
     Object.assign(this._meta, { className: meta.name }, meta);
+    this._meta.root = this._meta.root ?? this._meta;
   }
 
   static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {

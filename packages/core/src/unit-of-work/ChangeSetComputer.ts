@@ -19,17 +19,14 @@ export class ChangeSetComputer {
               private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const changeSet = { entity } as ChangeSet<T>;
     const meta = this.metadata.find(entity.constructor.name)!;
 
     if (meta.readonly) {
       return null;
     }
 
-    changeSet.name = meta.name!;
-    changeSet.type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
-    changeSet.collection = meta.collection;
-    changeSet.payload = this.computePayload(entity);
+    const type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
       changeSet.originalEntity = entity.__helper!.__originalEntityData;
