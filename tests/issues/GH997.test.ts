@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 abstract class Base {
 
@@ -57,11 +56,8 @@ describe('GH issue 997', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
-      dbName: `mikro_orm_test_gh_997`,
-      type: 'mysql',
-      port: 3307,
-      cache: { enabled: false },
-      debug: true,
+      dbName: ':memory:',
+      type: 'sqlite',
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();
@@ -95,7 +91,9 @@ describe('GH issue 997', () => {
 
     const results = await orm.em.createQueryBuilder(Parent)
       .offset(0)
-      .limit(10).getResult();
+      .limit(10)
+      .orderBy({type: QueryOrder.ASC})
+      .getResult();
 
     const parents = await orm.em.populate(results, ['qaInfo.parent', 'rel']);
 
