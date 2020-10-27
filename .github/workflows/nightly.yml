@@ -27,8 +27,9 @@ jobs:
 
     - name: Create .npmrc
       run: |
-        echo -e "access=public" >> ~/.npmrc
-        echo -e "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> ~/.npmrc
+        pwd
+        echo -e "access=public" >> .npmrc
+        echo -e "//registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN" >> .npmrc
 
     - name: Install libkrb5-dev (for mongo)
       run: sudo apt install libkrb5-dev
