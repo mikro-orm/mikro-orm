@@ -48,16 +48,20 @@ export class SchemaGenerator {
     const createdColumns: string[] = [];
     let ret = '';
 
+    if (this.connection.getSchema()) {
+      ret += `create schema "${this.connection.getSchema()}"`;
+    }
+
     for (const meta of metadata) {
       ret += this.dump(this.createTable(meta, createdColumns));
     }
 
     for (const meta of metadata) {
-      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta, undefined, createdColumns)));
+      ret += this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => this.createForeignKeys(table, meta, undefined, createdColumns)));
     }
 
     for (const meta of metadata) {
-      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+      ret += this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => {
         meta.indexes.forEach(index => this.createIndex(table, meta, index, false));
         meta.uniques.forEach(index => this.createIndex(table, meta, index, true));
       }));
@@ -165,7 +169,7 @@ export class SchemaGenerator {
     const table = schema.getTable(meta.collection);
 
     if (!table) {
-      return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
+      return this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
     }
 
     const { create } = this.computeTableDifference(meta, table, true);
@@ -174,14 +178,14 @@ export class SchemaGenerator {
       return '';
     }
 
-    return this.dump(this.knex.schema.alterTable(meta.collection, table => this.createForeignKeys(table, meta, create, createdColumns)));
+    return this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => this.createForeignKeys(table, meta, create, createdColumns)));
   }
 
   private getUpdateTableIndexesSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
     const table = schema.getTable(meta.collection);
 
     if (!table) {
-      return this.dump(this.knex.schema.alterTable(meta.collection, table => {
+      return this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => {
         meta.indexes.forEach(index => this.createIndex(table, meta, index, false));
         meta.uniques.forEach(index => this.createIndex(table, meta, index, true));
       }));
@@ -191,7 +195,7 @@ export class SchemaGenerator {
     const { addIndex, dropIndex } = this.computeTableDifference(meta, table, true);
 
     dropIndex.forEach(index => {
-      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+      ret += this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => {
         if (index.unique) {
           table.dropUnique(index.columnNames, index.keyName);
         } else {
@@ -201,7 +205,7 @@ export class SchemaGenerator {
     });
 
     addIndex.forEach(index => {
-      ret += this.dump(this.knex.schema.alterTable(meta.collection, table => {
+      ret += this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => {
         if (index.unique) {
           table.unique(index.columnNames, index.keyName);
         } else {
@@ -226,7 +230,7 @@ export class SchemaGenerator {
   }
 
   private createTable(meta: EntityMetadata, createdColumns: string[]): SchemaBuilder {
-    return this.knex.schema.createTable(meta.collection, table => {
+    return this.knex.schema.withSchema(this.connection.getSchema()).createTable(meta.collection, table => {
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => {
@@ -268,10 +272,10 @@ export class SchemaGenerator {
     const ret: SchemaBuilder[] = [];
 
     for (const prop of rename) {
-      ret.push(this.knex.schema.raw(this.helper.getRenameColumnSQL(table.name, prop.from, prop.to)));
+      ret.push(this.knex.schema.withSchema(this.connection.getSchema()).raw(this.helper.getRenameColumnSQL(table.name, prop.from, prop.to)));
     }
 
-    ret.push(this.knex.schema.alterTable(meta.collection, t => {
+    ret.push(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, t => {
       for (const prop of create) {
         this.createTableColumn(t, meta, prop, {});
         createdColumns.push(`${meta.collection}.${prop.name}`);
@@ -335,10 +339,10 @@ export class SchemaGenerator {
 
   private dropTable(name: string, schema?: string): SchemaBuilder {
     /* istanbul ignore next */
-    let builder = this.knex.schema.dropTableIfExists(schema ? `${schema}.${name}` : name);
+    let builder = this.knex.schema.withSchema(this.connection.getSchema()).dropTableIfExists(schema ? `${schema}.${name}` : name);
 
     if (this.platform.usesCascadeStatement()) {
-      builder = this.knex.schema.raw(builder.toQuery() + ' cascade');
+      builder = this.knex.schema.withSchema(this.connection.getSchema()).raw(builder.toQuery() + ' cascade');
     }
 
     return builder;
@@ -492,7 +496,8 @@ export class SchemaGenerator {
 
   private createForeignKeyReference(table: TableBuilder, prop: EntityProperty, meta: EntityMetadata): void {
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
-    const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(prop.referencedTableName);
+    const refTable = this.connection.getSchema() ? `${this.connection.getSchema()}.${prop.referencedTableName}` : prop.referencedTableName;
+    const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(refTable);
 
     if (prop.onDelete || cascade || prop.nullable) {
       col.onDelete(prop.onDelete || (cascade ? 'cascade' : 'set null'));

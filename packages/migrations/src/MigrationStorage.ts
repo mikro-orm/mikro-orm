@@ -42,7 +42,7 @@ export class MigrationStorage {
       return;
     }
 
-    await this.knex.schema.createTable(this.options.tableName!, table => {
+    await this.knex.schema.withSchema(this.connection.getSchema()).createTable(this.options.tableName!, table => {
       table.increments();
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());

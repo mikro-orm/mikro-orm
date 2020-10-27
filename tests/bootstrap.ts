@@ -89,10 +89,11 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, schema?: string) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
     dbName: `mikro_orm_test`,
+    schema,
     baseDir: BASE_DIR,
     type: 'postgresql',
     debug: ['query'],
@@ -104,8 +105,13 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
     loadStrategy,
   });
 
+  try {
+    await orm.em.getConnection().execute(`drop schema ${orm.em.getConnection().getSchema()} cascade`);
+  } catch (e) {}
+
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
+  await schemaGenerator.createSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
@@ -206,6 +212,9 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   await em.createQueryBuilder('book_to_tag_unordered').truncate().execute();
   await em.createQueryBuilder('publisher2_tests').truncate().execute();
   await em.getConnection().execute(`set session_replication_role = 'origin'`);
+  if (em.getConnection().getSchema()) {
+    await em.getConnection().execute(`drop schema ${em.getConnection().getSchema()} cascade`);
+  }
   em.clear();
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;

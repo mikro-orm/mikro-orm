@@ -8,6 +8,7 @@ import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
+import * as fs from 'fs';
 
 describe('EntityManagerPostgre', () => {
 
@@ -1705,5 +1706,46 @@ describe('EntityManagerPostgre', () => {
   });
 
   afterAll(async () => orm.close(true));
+
+});
+
+
+describe('EntityManagerPostgre schemas', () => {
+  let orm1: MikroORM<PostgreSqlDriver>, orm2: MikroORM<PostgreSqlDriver>;
+  beforeAll(async () => {
+    orm1 = await initORMPostgreSql(undefined, 'test_1');
+    orm2 = await initORMPostgreSql(undefined, 'test_2');
+  });
+
+
+  afterEach(async () => {
+    await wipeDatabasePostgreSql(orm1.em);
+    await wipeDatabasePostgreSql(orm2.em);
+  });
+
+  it('migrate correctly', async () => {
+    fs.mkdirSync('tests/migrations', { recursive: true });
+    const migrator1 = orm1.getMigrator();
+    await migrator1.createMigration();
+    await migrator1.up();
+
+    const migrator2 = orm2.getMigrator();
+    await migrator2.createMigration();
+    await migrator2.up();
+
+    const d = await orm1.connect();
+    const res = await d.execute('select nspname from pg_catalog.pg_namespace;');
+    expect(res.map(x => x.nspname)).toContain('test_1');
+    expect(res.map(x => x.nspname)).toContain('test_2');
+  });
+
+  it('migrate correctly', async () => {
+    orm1.em.create(Author2, {
+      email: 'author@mikro',
+      name: 'mikro',
+      address: 'none',
+    });
+    await orm1.em.flush();
+  });
 
 });

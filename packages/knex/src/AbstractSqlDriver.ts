@@ -52,7 +52,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .orderBy({ ...options.orderBy!, ...joinedPropsOrderBy })
       .groupBy(options.groupBy!)
       .having(options.having!)
-      .withSchema(options.schema);
+      .withSchema(options.schema || this.config.get('schema'));
 
     if (options.limit !== undefined) {
       qb.limit(options.limit, options.offset);
@@ -176,7 +176,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .groupBy(options.groupBy!)
       .having(options.having!)
       .populate(options.populate as PopulateOptions<T>[] ?? [])
-      .withSchema(options.schema)
+      .withSchema(options.schema || this.config.get('schema'))
       .where(where);
     const res = await this.rethrow(qb.execute('get', false));
 
@@ -205,6 +205,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
+  wrapTableDefiniton(tableName: string): string {
+    if (!this.config.get('schema')) {
+      return tableName;
+    }
+    return this.config.get('schema') + '.' + tableName;
+  }
+
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
@@ -219,7 +226,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const qb = this.createQueryBuilder(entityName, ctx, true, convertCustomTypes);
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
-      let sql = `insert into ${this.platform.quoteIdentifier(meta.collection)} `;
+      let sql = `insert into ${this.platform.quoteIdentifier(this.wrapTableDefiniton(meta.collection))} `;
       /* istanbul ignore next */
       sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
       sql += ` values `;
@@ -292,7 +299,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
     const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
     const params: any[] = [];
-    let sql = `update ${this.platform.quoteIdentifier(meta.collection)} set `;
+    let sql = `update ${this.platform.quoteIdentifier(this.wrapTableDefiniton(meta.collection))} set `;
 
     keys.forEach(key => {
       const prop = meta.properties[key];
@@ -505,7 +512,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean, convertCustomTypes?: boolean): QueryBuilder<T> {
-    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
+    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read')
+      .withSchema(this.config.get('schema')) as any;
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
