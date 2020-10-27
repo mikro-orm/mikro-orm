@@ -475,15 +475,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return entity;
     }
 
-    let meta = this.metadata.find(entityName);
-
-    if (meta!.discriminatorColumn) {
-      const childMeta = this.metadata.getByDiscriminatorColumn(meta!, data as EntityData<T>);
-      meta = childMeta ?? meta;
-    }
+    const meta = this.metadata.get(entityName);
+    const childMeta = this.metadata.getByDiscriminatorColumn(meta!, data as EntityData<T>);
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, refresh, convertCustomTypes });
-    this.validator.validate(entity, data, meta!);
+    this.validator.validate(entity, data, childMeta !== undefined ? childMeta : meta);
     this.getUnitOfWork().merge(entity);
 
     return entity;

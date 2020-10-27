@@ -62,7 +62,17 @@ export class MetadataStorage {
 
   getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
     const prop = meta.properties[meta.root.discriminatorColumn!];
+
+    if (!prop) {
+      return undefined;
+    }
+
     const value = data[prop.name];
+
+    if (!value) {
+      return undefined;
+    }
+
     const type = meta.root.discriminatorMap![value];
 
     return this.metadata[type];
