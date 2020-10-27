@@ -35,6 +35,7 @@ jobs:
 
     - name: Release nightly
       run: |
+        npm whoami --loglevel silly
         yarn
         yarn release:next --yes --loglevel silly
       env:
