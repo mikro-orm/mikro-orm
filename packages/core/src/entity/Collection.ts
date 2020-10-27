@@ -59,7 +59,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (refresh || !Utils.isDefined(this._count)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
+      if (!em.getDriver().getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+        this._count = this.length;
+      } else {
+        this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
+      }
     }
 
     return this._count!;
@@ -267,8 +271,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
-      const value = this.owner.__meta?.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
-      cond[key] = value;
+      cond[key] = this.owner.__meta!.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
     }
     return cond;
   }
