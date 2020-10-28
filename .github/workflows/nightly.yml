@@ -13,6 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
     - name: Use Node.js 15
       uses: actions/setup-node@v2-beta
       with:
@@ -37,6 +41,6 @@ jobs:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Release nightly
-      run: yarn release:next --yes --loglevel silly --no-verify-access
+      run: yarn release:next --yes --no-verify-access
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
