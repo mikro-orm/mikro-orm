@@ -26,6 +26,12 @@ jobs:
     - name: Init docker
       run: docker-compose up -d
 
+    - uses: actions/cache@v2
+    - name: Cache node_modules
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
     - name: Install
       run: |
         yarn config set ignore-engines true
