@@ -476,7 +476,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const meta = this.metadata.get(entityName);
-    const childMeta = this.metadata.getByDiscriminatorColumn(meta!, data as EntityData<T>);
+    const childMeta = this.metadata.getByDiscriminatorColumn(meta, data as EntityData<T>);
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, refresh, convertCustomTypes });
     this.validator.validate(entity, data, childMeta !== undefined ? childMeta : meta);
