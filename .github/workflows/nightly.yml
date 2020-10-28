@@ -22,8 +22,8 @@ jobs:
     - name: Install libkrb5-dev (for mongo)
       run: sudo apt install libkrb5-dev
 
-    - uses: actions/cache@v2
     - name: Cache node_modules
+      uses: actions/cache@v2
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}

@@ -21,8 +21,8 @@ jobs:
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
 
-    - uses: actions/cache@v2
     - name: Cache node_modules
+      uses: actions/cache@v2
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
