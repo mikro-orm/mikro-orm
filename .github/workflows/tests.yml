@@ -36,8 +36,6 @@ jobs:
       run: |
         yarn config set ignore-engines true
         yarn
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
     - name: Set CC Required env vars
       run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
@@ -54,6 +52,16 @@ jobs:
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
 
+    - name: Release dev version for testing
+      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x'
+      run: |
+        echo "access=public" >> .npmrc
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        yarn publish:next --yes --no-verify-access
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
@@ -62,7 +70,7 @@ jobs:
     - name: Codeclimate
       uses: paambaati/codeclimate-action@v2.7.4
       env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
       with:
         coverageCommand: echo "$(cat COVERAGE_RESULT)"
 
