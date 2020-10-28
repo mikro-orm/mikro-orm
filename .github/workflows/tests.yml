@@ -15,7 +15,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-        fetch-depth: 500
+        fetch-depth: 0
 
     - name: EditorConfig Lint
       uses: docker://mstruebing/editorconfig-checker:2.2.0@sha256:cafda9b945dd452928aba85d20b79def419237c6e961a46193dbc2d6fc08f561

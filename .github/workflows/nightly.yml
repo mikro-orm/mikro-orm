@@ -1,6 +1,9 @@
 name: nightly
 
 on:
+  push:
+    branches:
+      - master # for testing
   schedule:
     - cron:  '0 6 * * *'
 
@@ -11,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        fetch-depth: 500
+        fetch-depth: 0
     - name: Use Node.js 15
       uses: actions/setup-node@v2-beta
       with:
