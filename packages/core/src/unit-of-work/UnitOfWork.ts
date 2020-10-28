@@ -185,7 +185,7 @@ export class UnitOfWork {
 
     this.persistStack.add(entity);
     this.removeStack.delete(entity);
-    this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack });
+    this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
   }
 
   remove(entity: AnyEntity, visited = new WeakSet<AnyEntity>()): void {
