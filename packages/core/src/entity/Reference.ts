@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityProperty, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty } from '../typings';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
@@ -60,8 +60,22 @@ export class Reference<T extends AnyEntity<T>> {
     return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
   }
 
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity.
+   */
   async load(): Promise<T>;
+
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the requested property instead of the whole entity.
+   */
   async load<K extends keyof T>(prop: K): Promise<T[K]>;
+
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns either the whole entity, or the requested property.
+   */
   async load<K extends keyof T = never>(prop?: K): Promise<T | T[K]> {
     if (!this.isInitialized()) {
       await this.entity.__helper!.init();

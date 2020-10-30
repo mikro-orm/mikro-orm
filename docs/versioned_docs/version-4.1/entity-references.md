@@ -80,7 +80,7 @@ console.log(book.author instanceof Reference); // true
 console.log(book.author.isInitialized()); // false
 console.log(book.author.name); // type error, there is no `name` property
 console.log(book.author.unwrap().name); // undefined as author is not loaded
-console.log((await book.author.get('name'))); // ok, loading the author first
+console.log((await book.author.load('name'))); // ok, loading the author first
 console.log((await book.author.load()).name); // ok, author already loaded
 console.log(book.author.unwrap().name); // ok, author already loaded
 ```
@@ -95,7 +95,7 @@ console.log(book.author instanceof Reference); // true
 console.log(book.author.isInitialized()); // false
 console.log(book.author.getEntity()); // Error: Reference<Author> 123 not initialized
 console.log(book.author.getProperty('name')); // Error: Reference<Author> 123 not initialized
-console.log((await book.author.get('name'))); // ok, loading the author first
+console.log((await book.author.load('name'))); // ok, loading the author first
 console.log(book.author.getProperty('name')); // ok, author already loaded
 ```
 
