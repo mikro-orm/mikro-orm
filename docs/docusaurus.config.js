@@ -48,7 +48,7 @@ module.exports = {
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
         { to: 'docs/api', label: 'API', position: 'left' },
-        { to: 'docs/faq', label: 'FAQ', position: 'left' },
+        // { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         {
           to: '/versions',
