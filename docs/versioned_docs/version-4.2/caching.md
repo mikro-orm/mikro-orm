@@ -2,7 +2,7 @@
 title: Result cache
 ---
 
-MikroORM have simple result caching mechanism. It works with those methods of 
+MikroORM has simple result caching mechanism. It works with those methods of 
 `EntityManager`: `find()`, `findOne()`, `findAndCount()`, `findOneOrFail()`,
 `count()`, as well as with `QueryBuilder` result methods (including `execute`). 
 
