@@ -2,6 +2,15 @@
 title: Using Query Builder
 ---
 
+:::info
+Since v4, we need to make sure we are working with correctly typed `EntityManager`
+or `EntityRepository` to have access to `createQueryBuilder()` method.
+
+```ts
+import { EntityManager, EntityRepository } from '@mikro-orm/mysql'; // or any other driver package
+```
+:::
+
 When you need to execute some SQL query without all the ORM stuff involved, you can either
 compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 

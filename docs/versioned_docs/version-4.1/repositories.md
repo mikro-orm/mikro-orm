@@ -27,9 +27,17 @@ console.log(books); // Book[]
 
 ## Custom Repository
 
+:::info
+Since v4, we need to make sure we are working with correctly typed `EntityRepository` 
+to have access to driver specific methods (like `createQueryBuilder()`). Use the one
+exported from your driver package.
+:::
+
 To use custom repository, just extend `EntityRepository<T>` class:
 
 ```typescript
+import { EntityRepository } from '@mikro-orm/mysql'; // or any other driver package
+
 @Repository(Author)
 export class CustomAuthorRepository extends EntityRepository<Author> {
 
