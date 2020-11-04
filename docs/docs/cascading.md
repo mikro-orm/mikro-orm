@@ -5,6 +5,9 @@ sidebar_label: Cascading
 
 > From v4.2, cascade merging is no longer configurable (and is kept enabled for all relations).
 
+> This section is about application level cascading. For that to work, we need
+> to have relations populated. 
+
 When persisting or removing entity, all your references are by default cascade persisted. 
 This means that by persisting any entity, ORM will automatically persist all of its 
 associations. 
