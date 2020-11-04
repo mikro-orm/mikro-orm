@@ -57,8 +57,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     /* istanbul ignore if */
     if (Utils.isPlainObject(value)) {
       value = JSON.stringify(value);
-    } else if (Array.isArray(value)) {
-      value = this.marshallArray(value);
     }
 
     if (typeof value === 'string') {

@@ -61,6 +61,13 @@ describe('EntityManagerPostgre', () => {
     });
   });
 
+  test('raw query with array param', async () => {
+    const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');
+    const q2 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    expect(q2).toBe(`select * from author2 where id in ('1', '2', '3') limit 3`);
+  });
+
   test('should return postgre driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(PostgreSqlDriver);

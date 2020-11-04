@@ -1,4 +1,4 @@
-import { Collection, EntityManager, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap, ArrayCollection } from '@mikro-orm/core';
+import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
@@ -29,6 +29,13 @@ describe('EntityManagerSqlite2', () => {
     const authors = await repo.find({ id: author.id });
     expect(a).toBe(author);
     expect(authors[0]).toBe(author);
+  });
+
+  test('raw query with array param', async () => {
+    const q1 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    expect(q1).toBe('select * from author4 where id in (1, 2, 3) limit 3');
+    const q2 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    expect(q2).toBe(`select * from author4 where id in ('1', '2', '3') limit 3`);
   });
 
   test('transactions', async () => {

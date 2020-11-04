@@ -25,7 +25,7 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   quoteValue(value: any): string {
     /* istanbul ignore if */
-    if (Utils.isPlainObject(value) || Array.isArray(value)) {
+    if (Utils.isPlainObject(value)) {
       return escape(JSON.stringify(value));
     }
 

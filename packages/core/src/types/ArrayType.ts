@@ -11,12 +11,16 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   }
 
   convertToDatabaseValue(value: T[] | null, platform: Platform, fromQuery?: boolean): string | null {
-    if (!value || fromQuery) {
+    if (!value) {
       return value as null;
     }
 
     if (Array.isArray(value)) {
       return platform.marshallArray(value as string[]);
+    }
+
+    if (fromQuery) {
+      return value;
     }
 
     throw ValidationError.invalidType(ArrayType, value, 'JS');

@@ -54,7 +54,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   quoteValue(value: any): string {
     /* istanbul ignore if */
-    if (Utils.isPlainObject(value) || Array.isArray(value)) {
+    if (Utils.isPlainObject(value)) {
       return escape(JSON.stringify(value), true, this.timezone);
     }
 
