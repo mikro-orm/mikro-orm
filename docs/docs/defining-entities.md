@@ -233,6 +233,8 @@ export class User {
   @Enum(() => OutsideEnum)
   outside!: OutsideEnum; // string enum defined outside of this file
 
+  @Enum({ items: () => OutsideNullableEnum, nullable: true })
+  outsideNullable?: OutsideNullableEnum; // string enum defined outside of this file, may be null
 }
 
 export enum UserRole {
