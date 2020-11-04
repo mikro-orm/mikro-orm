@@ -231,7 +231,7 @@ export class SchemaGenerator {
         .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => {
           this.createTableColumn(table, meta, prop);
-          createdColumns.push(prop.name);
+          createdColumns.push(`${meta.collection}.${prop.name}`);
         });
 
       if (meta.compositePK) {
@@ -274,7 +274,7 @@ export class SchemaGenerator {
     ret.push(this.knex.schema.alterTable(meta.collection, t => {
       for (const prop of create) {
         this.createTableColumn(t, meta, prop, {});
-        createdColumns.push(prop.name);
+        createdColumns.push(`${meta.collection}.${prop.name}`);
       }
 
       for (const col of update) {
@@ -470,10 +470,10 @@ export class SchemaGenerator {
       return;
     }
 
-    if (!meta.pivotTable && !createdColumns.includes(prop.name)) {
+    if (!meta.pivotTable && !createdColumns.includes(`${meta.collection}.${prop.name}`)) {
       /* istanbul ignore next */
       this.createTableColumn(table, meta, prop, diff ?? {});
-      createdColumns.push(prop.name);
+      createdColumns.push(`${meta.collection}.${prop.name}`);
     }
 
     // knex does not allow adding new columns with FK in sqlite
