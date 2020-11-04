@@ -308,14 +308,12 @@ export class MetadataDiscovery {
     }
 
     if (!prop.joinColumns) {
-      const tableName = meta.collection.split('.').pop()!;
-      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(tableName, referencedColumnName, meta.compositePK));
+      prop.joinColumns = prop.referencedColumnNames.map(referencedColumnName => this.namingStrategy.joinKeyColumnName(meta.root.className, referencedColumnName, meta.compositePK));
     }
 
     if (!prop.inverseJoinColumns) {
       const meta2 = this.metadata.get(prop.type);
-      const tableName = meta2.collection.split('.').pop()!;
-      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, tableName);
+      prop.inverseJoinColumns = this.initManyToOneFieldName(prop, meta2.root.className);
     }
   }
 
@@ -411,8 +409,8 @@ export class MetadataDiscovery {
 
     // handle self-referenced m:n with same default field names
     if (meta.name === prop.type && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
-      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_1', name, meta.compositePK));
-      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.collection + '_2', name, meta.compositePK));
+      prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_1', name, meta.compositePK));
+      prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
         const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
