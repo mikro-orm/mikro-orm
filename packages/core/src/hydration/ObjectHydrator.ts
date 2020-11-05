@@ -91,7 +91,11 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`  if (Array.isArray(data.${prop.name})) {`);
         lines.push(`     const items = data.${prop.name}.map(value => createCollectionItem_${prop.name}(value));`);
         lines.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
-        lines.push(`     coll.setDirty(newEntity);`);
+        lines.push(`     if (newEntity) {`);
+        lines.push(`       coll.setDirty();`);
+        lines.push(`     } else {`);
+        lines.push(`       coll.takeSnapshot();`);
+        lines.push(`     }`);
         lines.push(`  } else if (!entity.${prop.name} && data.${prop.name} instanceof Collection) {`);
         lines.push(`     entity.${prop.name} = data.${prop.name};`);
         lines.push(`  } else if (!entity.${prop.name}) {`);
