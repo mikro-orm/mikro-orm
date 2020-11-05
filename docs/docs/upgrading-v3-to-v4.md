@@ -41,6 +41,34 @@ your `package.json`.
 > You should prefer the `@mikro-orm/core` over `mikro-orm` package, there were
 > weird dependency issues reported with the `mikro-orm` meta-package. 
 
+## Default metadata provider is now `ReflectMetadataProvider`
+
+If you want to use ts-morph, you need to install `@mikro-orm/reflection` package
+and enable the provider explicitly in the ORM config, as described [here](./metadata-providers.md#tsmorphmetadataprovider).
+
+```typescript
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+
+await MikroORM.init({
+  metadataProvider: TsMorphMetadataProvider,
+  // ...
+});
+```
+
+Using `ReflectMetadataProvider` has some limitations, so be sure to read 
+about them [here](./metadata-providers.md#limitations-and-requirements).
+
+One common gotcha with `reflect-metadata` is that you need to explicitly
+state the property type when using property initializer:
+
+```ts
+@Property()
+createdAt: Date = new Date();
+```
+
+Without the explicit type, we would infer `Object` instead of `Date`, 
+which would be most probably mapped to JSON column type (depends on driver).
+
 ## SqlEntityManager and MongoEntityManager
 
 In v4 the `core` package, where `EntityManager` and `EntityRepository` are 
