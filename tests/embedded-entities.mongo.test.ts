@@ -1,5 +1,5 @@
 import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
-import { ObjectId, MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId, MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class Address1 {
@@ -160,6 +160,14 @@ describe('embedded entities in mongo', () => {
       reference: ReferenceType.SCALAR,
       type: 'string',
     });
+  });
+
+  test('create collections', async () => {
+    const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
+    createCollection.mockResolvedValue({} as any);
+    await orm.em.getDriver().createCollections();
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'parent']);
+    createCollection.mockRestore();
   });
 
   test('persist and load', async () => {

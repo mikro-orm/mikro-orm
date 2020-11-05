@@ -89,8 +89,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async createCollections(): Promise<void> {
     const existing = await this.getConnection('write').listCollections();
+    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
+      const isRootEntity = meta.root.className === meta.className;
+      return isRootEntity && !meta.embeddable;
+    });
 
-    const promises = Object.values(this.metadata.getAll())
+    const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
       .map(meta => this.getConnection('write').createCollection(meta.collection));
 
