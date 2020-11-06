@@ -320,6 +320,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const join = Object.values(this._joins).find(j => j.path === path);
+
+    if (path.endsWith('[pivot]') && join) {
+      return join.alias;
+    }
+
     /* istanbul ignore next */
     return join?.inverseAlias || join?.alias;
   }
