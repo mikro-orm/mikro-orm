@@ -144,6 +144,10 @@ export class ChangeSetPersister {
       wrapped.setPrimaryKey(insertId);
     }
 
+    // some drivers might be returning bigint PKs as numbers when the number is small enough,
+    // but we need to have it as string so comparison works in change set tracking, so instead
+    // of using the raw value from db, we convert it back to the db value explicitly
+    value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.driver.getPlatform()) : value;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
     wrapped.__identifier!.setValue(value);
   }
