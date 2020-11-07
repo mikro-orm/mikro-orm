@@ -26,6 +26,9 @@ drop table if exists `foo_baz2`;
 drop table if exists `publisher2`;
 drop table if exists `sandwich`;
 drop table if exists `new_table`;
+drop table if exists `grandparent`;
+drop table if exists `parent`;
+drop table if exists `child`;
 
 drop table if exists `author2_to_author2`;
 drop table if exists `book2_to_book_tag2`;
@@ -196,5 +199,16 @@ alter table `author2_following` add constraint `author2_following_author2_1_id_f
 alter table `author2_following` add constraint `author2_following_author2_2_id_foreign` foreign key (`author2_2_id`) references `author2` (`id`) on update cascade on delete cascade;
 
 alter table `address2` add constraint `address2_author_id_foreign` foreign key (`author_id`) references `author2` (`id`) on update cascade on delete cascade;
+
+create table `grandparent` (`id` varchar(255) not null, `name` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table `grandparent` add primary key `grandparent_pkey`(`id`);
+
+create table `parent` (`id` varchar(255) not null, `name` varchar(255) not null, `parent_id` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table `parent` add primary key `parent_pkey`(`id`);
+alter table `parent` add index `parent_parent_id_index`(`parent_id`);
+
+create table `child` (`id` varchar(255) not null, `name` varchar(255) not null, `parent_id` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table `child` add primary key `child_pkey`(`id`);
+alter table `child` add index `child_parent_id_index`(`parent_id`);
 
 set foreign_key_checks = 1;
