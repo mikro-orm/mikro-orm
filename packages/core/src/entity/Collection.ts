@@ -99,6 +99,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
     unwrapped.forEach(item => this.validateItemType(item));
     this.validateModification(unwrapped);
+
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
+    }
+
     super.set(unwrapped);
     this.setDirty();
     this.cancelOrphanRemoval(unwrapped);
@@ -107,15 +113,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @internal
    */
-  hydrate(items?: T[]): void {
+  hydrate(items: T[]): void {
     this.initialized = true;
-
-    if (items) {
-      super.hydrate(items);
-      this.takeSnapshot();
-    } else {
-      this.snapshot = undefined;
-    }
+    super.hydrate(items);
+    this.takeSnapshot();
   }
 
   remove(...items: (T | Reference<T>)[]): void {
