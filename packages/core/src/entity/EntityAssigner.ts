@@ -120,6 +120,10 @@ export class EntityAssigner {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
+    if (!collection.isInitialized()) {
+      collection.hydrate();
+    }
+
     collection.set(items);
   }
 
