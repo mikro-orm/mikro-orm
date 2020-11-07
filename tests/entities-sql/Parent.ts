@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Grandparent } from './Grandparent';
 import { Child } from './Child';
 
@@ -15,7 +15,7 @@ export class Parent {
   @ManyToOne(() => Grandparent)
   parent!: Grandparent;
 
-  @OneToMany(() => Child, parent => parent.parent, { orphanRemoval: true })
+  @OneToMany(() => Child, parent => parent.parent, { orphanRemoval: true, cascade: [Cascade.ALL] })
   children = new Collection<Child>(this);
 
 }

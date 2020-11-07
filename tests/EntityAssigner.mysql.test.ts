@@ -218,7 +218,7 @@ describe('EntityAssignerMySql', () => {
       ],
     };
 
-    wrap(toSave).assign(inputUpdated);
+    wrap(toSave).assign(inputUpdated, { merge: true });
 
     await orm.em.persistAndFlush(toSave);
 
@@ -258,7 +258,7 @@ describe('EntityAssignerMySql', () => {
     };
 
     const updated = new Grandparent();
-    wrap(updated).assign(input2, { em: orm.em });
+    wrap(updated).assign(input2, { em: orm.em, merge: true });
 
     await orm.em.persistAndFlush(updated);
 
