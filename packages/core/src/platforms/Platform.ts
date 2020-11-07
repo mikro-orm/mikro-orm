@@ -134,6 +134,10 @@ export abstract class Platform {
   }
 
   unmarshallArray(value: string): string[] {
+    if (value === '') {
+      return [];
+    }
+
     return value.split(',') as string[];
   }
 

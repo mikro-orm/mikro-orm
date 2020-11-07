@@ -1988,7 +1988,7 @@ describe('EntityManagerMongo', () => {
   test('custom types', async () => {
     const bar = FooBar.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
-    bar.array = [1, 2, 3, 4, 5];
+    bar.array = [];
     bar.object = { foo: 'bar', bar: 3 };
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
@@ -1996,19 +1996,21 @@ describe('EntityManagerMongo', () => {
     const b1 = await orm.em.findOneOrFail(FooBar, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
-    expect(b1.array).toEqual([1, 2, 3, 4, 5]);
-    expect(b1.array![2]).toBe(3);
+    expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
     expect(b1.object).toBeInstanceOf(Object);
     expect(b1.object!.bar).toBe(3);
 
     b1.object = 'foo';
+    b1.array = [1, 2, 3, 4, 5];
     await orm.em.flush();
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar, bar.id);
     expect(b2.object).toBe('foo');
+    expect(b2.array).toEqual([1, 2, 3, 4, 5]);
+    expect(b2.array![2]).toBe(3);
 
     b2.object = [1, 2, '3'];
     await orm.em.flush();
