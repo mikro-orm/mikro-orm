@@ -166,7 +166,7 @@ export abstract class BasePerson {
 }
 
 @Entity()
-export class Person extends Base {
+export class Person extends BasePerson {
   // ...
 }
 
@@ -192,7 +192,7 @@ export abstract class BasePerson {
 }
 
 @Entity({ discriminatorValue: 'person' })
-export class Person extends Base {
+export class Person extends BasePerson {
   // ...
 }
 

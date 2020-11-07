@@ -165,7 +165,7 @@ export abstract class BasePerson {
 }
 
 @Entity()
-export class Person extends Base {
+export class Person extends BasePerson {
   // ...
 }
 
