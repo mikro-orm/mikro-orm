@@ -107,22 +107,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @internal
    */
-  hydrate(items: T[], validate = false, takeSnapshot = true): void {
-    if (validate) {
-      this.validateModification(items);
-    }
-
-    const wasInitialized = this.initialized;
-    const wasDirty = this.dirty;
+  hydrate(items: T[]): void {
     this.initialized = true;
     super.hydrate(items);
-    this.dirty = wasDirty;
-
-    if (!wasInitialized && !takeSnapshot) {
-      this.snapshot = undefined;
-    } else if (takeSnapshot) {
-      this.takeSnapshot();
-    }
+    this.takeSnapshot();
   }
 
   remove(...items: (T | Reference<T>)[]): void {

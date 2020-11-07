@@ -120,8 +120,7 @@ export class EntityAssigner {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
-    collection.hydrate(items, true, !!options.merge);
-    collection.setDirty();
+    collection.set(items);
   }
 
   private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
