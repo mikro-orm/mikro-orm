@@ -132,6 +132,10 @@ export class ObjectHydrator extends Hydrator {
           lines.push(`  if (typeof data.${prop.name} !== 'undefined') entity.${prop.name} = data.${prop.name};`);
         }
       }
+
+      if (this.config.get('forceUndefined')) {
+        lines.push(`  if (data.${prop.name} === null) entity.${prop.name} = undefined;`);
+      }
     }
 
     const code = `return function(entity, data, factory, newEntity, convertCustomTypes) {\n${lines.join('\n')}\n}`;

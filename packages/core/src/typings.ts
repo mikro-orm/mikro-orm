@@ -3,7 +3,7 @@ import { AssignOptions, Collection, EntityRepository, EntityIdentifier, Identifi
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
-import { EntityComparator, Utils } from './utils';
+import { Configuration, EntityComparator, Utils } from './utils';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -441,5 +441,5 @@ export interface IHydrator {
 }
 
 export interface HydratorConstructor {
-  new (metadata: MetadataStorage, platform: Platform): IHydrator;
+  new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }

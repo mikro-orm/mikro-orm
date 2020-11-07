@@ -31,6 +31,20 @@ describe('EntityManagerSqlite2', () => {
     expect(authors[0]).toBe(author);
   });
 
+  test('hydration with `forceUndefined` converts null values', async () => {
+    const repo = orm.em.getRepository(Author4);
+    const author = orm.em.create(Author4, { name: 'name', email: 'email' });
+    await repo.persistAndFlush(author);
+    orm.em.clear();
+
+    const a = await repo.findOneOrFail(author);
+    expect(a.age).toBeUndefined();
+    expect(a.identities).toBeUndefined();
+    expect(a.born).toBeUndefined();
+    expect(a.bornTime).toBeUndefined();
+    expect(a.favouriteBook).toBeUndefined();
+  });
+
   test('raw query with array param', async () => {
     const q1 = await orm.em.getPlatform().formatQuery(`select * from author4 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author4 where id in (1, 2, 3) limit 3');

@@ -2,12 +2,14 @@ import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from
 import { EntityFactory } from '../entity';
 import { Platform } from '../platforms/Platform';
 import { MetadataStorage } from '../metadata/MetadataStorage';
+import { Configuration } from '../utils/Configuration';
 
 /* istanbul ignore next */
 export abstract class Hydrator implements IHydrator {
 
   constructor(protected readonly metadata: MetadataStorage,
-              protected readonly platform: Platform) { }
+              protected readonly platform: Platform,
+              protected readonly config: Configuration) { }
 
   /**
    * @inheritDoc

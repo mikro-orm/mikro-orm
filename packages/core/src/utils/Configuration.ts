@@ -49,6 +49,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: false,
+    forceUndefined: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
     batchSize: 300,
@@ -167,7 +168,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of Hydrator.
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
-    return this.cached(this.options.hydrator, metadata, this.platform);
+    return this.cached(this.options.hydrator, metadata, this.platform, this);
   }
 
   /**
@@ -345,6 +346,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
+  forceUndefined: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;
   ensureIndexes: boolean;

@@ -219,6 +219,18 @@ MikroORM.init({
 });
 ```
 
+## Mapping `null` values to `undefined`
+
+By default `null` values from nullable database columns are hydrated as `null`. 
+Using `forceUndefined` we can tell the ORM to convert those `null` values to
+`undefined` instead. 
+
+```typescript
+MikroORM.init({
+  forceUndefined: true,
+});
+```
+
 ## Custom Hydrator
 
 Hydrator is responsible for assigning values from the database to entities. 
