@@ -2,13 +2,23 @@ import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, P
 import { ObjectId, MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
 
 @Embeddable()
-class Address1 {
+class Address1Base {
 
   @Property()
   street?: string;
 
   @Property()
   postalCode?: string;
+
+  constructor(street?: string, postalCode?: string) {
+    this.street = street;
+    this.postalCode = postalCode;
+  }
+
+}
+
+@Embeddable()
+class Address1 extends Address1Base {
 
   @Property()
   city?: string;
@@ -17,8 +27,7 @@ class Address1 {
   country?: string;
 
   constructor(street?: string, postalCode?: string, city?: string, country?: string) {
-    this.street = street;
-    this.postalCode = postalCode;
+    super(street, postalCode);
     this.city = city;
     this.country = country;
   }
@@ -26,13 +35,23 @@ class Address1 {
 }
 
 @Embeddable()
-class Address2 {
+class Address2Base {
 
   @Property()
   street!: string;
 
   @Property()
   postalCode?: string;
+
+  constructor(street: string, postalCode?: string) {
+    this.street = street;
+    this.postalCode = postalCode;
+  }
+
+}
+
+@Embeddable()
+class Address2 extends Address2Base {
 
   @Property()
   city!: string;
@@ -41,10 +60,9 @@ class Address2 {
   country!: string;
 
   constructor(street: string, city: string, country: string, postalCode?: string) {
-    this.street = street;
+    super(street, postalCode);
     this.city = city;
     this.country = country;
-    this.postalCode = postalCode;
   }
 
 }
@@ -109,7 +127,7 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1, Address2, User, childSchema, parentSchema],
+      entities: [Address1Base, Address1, Address2Base, Address2, User, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs0',
       type: 'mongo',
       validate: true,
@@ -267,6 +285,40 @@ describe('embedded entities in mongo', () => {
     const p = await orm.em.fork().findOneOrFail(Parent, parent);
     expect(p.foo).toBe(0);
     expect(p.child.bar).toBe(0);
+  });
+
+  test('embeddable with inherited properties (GH issue #1049)', async () => {
+    const runTests = (user: User): void => {
+      expect(user.address1).toBeInstanceOf(Address1);
+      expect(user.address1).toEqual({
+        street: 'Rainbow st. 1',
+        postalCode: '001',
+        city: 'London',
+        country: 'UK',
+      });
+      expect(user.address2).toBeInstanceOf(Address2);
+      expect(user.address2).toEqual({
+        street: 'Rainbow st. 2',
+        postalCode: null,
+        city: 'London',
+        country: 'UK',
+      });
+    };
+
+    const john = new User();
+    john.address1 = new Address1('Rainbow st. 1', '001', 'London', 'UK');
+    john.address2 = new Address2('Rainbow st. 2', 'London', 'UK');
+    await orm.em.persistAndFlush(john);
+    orm.em.clear();
+
+    const j1 = await orm.em.findOneOrFail(User, john.id);
+    runTests(j1);
+    orm.em.clear();
+
+    const j2 = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
+    expect(j2).not.toBe(null);
+    runTests(j2);
+    orm.em.clear();
   });
 
 });
