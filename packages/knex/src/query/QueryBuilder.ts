@@ -1,7 +1,23 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage, EntityData,
-  PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError, LoadStrategy,
+  AnyEntity,
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  GroupOperator,
+  LoadStrategy,
+  LockMode,
+  MetadataStorage,
+  PopulateOptions,
+  QBFilterQuery,
+  QueryFlag,
+  QueryHelper,
+  QueryOrderMap,
+  ReferenceType,
+  Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -522,7 +538,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (data) {
-      this._data = this.helper.processData(data);
+      this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES));
     }
 
     if (cond) {

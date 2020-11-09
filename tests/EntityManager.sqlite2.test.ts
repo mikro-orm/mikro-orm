@@ -834,6 +834,9 @@ describe('EntityManagerSqlite2', () => {
   });
 
   test('custom types', async () => {
+    await orm.em.nativeInsert(FooBar4, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.nativeInsert(FooBar4, { id: 456, name: 'n2', array: [] });
+
     const bar = orm.em.create(FooBar4, { name: 'b1 \'the bad\' lol' });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [];

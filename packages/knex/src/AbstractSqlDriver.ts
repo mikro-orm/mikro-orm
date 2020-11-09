@@ -38,7 +38,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
-    const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+    const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
@@ -166,8 +166,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}, ctx?: Transaction<KnexTransaction>): Promise<number> {
     const pks = this.metadata.find(entityName)!.primaryKeys;
-    const qb = this.createQueryBuilder(entityName, ctx, !!ctx)
-      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+    const qb = this.createQueryBuilder(entityName, ctx, !!ctx, false)
       .count(pks, true)
       .groupBy(options.groupBy!)
       .having(options.having!)
@@ -178,11 +177,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return +res.count;
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<KnexTransaction>, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.find<T>(entityName);
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
-    const qb = this.createQueryBuilder(entityName, ctx, true);
+    const qb = this.createQueryBuilder(entityName, ctx, true, convertCustomTypes);
     const res = await this.rethrow(qb.insert(data).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -200,7 +199,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
@@ -211,7 +210,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let res: QueryResult;
 
     if (fields.length === 0) {
-      const qb = this.createQueryBuilder(entityName, ctx, true);
+      const qb = this.createQueryBuilder(entityName, ctx, true, convertCustomTypes);
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
       let sql = `insert into ${this.platform.quoteIdentifier(meta.collection)} `;
@@ -256,7 +255,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<KnexTransaction>): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<KnexTransaction>, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
@@ -267,8 +266,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (Utils.hasObjectKeys(data)) {
-      const qb = this.createQueryBuilder<T>(entityName, ctx, true)
-        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+      const qb = this.createQueryBuilder<T>(entityName, ctx, true, convertCustomTypes)
         .update(data)
         .where(where);
 
@@ -281,7 +279,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<KnexTransaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
@@ -338,7 +336,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pks[0]]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).delete(where);
+    const qb = this.createQueryBuilder(entityName, ctx, true, false).delete(where);
 
     return this.rethrow(qb.execute('run', false));
   }
@@ -366,7 +364,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
       const qb = this.createQueryBuilder(coll.property.type, ctx, true)
-        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
         .update({ [coll.property.mappedBy]: pks })
         .getKnexQuery()
         .whereIn(cols, insertDiff as string[][]);
@@ -490,8 +487,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return prop.fieldNames;
   }
 
-  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean): QueryBuilder<T> {
-    return new QueryBuilder(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
+  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<KnexTransaction>, write?: boolean, convertCustomTypes?: boolean): QueryBuilder<T> {
+    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
+
+    if (!convertCustomTypes) {
+      qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+    }
+
+    return qb;
   }
 
   protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
@@ -531,7 +534,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotTable, ctx, true);
+      const qb1 = this.createQueryBuilder(prop.pivotTable, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {
@@ -558,12 +561,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (this.platform.allowsMultiInsert()) {
       await this.nativeInsertMany(prop.pivotTable, items, ctx);
     } else {
-      await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).insert(item).execute('run', false));
+      await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).insert(item).execute('run', false));
     }
   }
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
-    const qb = this.createQueryBuilder(entity.constructor.name, ctx);
+    const qb = this.createQueryBuilder(entity.constructor.name, ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const meta = entity.__helper!.__meta;
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(mode);

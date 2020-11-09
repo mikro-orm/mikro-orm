@@ -1456,6 +1456,9 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('custom types', async () => {
+    await orm.em.nativeInsert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.nativeInsert(FooBar2, { id: 456, name: 'n2', array: [] });
+
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [];

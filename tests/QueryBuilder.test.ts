@@ -1628,6 +1628,14 @@ describe('QueryBuilder', () => {
       type: 'postgresql',
     });
 
+    const qb01 = pg.em.createQueryBuilder(FooBar2);
+    qb01.insert({ array: [] });
+    expect(qb01.getFormattedQuery()).toEqual(`insert into "foo_bar2" ("array") values ('{}') returning "id", "version"`);
+
+    const qb02 = pg.em.createQueryBuilder(FooBar2);
+    qb02.insert({ array: [1, 2, 3] });
+    expect(qb02.getFormattedQuery()).toEqual(`insert into "foo_bar2" ("array") values ('{1,2,3}') returning "id", "version"`);
+
     const qb1 = pg.em.createQueryBuilder(Publisher2);
     qb1.select('*').where({ name: { $contains: 'test' } });
     expect(qb1.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" @> $1');

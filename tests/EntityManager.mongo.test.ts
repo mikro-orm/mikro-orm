@@ -1986,6 +1986,9 @@ describe('EntityManagerMongo', () => {
   });
 
   test('custom types', async () => {
+    await orm.em.nativeInsert(FooBar, { name: 'n1', array: [1, 2, 3] });
+    await orm.em.nativeInsert(FooBar, { name: 'n2', array: [] });
+
     const bar = FooBar.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [];

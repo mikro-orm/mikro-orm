@@ -55,9 +55,9 @@ export class QueryBuilderHelper {
     return this.alias + '.' + ret;
   }
 
-  processData(data: Dictionary, multi = false): any {
+  processData(data: Dictionary, convertCustomTypes: boolean, multi = false): any {
     if (Array.isArray(data)) {
-      return data.map(d => this.processData(d, true));
+      return data.map(d => this.processData(d, convertCustomTypes, true));
     }
 
     data = Object.assign({}, data); // copy first
@@ -76,6 +76,10 @@ export class QueryBuilderHelper {
         prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
 
         return;
+      }
+
+      if (prop.customType && convertCustomTypes) {
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
       }
 
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {

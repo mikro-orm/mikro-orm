@@ -65,7 +65,7 @@ export class ChangeSetPersister {
 
   private async persistNewEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const wrapped = changeSet.entity.__helper!;
-    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx);
+    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx, false);
 
     if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId, changeSet);
@@ -93,7 +93,7 @@ export class ChangeSetPersister {
   }
 
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
-    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false);
+    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false, false);
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -131,13 +131,13 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
     changeSets.forEach(cs => cs.persisted = true);
   }
 
   private mapPrimaryKey<T extends AnyEntity<T>>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
     const prop = meta.properties[meta.primaryKeys[0]];
-    const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.driver.getPlatform()) : value;
+    const insertId = prop.customType ? prop.customType.convertToJSValue(value, this.platform) : value;
     const wrapped = changeSet.entity.__helper!;
 
     if (!wrapped.hasPrimaryKey()) {
@@ -147,7 +147,7 @@ export class ChangeSetPersister {
     // some drivers might be returning bigint PKs as numbers when the number is small enough,
     // but we need to have it as string so comparison works in change set tracking, so instead
     // of using the raw value from db, we convert it back to the db value explicitly
-    value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.driver.getPlatform()) : value;
+    value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.platform) : value;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
     wrapped.__identifier!.setValue(value);
   }
@@ -174,7 +174,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
 
     const cond = {
@@ -182,7 +182,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     } as FilterQuery<T>;
 
-    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx);
+    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false);
   }
 
   private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -257,7 +257,7 @@ export class ChangeSetPersister {
     }
 
     if (changeSet.payload[prop.name] as unknown instanceof Date) {
-      changeSet.payload[prop.name] = this.driver.getPlatform().processDateProperty(changeSet.payload[prop.name]);
+      changeSet.payload[prop.name] = this.platform.processDateProperty(changeSet.payload[prop.name]);
     }
   }
 
