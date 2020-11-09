@@ -278,7 +278,7 @@ describe('EntityManagerMySql', () => {
     });
     const fooBazRef = orm.em.getReference<FooBaz2>(FooBaz2, 0);
     const fooBar = FooBar2.create('testBar');
-    fooBar.baz = Reference.create(fooBazRef);
+    fooBar.baz = fooBazRef;
     await orm.em.persistAndFlush(fooBar);
     orm.em.clear();
     const repo = orm.em.getRepository(FooBar2);

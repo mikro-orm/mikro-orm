@@ -1,7 +1,7 @@
-import { AnyEntity, Dictionary, EntityProperty } from '../typings';
+import { AnyEntity, Cast, Dictionary, EntityProperty, IsUnknown, PrimaryProperty } from '../typings';
 import { wrap } from './wrap';
 
-export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T = 'id' & keyof T> = { [K in PK]: T[K] } & Reference<T>;
+export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
 
 export class Reference<T extends AnyEntity<T>> {
 
@@ -27,7 +27,7 @@ export class Reference<T extends AnyEntity<T>> {
     }
   }
 
-  static create<T extends AnyEntity<T>, PK extends keyof T>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+  static create<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
     if (Reference.isReference(entity)) {
       return entity as IdentifiedReference<T, PK>;
     }

@@ -9,6 +9,8 @@ export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NonFunctionPropertyNames<T> = NonNullable<{ [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>;
+export type Cast<T, R> = T extends R ? T : R;
+export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -20,11 +22,17 @@ export type DeepPartial<T> = T & {
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
-export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
+export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
+export type Primary<T> = T extends { [PrimaryKeyType]: infer PK } // TODO `PrimaryKeyType` should be optional
   ? PK : T extends { _id: infer PK }
   ? PK | string : T extends { uuid: infer PK }
   ? PK : T extends { id: infer PK }
   ? PK : never;
+export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
+  ? PK : T extends { _id: any }
+  ? '_id' | string : T extends { uuid: any }
+  ? 'uuid' : T extends { id: any }
+  ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
@@ -68,11 +76,11 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = never> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
-  toReference<PK2 extends PK = never, P2 extends P = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
+  toReference<PK2 extends PK | unknown = unknown, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): T;

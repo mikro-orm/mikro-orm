@@ -1,9 +1,9 @@
 import { assert, Has, IsExact } from 'conditional-type-checks';
 import { ObjectId } from 'mongodb';
-import { FilterQuery, FilterValue, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import { FilterQuery, FilterValue, OperatorMap, Primary, PrimaryKeyType, PrimaryProperty, Query } from '../packages/core/src/typings';
 import { Author2, Book2, BookTag2, FooParam2 } from './entities-sql';
 import { Author, Book } from './entities';
-import { Collection } from '@mikro-orm/core';
+import { Collection, IdentifiedReference, Reference, wrap } from '@mikro-orm/core';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -163,6 +163,48 @@ describe('check typings', () => {
     assert<IsAssignable<FilterQuery<Book2>, { tags: string[] }>>(true);
     assert<IsAssignable<FilterQuery<Book2>, { tags: string }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { books: { tags: bigint[] } }>>(false);
+  });
+
+  test('assignment to naked relation, generic reference and identified reference', async () => {
+    interface Publisher {
+      id: number;
+      name: string;
+    }
+    interface Book {
+      id: number;
+      name: string;
+      publisher?: Publisher;
+      publisherRef?: Reference<Publisher>;
+      publisherIdRef?: IdentifiedReference<Publisher, 'id'>;
+    }
+
+    // simulate usage of ORM base entity so `wrap` will return its parameter
+    const book = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Book;
+    const publisher = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Publisher;
+
+    book.publisher = publisher;
+    // @ts-expect-error
+    book.publisher = wrap(publisher).toReference();
+    // @ts-expect-error
+    book.publisher = wrap(publisher).toReference<'id'>();
+
+    const id = book.publisherIdRef!.id;
+
+    // @ts-expect-error
+    book.publisherRef = publisher;
+    book.publisherRef = wrap(publisher).toReference();
+    book.publisherRef = wrap(publisher).toReference<'id'>();
+
+    // @ts-expect-error
+    book.publisherIdRef = publisher;
+    book.publisherIdRef = wrap(publisher).toReference();
+    book.publisherIdRef = wrap(publisher).toReference<'id'>();
+
+    // composite keys
+    const compositePks: Primary<FooParam2> = [1, 2];
+    const compositeRef = {} as IdentifiedReference<FooParam2>;
+    const bar = compositeRef.bar;
+    const baz = compositeRef.baz;
   });
 
   test('FilterQuery ok assignments', async () => {
