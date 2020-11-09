@@ -188,7 +188,7 @@ describe('check typings', () => {
     // @ts-expect-error
     book.publisher = wrap(publisher).toReference<'id'>();
 
-    const id = book.publisherIdRef!.id;
+    const id = book.publisherIdRef?.id;
 
     // @ts-expect-error
     book.publisherRef = publisher;
