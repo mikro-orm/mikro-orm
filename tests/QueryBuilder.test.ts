@@ -20,6 +20,18 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: 'test 123', type: PublisherType.GLOBAL }).orderBy({ name: QueryOrder.DESC, type: QueryOrder.ASC }).limit(2, 1);
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ? order by `e0`.`name` desc, `e0`.`type` asc limit ? offset ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL, 2, 1]);
+
+    const qb1 = orm.em.createQueryBuilder(Publisher2);
+    qb1.select('*')
+      .where({ name: 'test 123', type: PublisherType.GLOBAL })
+      .orderBy({ [`(point(location_latitude, location_longitude) <@> point(${53}, ${9}))`]: 'ASC' });
+    expect(qb1.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53, 9)) asc');
+
+    const qb2 = orm.em.createQueryBuilder(Publisher2);
+    qb2.select('*')
+      .where({ name: 'test 123', type: PublisherType.GLOBAL })
+      .orderBy({ [`(point(location_latitude, location_longitude) <@> point(${53.46}, ${9.90}))`]: 'ASC' });
+    expect(qb2.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53.46, 9.9)) asc');
   });
 
   test('select query picks read replica', async () => {

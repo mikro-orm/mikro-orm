@@ -403,15 +403,22 @@ export class QueryBuilderHelper {
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
+      const direction = orderBy[k];
+      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+
+      if (QueryBuilderHelper.isCustomExpression(k)) {
+        ret.push(`${k} ${order.toLowerCase()}`);
+        return;
+      }
+
       // eslint-disable-next-line prefer-const
       let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
       Utils.splitPrimaryKeys(field).forEach(f => {
-        const direction = orderBy[k];
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
-        const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
+        /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
         ret.push(`${rawColumn} ${order.toLowerCase()}`);
