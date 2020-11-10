@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "^4.2.3",
-    "pg": "8.4.2"
+    "pg": "8.5.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.2.3"
