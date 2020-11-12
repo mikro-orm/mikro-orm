@@ -8853,10 +8853,10 @@ ts-jest@26.4.4:
     semver "7.x"
     yargs-parser "20.x"
 
-ts-morph@8.1.2:
-  version "8.1.2"
-  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-8.1.2.tgz#f0bee6be6fbd8c3174ac5d6c0423a035e36c2bbd"
-  integrity sha512-5w4TzmMzECrBunIku1T6/Y0Y2IJ9sHT6hAlfF59WugXnsq1dv6DSioA+s6LgUiswxjgaJgZndOKgu8BrLcYjKw==
+ts-morph@8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-8.2.0.tgz#41d83cd501cbd897eb029ac489d6d5b927555c57"
+  integrity sha512-NHHWu+7I2/AOZiTni5w3f+xCfIxrkzPCcQbTGa81Yk3pr23a4h9xLLEE6tIGuYIubWjkjr9QVC3ITqgmA5touQ==
   dependencies:
     "@dsherret/to-absolute-glob" "^2.0.2"
     "@ts-morph/common" "~0.6.0"
