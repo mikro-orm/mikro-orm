@@ -117,6 +117,10 @@ export abstract class Platform {
     return false;
   }
 
+  allowsUniqueBatchUpdates() {
+    return true;
+  }
+
   isBigIntProperty(prop: EntityProperty): boolean {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }

@@ -739,6 +739,28 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(b1).toJSON()).toMatchObject({ test: { id: test.id, book: test.book.uuid, name: 't' } });
   });
 
+  test('batch update with OneToOne relation will use 2 queries (GH issue #1025)', async () => {
+    const bar1 = FooBar2.create('bar 1');
+    const bar2 = FooBar2.create('bar 2');
+    const bar3 = FooBar2.create('bar 3');
+    bar1.fooBar = bar2;
+    await orm.em.persistAndFlush([bar1, bar3]);
+    bar1.fooBar = undefined;
+    bar3.fooBar = bar2;
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
+    expect(mock.mock.calls[2][0]).toMatch('select "e0"."id", "e0"."version" from "foo_bar2" as "e0" where "e0"."id" in ($1)');
+    expect(mock.mock.calls[3][0]).toMatch('update "foo_bar2" set "foo_bar_id" = $1, "version" = current_timestamp(0) where "id" = $2 and "version" = $3');
+    expect(mock.mock.calls[4][0]).toMatch('select "e0"."id", "e0"."version" from "foo_bar2" as "e0" where "e0"."id" in ($1)');
+    expect(mock.mock.calls[5][0]).toMatch('commit');
+  });
+
   test('many to many relation', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     const book1 = new Book2('My Life on The Wall, part 1', author);

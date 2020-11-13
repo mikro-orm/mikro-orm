@@ -30,11 +30,11 @@ export class ChangeSetPersister {
     }
   }
 
-  async executeUpdates<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+  async executeUpdates<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], batched: boolean, ctx?: Transaction): Promise<void> {
     const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
-    if (changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
+    if (changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates()) && batched) {
       return this.persistManagedEntities(meta, changeSets, ctx);
     }
 
@@ -75,7 +75,11 @@ export class ChangeSetPersister {
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
-    await this.reloadVersionValues(meta, [changeSet], ctx);
+
+    if (!this.platform.usesReturningStatement()) {
+      await this.reloadVersionValues(meta, [changeSet], ctx);
+    }
+
     changeSet.persisted = true;
   }
 

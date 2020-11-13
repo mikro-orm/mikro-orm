@@ -349,7 +349,7 @@ export class UnitOfWork {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && reference) {
-      return this.processToOneReference(reference, visited);
+      return this.processToOneReference(reference, visited, parent, prop);
     }
 
     if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
@@ -357,7 +357,13 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>): void {
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
+    // when changing a unique property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
+    if (!this.platform.allowsUniqueBatchUpdates() && prop.nullable && prop.unique && !prop.primary) {
+      this.extraUpdates.add([parent, prop.name, reference]);
+      delete parent[prop.name as keyof T];
+    }
+
     if (!reference.__helper!.__originalEntityData) {
       this.findNewEntities(reference, visited);
     }
@@ -550,7 +556,7 @@ export class UnitOfWork {
       }
     }
 
-    await this.commitUpdateChangeSets(extraUpdates, tx);
+    await this.commitUpdateChangeSets(extraUpdates, tx, false);
 
     // 5. collection updates
     for (const coll of this.collectionUpdates) {
@@ -599,7 +605,7 @@ export class UnitOfWork {
     }
   }
 
-  private async commitUpdateChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+  private async commitUpdateChangeSets<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction, batched = true): Promise<void> {
     if (changeSets.length === 0) {
       return;
     }
@@ -608,7 +614,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
-    await this.changeSetPersister.executeUpdates(changeSets, ctx);
+    await this.changeSetPersister.executeUpdates(changeSets, batched, ctx);
 
     for (const changeSet of changeSets) {
       changeSet.entity.__helper!.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);

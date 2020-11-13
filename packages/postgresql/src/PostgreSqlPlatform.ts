@@ -17,6 +17,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  /**
+   * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
+   * This flag will result in postponing 1:1 updates (removing them from the batched query).
+   * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
+   */
+  allowsUniqueBatchUpdates() {
+    return false;
+  }
+
   getCurrentTimestampSQL(length: number): string {
     return `current_timestamp(${length})`;
   }

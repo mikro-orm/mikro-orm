@@ -833,6 +833,27 @@ describe('EntityManagerSqlite2', () => {
     expect(b1.virtual).toBe('123');
   });
 
+  test('batch update with changing OneToOne relation (GH issue #1025)', async () => {
+    const bar1 = orm.em.create(FooBar4, { name: 'bar 1' });
+    const bar2 = orm.em.create(FooBar4, { name: 'bar 2' });
+    const bar3 = orm.em.create(FooBar4, { name: 'bar 3' });
+    bar1.fooBar = bar2;
+    await orm.em.persistAndFlush([bar1, bar3]);
+    bar1.fooBar = undefined;
+    bar3.fooBar = bar2;
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id` from `foo_bar4` as `e0` where ((`e0`.`id` = ? and `e0`.`version` = ?) or (`e0`.`id` = ? and `e0`.`version` = ?))');
+    expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end where `id` in (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.`id`, `e0`.`version` from `foo_bar4` as `e0` where `e0`.`id` in (?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
+  });
+
   test('custom types', async () => {
     await orm.em.nativeInsert(FooBar4, { id: 123, name: 'n1', array: [1, 2, 3] });
     await orm.em.nativeInsert(FooBar4, { id: 456, name: 'n2', array: [] });
