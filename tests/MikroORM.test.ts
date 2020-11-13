@@ -29,6 +29,10 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', entities: ['not-existing/path'] })).rejects.toThrowError('No entities were discovered');
   });
 
+  test('should work with absolute paths (GH issue #1073)', async () => {
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', entities: [process.cwd() + '/tests/entities'] })).resolves.not.toBeUndefined();
+  });
+
   test('should throw when multiple entities with same file name discovered', async () => {
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
   });
