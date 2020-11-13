@@ -54,8 +54,13 @@ jobs:
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
 
+    - name: Check for changes
+      id: changed_packages
+      run: |
+        echo "::set-output name=changed_packages::$(lerna changed -p | wc -l)"
+
     - name: Release dev version for testing
-      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x'
+      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
       run: |
         echo "access=public" >> .npmrc
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
