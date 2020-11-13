@@ -8,7 +8,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, index: 'address2_author_id_index', unique: 'address2_author_id_unique' })
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, index: 'address2_author_id_index' })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -521,7 +521,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, unique: 'address2_author_id_unique' })
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
   author!: Author2;
 
   @Property({ length: 255 })

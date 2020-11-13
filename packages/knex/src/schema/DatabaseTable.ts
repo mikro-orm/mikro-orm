@@ -80,8 +80,12 @@ export class DatabaseTable {
       });
 
     this.getColumns().forEach(column => this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, schema));
+    const meta = schema.init().meta;
+    meta.relations
+      .filter(prop => prop.primary && prop.reference === ReferenceType.MANY_TO_ONE && !meta.compositePK)
+      .forEach(prop => prop.reference = ReferenceType.ONE_TO_ONE);
 
-    return schema.init().meta;
+    return meta;
   }
 
   private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, compositeFkIndexes: Dictionary<{ keyName: string }>, schema: EntitySchema) {

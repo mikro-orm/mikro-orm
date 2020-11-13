@@ -144,7 +144,6 @@ alter table `author2_following` add primary key `author2_following_pkey`(`author
 create table `address2` (`author_id` int(11) unsigned not null, `value` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table `address2` add primary key `address2_pkey`(`author_id`);
 alter table `address2` add index `address2_author_id_index`(`author_id`);
-alter table `address2` add unique `address2_author_id_unique`(`author_id`);
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;

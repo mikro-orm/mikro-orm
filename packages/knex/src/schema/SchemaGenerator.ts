@@ -439,7 +439,7 @@ export class SchemaGenerator {
     Utils.runIfNotEmpty(() => col.primary(), prop.primary && !meta.compositePK);
     Utils.runIfNotEmpty(() => col.unsigned(), pkProp.unsigned);
     Utils.runIfNotEmpty(() => col.index(indexName), !composite && index);
-    Utils.runIfNotEmpty(() => col.unique(uniqueName), !composite && prop.unique);
+    Utils.runIfNotEmpty(() => col.unique(uniqueName), !composite && prop.unique && (!prop.primary || meta.compositePK));
     Utils.runIfNotEmpty(() => col.defaultTo(prop.defaultRaw ? this.knex.raw(prop.defaultRaw) : null), !sameDefault);
     Utils.runIfNotEmpty(() => col.comment(prop.comment!), prop.comment);
 
