@@ -42,22 +42,24 @@ jobs:
     - name: Set CC Required env vars
       run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
 
-    - name: Build
-      run: yarn build
-
     - name: Lint
       run: yarn lint
-
-    - name: Test
-      run: |
-        yarn run-rs-in-background
-        yarn coverage > COVERAGE_RESULT
-        echo "$(cat COVERAGE_RESULT)"
 
     - name: Check for changes
       id: changed_packages
       run: |
         echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l)"
+
+    - name: Build
+      if: steps.changed_packages.outputs.changed_packages != '0'
+      run: yarn build
+
+    - name: Test
+      if: steps.changed_packages.outputs.changed_packages != '0'
+      run: |
+        yarn run-rs-in-background
+        yarn coverage > COVERAGE_RESULT
+        echo "$(cat COVERAGE_RESULT)"
 
     - name: Release dev version for testing
       if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
@@ -70,11 +72,13 @@ jobs:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: Coveralls
+      if: steps.changed_packages.outputs.changed_packages != '0'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Codeclimate
+      if: steps.changed_packages.outputs.changed_packages != '0'
       uses: paambaati/codeclimate-action@v2.7.4
       env:
         CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
