@@ -57,7 +57,7 @@ jobs:
     - name: Check for changes
       id: changed_packages
       run: |
-        echo "::set-output name=changed_packages::$(lerna changed -p | wc -l)"
+        echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l)"
 
     - name: Release dev version for testing
       if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
