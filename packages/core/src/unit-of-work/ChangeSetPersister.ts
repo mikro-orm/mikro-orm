@@ -34,7 +34,7 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
 
-    if (changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates()) && batched) {
+    if (batched && changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
       return this.persistManagedEntities(meta, changeSets, ctx);
     }
 

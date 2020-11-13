@@ -30,7 +30,7 @@ describe('MikroORM', () => {
   });
 
   test('should work with absolute paths (GH issue #1073)', async () => {
-    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', entities: [process.cwd() + '/tests/entities'] })).resolves.not.toBeUndefined();
+    await expect(MikroORM.init({ type: 'mongo', dbName: 'test', entities: [process.cwd() + '/tests/entities'] }, false)).resolves.not.toBeUndefined();
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
