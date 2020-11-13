@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/mikro-orm/mikro-orm/compare/v4.2.3...v4.3.0) (2020-11-13)
+
+
+### Bug Fixes
+
+* **core:** pin dependencies ([0f3a8e5](https://github.com/mikro-orm/mikro-orm/commit/0f3a8e51e4bcd5386c517b95a437721fbdda7e66)), closes [#961](https://github.com/mikro-orm/mikro-orm/issues/961)
+* **deps:** update dependency @types/mongodb to v3.5.33 ([#1045](https://github.com/mikro-orm/mikro-orm/issues/1045)) ([81514d8](https://github.com/mikro-orm/mikro-orm/commit/81514d8bf6a691bd015d198a44ea01f5b4b0eb66))
+* **mongo:** do not create collections for embeddables ([a0cc877](https://github.com/mikro-orm/mikro-orm/commit/a0cc87791f8a503ad13b3fd34e72d68e758b3d39)), closes [#1040](https://github.com/mikro-orm/mikro-orm/issues/1040)
+
+
+### Features
+
+* **core:** maintain transaction context automatically ([#959](https://github.com/mikro-orm/mikro-orm/issues/959)) ([e0064e4](https://github.com/mikro-orm/mikro-orm/commit/e0064e44acb05eb559dcbd47ffff8dafb814149f))
+* **query-builder:** allow mapping of complex joined results ([#988](https://github.com/mikro-orm/mikro-orm/issues/988)) ([60dd2d8](https://github.com/mikro-orm/mikro-orm/commit/60dd2d8e951dd94946888765a5e81f4f16c3e7c1)), closes [#932](https://github.com/mikro-orm/mikro-orm/issues/932)
+
+
+
+
+
 ## [4.2.3](https://github.com/mikro-orm/mikro-orm/compare/v4.2.2...v4.2.3) (2020-10-24)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

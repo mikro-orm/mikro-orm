@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/mikro-orm/mikro-orm/compare/v4.2.3...v4.3.0) (2020-11-13)
+
+
+### Bug Fixes
+
+* **cli:** add missing peer dependencies ([#1057](https://github.com/mikro-orm/mikro-orm/issues/1057)) ([83bd6b3](https://github.com/mikro-orm/mikro-orm/commit/83bd6b3ce0fe47cb0d1052ec200ecc49fe3728b5))
+* **core:** pin dependencies ([0f3a8e5](https://github.com/mikro-orm/mikro-orm/commit/0f3a8e51e4bcd5386c517b95a437721fbdda7e66)), closes [#961](https://github.com/mikro-orm/mikro-orm/issues/961)
+
+
+
+
+
 ## [4.2.3](https://github.com/mikro-orm/mikro-orm/compare/v4.2.2...v4.2.3) (2020-10-24)
 
 **Note:** Version bump only for package @mikro-orm/cli
