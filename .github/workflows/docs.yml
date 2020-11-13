@@ -27,7 +27,18 @@ jobs:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-    - name: Build docs
+    - name: Check for changes
+      id: docs_diff
+      run: |
+        echo "::set-output name=docs_diff::$(git diff ./docs | wc -l | xargs)"
+
+    - name: Check for changes 2
+      if: steps.docs_diff.outputs.docs_diff == '0'
+      run: |
+        echo "no changes detected in ./docs"
+
+    - name: Build & deploy docs
+      if: steps.docs_diff.outputs.docs_diff != '0'
       run: |
         cd docs
         yarn
