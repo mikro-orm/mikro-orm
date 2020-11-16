@@ -6,16 +6,15 @@ export class ScalarCriteriaNode extends CriteriaNode {
 
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
-      const nestedAlias = qb.getAliasForJoinPath(this.getPath()) || qb.getNextAlias();
+      const path = this.getPath();
+      const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`
+      const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias();
       const field = `${alias}.${this.prop!.name}`;
+      const type = this.prop!.reference === ReferenceType.MANY_TO_MANY ? 'pivotJoin' : 'leftJoin';
+      qb.join(field, nestedAlias, undefined, type, path);
 
-      if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
-        qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
-      } else {
-        qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
-      }
-
-      if (this.prop!.reference === ReferenceType.ONE_TO_ONE) {
+      // select the owner as virtual property when joining from 1:1 inverse side, but only if the parent is root entity
+      if (this.prop!.reference === ReferenceType.ONE_TO_ONE && !parentPath.includes('.')) {
         qb.addSelect(field);
       }
     }
@@ -24,15 +23,16 @@ export class ScalarCriteriaNode extends CriteriaNode {
   }
 
   shouldJoin(): boolean {
-    if (!this.parent || !this.prop || [ReferenceType.SCALAR, ReferenceType.ONE_TO_MANY].includes(this.prop.reference)) {
+    if (!this.parent || !this.prop) {
       return false;
     }
 
-    if (this.prop.reference === ReferenceType.ONE_TO_ONE) {
-      return !this.prop.owner;
+    switch (this.prop.reference) {
+      case ReferenceType.ONE_TO_MANY: return true;
+      case ReferenceType.MANY_TO_MANY: return true;
+      case ReferenceType.ONE_TO_ONE: return !this.prop.owner;
+      default: return false; // SCALAR, MANY_TO_ONE
     }
-
-    return this.prop.reference === ReferenceType.MANY_TO_MANY;
   }
 
 }

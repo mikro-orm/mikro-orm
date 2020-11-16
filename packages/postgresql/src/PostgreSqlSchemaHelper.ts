@@ -61,6 +61,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return false;
   }
 
+  isImplicitIndex(name: string): boolean {
+    return false;
+  }
+
   getListTablesSQL(): string {
     return 'select table_name, table_schema as schema_name '
       + `from information_schema.tables where table_schema not like 'pg_%' and table_schema = current_schema() `
@@ -126,7 +130,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       /* istanbul ignore else  */
       if (m1 && m2) {
-        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^'(.*)'/)![1]);
+        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
       }
 
       return o;

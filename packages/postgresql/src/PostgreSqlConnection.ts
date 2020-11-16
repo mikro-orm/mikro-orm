@@ -15,9 +15,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   getConnectionOptions(): Knex.PgConnectionConfig {
     const ret: Knex.PgConnectionConfig = super.getConnectionOptions();
+    [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
 
     if (this.config.get('forceUtcTimezone')) {
-      [1082, 1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // date, timestamp types
+      [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
       (defaults as any).parseInputDatesAsUTC = true;
     }
 
@@ -37,6 +38,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
       affectedRows: res.rowCount,
       insertId: res.rows[0] ? res.rows[0].id : 0,
       row: res.rows[0],
+      rows: res.rows,
     } as unknown as T;
   }
 

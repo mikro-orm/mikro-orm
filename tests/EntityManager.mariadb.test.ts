@@ -80,7 +80,7 @@ describe('EntityManagerMariaDb', () => {
     ]);
 
     // mysql returns the first inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 0, row: 1, rows: [ 1 ] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: {}, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },

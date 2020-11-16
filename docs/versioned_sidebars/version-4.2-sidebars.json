@@ -1,0 +1,521 @@
+{
+  "version-4.2/docs": [
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/defining-entities"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/relationships"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-manager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/unit-of-work"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Fundamentals",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/identity-map"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-references"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/collections"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/repositories"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/transactions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/inheritance-mapping"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/cascading"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/filters"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/deployment"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/caching"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/debugging"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Advanced Features",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/nested-populate"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/query-conditions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/propagation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/loading-strategies"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/serializing"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-helper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/lifecycle-hooks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/composite-keys"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/custom-types"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/embeddables"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-schema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/metadata-providers"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/metadata-cache"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/schema-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/naming-strategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/property-validation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/migrations"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/read-connections"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Reference",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-manager-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/repositories-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/query-builder-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/decorators"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/configuration"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Usage with Different Drivers",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/usage-with-sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/usage-with-mongo"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Recipes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.2/quick-start"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/usage-with-nestjs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/usage-with-js"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/entity-constructors"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/multiple-schemas"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/using-bigint-pks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/async-local-storage"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.2/custom-driver"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Example Integrations",
+      "items": [
+        {
+          "type": "link",
+          "label": "Express + MongoDB + TypeScript",
+          "href": "https://github.com/mikro-orm/express-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NestJS + MySQL + TypeScript",
+          "href": "https://github.com/mikro-orm/nestjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "RealWorld example app (Nest + MySQL)",
+          "href": "https://github.com/mikro-orm/nestjs-realworld-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + MongoDB + JavaScript",
+          "href": "https://github.com/mikro-orm/express-js-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Koa + SQLite + JavaScript",
+          "href": "https://github.com/mikro-orm/koa-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Inversify + PostgreSQL",
+          "href": "https://github.com/PodaruDragos/inversify-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NextJS + MySQL",
+          "href": "https://github.com/jonahallibone/mikro-orm-nextjs"
+        }
+      ]
+    }
+  ],
+  "version-4.2/API": [
+    "version-4.2/api/index",
+    {
+      "type": "category",
+      "label": "Enumerations",
+      "items": [
+        "version-4.2/api/enums/cascade",
+        "version-4.2/api/enums/changesettype",
+        "version-4.2/api/enums/eventtype",
+        "version-4.2/api/enums/groupoperator",
+        "version-4.2/api/enums/loadstrategy",
+        "version-4.2/api/enums/lockmode",
+        "version-4.2/api/enums/nodestate",
+        "version-4.2/api/enums/queryflag",
+        "version-4.2/api/enums/queryoperator",
+        "version-4.2/api/enums/queryorder",
+        "version-4.2/api/enums/queryordernumeric",
+        "version-4.2/api/enums/querytype",
+        "version-4.2/api/enums/referencetype"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Classes",
+      "items": [
+        "version-4.2/api/classes/abstractnamingstrategy",
+        "version-4.2/api/classes/abstractsqlconnection",
+        "version-4.2/api/classes/abstractsqldriver",
+        "version-4.2/api/classes/abstractsqlplatform",
+        "version-4.2/api/classes/arraycollection",
+        "version-4.2/api/classes/arraycriterianode",
+        "version-4.2/api/classes/arraytype",
+        "version-4.2/api/classes/baseentity",
+        "version-4.2/api/classes/biginttype",
+        "version-4.2/api/classes/blobtype",
+        "version-4.2/api/classes/cliconfigurator",
+        "version-4.2/api/classes/clihelper",
+        "version-4.2/api/classes/changesetcomputer",
+        "version-4.2/api/classes/changesetpersister",
+        "version-4.2/api/classes/clearcachecommand",
+        "version-4.2/api/classes/collection",
+        "version-4.2/api/classes/commitordercalculator",
+        "version-4.2/api/classes/configuration",
+        "version-4.2/api/classes/configurationloader",
+        "version-4.2/api/classes/connection",
+        "version-4.2/api/classes/connectionexception",
+        "version-4.2/api/classes/constraintviolationexception",
+        "version-4.2/api/classes/criterianode",
+        "version-4.2/api/classes/criterianodefactory",
+        "version-4.2/api/classes/databasedriver",
+        "version-4.2/api/classes/databaseobjectexistsexception",
+        "version-4.2/api/classes/databaseobjectnotfoundexception",
+        "version-4.2/api/classes/databaseschema",
+        "version-4.2/api/classes/databasetable",
+        "version-4.2/api/classes/datetype",
+        "version-4.2/api/classes/deadlockexception",
+        "version-4.2/api/classes/debugcommand",
+        "version-4.2/api/classes/driverexception",
+        "version-4.2/api/classes/entityassigner",
+        "version-4.2/api/classes/entitycasenamingstrategy",
+        "version-4.2/api/classes/entitycomparator",
+        "version-4.2/api/classes/entityfactory",
+        "version-4.2/api/classes/entitygenerator",
+        "version-4.2/api/classes/entityhelper",
+        "version-4.2/api/classes/entityidentifier",
+        "version-4.2/api/classes/entityloader",
+        "version-4.2/api/classes/entitymanager",
+        "version-4.2/api/classes/entitymetadata",
+        "version-4.2/api/classes/entityrepository",
+        "version-4.2/api/classes/entityschema",
+        "version-4.2/api/classes/entitytransformer",
+        "version-4.2/api/classes/entityvalidator",
+        "version-4.2/api/classes/enumarraytype",
+        "version-4.2/api/classes/eventmanager",
+        "version-4.2/api/classes/exceptionconverter",
+        "version-4.2/api/classes/filecacheadapter",
+        "version-4.2/api/classes/foreignkeyconstraintviolationexception",
+        "version-4.2/api/classes/generatecachecommand",
+        "version-4.2/api/classes/generateentitiescommand",
+        "version-4.2/api/classes/hydrator",
+        "version-4.2/api/classes/identitymap",
+        "version-4.2/api/classes/importcommand",
+        "version-4.2/api/classes/invalidfieldnameexception",
+        "version-4.2/api/classes/javascriptmetadataprovider",
+        "version-4.2/api/classes/jsontype",
+        "version-4.2/api/classes/lockwaittimeoutexception",
+        "version-4.2/api/classes/logger",
+        "version-4.2/api/classes/mariadbconnection",
+        "version-4.2/api/classes/mariadbdriver",
+        "version-4.2/api/classes/memorycacheadapter",
+        "version-4.2/api/classes/metadatadiscovery",
+        "version-4.2/api/classes/metadataerror",
+        "version-4.2/api/classes/metadataprovider",
+        "version-4.2/api/classes/metadatastorage",
+        "version-4.2/api/classes/metadatavalidator",
+        "version-4.2/api/classes/migration",
+        "version-4.2/api/classes/migrationcommandfactory",
+        "version-4.2/api/classes/migrationgenerator",
+        "version-4.2/api/classes/migrationrunner",
+        "version-4.2/api/classes/migrationstorage",
+        "version-4.2/api/classes/migrator",
+        "version-4.2/api/classes/mikroorm",
+        "version-4.2/api/classes/mongoconnection",
+        "version-4.2/api/classes/mongodriver",
+        "version-4.2/api/classes/mongoentitymanager",
+        "version-4.2/api/classes/mongoentityrepository",
+        "version-4.2/api/classes/mongoexceptionconverter",
+        "version-4.2/api/classes/mongonamingstrategy",
+        "version-4.2/api/classes/mongoplatform",
+        "version-4.2/api/classes/mysqlconnection",
+        "version-4.2/api/classes/mysqldriver",
+        "version-4.2/api/classes/mysqlexceptionconverter",
+        "version-4.2/api/classes/mysqlplatform",
+        "version-4.2/api/classes/mysqlschemahelper",
+        "version-4.2/api/classes/nonuniquefieldnameexception",
+        "version-4.2/api/classes/notfounderror",
+        "version-4.2/api/classes/notnullconstraintviolationexception",
+        "version-4.2/api/classes/nullcacheadapter",
+        "version-4.2/api/classes/nullhighlighter",
+        "version-4.2/api/classes/objectcriterianode",
+        "version-4.2/api/classes/objecthydrator",
+        "version-4.2/api/classes/optimisticlockerror",
+        "version-4.2/api/classes/platform",
+        "version-4.2/api/classes/postgresqlconnection",
+        "version-4.2/api/classes/postgresqldriver",
+        "version-4.2/api/classes/postgresqlexceptionconverter",
+        "version-4.2/api/classes/postgresqlplatform",
+        "version-4.2/api/classes/postgresqlschemahelper",
+        "version-4.2/api/classes/querybuilder",
+        "version-4.2/api/classes/querybuilderhelper",
+        "version-4.2/api/classes/queryhelper",
+        "version-4.2/api/classes/readonlyexception",
+        "version-4.2/api/classes/reference",
+        "version-4.2/api/classes/reflectmetadataprovider",
+        "version-4.2/api/classes/requestcontext",
+        "version-4.2/api/classes/scalarcriterianode",
+        "version-4.2/api/classes/schemacommandfactory",
+        "version-4.2/api/classes/schemagenerator",
+        "version-4.2/api/classes/schemahelper",
+        "version-4.2/api/classes/serializationcontext",
+        "version-4.2/api/classes/serverexception",
+        "version-4.2/api/classes/sourcefile",
+        "version-4.2/api/classes/sqlentitymanager",
+        "version-4.2/api/classes/sqlentityrepository",
+        "version-4.2/api/classes/sqliteconnection",
+        "version-4.2/api/classes/sqlitedriver",
+        "version-4.2/api/classes/sqliteexceptionconverter",
+        "version-4.2/api/classes/sqliteplatform",
+        "version-4.2/api/classes/sqliteschemahelper",
+        "version-4.2/api/classes/syntaxerrorexception",
+        "version-4.2/api/classes/tableexistsexception",
+        "version-4.2/api/classes/tablenotfoundexception",
+        "version-4.2/api/classes/timetype",
+        "version-4.2/api/classes/tsmorphmetadataprovider",
+        "version-4.2/api/classes/type",
+        "version-4.2/api/classes/underscorenamingstrategy",
+        "version-4.2/api/classes/uniqueconstraintviolationexception",
+        "version-4.2/api/classes/unitofwork",
+        "version-4.2/api/classes/utils",
+        "version-4.2/api/classes/validationerror",
+        "version-4.2/api/classes/wrappedentity"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Interfaces",
+      "items": [
+        "version-4.2/api/interfaces/assignoptions",
+        "version-4.2/api/interfaces/cacheadapter",
+        "version-4.2/api/interfaces/changeset",
+        "version-4.2/api/interfaces/column",
+        "version-4.2/api/interfaces/connectionconfig",
+        "version-4.2/api/interfaces/connectionoptions",
+        "version-4.2/api/interfaces/countoptions",
+        "version-4.2/api/interfaces/deleteoptions",
+        "version-4.2/api/interfaces/edge",
+        "version-4.2/api/interfaces/entityproperty",
+        "version-4.2/api/interfaces/enumoptions",
+        "version-4.2/api/interfaces/eventargs",
+        "version-4.2/api/interfaces/eventsubscriber",
+        "version-4.2/api/interfaces/factoryoptions",
+        "version-4.2/api/interfaces/findoneoptions",
+        "version-4.2/api/interfaces/findoneorfailoptions",
+        "version-4.2/api/interfaces/findoptions",
+        "version-4.2/api/interfaces/flatqueryordermap",
+        "version-4.2/api/interfaces/flusheventargs",
+        "version-4.2/api/interfaces/foreignkey",
+        "version-4.2/api/interfaces/highlighter",
+        "version-4.2/api/interfaces/hydratorconstructor",
+        "version-4.2/api/interfaces/iconfiguration",
+        "version-4.2/api/interfaces/icriterianode",
+        "version-4.2/api/interfaces/idatabasedriver",
+        "version-4.2/api/interfaces/ientitygenerator",
+        "version-4.2/api/interfaces/ihydrator",
+        "version-4.2/api/interfaces/imetadatastorage",
+        "version-4.2/api/interfaces/imigrator",
+        "version-4.2/api/interfaces/iquerybuilder",
+        "version-4.2/api/interfaces/ischemagenerator",
+        "version-4.2/api/interfaces/iwrappedentity",
+        "version-4.2/api/interfaces/iwrappedentityinternal",
+        "version-4.2/api/interfaces/index",
+        "version-4.2/api/interfaces/indexdef",
+        "version-4.2/api/interfaces/indexoptions",
+        "version-4.2/api/interfaces/initoptions",
+        "version-4.2/api/interfaces/issame",
+        "version-4.2/api/interfaces/joinoptions",
+        "version-4.2/api/interfaces/loadedcollection",
+        "version-4.2/api/interfaces/loadedreference",
+        "version-4.2/api/interfaces/manytomanyoptions",
+        "version-4.2/api/interfaces/manytooneoptions",
+        "version-4.2/api/interfaces/migrationobject",
+        "version-4.2/api/interfaces/mikroormoptions",
+        "version-4.2/api/interfaces/namingstrategy",
+        "version-4.2/api/interfaces/node",
+        "version-4.2/api/interfaces/onetooneoptions",
+        "version-4.2/api/interfaces/poolconfig",
+        "version-4.2/api/interfaces/primarykeyoptions",
+        "version-4.2/api/interfaces/queryordermap",
+        "version-4.2/api/interfaces/queryresult",
+        "version-4.2/api/interfaces/referenceoptions",
+        "version-4.2/api/interfaces/serializedprimarykeyoptions",
+        "version-4.2/api/interfaces/settings",
+        "version-4.2/api/interfaces/table",
+        "version-4.2/api/interfaces/tabledifference",
+        "version-4.2/api/interfaces/uniqueoptions",
+        "version-4.2/api/interfaces/updateoptions"
+      ]
+    }
+  ]
+}

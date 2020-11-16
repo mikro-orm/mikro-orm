@@ -76,12 +76,26 @@ export const TestSchema = new EntitySchema<Test>({
   },
 });
 
+export class Test2 {
+
+  id!: string;
+
+}
+
+export const TestSchema2 = new EntitySchema<Test2>({
+  name: 'Test2',
+  properties: {
+    id: {
+      primary: true,
+      type: Number,
+    },
+  },
+});
+
 describe('GH issue 725', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
+  test('mapping values from returning statement to custom types', async () => {
+    const orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [TestSchema],
       dbName: `mikro_orm_test_gh_725`,
       type: 'postgresql',
@@ -90,11 +104,7 @@ describe('GH issue 725', () => {
     await orm.getSchemaGenerator().execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
-  });
 
-  afterAll(() => orm.close(true));
-
-  test('mapping values from returning statement to custom types', async () => {
     const test = new Test();
     orm.em.persist(test);
     expect(test.id).toBeUndefined();
@@ -112,6 +122,21 @@ describe('GH issue 725', () => {
     const t1 = await orm.em.findOneOrFail(Test, test);
     expect(t1.createdAt).toBeInstanceOf(DateTime);
     expect(t1.createdAt.toDate().toISOString()).toBe('2020-01-01T00:00:00.000Z');
+
+    await orm.close(true);
+  });
+
+  test('validation when trying to persist not discovered entity', async () => {
+    const orm = await MikroORM.init<AbstractSqlDriver>({
+      entities: [TestSchema2],
+      dbName: `:memory:`,
+      type: 'sqlite',
+    });
+
+    const test = new Test2();
+    const err = `Trying to persist not discovered entity of type Test2. Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via \`class\`.`;
+    expect(() => orm.em.persist(test)).toThrowError(err);
+    await orm.close();
   });
 
 });

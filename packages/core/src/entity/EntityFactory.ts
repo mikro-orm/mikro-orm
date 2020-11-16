@@ -3,7 +3,6 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityPr
 import { UnitOfWork } from '../unit-of-work';
 import { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
-import { WrappedEntity } from './WrappedEntity';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -19,22 +18,25 @@ export class EntityFactory {
   private readonly platform = this.driver.getPlatform();
   private readonly config = this.em.config;
   private readonly metadata = this.em.getMetadata();
-  private readonly hydrator = this.config.getHydrator(this, this.em);
+  private readonly hydrator = this.config.getHydrator(this.metadata);
   private readonly eventManager = this.em.getEventManager();
 
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T extends AnyEntity<T>, P extends Populate<T> = keyof T>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
-    if (Utils.isEntity<T>(data)) {
+    if (data.__entity) {
       return data as New<T, P>;
     }
 
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
-    meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
+
+    if (this.platform.usesDifferentSerializedPrimaryKey()) {
+      meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
+    }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
     const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
@@ -44,14 +46,16 @@ export class EntityFactory {
     }
 
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
-    this.hydrate(entity, meta, data, options);
+    entity.__helper!.__initialized = options.initialized;
+    this.hydrate(entity, meta2, data, options);
 
     if (options.merge) {
-      this.unitOfWork.registerManaged(entity, data, options.refresh, options.newEntity);
+      this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
     }
 
-    entity.__helper!.__initialized = options.initialized;
-    this.runHooks(entity, meta);
+    if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
+      this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
+    }
 
     return entity as New<T, P>;
   }
@@ -77,33 +81,25 @@ export class EntityFactory {
       return exists;
     }
 
-    return this.create<T>(entityName, id as EntityData<T>, { initialized: false, ...options });
+    return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false });
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
-    if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
+    if (options.newEntity) {
       const params = this.extractConstructorParams<T>(meta, data);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
-      const entity = new Entity(...params);
-      // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-      const helper = new WrappedEntity(entity);
-      Object.defineProperty(entity, '__helper', { value: helper });
-
-      return entity;
+      return new Entity(...params);
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
-    const entity = Object.create(meta.class.prototype) as T & AnyEntity<T>;
-    // perf: create the helper instance early to bypass the double getter defined on the prototype in EntityHelper
-    const helper = new WrappedEntity(entity as T);
-    Object.defineProperty(entity, '__helper', { value: helper });
+    const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
-    this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
 
-    if (!options.newEntity) {
+    if (meta.selfReferencing && !options.newEntity) {
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
       this.unitOfWork.registerManaged<T>(entity);
     }
 
@@ -112,13 +108,17 @@ export class EntityFactory {
 
   private hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, options.newEntity, options.convertCustomTypes);
+      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes);
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, options.convertCustomTypes);
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
     }
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {
+    if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]].customType) {
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]]);
+    }
+
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       return undefined;
     }
@@ -189,17 +189,6 @@ export class EntityFactory {
 
       return data[k];
     });
-  }
-
-  private runHooks<T>(entity: T, meta: EntityMetadata<T>): void {
-    /* istanbul ignore next */
-    const hooks = meta.hooks?.onInit || [];
-
-    if (hooks.length > 0) {
-      hooks.forEach(hook => (entity[hook] as unknown as () => void)());
-    }
-
-    this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
   }
 
 }

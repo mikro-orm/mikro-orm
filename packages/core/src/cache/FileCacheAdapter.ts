@@ -6,7 +6,6 @@ import { Utils } from '../utils/Utils';
 
 export class FileCacheAdapter implements CacheAdapter {
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   private readonly VERSION = Utils.getORMVersion();
 
   constructor(private readonly options: { cacheDir: string },

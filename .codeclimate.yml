@@ -29,6 +29,7 @@ plugins:
 
 exclude_patterns:
   - '**/*ExceptionConverter.ts'
+  - 'packages/core/src/utils/EntityComparator.ts'
   - 'docs/'
   - 'temp/'
   - '**/dist/'

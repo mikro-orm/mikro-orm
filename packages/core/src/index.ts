@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 export {
-  Constructor, Dictionary, PrimaryKeyType, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
+  Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection,
-  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial,
+  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty,
 } from './typings';
 export * from './enums';
 export * from './errors';

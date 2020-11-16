@@ -2,9 +2,9 @@ import { inspect } from 'util';
 
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-import { EntityFactory, EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, IPrimaryKey, MigrationObject } from '../typings';
-import { Hydrator, ObjectHydrator } from '../hydration';
+import { EntityRepository } from '../entity';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MigrationObject } from '../typings';
+import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace } from '../utils/Logger';
 import { Utils } from '../utils/Utils';
@@ -19,6 +19,8 @@ import { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
+import { LoadStrategy } from '../enums';
+import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -36,17 +38,21 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     strict: false,
     validate: false,
-    context: () => RequestContext.getEntityManager(),
+    context: (name: string) => RequestContext.getEntityManager(name),
+    contextName: 'default',
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
+    loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: false,
+    forceUndefined: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
+    batchSize: 300,
     debug: false,
     verbose: false,
     driverOptions: {},
@@ -66,6 +72,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
+    },
+    resultCache: {
+      adapter: MemoryCacheAdapter,
+      expiration: 1000, // 1s
+      options: {},
     },
     metadataProvider: ReflectMetadataProvider,
     highlighter: new NullHighlighter(),
@@ -97,6 +108,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     this.logger = new Logger(this.options.logger, this.options.debug);
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
+    this.platform.setConfig(this);
     this.init();
   }
 
@@ -154,10 +166,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of Hydrator. Hydrator cannot be cached as it would have reference to wrong (global) EntityFactory.
+   * Gets instance of Hydrator.
    */
-  getHydrator(factory: EntityFactory, em: EntityManager): Hydrator {
-    return new this.options.hydrator(factory, em);
+  getHydrator(metadata: MetadataStorage): IHydrator {
+    return this.cached(this.options.hydrator, metadata, this.platform, this);
   }
 
   /**
@@ -172,6 +184,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getCacheAdapter(): CacheAdapter {
     return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+  }
+
+  /**
+   * Gets instance of CacheAdapter for result cache. (cached)
+   */
+  getResultCacheAdapter(): CacheAdapter {
+    return this.cached(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
   }
 
   /**
@@ -215,6 +234,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.options.charset) {
       this.options.charset = this.platform.getDefaultCharset();
     }
+
+    Object.keys(this.options.filters).forEach(key => {
+      this.options.filters[key].default = this.options.filters[key].default ?? true;
+    });
 
     const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
     this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
@@ -324,15 +347,21 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
+  forceUndefined: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;
   ensureIndexes: boolean;
-  hydrator: { new (factory: EntityFactory, em: EntityManager): Hydrator };
+  useBatchInserts?: boolean;
+  useBatchUpdates?: boolean;
+  batchSize: number;
+  hydrator: HydratorConstructor;
+  loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
-  context: () => EntityManager | undefined;
+  context: (name: string) => EntityManager | undefined;
+  contextName: string;
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
@@ -343,6 +372,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   cache: {
     enabled?: boolean;
     pretty?: boolean;
+    adapter?: { new (...params: any[]): CacheAdapter };
+    options?: Dictionary;
+  };
+  resultCache: {
+    expiration?: number;
     adapter?: { new (...params: any[]): CacheAdapter };
     options?: Dictionary;
   };

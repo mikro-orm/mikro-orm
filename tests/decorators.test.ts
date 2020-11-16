@@ -1,4 +1,4 @@
-import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
+import { ManyToMany, ManyToOne, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType, Utils, Subscriber } from '@mikro-orm/core';
 import { Test } from './entities';
 
 class Test2 {}
@@ -19,6 +19,12 @@ describe('decorators', () => {
     ManyToMany({ entity: () => Test })(new Test2(), 'test0'); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ reference: ReferenceType.MANY_TO_MANY, name: 'test0' });
     expect(storage[key].properties.test0.entity()).toBe(Test);
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(7);
+    Subscriber()(Test6);
+    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(1);
+    MetadataStorage.clear();
+    expect(Object.keys(MetadataStorage.getMetadata())).toHaveLength(0);
+    expect(Object.keys(MetadataStorage.getSubscriberMetadata())).toHaveLength(0);
   });
 
   test('ManyToOne', () => {
@@ -52,6 +58,17 @@ describe('decorators', () => {
     const key = 'Test5-' + Utils.hash('/path/to/entity');
     Property()(new Test5(), 'test3');
     expect(storage[key].properties.test3).toMatchObject({ reference: ReferenceType.SCALAR, name: 'test3' });
+  });
+
+  test('babel support', () => {
+    const ret1 = Property()(new Test5(), 'test3');
+    expect(ret1).toBeUndefined();
+    process.env.BABEL_DECORATORS_COMPAT = 'true';
+    const ret2 = Property()(new Test5(), 'test3');
+    expect(ret2).not.toBeUndefined();
+    delete process.env.BABEL_DECORATORS_COMPAT;
+    const ret3 = Property()(new Test5(), 'test3');
+    expect(ret3).toBeUndefined();
   });
 
 });

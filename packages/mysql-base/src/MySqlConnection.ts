@@ -36,6 +36,7 @@ export class MySqlConnection extends AbstractSqlConnection {
       return {
         insertId: res[0].insertId,
         affectedRows: res[0].affectedRows,
+        rows: [],
       } as unknown as T;
     }
 

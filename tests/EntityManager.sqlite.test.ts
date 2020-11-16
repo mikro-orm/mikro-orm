@@ -70,12 +70,20 @@ describe('EntityManagerSqlite', () => {
     ]);
 
     // sqlite returns the last inserted id
-    expect(res).toMatchObject({ insertId: 3, affectedRows: 0, row: 3, rows: [ 3 ] });
+    expect(res).toMatchObject({ insertId: 3, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher3.name, {});
     expect(res2).toEqual([
       { id: 1, name: 'test 1', type: 'GLOBAL' },
       { id: 2, name: 'test 2', type: 'LOCAL' },
       { id: 3, name: 'test 3', type: 'GLOBAL' },
+    ]);
+
+    // multi inserts with no values
+    await driver.nativeInsertMany(Test3.name, [{}, {}]);
+    const res3 = await driver.find(Test3.name, {});
+    expect(res3).toEqual([
+      { id: 2, name: null, version: 1 },
+      { id: 3, name: null, version: 1 },
     ]);
 
     const now = new Date();
@@ -370,6 +378,16 @@ describe('EntityManagerSqlite', () => {
     }
   });
 
+  test('findOne supports optimistic locking', async () => {
+    const test = new Test3();
+    test.name = 'test';
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const test2 = await orm.em.findOne(Test3, test.id);
+    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
+  });
+
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = new Test3();
     test.name = 'test';
@@ -379,16 +397,6 @@ describe('EntityManagerSqlite', () => {
     const proxy = orm.em.getReference<any>(Test3, test.id);
     await orm.em.lock(proxy, LockMode.OPTIMISTIC, 1);
     expect(proxy.isInitialized()).toBe(true);
-  });
-
-  test('findOne supports optimistic locking [versioned proxy]', async () => {
-    const test = new Test3();
-    test.name = 'test';
-    await orm.em.persistAndFlush(test);
-    orm.em.clear();
-
-    const test2 = await orm.em.findOne(Test3, test.id);
-    await orm.em.lock(test2!, LockMode.OPTIMISTIC, test.version);
   });
 
   test('findOne supports optimistic locking [testOptimisticTimestampLockFailureThrowsException]', async () => {
@@ -644,7 +652,7 @@ describe('EntityManagerSqlite', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
     book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
@@ -658,11 +666,11 @@ describe('EntityManagerSqlite', () => {
     expect(book.tags.count()).toBe(2);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();
@@ -828,18 +836,6 @@ describe('EntityManagerSqlite', () => {
     expect(res5).toBe(1);
   });
 
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author3('Name 1', 'e-mail1');
-    const book = new Book3('test', author1);
-    const author2 = new Author3('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persist([author1, author2, book]).flush();
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.id });
-    expect(typeof diff.favouriteBook).toBe('number');
-  });
-
   test('EM supports smart search conditions', async () => {
     const author = new Author3('name', 'email');
     const b1 = new Book3('b1', author);
@@ -870,13 +866,16 @@ describe('EntityManagerSqlite', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ created_at: number }[]>(`select created_at as created_at from author3 where id = ${author.id}`);
+    const res = await orm.em.getConnection().execute<{ created_at: number; updated_at: number }[]>(`select created_at as created_at, updated_at as updated_at from author3 where id = ${author.id}`);
     expect(res[0].created_at).toBe(+author.createdAt);
+    expect(res[0].updated_at).toBe(+author.updatedAt);
     const a = await orm.em.findOneOrFail<any>(Author3, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
     const a1 = await orm.em.findOneOrFail<any>(Author3, { createdAt: { $eq: a.createdAt } });
     expect(+a1.createdAt!).toBe(+author.createdAt);
     expect(orm.em.merge(a1)).toBe(a1);
+    const a2 = await orm.em.findOneOrFail<any>(Author3, { updatedAt: { $eq: a.updatedAt } });
+    expect(+a2.updatedAt!).toBe(+author.updatedAt);
   });
 
   test('exceptions', async () => {

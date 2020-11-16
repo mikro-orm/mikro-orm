@@ -1,4 +1,4 @@
-import { EntityMetadata, AnyEntity, Dictionary } from '../typings';
+import { EntityMetadata, AnyEntity, Dictionary, EntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
 import { EntityManager } from '../EntityManager';
@@ -21,7 +21,7 @@ export class MetadataStorage {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
-      MetadataStorage.metadata[key] = { className: entity, path, properties: {}, hooks: {}, filters: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
+      MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });
     }
 
     if (key) {
@@ -29,6 +29,10 @@ export class MetadataStorage {
     }
 
     return MetadataStorage.metadata;
+  }
+
+  static isKnownEntity(name: string): boolean {
+    return !!Object.values(this.metadata).find(meta => meta.className === name);
   }
 
   static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
@@ -47,8 +51,25 @@ export class MetadataStorage {
     return new MetadataStorage(MetadataStorage.metadata);
   }
 
+  static clear(): void {
+    Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
+    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
+  }
+
   getAll(): Dictionary<EntityMetadata> {
     return this.metadata;
+  }
+
+  getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
+    const value = data[meta.root.discriminatorColumn!];
+
+    if (!value) {
+      return undefined;
+    }
+
+    const type = meta.root.discriminatorMap![value];
+
+    return this.metadata[type];
   }
 
   get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
@@ -57,7 +78,7 @@ export class MetadataStorage {
     }
 
     if (init && !this.has(entity)) {
-      this.metadata[entity] = { properties: {}, hooks: {}, indexes: [] as any[], uniques: [] as any[] } as EntityMetadata;
+      this.metadata[entity] = new EntityMetadata();
     }
 
     return this.metadata[entity];

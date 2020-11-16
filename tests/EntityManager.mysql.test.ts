@@ -55,10 +55,18 @@ describe('EntityManagerMySql', () => {
     });
   });
 
+  test('raw query with array param', async () => {
+    const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
+    expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');
+    const q2 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [['1', '2', '3'], 3]);
+    expect(q2).toBe(`select * from author2 where id in ('1', '2', '3') limit 3`);
+  });
+
   test('should return mysql driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MySqlDriver);
     await expect(driver.findOne<Book2>(Book2.name, { title: 'bar' })).resolves.toBeNull();
+    await expect(driver.findOne<Book2>(Book2.name, 'uuid')).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
     expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
@@ -68,19 +76,23 @@ describe('EntityManagerMySql', () => {
     await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
+      rows: [],
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
+      rows: [],
     });
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(true);
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find<BookTag2>(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
+    await expect(driver.count(BookTag2.name, {})).resolves.toBe(1);
     await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
 
     const conn = driver.getConnection();
@@ -98,12 +110,26 @@ describe('EntityManagerMySql', () => {
     ]);
 
     // mysql returns the first inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 0, row: 1, rows: [ 1 ] });
+    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
       { id: 2, name: 'test 2', type: PublisherType.LOCAL },
       { id: 3, name: 'test 3', type: PublisherType.GLOBAL },
+    ]);
+
+    // multi updates
+    const res3 = await driver.nativeUpdateMany<Publisher2>(Publisher2.name, [1, 2, 3], [
+      { name: 'test 11', type: PublisherType.LOCAL },
+      { type: PublisherType.GLOBAL },
+      { name: 'test 33', type: PublisherType.LOCAL },
+    ]);
+
+    const res4 = await driver.find(Publisher2.name, {});
+    expect(res4).toMatchObject([
+      { id: 1, name: 'test 11', type: PublisherType.LOCAL },
+      { id: 2, name: 'test 2', type: PublisherType.GLOBAL },
+      { id: 3, name: 'test 33', type: PublisherType.LOCAL },
     ]);
   });
 
@@ -252,7 +278,7 @@ describe('EntityManagerMySql', () => {
     });
     const fooBazRef = orm.em.getReference<FooBaz2>(FooBaz2, 0);
     const fooBar = FooBar2.create('testBar');
-    fooBar.baz = Reference.create(fooBazRef);
+    fooBar.baz = fooBazRef;
     await orm.em.persistAndFlush(fooBar);
     orm.em.clear();
     const repo = orm.em.getRepository(FooBar2);
@@ -424,6 +450,11 @@ describe('EntityManagerMySql', () => {
     expect(count).toBe(authors.length);
     const count2 = await orm.em.count(Author2);
     expect(count2).toBe(authors.length);
+    const count3 = await orm.em.getRepository(Author2).count({}, {
+      groupBy: ['termsAccepted'],
+      having: { termsAccepted: false },
+    });
+    expect(count3).toBe(authors.length);
 
     // identity map test
     authors.shift(); // shift the god away, as that entity is detached from IM
@@ -731,7 +762,7 @@ describe('EntityManagerMySql', () => {
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
     expect(res2).toBeNull();
-    const res3 = await qb1.select('*').getResultList();
+    const res3 = await qb1.select('*').getResult();
     expect(res3).toHaveLength(1);
   });
 
@@ -994,7 +1025,7 @@ describe('EntityManagerMySql', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(tag1);
+    book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persistAndFlush(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, ['tags']))!;
@@ -1009,11 +1040,11 @@ describe('EntityManagerMySql', () => {
     expect(book.tags.count()).toBe(3);
 
     // contains
-    expect(book.tags.contains(tag1)).toBe(true);
-    expect(book.tags.contains(tag2)).toBe(false);
-    expect(book.tags.contains(tag3)).toBe(true);
-    expect(book.tags.contains(tag4)).toBe(false);
-    expect(book.tags.contains(tag5)).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag1.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag2.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag3.id))).toBe(true);
+    expect(book.tags.contains(tagRepository.getReference(tag4.id))).toBe(false);
+    expect(book.tags.contains(tagRepository.getReference(tag5.id))).toBe(false);
 
     // removeAll
     book.tags.removeAll();
@@ -1063,7 +1094,11 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     tag = await orm.em.findOneOrFail(BookTag2, tag1.id, ['books']);
-    book4 = await orm.em.findOneOrFail(Book2, book4.uuid, ['tags']);
+    book4 = await orm.em.findOneOrFail(Book2, book4.uuid, ['tags.books']);
+
+    // to check that circular serialization works fine with chain of populated collections
+    expect(JSON.stringify(book4)).not.toEqual({});
+
     tag.books.add(book4);
     tag.books.add(new Book2('ttt', new Author2('aaa', 'bbb')));
     await orm.em.flush();
@@ -1711,19 +1746,6 @@ describe('EntityManagerMySql', () => {
     expect(res9).toBe(0);
   });
 
-  test('Utils.prepareEntity changes entity to number id', async () => {
-    const author1 = new Author2('Name 1', 'e-mail1');
-    const book = new Book2('test', author1);
-    const author2 = new Author2('Name 2', 'e-mail2');
-    author2.favouriteBook = book;
-    author2.version = 123;
-    await orm.em.persistAndFlush([author1, author2, book]);
-    const diff = orm.em.getComparator().diffEntities(author1, author2);
-    expect(diff).toMatchObject({ name: 'Name 2', favouriteBook: book.uuid });
-    expect(typeof diff.favouriteBook).toBe('string');
-    expect(diff.favouriteBook).toBe(book.uuid);
-  });
-
   test('self referencing (2 step)', async () => {
     const author = new Author2('name', 'email');
     const b1 = new Book2('b1', author);
@@ -1759,15 +1781,13 @@ describe('EntityManagerMySql', () => {
     expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(8);
+    expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `book2` (`author_id`, `created_at`, `title`, `uuid_pk`) values (?, ?, ?, ?)');
-    expect(mock.mock.calls[5][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
-    expect(mock.mock.calls[6][0]).toMatch('commit');
-    expect(mock.mock.calls[7][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`uuid_pk`, `created_at`, `title`, `author_id`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
+    expect(mock.mock.calls[5][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
   });
 
   test('self referencing 1:1 (1 step)', async () => {
@@ -1840,9 +1860,9 @@ describe('EntityManagerMySql', () => {
     await expect(orm.em.count(Book2, [book1.uuid, book2.uuid, book3.uuid])).resolves.toBe(3);
     // this test was causing TS recursion errors without the type argument
     // see https://github.com/mikro-orm/mikro-orm/issues/124 and https://github.com/mikro-orm/mikro-orm/issues/208
-    await expect(orm.em.count<Book2>(Book2, [book1, book2, book3])).resolves.toBe(3);
-    await expect(orm.em.count<any>(Book2, [book1, book2, book3])).resolves.toBe(3);
-    const a = await orm.em.find<any>(Book2, [book1, book2, book3]) as Book2[];
+    await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    await expect(orm.em.count(Book2, [book1, book2, book3])).resolves.toBe(3);
+    const a = await orm.em.find(Book2, [book1, book2, book3]) as Book2[];
     await expect(orm.em.getRepository(Book2).count([book1, book2, book3])).resolves.toBe(3);
   });
 
@@ -1875,7 +1895,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
-      'where `e1`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e1`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1890,7 +1910,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e3`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1903,7 +1923,7 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`favourite_book_uuid_pk` = ?');
+      'where `e0`.`author_id` is not null and `e1`.`favourite_book_uuid_pk` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -1918,7 +1938,7 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e3`.`name` = ?');
+      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
   });
 
   test('partial selects', async () => {
@@ -1931,6 +1951,15 @@ describe('EntityManagerMySql', () => {
     expect(a.name).toBe('Jon Snow');
     expect(a.email).toBeUndefined();
     expect(a.born).toBeUndefined();
+  });
+
+  test('question marks and parameter interpolation (GH issue #920)', async () => {
+    const e = new FooBaz2(`?baz? uh \\? ? wut? \\\\ wut`);
+    await orm.em.persistAndFlush(e);
+    const e2 = await orm.em.fork().findOneOrFail(FooBaz2, e);
+    expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
+    const res = await orm.em.getKnex().raw('select ? as count', [1]);
+    expect(res[0][0].count).toBe(1);
   });
 
   test('allow undefined value in nullable properties', async () => {
@@ -2041,14 +2070,19 @@ describe('EntityManagerMySql', () => {
 
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
-    author.born = new Date('2000-01-01T00:00:00Z');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ born: string }[]>(`select date_format(born, '%Y-%m-%d %T.%f') as born from author2 where id = ${author.id}`);
-    expect(res[0].born).toBe('2000-01-01 00:00:00.000000');
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select date_format(created_at, '%Y-%m-%d %T.%f') as created_at from author2 where id = ${author.id}`);
+    expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
-    expect(+a.born!).toBe(+author.born);
+    expect(+a.createdAt!).toBe(+author.createdAt);
+    const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
+    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(orm.em.merge(a1)).toBe(a1);
+    const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
+    expect(+a2.updatedAt!).toBe(+author.updatedAt);
   });
 
   test('setting optional boolean to false', async () => {
@@ -2281,13 +2315,55 @@ describe('EntityManagerMySql', () => {
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e1`.`name` = ? and `e0`.`author_id` is not null limit ?');
+      'where `e0`.`author_id` is not null and `e1`.`name` = ? limit ?');
+  });
+
+  test('refreshing already loaded entity', async () => {
+    const god = new Author2(`God `, `hello@heaven.god`);
+    new Book2(`Bible 1`, god);
+    new Book2(`Bible 2`, god);
+    new Book2(`Bible 3`, god);
+    await orm.em.persistAndFlush(god);
+    orm.em.clear();
+
+    const r1 = await orm.em.find(Author2, god, { fields: ['id'], populate: ['books'] });
+    expect(r1).toHaveLength(1);
+    expect(r1[0].id).toBe(god.id);
+    expect(r1[0].name).toBeUndefined();
+    const r2 = await orm.em.find(Author2, god, { refresh: true, populate: ['books'] });
+    expect(r2).toHaveLength(1);
+    expect(r2[0].id).toBe(god.id);
+    expect(r2[0].name).toBe(god.name);
+  });
+
+  test('batch update with changing OneToOne relation (GH issue #1025)', async () => {
+    const bar1 = FooBar2.create('bar 1');
+    const bar2 = FooBar2.create('bar 2');
+    const bar3 = FooBar2.create('bar 3');
+    bar1.fooBar = bar2;
+    await orm.em.persistAndFlush([bar1, bar3]);
+    bar1.fooBar = undefined;
+    bar3.fooBar = bar2;
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.flush();
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id` from `foo_bar2` as `e0` where ((`e0`.`id` = ? and `e0`.`version` = ?) or (`e0`.`id` = ? and `e0`.`version` = ?))');
+    expect(mock.mock.calls[2][0]).toMatch('update `foo_bar2` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end where `id` in (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.`id`, `e0`.`version` from `foo_bar2` as `e0` where `e0`.`id` in (?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
   test('custom types', async () => {
+    await orm.em.nativeInsert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.nativeInsert(FooBar2, { id: 456, name: 'n2', array: [] });
+
     const bar = FooBar2.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
-    bar.array = [1, 2, 3, 4, 5];
+    bar.array = [];
     bar.object = { foo: 'bar', bar: 3 };
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
@@ -2295,18 +2371,20 @@ describe('EntityManagerMySql', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, bar.id);
     expect(b1.blob).toEqual(Buffer.from([1, 2, 3, 4, 5]));
     expect(b1.blob).toBeInstanceOf(Buffer);
-    expect(b1.array).toEqual([1, 2, 3, 4, 5]);
-    expect(b1.array![2]).toBe(3);
+    expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
     expect(b1.object).toEqual({ foo: 'bar', bar: 3 });
     expect(b1.object).toBeInstanceOf(Object);
     expect(b1.object!.bar).toBe(3);
 
     b1.object = 'foo';
+    b1.array = [1, 2, 3, 4, 5];
     await orm.em.flush();
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar2, bar.id);
+    expect(b2.array).toEqual([1, 2, 3, 4, 5]);
+    expect(b2.array![2]).toBe(3);
     expect(b2.object).toBe('foo');
 
     b2.object = [1, 2, '3'];
@@ -2407,6 +2485,23 @@ describe('EntityManagerMySql', () => {
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
       'where `e0`.`author_id` is not null and `e0`.`author_id` in (?) ' +
       'order by `e0`.`title` asc');
+  });
+
+  // this should run in ~800ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
+    const authors = new Set<Author2>();
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = new Author2(`Jon Snow ${i}`, `snow-${i}@wall.st`);
+      orm.em.persist(author);
+      authors.add(author);
+    }
+
+    await orm.em.flush();
+    authors.forEach(author => expect(author.id).toBeGreaterThan(0));
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
   });
 
   afterAll(async () => orm.close(true));

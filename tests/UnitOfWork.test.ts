@@ -1,5 +1,5 @@
 import { Author } from './entities';
-import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
+import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, IdentityMap, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
@@ -87,12 +87,16 @@ describe('UnitOfWork', () => {
 
   test('changeSet is null for empty payload', async () => {
     const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
+    expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).toBeUndefined();
     uow.merge(author); // add entity to IM first
     const changeSet = await computer.computeChangeSet(author); // then try to persist it again
     expect(changeSet).toBeNull();
-    expect(uow.getIdentityMap()).not.toEqual(new Map());
+    expect(uow.getIdentityMap()).not.toEqual(new IdentityMap());
+    expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).not.toBeUndefined();
+    expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f2')).toBeUndefined();
     uow.clear();
-    expect(uow.getIdentityMap()).toEqual(new Map());
+    expect(uow.getIdentityMap()).toEqual(new IdentityMap());
+    expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).toBeUndefined();
   });
 
   test('changeSet is null for readonly entity', async () => {
@@ -119,7 +123,7 @@ describe('UnitOfWork', () => {
 
   test('getters', async () => {
     const uow = new UnitOfWork(orm.em);
-    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
+    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' }, { managed: true });
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);

@@ -1,0 +1,288 @@
+{
+  "version-4.1/docs": [
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/defining-entities"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/relationships"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-manager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/unit-of-work"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Fundamentals",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/identity-map"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-references"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/collections"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/repositories"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/transactions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/inheritance-mapping"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/cascading"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/filters"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/deployment"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/debugging"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Advanced Features",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/nested-populate"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/query-conditions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/propagation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/serializing"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-helper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/property-validation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/lifecycle-hooks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/loading-strategies"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/naming-strategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/composite-keys"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/custom-types"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/embeddables"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-schema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/metadata-providers"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/metadata-cache"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/schema-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/migrations"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/read-connections"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Reference",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-manager-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/repositories-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/query-builder-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/decorators"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/configuration"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Usage with Different Drivers",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/usage-with-sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/usage-with-mongo"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Recipes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.1/quick-start"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/usage-with-nestjs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/usage-with-js"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/entity-constructors"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/multiple-schemas"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/using-bigint-pks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/async-local-storage"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.1/custom-driver"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Example Integrations",
+      "items": [
+        {
+          "type": "link",
+          "label": "Express + MongoDB + TypeScript",
+          "href": "https://github.com/mikro-orm/express-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NestJS + MySQL + TypeScript",
+          "href": "https://github.com/mikro-orm/nestjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "RealWorld example app (Nest + MySQL)",
+          "href": "https://github.com/mikro-orm/nestjs-realworld-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + MongoDB + JavaScript",
+          "href": "https://github.com/mikro-orm/express-js-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Koa + SQLite + JavaScript",
+          "href": "https://github.com/mikro-orm/koa-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Inversify + PostgreSQL",
+          "href": "https://github.com/PodaruDragos/inversify-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NextJS + MySQL",
+          "href": "https://github.com/jonahallibone/mikro-orm-nextjs"
+        }
+      ]
+    }
+  ]
+}

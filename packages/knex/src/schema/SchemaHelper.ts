@@ -52,6 +52,13 @@ export abstract class SchemaHelper {
     return true;
   }
 
+  /**
+   * Implicit indexes will be ignored when diffing
+   */
+  isImplicitIndex(name: string): boolean {
+    return false;
+  }
+
   getTypeFromDefinition(type: string, defaultType: string, types?: Dictionary<string[]>): string {
     type = type.replace(/\(.+\)/, '');
 
@@ -106,8 +113,7 @@ export abstract class SchemaHelper {
   /**
    * Returns the default name of index for the given columns
    */
-  getIndexName(tableName: string, columns: string[], unique: boolean): string {
-    const type = unique ? 'unique' : 'index';
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
     return `${tableName}_${columns.join('_')}_${type}`;
   }
 
@@ -191,20 +197,20 @@ export abstract class SchemaHelper {
   }
 
   private hasSameType(columnType: string, infoType: string, types: Dictionary<string[]>): boolean {
-    columnType = columnType.replace(/\([?\d]+\)/, '').toLowerCase();
-    infoType = infoType.replace(/\([?\d]+\)/, '').toLowerCase();
+    columnType = columnType.replace(/\([,?\d]+\)/, '').toLowerCase();
+    infoType = infoType.replace(/\([,?\d]+\)/, '').toLowerCase();
 
     if (columnType === infoType) {
       return true;
     }
 
-    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([?\d]+\)/, '').toLowerCase() === infoType));
+    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([,?\d]+\)/, '').toLowerCase() === infoType));
 
     if (!type) {
       return false;
     }
 
-    const propTypes = type.map(t => t.replace(/\([?\d]+\)/, '').toLowerCase());
+    const propTypes = type.map(t => t.replace(/\([,?\d]+\)/, '').toLowerCase());
 
     return propTypes.includes(columnType);
   }
@@ -237,7 +243,7 @@ export abstract class SchemaHelper {
   }
 
   private hasSameIndex(prop: EntityProperty, column: Column): boolean {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if ([ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
       return true;
     }
 

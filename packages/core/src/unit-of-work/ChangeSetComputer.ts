@@ -19,17 +19,14 @@ export class ChangeSetComputer {
               private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const changeSet = { entity } as ChangeSet<T>;
     const meta = this.metadata.find(entity.constructor.name)!;
 
     if (meta.readonly) {
       return null;
     }
 
-    changeSet.name = meta.name!;
-    changeSet.type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
-    changeSet.collection = meta.collection;
-    changeSet.payload = this.computePayload(entity);
+    const type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
       changeSet.originalEntity = entity.__helper!.__originalEntityData;
@@ -43,7 +40,7 @@ export class ChangeSetComputer {
       this.processProperty(changeSet, prop);
     }
 
-    if (changeSet.type === ChangeSetType.UPDATE && Object.keys(changeSet.payload).length === 0) {
+    if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
       return null;
     }
 
@@ -52,9 +49,12 @@ export class ChangeSetComputer {
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
+    const entityName = entity.__meta!.root.className;
+    const originalEntityData = entity.__helper!.__originalEntityData;
 
-    if (entity.__helper!.__originalEntityData) {
-      return Utils.diff(entity.__helper!.__originalEntityData, data);
+    if (originalEntityData) {
+      const comparator = this.comparator.getEntityComparator(entityName);
+      return comparator(originalEntityData, data);
     }
 
     return data;

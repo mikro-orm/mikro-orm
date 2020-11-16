@@ -1,4 +1,4 @@
-import { ReferenceType, Utils } from '@mikro-orm/core';
+import { Dictionary, ReferenceType, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import { IQueryBuilder } from '../typings';
 import { QueryType } from './enums';
@@ -25,13 +25,8 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const virtual = childNode.prop?.persist === false;
 
       if (childNode.shouldInline(payload)) {
-        const operators = Object.keys(payload).filter(k => Utils.isOperator(k, false));
-        operators.forEach(op => {
-          const tmp = payload[op];
-          delete payload[op];
-          payload[`${alias}.${field}`] = { [op]: tmp, ...(payload[`${alias}.${field}`] || {}) };
-        });
-        Object.assign(o, payload);
+        const childAlias = qb.getAliasForJoinPath(childNode.getPath());
+        this.inlineChildPayload(o, payload, field, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
       } else if (virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
@@ -70,6 +65,20 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
   }
 
+  private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: string, alias?: string, childAlias?: string) {
+    for (const k of Object.keys(payload)) {
+      if (Utils.isOperator(k, false)) {
+        const tmp = payload[k];
+        delete payload[k];
+        o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
+      } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
+        o[k] = payload[k];
+      } else {
+        o[`${childAlias}.${k}`] = payload[k];
+      }
+    }
+  }
+
   private shouldAutoJoin(nestedAlias: string | undefined): boolean {
     if (!this.prop || !this.parent) {
       return false;
@@ -92,12 +101,16 @@ export class ObjectCriteriaNode extends CriteriaNode {
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
     } else {
-      const prev = qb._fields!.slice();
+      const prev = qb._fields?.slice();
       qb.join(field, nestedAlias, undefined, 'leftJoin', this.getPath());
       qb._fields = prev;
     }
 
     return nestedAlias;
+  }
+
+  private isPrefixed(field: string): boolean {
+    return !!field.match(/\w+\./);
   }
 
 }

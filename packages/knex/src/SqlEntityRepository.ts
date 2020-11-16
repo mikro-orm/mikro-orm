@@ -5,17 +5,27 @@ import { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T> extends EntityRepository<T> {
 
-  constructor(protected readonly em: SqlEntityManager,
+  constructor(protected readonly _em: SqlEntityManager,
               protected readonly entityName: EntityName<T>) {
-    super(em, entityName);
+    super(_em, entityName);
   }
 
+  /**
+   * Creates a QueryBuilder instance
+   */
   createQueryBuilder(alias?: string): QueryBuilder<T> {
     return this.em.createQueryBuilder(this.entityName, alias);
   }
 
+  /**
+   * Returns configured knex instance.
+   */
   getKnex(type?: 'read' | 'write'): Knex {
     return this.em.getConnection(type).getKnex();
+  }
+
+  protected get em(): SqlEntityManager {
+    return this._em.getContext() as SqlEntityManager;
   }
 
 }

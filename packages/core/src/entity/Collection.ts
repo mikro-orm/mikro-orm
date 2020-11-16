@@ -18,8 +18,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
     Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
-    Object.defineProperty(this, '$', { value: this.items });
-    Object.defineProperty(this, 'get', { value: () => this.items });
+    Object.defineProperty(this, '$', { get: () => super.getItems() });
+    Object.defineProperty(this, 'get', { value: () => super.getItems() });
   }
 
   /**
@@ -48,6 +48,28 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   /**
+   * Gets the count of collection items from database instead of counting loaded items.
+   * The value is cached, use `refresh = true` to force reload it.
+   */
+  async loadCount(refresh = false): Promise<number> {
+    const em = this.owner.__helper!.__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.owner);
+    }
+
+    if (refresh || !Utils.isDefined(this._count)) {
+      if (!em.getDriver().getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+        this._count = this.length;
+      } else {
+        this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
+      }
+    }
+
+    return this._count!;
+  }
+
+  /**
    * Returns the items (the collection must be initialized)
    */
   getItems(check = true): T[] {
@@ -68,15 +90,21 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   add(...items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.map(item => this.validateItemType(item));
+    unwrapped.forEach(item => this.validateItemType(item));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
 
   set(items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.map(item => this.validateItemType(item));
+    unwrapped.forEach(item => this.validateItemType(item));
     this.validateModification(unwrapped);
+
+    if (!this.initialized) {
+      this.initialized = true;
+      this.snapshot = undefined;
+    }
+
     super.set(unwrapped);
     this.setDirty();
     this.cancelOrphanRemoval(unwrapped);
@@ -85,22 +113,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @internal
    */
-  hydrate(items: T[], validate = false, takeSnapshot = true): void {
-    if (validate) {
-      this.validateModification(items);
-    }
-
-    const wasInitialized = this.initialized;
-    const wasDirty = this.dirty;
+  hydrate(items: T[]): void {
     this.initialized = true;
     super.hydrate(items);
-    this.dirty = wasDirty;
-
-    if (!wasInitialized && !takeSnapshot) {
-      this.snapshot = undefined;
-    } else if (takeSnapshot) {
-      this.takeSnapshot();
-    }
+    this.takeSnapshot();
   }
 
   remove(...items: (T | Reference<T>)[]): void {
@@ -157,7 +173,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.__serializedPrimaryKey].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
+      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
       this._lazyInitialized = true;
 
       return this;
@@ -176,15 +192,19 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
-    const items = await em.find(this.property.type, where, options.populate, orderBy);
+    const items: T[] = await em.find(this.property.type, where, options.populate, orderBy);
 
     if (!customOrder) {
       this.reorderItems(items, order);
     }
 
-    this.items.length = 0;
-    this.items.push(...items);
-    Object.assign(this, items);
+    this.items.clear();
+    let i = 0;
+    items.forEach(item => {
+      this.items.add(item);
+      this[i++] = item;
+    });
+
     this.initialized = true;
     this.dirty = false;
     this._lazyInitialized = true;
@@ -209,7 +229,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy as string] = this.owner.__helper!.__primaryKey;
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond as Dictionary);
     }
@@ -231,11 +251,23 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createManyToManyCondition(cond: Dictionary) {
     if (this.property.owner || this.property.pivotTable) {
-      const pk = (this.items[0] as AnyEntity<T>).__meta!.primaryKeys[0]; // we know there is at least one item as it was checked in load method
-      cond[pk] = { $in: this.items.map((item: AnyEntity<T>) => item.__helper!.__primaryKey) };
+      // we know there is at least one item as it was checked in load method
+      const pk = this.property.targetMeta!.primaryKeys[0];
+      cond[pk] = { $in: [] };
+      this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.getPrimaryKey()));
     } else {
-      cond[this.property.mappedBy] = this.owner.__helper!.__primaryKey;
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     }
+  }
+
+  private createLoadCountCondition(cond: Dictionary) {
+    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+    } else {
+      const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
+      cond[key] = this.owner.__meta!.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+    }
+    return cond;
   }
 
   private modify(method: 'add' | 'remove', items: T[]): void {
@@ -250,7 +282,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${this.owner.__helper!.__primaryKey}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${this.owner.__helper!.getPrimaryKey()}] not initialized`);
     }
   }
 

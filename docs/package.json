@@ -4,17 +4,21 @@
   "private": true,
   "scripts": {
     "start": "docusaurus start",
-    "build": "docusaurus build",
+    "build": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "docusaurus deploy"
+    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.63",
-    "@docusaurus/plugin-client-redirects": "^2.0.0-alpha.63",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.63",
-    "classnames": "^2.2.6",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "@docusaurus/core": "2.0.0-alpha.66",
+    "@docusaurus/plugin-client-redirects": "2.0.0-alpha.66",
+    "@docusaurus/preset-classic": "2.0.0-alpha.66",
+    "classnames": "2.2.6",
+    "docusaurus-plugin-typedoc": "0.4.0",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
+    "typedoc": "0.19.2",
+    "typedoc-plugin-markdown": "3.0.11",
+    "typescript": "4.0.5"
   },
   "browserslist": {
     "production": [

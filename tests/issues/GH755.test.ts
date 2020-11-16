@@ -21,7 +21,7 @@ export const TestSchema = new EntitySchema<Test>({
     },
   },
   indexes: [
-    { properties: ['created_at'] },
+    { properties: ['created_at'] as any },
   ],
 });
 

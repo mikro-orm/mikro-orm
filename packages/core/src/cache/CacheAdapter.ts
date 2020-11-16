@@ -8,7 +8,7 @@ export interface CacheAdapter {
   /**
    * Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.
    */
-  set(name: string, data: any, origin: string): Promise<void>;
+  set(name: string, data: any, origin: string, expiration?: number): Promise<void>;
 
   /**
    * Clears all items stored in the cache.

@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM"></a>
+  <a href="https://mikro-orm.io"><img src="https://raw.githubusercontent.com/mikro-orm/mikro-orm/master/docs/static/img/logo-readme.svg?sanitize=true" alt="MikroORM" /></a>
 </h1>
 
 TypeScript ORM for Node.js based on Data Mapper, [Unit of Work](https://mikro-orm.io/docs/unit-of-work/) 
@@ -169,6 +169,7 @@ You can find example integrations for some popular frameworks in the [`mikro-orm
 - [Koa + SQLite](https://github.com/mikro-orm/koa-ts-example-app)
 - [GraphQL + PostgreSQL](https://github.com/driescroons/mikro-orm-graphql-example)
 - [Inversify + PostgreSQL](https://github.com/PodaruDragos/inversify-example-app)
+- [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
 
 ### JavaScript Examples 
 - [Express + MongoDB](https://github.com/mikro-orm/express-js-example-app)

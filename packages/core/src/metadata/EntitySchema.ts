@@ -4,9 +4,10 @@ import {
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
 import { BaseEntity, EntityRepository } from '../entity';
-import { Cascade, LoadStrategy, ReferenceType } from '../enums';
+import { Cascade, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
+import { EnumArrayType } from '../types/EnumArrayType';
 
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
 type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
@@ -26,7 +27,7 @@ type Metadata<T, U> =
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
 
-  private readonly _meta: EntityMetadata<T> = {} as EntityMetadata<T>;
+  private readonly _meta: EntityMetadata<T> = new EntityMetadata<T>();
   private internal = false;
   private initialized = false;
 
@@ -38,7 +39,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       meta.tableName = meta.collection;
     }
 
-    Object.assign(this._meta, { className: meta.name, properties: {}, hooks: {}, filters: {}, primaryKeys: [], indexes: [], uniques: [] }, meta);
+    Object.assign(this._meta, { className: meta.name }, meta);
+    this._meta.root = this._meta.root ?? this._meta;
   }
 
   static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
@@ -83,6 +85,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions<T> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
+    }
+
+    // enum arrays are simple numeric/string arrays, the constrain is enforced in the custom type only
+    if (options.array && !options.customType) {
+      options.customType = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
+      (options as EntityProperty).enum = false;
     }
 
     const prop = { enum: true, ...options };
@@ -168,12 +176,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addIndex(options: Required<Omit<IndexOptions, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
-    this._meta.indexes.push(options as Required<IndexOptions>);
+  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
+    this._meta.indexes.push(options as any);
   }
 
-  addUnique(options: Required<Omit<UniqueOptions, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
-    this._meta.uniques.push(options as Required<UniqueOptions>);
+  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
+    this._meta.uniques.push(options as any);
   }
 
   setCustomRepository(repository: () => Constructor<EntityRepository<T>>): void {
@@ -219,13 +227,14 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     this.setClass(this._meta.class);
 
-    if (this._meta.abstract) {
+    if (this._meta.abstract && !this._meta.discriminatorColumn) {
       delete this._meta.name;
     }
 
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
+    this._meta.relations = this._meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
     this.initialized = true;
 
     return this;
@@ -277,7 +286,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     // FK used as PK, we need to cascade
     if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
-      pks[0].cascade.push(Cascade.REMOVE);
+      pks[0].onDelete = 'cascade';
     }
 
     const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);
@@ -310,8 +319,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty) {
     return {
       reference,
-      cascade: [Cascade.PERSIST, Cascade.MERGE],
-      strategy: LoadStrategy.SELECT_IN,
+      cascade: [Cascade.PERSIST],
       ...options,
     };
   }

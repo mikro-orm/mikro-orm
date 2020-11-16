@@ -10,18 +10,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js 12
-      uses: actions/setup-node@v1
+    - uses: actions/checkout@v2
+    - name: Use Node.js 15
+      uses: actions/setup-node@v2-beta
       with:
-        node-version: 12
+        node-version: 15
 
     - name: Set git identity
       run: |
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
 
-    - name: Build docs
+    - name: Cache node_modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Check for changes
+      id: docs_diff
+      run: |
+        echo "::set-output name=docs_diff::$(git diff ./docs | wc -l | xargs)"
+
+    - name: Check for changes 2
+      if: steps.docs_diff.outputs.docs_diff == '0'
+      run: |
+        echo "no changes detected in ./docs"
+
+    - name: Build & deploy docs
+      if: steps.docs_diff.outputs.docs_diff != '0'
       run: |
         cd docs
         yarn

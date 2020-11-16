@@ -7,7 +7,7 @@ describe('QueryHelper', () => {
 
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   afterAll(async () => orm.close(true));
 
   test('test operators `>, <, >=, <=, !`', async () => {
@@ -75,11 +75,11 @@ describe('QueryHelper', () => {
     expect(QueryHelper.processParams({ test })).toEqual({ test: test.id });
     expect(QueryHelper.processParams(test)).toEqual({ id: test.id });
     const author = new Author2('name', 'mail');
-    let book = new Book2('test', author);
+    const book = new Book2('test', author);
     expect(QueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
-    book = Reference.create(book);
-    expect(QueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
-    expect(QueryHelper.processParams({ book })).toEqual({ book: book.uuid });
+    const bookRef = Reference.create(book);
+    expect(QueryHelper.processParams(bookRef)).toEqual({ uuid: bookRef.uuid });
+    expect(QueryHelper.processParams({ book: bookRef })).toEqual({ book: bookRef.uuid });
     const field = undefined;
     expect(QueryHelper.processParams({ field })).toEqual({ field: null });
   });

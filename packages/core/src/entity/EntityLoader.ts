@@ -24,6 +24,9 @@ export class EntityLoader {
 
   constructor(private readonly em: EntityManager) { }
 
+  /**
+   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
+   */
   async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: Options<T>): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
@@ -43,6 +46,8 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
+    entities.forEach(e => e.__helper!.__serializationContext.populate = e.__helper!.__serializationContext.populate ?? populate as PopulateOptions<T>[]);
+
     for (const pop of populate) {
       await this.populateField<T>(entityName, entities, pop, options as Required<Options<T>>);
     }
@@ -59,6 +64,7 @@ export class EntityLoader {
       populate = this.lookupEagerLoadedRelationships(entityName, populate);
     }
 
+    // convert nested `field` with dot syntax to PopulateOptions with children array
     populate.forEach(p => {
       if (!p.field.includes('.')) {
         return;
@@ -68,23 +74,52 @@ export class EntityLoader {
       p.field = f;
       p.children = p.children || [];
       const prop = this.metadata.find(entityName)!.properties[f];
-      p.children.push(this.expandNestedPopulate(prop.type, parts));
+      p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy));
     });
 
-    return populate;
+    // merge same fields
+    return this.mergeNestedPopulate(populate);
+  }
+
+  /**
+   * merge multiple populates for the same entity with different children
+   */
+  private mergeNestedPopulate<T>(populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
+    const tmp = populate.reduce((ret, item) => {
+      if (!ret[item.field]) {
+        ret[item.field] = item;
+        return ret;
+      }
+
+      if (!ret[item.field].children && item.children) {
+        ret[item.field].children = item.children;
+      } else if (ret[item.field].children && item.children) {
+        ret[item.field].children!.push(...item.children!);
+      }
+
+      return ret;
+    }, {} as Dictionary<PopulateOptions<T>>);
+
+    return Object.values(tmp).map(item => {
+      if (item.children) {
+        item.children = this.mergeNestedPopulate<T>(item.children);
+      }
+
+      return item;
+    });
   }
 
   /**
    * Expands `books.perex` like populate to use `children` array instead of the dot syntax
    */
-  private expandNestedPopulate<T>(entityName: string, parts: string[]): PopulateOptions<T> {
+  private expandNestedPopulate<T>(entityName: string, parts: string[], strategy?: LoadStrategy): PopulateOptions<T> {
     const meta = this.metadata.find(entityName)!;
     const field = parts.shift()!;
     const prop = meta.properties[field];
-    const ret = { field } as PopulateOptions<T>;
+    const ret = { field, strategy } as PopulateOptions<T>;
 
     if (parts.length > 0) {
-      ret.children = [this.expandNestedPopulate(prop.type, parts)];
+      ret.children = [this.expandNestedPopulate(prop.type, parts, strategy)];
     }
 
     return ret;
@@ -120,12 +155,18 @@ export class EntityLoader {
       return this.findChildrenFromPivotTable<T>(filtered, prop, field, options.refresh, options.where[prop.name], innerOrderBy as QueryOrderMap);
     }
 
-    let subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
-    const op = Object.keys(subCond).find(key => Utils.isOperator(key, false));
+    const subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
+    const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
     const meta2 = this.metadata.find(prop.type)!;
 
-    if (op) {
-      subCond = { [Utils.getPrimaryKeyHash(meta2.primaryKeys)]: subCond };
+    if (operators.length > 0) {
+      operators.forEach(op => {
+        const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
+        /* istanbul ignore next */
+        subCond[pk] = subCond[pk] ?? {};
+        subCond[pk][op] = subCond[op];
+        delete subCond[op];
+      });
     }
 
     const data = await this.findChildren<T>(entities, prop, populate, { ...options, where: subCond, orderBy: innerOrderBy! });
@@ -202,7 +243,7 @@ export class EntityLoader {
         children.push(entity[populate.field]);
       } else if (Reference.isReference(entity[populate.field])) {
         children.push(entity[populate.field].unwrap());
-      } else if (entity[populate.field] as unknown instanceof Collection) {
+      } else if (Utils.isCollection(entity[populate.field])) {
         children.push(...entity[populate.field].getItems());
       }
     }
@@ -220,7 +261,7 @@ export class EntityLoader {
   }
 
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
-    const ids = filtered.map(e => e.__helper!.__primaryKeys);
+    const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
 
     if (prop.customType) {
       ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id, this.driver.getPlatform()));
@@ -230,7 +271,7 @@ export class EntityLoader {
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
-      const items = map[entity.__helper!.__serializedPrimaryKey as string].map(item => {
+      const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
         const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
         return this.em.getUnitOfWork().registerManaged(entity, item, refresh);
       });
@@ -285,20 +326,19 @@ export class EntityLoader {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
-    meta.relations
-      .forEach(prop => {
-        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-        const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
+    meta.relations.forEach(prop => {
+      const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+      const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
 
-        if (nested.length > 0) {
-          ret.push(...nested);
-        } else {
-          ret.push({
-            field: prefixed,
-            strategy: LoadStrategy.SELECT_IN,
-          });
-        }
-      });
+      if (nested.length > 0) {
+        ret.push(...nested);
+      } else {
+        ret.push({
+          field: prefixed,
+          strategy: this.em.config.get('loadStrategy'),
+        });
+      }
+    });
 
     return ret;
   }
@@ -322,7 +362,7 @@ export class EntityLoader {
         } else {
           populate.push({
             field: prefixed,
-            strategy: LoadStrategy.SELECT_IN,
+            strategy: this.em.config.get('loadStrategy'),
           });
         }
       });

@@ -85,7 +85,7 @@ export class SourceFile {
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
 
-    if (Object.keys(options).length === 0) {
+    if (!Utils.hasObjectKeys(options)) {
       return `${decorator}()\n`;
     }
 
@@ -165,7 +165,7 @@ export class SourceFile {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
 
-    const cascade = ['Cascade.MERGE'];
+    const cascade = [];
 
     if (prop.onUpdateIntegrity === 'cascade') {
       cascade.push('Cascade.PERSIST');
@@ -175,13 +175,13 @@ export class SourceFile {
       cascade.push('Cascade.REMOVE');
     }
 
-    if (cascade.length === 3) {
+    if (cascade.length === 2) {
       cascade.length = 0;
       cascade.push('Cascade.ALL');
     }
 
-    // do not set cascade when it matches the defaults (persist + merge)
-    if (!(cascade.length === 2 && cascade.includes('Cascade.PERSIST') && cascade.includes('Cascade.MERGE'))) {
+    // do not set cascade when it matches the defaults (persist)
+    if (!(cascade.length === 1 && cascade.includes('Cascade.PERSIST'))) {
       this.coreImports.add('Cascade');
       options.cascade = `[${cascade.sort().join(', ')}]`;
     }

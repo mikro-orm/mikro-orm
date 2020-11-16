@@ -25,9 +25,14 @@ export class EntityAssigner {
         return;
       }
 
+      let value = data[prop as keyof EntityData<T>];
+
+      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
+        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
+      }
+
       /* istanbul ignore next */
       const customType = props[prop]?.customType;
-      let value = data[prop as keyof EntityData<T>];
 
       if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {
         value = props[prop].customType.convertToJSValue(value, entity.__platform);
@@ -35,10 +40,6 @@ export class EntityAssigner {
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
-      }
-
-      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
-        return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
@@ -75,6 +76,7 @@ export class EntityAssigner {
     const meta2 = entity[prop.name].__meta! as EntityMetadata;
     const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
+    /* istanbul ignore next */
     if (prop2 && !entity[prop.name][prop2.name]) {
       if (Reference.isReference(entity[prop.name])) {
         entity[prop.name].unwrap()[prop2.name] = Reference.wrapReference(entity, prop2);
@@ -118,8 +120,7 @@ export class EntityAssigner {
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
-    collection.hydrate(items, true, !!options.merge);
-    collection.setDirty();
+    collection.set(items);
   }
 
   private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
@@ -131,11 +132,11 @@ export class EntityAssigner {
       return em.getReference(prop.type, item);
     }
 
-    if (Utils.isObject<T>(item) && options.merge) {
+    if (Utils.isObject<EntityData<T>>(item) && options.merge) {
       return em.merge<T>(prop.type, item);
     }
 
-    if (Utils.isObject<T>(item)) {
+    if (Utils.isObject<EntityData<T>>(item)) {
       return em.create<T>(prop.type, item);
     }
 

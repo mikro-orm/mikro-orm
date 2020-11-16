@@ -1,20 +1,121 @@
-import fastEqual from 'fast-deep-equal';
 import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
-import { isAbsolute, normalize, relative, resolve, extname, join } from 'path';
+import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 
-import { AnyEntity, Dictionary, EntityMetadata, EntityName, EntityProperty, Primary, IMetadataStorage } from '../typings';
-import { GroupOperator, ReferenceType, QueryOperator } from '../enums';
+import { AnyEntity, Dictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
 import { Collection } from '../entity';
 import { Platform } from '../platforms';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
+export function compareObjects(a: any, b: any) {
+  if (a === b) {
+    return true;
+  }
+
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || a.constructor !== b.constructor) {
+    return false;
+  }
+
+  if (a.valueOf !== Object.prototype.valueOf) {
+    return a.valueOf() === b.valueOf();
+  }
+
+  if (a.toString !== Object.prototype.toString) {
+    return a.toString() === b.toString();
+  }
+
+  const keys = Object.keys(a);
+  const length = keys.length;
+
+  if (length !== Object.keys(b).length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
+      return false;
+    }
+  }
+
+  for (let i = length; i-- !== 0;) {
+    const key = keys[i];
+
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (!equals(a[key], b[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function compareArrays(a: any[], b: any[]) {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    if (!equals(a[i], b[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function compareBuffers(a: Buffer, b: Buffer): boolean {
+  const length = a.length;
+
+  if (length !== b.length) {
+    return false;
+  }
+
+  for (let i = length; i-- !== 0;) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Checks if arguments are deeply (but not strictly) equal.
+ */
+export function equals(a: any, b: any): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    if (Array.isArray(a)) {
+      return compareArrays(a, b);
+    }
+
+    if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+      return compareBuffers(a as Buffer, b as Buffer);
+    }
+
+    return compareObjects(a, b);
+  }
+
+  return false;
+}
+
+const equalsFn = equals;
+
 export class Utils {
+
+  static readonly PK_SEPARATOR = '~~~';
 
   /**
    * Checks if the argument is not undefined
@@ -25,10 +126,48 @@ export class Utils {
 
   /**
    * Checks if the argument is instance of `Object`. Returns false for arrays.
-   * `not` argument allows to blacklist classes that should be considered as not object.
    */
-  static isObject<T = Dictionary>(o: any, not: any[] = []): o is T {
-    return !!o && typeof o === 'object' && !Array.isArray(o) && !not.some(cls => o instanceof cls);
+  static isObject<T = Dictionary>(o: any): o is T {
+    return !!o && typeof o === 'object' && !Array.isArray(o);
+  }
+
+  /**
+   * Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
+   */
+  static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {
+    return this.isObject(o) && !not.some(cls => o instanceof cls);
+  }
+
+  /**
+   * Returns the number of properties on `obj`. This is 20x faster than Object.keys(obj).length.
+   * @see https://github.com/deepkit/deepkit-framework/blob/master/packages/core/src/core.ts
+   */
+  static getObjectKeysSize(object: Dictionary): number {
+    let size = 0;
+
+    for (const key in object) {
+      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
+      if (object.hasOwnProperty(key)) {
+        size++;
+      }
+    }
+
+    return size;
+  }
+
+  /**
+   * Returns true if `obj` has at least one property. This is 20x faster than Object.keys(obj).length.
+   * @see https://github.com/deepkit/deepkit-framework/blob/master/packages/core/src/core.ts
+   */
+  static hasObjectKeys(object: Dictionary): boolean {
+    for (const key in object) {
+      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
+      if (object.hasOwnProperty(key)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -49,7 +188,7 @@ export class Utils {
    * Checks if arguments are deeply (but not strictly) equal.
    */
   static equals(a: any, b: any): boolean {
-    return fastEqual(a, b);
+    return equalsFn(a, b);
   }
 
   /**
@@ -217,22 +356,22 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | null {
+  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
-    if (Utils.isEntity(data, true)) {
-      return data.__helper!.__primaryKey as Primary<T>;
+    if (Utils.isEntity<T>(data, true)) {
+      return data.__helper!.getPrimaryKey();
     }
 
-    if (strict && meta && Object.keys(data).length !== meta.primaryKeys.length) {
+    if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
       return null;
     }
 
     if (Utils.isObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data as T, meta) as Primary<T>;
+        return Utils.getCompositeKeyHash<T>(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -245,8 +384,9 @@ export class Utils {
     const pks = meta.primaryKeys.map(pk => {
       const value = entity[pk];
 
+      /* istanbul ignore next */
       if (Utils.isEntity<T>(value, true)) {
-        return value.__helper!.__serializedPrimaryKey;
+        return value.__helper!.getSerializedPrimaryKey();
       }
 
       return value;
@@ -256,29 +396,17 @@ export class Utils {
   }
 
   static getPrimaryKeyHash(pks: string[]): string {
-    return pks.join('~~~');
+    return pks.join(this.PK_SEPARATOR);
   }
 
   static splitPrimaryKeys(key: string): string[] {
-    return key.split('~~~');
-  }
-
-  static getPrimaryKeyValue<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]) {
-    if (primaryKeys.length > 1) {
-      return Utils.getPrimaryKeyCond(entity, primaryKeys);
-    }
-
-    if (Utils.isEntity(entity[primaryKeys[0]])) {
-      return entity[primaryKeys[0]].__helper!.__primaryKey;
-    }
-
-    return entity[primaryKeys[0]];
+    return key.split(this.PK_SEPARATOR);
   }
 
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]])) {
-        return entity[primaryKeys[0]].__helper!.__primaryKey;
+        return entity[primaryKeys[0]].__helper!.getPrimaryKey();
       }
 
       return entity[primaryKeys[0]];
@@ -286,7 +414,7 @@ export class Utils {
 
     return primaryKeys.map(pk => {
       if (Utils.isEntity(entity[pk])) {
-        return entity[pk].__helper!.__primaryKey;
+        return entity[pk].__helper!.getPrimaryKey();
       }
 
       return entity[pk];
@@ -313,12 +441,12 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform: Platform, convertCustomTypes?: boolean): Primary<T>[] {
+  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     return meta.primaryKeys.map(pk => {
       const prop = meta.properties[pk];
 
-      if (prop.customType && convertCustomTypes) {
+      if (prop.customType && platform && convertCustomTypes) {
         return prop.customType.convertToJSValue(data[pk], platform);
       }
 
@@ -357,7 +485,7 @@ export class Utils {
     }
 
     if (Utils.isObject(data)) {
-      return Object.keys(data).length === 0;
+      return !Utils.hasObjectKeys(data);
     }
 
     return !data;
@@ -539,6 +667,10 @@ export class Utils {
     return !!GroupOperator[key] || !!QueryOperator[key];
   }
 
+  static isGroupOperator(key: string): boolean {
+    return !!GroupOperator[key];
+  }
+
   static getGlobalStorage(namespace: string): Dictionary {
     const key = `mikro-orm-${namespace}`;
     global[key] = global[key] || {};
@@ -570,6 +702,40 @@ export class Utils {
       // this works with node in production build (where we do not have the `src` folder)
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require('../package.json').version;
+    }
+  }
+
+  /* istanbul ignore next */
+  static createFunction(context: Map<string, any>, code: string) {
+    try {
+      return new Function(...context.keys(), code)(...context.values());
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(code);
+      throw e;
+    }
+  }
+
+  /* istanbul ignore next */
+  static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T) {
+    try {
+      return fn(...args);
+    } catch (e) {
+      if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
+        // eslint-disable-next-line no-console
+        console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
+      }
+
+      throw e;
+    }
+  }
+
+  /**
+   * @see https://github.com/mikro-orm/mikro-orm/issues/840
+   */
+  static propertyDecoratorReturnValue(): any {
+    if (process.env.BABEL_DECORATORS_COMPAT) {
+      return {};
     }
   }
 

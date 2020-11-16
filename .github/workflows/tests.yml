@@ -7,17 +7,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 13.x, 14.x]
+        node-version: [10.x, 12.x, 14.x, 15.x]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2-beta
       with:
         node-version: ${{ matrix.node-version }}
 
     - name: EditorConfig Lint
-      uses: docker://mstruebing/editorconfig-checker:2.1.0@sha256:e8df8dd7934386812ef8974c09aa28008f06309b90651df4e4b580d263083421
+      uses: docker://mstruebing/editorconfig-checker:2.2.0@sha256:cafda9b945dd452928aba85d20b79def419237c6e961a46193dbc2d6fc08f561
 
     - name: Install libkrb5-dev (for run-rs)
       run: sudo apt install libkrb5-dev
@@ -25,34 +28,65 @@ jobs:
     - name: Init docker
       run: docker-compose up -d
 
+    - name: Cache node_modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+
     - name: Install
       run: |
         yarn config set ignore-engines true
         yarn
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
-    - name: Build
-      run: yarn build
+    - name: Set CC Required env vars
+      run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
 
     - name: Lint
       run: yarn lint
 
+    - name: Check for changes
+      id: changed_packages
+      run: |
+        echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
+
+    - name: Check for changes 2
+      if: steps.changed_packages.outputs.changed_packages == '0'
+      run: |
+        echo "no changes detected by lerna"
+
+    - name: Build
+      if: steps.changed_packages.outputs.changed_packages != '0'
+      run: yarn build
+
     - name: Test
+      if: steps.changed_packages.outputs.changed_packages != '0'
       run: |
         yarn run-rs-in-background
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
 
+    - name: Release dev version for testing
+      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
+      run: |
+        echo "access=public" >> .npmrc
+        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        yarn publish:next --yes --no-verify-access
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
     - name: Coveralls
+      if: steps.changed_packages.outputs.changed_packages != '0'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Codeclimate
-      uses: paambaati/codeclimate-action@v2.5.3
+      if: steps.changed_packages.outputs.changed_packages != '0'
+      uses: paambaati/codeclimate-action@v2.7.4
       env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
       with:
         coverageCommand: echo "$(cat COVERAGE_RESULT)"
 

@@ -1,13 +1,16 @@
 import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference } from './entity';
-import { EntitySchema } from './metadata';
+import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory, SerializationContext } from './entity';
+import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
+import { Configuration, EntityComparator, Utils } from './utils';
 
 export type Constructor<T> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NonFunctionPropertyNames<T> = NonNullable<{ [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>;
+export type Cast<T, R> = T extends R ? T : R;
+export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -19,12 +22,17 @@ export type DeepPartial<T> = T & {
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
-export type Primary<T> = T extends { [PrimaryKeyType]: infer PK }
+export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
+export type Primary<T> = T extends { [PrimaryKeyType]: infer PK } // TODO `PrimaryKeyType` should be optional
   ? PK : T extends { _id: infer PK }
   ? PK | string : T extends { uuid: infer PK }
   ? PK : T extends { id: infer PK }
   ? PK : never;
-export type PrimaryMap<T extends AnyEntity<T>> = Record<keyof T, Primary<T>>;
+export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
+  ? PK : T extends { _id: any }
+  ? '_id' | string : T extends { uuid: any }
+  ? 'uuid' : T extends { id: any }
+  ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
 
@@ -68,18 +76,21 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P = never> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
-  toReference<PK2 extends PK = never, P2 extends P = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
+  toReference<PK2 extends PK | unknown = unknown, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
+  getPrimaryKey(): Primary<T>;
+  setPrimaryKey(val: Primary<T>): void;
+  getSerializedPrimaryKey(): string & keyof T;
   __meta: EntityMetadata<T>;
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
@@ -90,12 +101,12 @@ export interface IWrappedEntityInternal<T extends AnyEntity<T>, PK extends keyof
   __managed: boolean;
   __populated: boolean;
   __lazyInitialized: boolean;
-  __primaryKey: PrimaryMap<T>;
   __primaryKeys: Primary<T>[];
-  __serializedPrimaryKey: string & keyof T;
+  __primaryKeyCond: Primary<T> | Primary<T>[];
+  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
 }
 
-export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & {
+export type AnyEntity<T = any> = Partial<T> & {
   [PrimaryKeyType]?: unknown;
   [EntityRepositoryType]?: unknown;
   __helper?: IWrappedEntityInternal<T, keyof T>;
@@ -107,24 +118,25 @@ export type AnyEntity<T = any> = { [K in keyof T]?: T[K] } & {
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
-export type EntityDataProp<T> = T extends Scalar ? ExpandScalar<T> : (T | EntityData<T> | Primary<T>);
-export type CollectionItem<T> = T extends Collection<any> | undefined ? EntityDataProp<ExpandProperty<T>>[] : EntityDataProp<T>;
-export type EntityData<T> = T | { [K in keyof T | NonFunctionPropertyNames<T>]?: CollectionItem<T[K]> } & Dictionary;
+export type EntityData<T> = { [P in keyof T]?: T[P] | any } & Dictionary;
 export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
   type: string;
+  targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
   primary: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
+  array?: boolean;
   length?: any;
   reference: ReferenceType;
   wrappedReference?: boolean;
   fieldNames: string[];
+  fieldNameRaw?: string;
   default?: string | number | boolean | null;
   defaultRaw?: string;
   formula?: (alias: string) => string;
@@ -132,11 +144,13 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   embedded?: [string, string];
   embeddable: Constructor<T>;
   embeddedProps: Dictionary<EntityProperty>;
+  object?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
   nullable?: boolean;
   inherited?: boolean;
   unsigned: boolean;
+  mapToPk?: boolean;
   persist?: boolean;
   hidden?: boolean;
   enum?: boolean;
@@ -164,10 +178,99 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
   referencedTableName: string;
+  referencedPKs: string[];
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;
   userDefined?: boolean;
+}
+
+export class EntityMetadata<T extends AnyEntity<T> = any> {
+
+  readonly propertyOrder = new Map<string, number>();
+
+  constructor(meta: Partial<EntityMetadata> = {}) {
+    this.properties = {} as any;
+    this.props = [];
+    this.primaryKeys = [];
+    this.filters = {};
+    this.hooks = {};
+    this.indexes = [];
+    this.uniques = [];
+    Object.assign(this, meta);
+  }
+
+  addProperty(prop: EntityProperty<T>, sync = true) {
+    this.properties[prop.name] = prop;
+    this.propertyOrder.set(prop.name, this.props.length);
+
+    /* istanbul ignore next */
+    if (sync) {
+      this.sync();
+    }
+  }
+
+  removeProperty(name: string, sync = true) {
+    delete this.properties[name];
+    this.propertyOrder.delete(name);
+
+    /* istanbul ignore next */
+    if (sync) {
+      this.sync();
+    }
+  }
+
+  getPrimaryProps(): EntityProperty<T>[] {
+    return this.primaryKeys.map(pk => this.properties[pk]);
+  }
+
+  sync(initIndexes = false) {
+    this.root = this.root ?? this;
+    const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
+    this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
+    this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
+    this.hydrateProps = this.props.filter(prop => {
+      // `prop.userDefined` is either `undefined` or `false`
+      const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
+      const onlyGetter = prop.getter && !prop.setter;
+      return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
+    });
+    this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+
+    if (initIndexes && this.name) {
+      this.props.forEach(prop => this.initIndexes(prop));
+    }
+  }
+
+  private initIndexes(prop: EntityProperty<T>): void {
+    const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type);
+    const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
+    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+
+    if (!prop.index && simpleIndex) {
+      Utils.defaultValue(simpleIndex, 'name', true);
+      prop.index = simpleIndex.name;
+      this.indexes.splice(this.indexes.indexOf(simpleIndex), 1);
+    }
+
+    if (!prop.unique && simpleUnique) {
+      Utils.defaultValue(simpleUnique, 'name', true);
+      prop.unique = simpleUnique.name;
+      this.uniques.splice(this.uniques.indexOf(simpleUnique), 1);
+    }
+
+    if (owner && prop.fieldNames.length > 1) {
+      this.indexes.push({ properties: prop.name });
+      prop.index = false;
+    }
+
+    if (owner && prop.fieldNames.length > 1 && prop.unique) {
+      this.uniques.push({ properties: prop.name });
+      prop.unique = false;
+    }
+  }
+
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
@@ -192,8 +295,9 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
-  indexes: { properties: string | string[]; name?: string; type?: string; options?: Dictionary }[];
-  uniques: { properties: string | string[]; name?: string; options?: Dictionary }[];
+  hydrateProps: EntityProperty<T>[]; // for Hydrator
+  indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary }[];
+  uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
   prototype: T;
@@ -202,6 +306,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   useCache: boolean;
   filters: Dictionary<FilterDef<T>>;
   comment?: string;
+  selfReferencing?: boolean;
   readonly?: boolean;
   root: EntityMetadata<T>;
 }
@@ -230,7 +335,8 @@ type MigrationResult = { fileName: string; code: string; diff: string[] };
 type MigrationRow = { name: string; executed_at: Date };
 
 export interface IMigrator {
-  createMigration(path?: string, blank?: boolean): Promise<MigrationResult>;
+  createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
+  createInitialMigration(path?: string): Promise<MigrationResult>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
   getPendingMigrations(): Promise<UmzugMigration[]>;
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
@@ -309,6 +415,7 @@ export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
 export interface Highlighter {
   highlight(text: string): string;
 }
+
 export interface IMetadataStorage {
   getAll(): Dictionary<EntityMetadata>;
   get<T extends AnyEntity<T> = any>(entity: string, init?: boolean, validate?: boolean): EntityMetadata<T>;
@@ -316,4 +423,31 @@ export interface IMetadataStorage {
   has(entity: string): boolean;
   set(entity: string, meta: EntityMetadata): EntityMetadata;
   reset(entity: string): void;
+}
+
+export interface IHydrator {
+
+  /**
+   * Hydrates the whole entity. This process handles custom type conversions, creating missing Collection instances,
+   * mapping FKs to entity instances, as well as merging those entities.
+   */
+  hydrate<T extends AnyEntity<T>>(
+    entity: T,
+    meta: EntityMetadata<T>,
+    data: EntityData<T>,
+    factory: EntityFactory,
+    type: 'full' | 'returning' | 'reference',
+    newEntity?: boolean,
+    convertCustomTypes?: boolean,
+  ): void;
+
+  /**
+   * Hydrates primary keys only
+   */
+  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean): void;
+
+}
+
+export interface HydratorConstructor {
+  new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }

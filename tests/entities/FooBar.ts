@@ -14,10 +14,10 @@ export default class FooBar {
   @Property()
   name!: string;
 
-  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true, serializedName: 'fooBaz', serializer: value => `FooBaz id: ${value.id}` })
+  @OneToOne({ entity: () => FooBaz, eager: true, orphanRemoval: true, nullable: true, serializedName: 'fooBaz', serializer: value => `FooBaz id: ${value.id}` })
   baz!: FooBaz | null;
 
-  @OneToOne(() => FooBar)
+  @OneToOne(() => FooBar, undefined, { nullable: true })
   fooBar!: FooBar;
 
   @Property({ nullable: true })
@@ -25,6 +25,12 @@ export default class FooBar {
 
   @Property({ type: new ArrayType(i => +i), nullable: true })
   array?: number[];
+
+  @Property()
+  num?: number;
+
+  @Property()
+  str?: string;
 
   @Property({ type: JsonType, nullable: true })
   object?: { foo: string; bar: number } | any;

@@ -54,7 +54,7 @@ export class QueryHelper {
       return false;
     }
 
-    if (meta.primaryKeys.every(pk => pk in where) && Object.keys(where).length === meta.primaryKeys.length) {
+    if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
       return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => !Utils.isOperator(v, false)));
     }
 
@@ -73,7 +73,7 @@ export class QueryHelper {
     const meta = metadata.find(entityName);
 
     // inline PK-only objects in M:N queries so we don't join the target entity when not needed
-    if (meta) {
+    if (meta && root) {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
@@ -87,7 +87,7 @@ export class QueryHelper {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where };
     }
 
-    if (Array.isArray(where)) {
+    if (Array.isArray(where) && root) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
       return { [rootPrimaryKey]: { $in: (where as FilterQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes, false)) } } as FilterQuery<T>;
     }
@@ -107,18 +107,27 @@ export class QueryHelper {
         return o;
       }
 
+      // wrap top level operators (except $not) with PK
+      if (Utils.isOperator(key) && root && meta && key !== '$not') {
+        const rootPrimaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
+        o[rootPrimaryKey] = { [key]: QueryHelper.processWhere(value, entityName, metadata, platform, convertCustomTypes, false) };
+        return o;
+      }
+
       if (prop?.customType && convertCustomTypes) {
         value = QueryHelper.processCustomType(prop, value, platform, undefined, true);
       }
 
-      if (Array.isArray(value) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
         // comparing single composite key - use $eq instead of $in
         const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
         o[key] = { [op]: value };
         return o;
       }
 
-      if (!QueryHelper.isSupportedOperator(key)) {
+      if (Utils.isPlainObject(value)) {
+        o[key] = QueryHelper.processWhere(value, prop?.type ?? entityName, metadata, platform, convertCustomTypes, false);
+      } else if (!QueryHelper.isSupportedOperator(key)) {
         o[key] = value;
       } else if (key.includes(':')) {
         const [k, expr] = key.split(':');
@@ -168,7 +177,12 @@ export class QueryHelper {
   static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Object.keys(cond).reduce((o, k) => {
-        o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
+        if (Utils.isOperator(k, true) || prop.referencedPKs.includes(k)) {
+          o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
+        } else {
+          o[k] = cond[k];
+        }
+
         return o;
       }, {});
     }
@@ -184,7 +198,7 @@ export class QueryHelper {
     const wrapped = entity.__helper!;
 
     if (root || wrapped.__meta.compositePK) {
-      return wrapped.__primaryKey;
+      return wrapped.getPrimaryKey();
     }
 
     return Utils.getPrimaryKeyCond(entity, wrapped.__meta.primaryKeys);

@@ -7,6 +7,7 @@ drop table if exists `author_to_friend`;
 drop table if exists `book_to_tag_unordered`;
 drop table if exists `book2_tags`;
 drop table if exists `publisher2_tests`;
+drop table if exists `test2_bars`;
 drop table if exists `configuration2`;
 drop table if exists `test2`;
 drop table if exists `book2`;
@@ -46,7 +47,7 @@ alter table `foo_bar2` add unique `foo_bar2_baz_id_unique`(`baz_id`);
 alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 alter table `foo_bar2` add unique `foo_bar2_foo_bar_id_unique`(`foo_bar_id`);
 
-create table `foo_param2` (`bar_id` int(11) unsigned not null, `baz_id` int(11) unsigned not null, `value` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+create table `foo_param2` (`bar_id` int(11) unsigned not null, `baz_id` int(11) unsigned not null, `value` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 alter table `foo_param2` add index `foo_param2_bar_id_index`(`bar_id`);
 alter table `foo_param2` add index `foo_param2_baz_id_index`(`baz_id`);
 alter table `foo_param2` add primary key `foo_param2_pkey`(`bar_id`, `baz_id`);
@@ -62,8 +63,7 @@ create table `car_owner2` (`id` int unsigned not null auto_increment primary key
 alter table `car_owner2` add index `car_owner2_car_name_car_year_index`(`car_name`, `car_year`);
 
 create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null, `favourite_car_name` varchar(100) null, `favourite_car_year` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table `user2` add unique `user2_favourite_car_name_unique`(`favourite_car_name`);
-alter table `user2` add unique `user2_favourite_car_year_unique`(`favourite_car_year`);
+alter table `user2` add unique `user2_favourite_car_name_favourite_car_year_unique`(`favourite_car_name`, `favourite_car_year`);
 alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
 alter table `user2` add index `user2_favourite_car_name_favourite_car_year_index`(`favourite_car_name`, `favourite_car_year`);
 
@@ -102,11 +102,12 @@ alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 
-create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
+create table `test2` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `parent_id` int(11) unsigned null, `version` int(11) not null default 1, `foo___bar` int(11) unsigned null, `foo___baz` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `test2` add index `test2_book_uuid_pk_index`(`book_uuid_pk`);
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
 alter table `test2` add index `test2_foo___bar_index`(`foo___bar`);
 alter table `test2` add unique `test2_foo___bar_unique`(`foo___bar`);
+alter table `test2` add index `test2_parent_id_index`(`parent_id`);
 
 create table `configuration2` (`property` varchar(255) not null, `test_id` int(11) unsigned not null, `value` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 alter table `configuration2` add index `configuration2_test_id_index`(`test_id`);
@@ -115,6 +116,11 @@ alter table `configuration2` add primary key `configuration2_pkey`(`property`, `
 create table `publisher2_tests` (`id` int unsigned not null auto_increment primary key, `publisher2_id` int(11) unsigned not null, `test2_id` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table `publisher2_tests` add index `publisher2_tests_publisher2_id_index`(`publisher2_id`);
 alter table `publisher2_tests` add index `publisher2_tests_test2_id_index`(`test2_id`);
+
+create table `test2_bars` (`test2_id` int(11) unsigned not null, `foo_bar2_id` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table `test2_bars` add index `test2_bars_test2_id_index`(`test2_id`);
+alter table `test2_bars` add index `test2_bars_foo_bar2_id_index`(`foo_bar2_id`);
+alter table `test2_bars` add primary key `test2_bars_pkey`(`test2_id`, `foo_bar2_id`);
 
 create table `book2_tags` (`order` int unsigned not null auto_increment primary key, `book2_uuid_pk` varchar(36) not null, `book_tag2_id` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table `book2_tags` add index `book2_tags_book2_uuid_pk_index`(`book2_uuid_pk`);
@@ -138,7 +144,6 @@ alter table `author2_following` add primary key `author2_following_pkey`(`author
 create table `address2` (`author_id` int(11) unsigned not null, `value` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table `address2` add primary key `address2_pkey`(`author_id`);
 alter table `address2` add index `address2_author_id_index`(`author_id`);
-alter table `address2` add unique `address2_author_id_unique`(`author_id`);
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;
@@ -167,11 +172,15 @@ alter table `book2` add constraint `book2_publisher_id_foreign` foreign key (`pu
 
 alter table `test2` add constraint `test2_book_uuid_pk_foreign` foreign key (`book_uuid_pk`) references `book2` (`uuid_pk`) on delete set null;
 alter table `test2` add constraint `test2_foo___bar_foreign` foreign key (`foo___bar`) references `foo_bar2` (`id`) on update cascade on delete set null;
+alter table `test2` add constraint `test2_parent_id_foreign` foreign key (`parent_id`) references `test2` (`id`) on update cascade on delete set null;
 
 alter table `configuration2` add constraint `configuration2_test_id_foreign` foreign key (`test_id`) references `test2` (`id`) on update cascade;
 
 alter table `publisher2_tests` add constraint `publisher2_tests_publisher2_id_foreign` foreign key (`publisher2_id`) references `publisher2` (`id`) on update cascade on delete cascade;
 alter table `publisher2_tests` add constraint `publisher2_tests_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;
+
+alter table `test2_bars` add constraint `test2_bars_test2_id_foreign` foreign key (`test2_id`) references `test2` (`id`) on update cascade on delete cascade;
+alter table `test2_bars` add constraint `test2_bars_foo_bar2_id_foreign` foreign key (`foo_bar2_id`) references `foo_bar2` (`id`) on update cascade on delete cascade;
 
 alter table `book2_tags` add constraint `book2_tags_book2_uuid_pk_foreign` foreign key (`book2_uuid_pk`) references `book2` (`uuid_pk`) on update cascade on delete cascade;
 alter table `book2_tags` add constraint `book2_tags_book_tag2_id_foreign` foreign key (`book_tag2_id`) references `book_tag2` (`id`) on update cascade on delete cascade;

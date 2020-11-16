@@ -22,6 +22,22 @@
   --ifm-color-primary-lightest: rgb(146, 224, 208);
 }
 
+html[data-theme="light"] {
+  --ifm-color-warning: #fff3cd;
+  --ifm-alert-background-color: #fff3cd;
+  --ifm-alert-border-color: #ffeeba;
+  --ifm-alert-color: #856404;
+  --ra-admonition-icon-color: #856404;
+}
+
+html[data-theme="light"] .admonition-info {
+  --ifm-color-info: #d1ecf1;
+  --ifm-alert-background-color: #d1ecf1;
+  --ifm-alert-border-color: #bee5eb;
+  --ifm-alert-color: #0c5460;
+  --ra-admonition-icon-color: #0c5460;
+}
+
 .docusaurus-highlight-code-line {
   background-color: rgb(72, 77, 91);
   display: block;

@@ -11,7 +11,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   }
 
   convertToDatabaseValue(value: T[] | null, platform: Platform, fromQuery?: boolean): string | null {
-    if (!value || fromQuery) {
+    if (!value) {
       return value as null;
     }
 
@@ -19,11 +19,15 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       return platform.marshallArray(value as string[]);
     }
 
+    if (fromQuery) {
+      return value;
+    }
+
     throw ValidationError.invalidType(ArrayType, value, 'JS');
   }
 
   convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
-    if (!value) {
+    if (!Utils.isDefined(value, true)) {
       return value as null;
     }
 
@@ -32,6 +36,10 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     }
 
     return value.map(i => this.hydrate(i as string));
+  }
+
+  compareAsType(): string {
+    return 'array';
   }
 
   toJSON(value: T[]): T[] {

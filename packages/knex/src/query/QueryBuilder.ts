@@ -1,7 +1,23 @@
 import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
 import {
-  AnyEntity, Dictionary, EntityMetadata, FlatQueryOrderMap, GroupOperator, LockMode, MetadataStorage,
-  PopulateOptions, QBFilterQuery, QueryFlag, QueryHelper, QueryOrderMap, ReferenceType, Utils, ValidationError,
+  AnyEntity,
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  GroupOperator,
+  LoadStrategy,
+  LockMode,
+  MetadataStorage,
+  PopulateOptions,
+  QBFilterQuery,
+  QueryFlag,
+  QueryHelper,
+  QueryOrderMap,
+  ReferenceType,
+  Utils,
+  ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -33,6 +49,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _having: Dictionary = {};
   private _limit?: number;
   private _offset?: number;
+  private _joinedProps = new Map<string, PopulateOptions<any>>();
+  private _cache?: boolean | number | [string, number];
   private lockMode?: LockMode;
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
@@ -44,7 +62,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly driver: AbstractSqlDriver,
               private readonly context?: Transaction,
               readonly alias = `e0`,
-              private readonly connectionType?: 'read' | 'write',
+              private connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) {
     this._aliasMap[this.alias] = this.entityName;
   }
@@ -59,7 +77,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.SELECT);
   }
 
-  addSelect(fields: string | string[]): this {
+  addSelect(fields: Field<T> | Field<T>[]): this {
+    if (this.type && this.type !== QueryType.SELECT) {
+      return this;
+    }
+
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
@@ -98,6 +120,38 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
+  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
+    const prop = this.joinReference(field, alias, cond, type, path);
+    this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
+    const [fromAlias] = this.helper.splitField(field);
+    const populate = this._joinedProps.get(fromAlias);
+    const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
+
+    if (populate) {
+      populate.children!.push(item);
+    } else { // root entity
+      this._populate.push(item);
+    }
+
+    this._joinedProps.set(alias, item);
+
+    return this;
+  }
+
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): this {
+    return this.joinAndSelect(field, alias, cond, 'leftJoin');
+  }
+
+  protected getFieldsForJoinedLoad<U extends AnyEntity<U>>(prop: EntityProperty<U>, alias: string): Field<U>[] {
+    const fields: Field<U>[] = [];
+    const meta2 = this.metadata.find<U>(prop.type)!;
+    meta2.props
+      .filter(prop => this.driver.shouldHaveColumn(prop, this._populate))
+      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
+
+    return fields;
+  }
+
   withSubQuery(subQuery: KnexQueryBuilder, alias: string): this {
     this.subQueries[alias] = subQuery.toString();
     return this;
@@ -114,7 +168,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const op = operator || params as keyof typeof GroupOperator;
-    const topLevel = !op || Object.keys(this._cond).length === 0;
+    const topLevel = !op || !Utils.hasObjectKeys(this._cond);
     const criteriaNode = CriteriaNodeFactory.createNode(this.metadata, this.entityName, cond);
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {
@@ -228,6 +282,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
+  cache(config: boolean | number | [string, number] = true): this {
+    this._cache = config;
+    return this;
+  }
+
   getKnexQuery(): KnexQueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
@@ -249,12 +308,26 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
+  /**
+   * Returns the query with parameters as wildcards.
+   */
   getQuery(): string {
     return this.getKnexQuery().toSQL().toNative().sql;
   }
 
+  /**
+   * Returns the list of all parameters for this query.
+   */
   getParams(): readonly Value[] {
     return this.getKnexQuery().toSQL().toNative().bindings;
+  }
+
+  /**
+   * Returns raw interpolated query string with all the parameters inlined.
+   */
+  getFormattedQuery(): string {
+    const query = this.getKnexQuery().toSQL();
+    return this.platform.formatQuery(query.sql, query.bindings);
   }
 
   getAliasForJoinPath(path: string): string | undefined {
@@ -263,6 +336,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const join = Object.values(this._joins).find(j => j.path === path);
+
+    if (path.endsWith('[pivot]') && join) {
+      return join.alias;
+    }
+
     /* istanbul ignore next */
     return join?.inverseAlias || join?.alias;
   }
@@ -272,21 +350,44 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return `${prefix.charAt(0).toLowerCase()}${this.aliasCounter++}`;
   }
 
+  /**
+   * Executes this QB and returns the raw results, mapped to the property names (unless disabled via last parameter).
+   * Use `method` to specify what kind of result you want to get (array/single/meta).
+   */
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
+    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type)) {
+      this.connectionType = 'write';
+    }
+
+    const query = this.getKnexQuery().toSQL();
+    const cached = await this.em?.tryCache<T, U>(this.entityName, this._cache, ['qb.execute', query.sql, query.bindings, method]);
+
+    if (cached?.data) {
+      return cached.data;
+    }
+
     const type = this.connectionType || (method === 'run' ? 'write' : 'read');
-    const res = await this.driver.getConnection(type).execute(this.getKnexQuery(), [], method);
+    const res = await this.driver.getConnection(type).execute(query.sql, query.bindings as any[], method, this.context);
     const meta = this.metadata.find(this.entityName);
 
     if (!mapResults || !meta) {
+      await this.em?.storeCache(this._cache, cached!, res);
       return res as unknown as U;
     }
 
     if (method === 'all' && Array.isArray(res)) {
       const map: Dictionary = {};
-      return res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      const mapped = res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      await this.em?.storeCache(this._cache, cached!, mapped);
+
+      return mapped;
     }
 
-    return this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
+    const mapped = this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
+    /* istanbul ignore next */
+    await this.em?.storeCache(this._cache, cached!, mapped);
+
+    return mapped;
   }
 
   /**
@@ -300,7 +401,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Executes the query, returning array of results
    */
   async getResultList(): Promise<T[]> {
-    const res = await this.execute<T[]>('all', true);
+    let res = await this.execute<EntityData<T>[]>('all', true);
+
+    if (this._joinedProps.size > 0) {
+      res = this.driver.mergeJoinedResult(res, this.metadata.find(this.entityName)!);
+    }
+
     return res.map(r => this.em!.map<T>(this.entityName, r));
   }
 
@@ -308,7 +414,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Executes the query, returning the first result or null
    */
   async getSingleResult(): Promise<T | null> {
-    const res = await this.getResult();
+    const res = await this.getResultList();
     return res[0] || null;
   }
 
@@ -334,7 +440,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', 'subQueries'];
+    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
     qb.finalized = false;
 
@@ -352,13 +458,20 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): void {
+  private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): EntityProperty {
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliasMap[fromAlias];
-    const prop = this.metadata.get(entityName).properties[fromField];
+    const meta = this.metadata.get(entityName);
+    const prop = meta.properties[fromField];
+
+    if (!prop) {
+      throw new Error(`Trying to join ${field}, but ${fromField} is not a defined relation on ${meta.className}`);
+    }
+
     this._aliasMap[alias] = prop.type;
     cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
+    path = path ?? `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
@@ -370,7 +483,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         pivotAlias = oldPivotAlias ?? `e${this.aliasCounter++}`;
       }
 
-      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond);
+      const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond, path);
       Object.assign(this._joins, joins);
       this._aliasMap[pivotAlias] = prop.pivotTable;
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
@@ -379,7 +492,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
     }
 
-    this._joins[aliasedName].path = path;
+    if (!this._joins[aliasedName].path && path) {
+      this._joins[aliasedName].path = path;
+    }
+
+    return prop;
   }
 
   private prepareFields<T extends AnyEntity<T>, U extends string | Raw = string | Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
@@ -421,7 +538,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (data) {
-      this._data = this.helper.processData(data);
+      this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES));
     }
 
     if (cond) {
@@ -459,7 +576,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         break;
       case QueryType.UPDATE:
         qb.update(this._data);
-        this.helper.updateVersionProperty(qb);
+        this.helper.updateVersionProperty(qb, this._data);
         break;
       case QueryType.DELETE:
         qb.delete();

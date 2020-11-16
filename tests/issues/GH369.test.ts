@@ -34,10 +34,9 @@ describe('GH issue 369', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
-      dbName: __dirname + '/../../temp/mikro_orm_test_gh369.db',
+      dbName: ':memory:',
       type: 'sqlite',
     });
-    await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
   });
 

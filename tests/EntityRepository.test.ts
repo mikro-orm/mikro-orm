@@ -27,9 +27,11 @@ const methods = {
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
   config: new Configuration({ type: 'mongo' } as any, false),
+  getContext: () => undefined as any,
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
 const em = new Mock();
+methods.getContext = () => em;
 const repo = new EntityRepository(em, Publisher);
 
 const MongoMock = jest.fn<MongoEntityManager, any>(() => methods as any);

@@ -1,4 +1,5 @@
-import { Dictionary } from '../typings';
+import { Dictionary, EntityProperty } from '../typings';
+import { ReferenceType } from '../enums';
 
 export const enum NodeState {
   NOT_VISITED = 0,
@@ -54,6 +55,21 @@ export class CommitOrderCalculator {
    */
   addDependency(from: string, to: string, weight: number): void {
     this.nodes[from].dependencies[to] = { from, to, weight };
+  }
+
+  discoverProperty(prop: EntityProperty, entityName: string): void {
+    if (!(prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) && prop.reference !== ReferenceType.MANY_TO_ONE) {
+      return;
+    }
+
+    /* istanbul ignore next */
+    const propertyType = prop.targetMeta?.root.className;
+
+    if (!propertyType || !this.hasNode(propertyType)) {
+      return;
+    }
+
+    this.addDependency(propertyType, entityName, prop.nullable ? 0 : 1);
   }
 
   /**

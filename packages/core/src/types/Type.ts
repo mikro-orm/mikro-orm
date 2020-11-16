@@ -20,6 +20,14 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /**
+   * How should the raw database values be compared? Used in `EntityComparator`.
+   * Possible values: string | number | boolean | date | any | buffer | array
+   */
+  compareAsType(): string {
+    return 'any';
+  }
+
+  /**
    * Converts a value from its JS representation to its serialized JSON form of this type.
    * By default uses the runtime value.
    */

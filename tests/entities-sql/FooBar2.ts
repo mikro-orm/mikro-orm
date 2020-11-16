@@ -1,6 +1,7 @@
-import { ArrayType, BlobType, Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { ManyToMany, Collection, Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
+import { Test2 } from './Test2';
 
 @Entity()
 export class FooBar2 extends BaseEntity22 {
@@ -31,6 +32,9 @@ export class FooBar2 extends BaseEntity22 {
 
   @Formula(`(select 123)`)
   random?: number;
+
+  @ManyToMany(() => Test2, t => t.bars)
+  tests = new Collection<Test2>(this);
 
   static create(name: string) {
     const bar = new FooBar2();

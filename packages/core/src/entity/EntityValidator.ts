@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import { ReferenceType } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -9,6 +9,10 @@ export class EntityValidator {
 
   validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
     meta.props.forEach(prop => {
+      if (prop.inherited) {
+        return;
+      }
+
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         this.validateCollection(entity, prop);
       }
@@ -19,13 +23,13 @@ export class EntityValidator {
         return;
       }
 
-      const newValue = this.validateProperty(prop, payload[prop.name], entity);
+      const newValue = this.validateProperty(prop, this.getValue(payload, prop), entity);
 
-      if (payload[prop.name] === newValue) {
+      if (this.getValue(payload, prop) === newValue) {
         return;
       }
 
-      payload[prop.name] = newValue;
+      this.setValue(payload, prop, newValue);
 
       if (entity[prop.name]) {
         entity[prop.name] = payload[prop.name];
@@ -82,6 +86,23 @@ export class EntityValidator {
     if (Utils.isEmpty(where)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
+  }
+
+  private getValue(o: Dictionary, prop: EntityProperty) {
+    if (prop.embedded && prop.embedded[0] in o) {
+      return o[prop.embedded[0]][prop.embedded[1]];
+    }
+
+    return o[prop.name];
+  }
+
+  private setValue(o: Dictionary, prop: EntityProperty, v: any) {
+    /* istanbul ignore next */
+    if (prop.embedded && prop.embedded[0] in o) {
+      return o[prop.embedded[0]][prop.embedded[1]] = v;
+    }
+
+    o[prop.name] = v;
   }
 
   private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {

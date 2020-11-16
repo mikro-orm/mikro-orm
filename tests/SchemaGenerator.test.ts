@@ -1,15 +1,16 @@
 import { BASE_DIR, initORMMySql, initORMPostgreSql, initORMSqlite, initORMSqlite2 } from './bootstrap';
 import { EntitySchema, ReferenceType, Utils, MikroORM } from '@mikro-orm/core';
 import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
-import { FooBar2, FooBaz2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { BaseEntity2 } from './entities-sql/BaseEntity2';
 
 describe('SchemaGenerator', () => {
 
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -25,7 +26,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -44,7 +45,7 @@ describe('SchemaGenerator', () => {
   test('create/drop database [mariadb]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -61,7 +62,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [mariadb]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       port: 3307,
       baseDir: BASE_DIR,
@@ -77,7 +78,7 @@ describe('SchemaGenerator', () => {
   });
 
   test('generate schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const generator = new SchemaGenerator(orm.em);
     await generator.ensureDatabase();
     const dump = await generator.generate();
@@ -96,7 +97,7 @@ describe('SchemaGenerator', () => {
   });
 
   test('update schema [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em);
 
@@ -144,8 +145,22 @@ describe('SchemaGenerator', () => {
       primaryKey: 'id',
     } as any).init().meta;
     meta.set('NewTable', newTableMeta);
-    await generator.getUpdateSchemaSQL(false);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-create-table');
+    await generator.updateSchema();
+
+    // add scalar property index
+    const bookMeta = meta.get('Book2');
+    bookMeta.properties.title.index = 'new_title_idx';
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-index');
+    await generator.updateSchema();
+    bookMeta.properties.title.unique = true;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-unique');
+    await generator.updateSchema();
+    bookMeta.properties.title.index = false;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-index');
+    await generator.updateSchema();
+    bookMeta.properties.title.unique = false;
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-unique');
     await generator.updateSchema();
 
     const authorMeta = meta.get('Author2');
@@ -162,27 +177,15 @@ describe('SchemaGenerator', () => {
 
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
-    delete newTableMeta.properties.id;
-    delete newTableMeta.properties.updatedAt;
-    delete authorMeta.properties.favouriteBook;
+    newTableMeta.removeProperty('id');
+    newTableMeta.removeProperty('updatedAt');
+    authorMeta.removeProperty('favouriteBook');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-column');
     await generator.updateSchema();
 
-    const ageProp = authorMeta.properties.age;
-    ageProp.name = 'ageInYears';
-    ageProp.fieldNames = ['age_in_years'];
-    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
-    favouriteAuthorProp.name = 'favouriteWriter';
-    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
-    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
-    delete authorMeta.properties.favouriteAuthor;
-    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
-    await generator.updateSchema();
-
-    newTableMeta.properties.id = idProp;
-    newTableMeta.properties.updatedAt = updatedAtProp;
-    authorMeta.properties.favouriteBook = favouriteBookProp;
+    newTableMeta.addProperty(idProp);
+    newTableMeta.addProperty(updatedAtProp);
+    authorMeta.addProperty(favouriteBookProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-add-column');
     await generator.updateSchema();
 
@@ -196,16 +199,42 @@ describe('SchemaGenerator', () => {
     // remove 1:1 relation
     const fooBarMeta = meta.get('FooBar2');
     const fooBazMeta = meta.get('FooBaz2');
-    delete fooBarMeta.properties.baz;
-    delete fooBazMeta.properties.bar;
+    fooBarMeta.removeProperty('baz');
+    fooBazMeta.removeProperty('bar');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-drop-1:1');
     await generator.updateSchema();
 
     await orm.close(true);
   });
 
+  test('rename column [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em);
+
+    const authorMeta = meta.get('Author2');
+    const ageProp = authorMeta.properties.age;
+    ageProp.name = 'ageInYears';
+    ageProp.fieldNames = ['age_in_years'];
+    const index = authorMeta.indexes.find(i => Utils.asArray(i.properties).join() === 'name,age')!;
+    index.properties = ['name', 'ageInYears'];
+    authorMeta.removeProperty('age');
+    authorMeta.addProperty(ageProp);
+    const favouriteAuthorProp = authorMeta.properties.favouriteAuthor;
+    favouriteAuthorProp.name = 'favouriteWriter';
+    favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
+    favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
+    authorMeta.removeProperty('favouriteAuthor');
+    authorMeta.addProperty(favouriteAuthorProp);
+    await (generator.getUpdateSchemaSQL(false));
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
   test('update schema enums [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
     const generator = new SchemaGenerator(orm.em);
 
@@ -365,7 +394,7 @@ describe('SchemaGenerator', () => {
   test('create/drop database [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
@@ -380,7 +409,7 @@ describe('SchemaGenerator', () => {
   test('create schema also creates the database if not exists [postgresql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
-      entities: [FooBar2, FooBaz2, BaseEntity22],
+      entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
@@ -489,9 +518,9 @@ describe('SchemaGenerator', () => {
     authorMeta.properties.name.nullable = false;
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
-    delete newTableMeta.properties.id;
-    delete newTableMeta.properties.updatedAt;
-    delete authorMeta.properties.favouriteBook;
+    newTableMeta.removeProperty('id');
+    newTableMeta.removeProperty('updatedAt');
+    authorMeta.removeProperty('favouriteBook');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-column');
     await generator.updateSchema();
 
@@ -502,14 +531,14 @@ describe('SchemaGenerator', () => {
     favouriteAuthorProp.name = 'favouriteWriter';
     favouriteAuthorProp.fieldNames = ['favourite_writer_id'];
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
-    delete authorMeta.properties.favouriteAuthor;
-    authorMeta.properties.favouriteWriter = favouriteAuthorProp;
+    authorMeta.removeProperty('favouriteAuthor');
+    authorMeta.addProperty(favouriteAuthorProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-rename-column');
     await generator.updateSchema();
 
-    newTableMeta.properties.id = idProp;
-    newTableMeta.properties.updatedAt = updatedAtProp;
-    authorMeta.properties.favouriteBook = favouriteBookProp;
+    newTableMeta.addProperty(idProp);
+    newTableMeta.addProperty(updatedAtProp);
+    authorMeta.addProperty(favouriteBookProp);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-column');
     await generator.updateSchema();
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
@@ -517,8 +546,8 @@ describe('SchemaGenerator', () => {
     // remove 1:1 relation
     const fooBarMeta = meta.get('FooBar2');
     const fooBazMeta = meta.get('FooBaz2');
-    delete fooBarMeta.properties.baz;
-    delete fooBazMeta.properties.bar;
+    fooBarMeta.removeProperty('baz');
+    fooBazMeta.removeProperty('bar');
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-1:1');
     await generator.updateSchema();
 
@@ -531,12 +560,43 @@ describe('SchemaGenerator', () => {
   });
 
   test('update empty schema from metadata [mysql]', async () => {
-    const orm = await initORMMySql();
+    const orm = await initORMMySql('mysql', {}, true);
     const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mysql-update-empty-schema-dump');
+    await generator.updateSchema();
+
+    await orm.close(true);
+  });
+
+  test('update indexes [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em);
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes.push({
+      properties: ['author', 'publisher'],
+    });
+
+    meta.get('Book2').uniques.push({
+      properties: ['author', 'publisher'],
+    });
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-add-index');
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes[0].name = 'custom_idx_123';
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-alter-index');
+    await generator.updateSchema();
+
+    meta.get('Book2').indexes = [];
+    meta.get('Book2').uniques = [];
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-index');
     await generator.updateSchema();
 
     await orm.close(true);

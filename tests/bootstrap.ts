@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, MikroORM, Options, Utils } from '@mikro-orm/core';
+import { EntityManager, JavaScriptMetadataProvider, LoadStrategy, MikroORM, Options, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -49,7 +49,7 @@ export async function initORMMongo() {
   return orm;
 }
 
-export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}) {
+export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
   let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
@@ -65,21 +65,25 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations' },
-
   }, additionalOptions));
 
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
+  await schemaGenerator.dropSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
-  orm.config.set('dbName', 'mikro_orm_test_schema_2');
-  await schemaGenerator.ensureDatabase();
-  await orm.em.getDriver().reconnect();
-  await schemaGenerator.dropSchema();
-  await connection.loadFile(__dirname + '/mysql-schema.sql');
-  await orm.close(true);
-  orm.config.set('dbName', 'mikro_orm_test');
-  orm = await MikroORM.init(orm.config);
+
+  if (!simple) {
+    orm.config.set('dbName', 'mikro_orm_test_schema_2');
+    await schemaGenerator.ensureDatabase();
+    await orm.em.getDriver().reconnect();
+    await schemaGenerator.dropSchema();
+    await connection.loadFile(__dirname + '/mysql-schema.sql');
+    await orm.close(true);
+    orm.config.set('dbName', 'mikro_orm_test');
+    orm = await MikroORM.init(orm.config);
+  }
+
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
@@ -87,7 +91,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql() {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, BaseEntity2, BaseEntity22],
     dbName: `mikro_orm_test`,
@@ -98,6 +102,7 @@ export async function initORMPostgreSql() {
     autoJoinOneToOneOwner: false,
     logger: i => i,
     cache: { enabled: true },
+    loadStrategy,
   });
 
   const schemaGenerator = new SchemaGenerator(orm.em);
@@ -138,6 +143,7 @@ export async function initORMSqlite2() {
     driver: SqliteDriver,
     debug: ['query'],
     propagateToOneOwner: false,
+    forceUndefined: true,
     logger: i => i,
     cache: { pretty: true },
   });

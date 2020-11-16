@@ -31,6 +31,10 @@ export class QueryBuilderHelper {
     const prop = this.getProperty(field, this.alias);
     const noPrefix = prop && prop.persist === false;
 
+    if (prop?.fieldNameRaw) {
+      return this.knex.raw(this.prefix(field, true));
+    }
+
     // do not wrap custom expressions
     if (!customExpression) {
       ret = this.prefix(field);
@@ -51,9 +55,9 @@ export class QueryBuilderHelper {
     return this.alias + '.' + ret;
   }
 
-  processData(data: Dictionary): any {
+  processData(data: Dictionary, convertCustomTypes: boolean, multi = false): any {
     if (Array.isArray(data)) {
-      return data.map(d => this.processData(d));
+      return data.map(d => this.processData(d, convertCustomTypes, true));
     }
 
     data = Object.assign({}, data); // copy first
@@ -74,6 +78,10 @@ export class QueryBuilderHelper {
         return;
       }
 
+      if (prop.customType && convertCustomTypes) {
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
+      }
+
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }
@@ -83,19 +91,24 @@ export class QueryBuilderHelper {
       }
     });
 
+    if (!Utils.hasObjectKeys(data) && meta && multi) {
+      data[meta.primaryKeys[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
+    }
+
     return data;
   }
 
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const meta = this.metadata.find(prop.type)!;
     const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
+    const table = this.getTableName(prop.type);
+    const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
+    const inverseJoinColumns = prop.referencedColumnNames;
+    const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
 
     return {
-      prop, type, cond, ownerAlias, alias,
-      table: this.getTableName(prop.type),
-      joinColumns: prop.owner ? meta.primaryKeys : prop2.joinColumns,
-      inverseJoinColumns: prop.owner ? meta.primaryKeys : prop.referencedColumnNames,
-      primaryKeys: prop.owner ? prop.joinColumns : prop2.referencedColumnNames,
+      prop, type, cond, ownerAlias, alias, table,
+      joinColumns, inverseJoinColumns, primaryKeys,
     };
   }
 
@@ -108,7 +121,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary): Dictionary<JoinOptions> {
+  joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string): Dictionary<JoinOptions> {
     const ret = {
       [`${ownerAlias}.${prop.name}`]: {
         prop, type, cond, ownerAlias,
@@ -118,8 +131,10 @@ export class QueryBuilderHelper {
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
         table: prop.pivotTable,
+        path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
+
 
     if (type === 'pivotJoin') {
       return ret;
@@ -127,6 +142,7 @@ export class QueryBuilderHelper {
 
     const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
     ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+    ret[`${pivotAlias}.${prop2.name}`].path = path;
 
     return ret;
   }
@@ -283,7 +299,7 @@ export class QueryBuilderHelper {
     // grouped condition for one field
     let value = cond[key];
 
-    if (Object.keys(value).length > 1) {
+    if (Utils.getObjectKeysSize(value) > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
@@ -302,13 +318,9 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
     const fields = Utils.splitPrimaryKeys(key);
 
-    if (key === op) { // substitute top level operators with PK
-      const meta = this.metadata.find(this.entityName)!;
-      key = meta.properties[meta.primaryKeys[0]].fieldNames[0];
-    }
-
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
+      const values = this.platform.requiresValuesKeyword() ? 'values ' : '';
+      value[op] = this.knex.raw(`${values}(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
     if (this.subQueries[key]) {
@@ -338,7 +350,7 @@ export class QueryBuilderHelper {
         const method = operator === '$or' ? 'orOn' : 'andOn';
         const m = k === '$or' ? 'orOn' : 'andOn';
         return clause[method](outer => cond[k].forEach((sub: any) => {
-          if (Object.keys(sub).length === 1) {
+          if (Utils.getObjectKeysSize(sub) === 1) {
             return this.appendJoinClause(outer, sub, k);
           }
 
@@ -371,7 +383,7 @@ export class QueryBuilderHelper {
 
   private processObjectSubClause(cond: any, key: string, clause: JoinClause, m: 'andOn' | 'orOn'): void {
     // grouped condition for one field
-    if (Object.keys(cond[key]).length > 1) {
+    if (Utils.getObjectKeysSize(cond[key]) > 1) {
       const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
     }
@@ -391,15 +403,22 @@ export class QueryBuilderHelper {
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
+      const direction = orderBy[k];
+      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+
+      if (QueryBuilderHelper.isCustomExpression(k)) {
+        ret.push(`${k} ${order.toLowerCase()}`);
+        return;
+      }
+
       // eslint-disable-next-line prefer-const
       let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
       Utils.splitPrimaryKeys(field).forEach(f => {
-        const direction = orderBy[k];
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
-        const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
+        /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
         ret.push(`${rawColumn} ${order.toLowerCase()}`);
@@ -442,10 +461,10 @@ export class QueryBuilderHelper {
     }
   }
 
-  updateVersionProperty(qb: KnexQueryBuilder): void {
+  updateVersionProperty(qb: KnexQueryBuilder, data: Dictionary): void {
     const meta = this.metadata.find(this.entityName);
 
-    if (!meta || !meta.versionProperty) {
+    if (!meta || !meta.versionProperty || meta.versionProperty in data) {
       return;
     }
 
@@ -463,9 +482,10 @@ export class QueryBuilderHelper {
     return !!field.match(/[ ?<>=()]|^\d/);
   }
 
-  private prefix(field: string): string {
+  private prefix(field: string, always = false): string {
     if (!this.isPrefixed(field)) {
-      return this.fieldName(field, this.alias);
+      const alias = always ? this.platform.quoteIdentifier(this.alias) + '.' : '';
+      return alias + this.fieldName(field, this.alias);
     }
 
     const [a, f] = field.split('.');
@@ -483,7 +503,7 @@ export class QueryBuilderHelper {
       // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
       const keys = Object.keys(sub);
       const val = sub[keys[0]];
-      const simple = !Utils.isPlainObject(val) || Object.keys(val).length === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
+      const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
 
       if (keys.length === 1 && simple) {
         return this.appendQueryCondition(type, sub, outer, operator);
@@ -494,12 +514,22 @@ export class QueryBuilderHelper {
   }
 
   private isPrefixed(field: string): boolean {
-    return !!field.match(/\w+\./);
+    return !!field.match(/[\w`"[\]]+\./);
   }
 
   private fieldName(field: string, alias?: string): string {
     const prop = this.getProperty(field, alias);
-    return prop ? prop.fieldNames[0] : field;
+
+    if (!prop) {
+      return field;
+    }
+
+    if (prop.fieldNameRaw) {
+      return prop.fieldNameRaw;
+    }
+
+    /* istanbul ignore next */
+    return prop.fieldNames[0] ?? field;
   }
 
   private getProperty(field: string, alias?: string): EntityProperty | undefined {

@@ -1,12 +1,12 @@
+import { inspect } from 'util';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
-import { EntityTransformer } from './EntityTransformer';
+import { EntityTransformer, SerializationContext } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import { LockMode } from '../enums';
 import { ValidationError } from '../errors';
-import { Platform } from '../platforms/Platform';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -15,6 +15,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __lazyInitialized?: boolean;
   __managed?: boolean;
   __em?: EntityManager;
+  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;
@@ -22,7 +23,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   /** holds wrapped primary key so we can compute change set without eager commit */
   __identifier?: EntityData<T>;
 
-  constructor(private readonly entity: T) { }
+  constructor(private readonly entity: T,
+              private readonly pkGetter: (e: T) => Primary<T>,
+              private readonly pkSerializer: (e: T) => string) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -67,44 +70,44 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   hasPrimaryKey(): boolean {
-    return this.__meta.primaryKeys.every(pk => {
-      const val = Utils.extractPK(this.entity[pk]);
-      return val !== undefined && val !== null;
-    });
+    const pk = this.getPrimaryKey();
+    return pk !== undefined && pk !== null;
+  }
+
+  getPrimaryKey(): Primary<T> | null {
+    return this.pkGetter(this.entity);
+  }
+
+  setPrimaryKey(id: Primary<T> | null) {
+    this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
+  }
+
+  getSerializedPrimaryKey(): string {
+    return this.pkSerializer(this.entity);
   }
 
   get __meta(): EntityMetadata<T> {
     return this.entity.__meta!;
   }
 
-  get __platform(): Platform {
+  get __platform() {
     return this.entity.__platform!;
   }
 
-  get __primaryKey(): Primary<T> {
-    return Utils.getPrimaryKeyValue(this.entity, this.__meta.primaryKeys);
-  }
-
-  set __primaryKey(id: Primary<T>) {
-    this.entity[this.__meta.primaryKeys[0] as string] = id;
-  }
-
   get __primaryKeys(): Primary<T>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.__meta.primaryKeys);
+    return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
-  get __serializedPrimaryKey(): Primary<T> | string {
-    if (this.__meta.compositePK) {
-      return Utils.getCompositeKeyHash(this.entity, this.__meta);
+  get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
+    if (this.entity.__meta!.compositePK) {
+      return this.__primaryKeys;
     }
 
-    const value = this.entity[this.__meta.serializedPrimaryKey];
+    return this.getPrimaryKey();
+  }
 
-    if (Utils.isEntity<T>(value)) {
-      return value.__helper!.__serializedPrimaryKey as string;
-    }
-
-    return value as unknown as string;
+  [inspect.custom]() {
+    return `[WrappedEntity<${this.entity.__meta!.className}>]`;
   }
 
 }

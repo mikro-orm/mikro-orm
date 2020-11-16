@@ -1,4 +1,5 @@
-import { EntityProperty } from '@mikro-orm/core';
+import { Client } from 'pg';
+import { EntityProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -14,6 +15,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   usesCascadeStatement(): boolean {
     return true;
+  }
+
+  /**
+   * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
+   * This flag will result in postponing 1:1 updates (removing them from the batched query).
+   * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
+   */
+  allowsUniqueBatchUpdates() {
+    return false;
   }
 
   getCurrentTimestampSQL(length: number): string {
@@ -46,6 +56,31 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getJsonDeclarationSQL(): string {
     return 'jsonb';
+  }
+
+  quoteIdentifier(id: string, quote = '"'): string {
+    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
+  }
+
+  quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value)) {
+      value = JSON.stringify(value);
+    }
+
+    if (typeof value === 'string') {
+      return Client.prototype.escapeLiteral(value);
+    }
+
+    if (value instanceof Date) {
+      return `'${value.toISOString()}'`;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      return `E'\\\\x${(value as Buffer).toString('hex')}'`;
+    }
+
+    return super.quoteValue(value);
   }
 
 }

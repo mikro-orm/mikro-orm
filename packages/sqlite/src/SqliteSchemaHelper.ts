@@ -111,4 +111,9 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return true;
   }
 
+  isImplicitIndex(name: string): boolean {
+    // Ignore indexes with reserved names, e.g. autoindexes
+    return name.startsWith('sqlite_');
+  }
+
 }

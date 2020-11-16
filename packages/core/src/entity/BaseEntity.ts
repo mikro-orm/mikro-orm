@@ -1,8 +1,8 @@
-import { IdentifiedReference, Reference } from './Reference';
-import { AnyEntity, Dictionary, EntityData, IWrappedEntity, LoadedReference, Populate } from '../typings';
+import { Reference } from './Reference';
+import { AnyEntity, Dictionary, EntityData, IWrappedEntity, Populate } from '../typings';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
-export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T> implements IWrappedEntity<T, PK> {
+export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> implements IWrappedEntity<T, PK, P> {
 
   constructor() {
     Object.defineProperty(this, '__baseEntity', { value: true });
@@ -16,8 +16,8 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T> imp
     (this as unknown as T).__helper!.populated(populated);
   }
 
-  toReference<PK2 extends PK = never, P extends Populate<T> = never>(): IdentifiedReference<T, PK2> & LoadedReference<T, P> {
-    return Reference.create<T, PK>(this as unknown as T) as IdentifiedReference<T, PK> & LoadedReference<T>;
+  toReference() {
+    return Reference.create(this) as any; // maintain the type from IWrappedEntity
   }
 
   toObject(ignoreFields: string[] = []): Dictionary {

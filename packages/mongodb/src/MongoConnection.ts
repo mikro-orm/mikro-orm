@@ -1,11 +1,11 @@
 import {
   Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions,
-  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession, SortOptionObject,
+  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession, SortOptionObject, BulkWriteResult,
 } from 'mongodb';
 import { inspect } from 'util';
 import {
   Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary,
+  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -19,7 +19,7 @@ export class MongoConnection extends Connection {
   }
 
   async close(force?: boolean): Promise<void> {
-    return this.client.close(force);
+    return this.client?.close(force);
   }
 
   async isConnected(): Promise<boolean> {
@@ -76,7 +76,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<T[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
 
@@ -87,7 +87,7 @@ export class MongoConnection extends Connection {
     const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
 
-    if (orderBy && Object.keys(orderBy).length > 0) {
+    if (orderBy && Utils.hasObjectKeys(orderBy)) {
       orderBy = Object.keys(orderBy).reduce((p, c) => {
         const direction = orderBy![c];
         return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
@@ -110,7 +110,7 @@ export class MongoConnection extends Connection {
     const res = await resultSet.toArray();
     this.logQuery(`${query}.toArray();`, Date.now() - now);
 
-    return res;
+    return res as EntityData<T>[];
   }
 
   async insertOne<T extends { _id: any }>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
@@ -123,6 +123,10 @@ export class MongoConnection extends Connection {
 
   async updateMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     return this.runQuery<T>('updateMany', collection, data, where, ctx);
+  }
+
+  async bulkUpdateMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx);
   }
 
   async deleteMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
@@ -183,31 +187,48 @@ export class MongoConnection extends Connection {
     super.logQuery(query, took);
   }
 
-  private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<U> {
+  private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
+    const logger = this.config.getLogger();
     const options: Dictionary = { session: ctx };
     const now = Date.now();
-    let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | number;
+    let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | BulkWriteResult | number;
     let query: string;
+    const log = (msg: () => string) => logger.isEnabled('query') ? msg() : '';
 
     switch (method) {
       case 'insertOne':
-        query = `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`;
+        query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.getCollection(collection).insertOne(data, options);
         break;
       case 'insertMany':
-        query = `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`;
+        query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.getCollection(collection).insertMany(data as Partial<T>[], options);
         break;
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
-        query = `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`;
+        query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload!, options);
+        break;
+      }
+      case 'bulkUpdateMany': {
+        query = log(() => `bulk = db.getCollection('${collection}').initializeUnorderedBulkOp(${this.logObject(options)});\n`);
+        const bulk = this.getCollection(collection).initializeUnorderedBulkOp(options);
+
+        (data as T[]).forEach((row, idx) => {
+          const cond = { _id: (where as Dictionary[])[idx] };
+          const doc = { $set: row };
+          query += log(() => `bulk.find(${this.logObject(cond)}).update(${this.logObject(doc)});\n`);
+          bulk.find(cond).update(doc);
+        });
+
+        query += log(() => `bulk.execute()`);
+        res = await bulk.execute();
         break;
       }
       case 'deleteMany':
       case 'countDocuments':
-        query = `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`;
+        query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
         res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQuery<T>, options); // cast to deleteMany to fix some typing weirdness
         break;
     }

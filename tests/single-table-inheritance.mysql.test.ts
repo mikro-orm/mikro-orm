@@ -1,4 +1,4 @@
-import { Dictionary, MetadataDiscovery, MetadataStorage, MikroORM, ReferenceType, wrap } from '@mikro-orm/core';
+import { Dictionary, Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -7,7 +7,7 @@ describe('single table inheritance in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   async function createEntities() {
@@ -27,8 +27,9 @@ describe('single table inheritance in mysql', () => {
     await orm.em.persistAndFlush([owner, employee1]);
     orm.em.clear();
 
-    expect(owner.state).toBe('created');
-    expect(owner.baseState).toBe('created');
+    // owner will be updated, as we first batch insert everything and handle the extra update for owner
+    expect(owner.state).toBe('updated');
+    expect(owner.baseState).toBe('updated');
     expect((owner as any).type).not.toBeDefined();
   }
 
@@ -62,29 +63,29 @@ describe('single table inheritance in mysql', () => {
     expect(users[3]).toBeInstanceOf(CompanyOwner2);
     expect((users[3] as CompanyOwner2).favouriteEmployee).toBeInstanceOf(Employee2);
     expect((users[3] as CompanyOwner2).favouriteManager).toBeInstanceOf(Manager2);
-    expect(users[0]).toEqual({
-      id: 2,
+    expect(users[0]).toMatchObject({
+      id: 4,
       firstName: 'Emp',
       lastName: '1',
       employeeProp: 1,
       type: Type.Employee,
     });
-    expect(users[1]).toEqual({
+    expect(users[1]).toMatchObject({
       id: 1,
       firstName: 'Emp',
       lastName: '2',
       employeeProp: 2,
       type: Type.Employee,
     });
-    expect(users[2]).toEqual({
-      id: 3,
+    expect(users[2]).toMatchObject({
+      id: 2,
       firstName: 'Man',
       lastName: '3',
       managerProp: 'i am manager',
       type: Type.Manager,
     });
-    expect(users[3]).toEqual({
-      id: 4,
+    expect(users[3]).toMatchObject({
+      id: 3,
       firstName: 'Bruce',
       lastName: 'Almighty',
       managerProp: 'i said i am owner',
@@ -93,13 +94,18 @@ describe('single table inheritance in mysql', () => {
       favouriteManager: users[2],
       type: Type.Owner,
     });
+    expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
+    expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
+    expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
+    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
 
-    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-2', 'BaseUser2-1', 'BaseUser2-3', 'BaseUser2-4']);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 
-    const o = await orm.em.findOneOrFail(CompanyOwner2, 4);
+    const o = await orm.em.findOneOrFail(CompanyOwner2, 3);
     expect(o.state).toBeUndefined();
     expect(o.baseState).toBeUndefined();
     o.firstName = 'Changed';
+    delete o.favouriteEmployee;
     await orm.em.flush();
     expect(o.state).toBe('updated');
     expect(o.baseState).toBe('updated');
@@ -163,6 +169,38 @@ describe('single table inheritance in mysql', () => {
     expect(discovered.get('A').discriminatorValue).toBe('a');
     expect(discovered.get('B').discriminatorValue).toBe('b');
     expect(discovered.get('C').discriminatorValue).toBe('c');
+  });
+
+  test('non-abstract root entity', async () => {
+    @Entity({
+      discriminatorColumn: 'type',
+      discriminatorMap: {
+        person: 'Person',
+        employee: 'Employee',
+      },
+    })
+    class Person {
+
+      @PrimaryKey()
+      id!: string;
+
+    }
+
+    @Entity()
+    class Employee extends Person {
+
+      @Property()
+      number?: number;
+
+    }
+
+    const orm = await MikroORM.init({
+      entities: [Person, Employee],
+      type: 'sqlite',
+      dbName: ':memory:',
+    });
+    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL(false);
+    expect(sql).toMatchSnapshot();
   });
 
   afterAll(async () => orm.close(true));

@@ -1,11 +1,17 @@
-import Knex, { Config, QueryBuilder, Raw, Transaction as KnexTransaction } from 'knex';
+import Knex, { Config, QueryBuilder, Raw, Client, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
-
-import { AnyEntity, Connection, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import { AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import { AbstractSqlPlatform } from './AbstractSqlPlatform';
 
 export abstract class AbstractSqlConnection extends Connection {
 
+  protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
+
+  constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
+    super(config, options, type);
+    this.patchKnexClient();
+  }
 
   getKnex(): Knex {
     return this.client;
@@ -42,16 +48,16 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
-      if (ctx) {
-        queryOrKnex.transacting(ctx);
-      }
-
-      return await this.executeKnex(queryOrKnex, method);
+      ctx = ctx ?? ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
+      const q = queryOrKnex.toSQL();
+      queryOrKnex = q.sql;
+      params = q.bindings as any[];
     }
 
-    const sql = this.getSql(this.client.raw(queryOrKnex, params));
+    const formatted = this.platform.formatQuery(queryOrKnex, params);
+    const sql = this.getSql(queryOrKnex, formatted);
     const res = await this.executeQuery<any>(sql, () => {
-      const query = this.client.raw(queryOrKnex, params);
+      const query = this.client.raw(formatted);
 
       if (ctx) {
         query.transacting(ctx);
@@ -99,43 +105,48 @@ export abstract class AbstractSqlConnection extends Connection {
     }, this.config.get('driverOptions'));
   }
 
-  protected async executeKnex(qb: QueryBuilder | Raw, method: 'all' | 'get' | 'run'): Promise<QueryResult | any | any[]> {
-    const sql = this.getSql(qb);
-    const res = await this.executeQuery(sql, () => qb as unknown as Promise<QueryResult>);
-
-    return this.transformKnexResult(res, method);
-  }
-
-  private getSql(qb: QueryBuilder | Raw): string {
+  private getSql(query: string, formatted: string): string {
     const logger = this.config.getLogger();
 
     if (!logger.isEnabled('query')) {
-      return '';
+      return query;
     }
 
     if (logger.isEnabled('query-params')) {
-      return qb.toString();
+      return formatted;
     }
 
-    const q = qb.toSQL();
-    const query = q.toNative ? q.toNative() : q;
-
-    return this.client.client.positionBindings(query.sql);
+    return this.client.client.positionBindings(query);
   }
 
-  protected transformKnexResult(res: any, method: 'all' | 'get' | 'run'): QueryResult | any | any[] {
-    if (method === 'all') {
-      return res;
-    }
+  /**
+   * do not call `positionBindings` when there are no bindings - it was messing up with
+   * already interpolated strings containing `?`, and escaping that was not enough to
+   * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
+   */
+  private patchKnexClient(): void {
+    const query = Client.prototype.query;
 
-    if (method === 'get') {
-      return res[0];
-    }
+    /* istanbul ignore next */
+    Client.prototype.query = function (this: any, connection: any, obj: any) {
+      if (typeof obj === 'string') {
+        obj = { sql: obj };
+      }
 
-    const affectedRows = typeof res === 'number' ? res : 0;
-    const insertId = typeof res[0] === 'number' ? res[0] : 0;
+      if ((obj.bindings ?? []).length > 0) {
+        return query.call(this, connection, obj);
+      }
 
-    return { insertId, affectedRows, row: res[0], rows: res };
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { __knexUid, __knexTxId } = connection;
+      this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
+
+      return this._query(connection, obj).catch((err: Error) => {
+        err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message;
+        this.emit('query-error', err, Object.assign({ __knexUid, __knexTxId }, obj));
+        throw err;
+      });
+    };
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;

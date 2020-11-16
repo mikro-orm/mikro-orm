@@ -1,8 +1,8 @@
-import { EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
+import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
 import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
-import { Configuration, ConnectionOptions, Utils } from '../utils';
+import { Configuration, ConnectionOptions, EntityComparator, Utils } from '../utils';
 import { LockMode, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Platform } from '../platforms';
 import { Collection } from '../entity';
@@ -18,24 +18,29 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected readonly replicas: C[] = [];
   protected readonly platform!: Platform;
   protected readonly logger = this.config.getLogger();
+  protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<T[]>;
+  abstract async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
 
-  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<T | null>;
+  abstract async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
-  abstract async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
 
-  abstract async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult>;
 
-  abstract async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult> {
+    throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
+  }
 
   abstract async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
 
-  abstract async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<number>;
+  abstract async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
@@ -52,35 +57,15 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.__primaryKey, data, ctx);
+    await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata, populate: PopulateOptions<T>[] = []): T | null {
+  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
       return null;
     }
 
-    const ret = Object.assign({}, result) as any;
-
-    meta.props.forEach(prop => {
-      if (prop.fieldNames && prop.fieldNames.length > 1 && prop.fieldNames.every(joinColumn => Utils.isDefined(ret[joinColumn], true))) {
-        const temp: any[] = [];
-        prop.fieldNames.forEach(joinColumn => {
-          temp.push(ret[joinColumn]);
-          delete ret[joinColumn];
-        });
-
-        ret[prop.name] = temp;
-      } else if (prop.fieldNames && prop.fieldNames[0] in ret) {
-        Utils.renameKey(ret, prop.fieldNames[0], prop.name);
-      }
-
-      if (prop.type === 'boolean' && ![null, undefined].includes(ret[prop.name])) {
-        ret[prop.name] = !!ret[prop.name];
-      }
-    });
-
-    return ret as T;
+    return this.comparator.mapResult(meta.className, result);
   }
 
   async connect(): Promise<C> {
@@ -116,7 +101,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   setMetadata(metadata: MetadataStorage): void {
     this.metadata = metadata;
+    this.comparator = new EntityComparator(this.metadata, this.platform);
     this.connection.setMetadata(metadata);
+    this.connection.setPlatform(this.platform);
+    this.replicas.forEach(replica => {
+      replica.setMetadata(metadata);
+      replica.setPlatform(this.platform);
+    });
   }
 
   getDependencies(): string[] {
@@ -127,7 +118,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use ensureIndexes`);
   }
 
-  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T): void {
+  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
     Object.keys(data).forEach(k => {
       if (Utils.isOperator(k)) {
         Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload));
@@ -135,6 +126,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
 
     meta.props.forEach(prop => {
+      if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
+        return;
+      }
+
       if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
 
@@ -145,7 +140,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
           }
 
-          data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+          if (prop.object && where) {
+            data[`${prop.name}.${props[kk].embedded![1]}`] = data[prop.name][props[kk].embedded![1]];
+          } else {
+            data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+          }
         });
         delete data[prop.name];
       }
@@ -205,7 +204,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 
-  protected shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
+  /**
+   * @internal
+   */
+  shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
     if (prop.formula) {
       return includeFormulas;
     }

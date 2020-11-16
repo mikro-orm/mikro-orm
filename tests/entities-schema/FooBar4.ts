@@ -9,6 +9,7 @@ export interface IFooBar4 extends IBaseEntity5 {
   blob?: Buffer;
   array?: number[];
   object?: { foo: string; bar: number } | any;
+  virtual?: string;
 }
 
 export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
@@ -22,5 +23,6 @@ export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
     blob: { type: BlobType, nullable: true },
     array: { customType: new ArrayType(i => +i), nullable: true },
     object: { type: JsonType, nullable: true },
+    virtual: { type: String, persist: false },
   },
 });

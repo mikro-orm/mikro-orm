@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder, Logger } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
@@ -58,7 +58,7 @@ describe('GH issue 845', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
+      entities: [Base, Relation1, Child1Specific, Child1, Child2, Parent],
       dbName: ':memory:',
       type: 'sqlite',
     });
@@ -70,6 +70,10 @@ describe('GH issue 845', () => {
   });
 
   test(`GH issue 845`, async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
     expect(true).toBe(true);
     const c1 = new Child1();
     const c2 = new Child2();
@@ -81,6 +85,12 @@ describe('GH issue 845', () => {
     c2.qaInfo.add(new Relation1());
     await orm.em.persistAndFlush([c1, c2]);
     orm.em.clear();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `parent` (`type`) values (?), (?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `relation1` (`parent_id`) values (?), (?), (?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `child1specific` (`child1_id`) values (?), (?), (?)');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
 
     const parents = await orm.em.find(Parent, {}, ['qaInfo.parent', 'rel'], { type: QueryOrder.ASC });
     expect(parents[0]).toBeInstanceOf(Child1);

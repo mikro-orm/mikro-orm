@@ -47,6 +47,8 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
+        { to: 'docs/api', label: 'API', position: 'left' },
+        { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         {
           to: '/versions',
@@ -129,6 +131,29 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+      },
+    ],
+  ],
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        // Plugin options
+        inputFiles: ['../packages'],
+        sidebar: {
+          sidebarFile: 'typedoc-sidebar.js',
+          readmeLabel: 'README',
+          globalsLabel: 'Overview',
+        },
+        globalsTitle: 'Overview',
+
+        // TypeDoc options (see typedoc --help)
+        mode: 'file',
+        target: 'ES2017',
+        readme: 'none',
+        moduleResolution: 'node',
+        ignoreCompilerErrors: true,
+        tsconfig: '../tsconfig.json',
       },
     ],
   ],

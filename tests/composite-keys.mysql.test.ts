@@ -1,4 +1,4 @@
-import { LoadStrategy, Logger, MikroORM, wrap } from '@mikro-orm/core';
+import { LoadStrategy, Logger, MikroORM, ValidationError, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -7,7 +7,7 @@ describe('composite keys in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql());
+  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('dynamic attributes', async () => {
@@ -52,7 +52,7 @@ describe('composite keys in mysql', () => {
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
-    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()].sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys().sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
 
     const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
     expect(p3).toBe(p2);
@@ -149,6 +149,26 @@ describe('composite keys in mysql', () => {
     const cc = await orm.em.findOneOrFail(Car2, car11, { populate: { users: LoadStrategy.JOINED } });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toBeCalledTimes(1);
+  });
+
+  test('composite entity in m:1 relationship (multi update)', async () => {
+    const car1 = new Car2('Audi A8', 2011, 100_000);
+    const car2 = new Car2('Audi A8', 2012, 200_000);
+    const car3 = new Car2('Audi A8', 2013, 300_000);
+    const owner1 = new CarOwner2('John Doe 1');
+    const owner2 = new CarOwner2('John Doe 2');
+    owner1.car = car1;
+    owner2.car = car2;
+    await orm.em.persistAndFlush([owner1, owner2]);
+
+    owner1.car = car2;
+    owner2.car = car3;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const owners = await orm.em.find(CarOwner2, {}, { orderBy: { name: 'asc' } });
+    expect(owners[0].car.year).toBe(2012);
+    expect(owners[1].car.year).toBe(2013);
   });
 
   test('composite entity in m:n relationship, both entities are composite', async () => {
@@ -280,11 +300,54 @@ describe('composite keys in mysql', () => {
     Object.assign(orm.config, { logger });
     await orm.em.persistAndFlush(u1);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c1
-    expect(mock.mock.calls[2][0]).toMatch('insert into `car2` (`name`, `price`, `year`) values (?, ?, ?)'); // c2
-    expect(mock.mock.calls[3][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
-    expect(mock.mock.calls[4][0]).toMatch('insert into `user2_cars` (`car2_name`, `car2_year`, `user2_first_name`, `user2_last_name`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
-    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2
+    expect(mock.mock.calls[2][0]).toMatch('insert into `user2` (`first_name`, `last_name`) values (?, ?)'); // u1
+    expect(mock.mock.calls[3][0]).toMatch('insert into `user2_cars` (`user2_first_name`, `user2_last_name`, `car2_name`, `car2_year`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
+  });
+
+  test('batch updates with optimistic locking', async () => {
+    const bar1 = FooBar2.create('bar 1');
+    bar1.id = 17;
+    const baz1 = new FooBaz2('baz 1');
+    baz1.id = 13;
+    const param1 = new FooParam2(bar1, baz1, 'val 1');
+    const bar2 = FooBar2.create('bar 2');
+    bar2.id = 27;
+    const baz2 = new FooBaz2('baz 2');
+    baz2.id = 23;
+    const param2 = new FooParam2(bar2, baz2, 'val 1');
+    const bar3 = FooBar2.create('bar 3');
+    bar3.id = 37;
+    const baz3 = new FooBaz2('baz 3');
+    baz3.id = 33;
+    const param3 = new FooParam2(bar3, baz3, 'val 1');
+    await orm.em.persistAndFlush([param1, param2, param3]);
+
+    param1.value += ' changed!';
+    param2.value += ' changed!';
+    param3.value += ' changed!';
+    await orm.em.flush();
+
+    try {
+      await orm.em.nativeUpdate(FooParam2, param2, { version: new Date('2020-01-01T00:00:00Z') }); // simulate concurrent update
+      param1.value += ' changed!!';
+      param2.value += ' changed!!';
+      param3.value += ' changed!!';
+      await orm.em.flush();
+      expect(1).toBe('should be unreachable');
+    } catch (e) {
+      expect((e as ValidationError).getEntity()).toBe(param2);
+    }
+  });
+
+  test('loadCount for composite keys', async () => {
+    const car = new Car2('Audi A8', 2010, 200_000);
+    const user = new User2('John', 'Doe');
+    user.cars.add(car);
+    await orm.em.persistAndFlush(user);
+    await expect(car.users.loadCount()).resolves.toEqual(1);
+    await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
 
   afterAll(async () => orm.close(true));
