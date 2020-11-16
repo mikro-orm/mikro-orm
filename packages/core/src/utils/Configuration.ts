@@ -77,6 +77,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     mariadb: { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
     postgresql: { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
     sqlite: { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
+    oracle: { className: 'OracleDriver', module: () => require('@mikro-orm/oracle') },
   };
 
   private readonly options: MikroORMOptions<D>;

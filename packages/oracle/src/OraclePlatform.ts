@@ -11,4 +11,19 @@ export class OraclePlatform extends AbstractSqlPlatform {
     return 'AL32UTF8';
   }
 
+  getArrayDeclarationSQL(): string {
+    return 'clob';
+  }
+
+  getBigIntTypeDeclarationSQL(): string {
+    return 'number(19)';
+  }
+
+  getJsonDeclarationSQL(): string {
+    return 'clob';
+  }
+
+  getTimeTypeDeclarationSQL(length: number): string {
+    return 'char(8)';
+  }
 }

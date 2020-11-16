@@ -11,7 +11,7 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {
-    const err = `No platform type specified, please fill in \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite' ]`;
+    const err = `No platform type specified, please fill in \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite', 'oracle' ]`;
     expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrowError(err);
     expect(() => new MikroORM({ type: 'mongo', entities: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` or `clientUrl` option');
     expect(() => new MikroORM({ type: 'mongo', entities: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` option');

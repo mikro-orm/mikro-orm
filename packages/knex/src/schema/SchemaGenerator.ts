@@ -508,7 +508,14 @@ export class SchemaGenerator {
 
   private dump(builder: SchemaBuilder, append = '\n\n'): string {
     const sql = builder.toQuery();
-    return sql.length > 0 ? `${sql};${append}` : '';
+
+    if (sql.length > 0)
+      if (sql.slice(-1) != ';')
+        return `${sql};${append}`
+      else
+        return `${sql}${append}`
+
+    return ''
   }
 
 }

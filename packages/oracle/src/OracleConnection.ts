@@ -37,7 +37,7 @@ export class OracleConnection extends AbstractSqlConnection {
       return res[0][0];
     }
 
-    return res[0];
+    return res;
   }
 
 }
