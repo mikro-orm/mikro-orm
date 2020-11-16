@@ -51,7 +51,10 @@ export abstract class AbstractSqlPlatform extends Platform {
         break;
       }
 
-      if (sql.substr(idx, 2) === '??') {
+      if (sql.substr(idx - 1, 2) === '\\?') {
+        ret += sql.substr(pos, idx - pos - 1) + '?';
+        pos = idx + 1;
+      } else if (sql.substr(idx, 2) === '??') {
         ret += sql.substr(pos, idx - pos) + this.quoteIdentifier(params[j++]);
         pos = idx + 2;
       } else {

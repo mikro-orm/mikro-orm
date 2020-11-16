@@ -104,6 +104,7 @@ describe('EntityManagerPostgre', () => {
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
     await expect(driver.find(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
     expect(driver.getPlatform().formatQuery('CREATE USER ?? WITH PASSWORD ?', ['foo', 'bar'])).toBe(`CREATE USER "foo" WITH PASSWORD 'bar'`);
+    expect(driver.getPlatform().formatQuery('select \\?, ?, ?', ['foo', 'bar'])).toBe(`select ?, 'foo', 'bar'`);
 
     // multi inserts
     await driver.nativeInsert(Test2.name, { id: 1, name: 't1' });
