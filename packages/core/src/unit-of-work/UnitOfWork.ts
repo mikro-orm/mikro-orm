@@ -147,7 +147,7 @@ export class UnitOfWork {
   computeChangeSet<T extends AnyEntity<T>>(entity: T): void {
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
-    if (!cs) {
+    if (!cs || this.checkUniqueProps(cs)) {
       return;
     }
 
@@ -167,7 +167,7 @@ export class UnitOfWork {
 
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
-    if (cs) {
+    if (cs && !this.checkUniqueProps(changeSet)) {
       this.checkOrphanRemoval(cs);
       Object.assign(changeSet.payload, cs.payload);
       entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
@@ -313,11 +313,27 @@ export class UnitOfWork {
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
 
-    if (changeSet) {
+    if (changeSet && !this.checkUniqueProps(changeSet)) {
       this.checkOrphanRemoval(changeSet);
       this.changeSets.set(entity, changeSet);
       this.persistStack.delete(entity);
     }
+  }
+
+  private checkUniqueProps<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): boolean {
+    if (this.platform.allowsUniqueBatchUpdates()) {
+      return false;
+    }
+
+    for (const prop of changeSet.entity.__meta!.props) {
+      // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
+      if (prop.unique && prop.nullable && Utils.isDefined(changeSet.payload[prop.name], true)) {
+        this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+        delete changeSet.payload[prop.name];
+      }
+    }
+
+    return changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload);
   }
 
   private checkOrphanRemoval<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {
@@ -349,7 +365,7 @@ export class UnitOfWork {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && reference) {
-      return this.processToOneReference(reference, visited, parent, prop);
+      return this.processToOneReference(reference, visited);
     }
 
     if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
@@ -357,14 +373,8 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
-    // when changing a unique property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
-    if (!this.platform.allowsUniqueBatchUpdates() && prop.nullable && prop.unique && !prop.primary) {
-      this.extraUpdates.add([parent, prop.name, reference]);
-      delete parent[prop.name as keyof T];
-    }
-
-    if (!reference.__helper!.__originalEntityData) {
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>): void {
+    if (!reference.__helper!.__managed) {
       this.findNewEntities(reference, visited);
     }
   }
