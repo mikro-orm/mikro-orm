@@ -321,4 +321,33 @@ describe('embedded entities in mongo', () => {
     orm.em.clear();
   });
 
+  test('assign entity changes on embeddables (GH issue 1083)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    const john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
+    const data: any = {};
+    // data.address1 = { street: 'Rainbow st. 3', postalCode: '003', city: 'London', country: 'UKK' };
+    data.address1 = new Address1('Rainbow st. 3', '003', 'London', 'UKK');
+    data.address1.street = 'Rainbow st. 33';
+
+    orm.em.assign(john, data);
+    await orm.em.persistAndFlush(john);
+    orm.em.clear();
+
+    expect(mock.mock.calls.length).toBe(2);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { address1_street: 'Rainbow st. 33', address1_postalCode: '003', address1_country: 'UKK' } }, { session: undefined }\);/);
+
+    const j1 = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 33' } });
+    expect(j1).not.toBe(null);
+    expect(j1.address1).toEqual({
+      street: 'Rainbow st. 33',
+      postalCode: '003',
+      city: 'London',
+      country: 'UKK',
+    });
+    orm.em.clear();
+  });
+
 });

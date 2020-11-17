@@ -49,7 +49,7 @@ export class EntityAssigner {
       if (props[prop]?.reference === ReferenceType.EMBEDDED) {
         const Embeddable = props[prop].embeddable;
         entity[props[prop].name] = Object.create(Embeddable.prototype);
-        Utils.merge(entity[prop as keyof T], value);
+        Utils.merge(entity[prop as keyof T], Utils.isPlainObject(value) ? value : { ...value });
         return;
       }
 
