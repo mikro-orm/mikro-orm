@@ -113,7 +113,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private processWrapper(prop: EntityProperty, wrapper: string): void {
     const type = prop.type.replace(/import\(.*\)\./g, '');
-    const m = type.match(new RegExp(`^${wrapper}<(\\w+),?.*>$`));
+    const m = type.match(new RegExp(`(?:^| )${wrapper}<(\\w+),?.*>$`));
 
     if (!m) {
       return;
@@ -121,7 +121,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     prop.type = m[1];
 
-    if (wrapper === 'IdentifiedReference') {
+    if (['Reference', 'IdentifiedReference'].includes(wrapper)) {
       prop.wrappedReference = true;
     }
   }
