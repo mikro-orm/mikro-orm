@@ -23,7 +23,9 @@ jobs:
       uses: docker://mstruebing/editorconfig-checker:2.2.0@sha256:cafda9b945dd452928aba85d20b79def419237c6e961a46193dbc2d6fc08f561
 
     - name: Install libkrb5-dev (for run-rs)
-      run: sudo apt install libkrb5-dev
+      run: |
+        sudo apt update
+        sudo apt install libkrb5-dev
 
     - name: Init docker
       run: docker-compose up -d
