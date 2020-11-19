@@ -58,6 +58,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
+  getSearchJsonPropertySQL(path: string): string {
+    const [a, b] = path.split('->', 2);
+    return `${this.quoteIdentifier(a)}->>'${b}'`;
+  }
+
   quoteIdentifier(id: string, quote = '"'): string {
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
