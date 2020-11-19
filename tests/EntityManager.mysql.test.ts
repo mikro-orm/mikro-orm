@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException,
+  NonUniqueFieldNameException, InvalidFieldNameException, expr,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
@@ -739,7 +739,7 @@ describe('EntityManagerMySql', () => {
     expect(res2.created_at).toBeDefined();
     expect(res2.meta).toEqual({ category: 'foo', items: 1 });
 
-    const res3 = (await orm.em.findOne(Book2, { 'JSON_CONTAINS(meta, ?)': [{ items: 1 }, true] } as any))!;
+    const res3 = await orm.em.findOneOrFail(Book2, { [expr('JSON_CONTAINS(meta, ?)')]: [{ items: 1 }, true] });
     expect(res3).toBeInstanceOf(Book2);
     expect(res3.createdAt).toBeDefined();
     expect(res3.meta).toEqual({ category: 'foo', items: 1 });
