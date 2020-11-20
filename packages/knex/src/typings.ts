@@ -95,6 +95,8 @@ export interface IQueryBuilder<T> {
   count(field?: string | string[], distinct?: boolean): this;
   join(field: string, alias: string, cond?: QBFilterQuery, type?: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): this;
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
+  joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
+  leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   withSubQuery(subQuery: KnexQueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
