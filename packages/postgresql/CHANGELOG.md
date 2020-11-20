@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.1](https://github.com/mikro-orm/mikro-orm/compare/v4.3.0...v4.3.1) (2020-11-20)
+
+
+### Bug Fixes
+
+* **postgres:** use `->>` to search in object embeddables ([78c9373](https://github.com/mikro-orm/mikro-orm/commit/78c93738ba875eb7195460fe6503da784db038a1)), closes [#1091](https://github.com/mikro-orm/mikro-orm/issues/1091)
+
+
+
+
+
 # [4.3.0](https://github.com/mikro-orm/mikro-orm/compare/v4.2.3...v4.3.0) (2020-11-13)
 
 
