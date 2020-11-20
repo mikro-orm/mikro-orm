@@ -284,6 +284,12 @@ export class UnitOfWork {
     }
   }
 
+  scheduleExtraUpdate<T>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
+    this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
+    delete changeSet.entity[prop.name];
+    delete changeSet.payload[prop.name];
+  }
+
   scheduleOrphanRemoval(entity: AnyEntity): void {
     this.orphanRemoveStack.add(entity);
   }
@@ -328,8 +334,7 @@ export class UnitOfWork {
     for (const prop of changeSet.entity.__meta!.props) {
       // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
       if (prop.unique && prop.nullable && Utils.isDefined(changeSet.payload[prop.name], true)) {
-        this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-        delete changeSet.payload[prop.name];
+        this.scheduleExtraUpdate(changeSet, prop);
       }
     }
 
@@ -608,9 +613,7 @@ export class UnitOfWork {
       const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
-        this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-        delete changeSet.entity[prop.name];
-        delete changeSet.payload[prop.name];
+        this.scheduleExtraUpdate(changeSet, prop);
       }
     }
   }
