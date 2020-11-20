@@ -92,19 +92,22 @@ export class EntityHelper {
         });
       });
 
-    meta.prototype[inspect.custom] = function (depth: number) {
-      const object = { ...this };
-      delete object[entityHelperSymbol];
-      const ret = inspect(object, { depth });
-      let name = meta.name;
+    /* istanbul ignore else */
+    if (!meta.prototype[inspect.custom]) {
+      meta.prototype[inspect.custom] = function (depth: number) {
+        const object = { ...this };
+        delete object[entityHelperSymbol];
+        const ret = inspect(object, { depth });
+        let name = meta.name;
 
-      // distinguish not initialized entities
-      if (!this.__helper!.__initialized) {
-        name = `Ref<${name}>`;
-      }
+        // distinguish not initialized entities
+        if (!this.__helper!.__initialized) {
+          name = `Ref<${name}>`;
+        }
 
-      return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
-    };
+        return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
+      };
+    }
   }
 
   private static defineReferenceProperty<T extends AnyEntity<T>>(prop: EntityProperty<T>, ref: T, val: AnyEntity): void {
