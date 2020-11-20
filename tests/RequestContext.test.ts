@@ -45,7 +45,7 @@ describe('RequestContext', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await new Promise(resolve => {
+    await new Promise<void>(resolve => {
       RequestContext.create(orm.em, async () => {
         const em = RequestContext.getEntityManager()!;
         const jon = await em.findOne(Author, author.id, ['favouriteBook']);

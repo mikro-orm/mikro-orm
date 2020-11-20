@@ -10,7 +10,7 @@ export abstract class MetadataProvider {
 
   constructor(protected readonly config: IConfiguration) { }
 
-  abstract async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
+  abstract loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Utils.merge(meta, cache);

@@ -11,7 +11,7 @@ export abstract class Migration {
   constructor(protected readonly driver: AbstractSqlDriver,
               protected readonly config: Configuration) { }
 
-  abstract async up(): Promise<void>;
+  abstract up(): Promise<void>;
 
   async down(): Promise<void> {
     throw new Error('This migration cannot be reverted');

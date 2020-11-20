@@ -188,7 +188,7 @@ export class Migrator {
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options?: T): T {
     if (Utils.isString(options) || Array.isArray(options)) {
-      return Utils.asArray(options).map(m => {
+      return Utils.asArray(options as string | string[]).map(m => {
         const name = m.replace(/\.[jt]s$/, '');
         return name.match(/^\d{14}$/) ? this.options.fileName!(name) : m;
       }) as T;

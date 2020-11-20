@@ -248,7 +248,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (Array.isArray(data)) {
-      return data.map((item: any) => this.convertObjectIds(item)) as T;
+      return (data as T[]).map((item: any) => this.convertObjectIds(item)) as T;
     }
 
     if (Utils.isObject(data)) {

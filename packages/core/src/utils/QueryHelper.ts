@@ -188,7 +188,7 @@ export class QueryHelper {
     }
 
     if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
-      return cond.map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as FilterQuery<T>;
+      return (cond as Dictionary[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as FilterQuery<T>;
     }
 
     return prop.customType.convertToDatabaseValue(cond, platform, fromQuery);

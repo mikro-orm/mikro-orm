@@ -24,17 +24,17 @@ export abstract class Connection {
   /**
    * Establishes connection to database
    */
-  abstract async connect(): Promise<void>;
+  abstract connect(): Promise<void>;
 
   /**
    * Are we connected to the database
    */
-  abstract async isConnected(): Promise<boolean>;
+  abstract isConnected(): Promise<boolean>;
 
   /**
    * Closes the database connection (aka disconnect)
    */
-  abstract async close(force?: boolean): Promise<void>;
+  abstract close(force?: boolean): Promise<void>;
 
   /**
    * Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
@@ -57,7 +57,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract async execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
+  abstract execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};

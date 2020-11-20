@@ -316,12 +316,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     return type;
   }
 
-  private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty) {
+  private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty): EntityProperty<T> {
     return {
       reference,
       cascade: [Cascade.PERSIST],
       ...options,
-    };
+    } as EntityProperty<T>;
   }
 
 }
