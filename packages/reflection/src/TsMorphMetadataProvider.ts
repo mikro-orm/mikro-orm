@@ -113,10 +113,12 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private processWrapper(prop: EntityProperty, wrapper: string): void {
     // type can be sometimes in form of:
-    // `'({ object?: Entity | undefined; } & import("/.../node_modules/@mikro-orm/core/dist/index").Reference<Entity>)'`
-    // `{ object?: import("/.../node_modules/@-/core/src/index").Entity | undefined; } & import("/.../node_modules/@mikro-orm/core/index").Reference<Entity>`
+    // `'({ object?: Entity | undefined; } & import("...").Reference<Entity>)'`
+    // `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
+    // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
     // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
-    const m = prop.type.match(new RegExp(`(?:^|\\.|\\()${wrapper}<(\\w+),?.*>(?:$|\\)| )`));
+    const type = prop.type.replace(/import\(.*\)\./g, '');
+    const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
 
     if (!m) {
       return;
