@@ -350,6 +350,36 @@ describe('composite keys in mysql', () => {
     await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
 
+  test('qb.leftJoinAndSelect() with FK as PK', async () => {
+    const author = new Author2('n', 'e');
+    author.id = 5;
+    author.address = new Address2(author, 'v1');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const addr1 = await orm.em.createQueryBuilder(Address2, 'addr')
+      .select('addr.*')
+      .leftJoinAndSelect('addr.author', 'a')
+      .where({ 'a.id': author.id })
+      .getSingleResult();
+    expect(addr1!.value).toBe('v1');
+    expect(addr1!.author.id).toBe(5);
+    expect(addr1!.author.name).toBe('n');
+    expect(addr1!.author.email).toBe('e');
+    orm.em.clear();
+
+    const a1 = await orm.em.createQueryBuilder(Author2, 'a')
+      .select('a.*')
+      .leftJoinAndSelect('a.address', 'addr')
+      .where({ id: author.id })
+      .getSingleResult();
+    expect(a1!.id).toBe(5);
+    expect(a1!.name).toBe('n');
+    expect(a1!.email).toBe('e');
+    expect(a1!.address!.value).toBe('v1');
+    expect(a1!.address!.author).toBe(a1);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
