@@ -405,7 +405,7 @@ export class Utils {
 
   static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
     if (allowScalar && primaryKeys.length === 1) {
-      if (Utils.isEntity(entity[primaryKeys[0]])) {
+      if (Utils.isEntity(entity[primaryKeys[0]], true)) {
         return entity[primaryKeys[0]].__helper!.getPrimaryKey();
       }
 
@@ -413,7 +413,7 @@ export class Utils {
     }
 
     return primaryKeys.map(pk => {
-      if (Utils.isEntity(entity[pk])) {
+      if (Utils.isEntity(entity[pk], true)) {
         return entity[pk].__helper!.getPrimaryKey();
       }
 
