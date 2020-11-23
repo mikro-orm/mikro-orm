@@ -12,13 +12,13 @@ import { Utils } from '../utils/Utils';
  */
 export class SerializationContext<T extends AnyEntity<T>> {
 
-  readonly path: string[] = [];
+  readonly path: [string, string][] = [];
 
   constructor(private readonly populate: PopulateOptions<T>[]) { }
 
-  visit(prop: string): boolean {
-    if (!this.path.find(item => prop === item)) {
-      this.path.push(prop);
+  visit(entityName: string, prop: string): boolean {
+    if (!this.path.find(([cls, item]) => entityName === cls && prop === item)) {
+      this.path.push([entityName, prop]);
       return false;
     }
 
@@ -27,16 +27,16 @@ export class SerializationContext<T extends AnyEntity<T>> {
       return true;
     }
 
-    this.path.push(prop);
+    this.path.push([entityName, prop]);
     return false;
   }
 
-  leave<U>(path: string) {
+  leave<U>(entityName: string, prop: string) {
     const last = this.path.pop();
 
     /* istanbul ignore next */
-    if (last !== path) {
-      throw new Error(`Trying to leave wrong property: ${path} instead of ${last}`);
+    if (!last || last[0] !== entityName || last[1] !== prop) {
+      throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last}`);
     }
   }
 
@@ -60,7 +60,7 @@ export class SerializationContext<T extends AnyEntity<T>> {
       .forEach(item => this.propagate(root, item));
   }
 
-  private isMarkedAsPopulated(path: string): boolean {
+  private isMarkedAsPopulated(prop: string): boolean {
     let populate: PopulateOptions<T>[] | undefined = this.populate;
 
     for (const segment of this.path) {
@@ -68,14 +68,14 @@ export class SerializationContext<T extends AnyEntity<T>> {
         return false;
       }
 
-      const exists = populate.find(p => p.field === segment) as PopulateOptions<T>;
+      const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
 
       if (exists) {
         populate = exists.children;
       }
     }
 
-    return !!populate?.find(p => p.field === path);
+    return !!populate?.find(p => p.field === prop);
   }
 
 }
@@ -113,7 +113,7 @@ export class EntityTransformer {
       })
       .forEach(([pk, value]) => ret[this.propertyName(meta, pk, entity.__platform!)] = value as unknown as T[keyof T]);
 
-    if ((!wrapped.isInitialized() && wrapped.hasPrimaryKey())) {
+    if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
       return ret;
     }
 
@@ -121,14 +121,14 @@ export class EntityTransformer {
     Object.keys(entity)
       .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
       .map(prop => {
-        const cycle = root!.visit(prop);
+        const cycle = root!.visit(meta.className, prop);
 
         if (cycle) {
           return [prop, undefined];
         }
 
         const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity);
-        root!.leave(prop);
+        root!.leave(meta.className, prop);
 
         return [prop, val];
       })
