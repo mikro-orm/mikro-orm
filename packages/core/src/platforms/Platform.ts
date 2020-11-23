@@ -125,6 +125,10 @@ export abstract class Platform {
     return prop.columnTypes && prop.columnTypes[0] === 'bigint';
   }
 
+  isRaw(value: any): boolean {
+    return '__raw' in value;
+  }
+
   getBigIntTypeDeclarationSQL(): string {
     return 'bigint';
   }

@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, JsonType, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -33,7 +33,7 @@ export class Book2 {
   @Property({ type: 'double', nullable: true })
   double?: number;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, type: JsonType })
   meta?: Book2Meta;
 
   @ManyToOne({ entity: 'Author2', cascade: [] })

@@ -78,7 +78,7 @@ export class QueryBuilderHelper {
         return;
       }
 
-      if (prop.customType && convertCustomTypes) {
+      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
       }
 

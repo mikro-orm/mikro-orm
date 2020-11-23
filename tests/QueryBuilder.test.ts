@@ -1141,6 +1141,14 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['123']);
   });
 
+  test('update query with JSON type and raw value', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', 123)`);
+    qb.update({ meta: raw }).where({ uuid: '456' });
+    expect(qb.getQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = ?');
+    expect(qb.getParams()).toEqual(['456']);
+  });
+
   test('update query with auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ books: { author: 123 } });

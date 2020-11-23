@@ -238,7 +238,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   raw(sql: string): Raw {
-    return this.knex.raw(sql);
+    const raw = this.knex.raw(sql);
+    (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+
+    return raw;
   }
 
   limit(limit?: number, offset = 0): this {
