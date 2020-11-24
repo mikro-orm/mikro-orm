@@ -45,7 +45,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   toPOJO(): EntityData<T> {
-    return EntityTransformer.toObject(this.entity, [], true) as EntityData<T>;
+    return EntityTransformer.toObject(this.entity, [], true);
   }
 
   toJSON(...args: any[]): EntityData<T> & Dictionary {

@@ -28,6 +28,10 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P e
     return this.toObject(...args);
   }
 
+  toPOJO(): EntityData<T> {
+    return (this as unknown as T).__helper!.toPOJO();
+  }
+
   assign(data: EntityData<T>, options?: AssignOptions): T {
     return EntityAssigner.assign(this as unknown as T, data, options);
   }

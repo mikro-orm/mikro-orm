@@ -66,6 +66,17 @@ describe('GH issue 1003', () => {
     orm.em.persist(newChild);
     expect(removeStack.size).toBe(1);
     await orm.em.flush();
+    expect(newChild.toPOJO()).toEqual({
+      id: 'newChildId',
+      parent: {
+        id: 'parentId',
+        children: [
+          { id: 'childId2', parent: { id: 'parentId' } },
+          { id: 'newChildId' },
+        ],
+      },
+    })
+    ;
   });
 
 });
