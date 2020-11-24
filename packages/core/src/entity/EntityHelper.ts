@@ -79,7 +79,7 @@ export class EntityHelper {
   private static defineReferenceProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
     Object
       .values<EntityProperty>(meta.properties)
-      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy))
+      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk)
       .forEach(prop => {
         Object.defineProperty(meta.prototype, prop.name, {
           set(val: AnyEntity) {

@@ -76,7 +76,7 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`    }`);
         lines.push(`  }`);
 
-        if (prop.reference === ReferenceType.ONE_TO_ONE) {
+        if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
           const meta2 = this.metadata.get(prop.type);
           const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
