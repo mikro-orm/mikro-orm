@@ -18,6 +18,10 @@ describe('EntityManagerPostgre', () => {
     const book1 = new Book2('My Life on The Wall, part 1', author);
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
+    const publisher = new Publisher2();
+    book1.publisher = wrap(publisher).toReference();
+    book2.publisher = wrap(publisher).toReference();
+    book3.publisher = wrap(publisher).toReference();
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -1287,22 +1291,22 @@ describe('EntityManagerPostgre', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
-    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res2 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
     orm.em.clear();
 
-    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res3 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
     orm.em.clear();
 
     await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
-    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: 50, strategy: LoadStrategy.JOINED });
+    const res4 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
   });

@@ -44,6 +44,10 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityTransformer.toObject(this.entity, ignoreFields) as EntityData<T>;
   }
 
+  toPOJO(): EntityData<T> {
+    return EntityTransformer.toObject(this.entity, [], true) as EntityData<T>;
+  }
+
   toJSON(...args: any[]): EntityData<T> & Dictionary {
     // toJSON methods is added to thee prototype during discovery to support automatic serialization via JSON.stringify()
     return (this.entity as Dictionary).toJSON(...args);

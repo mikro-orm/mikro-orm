@@ -83,6 +83,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P ex
   toReference<PK2 extends PK | unknown = unknown, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
+  toPOJO(): Dictionary;
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 

@@ -126,7 +126,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const unique = Utils.unique(ret);
     await this.entityLoader.populate<T>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false });
-    await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toObject()));
+    await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
   }
@@ -285,7 +285,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
     this.getUnitOfWork().registerManaged(entity, data as EntityData<T>, options.refresh);
     await this.lockAndPopulate(entityName, entity, where, options);
-    await this.storeCache(options.cache, cached!, () => entity!.__helper!.toObject());
+    await this.storeCache(options.cache, cached!, () => entity!.__helper!.toPOJO());
 
     return entity as Loaded<T, P>;
   }

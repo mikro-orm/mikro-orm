@@ -82,7 +82,7 @@ export class SerializationContext<T extends AnyEntity<T>> {
 
 export class EntityTransformer {
 
-  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = []): EntityData<T> {
+  static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], raw = false): EntityData<T> {
     const wrapped = entity.__helper!;
     let contextCreated = false;
 
@@ -104,7 +104,7 @@ export class EntityTransformer {
         if (meta.properties[pk].serializer) {
           value = meta.properties[pk].serializer!(entity[pk]);
         } else if (Utils.isEntity(entity[pk], true)) {
-          value = EntityTransformer.processEntity(pk, entity, entity.__platform!);
+          value = EntityTransformer.processEntity(pk, entity, entity.__platform!, raw);
         } else {
           value = entity.__platform!.normalizePrimaryKey(entity[pk] as unknown as IPrimaryKey);
         }
@@ -127,7 +127,7 @@ export class EntityTransformer {
           return [prop, undefined];
         }
 
-        const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity);
+        const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity, raw);
         root!.leave(meta.className, prop);
 
         return [prop, val];
@@ -169,7 +169,7 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T): T[keyof T] | undefined {
+  private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
     const property = entity.__meta!.properties[prop];
 
     /* istanbul ignore next */
@@ -180,7 +180,7 @@ export class EntityTransformer {
     }
 
     if (Utils.isCollection(entity[prop])) {
-      return EntityTransformer.processCollection(prop, entity);
+      return EntityTransformer.processCollection(prop, entity, raw);
     }
 
     /* istanbul ignore next */
@@ -191,15 +191,19 @@ export class EntityTransformer {
     }
 
     if (Utils.isEntity(entity[prop], true)) {
-      return EntityTransformer.processEntity(prop, entity, entity.__platform!);
+      return EntityTransformer.processEntity(prop, entity, entity.__platform!, raw);
     }
 
     return entity[prop];
   }
 
-  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, platform: Platform): T[keyof T] | undefined {
+  private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, platform: Platform, raw: boolean): T[keyof T] | undefined {
     const child = entity[prop] as unknown as T | Reference<T>;
     const wrapped = (child as T).__helper!;
+
+    if (raw && wrapped.isInitialized() && child !== entity) {
+      return wrapped.toPOJO() as T[keyof T];
+    }
 
     if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
       const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
@@ -209,8 +213,12 @@ export class EntityTransformer {
     return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as T[keyof T];
   }
 
-  private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T): T[keyof T] | undefined {
+  private static processCollection<T extends AnyEntity<T>>(prop: keyof T, entity: T, raw: boolean): T[keyof T] | undefined {
     const col = entity[prop] as unknown as Collection<AnyEntity>;
+
+    if (raw && col.isInitialized(true)) {
+      return col.getItems().map(item => wrap(item).toPOJO()) as unknown as T[keyof T];
+    }
 
     if (col.isInitialized(true) && col.shouldPopulate()) {
       return col.toArray() as unknown as T[keyof T];
