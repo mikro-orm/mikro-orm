@@ -4,7 +4,6 @@ import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class SqliteConnection extends AbstractSqlConnection {
 
-  // static readonly RUN_QUERY_RE = '^insert into|update|delete';
   static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
 
   async connect(): Promise<void> {

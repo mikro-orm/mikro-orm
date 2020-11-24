@@ -86,6 +86,16 @@ export class ObjectHydrator extends Hydrator {
             lines.push(`  }`);
           }
         }
+
+        if (prop.customType) {
+          context.set(`convertToJSValue_${prop.name}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
+          context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+
+          lines.push(`  if (data.${prop.name} != null && convertCustomTypes) {`);
+          lines.push(`    const value = convertToJSValue_${prop.name}(data.${prop.name});`);
+          lines.push(`    data.${prop.name} = convertToDatabaseValue_${prop.name}(value);`); // make sure the value is comparable
+          lines.push(`  }`);
+        }
       } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
         lines.push(...this.createCollectionItemMapper(prop));
         lines.push(`  if (Array.isArray(data.${prop.name})) {`);

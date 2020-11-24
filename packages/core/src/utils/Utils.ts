@@ -14,7 +14,8 @@ import { Platform } from '../platforms';
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
 export function compareObjects(a: any, b: any) {
-  if (a === b) {
+  // eslint-disable-next-line eqeqeq
+  if (a === b || (a == null && b == null)) {
     return true;
   }
 
