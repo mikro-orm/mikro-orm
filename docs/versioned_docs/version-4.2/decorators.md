@@ -223,6 +223,7 @@ See [Defining Entities](relationships.md#manytoone) for more examples.
 | `eager` | `boolean` | yes | Always load the relationship. |
 | `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
 | `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](entity-references.md). |
+| `primary` | `boolean` | yes | Use this relation as primary key. |
 | `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 | `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
@@ -257,6 +258,7 @@ See [Defining Entities](relationships.md#onetoone) for more examples, including 
 | `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](entity-references.md). |
 | `orphanRemoval` | `boolean` | yes | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)). |
 | `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
+| `primary` | `boolean` | yes | Use this relation as primary key. |
 | `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 | `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
