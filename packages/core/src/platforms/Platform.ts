@@ -126,7 +126,7 @@ export abstract class Platform {
   }
 
   isRaw(value: any): boolean {
-    return '__raw' in value;
+    return typeof value === 'object' && '__raw' in value;
   }
 
   getBigIntTypeDeclarationSQL(): string {
