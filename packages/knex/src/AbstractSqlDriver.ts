@@ -174,7 +174,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .where(where);
     const res = await this.rethrow(qb.execute('get', false));
 
-    return +res.count;
+    return +res?.count || 0;
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<KnexTransaction>, convertCustomTypes = true): Promise<QueryResult> {
