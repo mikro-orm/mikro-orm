@@ -39,15 +39,19 @@ describe('GH issue 1128', () => {
   afterAll(() => orm.close(true));
 
   test('mapToPk option returns nothing when its set on M:1 side and its populated from 1:M side', async () => {
-    const a = orm.em.create(A, {});
-    const b1 = orm.em.create(B, { entity: a });
-    const b2 = orm.em.create(B, { entity: a });
-    a.entities.add(b1, b2);
-    await orm.em.persistAndFlush(a);
+    await orm.em.transactional(async () => {
+      const a = orm.em.create(A, {});
+      await orm.em.persistAndFlush(a);
+      const b1 = orm.em.create(B, { entity: a.id });
+      const b2 = orm.em.create(B, { entity: a.id });
+      a.entities.add(b1, b2);
+    });
     orm.em.clear();
 
     const entity = await orm.em.findOneOrFail(A, { id: 1 }, { populate: true });
     expect(entity.entities).toHaveLength(2);
+    expect(entity.entities[0].entity).toBe(entity.id);
+    expect(entity.entities[1].entity).toBe(entity.id);
   });
 
 });
