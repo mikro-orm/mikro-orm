@@ -28,13 +28,36 @@ export class DebugCommand implements CommandModule {
     try {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${c.green('found')}`);
+      const tsNode = config.get('tsNode');
+
+      if ([true, false].includes(tsNode as boolean)) {
+        const warning = tsNode ? ' (this value should be set to `false` when running compiled code!)' : '';
+        CLIHelper.dump(` - \`tsNode\` flag explicitly set to ${tsNode}, will use \`entities${tsNode ? 'Ts' : ''}\` array${warning}`);
+      }
+
       const entities = config.get('entities', []);
 
       if (entities.length > 0) {
         const refs = entities.filter(p => !Utils.isString(p));
         const paths = entities.filter(p => Utils.isString(p));
-        CLIHelper.dump(` - will use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
+        const will = !config.get('tsNode') ? 'will' : 'could';
+        CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
+        if (paths.length > 0) {
+          await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'), true);
+        }
+      }
+
+      const entitiesTs = config.get('entitiesTs', []);
+
+      if (entitiesTs.length > 0) {
+        const refs = entitiesTs.filter(p => !Utils.isString(p));
+        const paths = entitiesTs.filter(p => Utils.isString(p));
+        /* istanbul ignore next */
+        const will = config.get('tsNode') ? 'will' : 'could';
+        CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
+
+        /* istanbul ignore else */
         if (paths.length > 0) {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'), true);
         }

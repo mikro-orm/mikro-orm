@@ -37,7 +37,7 @@ describe('DebugCommand', () => {
 
     getSettings.mockResolvedValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entities: ['./entities-1', './entities-2'] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(2);
@@ -47,12 +47,16 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      [' - will use `entities` array (contains 0 references and 2 paths)'],
-      [`   - ${Utils.normalizePath(process.cwd() + '/entities-1') } (found)`],
-      [`   - ${Utils.normalizePath(process.cwd() + '/entities-2') } (not found)`],
+      [' - `tsNode` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
+      [' - could use `entities` array (contains 0 references and 2 paths)'],
+      [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-2') } (not found)`],
+      [' - will use `entitiesTs` array (contains 0 references and 2 paths)'],
+      [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-1') } (found)`],
+      [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
     ]);
 
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', entities: [FooBar, FooBaz] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', tsNode: false, entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(3);
@@ -62,6 +66,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
 
@@ -87,6 +92,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
+      [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
     globbyMock.mockRestore();
