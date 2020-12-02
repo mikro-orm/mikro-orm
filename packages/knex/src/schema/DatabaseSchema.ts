@@ -8,8 +8,8 @@ export class DatabaseSchema {
 
   private readonly tables: DatabaseTable[] = [];
 
-  addTable(name: string, schema: string | undefined): DatabaseTable {
-    const table = new DatabaseTable(name, schema);
+  addTable(name: string, schema: string | undefined | null): DatabaseTable {
+    const table = new DatabaseTable(name, schema ?? undefined);
     this.tables.push(table);
 
     return table;
@@ -20,7 +20,7 @@ export class DatabaseSchema {
   }
 
   getTable(name: string): DatabaseTable | undefined {
-    return this.tables.find(t => t.name === name);
+    return this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
 
   static async create(connection: AbstractSqlConnection, helper: SchemaHelper, config: Configuration) {
@@ -33,11 +33,11 @@ export class DatabaseSchema {
       }
 
       const table = schema.addTable(t.table_name, t.schema_name);
-      const cols = await helper.getColumns(connection, t.table_name, t.schema_name);
-      const indexes = await helper.getIndexes(connection, t.table_name, t.schema_name);
-      const pks = await helper.getPrimaryKeys(connection, indexes, t.table_name, t.schema_name);
-      const fks = await helper.getForeignKeys(connection, t.table_name, t.schema_name);
-      const enums = await helper.getEnumDefinitions(connection, t.table_name, t.schema_name);
+      const cols = await helper.getColumns(connection, table.name, table.schema);
+      const indexes = await helper.getIndexes(connection, table.name, table.schema);
+      const pks = await helper.getPrimaryKeys(connection, indexes, table.name, table.schema);
+      const fks = await helper.getForeignKeys(connection, table.name, table.schema);
+      const enums = await helper.getEnumDefinitions(connection, table.name, table.schema);
       table.init(cols, indexes, pks, fks, enums);
     }
 

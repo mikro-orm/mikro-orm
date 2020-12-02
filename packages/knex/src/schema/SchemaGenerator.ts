@@ -119,10 +119,10 @@ export class SchemaGenerator {
     }
 
     const definedTables = metadata.map(meta => meta.collection);
-    const remove = schema.getTables().filter(table => !definedTables.includes(table.name));
+    const remove = schema.getTables().filter(table => !definedTables.includes(table.name) && !definedTables.includes(`${table.schema}.${table.name}`));
 
     for (const table of remove) {
-      ret += this.dump(this.dropTable(table.name));
+      ret += this.dump(this.dropTable(table.name, table.schema));
     }
 
     return this.wrapSchema(ret, wrap);
@@ -333,8 +333,9 @@ export class SchemaGenerator {
     }
   }
 
-  private dropTable(name: string): SchemaBuilder {
-    let builder = this.knex.schema.dropTableIfExists(name);
+  private dropTable(name: string, schema?: string): SchemaBuilder {
+    /* istanbul ignore next */
+    let builder = this.knex.schema.dropTableIfExists(schema ? `${schema}.${name}` : name);
 
     if (this.platform.usesCascadeStatement()) {
       builder = this.knex.schema.raw(builder.toQuery() + ' cascade');

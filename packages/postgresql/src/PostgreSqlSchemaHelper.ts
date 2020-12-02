@@ -66,12 +66,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
-    return 'select table_name, table_schema as schema_name '
-      + `from information_schema.tables where table_schema not like 'pg_%' and table_schema = current_schema() `
+    return `select table_name, nullif(table_schema, 'public') as schema_name `
+      + `from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<any[]> {
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<any[]> {
     const sql = `select column_name, column_default, is_nullable, udt_name, coalesce(datetime_precision, character_maximum_length) length, data_type
       from information_schema.columns where table_schema = '${schemaName}' and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
@@ -97,7 +97,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }));
   }
 
-  getForeignKeysSQL(tableName: string, schemaName: string): string {
+  getForeignKeysSQL(tableName: string, schemaName = 'public'): string {
     return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name, kcu.column_name as column_name,
       rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
       from information_schema.table_constraints tco
@@ -115,7 +115,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position`;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Dictionary> {
     const sql = `select conrelid::regclass as table_from, conname, pg_get_constraintdef(c.oid) as enum_def
       from pg_constraint c join pg_namespace n on n.oid = c.connamespace
       where contype = 'c' and conrelid = '"${schemaName}"."${tableName}"'::regclass order by contype`;
@@ -167,7 +167,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return 'postgres';
   }
 
-  private getIndexesSQL(tableName: string, schemaName: string): string {
+  private getIndexesSQL(tableName: string, schemaName = 'public'): string {
     return `select relname as constraint_name, attname as column_name, idx.indisunique as unique, idx.indisprimary as primary
       from pg_index idx
       left join pg_class AS i on i.oid = idx.indexrelid
