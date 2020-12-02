@@ -321,6 +321,9 @@ describe('EntityManagerPostgre', () => {
     const count = await authorRepository.count();
     expect(count).toBe(authors.length);
 
+    const count2 = await authorRepository.count({ favouriteBook: '123' }, { groupBy: 'email' });
+    expect(count2).toBe(0);
+
     // identity map test
     authors.shift(); // shift the god away, as that entity is detached from IM
     expect(jon).toBe(authors[0]);
