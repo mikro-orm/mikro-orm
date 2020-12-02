@@ -70,7 +70,7 @@ export class ObjectHydrator extends Hydrator {
         } else if (prop.wrappedReference) {
           lines.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true }));`);
         } else {
-          lines.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true });`);
+          lines.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity });`);
         }
 
         lines.push(`    }`);
