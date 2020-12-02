@@ -7,7 +7,7 @@ describe('ArrayType', () => {
   const platform = new MongoPlatform();
 
   test('convertToDatabaseValue', () => {
-    expect(type.convertToDatabaseValue(['a'], platform)).toStrictEqual(['a']);
+    expect(type.convertToDatabaseValue(['a'], platform)).toStrictEqual(['a'] as any);
     expect(type.convertToDatabaseValue(null, platform)).toStrictEqual(null);
     expect(type.convertToDatabaseValue(undefined as any, platform)).toBe(undefined);
     expect(() => type.convertToDatabaseValue(1 as any, platform)).toThrowError(`Could not convert JS value '1' of type 'number' to type ArrayType`);
