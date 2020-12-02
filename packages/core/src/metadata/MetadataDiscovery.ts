@@ -736,18 +736,20 @@ export class MetadataDiscovery {
 
     const meta = this.metadata.get(prop.type);
     prop.columnTypes = [];
-    meta.primaryKeys.forEach(primaryKey => {
-      const pk = meta.properties[primaryKey];
+    meta.getPrimaryProps().forEach(pk => {
       this.initCustomType(pk);
       this.initColumnType(pk);
 
-      if (pk.customType) {
-        prop.columnTypes.push(pk.customType.getColumnType(pk, this.platform));
-        prop.customType = pk.customType;
+      if (!pk.customType) {
+        prop.columnTypes.push(...pk.columnTypes);
         return;
       }
 
-      prop.columnTypes.push(...pk.columnTypes);
+      prop.columnTypes.push(pk.customType.getColumnType(pk, this.platform));
+
+      if (!meta.compositePK) {
+        prop.customType = pk.customType;
+      }
     });
   }
 

@@ -356,7 +356,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
     if (coll.property.owner && coll.property.fixedOrder && !equals && Array.isArray(deleteDiff)) {
-      deleteDiff.length = insertDiff.length = 0;
+      (deleteDiff as unknown[]).length = insertDiff.length = 0;
       deleteDiff.push(...snapshot);
       insertDiff.push(...current);
     }
