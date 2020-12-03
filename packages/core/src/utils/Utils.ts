@@ -1,3 +1,4 @@
+import { ConfigurationLoader } from '@mikro-orm/core';
 import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
@@ -512,6 +513,35 @@ export class Utils {
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
       || (require.extensions && !!require.extensions['.ts']) // check if the extension is registered
       || !!new Error().stack!.split('\n').find(line => line.match(/\w\.ts:\d/)); // as a last resort, try to find a TS file in the stack trace
+  }
+
+  private static async getJestConfig(): Promise<Dictionary> {
+    if (await pathExists(process.cwd() + '/jest.config.json')) {
+      return require(process.cwd() + '/jest.config.json');
+    }
+    return {};
+  }
+
+  private static jestConfigUsesTsJest(jestConfig: Dictionary): boolean {
+    return jestConfig.preset === 'ts-jest'
+      || (Object.values(jestConfig.transform ?? {}).some(transformer => transformer === 'ts-jest'));
+  }
+
+  /**
+   * Tries to detect `ts-jest` runtime.
+   */
+  static async detectTsJest(): Promise<boolean> {
+    if (process.argv.length > 1 && process.argv[1].includes('jest-worker')) {
+      const packageConfig = await ConfigurationLoader.getPackageConfig();
+      const jestConfig = await Utils.getJestConfig();
+      if (
+        (packageConfig.jest && Utils.jestConfigUsesTsJest(packageConfig.jest))
+        || Utils.jestConfigUsesTsJest(jestConfig)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -54,8 +54,9 @@ export class ConfigurationLoader {
 
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
+    const tsJest = settings.useTsJest && await Utils.detectTsJest();
 
-    return paths.filter(p => p.endsWith('.js') || tsNode);
+    return paths.filter(p => p.endsWith('.js') || tsNode || tsJest);
   }
 
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
@@ -89,6 +90,7 @@ export class ConfigurationLoader {
 
 export interface Settings {
   useTsNode?: boolean;
+  useTsJest?: boolean;
   tsConfigPath?: string;
   configPaths?: string[];
 }
