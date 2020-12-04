@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mikro-orm/mysql-base": "^4.3.2",
-    "mariadb": "2.5.1"
+    "mariadb": "2.5.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.3.2"

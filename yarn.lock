@@ -1761,12 +1761,12 @@
   version "2.0.0"
   resolved "https://codeload.github.com/types/mysql/tar.gz/c26b1bc2bac17010081455e3127a90fb2eafcec9"
 
-"@types/node@*", "@types/node@>= 8", "@types/node@^14.11.2":
+"@types/node@*", "@types/node@>= 8":
   version "14.14.3"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.3.tgz#e1c09064121f894baaad2bd9f12ce4a41bffb274"
   integrity sha512-33/L34xS7HVUx23e0wOT2V1qPF1IrHgQccdJVm9uXGTB9vFBrrzBtkQymT8VskeKOxjz55MSqMv0xuLq+u98WQ==
 
-"@types/node@14.14.10":
+"@types/node@14.14.10", "@types/node@^14.14.7":
   version "14.14.10"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.10.tgz#5958a82e41863cfc71f2307b3748e3491ba03785"
   integrity sha512-J32dgx2hw8vXrSbu4ZlVhn1Nm3GbeCFNw2FWL8S5QKucHGY0cyNwjdQdO+KMBZ4wpmC7KhLCiNsdk1RFRIYUQQ==
@@ -6072,17 +6072,17 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-mariadb@2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.1.tgz#46fd8773b6320eef535b895dae6374781194b6f6"
-  integrity sha512-LPm/1qXKLdMX16WOalAQAf93JtApW8z3NXq38BKlSUfjkb/VyXW4VjckmNChmC2Ypouba1SY/3mCOW+6nT6vvQ==
+mariadb@2.5.2:
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.2.tgz#0046331541589a9c0405507d91d79bcc972b3f5e"
+  integrity sha512-SfaBl5/LiX2qJNNr7wCQvizVjtWxVm1CUWYKe+y4OMeyYMM6g0GhwX7/BbGtv/O3WthnGrM+Kj1imFnlescO0w==
   dependencies:
     "@types/geojson" "^7946.0.7"
-    "@types/node" "^14.11.2"
+    "@types/node" "^14.14.7"
     denque "^1.4.1"
     iconv-lite "^0.6.2"
     long "^4.0.0"
-    moment-timezone "^0.5.31"
+    moment-timezone "^0.5.32"
     please-upgrade-node "^3.2.0"
 
 memory-pager@^1.0.2:
@@ -6299,10 +6299,10 @@ modify-values@^1.0.0:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-moment-timezone@^0.5.31:
-  version "0.5.31"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.31.tgz#9c40d8c5026f0c7ab46eda3d63e49c155148de05"
-  integrity sha512-+GgHNg8xRhMXfEbv81iDtrVeTcWt0kWmTEY1XQK14dICTXnWJnT0dxdlPspwqF3keKMVPXwayEsk1DI0AA/jdA==
+moment-timezone@^0.5.32:
+  version "0.5.32"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.32.tgz#db7677cc3cc680fd30303ebd90b0da1ca0dfecc2"
+  integrity sha512-Z8QNyuQHQAmWucp8Knmgei8YNo28aLjJq6Ma+jy1ZSpSk5nyfRT8xgUbSQvD2+2UajISfenndwvFuH3NGS+nvA==
   dependencies:
     moment ">= 2.9.0"
 
