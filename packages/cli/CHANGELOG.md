@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.3](https://github.com/mikro-orm/mikro-orm/compare/v4.3.2...v4.3.3) (2020-12-04)
+
+
+### Bug Fixes
+
+* **cli:** print both `entities` and `entitiesTs` in debug command ([90b85e4](https://github.com/mikro-orm/mikro-orm/commit/90b85e4a540bf0a385ba34c4ca7ff0859039abcf)), closes [#1139](https://github.com/mikro-orm/mikro-orm/issues/1139)
+
+
+
+
+
 ## [4.3.2](https://github.com/mikro-orm/mikro-orm/compare/v4.3.1...v4.3.2) (2020-11-24)
 
 **Note:** Version bump only for package @mikro-orm/cli
