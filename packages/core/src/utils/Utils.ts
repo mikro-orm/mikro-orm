@@ -648,8 +648,12 @@ export class Utils {
     const keys = Object.keys(target);
     const values = Object.values<string | number>(target);
     const numeric = !!values.find(v => typeof v === 'number');
+    const constEnum = values.length % 2 === 0 // const enum will have even number of items
+      && values.slice(0, values.length / 2).every(v => typeof v === 'string') // first half are strings
+      && values.slice(values.length / 2).every(v => typeof v === 'number') // second half are numbers
+      && this.equals(keys, values.slice(values.length / 2).concat(values.slice(0, values.length / 2)).map(v => '' + v)); // and when swapped, it will match the keys
 
-    if (numeric) {
+    if (numeric || constEnum) {
       return values.filter(val => !keys.includes(val as string));
     }
 

@@ -1,4 +1,4 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -21,6 +21,12 @@ export class Person {
 
 }
 
+export enum State {
+  Queued,
+  Running,
+  Waiting,
+}
+
 @Entity()
 export class User {
 
@@ -35,6 +41,9 @@ export class User {
 
   @OneToOne({ entity: () => Person, inversedBy: person => person.user })
   person!: Person;
+
+  @Enum({ items: () => State })
+  state!: number;
 
 }
 
@@ -68,10 +77,16 @@ describe('GH issue 1150', () => {
         lastName: 'de Oliveira Paludetto',
         email: 'some@mail.com',
       },
+      state: State.Running,
     });
     await orm.em.persistAndFlush(user);
     expect(user.id).not.toBeUndefined();
     expect(user.person.id).not.toBeUndefined();
+  });
+
+  it('numeric enum diffing (GH issue #1096)', async () => {
+    const generator = orm.getSchemaGenerator();
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
   });
 
 });

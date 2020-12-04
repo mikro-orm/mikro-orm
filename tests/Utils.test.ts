@@ -229,10 +229,18 @@ describe('Utils', () => {
       PROP2 = 2,
     }
 
+    enum Enum3 {
+      Queued,
+      Running,
+      Failed,
+      Cancelled,
+    }
+
     expect(Utils.extractEnumValues(PublisherType)).toEqual(['local', 'global']);
     expect(Utils.extractEnumValues(PublisherType2)).toEqual(['LOCAL', 'GLOBAL']);
     expect(Utils.extractEnumValues(PublisherType3)).toEqual(['local', 'GLOBAL']);
     expect(Utils.extractEnumValues(Enum2)).toEqual([1, 2]);
+    expect(Utils.extractEnumValues(Enum3)).toEqual([0, 1, 2, 3]);
   });
 
   test('lookup path from decorator', () => {
