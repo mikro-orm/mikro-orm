@@ -117,6 +117,10 @@ export abstract class Platform {
     return false;
   }
 
+  allowsComparingTuples() {
+    return true;
+  }
+
   allowsUniqueBatchUpdates() {
     return true;
   }
