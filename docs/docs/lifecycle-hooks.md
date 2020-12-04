@@ -73,15 +73,15 @@ import { EntityName, EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/c
 @Subscriber()
 export class AuthorSubscriber implements EventSubscriber<Author> {
 
-  getSubscribedEntities(): EntityName<Author2>[] {
-    return [Author2];
+  getSubscribedEntities(): EntityName<Author>[] {
+    return [Author];
   }
 
-  async afterCreate(args: EventArgs<Author2>): Promise<void> {
+  async afterCreate(args: EventArgs<Author>): Promise<void> {
     // ...
   }
 
-  async afterUpdate(args: EventArgs<Author2>): Promise<void> {
+  async afterUpdate(args: EventArgs<Author>): Promise<void> {
     // ... 
   }
 
