@@ -522,26 +522,21 @@ export class Utils {
     return {};
   }
 
-  private static jestConfigUsesTsJest(jestConfig: Dictionary): boolean {
-    return jestConfig.preset === 'ts-jest'
-      || (Object.values(jestConfig.transform ?? {}).some(transformer => transformer === 'ts-jest'));
+  private static jestConfigUsesTsJest(jestConfig?: Dictionary): boolean {
+    const usesJestTransformer = Object.values(jestConfig?.transform ?? {}).some(transformer => transformer === 'ts-jest');
+    return jestConfig?.preset === 'ts-jest' || usesJestTransformer;
   }
 
   /**
    * Tries to detect `ts-jest` runtime.
    */
   static async detectTsJest(): Promise<boolean> {
-    if (process.argv.length > 1 && process.argv[1].includes('jest-worker')) {
-      const packageConfig = await ConfigurationLoader.getPackageConfig();
-      const jestConfig = await Utils.getJestConfig();
-      if (
-        (packageConfig.jest && Utils.jestConfigUsesTsJest(packageConfig.jest))
-        || Utils.jestConfigUsesTsJest(jestConfig)
-      ) {
-        return true;
-      }
+    if (process.argv.length <= 1 || !process.argv[1].includes('jest-worker')) {
+      return false;
     }
-    return false;
+    const packageConfig = await ConfigurationLoader.getPackageConfig();
+    const jestConfig = await Utils.getJestConfig();
+    return Utils.jestConfigUsesTsJest(packageConfig.jest) || Utils.jestConfigUsesTsJest(jestConfig);
   }
 
   /**
