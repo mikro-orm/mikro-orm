@@ -1,4 +1,4 @@
-import { ConfigurationLoader } from '@mikro-orm/core';
+import { ConfigurationLoader } from './ConfigurationLoader';
 import { createRequire, createRequireFromPath } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
