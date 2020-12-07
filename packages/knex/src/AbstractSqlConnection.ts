@@ -39,7 +39,8 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   async commit(ctx: KnexTransaction): Promise<void> {
-    return ctx.commit();
+    ctx.commit();
+    return ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
   }
 
   async rollback(ctx: KnexTransaction): Promise<void> {
