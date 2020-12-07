@@ -1,4 +1,16 @@
-import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import {
+  assign,
+  Embeddable,
+  Embedded,
+  Entity,
+  Logger,
+  MetadataError,
+  MikroORM,
+  PrimaryKey,
+  Property,
+  ReferenceType,
+  wrap,
+} from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Embeddable()
@@ -69,6 +81,20 @@ class User {
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
+
+}
+
+@Entity()
+class UserWithCity {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Embedded({ object: false, prefix: false })
+  address1!: Address1;
+
+  @Property({ type: String })
+  city!: string;
 
 }
 
@@ -243,6 +269,16 @@ describe('embedded entities in mysql', () => {
       city: 'London 3',
       country: 'UK 3',
     });
+  });
+
+  test('should throw error with object&prefix false', async () => {
+    await expect(MikroORM.init({
+      entities: [Address1, UserWithCity],
+      dbName: `mikro_orm_test_embeddables`,
+      type: 'mysql',
+      port: 3307,
+      // eslint-disable-next-line no-console
+    })).rejects.toThrow(MetadataError);
   });
 
 });
