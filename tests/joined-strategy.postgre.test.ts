@@ -370,7 +370,7 @@ describe('Joined loading strategy', () => {
           publisher: { tests: true },
         },
       },
-      orderBy: { books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
+      orderBy: { name: 'asc', books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
       strategy: LoadStrategy.JOINED,
     });
     expect(mock.mock.calls.length).toBe(1);
@@ -386,7 +386,7 @@ describe('Joined loading strategy', () => {
       'left join "publisher2" as "p4" on "b1"."publisher_id" = "p4"."id" ' +
       'left join "publisher2_tests" as "e6" on "p4"."id" = "e6"."publisher2_id" ' +
       'left join "test2" as "t5" on "e6"."test2_id" = "t5"."id" ' +
-      'order by "t5"."name" asc');
+      'order by "e0"."name" asc, "t5"."name" asc');
 
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag2);
@@ -401,8 +401,8 @@ describe('Joined loading strategy', () => {
     expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
-    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
-    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
+    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t21');
+    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t22');
 
     orm.em.clear();
     const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });

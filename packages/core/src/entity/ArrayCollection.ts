@@ -14,9 +14,9 @@ export class ArrayCollection<T, O> {
 
   constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
     if (items) {
-      this.items = new Set(items);
       let i = 0;
-      items.forEach(item => this[i++] = item);
+      this.items = new Set(items);
+      this.items.forEach(item => this[i++] = item);
     }
 
     Object.defineProperty(this, 'items', { enumerable: false });
@@ -83,6 +83,10 @@ export class ArrayCollection<T, O> {
    * @internal
    */
   hydrate(items: T[]): void {
+    for (let i = 0; i < this.items.size; i++) {
+      delete this[i];
+    }
+
     this.items.clear();
     this._count = 0;
     this.add(...items);

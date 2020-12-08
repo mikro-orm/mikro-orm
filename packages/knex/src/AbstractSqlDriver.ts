@@ -434,17 +434,22 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * @internal
    */
-  mergeJoinedResult<T extends AnyEntity<T>>(rawResults: Dictionary[], meta: EntityMetadata<T>): EntityData<T>[] {
+  mergeJoinedResult<T extends AnyEntity<T>>(rawResults: EntityData<T>[], meta: EntityMetadata<T>): EntityData<T>[] {
     // group by the root entity primary key first
-    const res = rawResults.reduce((result, item) => {
+    const map: Dictionary = {};
+    const res: EntityData<T>[] = [];
+    rawResults.forEach(item => {
       const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
-      result[pk] = result[pk] || [];
-      result[pk].push(item);
 
-      return result;
-    }, {}) as Dictionary<any[]>;
+      if (map[pk]) {
+        map[pk].push(item);
+      } else {
+        map[pk] = [item];
+        res.push(item);
+      }
+    });
 
-    return Object.values(res).map((rows: Dictionary[]) => rows[0]) as EntityData<T>[];
+    return res;
   }
 
   protected getFieldsForJoinedLoad<T extends AnyEntity<T>>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
