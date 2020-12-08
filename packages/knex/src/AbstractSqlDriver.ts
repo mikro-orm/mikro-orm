@@ -110,7 +110,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
       const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
-        return Utils.isDefined(root![`${relationAlias}_${name}`], true);
+        return Utils.isDefined(root![`${relationAlias}__${name}`], true);
       }));
 
       if (!hasPK) {
@@ -122,9 +122,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}_${name}`]);
-            prop.fieldNames.map(name => delete root![`${relationAlias}_${name}`]);
+            prop.fieldNames.map(name => delete root![`${relationAlias}__${name}`]);
           } else {
-            const alias = `${relationAlias}_${prop.fieldNames[0]}`;
+            const alias = `${relationAlias}__${prop.fieldNames[0]}`;
             relationPojo[prop.name] = root![alias];
             delete root![alias];
           }
@@ -480,13 +480,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   mapPropToFieldNames<T extends AnyEntity<T>>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
     if (prop.formula) {
       const alias = qb.ref(tableAlias ?? qb.alias).toString();
-      const aliased = qb.ref(tableAlias ? `${tableAlias}_${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
+      const aliased = qb.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
 
       return [`${prop.formula!(alias)} as ${aliased}`];
     }
 
     if (tableAlias) {
-      return prop.fieldNames.map(fieldName => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}_${fieldName}`));
+      return prop.fieldNames.map(fieldName => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
     }
 
     return prop.fieldNames;

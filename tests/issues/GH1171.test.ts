@@ -50,11 +50,12 @@ describe('GH issue 1171', () => {
     const orderedAs = await orm.em
       .createQueryBuilder(A)
       .select('*')
-      .leftJoinAndSelect('b', 'b0')
-      .orderBy({ 'b0.name': 'asc' })
+      .leftJoinAndSelect('b', 'b')
+      .orderBy({ 'b.name': 'asc' })
       .getResult();
 
     expect(orderedAs.map(e => e.id)).toEqual([a3.id, a2.id, a1.id]);
+    expect(orderedAs.map(e => e.b.name)).toEqual([b3.name, b2.name, b1.name]);
   });
 
 });

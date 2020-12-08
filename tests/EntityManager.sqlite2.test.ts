@@ -924,8 +924,8 @@ describe('EntityManagerSqlite2', () => {
       .leftJoinAndSelect('b.tags', 't')
       .where({ 't.name': ['sick', 'sexy'] });
     const sql = 'select `a`.*, ' +
-      '`b`.`id` as `b_id`, `b`.`created_at` as `b_created_at`, `b`.`updated_at` as `b_updated_at`, `b`.`title` as `b_title`, `b`.`author_id` as `b_author_id`, `b`.`publisher_id` as `b_publisher_id`, `b`.`meta` as `b_meta`, ' +
-      '`t`.`id` as `t_id`, `t`.`created_at` as `t_created_at`, `t`.`updated_at` as `t_updated_at`, `t`.`name` as `t_name`, `t`.`version` as `t_version` ' +
+      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
+      '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
       'left join `tags_ordered` as `e1` on `b`.`id` = `e1`.`book4_id` ' +

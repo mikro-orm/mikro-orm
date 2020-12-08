@@ -144,8 +144,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   protected getFieldsForJoinedLoad<U extends AnyEntity<U>>(prop: EntityProperty<U>, alias: string): Field<U>[] {
     const fields: Field<U>[] = [];
-    const meta2 = this.metadata.find<U>(prop.type)!;
-    meta2.props
+    prop.targetMeta!.props
       .filter(prop => this.driver.shouldHaveColumn(prop, this._populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
 
