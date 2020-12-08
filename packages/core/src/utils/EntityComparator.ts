@@ -309,6 +309,7 @@ export class EntityComparator {
 
   private getPropertyComparator<T>(prop: EntityProperty<T>): string {
     let type = prop.type.toLowerCase();
+    const defaultComparator = (valueReplaced: string) => `  if (!compareObjects(last.${prop.name}, current.${prop.name})) diff.${prop.name} = ${valueReplaced};`;
 
     if (prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED) {
       const meta2 = this.metadata.find(prop.type)!;
@@ -318,6 +319,13 @@ export class EntityComparator {
       } else {
         type = meta2.properties[meta2.primaryKeys[0]].type.toLowerCase();
       }
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED && prop.object) {
+       const lines: string[] = Object.keys(prop.embeddedProps).map(key => (
+         this.getPropertyComparator({ ...prop.embeddedProps[key], name: `${prop.name}.${key}` })
+        ));
+      return defaultComparator(`{}`) + '\n' + lines.join('\n');
     }
 
     if (prop.customType) {
@@ -345,7 +353,7 @@ export class EntityComparator {
       return this.getGenericComparator(prop.name, cond);
     }
 
-    return `  if (!compareObjects(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
+    return defaultComparator(`current.${prop.name}`);
   }
 
   /**
