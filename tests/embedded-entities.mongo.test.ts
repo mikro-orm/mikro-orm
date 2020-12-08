@@ -350,4 +350,23 @@ describe('embedded entities in mongo', () => {
     orm.em.clear();
   });
 
+  test('entity should partially update embedded object (GH issue 1173)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    const user = new User();
+    user.address1 = new Address1('Partial Street', 'postal', 'city', 'country');
+    user.address4.city = '4city';
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const retrievedUser = await orm.em.findOneOrFail(User, { address1: { street: 'Partial Street' } });
+    retrievedUser.address1.city = 'new city';
+    retrievedUser.address4.city = 'new city 4';
+    await orm.em.persistAndFlush(retrievedUser);
+
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { address1_city: 'new city', 'address4.city': 'new city 4' } }, { session: undefined }\);/);
+  });
+
 });
