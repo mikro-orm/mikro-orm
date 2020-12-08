@@ -7923,10 +7923,10 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
-run-rs@0.7.3:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.3.tgz#47fe24fe6c7bebda8984eab830720f506b348310"
-  integrity sha512-/JmHX4rhHNeLn+F/RqhPwYUmcnbX2Qjm8g77flhKbL6Ak9wpyq+d/a87qb1nBR72r15LT0IRf87sbLWZ/x39QA==
+run-rs@0.7.4:
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.4.tgz#4267a7c7643b9d05415955747fdeac0dbbad9f3a"
+  integrity sha512-6VP6zOPvl6uiC+Qe+yXY0G5BbLcelO6lhkMlAuM+syOSUIsiI2mQB2NBhqv1g1I0k8bPQ2KgIa4qe6nTuXYU+g==
   dependencies:
     chalk "2.4.1"
     co "4.6.0"

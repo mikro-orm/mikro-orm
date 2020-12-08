@@ -132,7 +132,7 @@
     "lerna": "3.22.1",
     "lint-staged": "10.5.3",
     "rimraf": "3.0.2",
-    "run-rs": "0.7.3",
+    "run-rs": "0.7.4",
     "ts-jest": "26.4.4",
     "ts-node": "9.1.1",
     "typescript": "4.1.2",
