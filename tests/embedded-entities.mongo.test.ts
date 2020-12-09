@@ -1,5 +1,18 @@
-import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey } from '@mikro-orm/core';
-import { ObjectId, MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
+import {
+  assign,
+  Embeddable,
+  Embedded,
+  Entity,
+  EntitySchema,
+  Logger,
+  MikroORM, Platform,
+  PrimaryKey,
+  Property,
+  ReferenceType,
+  SerializedPrimaryKey,
+  Type,
+} from '@mikro-orm/core';
+import { ObjectId, MongoDriver, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class Address1Base {
@@ -90,6 +103,60 @@ class User {
 
 }
 
+class NumericType extends Type<number, string> {
+
+  public convertToDatabaseValue(value: number, platform: Platform): string {
+    this.validatePlatformSupport(platform);
+    return value.toString();
+  }
+
+  public convertToJSValue(value: string, platform: Platform): number {
+    this.validatePlatformSupport(platform);
+    return Number(value);
+  }
+
+  public getColumnType(): string {
+    return 'double';
+  }
+
+  private validatePlatformSupport(platform: Platform): void {
+    if (!(platform instanceof MongoPlatform)) {
+      throw new Error('Numeric custom type implemented only for Mongo.');
+    }
+  }
+
+}
+
+@Embeddable()
+class CustomAddress {
+
+  @Property()
+  street!: string;
+
+  @Property({ type: NumericType })
+  postalCode!: number;
+
+  constructor(street?: string, code?: number) {
+    if (street !== undefined) { this.street = street; }
+    if (code !== undefined) { this.postalCode = code; }
+  }
+
+}
+
+@Entity()
+class CustomUser {
+
+  @PrimaryKey({ type: 'ObjectId' })
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
+
+  @Embedded()
+  address!: CustomAddress;
+
+}
+
 class Parent {
 
   _id!: number;
@@ -127,7 +194,7 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1Base, Address1, Address2Base, Address2, User, childSchema, parentSchema],
+      entities: [Address1Base, Address1, Address2Base, Address2, User, CustomAddress, CustomUser, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs0',
       type: 'mongo',
       validate: true,
@@ -184,7 +251,7 @@ describe('embedded entities in mongo', () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.em.getDriver().createCollections();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'parent']);
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'custom-user', 'parent']);
     createCollection.mockRestore();
   });
 
@@ -348,6 +415,16 @@ describe('embedded entities in mongo', () => {
       country: 'UKK',
     });
     orm.em.clear();
+  });
+
+  test('embeddables should work with custom type properties', async () => {
+    const user = new CustomUser();
+    user.address = new CustomAddress('my street', 123.02);
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const retrievedUser = await orm.em.findOneOrFail(CustomUser, { address: { street: 'my street' } });
+    expect(retrievedUser.address.postalCode).toStrictEqual(123.02);
   });
 
 });
