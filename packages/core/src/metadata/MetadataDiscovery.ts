@@ -78,6 +78,19 @@ export class MetadataDiscovery {
 
     await this.discoverDirectories(paths);
     await this.discoverReferences(refs);
+
+    for (const meta of Object.values(this.metadata.getAll())) {
+      if (!meta.class) {
+        continue;
+      }
+
+      const parent = Object.getPrototypeOf(meta.class);
+
+      if (parent.name !== '' && !this.metadata.has(parent.name)) {
+        await this.discoverReferences([parent]);
+      }
+    }
+
     this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
 
     return this.discovered;
@@ -136,7 +149,7 @@ export class MetadataDiscovery {
     const found: Constructor<AnyEntity>[] = [];
 
     for (const entity of refs) {
-      const schema = this.getSchema(entity);
+      const schema = this.getSchema(this.prepare(entity) as Constructor<AnyEntity>);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
       found.push(entity);

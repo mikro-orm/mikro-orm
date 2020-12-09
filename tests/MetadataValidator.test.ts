@@ -1,6 +1,4 @@
-import { ReferenceType, MikroORM, MetadataStorage, MetadataValidator } from '@mikro-orm/core';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
-import { BASE_DIR } from './bootstrap';
+import { ReferenceType, MetadataStorage, MetadataValidator } from '@mikro-orm/core';
 
 describe('MetadataValidator', () => {
 
@@ -110,27 +108,6 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Entity Author has multiple version properties defined: 'version', 'version2'. Only one version property is allowed per entity.`);
     delete meta.Author.properties.version2;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).not.toThrowError();
-  });
-
-  test('validates missing base entity definition', async () => {
-    // base entity with properties
-    await expect(MikroORM.init({
-      entities: [FooBar2, FooBaz2],
-      dbName: `mikro_orm_test`,
-      port: 3307,
-      cache: { enabled: true },
-      type: 'mysql',
-      baseDir: BASE_DIR,
-    })).rejects.toThrowError(`Entity 'FooBar2' extends unknown base entity 'BaseEntity22', please make sure to provide it in 'entities' array when initializing the ORM`);
-
-    // base entity without properties
-    await expect(MikroORM.init({
-      entities: [Author2, Book2, BookTag2, Publisher2, Test2],
-      dbName: `mikro_orm_test`,
-      port: 3307,
-      type: 'mysql',
-      baseDir: BASE_DIR,
-    })).rejects.toThrowError(`Entity 'Author2' extends unknown base entity 'BaseEntity2', please make sure to provide it in 'entities' array when initializing the ORM`);
   });
 
   test('MetadataStorage.get throws when no metadata found', async () => {

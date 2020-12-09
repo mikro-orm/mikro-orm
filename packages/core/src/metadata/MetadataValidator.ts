@@ -47,11 +47,6 @@ export class MetadataValidator {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
-    // validate base entities
-    discovered
-      .filter(meta => meta.extends && !discovered.find(m => m.className === meta.extends))
-      .forEach(meta => { throw MetadataError.fromUnknownBaseEntity(meta); });
-
     // validate we found at least one entity (not just abstract/base entities)
     if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
       throw MetadataError.onlyAbstractEntitiesDiscovered();

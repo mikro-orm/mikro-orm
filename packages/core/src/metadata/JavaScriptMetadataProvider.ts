@@ -53,6 +53,10 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
   }
 
   private getSchema(meta: EntityMetadata) {
+    if (!meta.path) {
+      return meta;
+    }
+
     const path = Utils.absolutePath(meta.path, this.config.get('baseDir'));
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { schema } = require(path);

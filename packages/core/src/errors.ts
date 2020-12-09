@@ -172,10 +172,6 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Entity '${className}' was not discovered, please make sure to provide it in 'entities' array when initializing the ORM (used in ${source})`);
   }
 
-  static fromUnknownBaseEntity(meta: EntityMetadata): MetadataError {
-    return new MetadataError(`Entity '${meta.className}' extends unknown base entity '${meta.extends}', please make sure to provide it in 'entities' array when initializing the ORM`);
-  }
-
   static noEntityDiscovered(): MetadataError {
     return new MetadataError('No entities were discovered');
   }

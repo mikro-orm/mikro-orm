@@ -12,8 +12,6 @@ import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
   Car2, CarOwner2, User2, BaseUser2,
 } from './entities-sql';
-import { BaseEntity2 } from './entities-sql/BaseEntity2';
-import { BaseEntity22 } from './entities-sql/BaseEntity22';
 import { FooBaz } from './entities/FooBaz';
 import FooBar from './entities/FooBar';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5 } from './entities-schema';
@@ -93,7 +91,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, BaseEntity2, BaseEntity22],
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',
