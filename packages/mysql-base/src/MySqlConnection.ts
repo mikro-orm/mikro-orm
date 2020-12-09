@@ -32,7 +32,7 @@ export class MySqlConnection extends AbstractSqlConnection {
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
-    if (method === 'run' && res[0].constructor.name === 'ResultSetHeader') {
+    if (method === 'run' && ['OkPacket', 'ResultSetHeader'].includes(res[0].constructor.name)) {
       return {
         insertId: res[0].insertId,
         affectedRows: res[0].affectedRows,

@@ -56,17 +56,17 @@ describe('EntityManagerMariaDb', () => {
     await expect(driver.getConnection().execute('insert into test2 (name) values (?)', ['test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 1,
-      warningStatus: 0,
+      rows: [],
     });
     await expect(driver.getConnection().execute('update test2 set name = ? where name = ?', ['test 2', 'test'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
-      warningStatus: 0,
+      rows: [],
     });
     await expect(driver.getConnection().execute('delete from test2 where name = ?', ['test 2'], 'run')).resolves.toEqual({
       affectedRows: 1,
       insertId: 0,
-      warningStatus: 0,
+      rows: [],
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
