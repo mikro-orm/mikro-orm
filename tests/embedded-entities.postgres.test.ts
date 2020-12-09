@@ -1,5 +1,5 @@
 import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
 class Address1 {
@@ -72,9 +72,9 @@ class User {
 
 }
 
-describe('embedded entities in mysql', () => {
+describe('embedded entities in postgresql', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
