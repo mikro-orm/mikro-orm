@@ -5,7 +5,6 @@ import { Reference } from '../entity/Reference';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import { EntityFactory } from '../entity/EntityFactory';
-import { Type } from '@mikro-orm/core';
 
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean) => void;
 
