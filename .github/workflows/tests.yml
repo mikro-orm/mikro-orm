@@ -86,7 +86,7 @@ jobs:
 
     - name: Codeclimate
       if: steps.changed_packages.outputs.changed_packages != '0'
-      uses: paambaati/codeclimate-action@v2.7.4
+      uses: paambaati/codeclimate-action@v2.7.5
       env:
         CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
       with:
