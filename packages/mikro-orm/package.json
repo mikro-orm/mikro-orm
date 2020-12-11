@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -47,11 +47,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/cli": "^4.3.3",
-    "@mikro-orm/core": "^4.3.3",
-    "@mikro-orm/entity-generator": "^4.3.3",
-    "@mikro-orm/migrations": "^4.3.3",
-    "@mikro-orm/reflection": "^4.3.3"
+    "@mikro-orm/cli": "^4.3.4",
+    "@mikro-orm/core": "^4.3.4",
+    "@mikro-orm/entity-generator": "^4.3.4",
+    "@mikro-orm/migrations": "^4.3.4",
+    "@mikro-orm/reflection": "^4.3.4"
   },
   "peerDependencies": {
     "@mikro-orm/mariadb": "^4.0.0",

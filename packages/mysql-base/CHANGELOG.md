@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.4](https://github.com/mikro-orm/mikro-orm/compare/v4.3.3...v4.3.4) (2020-12-11)
+
+
+### Bug Fixes
+
+* **mariadb:** fix transforming of raw results in `run` mode ([417a4c9](https://github.com/mikro-orm/mikro-orm/commit/417a4c9451cc6b0d4e7a0bf545e2db4996a35da3))
+
+
+
+
+
 ## [4.3.3](https://github.com/mikro-orm/mikro-orm/compare/v4.3.2...v4.3.3) (2020-12-04)
 
 **Note:** Version bump only for package @mikro-orm/mysql-base
