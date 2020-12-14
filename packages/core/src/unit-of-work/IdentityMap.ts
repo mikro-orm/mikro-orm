@@ -44,6 +44,14 @@ export class IdentityMap {
     return ret;
   }
 
+  * [Symbol.iterator](): IterableIterator<AnyEntity> {
+    for (const store of this.registry.values()) {
+      for (const item of store.values()) {
+        yield item;
+      }
+    }
+  }
+
   keys(): string[] {
     const ret: string[] = [];
 
