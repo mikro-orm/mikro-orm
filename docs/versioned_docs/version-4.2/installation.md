@@ -98,7 +98,7 @@ If you encounter this, you have basically two options:
 - Use entity references in `entities` array to have control over the order of discovery. 
   You might need to play with the actual order you provide here, or possibly with the 
   order of import statements.
-- Use strings instead of references (e.g. `@OneToMany('Book', 'author)`). The downside 
+- Use strings instead of references (e.g. `@OneToMany('Book', 'author')`). The downside 
   here is that you will lose the typechecking capabilities of the decorators. 
 
 ## Entity Discovery in TypeScript
