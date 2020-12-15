@@ -139,9 +139,3 @@ export interface ConnectionConfig {
 }
 
 export type Transaction<T = any> = T;
-
-export const parentTransactionSymbol = Symbol('parentTransaction');
-
-export function isRootTransaction<T>(trx: Transaction<T>) {
-  return !Object.getOwnPropertySymbols(trx).includes(parentTransactionSymbol);
-}

@@ -15,6 +15,7 @@ export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
 
 export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
   transaction?: Transaction;
+  uow?: UnitOfWork;
 }
 
 export interface EventSubscriber<T = any> {

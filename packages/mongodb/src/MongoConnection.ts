@@ -163,25 +163,34 @@ export class MongoConnection extends Connection {
   }
 
   async begin(ctx?: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<ClientSession> {
+    if (!ctx) {
+      /* istanbul ignore next */
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+    }
     const session = ctx || this.client.startSession();
     session.startTransaction();
     this.logQuery('db.begin();');
+    /* istanbul ignore next */
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
 
     return session;
   }
 
   async commit(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    /* istanbul ignore next */
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
     await ctx.commitTransaction();
     this.logQuery('db.commit();');
+    /* istanbul ignore next */
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
   async rollback(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    /* istanbul ignore next */
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await ctx.abortTransaction();
     this.logQuery('db.rollback();');
+    /* istanbul ignore next */
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 

@@ -1,7 +1,16 @@
 import Knex, { Config, QueryBuilder, Raw, Client, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
-import { AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, isRootTransaction, parentTransactionSymbol, QueryResult, Transaction, TransactionEventBroadcaster, Utils } from '@mikro-orm/core';
+import {
+  AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, QueryResult,
+  Transaction, TransactionEventBroadcaster, Utils,
+} from '@mikro-orm/core';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+
+const parentTransactionSymbol = Symbol('parentTransaction');
+
+function isRootTransaction<T>(trx: Transaction<T>) {
+  return !Object.getOwnPropertySymbols(trx).includes(parentTransactionSymbol);
+}
 
 export abstract class AbstractSqlConnection extends Connection {
 
