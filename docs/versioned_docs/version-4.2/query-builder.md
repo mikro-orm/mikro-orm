@@ -191,6 +191,27 @@ console.log(qb.getQuery());
 There are multiple ways to construct complex query conditions. You can either write parts of SQL
 manually, use `andWhere()`/`orWhere()`, or provide condition object:
 
+### Using custom SQL fragments
+
+It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
+
+```ts
+const users = orm.em.createQueryBuilder(User)
+  .select('*')
+  .where({ 'lower(email)': 'foo@bar.baz' })
+  .orderBy({ [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' })
+  .getResultList();
+```
+
+This will produce following query:
+
+```sql
+select `e0`.* 
+from `user` as `e0`
+where lower(email) = 'foo@bar.baz'
+order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
+```
+
 ### Custom SQL in where
 
 ```typescript

@@ -236,6 +236,28 @@ try {
 }
 ```
 
+### Using custom SQL fragments
+
+It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
+
+> The `expr()` helper is an identity function - all it does is to return its parameter.
+> We can use it to bypass the strict type checks in `FilterQuery`.
+
+```ts
+const users = await orm.em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
+  orderBy: { [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
+});
+```
+
+This will produce following query:
+
+```sql
+select `e0`.* 
+from `user` as `e0`
+where lower(email) = 'foo@bar.baz'
+order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
+```
+
 ## Type of Fetched Entities
 
 Both `em.find` and `em.findOne()` methods have generic return types.
