@@ -130,7 +130,7 @@ More information can be found in
 When you have your entities defined, you can start using ORM either via `EntityManager`
 or via `EntityRepository`s.
 
-To save entity state to database, you need to persist it. Persist takes care or deciding 
+To save entity state to database, you need to persist it. Persist determines 
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
 that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
 

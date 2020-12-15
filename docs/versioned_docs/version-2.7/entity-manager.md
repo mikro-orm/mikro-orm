@@ -24,7 +24,7 @@ them.
 
 ## Persisting and cascading
 
-To save entity state to database, you need to persist it. Persist takes care or deciding 
+To save entity state to database, you need to persist it. Persist determines 
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
 that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
 

@@ -153,7 +153,7 @@ You might be curious about the last line with `Book` as an interface. This is ca
 
 ## Persisting entities with EntityManager
 
-To save entity state to database, you need to [persist it](https://b4nan.github.io/mikro-orm/entity-manager/). Persist takes care or deciding whether to use `insert` or `update` and computes appropriate change-set. As a result, only changed fields will be updated in database.
+To save entity state to database, you need to [persist it](https://b4nan.github.io/mikro-orm/entity-manager/). Persist determines whether to use `insert` or `update` and computes appropriate change-set. As a result, only changed fields will be updated in database.
 
 [MikroORM](https://b4nan.github.io/mikro-orm/) comes with support for [cascading persist and remove operations](https://b4nan.github.io/mikro-orm/cascading/). Cascade persist is enabled by default, which means that by persisting an entity, all referenced entities will be automatically persisted too.
 
