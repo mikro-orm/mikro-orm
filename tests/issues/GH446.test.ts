@@ -5,7 +5,7 @@ import { MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
 export class UuidBinaryType extends Type<string, Buffer> {
 
   convertToDatabaseValue(value: string): Buffer {
-    return Buffer.from(parse(value));
+    return Buffer.from(parse(value) as number[]);
   }
 
   convertToJSValue(value: Buffer): string {
@@ -100,7 +100,7 @@ describe('GH issue 446', () => {
 
   test(`assign with custom types`, async () => {
     const d = new D();
-    orm.em.assign(d, { id: Buffer.from(parse(v4())) as any, a: Buffer.from(parse(v4())) }, { convertCustomTypes: true });
+    orm.em.assign(d, { id: Buffer.from(parse(v4()) as number[]) as any, a: Buffer.from(parse(v4()) as number[]) }, { convertCustomTypes: true });
     expect(typeof d.id).toBe('string');
     expect(typeof d.a.id).toBe('string');
     orm.em.assign(d, { id: v4(), a: v4() });
