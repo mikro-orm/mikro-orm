@@ -80,7 +80,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P ex
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
-  toReference<PK2 extends PK | unknown = unknown, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
+  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
   toObject(ignoreFields?: string[]): Dictionary;
   toJSON(...args: any[]): Dictionary;
   toPOJO(): EntityData<T>;
