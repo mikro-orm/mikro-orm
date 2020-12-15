@@ -51,7 +51,7 @@ describe('GH issue 1176', () => {
     em = orm.em.fork();
   });
 
-  describe('immediate constraint (failures on insert)', () => {
+  describe('immediate constraints (failures on insert)', () => {
     beforeAll(async () => {
       const orm = await getOrmInstance();
       await orm.em.getConnection().execute(
@@ -157,7 +157,7 @@ describe('GH issue 1176', () => {
 
         await expect(em.flush()).resolves.toBeUndefined();
       });
-      it('flush throws when a database constraint ffails', async () => {
+      it('flush throws when a database constraint fails', async () => {
         const user = new User(username);
         em.persist(user);
 

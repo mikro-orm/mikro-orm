@@ -8,7 +8,7 @@ import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDe
 import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
-import { EventManager } from './events';
+import { EventManager, TransactionEventBroadcaster } from './events';
 import { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
@@ -335,7 +335,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         await em.flush();
 
         return ret;
-      }, ctx);
+      }, ctx, new TransactionEventBroadcaster(em));
     });
   }
 
@@ -343,7 +343,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
   async begin(ctx?: Transaction): Promise<void> {
-    this.transactionContext = await this.getConnection('write').begin(ctx);
+    this.transactionContext = await this.getConnection('write').begin(ctx, new TransactionEventBroadcaster(this));
   }
 
   /**
@@ -351,7 +351,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async commit(): Promise<void> {
     await this.flush();
-    await this.getConnection('write').commit(this.transactionContext);
+    await this.getConnection('write').commit(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
   }
 
@@ -359,7 +359,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
-    await this.getConnection('write').rollback(this.transactionContext);
+    await this.getConnection('write').rollback(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
   }
 

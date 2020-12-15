@@ -9,6 +9,7 @@ import { EntityManager } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import { Transaction } from '../connections';
+import { TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
 
 export class UnitOfWork {
@@ -223,7 +224,7 @@ export class UnitOfWork {
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
-        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx));
+        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), undefined, new TransactionEventBroadcaster(this.em));
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
