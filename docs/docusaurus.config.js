@@ -22,7 +22,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      searchParameters: { facetFilters: `version:${versions[0]}` }, //  `version:latest` is not working?
+      searchParameters: { facetFilters: `version:${versions[0]}` }, // `version:latest` is not working?
     },
     announcementBar: {
       id: 'supportus',
