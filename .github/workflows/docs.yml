@@ -30,7 +30,7 @@ jobs:
     - name: Check for changes
       id: docs_diff
       run: |
-        echo "::set-output name=docs_diff::$(git diff ./docs | wc -l | xargs)"
+        echo "::set-output name=docs_diff::$(git diff HEAD^ ./docs | wc -l | xargs)"
 
     - name: Check for changes 2
       if: steps.docs_diff.outputs.docs_diff == '0'
