@@ -41,9 +41,11 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async transactional<T>(cb: (trx: Transaction<KnexTransaction>) => Promise<T>, ctx?: Transaction<KnexTransaction>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
     const trx = await this.begin(ctx, eventBroadcaster);
+
     try {
       const ret = await cb(trx);
       await this.commit(trx, eventBroadcaster);
+
       return ret;
     } catch (error) {
       await this.rollback(trx, eventBroadcaster);
@@ -55,22 +57,28 @@ export abstract class AbstractSqlConnection extends Connection {
     if (!ctx) {
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
+
     const trx = await (ctx || this.client).transaction();
+
     if (!ctx) {
       await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
     } else {
       trx[parentTransactionSymbol] = ctx;
     }
+
     return trx;
   }
 
   async commit(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
+
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
     }
+
     ctx.commit();
     await ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
+
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
     }
@@ -78,10 +86,13 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async rollback(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
+
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     }
+
     await ctx.rollback();
+
     if (runTrxHooks) {
       await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
     }

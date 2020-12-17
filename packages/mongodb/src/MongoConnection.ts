@@ -150,9 +150,11 @@ export class MongoConnection extends Connection {
 
   async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, ctx?: Transaction<ClientSession>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
     const session = await this.begin(ctx, eventBroadcaster);
+
     try {
       const ret = await cb(session);
       await this.commit(session, eventBroadcaster);
+
       return ret;
     } catch (error) {
       await this.rollback(session, eventBroadcaster);
@@ -167,6 +169,7 @@ export class MongoConnection extends Connection {
       /* istanbul ignore next */
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
+
     const session = ctx || this.client.startSession();
     session.startTransaction();
     this.logQuery('db.begin();');

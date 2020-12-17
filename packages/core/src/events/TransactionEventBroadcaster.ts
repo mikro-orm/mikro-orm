@@ -5,13 +5,13 @@ import { UnitOfWork } from '../unit-of-work';
 
 export class TransactionEventBroadcaster {
 
-  constructor(
-    private entityManager: EntityManager,
-    private uow?: UnitOfWork
-  ) {}
+  private readonly eventManager = this.em.getEventManager();
+
+  constructor(private readonly em: EntityManager,
+              private readonly uow?: UnitOfWork) {}
 
   async dispatchEvent(event: TransactionEventType, transaction?: Transaction) {
-    await this.entityManager.getEventManager().dispatchEvent(event, { em: this.entityManager, transaction, uow: this.uow });
+    await this.eventManager.dispatchEvent(event, { em: this.em, transaction, uow: this.uow });
   }
 
 }
