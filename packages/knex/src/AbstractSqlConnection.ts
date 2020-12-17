@@ -1,7 +1,16 @@
 import Knex, { Config, QueryBuilder, Raw, Client, Transaction as KnexTransaction } from 'knex';
 import { readFile } from 'fs-extra';
-import { AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, QueryResult, Transaction, Utils } from '@mikro-orm/core';
+import {
+  AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, QueryResult,
+  Transaction, TransactionEventBroadcaster, Utils,
+} from '@mikro-orm/core';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+
+const parentTransactionSymbol = Symbol('parentTransaction');
+
+function isRootTransaction<T>(trx: Transaction<T>) {
+  return !Object.getOwnPropertySymbols(trx).includes(parentTransactionSymbol);
+}
 
 export abstract class AbstractSqlConnection extends Connection {
 
@@ -30,21 +39,52 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<KnexTransaction>) => Promise<T>, ctx?: Transaction<KnexTransaction>): Promise<T> {
-    return (ctx || this.client).transaction(cb);
+  async transactional<T>(cb: (trx: Transaction<KnexTransaction>) => Promise<T>, ctx?: Transaction<KnexTransaction>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
+    const trx = await this.begin(ctx, eventBroadcaster);
+    try {
+      const ret = await cb(trx);
+      await this.commit(trx, eventBroadcaster);
+      return ret;
+    } catch (error) {
+      await this.rollback(trx, eventBroadcaster);
+      throw error;
+    }
   }
 
-  async begin(ctx?: KnexTransaction): Promise<KnexTransaction> {
-    return (ctx || this.client).transaction();
+  async begin(ctx?: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<KnexTransaction> {
+    if (!ctx) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+    }
+    const trx = await (ctx || this.client).transaction();
+    if (!ctx) {
+      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
+    } else {
+      trx[parentTransactionSymbol] = ctx;
+    }
+    return trx;
   }
 
-  async commit(ctx: KnexTransaction): Promise<void> {
+  async commit(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    const runTrxHooks = isRootTransaction(ctx);
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
+    }
     ctx.commit();
-    return ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
+    await ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
+    }
   }
 
-  async rollback(ctx: KnexTransaction): Promise<void> {
-    return ctx.rollback();
+  async rollback(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    const runTrxHooks = isRootTransaction(ctx);
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
+    }
+    await ctx.rollback();
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
+    }
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {

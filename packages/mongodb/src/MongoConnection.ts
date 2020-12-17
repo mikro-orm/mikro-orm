@@ -5,7 +5,7 @@ import {
 import { inspect } from 'util';
 import {
   Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData,
+  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, EventType,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -148,39 +148,50 @@ export class MongoConnection extends Connection {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
-  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, ctx?: Transaction<ClientSession>): Promise<T> {
-    const session = ctx || this.client.startSession();
-    let ret: T = null as unknown as T;
-
+  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, ctx?: Transaction<ClientSession>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
+    const session = await this.begin(ctx, eventBroadcaster);
     try {
-      this.logQuery('db.begin();');
-      await session.withTransaction(async () => ret = await cb(session));
+      const ret = await cb(session);
+      await this.commit(session, eventBroadcaster);
+      return ret;
+    } catch (error) {
+      await this.rollback(session, eventBroadcaster);
+      throw error;
+    } finally {
       session.endSession();
-      this.logQuery('db.commit();');
-    } catch (e) {
-      this.logQuery('db.rollback();');
-      throw e;
     }
-
-    return ret;
   }
 
-  async begin(ctx?: ClientSession): Promise<ClientSession> {
+  async begin(ctx?: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<ClientSession> {
+    if (!ctx) {
+      /* istanbul ignore next */
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+    }
     const session = ctx || this.client.startSession();
     session.startTransaction();
     this.logQuery('db.begin();');
+    /* istanbul ignore next */
+    await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
 
     return session;
   }
 
-  async commit(ctx: ClientSession): Promise<void> {
+  async commit(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    /* istanbul ignore next */
+    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
     await ctx.commitTransaction();
     this.logQuery('db.commit();');
+    /* istanbul ignore next */
+    await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
-  async rollback(ctx: ClientSession): Promise<void> {
+  async rollback(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    /* istanbul ignore next */
+    await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await ctx.abortTransaction();
     this.logQuery('db.rollback();');
+    /* istanbul ignore next */
+    await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
   protected logQuery(query: string, took?: number): void {

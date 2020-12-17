@@ -1,7 +1,7 @@
 import { AnyEntity, EntityMetadata } from '../typings';
-import { EventArgs, EventSubscriber, FlushEventArgs } from './EventSubscriber';
+import { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
-import { EventType } from '../enums';
+import { EventType, TransactionEventType } from '../enums';
 
 export class EventManager {
 
@@ -22,9 +22,10 @@ export class EventManager {
       });
   }
 
+  dispatchEvent<T extends AnyEntity<T>>(event: TransactionEventType, args: TransactionEventArgs): unknown;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
-  dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown> | unknown {
+  dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs | TransactionEventArgs>): Promise<unknown> | unknown {
     const listeners: [EventType, EventSubscriber<T>][] = [];
     const entity: T = (args as EventArgs<T>).entity;
 
@@ -41,10 +42,10 @@ export class EventManager {
     }
 
     if (event === EventType.onInit) {
-      return listeners.forEach(listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs)));
+      return listeners.forEach(listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs)));
     }
 
-    return Utils.runSerial(listeners, listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs)) as Promise<void>);
+    return Utils.runSerial(listeners, listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs)) as Promise<void>);
   }
 
   hasListeners<T extends AnyEntity<T>>(event: EventType, meta: EntityMetadata<T>): boolean {

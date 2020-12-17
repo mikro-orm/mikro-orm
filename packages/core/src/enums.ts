@@ -103,4 +103,12 @@ export enum EventType {
   beforeFlush = 'beforeFlush',
   onFlush = 'onFlush',
   afterFlush = 'afterFlush',
+  beforeTransactionStart = 'beforeTransactionStart',
+  afterTransactionStart = 'afterTransactionStart',
+  beforeTransactionCommit = 'beforeTransactionCommit',
+  afterTransactionCommit = 'afterTransactionCommit',
+  beforeTransactionRollback = 'beforeTransactionRollback',
+  afterTransactionRollback = 'afterTransactionRollback',
 }
+
+export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;

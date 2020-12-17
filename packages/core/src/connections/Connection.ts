@@ -5,6 +5,7 @@ import { Configuration, ConnectionOptions, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { Dictionary } from '../typings';
 import { Platform } from '../platforms/Platform';
+import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 
 export abstract class Connection {
 
@@ -41,19 +42,19 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(ctx?: Transaction): Promise<unknown> {
+  async begin(ctx?: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<unknown> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async commit(ctx: Transaction): Promise<void> {
+  async commit(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async rollback(ctx: Transaction): Promise<void> {
+  async rollback(ctx: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

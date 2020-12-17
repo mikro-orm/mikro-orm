@@ -1,6 +1,7 @@
 import { EntityName } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { ChangeSet, UnitOfWork } from '../unit-of-work';
+import { Transaction } from '../connections';
 
 export interface EventArgs<T> {
   entity: T;
@@ -10,6 +11,11 @@ export interface EventArgs<T> {
 
 export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
   uow: UnitOfWork;
+}
+
+export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
+  transaction?: Transaction;
+  uow?: UnitOfWork;
 }
 
 export interface EventSubscriber<T = any> {
@@ -24,4 +30,11 @@ export interface EventSubscriber<T = any> {
   beforeFlush?(args: FlushEventArgs): Promise<void>;
   onFlush?(args: FlushEventArgs): Promise<void>;
   afterFlush?(args: FlushEventArgs): Promise<void>;
+
+  beforeTransactionStart?(args: TransactionEventArgs): Promise<void>;
+  afterTransactionStart?(args: TransactionEventArgs): Promise<void>;
+  beforeTransactionCommit?(args: TransactionEventArgs): Promise<void>;
+  afterTransactionCommit?(args: TransactionEventArgs): Promise<void>;
+  beforeTransactionRollback?(args: TransactionEventArgs): Promise<void>;
+  afterTransactionRollback?(args: TransactionEventArgs): Promise<void>;
 }
