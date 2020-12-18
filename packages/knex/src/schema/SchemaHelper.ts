@@ -106,6 +106,10 @@ export abstract class SchemaHelper {
    * Returns the default name of index for the given columns
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
+    if (tableName.includes('.')) {
+      tableName = tableName.substr(tableName.indexOf('.') + 1);
+    }
+
     return `${tableName}_${columns.join('_')}_${type}`;
   }
 

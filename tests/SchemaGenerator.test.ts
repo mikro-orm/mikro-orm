@@ -286,6 +286,38 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('update schema - entity in different namespace [postgres] (GH #1215)', async () => {
+    const orm = await initORMPostgreSql();
+    const meta = orm.getMetadata();
+    const generator = new SchemaGenerator(orm.em);
+    await generator.execute('drop table if exists other.new_table');
+    await generator.execute('create schema if not exists other');
+
+    const newTableMeta = new EntitySchema({
+      properties: {
+        id: {
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldName: 'id',
+          columnType: 'int(11)',
+        },
+        columnName: {
+          type: 'string',
+          name: 'columnName',
+          fieldName: 'column_name',
+          columnType: 'varchar(255)',
+          unique: true,
+        },
+      },
+      name: 'NewTable',
+      tableName: 'other.new_table',
+    }).init().meta;
+    meta.set('NewTable', newTableMeta);
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-1215');
+    await generator.updateSchema();
+  });
+
   test('update schema enums [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();

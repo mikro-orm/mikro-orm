@@ -1460,6 +1460,17 @@ create index \\"author2_name_age_in_years_index\\" on \\"author2\\" (\\"name\\",
 "
 `;
 
+exports[`SchemaGenerator update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 1`] = `
+"create table \\"other\\".\\"new_table\\" (\\"id\\" serial primary key, \\"column_name\\" varchar(255) not null);
+alter table \\"other\\".\\"new_table\\" add constraint \\"new_table_column_name_unique\\" unique (\\"column_name\\");
+
+alter table \\"book2\\" drop column \\"foo\\";
+
+alter table \\"test2\\" drop column \\"path\\";
+
+"
+`;
+
 exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-1 1`] = `
 "create table \`new_table\` (\`id\` int unsigned not null auto_increment primary key, \`enum_test\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 
