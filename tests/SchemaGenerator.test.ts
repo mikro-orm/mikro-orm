@@ -316,6 +316,7 @@ describe('SchemaGenerator', () => {
     meta.set('NewTable', newTableMeta);
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-1215');
     await generator.updateSchema();
+    await generator.execute('drop table if exists other.new_table');
   });
 
   test('update schema enums [postgres]', async () => {
