@@ -62,7 +62,7 @@ export class ArrayCollection<T, O> {
     return this.getItems().map(i => {
       let e = i[field as keyof T] as unknown as U;
       while (Utils.isEntity(e, true)) {
-        e = Reference.unwrapReference(e as AnyEntity)[this.property.targetMeta!.properties[field as string].targetMeta!.serializedPrimaryKey];
+        e = Reference.unwrapReference(e as AnyEntity)[e.__meta!.serializedPrimaryKey];
       }
       return e;
     });
