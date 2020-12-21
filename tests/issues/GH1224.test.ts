@@ -77,11 +77,10 @@ describe('GH issue 1224', () => {
 
     orm.em.clear();
 
-
     const b2 = await orm.em.findOneOrFail(B, b1.id);
     const ids = b2.as.getIdentifiers();
 
-    expect(ids).toBe([a1.node.id]);
+    expect(ids).toStrictEqual([a1.node.id]);
   });
 
 });
