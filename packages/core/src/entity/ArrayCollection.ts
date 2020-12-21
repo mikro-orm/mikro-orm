@@ -58,7 +58,7 @@ export class ArrayCollection<T, O> {
 
     field = field ?? this.property.targetMeta!.serializedPrimaryKey;
 
-    return items.map(i => {
+    return this.getItems().map(i => {
       let e = i[field as keyof T] as unknown as U;
       while (e instanceof Reference) {
         e = e.unwrap()[this.property.targetMeta!.properties[field as string].targetMeta!.serializedPrimaryKey];
