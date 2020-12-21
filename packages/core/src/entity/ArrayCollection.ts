@@ -2,6 +2,7 @@ import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
+import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
 
@@ -60,8 +61,8 @@ export class ArrayCollection<T, O> {
 
     return this.getItems().map(i => {
       let e = i[field as keyof T] as unknown as U;
-      while (e instanceof Reference) {
-        e = e.unwrap()[this.property.targetMeta!.properties[field as string].targetMeta!.serializedPrimaryKey];
+      while (Utils.isEntity(e, true)) {
+        e = Reference.unwrapReference(e as AnyEntity)[this.property.targetMeta!.properties[field as string].targetMeta!.serializedPrimaryKey];
       }
       return e;
     });
