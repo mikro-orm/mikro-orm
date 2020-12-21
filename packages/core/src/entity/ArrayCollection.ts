@@ -59,13 +59,13 @@ export class ArrayCollection<T, O> {
 
     field = field ?? this.property.targetMeta!.serializedPrimaryKey;
 
-    return this.getItems().map(i => {
-      let e = i[field as keyof T] as unknown as U;
-      while (Utils.isEntity(e, true)) {
-        e = Reference.unwrapReference(e as AnyEntity)[e.__meta!.serializedPrimaryKey];
+    return items.map(i => {
+      if (Utils.isEntity(i[field as keyof T], true)) {
+        return wrap(i[field as keyof T], true).getPrimaryKey();
       }
-      return e;
-    });
+
+      return i[field as keyof T];
+    }) as unknown as U[];
   }
 
   add(...items: (T | Reference<T>)[]): void {
