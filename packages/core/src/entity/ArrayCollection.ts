@@ -2,6 +2,7 @@ import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
+import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
 
@@ -58,7 +59,13 @@ export class ArrayCollection<T, O> {
 
     field = field ?? this.property.targetMeta!.serializedPrimaryKey;
 
-    return this.getItems().map(i => i[field as keyof T]) as unknown as U[];
+    return items.map(i => {
+      if (Utils.isEntity(i[field as keyof T], true)) {
+        return wrap(i[field as keyof T], true).getPrimaryKey();
+      }
+
+      return i[field as keyof T];
+    }) as unknown as U[];
   }
 
   add(...items: (T | Reference<T>)[]): void {
