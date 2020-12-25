@@ -226,7 +226,7 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
-    const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform()), ...(options.where as Dictionary) } as FilterQuery<T>;
+    const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes), ...(options.where as Dictionary) } as FilterQuery<T>;
 
     return this.em.find<T>(prop.type, where, {
       orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },

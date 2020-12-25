@@ -446,12 +446,18 @@ export class Utils {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     return meta.primaryKeys.map(pk => {
       const prop = meta.properties[pk];
+      let value = data[pk];
 
-      if (prop.customType && platform && convertCustomTypes) {
-        return prop.customType.convertToJSValue(data[pk], platform);
+      if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta); // do not convert custom types yet
+        value = value2[0] as Primary<T>;
       }
 
-      return data[pk];
+      if (prop.customType && platform && convertCustomTypes) {
+        return prop.customType.convertToJSValue(value, platform);
+      }
+
+      return value;
     }) as Primary<T>[];
   }
 

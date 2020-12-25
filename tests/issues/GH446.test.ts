@@ -1,5 +1,5 @@
 import { v4, parse, stringify } from 'uuid';
-import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
+import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
 import { MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
@@ -96,6 +96,15 @@ describe('GH issue 446', () => {
     expect(c1.b.a).toBeInstanceOf(A);
     expect(wrap(c1.b.a).isInitialized()).toBe(true);
     expect(c1.b.a.id).toBe(a.id);
+
+    orm.em.clear();
+    const c2 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'], strategy: LoadStrategy.JOINED });
+    expect(c2).toBeInstanceOf(C);
+    expect(c2.b).toBeInstanceOf(B);
+    expect(wrap(c2.b).isInitialized()).toBe(true);
+    expect(c2.b.a).toBeInstanceOf(A);
+    expect(wrap(c2.b.a).isInitialized()).toBe(true);
+    expect(c2.b.a.id).toBe(a.id);
   });
 
   test(`assign with custom types`, async () => {
