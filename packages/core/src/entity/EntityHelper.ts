@@ -98,7 +98,7 @@ export class EntityHelper {
         const object = { ...this };
         delete object[entityHelperSymbol];
         const ret = inspect(object, { depth });
-        let name = meta.name;
+        let name = this.constructor.name;
 
         // distinguish not initialized entities
         if (!this.__helper!.__initialized) {
