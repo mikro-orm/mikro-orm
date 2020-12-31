@@ -98,8 +98,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = this.preparePopulate<T>(entityName, options.populate, options.strategy) as unknown as P;
@@ -172,6 +171,26 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
     return this.filterParams[name] as T;
+  }
+
+  protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
+    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    where = await this.applyDiscriminatorCondition(entityName, where);
+
+    return where;
+  }
+
+  protected applyDiscriminatorCondition<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>): FilterQuery<T> {
+    const meta = this.metadata.find(entityName);
+
+    if (!meta || !meta.discriminatorValue) {
+      return where;
+    }
+
+    where[meta.root.discriminatorColumn!] = meta.discriminatorValue;
+
+    return where;
   }
 
   protected async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
@@ -256,8 +275,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T, P>>(populate) ? populate : { populate, orderBy } as FindOneOptions<T, P>;
     const meta = this.metadata.get<T>(entityName);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
@@ -406,8 +424,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async nativeUpdate<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, data: EntityData<T>, options: UpdateOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     data = QueryHelper.processObjectParams(data);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'update');
+    where = await this.processWhere(entityName, where, options, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
     const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
@@ -420,8 +437,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async nativeDelete<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T>, options: DeleteOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform());
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'delete');
+    where = await this.processWhere(entityName, where, options, 'delete');
     this.validator.validateParams(where, 'delete condition');
     const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
 
@@ -547,8 +563,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async count<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
-    where = QueryHelper.processWhere(where, entityName, this.metadata, this.driver.getPlatform());
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateParams(where);
 
     const cached = await this.tryCache<T, number>(entityName, options.cache, [entityName, 'em.count', options, where]);

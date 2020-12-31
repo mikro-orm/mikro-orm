@@ -1,4 +1,4 @@
-import { Dictionary, Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Dictionary, Entity, Logger, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
@@ -51,6 +51,34 @@ describe('single table inheritance in mysql', () => {
       afterCreate: ['afterCreate1', 'afterCreate2'],
       afterUpdate: ['afterUpdate1', 'afterUpdate2'],
     });
+  });
+
+  test('loading STI entities respects the entity type (GH #1252)', async () => {
+    await createEntities();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
+    const managers = await orm.em.find(Manager2, {});
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'manager\'');
+    expect(managers.length).toBe(1);
+    expect(managers.map(u => u.constructor.name)).toEqual(['Manager2']);
+
+    const owners = await orm.em.find(CompanyOwner2, {});
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'owner\'');
+    expect(owners.length).toBe(1);
+    expect(owners.map(u => u.constructor.name)).toEqual(['CompanyOwner2']);
+
+    const employees = await orm.em.find(Employee2, {});
+    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'employee\'');
+    expect(employees.length).toBe(2);
+    expect(employees.map(u => u.constructor.name)).toEqual(['Employee2', 'Employee2']);
+
+    const users = await orm.em.find(BaseUser2, {});
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.* from `base_user2` as `e0`');
+    expect(users.length).toBe(4);
+    expect(users.map(u => u.constructor.name).sort()).toEqual(['CompanyOwner2', 'Employee2', 'Employee2', 'Manager2']);
   });
 
   test('persisting and loading STI entities', async () => {

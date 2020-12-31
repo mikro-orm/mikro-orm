@@ -117,7 +117,6 @@ export class ObjectHydrator extends Hydrator {
         }
 
         if (prop.customType) {
-          context.set(`convertToJSValue_${prop.name}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
           context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
           lines.push(`  if (data.${prop.name} != null && convertCustomTypes) {`);
