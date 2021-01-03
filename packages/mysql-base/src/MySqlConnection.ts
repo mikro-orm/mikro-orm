@@ -26,7 +26,11 @@ export class MySqlConnection extends AbstractSqlConnection {
     }
 
     ret.supportBigNumbers = true;
-    ret.dateStrings = ['DATE'] as any;
+    if (this.config.get('dateStrings') === true) {
+      ret.dateStrings = true;
+    } else {
+      ret.dateStrings = ['DATE'] as any;
+    }
 
     return ret;
   }

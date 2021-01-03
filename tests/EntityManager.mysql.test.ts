@@ -54,6 +54,29 @@ describe('EntityManagerMySql', () => {
       supportBigNumbers: true,
     });
   });
+    test('getConnectionOptions() including dateStrings', async () => {
+      const config = new Configuration({
+        type: 'mysql',
+        clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+        host: '127.0.0.10',
+        password: 'secret',
+        user: 'user',
+        logger: jest.fn(),
+        forceUtcTimezone: true,
+        dateStrings: true,
+      } as any, false);
+      const driver = new MySqlDriver(config);
+      expect(driver.getConnection().getConnectionOptions()).toEqual({
+        database: 'db_name',
+        host: '127.0.0.10',
+        password: 'secret',
+        port: 3308,
+        user: 'user',
+        timezone: 'Z',
+        dateStrings: true,
+        supportBigNumbers: true,
+      });
+  });
 
   test('raw query with array param', async () => {
     const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);

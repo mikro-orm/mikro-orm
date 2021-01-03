@@ -56,6 +56,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     debug: false,
     verbose: false,
     driverOptions: {},
+    dateStrings: ['DATE'],
     migrations: {
       tableName: 'mikro_orm_migrations',
       path: './migrations',
@@ -287,6 +288,7 @@ export interface ConnectionOptions {
   charset?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
+  dateStrings: any;
 }
 
 export type MigrationsOptions = {

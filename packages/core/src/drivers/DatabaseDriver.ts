@@ -190,7 +190,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
     const replicas = this.config.get('replicas', [])!;
     const ret: C[] = [];
-    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
+    const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'dateStrings', 'pool', 'name'] as const;
 
     replicas.forEach((conf: Partial<ConnectionOptions>) => {
       props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));

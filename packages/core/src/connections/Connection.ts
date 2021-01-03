@@ -17,7 +17,7 @@ export abstract class Connection {
               protected readonly options?: ConnectionOptions,
               protected readonly type: 'read' | 'write' = 'write') {
     if (!this.options) {
-      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
+      const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'dateStrings', 'pool'] as const;
       this.options = props.reduce((o, i) => { (o[i] as any) = this.config.get(i); return o; }, {} as ConnectionOptions);
     }
   }
