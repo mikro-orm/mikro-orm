@@ -332,7 +332,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 
-  getAliasForJoinPath(path: string): string | undefined {
+  getAliasForJoinPath(path?: string): string | undefined {
     if (!path || path === this.entityName) {
       return this.alias;
     }
