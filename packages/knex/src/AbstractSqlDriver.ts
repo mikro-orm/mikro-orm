@@ -118,7 +118,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }
 
       meta2.props
-        .filter(prop => this.shouldHaveColumn(prop, populate))
+        .filter(prop => this.shouldHaveColumn(prop, p.children || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}_${name}`]);
@@ -580,20 +580,23 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   protected buildFields<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const hasExplicitFields = !!fields;
 
     if (fields) {
       fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
     } else if (joinedProps.length > 0) {
       fields = this.getFieldsForJoinedLoad(qb, meta, populate);
-    } else if (lazyProps.length > 0) {
+    } else if (lazyProps.filter(p => !p.formula).length > 0) {
       const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate, false));
       fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
+    } else if (hasLazyFormulas) {
+      fields = ['*'];
     }
 
     if (fields && !hasExplicitFields) {
       meta.props
-        .filter(prop => prop.formula)
+        .filter(prop => prop.formula && !lazyProps.includes(prop))
         .forEach(prop => {
           const alias = qb.ref(qb.alias).toString();
           const aliased = qb.ref(prop.fieldNames[0]).toString();

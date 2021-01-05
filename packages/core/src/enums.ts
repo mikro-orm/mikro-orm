@@ -60,6 +60,7 @@ export enum QueryFlag {
   UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
   DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
+  INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];

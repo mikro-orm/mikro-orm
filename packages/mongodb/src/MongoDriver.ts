@@ -273,7 +273,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   private buildFields<T>(entityName: string, populate: PopulateOptions<T>[], fields?: string[]): string[] | undefined {
     const meta = this.metadata.find(entityName)!;
     const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
-    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name));
+    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
 
     if (fields) {
       fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));

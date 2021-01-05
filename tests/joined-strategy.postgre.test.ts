@@ -320,6 +320,7 @@ describe('Joined loading strategy', () => {
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(b1.bar!.random).toBe(123);
+    expect(b1.bar!.lazyRandom).toBeUndefined();
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
@@ -333,7 +334,22 @@ describe('Joined loading strategy', () => {
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(b2.bar!.random).toBe(123);
+    expect(b2.bar!.lazyRandom).toBeUndefined();
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
+    orm.em.clear();
+
+    const b3 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: { bar: { lazyRandom: true } } }))!;
+    expect(mock.mock.calls).toHaveLength(4);
+    expect(mock.mock.calls[3][0]).toMatch('select "e0"."id", "e0"."name", "e0"."version", ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object" as "b1__object", (select 123) as "b1__random", (select 456) as "b1__lazy_random", "b1"."id" as "bar_id" ' +
+      'from "foo_baz2" as "e0" ' +
+      'left join "foo_bar2" as "b1" on "e0"."id" = "b1"."baz_id" ' +
+      'where "b1"."id" = $1');
+    expect(b3.bar).toBeInstanceOf(FooBar2);
+    expect(b3.bar!.id).toBe(bar.id);
+    expect(b3.bar!.random).toBe(123);
+    expect(b3.bar!.lazyRandom).toBe(456);
+    expect(wrap(b3).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
   });
 
   test('nested populating', async () => {

@@ -1,5 +1,5 @@
 import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
-import { EntityData, EntityMetadata, EntityProperty, FilterQuery, AnyEntity, Dictionary, Primary, PopulateOptions } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, EntityComparator, Utils } from '../utils';
@@ -209,7 +209,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
    */
   shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
     if (prop.formula) {
-      return includeFormulas;
+      return includeFormulas && (!prop.lazy || populate.some(p => p.field === prop.name));
     }
 
     if (prop.persist === false) {

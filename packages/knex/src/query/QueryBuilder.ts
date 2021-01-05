@@ -620,12 +620,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.alias}.*`))) {
       meta.props
-        .filter(prop => prop.formula)
-        .forEach(prop => {
+        .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
+        .map(prop => {
           const alias = this.knex.ref(this.alias).toString();
           const aliased = this.knex.ref(prop.fieldNames[0]).toString();
-          this.addSelect(`${prop.formula!(alias)} as ${aliased}`);
-        });
+          return `${prop.formula!(alias)} as ${aliased}`;
+        })
+        .filter(field => !this._fields!.includes(field))
+        .forEach(field => this.addSelect(field));
     }
 
     QueryHelper.processObjectParams(this._data);

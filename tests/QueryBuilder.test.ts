@@ -898,6 +898,15 @@ describe('QueryBuilder', () => {
       'left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` ' +
       'where `e1`.`name` = ?');
     expect(qb11.getParams()).toEqual(['Foo Bar']);
+
+    // include lazy formulas
+    const qb12 = orm.em.createQueryBuilder(FooBar2);
+    qb12.select('*').where({ fooBar: { baz: { name: 'Foo Baz' } } }).setFlag(QueryFlag.INCLUDE_LAZY_FORMULAS);
+    expect(qb12.getQuery()).toEqual('select `e0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `e0` ' +
+      'left join `foo_bar2` as `e1` on `e0`.`foo_bar_id` = `e1`.`id` ' +
+      'left join `foo_baz2` as `e2` on `e1`.`baz_id` = `e2`.`id` ' +
+      'where `e2`.`name` = ?');
+    expect(qb12.getParams()).toEqual(['Foo Baz']);
   });
 
   test('select with deep where condition with self-reference', async () => {

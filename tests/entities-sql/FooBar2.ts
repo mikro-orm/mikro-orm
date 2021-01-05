@@ -33,6 +33,9 @@ export class FooBar2 extends BaseEntity22 {
   @Formula(`(select 123)`)
   random?: number;
 
+  @Formula(`(select 456)`, { lazy: true })
+  lazyRandom?: number;
+
   @ManyToMany(() => Test2, t => t.bars)
   tests = new Collection<Test2>(this);
 

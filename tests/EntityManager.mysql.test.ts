@@ -2318,6 +2318,27 @@ describe('EntityManagerMySql', () => {
       'where `e0`.`author_id` is not null and `e1`.`name` = ? limit ?');
   });
 
+  test('lazy formulas (gh #1229)', async () => {
+    const b = FooBar2.create('b');
+    await orm.em.persistAndFlush(b);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const b1 = await orm.em.findOneOrFail(FooBar2, b.id);
+    expect(b1.random).toBe(123);
+    expect(b1.lazyRandom).toBeUndefined();
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` = ? limit ?');
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail(FooBar2, b.id, { populate: ['lazyRandom'] });
+    expect(b2.random).toBe(123);
+    expect(b2.lazyRandom).toBe(456);
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `e0` where `e0`.`id` = ? limit ?');
+  });
+
   test('refreshing already loaded entity', async () => {
     const god = new Author2(`God `, `hello@heaven.god`);
     new Book2(`Bible 1`, god);
