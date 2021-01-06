@@ -350,6 +350,12 @@ describe('Utils', () => {
     expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);
   });
 
+  test('asArray', () => {
+    expect(Utils.asArray('a')).toEqual(['a']);
+    expect(Utils.asArray(['a'])).toEqual(['a']);
+    expect(Utils.asArray(new Set(['a']))).toEqual(['a']);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

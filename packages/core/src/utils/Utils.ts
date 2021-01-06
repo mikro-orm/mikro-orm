@@ -274,6 +274,10 @@ export class Utils {
       return [];
     }
 
+    if (data instanceof Set) {
+      return Array.from(data);
+    }
+
     return Array.isArray(data!) ? data : [data!];
   }
 
