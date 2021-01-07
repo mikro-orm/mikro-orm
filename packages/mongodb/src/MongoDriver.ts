@@ -210,11 +210,6 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
       if (meta?.properties[k]) {
         const prop = meta.properties[k];
-
-        if (prop.fieldNames) {
-          Utils.renameKey(data, k, prop.fieldNames[0]);
-        }
-
         let isObjectId = false;
 
         if (prop.reference === ReferenceType.SCALAR) {
@@ -227,6 +222,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
         if (isObjectId) {
           data[k] = this.convertObjectIds(data[k]);
+        }
+
+        if (prop.fieldNames) {
+          Utils.renameKey(data, k, prop.fieldNames[0]);
         }
       }
 
