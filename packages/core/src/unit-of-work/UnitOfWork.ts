@@ -168,6 +168,7 @@ export class UnitOfWork {
 
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
+    /* istanbul ignore else */
     if (cs && !this.checkUniqueProps(changeSet)) {
       this.checkOrphanRemoval(cs);
       Object.assign(changeSet.payload, cs.payload);
@@ -190,7 +191,7 @@ export class UnitOfWork {
   }
 
   remove(entity: AnyEntity, visited = new WeakSet<AnyEntity>()): void {
-    if (this.removeStack.has(entity)) {
+    if (!entity || this.removeStack.has(entity)) {
       return;
     }
 
@@ -199,7 +200,6 @@ export class UnitOfWork {
     }
 
     this.persistStack.delete(entity);
-    this.unsetIdentity(entity);
     this.cascade(entity, Cascade.REMOVE, visited);
   }
 
@@ -257,6 +257,11 @@ export class UnitOfWork {
   unsetIdentity(entity: AnyEntity): void {
     this.identityMap.delete(entity);
     const wrapped = entity.__helper!;
+
+    wrapped.__meta.relations
+      .filter(prop => prop.mappedBy && entity[prop.name] && entity[prop.name][prop.mappedBy])
+      .forEach(prop => delete entity[prop.name][prop.mappedBy]);
+
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
   }
@@ -292,7 +297,9 @@ export class UnitOfWork {
   }
 
   scheduleOrphanRemoval(entity: AnyEntity): void {
-    this.orphanRemoveStack.add(entity);
+    if (entity) {
+      this.orphanRemoveStack.add(entity);
+    }
   }
 
   cancelOrphanRemoval(entity: AnyEntity): void {

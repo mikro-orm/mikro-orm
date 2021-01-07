@@ -340,6 +340,8 @@ describe('EntityManagerMongo', () => {
     author.name = 'new name';
     repo.persist(author);
     orm.em.remove(author);
+    expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeDefined();
+    await repo.flush();
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({ registry: new Map([[Author, new Map<string, Author>()]]) });
   });
