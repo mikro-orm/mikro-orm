@@ -495,7 +495,7 @@ export class SchemaGenerator {
       col.onUpdate(prop.onUpdateIntegrity || 'cascade');
     }
 
-    col.withKeyName(this.helper.getIndexName(meta.tableName, prop.fieldNames, 'foreign'));
+    col.withKeyName(this.helper.getIndexName(meta.collection, prop.fieldNames, 'foreign'));
   }
 
   private findRenamedColumns(create: EntityProperty[], remove: Column[]): { from: Column; to: EntityProperty }[] {
