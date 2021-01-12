@@ -1,5 +1,5 @@
 import { AbstractSqlConnection, SchemaHelper, Column, Index, IsSame, Knex } from '@mikro-orm/knex';
-import { Dictionary, EntityProperty } from '@mikro-orm/core';
+import { Dictionary, EntityProperty, Utils }                                from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -75,7 +75,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
     let indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 52)}_${Math.random().toString(36).substr(2, 5)}`;
+      indexName = `${indexName.substr(0, 52)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }
 
     return indexName;
