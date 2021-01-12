@@ -1,5 +1,5 @@
 import { AbstractSqlConnection, SchemaHelper, Column, Index, IsSame, Knex } from '@mikro-orm/knex';
-import { Dictionary, EntityProperty, Utils }                                from '@mikro-orm/core';
+import { Dictionary, EntityProperty, Utils } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
