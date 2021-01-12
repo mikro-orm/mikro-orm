@@ -68,6 +68,23 @@ export class MySqlSchemaHelper extends SchemaHelper {
       + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
   }
 
+  /**
+   * Returns the default name of index for the given columns
+   * cannot go past 64 character length for identifiers in MySQL
+   */
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
+    if (tableName.includes('.')) {
+      tableName = tableName.substr(tableName.indexOf('.') + 1);
+    }
+
+    let indexName = `${tableName}_${columns.join('_')}_${type}`;
+    if (indexName.length > 64) {
+      indexName = `${indexName.substr(0, 52)}_${Math.random().toString(36).substr(2, 5)}`;
+    }
+
+    return indexName;
+  }
+
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const sql =  `select column_name as column_name, column_type as column_type from information_schema.columns
       where data_type = 'enum' and table_name = '${tableName}'`;
