@@ -52,19 +52,20 @@ export class ObjectHydrator extends Hydrator {
     const scalarHydrator = <T>(prop: EntityProperty<T>, parentProp?: EntityProperty<T>): string[] => {
       const entityKey = parentProp !== undefined ? `${parentProp.name}.${prop.embedded![1]}` : prop.name;
       const dataKey = parentProp?.object ? `${parentProp.name}.${prop.embedded![1]}` : prop.name;
+      const preCond = dataKey.includes('.') ? `data.${dataKey.replace(/\..*/, '')} && ` : '';
       const convertorKey = dataKey.replace('.', '_');
 
       if (prop.type.toLowerCase() === 'date') {
         return [
-          `  if (data.${dataKey}) entity.${entityKey} = new Date(data.${dataKey});`,
-          `  else if (data.${dataKey} === null) entity.${entityKey} = null;`,
+          `  if (${preCond}data.${dataKey}) entity.${entityKey} = new Date(data.${dataKey});`,
+          `  else if (${preCond}data.${dataKey} === null) entity.${entityKey} = null;`,
         ];
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
         return [
-          `  if (typeof data.${dataKey} !== 'undefined') {`,
+          `  if (${preCond}typeof data.${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data.${dataKey});`,
           `      data.${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
@@ -75,7 +76,7 @@ export class ObjectHydrator extends Hydrator {
           `  }`,
         ];
       }
-        return [`  if (typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey};`];
+        return [`  if (${preCond}typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey};`];
     };
 
     for (const prop of props) {
@@ -142,11 +143,22 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`  }`);
       } else if (prop.reference === ReferenceType.EMBEDDED) {
         context.set(`prototype_${prop.name}`, prop.embeddable.prototype);
+        const conds: string[] = [];
 
-        lines.push(`  entity.${prop.name} = Object.create(prototype_${prop.name});`);
+        if (prop.object) {
+          conds.push(`data.${prop.name} != null`);
+        } else {
+          meta.props
+            .filter(p => p.embedded?.[0] === prop.name)
+            .forEach(p => conds.push(`data.${p.name} != null`));
+        }
+
+        lines.push(`  if (${conds.join(' || ')}) {`);
+        lines.push(`    entity.${prop.name} = Object.create(prototype_${prop.name});`);
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(childProp => lines.push(...scalarHydrator(childProp, prop)));
+          .forEach(childProp => lines.push(...scalarHydrator(childProp, prop).map(l => '  ' + l)));
+        lines.push(`  }`);
       } else { // ReferenceType.SCALAR
         lines.push(...scalarHydrator(prop));
       }

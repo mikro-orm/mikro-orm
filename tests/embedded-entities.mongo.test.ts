@@ -101,6 +101,9 @@ class User {
   @Embedded({ entity: () => Address1, object: true })
   address4 = new Address1();
 
+  @Embedded({ entity: () => Address1, object: true, nullable: true })
+  address5?: Address1;
+
 }
 
 class NumericType extends Type<number, string> {

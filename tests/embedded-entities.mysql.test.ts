@@ -79,6 +79,9 @@ class User {
   @Embedded({ object: true })
   address4: Address1 = new Address1();
 
+  @Embedded({ object: true, nullable: true })
+  address5?: Address1;
+
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
 
