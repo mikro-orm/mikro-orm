@@ -45,6 +45,7 @@ export class EntityFactory {
       return exists as New<T, P>;
     }
 
+    data = { ...data };
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);

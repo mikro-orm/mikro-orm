@@ -234,6 +234,20 @@ describe('EntityFactory', () => {
     expect(mock.mock.calls[5][0]).toMatch('db.commit()');
   });
 
+  test('em.create() should not mutate the input object (GH issue 1294)', async () => {
+    const data = {
+      name: 'this is my name',
+      age: 21,
+    };
+
+    const entity = orm.em.create(Author, data);
+    expect(data.name).toEqual('this is my name');
+    expect(data.age).toEqual(21);
+    expect(entity.name).toEqual('this is my name');
+    expect(entity.age).toEqual(21);
+  });
+
+
   afterAll(async () => orm.close(true));
 
 });
