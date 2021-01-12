@@ -57,6 +57,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       qb.limit(options.limit, options.offset);
     }
 
+    if ((options as FindOneOptions<T>).lockMode) {
+      qb.setLockMode((options as FindOneOptions<T>).lockMode);
+    }
+
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
 

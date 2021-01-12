@@ -718,6 +718,18 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `e0` where `e0`.`id` = ? lock in share mode');
     expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+
+    await orm.em.transactional(async em => {
+      await em.findOne(Author2, { email: 'foo' }, { lockMode: LockMode.PESSIMISTIC_READ });
+    });
+
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`email` = ? limit ? lock in share mode');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('custom query expressions via query builder', async () => {
