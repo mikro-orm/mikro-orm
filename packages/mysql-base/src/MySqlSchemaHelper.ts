@@ -75,7 +75,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
     let indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 52)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      indexName = `${indexName.substr(0, 58 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }
 
     return indexName;
