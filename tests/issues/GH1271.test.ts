@@ -2,7 +2,7 @@ import { Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey 
 import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
 
 
-@Entity({ tableName: 'very_long_table_name_over_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
+@Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
 class ChildEntity {
 
   @PrimaryKey()
