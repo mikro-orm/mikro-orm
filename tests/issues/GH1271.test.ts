@@ -32,6 +32,7 @@ describe('GH issue 1271', () => {
     orm = await MikroORM.init({
       entities: [ParentEntity, ChildEntity],
       dbName: `mikro_orm_test_gh_1271`,
+      port: 3307,
       type: 'mysql',
       cache: { enabled: false },
     });
