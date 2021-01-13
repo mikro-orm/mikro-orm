@@ -523,8 +523,6 @@ export class SchemaGenerator {
       remove.splice(remove.indexOf(prop.from), 1);
     });
 
-    console.log('findRenamedColumns', renamed);
-
     return renamed;
   }
 
