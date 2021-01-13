@@ -502,6 +502,10 @@ export class SchemaGenerator {
     for (const prop of create) {
       for (const fieldName of prop.fieldNames) {
         const match = remove.find(column => {
+          if (renamed.some(item => item.from === column)) {
+            return false;
+          }
+
           const copy = Utils.copy(column);
           copy.name = fieldName;
 
@@ -518,6 +522,8 @@ export class SchemaGenerator {
       create.splice(create.indexOf(prop.to), 1);
       remove.splice(remove.indexOf(prop.from), 1);
     });
+
+    console.log('findRenamedColumns', renamed);
 
     return renamed;
   }
