@@ -466,7 +466,7 @@ export class SchemaGenerator {
 
   private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, createdColumns: string[], diff?: IsSame): void {
     if (this.helper.supportsSchemaConstraints()) {
-      this.createForeignKeyReference(table, prop);
+      this.createForeignKeyReference(table, prop, meta);
 
       return;
     }
@@ -483,7 +483,7 @@ export class SchemaGenerator {
     // this.createForeignKeyReference(col, prop);
   }
 
-  private createForeignKeyReference(table: TableBuilder, prop: EntityProperty): void {
+  private createForeignKeyReference(table: TableBuilder, prop: EntityProperty, meta: EntityMetadata): void {
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
     const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(prop.referencedTableName);
 
@@ -494,6 +494,8 @@ export class SchemaGenerator {
     if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
       col.onUpdate(prop.onUpdateIntegrity || 'cascade');
     }
+
+    col.withKeyName(this.helper.getIndexName(meta.collection, prop.fieldNames, 'foreign'));
   }
 
   private findRenamedColumns(create: EntityProperty[], remove: Column[]): { from: Column; to: EntityProperty }[] {

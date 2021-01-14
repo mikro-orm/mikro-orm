@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH issue 1271 Index and FK names should be a max of 64 chars in mysql 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`parent_entity\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
+
+create table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` (\`id\` int unsigned not null auto_increment primary key, \`parent_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add index \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxx_d90a7_index\`(\`parent_id\`);
+
+alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add constraint \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxx_19cce_foreign\` foreign key (\`parent_id\`) references \`parent_entity\` (\`id\`) on update cascade;
+
+set foreign_key_checks = 1;
+"
+`;
