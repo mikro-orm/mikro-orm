@@ -1,4 +1,4 @@
-import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
@@ -242,6 +242,35 @@ describe('embedded entities in postgresql', () => {
       city: 'London 3',
       country: 'UK 3',
     });
+  });
+
+  test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
+    const user = new User();
+    user.address1 = new Address1('Test', '12000', 'Prague', 'CZ');
+    user.address3 = new Address1('Test', '12000', 'Prague', 'CZ');
+    user.address4 = new Address1('Test', '12000', 'Prague', 'CZ');
+    await orm.em.persistAndFlush(user);
+    orm.em.clear();
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+    const r = await orm.em.find(User, {
+      [expr('(address4->>\'street\')::text != \'\'')]: [],
+      [expr('lower((address4->>\'city\')::text) = ?')]: ['prague'],
+      [expr('(address4->>?)::text = ?')]: ['city', 'Prague'],
+      [expr('(address4->>?)::text')]: ['postalCode', '12000'],
+    });
+    expect(r[0]).toBeInstanceOf(User);
+    expect(r[0].address4).toBeInstanceOf(Address1);
+    expect(r[0].address4.city).toBe('Prague');
+    expect(r[0].address4.postalCode).toBe('12000');
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* ' +
+      'from "user" as "e0" ' +
+      'where (address4->>\'street\')::text != \'\' and ' +
+      'lower((address4->>\'city\')::text) = \'prague\' and ' +
+      '(address4->>\'city\')::text = \'Prague\' and ' +
+      '(address4->>\'postalCode\')::text = \'12000\'');
   });
 
 });

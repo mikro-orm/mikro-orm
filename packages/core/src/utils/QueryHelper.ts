@@ -134,16 +134,23 @@ export class QueryHelper {
         return o;
       }
 
+      const re = '[^:]+(' + this.SUPPORTED_OPERATORS.filter(op => op.startsWith(':')).map(op => `${op}`).join('|') + ')$';
+      const operatorExpression = new RegExp(re).exec(key);
+
       if (Utils.isPlainObject(value)) {
         o[key] = QueryHelper.processWhere(value, prop?.type ?? entityName, metadata, platform, convertCustomTypes, false);
       } else if (!QueryHelper.isSupportedOperator(key)) {
         o[key] = value;
-      } else if (key.includes(':')) {
+      } else if (operatorExpression) {
         const [k, expr] = key.split(':');
         o[k] = QueryHelper.processExpression(expr, value);
       } else {
         const m = key.match(/([\w-]+) ?([<>=!]+)$/)!;
-        o[m[1]] = QueryHelper.processExpression(m[2], value);
+        if (m) {
+          o[m[1]] = QueryHelper.processExpression(m[2], value);
+        } else {
+          o[key] = value;
+        }
       }
 
       return o;
