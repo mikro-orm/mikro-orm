@@ -46,6 +46,8 @@ describe('GH issue 1271', () => {
   afterAll(() => orm.close(true));
 
   test('Index and FK names should be a max of 64 chars in mysql', async () => {
+    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    expect(sql).toMatchSnapshot();
     await orm.getSchemaGenerator().createSchema();
   });
 });
