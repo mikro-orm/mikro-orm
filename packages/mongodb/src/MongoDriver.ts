@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
   DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, FieldsMap,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -269,18 +269,35 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  private buildFields<T>(entityName: string, populate: PopulateOptions<T>[], fields?: string[]): string[] | undefined {
+  protected buildFields<T extends AnyEntity<T>>(entityName: string, populate: PopulateOptions<T>[], fields?: (string | FieldsMap)[]): string[] | undefined {
     const meta = this.metadata.find(entityName)!;
-    const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const ret: string[] = [];
 
     if (fields) {
-      fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
-    } else if (lazyProps.length > 0) {
-      fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
+      for (const field of fields) {
+        if (Utils.isPlainObject(field) || field.toString().includes('.')) {
+          continue;
+        }
+
+        let prop = meta.properties[field];
+
+        /* istanbul ignore else */
+        if (prop) {
+          prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
+          ret.push(prop.fieldNames[0]);
+        } else {
+          ret.push(field);
+        }
+      }
+
+      ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
+    } else if (lazyProps.filter(p => !p.formula).length > 0) {
+      const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
+      ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     }
 
-    return fields;
+    return ret.length > 0 ? ret : undefined;
   }
 
   shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {

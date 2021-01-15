@@ -186,6 +186,8 @@ console.log(author.books[0].tags[0].isInitialized()); // true, because it was po
 
 ### Fetching Partial Entities
 
+> This feature is supported only for `SELECT_IN` loading strategy.
+
 When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
 
 ```typescript
