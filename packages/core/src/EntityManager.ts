@@ -97,6 +97,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
     const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
+
+    if (options.disableIdentityMap) {
+      const fork = this.fork(false);
+      const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateParams(where);
@@ -272,8 +281,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Finds first entity matching your `where` query.
    */
   async findOne<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null> {
-    entityName = Utils.className(entityName);
     const options = Utils.isObject<FindOneOptions<T, P>>(populate) ? populate : { populate, orderBy } as FindOneOptions<T, P>;
+
+    if (options.disableIdentityMap) {
+      const fork = this.fork(false);
+      const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
+      fork.clear();
+
+      return ret;
+    }
+
+    entityName = Utils.className(entityName);
     const meta = this.metadata.get<T>(entityName);
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
