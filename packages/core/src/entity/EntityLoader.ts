@@ -1,14 +1,16 @@
-import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions } from '../typings';
+import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { Collection } from './Collection';
-import { LoadStrategy, ReferenceType, QueryOrder, QueryOrderMap } from '../enums';
+import { LoadStrategy, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Reference } from './Reference';
+import { FieldsMap, FindOptions } from '../drivers/IDatabaseDriver';
 
 type Options<T extends AnyEntity<T>> = {
   where?: FilterQuery<T>;
+  fields?: (string | FieldsMap)[];
   orderBy?: QueryOrderMap;
   refresh?: boolean;
   validate?: boolean;
@@ -152,7 +154,7 @@ export class EntityLoader {
     const innerOrderBy = Utils.isObject(options.orderBy[prop.name]) ? options.orderBy[prop.name] as QueryOrderMap : undefined;
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
-      return this.findChildrenFromPivotTable<T>(filtered, prop, field, options.refresh, options.where[prop.name], innerOrderBy as QueryOrderMap);
+      return this.findChildrenFromPivotTable<T>(filtered, prop, options, innerOrderBy, populate);
     }
 
     const subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
@@ -227,6 +229,7 @@ export class EntityLoader {
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes), ...(options.where as Dictionary) } as FilterQuery<T>;
+    const fields = this.buildFields(prop, options);
 
     return this.em.find<T>(prop.type, where, {
       orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },
@@ -234,6 +237,7 @@ export class EntityLoader {
       filters: options.filters,
       convertCustomTypes: options.convertCustomTypes,
       populate: populate.children,
+      fields: fields.length > 0 ? fields : undefined,
     });
   }
 
@@ -257,24 +261,33 @@ export class EntityLoader {
 
     const filtered = Utils.unique(children);
     const prop = this.metadata.find(entityName)!.properties[populate.field];
+    const fields = this.buildFields(prop, options);
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: options.where[prop.name],
       orderBy: options.orderBy[prop.name] as QueryOrderMap,
       refresh: options.refresh,
+      fields: fields.length > 0 ? fields : undefined,
       filters: options.filters,
       validate: false,
       lookup: false,
     });
   }
 
-  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty, field: keyof T, refresh: boolean, where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<AnyEntity[]> {
+  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<Options<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
+    const refresh = options.refresh;
+    const where = options.where[prop.name as string];
+    const fields = this.buildFields(prop, options);
+    const options2 = { ...options } as FindOptions<T>;
+    options2.fields = (fields.length > 0 ? fields : undefined) as string[];
+    /* istanbul ignore next */
+    options2.populate = (populate?.children ?? []) as unknown as string[];
 
     if (prop.customType) {
-      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id, this.driver.getPlatform()));
+      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id as FilterQuery<T>, this.driver.getPlatform()) as Primary<T>[]);
     }
 
-    const map = await this.driver.loadFromPivotTable(prop, ids, where, orderBy, this.em.getTransactionContext());
+    const map = await this.driver.loadFromPivotTable(prop, ids, where, orderBy, this.em.getTransactionContext(), options2);
     const children: AnyEntity[] = [];
 
     for (const entity of filtered) {
@@ -282,11 +295,32 @@ export class EntityLoader {
         const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
         return this.em.getUnitOfWork().registerManaged(entity, item, refresh);
       });
-      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
+      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
     }
 
     return children;
+  }
+
+  private buildFields<T>(prop: EntityProperty<T>, options: Required<Options<T>>) {
+    return (options.fields || []).reduce((ret, f) => {
+      if (Utils.isPlainObject(f)) {
+        Object.keys(f)
+          .filter(ff => ff === prop.name)
+          .forEach(ff => ret.push(...f[ff] as string[]));
+      } else if (f.toString().includes('.')) {
+        const parts = f.toString().split('.');
+        const propName = parts.shift();
+        const childPropName = parts.join('.');
+
+        /* istanbul ignore else */
+        if (propName === prop.name) {
+          ret.push(childPropName);
+        }
+      }
+
+      return ret;
+    }, [] as string[]);
   }
 
   private getChildReferences<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty<T>, refresh: boolean): AnyEntity[] {

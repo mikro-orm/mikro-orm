@@ -186,14 +186,47 @@ console.log(author.books[0].tags[0].isInitialized()); // true, because it was po
 
 ### Fetching Partial Entities
 
+> This feature is supported only for `SELECT_IN` loading strategy.
+
 When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
 
-```typescript
+```ts
 const author = await orm.em.findOne(Author, '...', { fields: ['name', 'born'] });
 console.log(author.id); // PK is always selected
 console.log(author.name); // Jon Snow
 console.log(author.email); // undefined
 ```
+
+From v4.4 it is also possible to specify fields for nested relations:
+
+```ts
+const author = await orm.em.findOne(Author, '...', { fields: ['name', 'books.title', 'books.author', 'books.price'] });
+```
+
+Or with an alternative object syntax:
+
+```ts
+const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'author', 'price'] }] });
+```
+
+It is also possible to use multiple levels:
+
+```ts
+const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price', 'author', { author: ['email'] }] }] });
+```
+
+Primary keys are always selected even if you omit them. On the other hand, you are responsible 
+for selecting the FKs - if you omit such property, the relation might not be loaded properly.
+In the following example the books would not be linked the author, because we did not specify 
+the `books.author` field to be loaded.
+
+```ts
+// this will load both author and book entities, but they won't be connected due to the missing FK in select
+const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price'] });
+```
+
+> Same problem can occur in mongo with M:N collections - those are stored as array property 
+> on the owning entity, so you need to make sure to mark such properties too.
 
 ### Fetching Paginated Results
 

@@ -1461,8 +1461,11 @@ describe('EntityManagerMySql', () => {
   test('many to many with composite pk', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     const book1 = new Book2('My Life on The Wall, part 1', author);
+    book1.perex = 'asd 1';
     const book2 = new Book2('My Life on The Wall, part 2', author);
+    book2.perex = 'asd 2';
     const book3 = new Book2('My Life on The Wall, part 3', author);
+    book3.perex = 'asd 3';
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -1951,18 +1954,6 @@ describe('EntityManagerMySql', () => {
       'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
       'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
       'where `e0`.`author_id` is not null and `e3`.`name` = ?');
-  });
-
-  test('partial selects', async () => {
-    const author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
-    await orm.em.persistAndFlush(author);
-    orm.em.clear();
-
-    const a = (await orm.em.findOne(Author2, author, { fields: ['name'] }))!;
-    expect(a.name).toBe('Jon Snow');
-    expect(a.email).toBeUndefined();
-    expect(a.born).toBeUndefined();
   });
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {

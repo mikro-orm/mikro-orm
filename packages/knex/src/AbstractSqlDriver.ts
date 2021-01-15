@@ -2,7 +2,7 @@ import { QueryBuilder as KnexQueryBuilder, Raw, Transaction as KnexTransaction, 
 import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType,
   EntityMetadata, EntityProperty, QueryFlag, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
-  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions,
+  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, FieldsMap,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -39,7 +39,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx, false);
-    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields);
+    const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
@@ -378,7 +378,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, ctx));
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {}, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {}, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const targetMeta = this.metadata.find(prop.type)!;
@@ -393,7 +393,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{ field: prop.pivotTable }]);
-    qb.select('*').populate(populate).where(where).orderBy(orderBy!);
+    const fields = this.buildFields(targetMeta, (options?.populate ?? []) as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
+    qb.select(fields).populate(populate).where(where).orderBy(orderBy!);
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
 
     const map: Dictionary<T[]> = {};
@@ -415,7 +416,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: string[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: (string | FieldsMap)[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner') || fields.length > 0) {
       return populate;
     }
@@ -586,29 +587,38 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
     const hasExplicitFields = !!fields;
+    const ret: Field<T>[] = [];
 
     if (fields) {
-      fields.unshift(...meta.primaryKeys.filter(pk => !fields!.includes(pk)));
+      for (const field of [...fields]) {
+        if (Utils.isPlainObject(field) || field.toString().includes('.')) {
+          continue;
+        }
+
+        ret.push(field);
+      }
+
+      ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
     } else if (joinedProps.length > 0) {
-      fields = this.getFieldsForJoinedLoad(qb, meta, populate);
+      ret.push(...this.getFieldsForJoinedLoad(qb, meta, populate));
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
       const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate, false));
-      fields = Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames));
+      ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     } else if (hasLazyFormulas) {
-      fields = ['*'];
+      ret.push('*');
     }
 
-    if (fields && !hasExplicitFields) {
+    if (ret.length > 0 && !hasExplicitFields) {
       meta.props
         .filter(prop => prop.formula && !lazyProps.includes(prop))
         .forEach(prop => {
           const alias = qb.ref(qb.alias).toString();
           const aliased = qb.ref(prop.fieldNames[0]).toString();
-          fields!.push(`${prop.formula!(alias)} as ${aliased}`);
+          ret.push(`${prop.formula!(alias)} as ${aliased}`);
         });
     }
 
-    return fields || ['*'];
+    return ret.length > 0 ? ret : ['*'];
   }
 
 }

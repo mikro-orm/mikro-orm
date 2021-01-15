@@ -54,7 +54,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -77,6 +77,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
+export type FieldsMap = { [K: string]: (string | FieldsMap)[] };
+
 export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   populate?: P;
   orderBy?: QueryOrderMap;
@@ -85,7 +87,7 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   offset?: number;
   refresh?: boolean;
   convertCustomTypes?: boolean;
-  fields?: string[];
+  fields?: (string | FieldsMap)[];
   schema?: string;
   flags?: QueryFlag[];
   groupBy?: string | string[];
