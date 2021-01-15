@@ -7,6 +7,8 @@
 
 const pkg = require('../packages/core/package.json');
 const versions = require('./versions.json');
+const fs = require('fs');
+const packages = fs.readdirSync('../packages').filter(d => !d.startsWith('.')).map(d => `../packages/${d}/src/index.ts`);
 
 module.exports = {
   title: 'MikroORM',
@@ -139,7 +141,11 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         // Plugin options
-        entryPoints: ['../packages'],
+        entryPoints: packages,
+        // entryPoints: [
+        //   '../packages/core/src/index.ts',
+        //   '../packages/cli/src/index.ts',
+        // ],
         sidebar: {
           sidebarFile: 'typedoc-sidebar.js',
           readmeLabel: 'README',
