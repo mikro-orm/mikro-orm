@@ -284,6 +284,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   discriminatorMap?: Dictionary<string>;
   embeddable: boolean;
   constructorParams: string[];
+  forceConstructor: boolean;
   toJsonParams: string[];
   extends: string;
   collection: string;

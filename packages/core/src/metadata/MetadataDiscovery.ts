@@ -360,7 +360,7 @@ export class MetadataDiscovery {
     const pks = Object.values(meta.properties).filter(prop => prop.primary);
     meta.primaryKeys = pks.map(prop => prop.name);
     meta.compositePK = pks.length > 1;
-
+    meta.forceConstructor = this.shouldForceConstructorUsage(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
     Object.values(meta.properties).forEach(prop => {
@@ -825,6 +825,16 @@ export class MetadataDiscovery {
     }
 
     return [target];
+  }
+
+  private shouldForceConstructorUsage<T>(meta: EntityMetadata<T>) {
+    const forceConstructor = this.config.get('forceEntityConstructor');
+
+    if (Array.isArray(forceConstructor)) {
+      return forceConstructor.some(cls => Utils.className(cls) === meta.className);
+    }
+
+    return meta.forceConstructor = forceConstructor;
   }
 
 }

@@ -86,7 +86,7 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
-    if (options.newEntity) {
+    if (options.newEntity || meta.forceConstructor) {
       const params = this.extractConstructorParams<T>(meta, data);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);

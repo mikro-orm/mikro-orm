@@ -49,6 +49,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: false,
+    forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,
     ensureIndexes: false,
@@ -346,6 +347,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
+  forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;

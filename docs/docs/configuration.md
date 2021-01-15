@@ -347,7 +347,7 @@ MikroORM.init({
 
 Read more about this in [Metadata Cache](metadata-cache.md) section.
 
-## Importing database dump files (MySQL and Postgress)
+## Importing database dump files (MySQL and PostgreSQL)
 
 Using the `mikro-orm database:import db-file.sql` you can import a database dump file. This can be useful when kickstarting an application or could be used in tests to reset the database. Database dumps often have queries spread over multiple lines and therefore you need the following configuration.
 
@@ -359,3 +359,18 @@ MikroORM.init({
 });
 ```
  > This should be disabled in production environments for added security.
+
+## Using native private properties
+
+If we want to use native private properties inside entities, the default approach of 
+how MikroORM creates entity instances via `Object.create()` is not viable (more about this
+in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity
+constructors, we can use `forceEntityConstructor` toggle:
+
+```ts
+MikroORM.init({
+  ...
+  forceEntityConstructor: true, // or specify just some entities via `[Author, 'Book', ...]` 
+  ...
+});
+```
