@@ -13,7 +13,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  finalizeTable(table: TableBuilder, charset: string): void {
+  finalizeTable(table: TableBuilder, charset: string, collate?: string): void {
     //
   }
 

@@ -286,6 +286,7 @@ export interface ConnectionOptions {
   user?: string;
   password?: string;
   charset?: string;
+  collate?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig;
 }

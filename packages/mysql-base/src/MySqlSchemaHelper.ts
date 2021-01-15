@@ -39,9 +39,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return 'set foreign_key_checks = 1;\n';
   }
 
-  finalizeTable(table: Knex.CreateTableBuilder, charset: string): void {
+  finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {
     table.engine('InnoDB');
     table.charset(charset);
+
+    if (collate) {
+      table.collate(collate);
+    }
   }
 
   getTypeDefinition(prop: EntityProperty): string {

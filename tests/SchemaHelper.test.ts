@@ -25,6 +25,16 @@ describe('SchemaHelper', () => {
     const from = { name: 'test1' };
     const to = { fieldNames: ['test_123'], nullable: false, columnTypes: ['int'] };
     expect(helper.getRenameColumnSQL('table', from as any, to as any)).toBe('alter table `table` change `test1` `test_123` int not null');
+
+    const mock = {
+      engine: jest.fn(),
+      charset: jest.fn(),
+      collate: jest.fn(),
+    } as any;
+    helper.finalizeTable(mock, 'charset', 'collate');
+    expect(mock.engine).toBeCalledWith('InnoDB');
+    expect(mock.charset).toBeCalledWith('charset');
+    expect(mock.collate).toBeCalledWith('collate');
   });
 
   test('sqlite schema helper', async () => {

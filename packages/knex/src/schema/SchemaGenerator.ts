@@ -243,7 +243,7 @@ export class SchemaGenerator {
         table.comment(meta.comment);
       }
 
-      this.helper.finalizeTable(table, this.config.get('charset'));
+      this.helper.finalizeTable(table, this.config.get('charset'), this.config.get('collate'));
     });
   }
 
