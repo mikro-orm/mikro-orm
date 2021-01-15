@@ -661,6 +661,53 @@ describe('EntityManagerSqlite2', () => {
     expect(book.tags.count()).toBe(0);
   });
 
+  test('disabling identity maap', async () => {
+    const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
+    const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1', author });
+    const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2', author });
+    const book3 = orm.em.create(Book4, { title: 'My Life on the Wall, part 3', author });
+    const tag1 = orm.em.create(BookTag4, { name: 'silly' });
+    const tag2 = orm.em.create(BookTag4, { name: 'funny' });
+    const tag3 = orm.em.create(BookTag4, { name: 'sick' });
+    const tag4 = orm.em.create(BookTag4, { name: 'strange' });
+    const tag5 = orm.em.create(BookTag4, { name: 'sexy' });
+    book1.tags.add(tag1, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    await orm.em.persist(book3).flush();
+    orm.em.clear();
+
+    const authors = await orm.em.find(Author4, {}, {
+      populate: { books: { tags: true } },
+      disableIdentityMap: true,
+    });
+
+    expect(authors).toHaveLength(1);
+    expect(authors[0].id).toBe(author.id);
+    expect(authors[0].books).toHaveLength(3);
+    expect(authors[0].books[0].id).toBe(book1.id);
+    expect(authors[0].books[0].tags).toHaveLength(2);
+    expect(authors[0].books[0].tags[0].name).toBe('silly');
+    expect(orm.em.getUnitOfWork().getIdentityMap().values().length).toBe(0);
+
+    const a1 = await orm.em.findOneOrFail(Author4, author.id, {
+      populate: { books: { tags: true } },
+      disableIdentityMap: true,
+    });
+    expect(a1.id).toBe(author.id);
+    expect(a1.books).toHaveLength(3);
+    expect(a1.books[0].id).toBe(book1.id);
+    expect(a1.books[0].tags).toHaveLength(2);
+    expect(a1.books[0].tags[0].name).toBe('silly');
+    expect(orm.em.getUnitOfWork().getIdentityMap().values().length).toBe(0);
+
+    expect(a1).not.toBe(authors[0]);
+    expect(a1.books[0]).not.toBe(authors[0].books[0]);
+  });
+
   test('populating many to many relation', async () => {
     const p1 = orm.em.create(Publisher4, { name: 'foo' });
     expect(p1.tests).toBeInstanceOf(Collection);

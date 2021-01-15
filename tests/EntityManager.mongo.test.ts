@@ -1886,8 +1886,6 @@ describe('EntityManagerMongo', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const tags = await orm.em.find(BookTag, {}, ['books']);
-    console.log(tags);
     let tag = await orm.em.findOneOrFail(BookTag, tag1.id, ['books']);
     const err = 'You cannot modify inverse side of M:N collection BookTag.books when the owning side is not initialized. Consider working with the owning side instead (Book.tags).';
     expect(() => tag.books.add(orm.em.getReference(Book, book4.id))).toThrowError(err);

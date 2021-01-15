@@ -291,6 +291,28 @@ where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
 ```
 
+## Disabling identity map and change set tracking
+
+Sometimes we might want to disable identity map and change set tracking for some query.
+This is possible via `disableIdentityMap` option. Behind the scenes, it will create new 
+context, load the entities inside that, and clear it afterwards, so the main identity map
+will stay clean.
+
+> As opposed to _managed_ entities, such entities are called _detached_. 
+> To be able to work with them, you first need to merge them via `em.registerManaged()`. 
+
+```ts
+const users = await orm.em.find(User, { email: 'foo@bar.baz' }, {
+  disableIdentityMap: true,
+  populate: { cars: { brand: true } },
+});
+users[0].name = 'changed';
+await orm.em.flush(); // calling flush have no effect, as the entity is not managed  
+```
+
+> Keep in mind that this can also have 
+> [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).
+
 ## Type of Fetched Entities
 
 Both `em.find` and `em.findOne()` methods have generic return types.
