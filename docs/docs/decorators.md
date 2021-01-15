@@ -376,7 +376,7 @@ async doStuffBeforeCreate() {
 
 Fired right after the new entity is created in the database and merged to identity map. 
 Since this event entity will have reference to `EntityManager` and will be 
-enabled to call `entity.init()` method (including all entity references and collections).
+enabled to call `wrap(entity).init()` method (including all entity references and collections).
 
 ```typescript
 @AfterCreate()

@@ -418,7 +418,7 @@ const author = repo.create({ firstName: 'Jon', lastName: 'Snow' });
 
 console.log(author.getFullName()); // 'Jon Snow'
 console.log(author.fullName2); // 'Jon Snow'
-console.log(author.toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
+console.log(wrap(author).toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon Snow' }
 ```
 
 ### Entity file names

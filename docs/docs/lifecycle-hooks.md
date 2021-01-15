@@ -27,7 +27,7 @@ automatically when new entities are loaded from database
 
 - `@AfterCreate()` and `@AfterUpdate()` is fired right after the entity is updated in database and 
 merged to identity map. Since this event entity will have reference to `EntityManager` and will be 
-enabled to call `entity.init()` method (including all entity references and collections).
+enabled to call `wrap(entity).init()` method (including all entity references and collections).
 
 - `@BeforeDelete()` is fired right before we delete the record from database. It is fired only when
 removing entity or entity reference, not when deleting records by query. 

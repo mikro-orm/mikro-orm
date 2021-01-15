@@ -7,7 +7,7 @@ Every single entity relation is mapped to an entity reference. Reference is an e
 only its identifier. This reference is stored in identity map so you will get the same object 
 reference when fetching the same document from database.
 
-You can call `await entity.init()` to initialize the entity. This will trigger database call 
+You can call `await wrap(entity).init()` to initialize the entity. This will trigger database call 
 and populate itself, keeping the same reference in identity map. 
 
 ```typescript
@@ -16,7 +16,7 @@ console.log(author.id); // accessing the id will not trigger any db call
 console.log(author.isInitialized()); // false
 console.log(author.name); // undefined
 
-await author.init(); // this will trigger db call
+await wrap(author).init(); // this will trigger db call
 console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
@@ -193,5 +193,5 @@ console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
 
-> As opposed to `Entity.init()` which always refreshes the entity, `Reference.load()` 
+> As opposed to `EntityHelper.init()` which always refreshes the entity, `Reference.load()` 
 > method will query the database only if the entity is not already loaded in Identity Map. 

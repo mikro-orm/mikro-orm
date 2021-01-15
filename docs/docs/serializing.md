@@ -23,7 +23,7 @@ export class Book {
   // ...
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
-    const o = this.toObject(...args); // do not forget to pass rest params here
+    const o = wrap(this, true).toObject(...args); // do not forget to pass rest params here
 
     if (strict) {
       strip.forEach(k => delete o[k]);
@@ -53,8 +53,8 @@ export class Book {
 }
 
 const book = new Book(...);
-console.log(book.toObject().hiddenField); // undefined
-console.log(book.toJSON().hiddenField); // undefined
+console.log(wrap(book).toObject().hiddenField); // undefined
+console.log(wrap(book).toJSON().hiddenField); // undefined
 ```
 
 ## Shadow Properties
@@ -77,9 +77,9 @@ export class Book {
 }
 
 const book = new Book(...);
-book.assign({ count: 123 });
-console.log(book.toObject().count); // 123
-console.log(book.toJSON().count); // 123
+wrap(book).assign({ count: 123 });
+console.log(wrap(book).toObject().count); // 123
+console.log(wrap(book).toJSON().count); // 123
 ```
 
 ## Property Serializers
@@ -98,5 +98,5 @@ export class Book {
 
 const author = new Author('God')
 const book = new Book(author);
-console.log(book.toJSON().authorName); // 'God'
+console.log(wrap(book).toJSON().authorName); // 'God'
 ```
