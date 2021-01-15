@@ -47,6 +47,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _orderBy: QueryOrderMap = {};
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
+  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T>; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
   private _joinedProps = new Map<string, PopulateOptions<any>>();
@@ -85,11 +86,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
-  insert(data: any): this {
+  insert(data: EntityData<T>): this {
     return this.init(QueryType.INSERT, data);
   }
 
-  update(data: any): this {
+  update(data: EntityData<T>): this {
     return this.init(QueryType.UPDATE, data);
   }
 
@@ -185,6 +186,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       this._cond = { [op]: cond1 };
     }
 
+    if (this._onConflict) {
+      this._onConflict[this._onConflict.length - 1].where = this._cond;
+      this._cond = {};
+    }
+
     return this;
   }
 
@@ -217,6 +223,22 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     this._having = CriteriaNodeFactory.createNode(this.metadata, this.entityName, cond).process(this);
+    return this;
+  }
+
+  onConflict(fields: string | string[]): this {
+    this._onConflict = this._onConflict || [];
+    this._onConflict.push({ fields: Utils.asArray(fields) });
+    return this;
+  }
+
+  ignore(): this {
+    this._onConflict![this._onConflict!.length - 1].ignore = true;
+    return this;
+  }
+
+  merge(data?: EntityData<T>): this {
+    this._onConflict![this._onConflict!.length - 1].merge = data;
     return this;
   }
 
@@ -293,12 +315,22 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.finalize();
     const qb = this.getQueryBase();
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => qb.orderByRaw(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
+    Utils.runIfNotEmpty(() => {
+      this._onConflict!.forEach(item => {
+        const sub = qb.onConflict(item.fields);
+        Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
+        Utils.runIfNotEmpty(() => {
+          const sub2 = sub.merge(item.merge);
+          Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, item.where, sub2), item.where);
+        }, item.merge);
+      });
+    }, this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -673,7 +705,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
 
-    this[method](this._data).where({
+    this[method](this._data as EntityData<T>).where({
       [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
     });
   }

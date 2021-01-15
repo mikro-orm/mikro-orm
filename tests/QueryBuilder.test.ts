@@ -1125,6 +1125,30 @@ describe('QueryBuilder', () => {
     expect(qb3.getParams()).toEqual([123]);
   });
 
+  test('insert on conflict ignore/merge', async () => {
+    const qb0 = orm.em.createQueryBuilder(Author2);
+    qb0.insert({ email: 'ignore@example.com', name: 'John Doe' }).onConflict('email').ignore();
+    expect(qb0.getQuery()).toEqual('insert ignore into `author2` (`email`, `name`) values (?, ?)');
+    expect(qb0.getParams()).toEqual(['ignore@example.com', 'John Doe']);
+
+    const timestamp = Date.now();
+    const qb1 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict('email')
+      .merge({
+        name: 'John Doe',
+        updatedAt: timestamp,
+      });
+
+    expect(qb1.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = ?,`updatedAt` = ?');
+    expect(qb1.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp]);
+  });
+
   test('insert many query', async () => {
     const qb1 = orm.em.createQueryBuilder(Publisher2);
     qb1.insert([
@@ -1650,7 +1674,7 @@ describe('QueryBuilder', () => {
       'where `e1`.`name` in (?) and `e0`.`uuid_pk` != ? and `e0`.`created_at` > ?');
   });
 
-  test('pg array operators', async () => {
+  test('postgres', async () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Configuration2],
       dbName: `mikro_orm_test`,
@@ -1695,6 +1719,29 @@ describe('QueryBuilder', () => {
     const qb8 = pg.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb7.getKnexQuery() } });
     expect(qb8.getQuery()).toEqual('select "a".* from "author2" as "a" where "a"."id" in (select "b"."author_id" from "book2" as "b" where "b"."price" > $1)');
     expect(qb8.getParams()).toEqual([100]);
+
+    const qb9 = pg.em.createQueryBuilder(Author2);
+    qb9.insert({ email: 'ignore@example.com', name: 'John Doe' }).onConflict('email').ignore();
+    expect(qb9.getQuery()).toEqual('insert into "author2" ("email", "name") values ($1, $2) on conflict ("email") do nothing returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb9.getParams()).toEqual(['ignore@example.com', 'John Doe']);
+
+    const timestamp = Date.now();
+    const qb10 = pg.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict('email')
+      .merge({
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .where({ updatedAt: { $lt: timestamp } });
+
+    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updatedAt" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
 
     await pg.close(true);
   });
