@@ -139,20 +139,19 @@ module.exports = {
       'docusaurus-plugin-typedoc',
       {
         // Plugin options
-        inputFiles: ['../packages'],
+        entryPoints: ['../packages'],
         sidebar: {
           sidebarFile: 'typedoc-sidebar.js',
           readmeLabel: 'README',
           globalsLabel: 'Overview',
         },
-        globalsTitle: 'Overview',
+        // globalsTitle: 'Overview',
 
         // TypeDoc options (see typedoc --help)
-        mode: 'file',
-        target: 'ES2017',
+        // target: 'ES2017',
         readme: 'none',
-        moduleResolution: 'node',
-        ignoreCompilerErrors: true,
+        // moduleResolution: 'node',
+        // ignoreCompilerErrors: true,
         tsconfig: '../tsconfig.json',
       },
     ],
