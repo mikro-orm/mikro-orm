@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`embedded entities in postgres diffing 1`] = `
+"function(entity) {
+  const ret = {};
+  if ('id' in entity && entity.id != null) {
+    ret.id = entity.id;
+  }
+
+  if ('name' in entity) {
+    ret.name = entity.name;
+  }
+
+  if (entity.profile1 != null) {
+    ret.profile1_username = clone(entity.profile1.username);
+
+    if (entity.profile1.identity != null) {
+      ret.profile1_identity_email = clone(entity.profile1.identity.email);
+
+      if (entity.profile1.identity.meta != null) {
+        ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
+        ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
+      }
+    }
+  }
+
+  if ('profile2' in entity) {
+    ret.profile2 = cloneEmbeddable({ ...entity.profile2 });
+  }
+
+  return ret;
+}"
+`;
+
+exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
+"create table \\"user\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"profile1_username\\" varchar(255) not null, \\"profile1_identity_email\\" varchar(255) not null, \\"profile1_identity_meta_foo\\" varchar(255) null, \\"profile1_identity_meta_bar\\" varchar(255) null, \\"profile2\\" jsonb not null);
+
+"
+`;
+
+exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
+
+exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
+"drop table if exists \\"user\\" cascade;
+
+"
+`;

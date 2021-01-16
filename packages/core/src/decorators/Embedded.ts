@@ -3,11 +3,11 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceType } from '../enums';
 
-export function Embedded(options: EmbeddedOptions | (() => AnyEntity) = {}) {
+export function Embedded(type: EmbeddedOptions | (() => AnyEntity) = {}, options: EmbeddedOptions = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.EMBEDDED);
-    options = options instanceof Function ? { entity: options } : options;
+    options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };
     Utils.defaultValue(options, 'prefix', true);
     const property = { name: propertyName, reference: ReferenceType.EMBEDDED } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);

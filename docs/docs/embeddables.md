@@ -120,3 +120,51 @@ In SQL drivers, this will use a JSON column to store the value.
 
 > This part of documentation is highly inspired by [doctrine tutorial](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/embeddables.html)
 > as the behaviour here is pretty much the same.
+
+## Nested embeddables
+
+Starting with v4.4, we can also nest embeddables, both in inline mode and object mode:
+
+```ts
+@Entity()
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Embedded(() => Profile, { object: true, nullable: true })
+  profile?: Profile;
+
+}
+
+@Embeddable()
+class Profile {
+
+  @Property()
+  username: string;
+
+  @Embedded(() => Identity)
+  identity: Identity;
+
+  constructor(username: string, identity: Identity) {
+    this.username = username;
+    this.identity = identity;
+  }
+
+}
+
+@Embeddable()
+class Identity {
+
+  @Property()
+  email: string;
+
+  constructor(email: string) {
+    this.email = email;
+  }
+
+}
+```

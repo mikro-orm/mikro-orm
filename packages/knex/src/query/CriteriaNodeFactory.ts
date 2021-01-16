@@ -67,6 +67,10 @@ export class CriteriaNodeFactory {
     }
 
     const map = Object.keys(payload[item]).reduce((oo, k) => {
+      if (!prop.embeddedProps[k]) {
+        throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
+      }
+
       oo[prop.embeddedProps[k].name] = payload[item][k];
       return oo;
     }, {});

@@ -12,7 +12,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   }
 
   getSearchJsonPropertySQL(path: string): string {
-    const [a, b] = path.split('->', 2);
+    const [a, b] = path.split('->', 2); // TODO
     return `${this.quoteIdentifier(a)}->'$.${b}'`;
   }
 

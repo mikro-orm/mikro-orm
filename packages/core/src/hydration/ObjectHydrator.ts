@@ -42,6 +42,7 @@ export class ObjectHydrator extends Hydrator {
       return exists;
     }
 
+    let tmpCounter = 0;
     const lines: string[] = [];
     const context = new Map<string, any>();
     const props = this.getProperties(meta, type);
@@ -49,22 +50,51 @@ export class ObjectHydrator extends Hydrator {
     context.set('Collection', Collection);
     context.set('Reference', Reference);
 
-    const scalarHydrator = <T>(prop: EntityProperty<T>, parentProp?: EntityProperty<T>): string[] => {
-      const entityKey = parentProp !== undefined ? `${parentProp.name}.${prop.embedded![1]}` : prop.name;
-      const dataKey = parentProp?.object ? `${parentProp.name}.${prop.embedded![1]}` : prop.name;
-      const preCond = dataKey.includes('.') ? `data.${dataKey.replace(/\..*/, '')} && ` : '';
-      const convertorKey = dataKey.replace('.', '_');
+    const preCondition = (dataKey: string) => {
+      const path = dataKey.split('.');
+      path.pop();
 
-      if (prop.type.toLowerCase() === 'date') {
-        return [
+      if (path.length === 0) {
+        return '';
+      }
+
+      let ret = '';
+      let prev = '';
+
+      for (const p of path) {
+        const key = prev ? prev + '.' + p : p;
+        ret += `data.${key} && `;
+        prev = key;
+      }
+
+      return ret;
+    };
+
+    const scalarHydrator = <T, U>(prop: EntityProperty<T>, object?: boolean, path: string[] = [prop.name]): string[] => {
+      const entityKey = path.join('.');
+      const dataKey = object ? entityKey : prop.name;
+      const preCond = preCondition(dataKey);
+      const convertorKey = path.join('_');
+      const ret: string[] = [];
+
+      if (prop.reference === ReferenceType.EMBEDDED) {
+        context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
+        tmpCounter++;
+        ret.push(`  const tmp_${tmpCounter} = entity.${entityKey};`);
+        ret.push(`  entity.${entityKey} = Object.create(prototype_${convertorKey});`);
+        const children = meta.props.filter(p => p.embedded?.[0] === prop.name);
+        children.forEach(childProp => ret.push(...scalarHydrator(childProp, object || prop.object, [...path, childProp.embedded![1]])));
+        ret.push(`  if (Object.keys(entity.${entityKey}).filter(k => entity.${entityKey}[k] != null).length === 0) entity.${entityKey} = tmp_${tmpCounter}`);
+      } else if (prop.type.toLowerCase() === 'date') {
+        ret.push(
           `  if (${preCond}data.${dataKey}) entity.${entityKey} = new Date(data.${dataKey});`,
           `  else if (${preCond}data.${dataKey} === null) entity.${entityKey} = null;`,
-        ];
+        );
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
-        return [
+        ret.push(
           `  if (${preCond}typeof data.${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data.${dataKey});`,
@@ -74,9 +104,12 @@ export class ObjectHydrator extends Hydrator {
           `      entity.${entityKey} = data.${dataKey};`,
           `    }`,
           `  }`,
-        ];
+        );
+      } else {
+        ret.push(`  if (${preCond}typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey};`);
       }
-        return [`  if (${preCond}typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey};`];
+
+      return ret;
     };
 
     for (const prop of props) {
@@ -157,7 +190,7 @@ export class ObjectHydrator extends Hydrator {
         lines.push(`    entity.${prop.name} = Object.create(prototype_${prop.name});`);
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(childProp => lines.push(...scalarHydrator(childProp, prop).map(l => '  ' + l)));
+          .forEach(childProp => lines.push(...scalarHydrator(childProp, prop.object, [prop.name, childProp.embedded![1]]).map(l => '  ' + l)));
         lines.push(`  }`);
       } else { // ReferenceType.SCALAR
         lines.push(...scalarHydrator(prop));

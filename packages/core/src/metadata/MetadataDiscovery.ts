@@ -555,11 +555,12 @@ export class MetadataDiscovery {
     return order;
   }
 
-  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty): void {
-    if (embeddedProp.reference !== ReferenceType.EMBEDDED) {
+  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new WeakSet<EntityProperty>()): void {
+    if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
 
+    visited.add(embeddedProp);
     const embeddable = this.discovered.find(m => m.name === embeddedProp.type);
     embeddedProp.embeddable = embeddable!.class;
     embeddedProp.embeddedProps = {};
@@ -568,7 +569,11 @@ export class MetadataDiscovery {
     for (const prop of Object.values(embeddable!.properties)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
-      if (meta.properties[name] !== undefined) { throw new MetadataError(`Property ${meta.name}:${name} is being overwritten by its child property ${embeddedProp.name}:${name}. Consider using a prefix to overcome this issue.`); }
+
+      if (meta.properties[name] !== undefined) {
+        throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
+      }
+
       meta.properties[name] = Utils.copy(prop);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
@@ -579,11 +584,29 @@ export class MetadataDiscovery {
         meta.properties[name].nullable = true;
       }
 
-      if (embeddedProp.object) {
+      const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+      const rootProperty = getRootProperty(embeddedProp);
+
+      if (rootProperty.object) {
+        embeddedProp.object = true;
         this.initFieldName(embeddedProp);
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(`${embeddedProp.fieldNames[0]}->${prop.name}`); // for querying in SQL drivers
+        const path: string[] = [];
+        let tmp = embeddedProp;
+
+        while (tmp.embedded) {
+          const fieldName = tmp.embedded![1];
+          path.unshift(fieldName);
+          tmp = meta.properties[tmp.embedded[0]];
+        }
+
+        path.unshift(this.namingStrategy.propertyToColumnName(rootProperty.name));
+        path.push(prop.name);
+
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->')); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }
+
+      this.initEmbeddables(meta, meta.properties[name], visited);
     }
   }
 

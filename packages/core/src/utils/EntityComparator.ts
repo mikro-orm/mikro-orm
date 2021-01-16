@@ -143,15 +143,21 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('clone', clone);
+    context.set('cloneEmbeddable', (o: any) => JSON.parse(JSON.stringify(o))); // do not clone prototypes
 
     if (meta.discriminatorValue) {
       lines.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
     }
 
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+
     // copy all comparable props, ignore collections and references, process custom types
-    meta.comparableProps.forEach(prop => {
-      lines.push(this.getPropertySnapshot(meta, prop, context));
-    });
+    meta.comparableProps
+      .filter(prop => {
+        const root = getRootProperty(prop);
+        return prop === root || root.reference !== ReferenceType.EMBEDDED;
+      })
+      .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context)));
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = Utils.createFunction(context, code);
@@ -216,6 +222,19 @@ export class EntityComparator {
     return ret;
   }
 
+  private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level = 1, path: string[] = [prop.name]): string {
+    const padding = ' '.repeat(level * 2);
+    const cond = `entity.${path.join('.')} != null`;
+    const ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
+    return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
+      if (childProp.reference === ReferenceType.EMBEDDED) {
+        return this.getEmbeddedPropertySnapshot(meta, childProp, context, level + 1, [...path, childProp.embedded![1]]);
+      }
+
+      return `${padding}  ret.${childProp.name} = clone(entity.${path.join('.')}.${childProp.embedded![1]});`;
+    }).join('\n') + `\n${padding}}`;
+  }
+
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>): string {
     let ret = `  if (${this.getPropertyCondition(prop)}) {\n`;
 
@@ -225,12 +244,10 @@ export class EntityComparator {
 
     if (prop.reference === ReferenceType.EMBEDDED) {
       if (prop.object) {
-        return ret + `    ret.${prop.name} = clone({ ...entity.${prop.name} });\n  }\n`;
+        return ret + `    ret.${prop.name} = cloneEmbeddable({ ...entity.${prop.name} });\n  }\n`;
       }
 
-      return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
-        return `    ret.${childProp.name} = clone(entity.${prop.name}.${childProp.embedded![1]});`;
-      }).join('\n') + '\n  }\n';
+      return this.getEmbeddedPropertySnapshot(meta, prop, context) + '\n';
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
