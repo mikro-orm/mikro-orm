@@ -172,14 +172,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * If you want to set shared value for all contexts, be sure to use the root entity manager.
    */
   setFilterParams(name: string, args: Dictionary): void {
-    this.filterParams[name] = args;
+    this.getContext().filterParams[name] = args;
   }
 
   /**
    * Returns filter parameters for given filter set in this context.
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
-    return this.filterParams[name] as T;
+    return this.getContext().filterParams[name] as T;
   }
 
   protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
@@ -223,7 +223,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let cond: Dictionary;
 
       if (filter.cond instanceof Function) {
-        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.filterParams[filter.name];
+        const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
           throw new Error(`No arguments provided for filter '${filter.name}'`);
