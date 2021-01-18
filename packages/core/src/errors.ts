@@ -97,6 +97,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
   }
 
+  static invalidEmbeddableQuery(className: string, propName: string, embeddableType: string): ValidationError {
+    return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
+  }
+
 }
 
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
@@ -190,6 +194,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
   static missingMetadata(entity: string): MetadataError {
     return new MetadataError(`Metadata for entity ${entity} not found`);
+  }
+
+  static conflictingPropertyName(className: string, name: string, embeddedName: string): MetadataError {
+    return new MetadataError(`Property ${className}:${name} is being overwritten by its child property ${embeddedName}:${name}. Consider using a prefix to overcome this issue.`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {

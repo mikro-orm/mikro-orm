@@ -121,7 +121,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
     Object.keys(data).forEach(k => {
       if (Utils.isOperator(k)) {
-        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload));
+        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload, where));
       }
     });
 
@@ -141,9 +141,24 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           }
 
           if (prop.object && where) {
-            data[`${prop.name}.${props[kk].embedded![1]}`] = data[prop.name][props[kk].embedded![1]];
-          } else {
+            const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
+              if (sub.reference === ReferenceType.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
+                return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
+                  if (!sub.embeddedProps[kkk]) {
+                    throw ValidationError.invalidEmbeddableQuery(meta.className, kkk, sub.type);
+                  }
+
+                  inline(payload[sub.embedded![1]], sub.embeddedProps[kkk], [...path, sub.embedded![1]]);
+                });
+              }
+
+              data[`${path.join('.')}.${sub.embedded![1]}`] = payload[sub.embedded![1]];
+            };
+            inline(data[prop.name], props[kk], [prop.name]);
+          } else if (props[kk]) {
             data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+          } else {
+            throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }
         });
         delete data[prop.name];

@@ -47,10 +47,7 @@ export class EntityAssigner {
       }
 
       if (props[prop]?.reference === ReferenceType.EMBEDDED) {
-        const Embeddable = props[prop].embeddable;
-        entity[props[prop].name] = Object.create(Embeddable.prototype);
-        Utils.merge(entity[prop as keyof T], Utils.isPlainObject(value) ? value : { ...value });
-        return;
+        return EntityAssigner.assignEmbeddable(entity, value, props[prop], em, options);
       }
 
       if (options.mergeObjects && Utils.isObject(value)) {
@@ -121,6 +118,22 @@ export class EntityAssigner {
     }
 
     collection.set(items);
+  }
+
+  private static assignEmbeddable<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
+    const Embeddable = prop.embeddable;
+    const propName = prop.embedded ? prop.embedded[1] : prop.name;
+    entity[propName] = options.mergeObjects ? entity[propName] || Object.create(Embeddable.prototype) : Object.create(Embeddable.prototype);
+
+    Object.keys(value).forEach(key => {
+      const childProp = prop.embeddedProps[key];
+
+      if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
+        return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
+      }
+
+      entity[propName][key] = value[key];
+    });
   }
 
   private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {

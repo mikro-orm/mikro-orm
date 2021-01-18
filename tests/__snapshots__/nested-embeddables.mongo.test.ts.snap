@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`embedded entities in mongo diffing 1`] = `
+"function(entity) {
+  const ret = {};
+  if ('_id' in entity && entity._id != null) {
+    ret._id = clone(entity._id);
+  }
+
+  if ('name' in entity) {
+    ret.name = entity.name;
+  }
+
+  if (entity.profile1 != null) {
+    ret.profile1_username = clone(entity.profile1.username);
+
+    if (entity.profile1.identity != null) {
+      ret.profile1_identity_email = clone(entity.profile1.identity.email);
+
+      if (entity.profile1.identity.meta != null) {
+        ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
+        ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
+      }
+    }
+  }
+
+  if ('profile2' in entity) {
+    ret.profile2 = cloneEmbeddable({ ...entity.profile2 });
+  }
+
+  return ret;
+}"
+`;

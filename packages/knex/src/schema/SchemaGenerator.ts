@@ -345,7 +345,7 @@ export class SchemaGenerator {
   }
 
   private shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty, update = false): boolean {
-    if (prop.persist === false) {
+    if (prop.persist === false || !prop.fieldNames) {
       return false;
     }
 
@@ -355,6 +355,13 @@ export class SchemaGenerator {
 
     if (prop.reference !== ReferenceType.SCALAR && !prop.primary && !this.helper.supportsSchemaConstraints() && !update) {
       return false;
+    }
+
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const rootProp = getRootProperty(prop);
+
+    if (rootProp.reference === ReferenceType.EMBEDDED) {
+      return prop === rootProp || !rootProp.object;
     }
 
     return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
