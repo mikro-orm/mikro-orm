@@ -29,6 +29,7 @@ jobs:
 
     - name: Build & deploy docs
       run: |
+        yarn
         cd docs
         yarn
         yarn deploy
