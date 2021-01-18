@@ -36,11 +36,11 @@ jobs:
       run: |
         yarn config set ignore-engines true
         yarn
-        cd docs
-        yarn
 
     - name: Build & deploy docs
       run: |
+        cd docs
+        yarn
         yarn deploy
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
