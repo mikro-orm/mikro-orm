@@ -2834,10 +2834,10 @@ commander@^6.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.0.tgz#b990bfb8ac030aedc6d11bc04d1488ffef56db75"
   integrity sha512-zP4jEKbe8SHzKJYQmq8Y9gYjtO/POJLgIdKgV7B9qNmABVFVc+ctqSX6iXh4mCpJfRBOabiZ2YKPg8ciDw6C+Q==
 
-comment-parser@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/comment-parser/-/comment-parser-1.0.1.tgz#6f40ebc3ac5063cf59b5eb415bc689636134cc4a"
-  integrity sha512-korDJ16mBVZexVd485jz4AeAcAFP1UzeecfVgfBCBojLFjMEHEHOY9vgk3e9o1zRSP0EscavonLki4JZDCKmrg==
+comment-parser@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/comment-parser/-/comment-parser-1.1.1.tgz#c0581d520677e2cfab1a568e94ea0400df9fe4bd"
+  integrity sha512-vue7cRi1ZO5/72FJ+wZ5+siTSBlUv3ZksTk8bWD2IkaA6obitzMZP3yI65azTJLckwmi8lxfPP5Sd9oGuZ8e2g==
 
 compare-func@^2.0.0:
   version "2.0.0"
@@ -3540,12 +3540,12 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-jsdoc@31.0.5:
-  version "31.0.5"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-31.0.5.tgz#f190d1b81989e9febb01356618b721cdc23675c4"
-  integrity sha512-TiBVItHnBAtSAY4YfYq0PBIfcCqmInYpK7ziCgCQgBUdRT30JtIqZ6TLrH5kF237fpfSdFUFYCVkdlc+MZPd0g==
+eslint-plugin-jsdoc@31.0.7:
+  version "31.0.7"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-31.0.7.tgz#a3ed0c1060521374f5c413e5a4bb90ef2ab9a60a"
+  integrity sha512-aAfVrXxgS+x9nW97DYZ1hEdKvobSqfT6S9xIU+pZYZ9mQW03B4l6s79CcAz6Q/RqYJj/nq+IOQO5ZFA8v7e0Og==
   dependencies:
-    comment-parser "1.0.1"
+    comment-parser "1.1.1"
     debug "^4.3.1"
     jsdoctypeparser "^9.0.0"
     lodash "^4.17.20"
