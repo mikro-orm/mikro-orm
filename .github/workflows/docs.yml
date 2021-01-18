@@ -21,17 +21,26 @@ jobs:
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
 
+    - name: Install libkrb5-dev (for run-rs)
+      run: |
+        sudo apt update
+        sudo apt install libkrb5-dev
+
     - name: Cache node_modules
       uses: actions/cache@v2
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-    - name: Build & deploy docs
+    - name: Install
       run: |
+        yarn config set ignore-engines true
         yarn
         cd docs
         yarn
+
+    - name: Build & deploy docs
+      run: |
         yarn deploy
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
