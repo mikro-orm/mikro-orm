@@ -58,10 +58,10 @@ export class Book {
   id!: number;
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
   @Property()
   title!: string;
@@ -102,10 +102,10 @@ export class Author {
   id!: string;
 
   @Property()
-  createdAt = new Date();
+  createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
-  updatedAt = new Date();
+  updatedAt: Date = new Date();
 
   @Property()
   name!: string;
@@ -117,7 +117,7 @@ export class Author {
   age?: number;
 
   @Property()
-  termsAccepted = false;
+  termsAccepted: boolean = false;
 
   @Property()
   identities?: string[];
