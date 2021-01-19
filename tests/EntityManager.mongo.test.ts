@@ -128,7 +128,7 @@ describe('EntityManagerMongo', () => {
     expect(booksByTitleDesc[1].title).toBe('My Life on The Wall, part 2');
     expect(booksByTitleDesc[2].title).toBe('My Life on The Wall, part 1');
 
-    const twoBooks = await booksRepository.find({ author: jon._id }, [], { title: 'DESC' }, 2);
+    const twoBooks = await booksRepository.find({ author: jon.id }, [], { title: 'DESC' }, 2);
     expect(twoBooks.length).toBe(2);
     expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
     expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
