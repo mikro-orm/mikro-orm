@@ -35,6 +35,7 @@ jobs:
       run: |
         cd docs
         yarn
+        yarn build
         yarn deploy
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
