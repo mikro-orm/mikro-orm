@@ -1,3 +1,7 @@
+/**
+ * @packageDocumentation
+ * @module migrations
+ */
 export * from './Migrator';
 export * from './Migration';
 export * from './MigrationRunner';

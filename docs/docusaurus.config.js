@@ -7,8 +7,7 @@
 
 const pkg = require('../packages/core/package.json');
 const versions = require('./versions.json');
-// const fs = require('fs');
-// const packages = fs.readdirSync('../packages').filter(d => !d.startsWith('.')).map(d => `../packages/${d}/src/index.ts`);
+const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => `../packages/${d}/src/index.ts`);
 
 module.exports = {
   title: 'MikroORM',
@@ -140,28 +139,17 @@ module.exports = {
     [
       'docusaurus-plugin-typedoc',
       {
-        entryPoints: ['../packages'],
+        entryPoints: packages,
         sidebar: {
           sidebarFile: 'typedoc-sidebar.js',
           readmeLabel: 'README',
           globalsLabel: 'Overview',
         },
-        globalsTitle: 'Overview',
-
-        // TypeDoc options (see typedoc --help)
-        target: 'ES2017',
         readme: 'none',
-        moduleResolution: 'node',
-        ignoreCompilerErrors: true,
-        // tsconfig: '../tsconfig.json',
-        // entryPoints: packages,
-        // sidebar: {
-        //   sidebarFile: 'typedoc-sidebar.js',
-        //   readmeLabel: 'README',
-        //   globalsLabel: 'Overview',
-        // },
-        // readme: 'none',
-        // tsconfig: '../tsconfig.json',
+        tsconfig: '../tsconfig.json',
+        excludeExternals: true,
+        externalPattern: '**/node_modules/*',
+        disableOutputCheck: true,
       },
     ],
   ],

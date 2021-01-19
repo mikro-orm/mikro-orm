@@ -1,3 +1,7 @@
+/**
+ * @packageDocumentation
+ * @module core
+ */
 /* istanbul ignore file */
 export {
   Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,

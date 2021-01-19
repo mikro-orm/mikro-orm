@@ -1,3 +1,7 @@
+/**
+ * @packageDocumentation
+ * @module knex
+ */
 /* istanbul ignore file */
 export * from './AbstractSqlConnection';
 export * from './AbstractSqlDriver';
