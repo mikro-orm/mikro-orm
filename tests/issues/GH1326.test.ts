@@ -1,5 +1,5 @@
-import { Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, Reference, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Reference } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql/src';
 
 @Entity()
 export class Driver {
@@ -49,7 +49,7 @@ export class LicenseType {
 
 describe('GH issue 1326', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -70,9 +70,7 @@ describe('GH issue 1326', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    const newDriver = new Driver();
-
-    wrap(newDriver).assign({
+    const newDriver = orm.em.create(Driver, {
       name: 'Martin Adámek',
       licenses: [{
         expiresAt: new Date(2050, 0, 1),
@@ -80,7 +78,7 @@ describe('GH issue 1326', () => {
           name: 'Standard Driver License',
         },
       }],
-    }, { em: orm.em });
+    });
 
     await orm.em.persistAndFlush(newDriver);
   });
