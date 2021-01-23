@@ -2,7 +2,7 @@ import { Configuration, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
 import { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityValidator } from '../entity';
+import { Collection, EntityIdentifier, EntityValidator } from '../entity';
 import { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 import { EntityComparator } from '../utils/EntityComparator';
@@ -71,11 +71,11 @@ export class ChangeSetComputer {
   }
 
   private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const pks = this.metadata.find(prop.type)!.primaryKeys;
     const entity = changeSet.entity[prop.name] as unknown as T;
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (isToOneOwner && pks.length === 1 && !Utils.isDefined(entity[pks[0]], true)) {
+    if (isToOneOwner && !entity.__helper!.hasPrimaryKey()) {
+      entity.__helper!.__identifier = entity.__helper!.__identifier ?? new EntityIdentifier();
       changeSet.payload[prop.name] = entity.__helper!.__identifier;
     }
   }

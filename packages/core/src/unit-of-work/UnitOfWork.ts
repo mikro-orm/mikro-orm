@@ -78,7 +78,11 @@ export class UnitOfWork {
   /**
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
-  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T {
+  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T | undefined {
+    if (!id || (Array.isArray(id) && id.length === 0)) {
+      return undefined;
+    }
+
     const root = this.metadata.find(entityName)!.root;
     const hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
 
@@ -92,7 +96,7 @@ export class UnitOfWork {
       return null;
     }
 
-    return this.getById<T>(entityName, pk as Primary<T>);
+    return this.getById<T>(entityName, pk as Primary<T>)!;
   }
 
   /**
@@ -296,7 +300,7 @@ export class UnitOfWork {
     delete changeSet.payload[prop.name];
   }
 
-  scheduleOrphanRemoval(entity: AnyEntity): void {
+  scheduleOrphanRemoval(entity?: AnyEntity): void {
     if (entity) {
       this.orphanRemoveStack.add(entity);
     }
