@@ -13,7 +13,7 @@ import {
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
-export class RadioOption {
+export class D {
 
   @PrimaryKey()
   id!: number;
@@ -23,15 +23,15 @@ export class RadioOption {
 
   @ManyToOne({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => Radio,
+    entity: () => C,
     wrappedReference: true,
   })
-  radio!: IdentifiedReference<Radio>;
+  c!: IdentifiedReference<C>;
 
 }
 
 @Entity()
-export class Radio {
+export class C {
 
   @PrimaryKey()
   id!: number;
@@ -41,41 +41,66 @@ export class Radio {
 
   @ManyToOne({
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => Project,
+    entity: () => B,
     wrappedReference: true,
   })
-  project!: IdentifiedReference<Project>;
+  b!: IdentifiedReference<B>;
 
   @OneToMany(
-    () => RadioOption,
-    option => option.radio,
+    () => D,
+    optionOption => optionOption.c,
     {
       eager: true,
       orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
     },
   )
-  options = new Collection<RadioOption>(this);
+  ds = new Collection<D>(this);
 
 }
 
 @Entity()
-export class Project {
+export class B {
 
   @PrimaryKey()
   id!: number;
 
   @Property()
-  name!: string;
+  order!: number;
+
+  @ManyToOne({
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    entity: () => A,
+    wrappedReference: true,
+  })
+  a!: IdentifiedReference<A>;
 
   @OneToMany(
-    () => Radio,
-    radio => radio.project,
+    () => C,
+    option => option.b,
     {
       eager: true,
       orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
     },
   )
-  radios = new Collection<Radio>(this);
+  cs = new Collection<C>(this);
+
+}
+
+@Entity()
+export class A {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToMany(
+    () => B,
+    radio => radio.a,
+    {
+      eager: true,
+      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+    },
+  )
+  bs = new Collection<B>(this);
 
 }
 
@@ -87,7 +112,7 @@ describe('GH issue 1331', () => {
     orm = await MikroORM.init({
       type: 'sqlite',
       dbName: ':memory:',
-      entities: [Project, Radio, RadioOption],
+      entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,
     });
     await orm.getSchemaGenerator().createSchema();
@@ -98,36 +123,42 @@ describe('GH issue 1331', () => {
   });
 
   test(`relations' orderBy should be respectend when using LoadStrategy.JOINED`, async () => {
-    const project = orm.em.create(Project, { name: 'project name' });
-    const radio1 = orm.em.create(Radio, { order: 0 });
-    const radio2 = orm.em.create(Radio, { order: 2 });
-    const radio3 = orm.em.create(Radio, { order: 1 });
+    const a = orm.em.create(A, {});
+    const b1 = orm.em.create(B, { order: 0 });
+    const b2 = orm.em.create(B, { order: 2 });
+    const b3 = orm.em.create(B, { order: 1 });
 
-    radio1.options.add(orm.em.create(RadioOption, { order: 3 }));
-    radio1.options.add(orm.em.create(RadioOption, { order: 2 }));
-    radio1.options.add(orm.em.create(RadioOption, { order: 4 }));
-    radio1.options.add(orm.em.create(RadioOption, { order: 1 }));
+    const c1 = orm.em.create(C, { order: 3 });
+    const c2 = orm.em.create(C, { order: 4 });
+    const c3 = orm.em.create(C, { order: 1 });
 
-    radio2.options.add(orm.em.create(RadioOption, { order: 5 }));
-    radio2.options.add(orm.em.create(RadioOption, { order: 2 }));
-    radio2.options.add(orm.em.create(RadioOption, { order: 11 }));
-    radio2.options.add(orm.em.create(RadioOption, { order: 12 }));
+    c1.ds.add(orm.em.create(D, { order: 5 }));
+    c1.ds.add(orm.em.create(D, { order: 2 }));
+    c1.ds.add(orm.em.create(D, { order: 11 }));
 
-    radio3.options.add(orm.em.create(RadioOption, { order: 0 }));
-    radio3.options.add(orm.em.create(RadioOption, { order: 2 }));
-    radio3.options.add(orm.em.create(RadioOption, { order: 4 }));
-    radio3.options.add(orm.em.create(RadioOption, { order: 1 }));
+    b1.cs.add(c1);
+    b1.cs.add(c2);
+    b1.cs.add(c3);
 
-    project.radios.add(radio1, radio2, radio3);
+    b2.cs.add(orm.em.create(C, { order: 5 }));
+    b2.cs.add(orm.em.create(C, { order: 2 }));
+    b2.cs.add(orm.em.create(C, { order: 11 }));
 
-    await orm.em.persistAndFlush(project);
+    b3.cs.add(orm.em.create(C, { order: 0 }));
+    b3.cs.add(orm.em.create(C, { order: 4 }));
+    b3.cs.add(orm.em.create(C, { order: 1 }));
+
+    a.bs.add(b1, b2, b3);
+
+    await orm.em.persistAndFlush(a);
     orm.em.clear();
 
-    const loadedProject = await orm.em.findOneOrFail(Project, project.id);
-    expect(loadedProject.radios.getItems().map(r => r.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedProject.radios[0].options.getIdentifiers('order')).toEqual([1, 2, 3, 4]);
-    expect(loadedProject.radios[2].options.getIdentifiers('order')).toEqual([2, 5, 11, 12]);
-    expect(loadedProject.radios[1].options.getIdentifiers('order')).toEqual([0, 1, 2, 4]);
+    const loadedA = await orm.em.findOneOrFail(A, a.id);
+    expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
+    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1,  3, 4]);
+    expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
+    expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
+    expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
   });
 
 });

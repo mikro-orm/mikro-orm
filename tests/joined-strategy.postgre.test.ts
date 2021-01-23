@@ -22,10 +22,10 @@ describe('Joined loading strategy', () => {
 
     const a2 = await orm.em.findOneOrFail(Author2, author, { populate: ['books2', 'following'] });
     expect(a2.books2).toHaveLength(2);
-    expect(a2.books2[0].title).toBe('The Stranger');
-    expect(a2.books2[0].priceTaxed).toBe(119);
-    expect(a2.books2[1].title).toBe('The Fall');
-    expect(a2.books2[1].priceTaxed).toBe(238);
+    expect(a2.books2[0].title).toBe('The Fall');
+    expect(a2.books2[0].priceTaxed).toBe(238);
+    expect(a2.books2[1].title).toBe('The Stranger');
+    expect(a2.books2[1].priceTaxed).toBe(119);
   });
 
   test('populate OneToMany with joined strategy [find()]', async () => {
@@ -41,20 +41,20 @@ describe('Joined loading strategy', () => {
     const ret = await orm.em.find(Author2, {}, { populate: ['books2', 'following'], orderBy: { email: 'asc' } });
     expect(ret).toHaveLength(3);
     expect(ret[0].books2).toHaveLength(2);
-    expect(ret[0].books2[0].title).toEqual('The Stranger 1');
-    expect(ret[0].books2[0].priceTaxed).toBe(119);
-    expect(ret[0].books2[1].title).toEqual('The Fall 1');
-    expect(ret[0].books2[1].priceTaxed).toBe(238);
+    expect(ret[0].books2[0].title).toEqual('The Fall 1');
+    expect(ret[0].books2[0].priceTaxed).toBe(238);
+    expect(ret[0].books2[1].title).toEqual('The Stranger 1');
+    expect(ret[0].books2[1].priceTaxed).toBe(119);
     expect(ret[1].books2).toHaveLength(2);
-    expect(ret[1].books2[0].title).toEqual('The Stranger 2');
-    expect(ret[1].books2[0].priceTaxed).toBe(357);
-    expect(ret[1].books2[1].title).toEqual('The Fall 2');
-    expect(ret[1].books2[1].priceTaxed).toBe(476);
+    expect(ret[1].books2[0].title).toEqual('The Fall 2');
+    expect(ret[1].books2[0].priceTaxed).toBe(476);
+    expect(ret[1].books2[1].title).toEqual('The Stranger 2');
+    expect(ret[1].books2[1].priceTaxed).toBe(357);
     expect(ret[2].books2).toHaveLength(2);
-    expect(ret[2].books2[0].title).toEqual('The Stranger 3');
-    expect(ret[2].books2[0].priceTaxed).toBe(595);
-    expect(ret[2].books2[1].title).toEqual('The Fall 3');
-    expect(ret[2].books2[1].priceTaxed).toBe(714);
+    expect(ret[2].books2[0].title).toEqual('The Fall 3');
+    expect(ret[2].books2[0].priceTaxed).toBe(714);
+    expect(ret[2].books2[1].title).toEqual('The Stranger 3');
+    expect(ret[2].books2[1].priceTaxed).toBe(595);
   });
 
   test('populate ManyToOne with joined strategy [findOne()]', async () => {

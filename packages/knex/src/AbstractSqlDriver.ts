@@ -40,6 +40,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
+    const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
@@ -48,7 +49,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     qb.select(fields)
       .populate(populate)
       .where(where)
-      .orderBy(options.orderBy!)
+      .orderBy({ ...options.orderBy!, ...joinedPropsOrderBy })
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(options.schema);
@@ -581,6 +582,30 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(mode);
     await this.rethrow(qb.execute());
+  }
+
+  protected buildJoinedPropsOrderBy<T extends AnyEntity<T>>(entityName: string, qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], parentPath?: string): QueryOrderMap {
+    const orderBy: QueryOrderMap = {};
+    const joinedProps = this.joinedProps(meta, populate);
+
+    joinedProps.forEach(relation => {
+      const prop = meta.properties[relation.field];
+      const propOrderBy = prop.orderBy;
+
+      const path = `${parentPath ? parentPath : entityName}.${relation.field}`;
+      const propAlias = qb.getAliasForJoinPath(path);
+      if (propOrderBy) {
+        Object.keys(propOrderBy).forEach(field => {
+          Object.assign(orderBy, { [`${propAlias}.${field}`]: propOrderBy[field] });
+        });
+      }
+
+      if (relation.children) {
+        const meta2 = this.metadata.find<T>(prop.type)!;
+        Object.assign(orderBy, { ...this.buildJoinedPropsOrderBy(prop.name, qb, meta2, relation.children, path) });
+      }
+    });
+    return orderBy;
   }
 
   protected buildFields<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
