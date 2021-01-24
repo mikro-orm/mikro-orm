@@ -12,9 +12,9 @@ export class SourceFile {
 
   generate(): string {
     this.coreImports.add('Entity');
-    let ret = `@Entity()\n`;
 
-    this.meta.indexes.forEach(index => {
+    let ret = `@Entity(${this.getCollectionDecl()})\n`;
+        this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
       const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
@@ -52,6 +52,12 @@ export class SourceFile {
 
   getBaseName() {
     return this.meta.className + '.ts';
+  }
+
+  private getCollectionDecl() {
+    const needsCollection = this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className);
+
+    return needsCollection ? `{ collection: '${this.meta.collection}' }` : '';
   }
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
