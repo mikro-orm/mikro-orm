@@ -12,9 +12,9 @@ export class SourceFile {
 
   generate(): string {
     this.coreImports.add('Entity');
-
     let ret = `@Entity(${this.getCollectionDecl()})\n`;
-        this.meta.indexes.forEach(index => {
+
+    this.meta.indexes.forEach(index => {
       this.coreImports.add('Index');
       const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
