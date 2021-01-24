@@ -110,18 +110,15 @@ describe('embedded entities in postgresql', () => {
       amount: 15200.23,
     });
 
+    mock.mock.calls.length = 0;
     await orm.em.flush();
-    expect(mock.mock.calls[4][0]).toMatch('begin');
-    expect(mock.mock.calls[5][0]).toMatch(
-      'update "user" set "savings_amount" = $1 where "id" = $2'
-    );
-    expect(mock.mock.calls[6][0]).toMatch('commit');
+    expect(mock.mock.calls.length).toBe(0);
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, {
       savings: { amount: 15200.23 },
     });
-    expect(mock.mock.calls[7][0]).toMatch(
+    expect(mock.mock.calls[0][0]).toMatch(
       'select "e0".* from "user" as "e0" where "e0"."savings_amount" = $1 limit $2'
     );
     expect(u1.savings.amount).toBe(15200.23);

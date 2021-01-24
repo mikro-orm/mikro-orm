@@ -208,7 +208,7 @@ export class EntityComparator {
 
   private getPropertyCondition<T>(prop: EntityProperty<T>): string {
     let ret = `'${prop.name}' in entity`;
-    const isRef = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference);
+    const isRef = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && !prop.mapToPk;
     const isSetter = isRef && !!(prop.inversedBy || prop.mappedBy);
 
     if (prop.primary || isSetter) {

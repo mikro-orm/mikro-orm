@@ -184,7 +184,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
-    where = await this.applyFilters(entityName, where, options.filters ?? {}, 'read');
+    where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
     return where;

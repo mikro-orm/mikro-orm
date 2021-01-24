@@ -69,7 +69,8 @@ export class UnitOfWork {
     helper!.__em = this.em;
 
     if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
-      helper!.__originalEntityData = data;
+      // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
+      helper!.__originalEntityData = this.comparator.prepareEntity(entity);
     }
 
     return entity;

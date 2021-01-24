@@ -101,7 +101,7 @@ export class EntityFactory {
 
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
-      this.unitOfWork.registerManaged<T>(entity);
+      this.unitOfWork.registerManaged(entity);
     }
 
     return entity;
