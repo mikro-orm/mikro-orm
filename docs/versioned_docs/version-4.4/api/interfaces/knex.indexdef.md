@@ -1,0 +1,38 @@
+---
+id: "knex.indexdef"
+title: "Interface: IndexDef"
+sidebar_label: "IndexDef"
+hide_title: true
+---
+
+# Interface: IndexDef
+
+[knex](../modules/knex.md).IndexDef
+
+## Hierarchy
+
+* **IndexDef**
+
+## Properties
+
+### columnNames
+
+• **columnNames**: *string*[]
+
+Defined in: [packages/knex/src/typings.ts:63](https://github.com/mikro-orm/mikro-orm/blob/969d4229bd/packages/knex/src/typings.ts#L63)
+
+___
+
+### keyName
+
+• **keyName**: *string*
+
+Defined in: [packages/knex/src/typings.ts:62](https://github.com/mikro-orm/mikro-orm/blob/969d4229bd/packages/knex/src/typings.ts#L62)
+
+___
+
+### unique
+
+• **unique**: *boolean*
+
+Defined in: [packages/knex/src/typings.ts:64](https://github.com/mikro-orm/mikro-orm/blob/969d4229bd/packages/knex/src/typings.ts#L64)

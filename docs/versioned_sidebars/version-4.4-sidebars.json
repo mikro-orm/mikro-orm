@@ -1,0 +1,1362 @@
+{
+  "version-4.4/docs": [
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Overview",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/installation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/defining-entities"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/relationships"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-manager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/unit-of-work"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Fundamentals",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/identity-map"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-references"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/collections"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/repositories"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/transactions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/inheritance-mapping"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/cascading"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/filters"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/deployment"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/query-builder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/caching"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/debugging"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Advanced Features",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/nested-populate"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/query-conditions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/propagation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/loading-strategies"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/serializing"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-helper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/lifecycle-hooks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/composite-keys"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/custom-types"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/embeddables"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-schema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/metadata-providers"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/metadata-cache"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/schema-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-generator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/naming-strategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/property-validation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/migrations"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/read-connections"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Reference",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-manager-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/repositories-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/query-builder-api"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/decorators"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/configuration"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Usage with Different Drivers",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/usage-with-sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/usage-with-mongo"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Recipes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/quick-start"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/usage-with-nestjs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/usage-with-js"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/entity-constructors"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/multiple-schemas"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/using-bigint-pks"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/async-local-storage"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/custom-driver"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Example Integrations",
+      "items": [
+        {
+          "type": "link",
+          "label": "Express + MongoDB + TypeScript",
+          "href": "https://github.com/mikro-orm/express-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NestJS + MySQL + TypeScript",
+          "href": "https://github.com/mikro-orm/nestjs-example-app"
+        },
+        {
+          "type": "link",
+          "label": "RealWorld example app (Nest + MySQL)",
+          "href": "https://github.com/mikro-orm/nestjs-realworld-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Express + MongoDB + JavaScript",
+          "href": "https://github.com/mikro-orm/express-js-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Koa + SQLite + JavaScript",
+          "href": "https://github.com/mikro-orm/koa-ts-example-app"
+        },
+        {
+          "type": "link",
+          "label": "Inversify + PostgreSQL",
+          "href": "https://github.com/PodaruDragos/inversify-example-app"
+        },
+        {
+          "type": "link",
+          "label": "NextJS + MySQL",
+          "href": "https://github.com/jonahallibone/mikro-orm-nextjs"
+        }
+      ]
+    }
+  ],
+  "version-4.4/API": [
+    {
+      "type": "doc",
+      "id": "version-4.4/api/index"
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Namespaces",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/api/modules/knex.knex-1"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Enumerations",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.cascade"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.changesettype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.eventtype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.groupoperator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.loadstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.lockmode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.nodestate"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.queryflag"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.queryoperator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.queryorder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.queryordernumeric"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/core.referencetype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/enums/knex.querytype"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Classes",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/cli.cliconfigurator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/cli.clihelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.abstractnamingstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.arraycollection"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.arraytype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.baseentity"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.biginttype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.blobtype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.changeset"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.changesetcomputer"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.changesetpersister"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.collection"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.commitordercalculator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.configuration"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.configurationloader"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.connection"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.connectionexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.constraintviolationexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.databasedriver"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.databaseobjectexistsexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.databaseobjectnotfoundexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.datetype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.deadlockexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.driverexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityassigner"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entitycasenamingstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entitycomparator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityfactory"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityhelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityidentifier"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityloader"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entitymanager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entitymetadata"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityrepository"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityschema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entitytransformer"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.entityvalidator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.enumarraytype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.eventmanager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.exceptionconverter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.filecacheadapter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.foreignkeyconstraintviolationexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.hydrator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.identitymap"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.invalidfieldnameexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.javascriptmetadataprovider"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.jsontype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.lockwaittimeoutexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.logger"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.memorycacheadapter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.metadatadiscovery"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.metadataerror"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.metadataprovider"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.metadatastorage"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.metadatavalidator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.mikroorm"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.mongonamingstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.nonuniquefieldnameexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.notfounderror"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.notnullconstraintviolationexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.nullcacheadapter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.nullhighlighter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.objecthydrator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.optimisticlockerror"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.platform"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.queryhelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.readonlyexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.reference"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.reflectmetadataprovider"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.requestcontext"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.serializationcontext"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.serverexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.syntaxerrorexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.tableexistsexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.tablenotfoundexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.timetype"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.transactioncontext"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.transactioneventbroadcaster"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.type"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.underscorenamingstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.uniqueconstraintviolationexception"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.unitofwork"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.utils"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.validationerror"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/core.wrappedentity"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/entity-generator.entitygenerator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.knex.client"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.knex.knextimeouterror"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.knex.querybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.knex.seeder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.abstractsqlconnection"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.abstractsqldriver"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.abstractsqlplatform"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.arraycriterianode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.criterianode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.criterianodefactory"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.databaseschema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.databasetable"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.entitymanager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.entityrepository"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.objectcriterianode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.querybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.querybuilderhelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.scalarcriterianode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.schemagenerator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.schemahelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.sqlentitymanager"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/knex.sqlentityrepository"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/migrations.migration"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/migrations.migrationgenerator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/migrations.migrationrunner"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/migrations.migrationstorage"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/migrations.migrator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/classes/reflection.tsmorphmetadataprovider"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "type": "category",
+      "label": "Interfaces",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.assignoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.cacheadapter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.connectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.connectionoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.countoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.deleteoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.edge"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.entityproperty"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.enumoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.eventargs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.eventsubscriber"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.factoryoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.findoneoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.findoneorfailoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.findoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.flatqueryordermap"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.flusheventargs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.formulaoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.highlighter"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.iconfiguration"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.idatabasedriver"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.iwrappedentity"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.indexoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.initoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.loadedcollection"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.loadedreference"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.manytomanyoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.manytooneoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.migrationobject"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.mikroormoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.namingstrategy"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.node"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.onetooneoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.poolconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.primarykeyoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.queryordermap"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.queryresult"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.referenceoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.serializedprimarykeyoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.settings"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.transactioneventargs"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.uniqueoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/core.updateoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.aliasdict"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.aliasquerybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.altercolumnbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.altertablebuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.as"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.asymmetricaggregation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.batchinsertbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.chainableinterface"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.columnbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.columninfo"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.columnnamequerybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.config"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.connectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.createtablebuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.distinct"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.distincton"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.enumoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.foreignconstraintbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.functionhelper"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.groupby"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.having"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.havingrange"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.intersect"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.join"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.joincallback"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.joinclause"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.joinraw"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.logger"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mariasqlconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mariasslconfiguration"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.migration"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.migrationsource"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.migrator"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.migratorconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mssqlconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.multikeyforeignconstraintbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mysql2connectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mysqlaltercolumnbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.mysqlconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.onconflictquerybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.oracledbconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.orderby"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.pgconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.poolconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.postgresqlcolumnbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.queryinterface"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.raw"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.rawbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.rawquerybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.ref"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.refbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.referencingcolumnbuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.schemabuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.seederconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.select"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.socketconnectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.sql"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.sqlnative"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.sqlite3connectionconfig"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.stringtagsupport"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.table"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.tablebuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.transaction"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.typepreservingaggregation"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.union"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.valuedict"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.where"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.wherebetween"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.whereexists"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.wherein"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.wherenull"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.whereraw"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.wherewrapped"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.with"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.withraw"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.withschema"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex.withwrapped"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.column"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.foreignkey"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.icriterianode"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.iquerybuilder"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.index"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.indexdef"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.issame"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.joinoptions"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.knex-2"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.table"
+        },
+        {
+          "type": "doc",
+          "id": "version-4.4/api/interfaces/knex.tabledifference"
+        }
+      ]
+    }
+  ]
+}
