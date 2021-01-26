@@ -1502,7 +1502,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
     const tags = await orm.em.find(BookTag2, { booksUnordered: { title: { $ne: 'My Life on The Wall, part 3' } } }, ['booksUnordered.perex'], { name: QueryOrder.ASC });
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`book2_uuid_pk`, `e1`.`book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
       'left join `book_to_tag_unordered` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
       'where `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
@@ -1635,7 +1635,7 @@ describe('EntityManagerMySql', () => {
       'where `e0`.`id` = ? ' +
       'order by `e1`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author2_2_id`, `e1`.`author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author2_2_id` as `fk__author2_2_id`, `e1`.`author2_1_id` as `fk__author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
       'from `author2` as `e0` ' +
       'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
@@ -1652,7 +1652,7 @@ describe('EntityManagerMySql', () => {
       'where `e1`.`author2_2_id` = ? ' +
       'order by `e2`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`author2_2_id`, `e1`.`author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`author2_2_id` as `fk__author2_2_id`, `e1`.`author2_1_id` as `fk__author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
       'from `author2` as `e0` ' +
       'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +

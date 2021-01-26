@@ -401,10 +401,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const map: Dictionary<T[]> = {};
     owners.forEach(owner => map['' + Utils.getPrimaryKeyHash(owner as string[])] = []);
     items.forEach((item: any) => {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map(col => item[col]));
+      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map(col => item[`fk__${col}`]));
       map[key].push(item);
-      prop.joinColumns.forEach(col => delete item[col]);
-      prop.inverseJoinColumns.forEach(col => delete item[col]);
+      prop.joinColumns.forEach(col => delete item[`fk__${col}`]);
+      prop.inverseJoinColumns.forEach(col => delete item[`fk__${col}`]);
     });
 
     return map;

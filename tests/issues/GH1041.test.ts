@@ -91,7 +91,7 @@ describe('GH issue 1041, 1043', () => {
     const findPromise = orm.em.findOne(User, { apps: 1 }, { populate: { apps: LoadStrategy.SELECT_IN } });
     await expect(findPromise).resolves.toBeInstanceOf(User);
     expect(log.mock.calls[0][0]).toMatch('select `e0`.* from `user` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`user_id` where `e1`.`app_id` = 1 limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`app_id`, `e1`.`user_id` from `app` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`app_id` where `e1`.`user_id` in (123)');
+    expect(log.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`app_id` as `fk__app_id`, `e1`.`user_id` as `fk__user_id` from `app` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`app_id` where `e1`.`user_id` in (123)');
   });
 
   test('joined strategy: find by many-to-many relation ID', async () => {
@@ -104,7 +104,7 @@ describe('GH issue 1041, 1043', () => {
     const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: { apps: LoadStrategy.SELECT_IN } });
     await expect(findPromise).resolves.toBeInstanceOf(User);
     expect(log.mock.calls[0][0]).toMatch('select `e0`.* from `user` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`user_id` where `e1`.`app_id` in (1, 2, 3) limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`app_id`, `e1`.`user_id` from `app` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`app_id` where `e1`.`user_id` in (123)');
+    expect(log.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`app_id` as `fk__app_id`, `e1`.`user_id` as `fk__user_id` from `app` as `e0` left join `user_apps` as `e1` on `e0`.`id` = `e1`.`app_id` where `e1`.`user_id` in (123)');
   });
 
   test('joined strategy: find by many-to-many relation IDs', async () => {

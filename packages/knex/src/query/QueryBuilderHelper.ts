@@ -183,8 +183,8 @@ export class QueryBuilderHelper {
     }
 
     return [
-      ...join.joinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type)),
-      ...join.inverseJoinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type)),
+      ...join.joinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`)),
+      ...join.inverseJoinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`)),
     ];
   }
 

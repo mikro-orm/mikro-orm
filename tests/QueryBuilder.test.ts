@@ -512,7 +512,7 @@ describe('QueryBuilder', () => {
   test('select by m:n inverse side (that is not defined as property) via populate', async () => {
     const qb = orm.em.createQueryBuilder(Test2);
     qb.select('*').populate([{ field: 'publisher2_tests' }]).where({ 'publisher2_tests.Publisher2_owner': { $in: [ 1, 2 ] } }).orderBy({ 'publisher2_tests.id': QueryOrder.ASC });
-    let sql = 'select `e0`.*, `e1`.`test2_id`, `e1`.`publisher2_id` from `test2` as `e0` ';
+    let sql = 'select `e0`.*, `e1`.`test2_id` as `fk__test2_id`, `e1`.`publisher2_id` as `fk__publisher2_id` from `test2` as `e0` ';
     sql += 'left join `publisher2_tests` as `e1` on `e0`.`id` = `e1`.`test2_id` ';
     sql += 'where `e1`.`publisher2_id` in (?, ?) ';
     sql += 'order by `e1`.`id` asc';
@@ -523,7 +523,7 @@ describe('QueryBuilder', () => {
   test('select by m:n self reference owner', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').populate([{ field: 'author2_following' }]).where({ 'author2_following.Author2_owner': { $in: [ 1, 2 ] } });
-    let sql = 'select `e0`.*, `e1`.`author2_2_id`, `e1`.`author2_1_id` from `author2` as `e0` ';
+    let sql = 'select `e0`.*, `e1`.`author2_2_id` as `fk__author2_2_id`, `e1`.`author2_1_id` as `fk__author2_1_id` from `author2` as `e0` ';
     sql += 'left join `author2_following` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ';
     sql += 'where `e1`.`author2_1_id` in (?, ?)';
     expect(qb.getQuery()).toEqual(sql);
@@ -533,7 +533,7 @@ describe('QueryBuilder', () => {
   test('select by m:n self reference inverse', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').populate([{ field: 'author2_following' }]).where({ 'author2_following.Author2_inverse': { $in: [ 1, 2 ] } });
-    let sql = 'select `e0`.*, `e1`.`author2_1_id`, `e1`.`author2_2_id` from `author2` as `e0` ';
+    let sql = 'select `e0`.*, `e1`.`author2_1_id` as `fk__author2_1_id`, `e1`.`author2_2_id` as `fk__author2_2_id` from `author2` as `e0` ';
     sql += 'left join `author2_following` as `e1` on `e0`.`id` = `e1`.`author2_1_id` ';
     sql += 'where `e1`.`author2_2_id` in (?, ?)';
     expect(qb.getQuery()).toEqual(sql);
@@ -543,7 +543,7 @@ describe('QueryBuilder', () => {
   test('select by m:n with composite keys', async () => {
     const qb = orm.em.createQueryBuilder(User2);
     qb.select('*').populate([{ field: 'user2_cars' }]).where({ 'user2_cars.Car2_inverse': { $in: [ [1, 2], [3, 4] ] } });
-    const sql = 'select `e0`.*, `e1`.`user2_first_name`, `e1`.`user2_last_name`, `e1`.`car2_name`, `e1`.`car2_year` ' +
+    const sql = 'select `e0`.*, `e1`.`user2_first_name` as `fk__user2_first_name`, `e1`.`user2_last_name` as `fk__user2_last_name`, `e1`.`car2_name` as `fk__car2_name`, `e1`.`car2_year` as `fk__car2_year` ' +
       'from `user2` as `e0` left join `user2_cars` as `e1` on `e0`.`first_name` = `e1`.`user2_first_name` and `e0`.`last_name` = `e1`.`user2_last_name` ' +
       'where (`e1`.`car2_name`, `e1`.`car2_year`) in ((?, ?), (?, ?))';
     expect(qb.getQuery()).toEqual(sql);
