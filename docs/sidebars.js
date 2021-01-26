@@ -1,6 +1,3 @@
-const { existsSync } = require('fs');
-const typedocSidebar = existsSync('./typedoc-sidebar.js') ? require('./typedoc-sidebar.js') : {};
-
 module.exports = {
   docs: {
     'Overview': [
@@ -76,5 +73,5 @@ module.exports = {
       { type: 'link', label: 'NextJS + MySQL', href: 'https://github.com/jonahallibone/mikro-orm-nextjs' },
     ],
   },
-  API: typedocSidebar,
+  API: require('./typedoc-sidebar.js'),
 };
