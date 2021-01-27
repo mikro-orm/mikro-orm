@@ -272,6 +272,9 @@ describe('embedded entities in mysql', () => {
       city: 'London 3',
       country: 'UK 3',
     });
+
+    assign(user, { address2: null });
+    expect(user.address2).toBe(null);
   });
 
   test('should throw error with object&prefix false', async () => {
