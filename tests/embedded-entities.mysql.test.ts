@@ -252,6 +252,9 @@ describe('embedded entities in mysql', () => {
     assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
     expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
 
+    assign(user, { address5: { city: '51', country: '52', postalCode: '53', street: '54' } });
+    expect(user.address5).toMatchObject({ city: '51', country: '52', postalCode: '53', street: '54' });
+
     expect(user.address1).toBeInstanceOf(Address1);
     expect(user.address1).toEqual({
       street: 'Downing street 10',
@@ -273,8 +276,26 @@ describe('embedded entities in mysql', () => {
       country: 'UK 3',
     });
 
+    assign(user, { address2: undefined });
+    expect(user.address2).toBe(undefined);
+
     assign(user, { address2: null });
     expect(user.address2).toBe(null);
+
+    expect(() => {
+      assign(user, { address4: undefined });
+    }).toThrow('You must pass a non-undefined value to the property address4 of entity User.');
+
+    expect(() => {
+      assign(user, { address4: null });
+    }).toThrow('You must pass a non-null value to the property address4 of entity User.');
+
+
+    assign(user, { address5: undefined });
+    expect(user.address5).toBe(undefined);
+
+    assign(user, { address5: null });
+    expect(user.address5).toBe(null);
   });
 
   test('should throw error with object&prefix false', async () => {

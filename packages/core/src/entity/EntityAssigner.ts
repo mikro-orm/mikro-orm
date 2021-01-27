@@ -27,6 +27,10 @@ export class EntityAssigner {
 
       let value = data[prop as keyof EntityData<T>];
 
+      if (!props[prop].nullable && (value === undefined || value === null)) {
+        throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
+      }
+
       if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
       }
@@ -124,19 +128,21 @@ export class EntityAssigner {
     const Embeddable = prop.embeddable;
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
     entity[propName] = options.mergeObjects ? entity[propName] || Object.create(Embeddable.prototype) : Object.create(Embeddable.prototype);
-    if (prop.nullable && value === null) {
-      entity[propName] = null;
-    } else if (typeof value === 'object') {
-      Object.keys(value).forEach(key => {
-        const childProp = prop.embeddedProps[key];
 
-        if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
-          return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
-        }
-
-        entity[propName][key] = value[key];
-      });
+    if (!value) {
+      entity[propName] = value;
+      return;
     }
+
+    Object.keys(value).forEach(key => {
+      const childProp = prop.embeddedProps[key];
+
+      if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
+        return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
+      }
+
+      entity[propName][key] = value[key];
+    });
   }
 
   private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
