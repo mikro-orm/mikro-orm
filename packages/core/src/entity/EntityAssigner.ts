@@ -124,16 +124,19 @@ export class EntityAssigner {
     const Embeddable = prop.embeddable;
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
     entity[propName] = options.mergeObjects ? entity[propName] || Object.create(Embeddable.prototype) : Object.create(Embeddable.prototype);
+    if (prop.nullable && value === null) {
+      entity[propName] = null;
+    } else if (typeof value === 'object') {
+      Object.keys(value).forEach(key => {
+        const childProp = prop.embeddedProps[key];
 
-    Object.keys(value).forEach(key => {
-      const childProp = prop.embeddedProps[key];
+        if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
+          return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
+        }
 
-      if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
-        return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
-      }
-
-      entity[propName][key] = value[key];
-    });
+        entity[propName][key] = value[key];
+      });
+    }
   }
 
   private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
