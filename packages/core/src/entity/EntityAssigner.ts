@@ -27,7 +27,7 @@ export class EntityAssigner {
 
       let value = data[prop as keyof EntityData<T>];
 
-      if (!props[prop].nullable && (value === undefined || value === null)) {
+      if (props[prop] && !props[prop]?.nullable && (value === undefined || value === null)) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
       }
 
