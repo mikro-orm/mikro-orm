@@ -2,7 +2,7 @@
 import umzug from 'umzug';
 import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
+import { DatabaseSchema, DatabaseTable, MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
 import { initORMMySql } from './bootstrap';
 
@@ -133,8 +133,8 @@ describe('Migrator', () => {
 
   test('migration is skipped when no diff', async () => {
     const migrator = new Migrator(orm.em);
-    const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
-    getSchemaDiffMock.mockResolvedValueOnce([]);
+    const schemaGeneratorMock = jest.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
+    schemaGeneratorMock.mockResolvedValue('');
     const migration = await migrator.createMigration();
     expect(migration).toEqual({ fileName: '', code: '', diff: [] });
   });

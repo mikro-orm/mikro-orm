@@ -198,8 +198,6 @@ export class Migration20191013214813 extends Migration {
     "create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");",
     "create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");",
     "alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -403,8 +401,6 @@ export class Migration20191013214813 extends Migration {
     "create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");",
     "create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");",
     "alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -431,8 +427,6 @@ exports.Migration20191013214813 = Migration20191013214813;
     "alter table \\"book2\\" drop column \\"foo\\";",
     "",
     "alter table \\"test2\\" drop column \\"path\\";",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.js",
 }
@@ -456,8 +450,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \\"book2\\" drop column \\"foo\\";",
     "",
     "alter table \\"test2\\" drop column \\"path\\";",
-    undefined,
-    undefined,
   ],
   "fileName": "migration-20191013214813.ts",
 }
@@ -481,8 +473,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \\"book2\\" drop column \\"foo\\";",
     "",
     "alter table \\"test2\\" drop column \\"path\\";",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }

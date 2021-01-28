@@ -353,8 +353,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
     "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
     "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -696,8 +694,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
     "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
     "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -732,8 +728,6 @@ exports.Migration20191013214813 = Migration20191013214813;
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
     "alter table \`test2\` drop \`foo___baz\`;",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.js",
 }
@@ -765,8 +759,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
     "alter table \`test2\` drop \`foo___baz\`;",
-    undefined,
-    undefined,
   ],
   "fileName": "migration-20191013214813.ts",
 }
@@ -798,8 +790,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
     "alter table \`test2\` drop \`foo___baz\`;",
-    undefined,
-    undefined,
   ],
   "fileName": "Migration20191013214813.ts",
 }
