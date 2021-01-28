@@ -175,12 +175,12 @@ export class Migrator {
       lines.push(...dump.split('\n'));
     }
 
-    for (let i = lines.length - 1; i > 0; i--) {
+    for (let i = lines.length - 1; i >= 0; i--) {
       if (lines[i]) {
         break;
       }
 
-      delete lines[i];
+      lines.splice(i, 1);
     }
 
     return lines;
