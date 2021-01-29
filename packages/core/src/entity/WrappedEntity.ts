@@ -7,6 +7,7 @@ import { AssignOptions, EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import { LockMode } from '../enums';
 import { ValidationError } from '../errors';
+import { EntityIdentifier } from './EntityIdentifier';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -21,7 +22,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __originalEntityData?: EntityData<T>;
 
   /** holds wrapped primary key so we can compute change set without eager commit */
-  __identifier?: EntityData<T>;
+  __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
               private readonly pkGetter: (e: T) => Primary<T>,

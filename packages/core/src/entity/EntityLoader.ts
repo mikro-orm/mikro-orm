@@ -391,24 +391,27 @@ export class EntityLoader {
 
     visited.push(entityName);
     const meta = this.metadata.find(entityName)!;
+    const ret: PopulateOptions<T>[] = prefix === '' ? [...populate] : [];
 
     meta.relations
-      .filter(prop => prop.eager)
+      .filter(prop => prop.eager || populate.some(p => p.field === prop.name))
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-        const nested = this.lookupEagerLoadedRelationships(prop.type, [], prefixed, visited);
+        /* istanbul ignore next */
+        const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
+        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, prefixed, visited);
 
         if (nested.length > 0) {
-          populate.push(...nested);
+          ret.push(...nested);
         } else {
-          populate.push({
+          ret.push({
             field: prefixed,
             strategy: this.em.config.get('loadStrategy'),
           });
         }
       });
 
-    return populate;
+    return ret;
   }
 
 }
