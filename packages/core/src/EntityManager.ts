@@ -197,7 +197,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return where;
     }
 
-    where[meta.root.discriminatorColumn!] = meta.discriminatorValue;
+    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
+    const children: EntityMetadata[] = [];
+    const lookUpChildren = (ret: EntityMetadata[], type: string) => {
+      const children = types.filter(meta2 => meta2.extends === type);
+      children.forEach(m => lookUpChildren(ret, m.className));
+      ret.push(...children.filter(c => c.discriminatorValue));
+
+      return children;
+    };
+    lookUpChildren(children, meta.className);
+    where[meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
   }

@@ -89,7 +89,6 @@ describe('GH issue 1352', () => {
       dbName: ':memory:',
       entities: [Project, Owner, Risk, Manager],
       loadStrategy: LoadStrategy.JOINED,
-      debug: true,
     });
     await orm.getSchemaGenerator().createSchema();
   });

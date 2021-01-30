@@ -61,9 +61,9 @@ describe('single table inheritance in mysql', () => {
     Object.assign(orm.config, { logger });
 
     const managers = await orm.em.find(Manager2, {});
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'manager\'');
-    expect(managers.length).toBe(1);
-    expect(managers.map(u => u.constructor.name)).toEqual(['Manager2']);
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` in (\'manager\', \'owner\')');
+    expect(managers.length).toBe(2);
+    expect(managers.map(u => u.constructor.name)).toEqual(['Manager2', 'CompanyOwner2']);
 
     const owners = await orm.em.find(CompanyOwner2, {});
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'owner\'');
@@ -165,6 +165,14 @@ describe('single table inheritance in mysql', () => {
     expect(wrap(owner.favouriteManager).isInitialized()).toBe(false);
     await wrap(owner.favouriteManager).init();
     expect(wrap(owner.favouriteManager).isInitialized()).toBe(true);
+  });
+
+  test('loading base type with discriminator condition', async () => {
+    await createEntities();
+    const users = await orm.em.find(Manager2, {});
+    expect(users).toHaveLength(2);
+    expect(users[0]).toBeInstanceOf(Manager2);
+    expect(users[1]).toBeInstanceOf(CompanyOwner2);
   });
 
   test('generated discriminator map', async () => {
