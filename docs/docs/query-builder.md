@@ -277,8 +277,17 @@ console.log(qb.getQuery());
 
 ## Using sub-queries
 
-You can use sub-queries in selects or in where conditions. To select subquery, use
-`qb.as(alias)` method: 
+You can filter using sub-queries in where conditions:
+
+```typescript
+const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb1.getKnexQuery() } });
+
+console.log(qb2.getQuery());
+// select `a`.* from `author2` as `a` where `a`.`id` in (select `b`.`author_id` from `book2` as `b` where `b`.`price` > ?)
+```
+
+For sub-queries in selects, use the `qb.as(alias)` method: 
 
 > The dynamic property (`booksTotal`) needs to be defined at the entity level (as `persist: false`).
 
@@ -302,7 +311,7 @@ console.log(qb4.getQuery());
 // select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book2` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` from `author2` as `a` order by `books_total` desc
 ```
 
-When you want to filter by sub-query, you will need to register it first via `qb.withSubquery()`:
+When you want to filter by sub-query on the left-hand side of a predicate, you will need to register it first via `qb.withSubquery()`:
 
 > The dynamic property (`booksTotal`) needs to be defined at the entity level (as `persist: false`).
 > You always need to use prefix in the `qb.withSchema()` (so `a.booksTotal`). 
