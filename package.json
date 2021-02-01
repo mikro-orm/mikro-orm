@@ -124,7 +124,7 @@
     "@typescript-eslint/parser": "3.10.0",
     "conditional-type-checks": "1.0.5",
     "coveralls": "3.1.0",
-    "eslint": "7.18.0",
+    "eslint": "7.19.0",
     "eslint-plugin-jsdoc": "31.4.0",
     "fs-extra": "9.1.0",
     "husky": "4.3.8",
