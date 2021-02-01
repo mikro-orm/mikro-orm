@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.1](https://github.com/mikro-orm/mikro-orm/compare/v4.4.0...v4.4.1) (2021-02-01)
+
+
+### Bug Fixes
+
+* **migrations:** fix generation of empty migrations ([#1362](https://github.com/mikro-orm/mikro-orm/issues/1362)) ([7ec9f30](https://github.com/mikro-orm/mikro-orm/commit/7ec9f3068709be0664966d18bc6d3ba88ae48b33))
+
+
+
+
+
 # [4.4.0](https://github.com/mikro-orm/mikro-orm/compare/v4.3.4...v4.4.0) (2021-01-24)
 
 **Note:** Version bump only for package @mikro-orm/migrations
