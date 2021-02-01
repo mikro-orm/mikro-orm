@@ -1,7 +1,7 @@
 import { assert, Has, IsExact } from 'conditional-type-checks';
 import { ObjectId } from 'mongodb';
-import { FilterQuery, FilterValue, OperatorMap, Primary, PrimaryKeyType, PrimaryProperty, Query } from '../packages/core/src/typings';
-import { Author2, Book2, BookTag2, FooParam2 } from './entities-sql';
+import { FilterQuery, FilterValue, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import { Author2, Book2, BookTag2, FooBar2, FooParam2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection, IdentifiedReference, Reference, wrap } from '@mikro-orm/core';
 
@@ -241,6 +241,11 @@ describe('check typings', () => {
     ok04 = { publisher: { name: /name/ } };
     ok04 = { publisher: { name: { $like: 'name' } } };
     ok04 = { $and: [{ author: { age: { $gte: 123 } } }] };
+
+    let ok05: FilterQuery<FooBar2>;
+    ok05 = { name: '1', array: 1 };
+    ok05 = { name: '1', array: [1, 2, 3] };
+    ok05 = { name: '1', array: { $in: [1, 2, 3] } };
   });
 
   test('FilterQuery bad assignments', async () => {

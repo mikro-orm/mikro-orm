@@ -363,7 +363,13 @@ export type FilterDef<T extends AnyEntity<T>> = {
   args?: boolean;
 };
 
-export type ExpandProperty<T> = T extends Reference<infer U> ? NonNullable<U> : T extends Collection<infer U> ? NonNullable<U> : NonNullable<T>;
+export type ExpandProperty<T> = T extends Reference<infer U>
+  ? NonNullable<U>
+  : T extends Collection<infer U>
+    ? NonNullable<U>
+    : T extends (infer U)[]
+      ? NonNullable <U>
+      : NonNullable<T>;
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ExpandProperty<T[K]>> };
 export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T>;
 export type Populate<T> = readonly (keyof T)[] | readonly string[] | boolean | PopulateMap<T>;
