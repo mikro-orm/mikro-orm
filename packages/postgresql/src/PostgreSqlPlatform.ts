@@ -58,17 +58,21 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  getSearchJsonPropertySQL(path: string): string {
-    const parts = path.split('->');
-    const first = parts.shift();
-    const last = parts.pop();
+  getSearchJsonPropertyKey(path: string[], type: string): string {
+    const first = path.shift();
+    const last = path.pop();
     const root = this.quoteIdentifier(first!);
+    const types = {
+      number: 'float8',
+      boolean: 'bool',
+    };
+    const cast = (key: string) => type in types ? `(${key})::${types[type]}` : key;
 
-    if (parts.length === 0) {
-      return `${root}->>'${last}'`;
+    if (path.length === 0) {
+      return cast(`${root}->>'${last}'`);
     }
 
-    return `${root}->${parts.map(a => this.quoteValue(a)).join('->')}->>'${last}'`;
+    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
   }
 
   quoteIdentifier(id: string, quote = '"'): string {

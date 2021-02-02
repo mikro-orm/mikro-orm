@@ -133,6 +133,10 @@
         },
         {
           "type": "doc",
+          "id": "version-4.4/json-properties"
+        },
+        {
+          "type": "doc",
           "id": "version-4.4/metadata-providers"
         },
         {

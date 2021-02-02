@@ -4,13 +4,20 @@ import { IAuthor4 } from './Author4';
 import { IPublisher4 } from './Publisher4';
 import { IBookTag4 } from './BookTag4';
 
+export interface Book4Meta {
+  category: string;
+  items: number;
+  valid?: boolean;
+  nested?: { foo: string; bar?: number; deep?: { baz: number; qux: boolean } };
+}
+
 export interface IBook4 extends IBaseEntity5 {
   title: string;
   author: IAuthor4;
   publisher?: Reference<IPublisher4>;
   tags: Collection<IBookTag4>;
   tagsUnordered: Collection<IBookTag4>;
-  meta: { category: string; items: number };
+  meta: Book4Meta;
 }
 
 export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({

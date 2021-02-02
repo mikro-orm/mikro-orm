@@ -11,9 +11,9 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  getSearchJsonPropertySQL(path: string): string {
-    const [a, b] = path.split('->', 2); // TODO
-    return `${this.quoteIdentifier(a)}->'$.${b}'`;
+  getSearchJsonPropertyKey(path: string[], type: string): string {
+    const [a, ...b] = path;
+    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
   }
 
 }

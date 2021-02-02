@@ -594,6 +594,36 @@ describe('EntityManagerMongo', () => {
     await expect(conn4.getClientUrl()).toBe('invalid-url-that-was-not-properly-parsed');
   });
 
+  test('json properties', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    god.identities = ['fb-123', 'pw-231', 'tw-321'];
+    const bible = new Book('Bible', god);
+    bible.metaObject = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const g = await orm.em.findOneOrFail(Author, god.id, ['books']);
+    expect(Array.isArray(g.identities)).toBe(true);
+    expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
+    expect(typeof g.books[0].metaObject).toBe('object');
+    expect(g.books[0].metaObject).toEqual({ category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } });
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(Book, { metaObject: { category: 'god like' } });
+    const b2 = await orm.em.findOneOrFail(Book, { metaObject: { category: 'god like', items: 3 } });
+    const b3 = await orm.em.findOneOrFail(Book, { metaObject: { nested: { bar: 321 } } });
+    const b4 = await orm.em.findOneOrFail(Book, { metaObject: { nested: { foo: '123', bar: 321 } } });
+    const b5 = await orm.em.findOneOrFail(Book, { metaObject: { valid: true, nested: { foo: '123', bar: 321 } } });
+    const b6 = await orm.em.findOneOrFail(Book, { metaObject: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59 } } } });
+    const b7 = await orm.em.findOneOrFail(Book, { metaObject: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } } });
+    expect(b1).toBe(b2);
+    expect(b1).toBe(b3);
+    expect(b1).toBe(b4);
+    expect(b1).toBe(b5);
+    expect(b1).toBe(b6);
+    expect(b1).toBe(b7);
+  });
+
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author);
     const jon = new Author('Jon Snow', 'snow@wall.st');

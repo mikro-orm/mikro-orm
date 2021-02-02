@@ -505,15 +505,30 @@ describe('EntityManagerSqlite2', () => {
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
     god.identities = ['fb-123', 'pw-231', 'tw-321'];
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
-    bible.meta = { category: 'god like', items: 3 };
+    bible.meta = { category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } };
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const g = (await orm.em.findOne(Author4, god.id, ['books']))!;
+    const g = await orm.em.findOneOrFail(Author4, god.id, ['books']);
     expect(Array.isArray(g.identities)).toBe(true);
     expect(g.identities).toEqual(['fb-123', 'pw-231', 'tw-321']);
     expect(typeof g.books[0].meta).toBe('object');
-    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3 });
+    expect(g.books[0].meta).toEqual({ category: 'god like', items: 3, valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } });
+    orm.em.clear();
+
+    const b1 = await orm.em.findOneOrFail(Book4, { meta: { category: 'god like' } });
+    const b2 = await orm.em.findOneOrFail(Book4, { meta: { category: 'god like', items: 3 } });
+    const b3 = await orm.em.findOneOrFail(Book4, { meta: { nested: { bar: 321 } } });
+    const b4 = await orm.em.findOneOrFail(Book4, { meta: { nested: { foo: '123', bar: 321 } } });
+    const b5 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321 } } });
+    const b6 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59 } } } });
+    const b7 = await orm.em.findOneOrFail(Book4, { meta: { valid: true, nested: { foo: '123', bar: 321, deep: { baz: 59, qux: false } } } });
+    expect(b1).toBe(b2);
+    expect(b1).toBe(b3);
+    expect(b1).toBe(b4);
+    expect(b1).toBe(b5);
+    expect(b1).toBe(b6);
+    expect(b1).toBe(b7);
   });
 
   test('findOne by id', async () => {

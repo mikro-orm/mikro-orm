@@ -33,6 +33,7 @@ module.exports = {
       'custom-types',
       'embeddables',
       'entity-schema',
+      'json-properties',
       'metadata-providers',
       'metadata-cache',
       'schema-generator',

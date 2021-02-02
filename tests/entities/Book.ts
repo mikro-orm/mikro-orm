@@ -34,7 +34,7 @@ export class Book extends BaseEntity3 {
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
-  @Property()
+  @Property({ type: 'json' })
   metaObject?: Dictionary<unknown>;
 
   @Property()

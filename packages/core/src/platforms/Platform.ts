@@ -161,8 +161,12 @@ export abstract class Platform {
     return 'json';
   }
 
-  getSearchJsonPropertySQL(path: string): string {
+  getSearchJsonPropertySQL(path: string, type: string): string {
     return path;
+  }
+
+  getSearchJsonPropertyKey(path: string[], type: string): string {
+    return path.join('.');
   }
 
   convertsJsonAutomatically(marshall = false): boolean {
