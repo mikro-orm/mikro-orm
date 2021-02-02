@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@types/mongodb": "3.6.3",
-    "mongodb": "3.6.3"
+    "mongodb": "3.6.4"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.4.1"
