@@ -602,7 +602,7 @@ export class MetadataDiscovery {
         path.unshift(this.namingStrategy.propertyToColumnName(rootProperty.name));
         path.push(prop.name);
 
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->')); // for querying in SQL drivers
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }
 

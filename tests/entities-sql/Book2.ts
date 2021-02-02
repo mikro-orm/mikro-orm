@@ -65,4 +65,6 @@ export class Book2 {
 export interface Book2Meta {
   category: string;
   items: number;
+  valid?: boolean;
+  nested?: { foo: string; bar?: number; deep?: { baz: number; qux: boolean } };
 }

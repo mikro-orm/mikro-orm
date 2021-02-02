@@ -69,4 +69,9 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return escape(value, true, this.timezone);
   }
 
+  getSearchJsonPropertyKey(path: string[], type: string): string {
+    const [a, ...b] = path;
+    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+  }
+
 }

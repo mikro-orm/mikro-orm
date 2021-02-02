@@ -4,6 +4,7 @@ import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, Filte
 import { ARRAY_OPERATORS, GroupOperator } from '../enums';
 import { Platform } from '../platforms';
 import { MetadataStorage } from '../metadata/MetadataStorage';
+import { JsonType } from '../types';
 
 export class QueryHelper {
 
@@ -118,6 +119,10 @@ export class QueryHelper {
         value = QueryHelper.processCustomType(prop, value, platform, undefined, true);
       }
 
+      if (prop?.customType instanceof JsonType && Utils.isPlainObject(value)) {
+        return this.processJsonCondition(o, value, [key], platform);
+      }
+
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
@@ -193,7 +198,7 @@ export class QueryHelper {
   static processCustomType<T>(prop: EntityProperty<T>, cond: FilterQuery<T>, platform: Platform, key?: string, fromQuery?: boolean): FilterQuery<T> {
     if (Utils.isPlainObject(cond)) {
       return Object.keys(cond).reduce((o, k) => {
-        if (Utils.isOperator(k, true) || prop.referencedPKs.includes(k)) {
+        if (Utils.isOperator(k, true) || prop.referencedPKs?.includes(k)) {
           o[k] = QueryHelper.processCustomType(prop, cond[k], platform, k, fromQuery);
         } else {
           o[k] = cond[k];
@@ -234,6 +239,21 @@ export class QueryHelper {
 
   private static isSupportedOperator(key: string): boolean {
     return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
+  }
+
+  private static processJsonCondition<T>(o: FilterQuery<T>, value: Dictionary, path: string[], platform: Platform) {
+    if (Utils.isPlainObject(value)) {
+      Object.keys(value).forEach(k => {
+        this.processJsonCondition(o, value[k], [...path, k], platform);
+      });
+
+      return o;
+    }
+
+    const k = platform.getSearchJsonPropertyKey(path, typeof value);
+    o[k] = value;
+
+    return o;
   }
 
 }
