@@ -20,6 +20,16 @@ export abstract class Type<JSType = string, DBType = JSType> {
   }
 
   /**
+   * Converts a value from its JS representation to its database representation of this type.
+   */
+  convertToDatabaseValueSQL?(key: string, platform: Platform): string;
+
+  /**
+   * Modifies the SQL expression (identifier, parameter) to convert to a JS value.
+   */
+  convertToJSValueSQL?(key: string, platform: Platform): string;
+
+  /**
    * How should the raw database values be compared? Used in `EntityComparator`.
    * Possible values: string | number | boolean | date | any | buffer | array
    */

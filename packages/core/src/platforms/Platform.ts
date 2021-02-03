@@ -197,6 +197,10 @@ export abstract class Platform {
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
+  quoteValue(value: any): string {
+    return value;
+  }
+
   setConfig(config: Configuration): void {
     this.config = config;
 
