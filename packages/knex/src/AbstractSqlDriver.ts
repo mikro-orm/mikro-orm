@@ -611,6 +611,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   protected buildFields<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
+    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToDatabaseValueSQL || p.customType?.convertToJSValueSQL);
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
 
@@ -629,7 +630,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
       const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate, false));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
-    } else if (hasLazyFormulas) {
+    } else if (hasLazyFormulas || requiresSQLConversion) {
       ret.push('*');
     }
 
@@ -641,6 +642,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           const aliased = qb.ref(prop.fieldNames[0]).toString();
           ret.push(`${prop.formula!(alias)} as ${aliased}`);
         });
+
+      meta.props
+        .filter(prop => prop.customType?.convertToDatabaseValueSQL || prop.customType?.convertToJSValueSQL)
+        .forEach(prop => ret.push(prop.name));
     }
 
     return ret.length > 0 ? ret : ['*'];

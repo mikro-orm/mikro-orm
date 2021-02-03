@@ -63,6 +63,7 @@ describe('DatabaseDriver', () => {
     const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
+    expect(driver.getPlatform().quoteValue('a')).toBe('a');
     await expect(driver.aggregate('', [])).rejects.toThrowError('Aggregations are not supported by Driver driver');
     await expect(driver.nativeUpdateMany('', [], [])).rejects.toThrowError('Batch updates are not supported by Driver driver');
     await expect(driver.lockPessimistic({}, LockMode.NONE)).rejects.toThrowError('Pessimistic locks are not supported by Driver driver');
