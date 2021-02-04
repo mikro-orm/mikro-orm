@@ -79,4 +79,27 @@ There are two ways around this:
 @Property()
 foo: string = 'abc';
 ```  
- 
+
+### How to set foreign key by raw id?
+
+There are several ways:
+
+1. using references:
+
+```ts
+const b = new Book();
+b.author = em.getReference(Author, 1);
+```
+
+2. using assign helper:
+
+```ts
+const b = new Book();
+em.assign(b, { author: 1 });
+```
+
+3. using create helper:
+
+```ts
+const b = em.create(Book, { author: 1 });
+```
