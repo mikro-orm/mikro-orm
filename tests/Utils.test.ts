@@ -343,7 +343,7 @@ describe('Utils', () => {
 
   test('requireFrom can require a package.json file', () => {
     const { name } = Utils.requireFrom('', path.join(BASE_DIR, '..', 'package.json'));
-    expect(name).toEqual('MikroORM');
+    expect(name).toEqual('@mikro-orm/core');
   });
 
   test('getPrimaryKeyCond', () => {
