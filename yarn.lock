@@ -1743,10 +1743,10 @@
     "@types/bson" "*"
     "@types/node" "*"
 
-"@types/mongodb@3.6.4":
-  version "3.6.4"
-  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.4.tgz#8bd1e0f9a18c3bc81f27dc609678c793f33d28f7"
-  integrity sha512-ZO0g1Yxt8pymoVXicq67xyNOT5jfUu2kRoBKB70cWp/qqL52UC30NwOrvhVekUoVjfh35Tv6QcMGZHwQTEkicg==
+"@types/mongodb@3.6.6":
+  version "3.6.6"
+  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.6.tgz#d62300927564e03daa08794eb207ff4f760f9014"
+  integrity sha512-ghYevKiSh/TGk2MAwSRZP7T1ilR9Pw8Fa7pT9GGVGZPUsWKdZjZ4G6LG3MqK2iXKdNba994F8W9ikA+qx2Eo3A==
   dependencies:
     "@types/bson" "*"
     "@types/node" "*"
