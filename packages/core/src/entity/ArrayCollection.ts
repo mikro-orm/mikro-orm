@@ -101,7 +101,12 @@ export class ArrayCollection<T, O> {
 
   remove(...items: (T | Reference<T>)[]): void {
     this.incrementCount(-items.length);
+
     for (const item of items) {
+      if (!item) {
+        continue;
+      }
+
       const entity = Reference.unwrapReference(item);
       delete this[this.items.size - 1]; // remove last item
       this.items.delete(entity);

@@ -1010,6 +1010,12 @@ describe('EntityManagerSqlite2', () => {
     expect(res[0].count).toBe(1);
   });
 
+  test('using collection methods with null/undefined (GH issue #1408)', async () => {
+    const e = orm.em.create(Author4, { name: 'name', email: 'email' });
+    expect(() => e.books.remove(null as any)).not.toThrow();
+    expect(() => e.books.remove(undefined as any)).not.toThrow();
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = orm.em.create(Author4, { name: 'n', email: 'e' });

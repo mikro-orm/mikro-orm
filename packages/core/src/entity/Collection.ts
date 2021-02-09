@@ -320,7 +320,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     const check = (item: T & AnyEntity<T>) => {
-      if (item.__helper!.__initialized) {
+      if (!item || item.__helper!.__initialized) {
         return false;
       }
 
