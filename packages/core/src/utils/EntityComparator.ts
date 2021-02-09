@@ -362,7 +362,7 @@ export class EntityComparator {
       return this.getGenericComparator(prop.name, cond);
     }
 
-    return `  if (!compareObjects(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
+    return `  if (!equals(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
   }
 
   /**
