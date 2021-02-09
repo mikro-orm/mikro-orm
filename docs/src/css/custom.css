@@ -96,15 +96,15 @@ html[data-theme="light"] .admonition-info {
 }
 
 .navbar .navbar__link[href*=github]:before {
-  background-image: url('/img/github-brand.svg');
+  background-image: url('/static/img/github-brand.svg');
 }
 
 .navbar .navbar__link[href*=slack]:before {
-  background-image: url('/img/slack-brand.svg');
+  background-image: url('/static/img/slack-brand.svg');
 }
 
 .navbar .navbar__link[href*=twitter]:before {
-  background-image: url('/img/twitter-brand.svg');
+  background-image: url('/static/img/twitter-brand.svg');
 }
 
 .navbar a[data-type="versions"] {
@@ -156,7 +156,7 @@ a[href*=edit] {
 
 html[data-theme="dark"] .navbar .navbar__brand,
 html[data-theme="dark"] .main-wrapper a[class*='sidebarLogo'] {
-  background-image: url('/img/logo-dark.svg');
+  background-image: url('/static/img/logo-dark.svg');
   background-repeat: no-repeat;
   background-position: left center;
   background-size: contain;
@@ -177,15 +177,15 @@ html[data-theme="dark"] .hero.hero--primary {
 }
 
 html[data-theme="dark"] .navbar .navbar__link[href*=github]:before {
-  background-image: url('/img/github-brand-dark.svg');
+  background-image: url('/static/img/github-brand-dark.svg');
 }
 
 html[data-theme="dark"] .navbar .navbar__link[href*=slack]:before {
-  background-image: url('/img/slack-brand-dark.svg');
+  background-image: url('/static/img/slack-brand-dark.svg');
 }
 
 html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
-  background-image: url('/img/twitter-brand-dark.svg');
+  background-image: url('/static/img/twitter-brand-dark.svg');
 }
 
 @media screen and (max-width: 1024px) {

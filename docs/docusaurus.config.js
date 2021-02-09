@@ -6,9 +6,9 @@
  */
 
 const pkg = require('../packages/core/package.json');
-const versions = require('./versions.json');
 const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => `../packages/${d}/src/index.ts`);
 
+/** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
   title: 'MikroORM',
   tagline: 'TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns.',
@@ -23,7 +23,7 @@ module.exports = {
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
-      searchParameters: { facetFilters: `version:${versions[0]}` }, // `version:latest` is not working?
+      contextualSearch: true,
     },
     announcementBar: {
       id: 'supportus',
