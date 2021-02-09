@@ -54,7 +54,7 @@ export class EntityAssigner {
         return EntityAssigner.assignEmbeddable(entity, value, props[prop], em, options);
       }
 
-      if (options.mergeObjects && Utils.isObject(value)) {
+      if (options.mergeObjects && Utils.isPlainObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
       } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
         entity[prop as keyof T] = value;
@@ -100,9 +100,9 @@ export class EntityAssigner {
       entity[prop.name] = value;
     } else if (Utils.isPrimaryKey(value, true)) {
       entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, false, options.convertCustomTypes), prop);
-    } else if (Utils.isObject<T[keyof T]>(value) && options.merge) {
+    } else if (Utils.isPlainObject(value) && options.merge) {
       entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
-    } else if (Utils.isObject<T[keyof T]>(value)) {
+    } else if (Utils.isPlainObject(value)) {
       entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
     } else {
       const name = entity.constructor.name;
@@ -154,12 +154,12 @@ export class EntityAssigner {
       return em.getReference(prop.type, item);
     }
 
-    if (Utils.isObject<EntityData<T>>(item) && options.merge) {
-      return em.merge<T>(prop.type, item);
+    if (Utils.isPlainObject(item) && options.merge) {
+      return em.merge<T>(prop.type, item as EntityData<T>);
     }
 
-    if (Utils.isObject<EntityData<T>>(item)) {
-      return em.create<T>(prop.type, item);
+    if (Utils.isPlainObject(item)) {
+      return em.create<T>(prop.type, item as EntityData<T>);
     }
 
     invalid.push(item);

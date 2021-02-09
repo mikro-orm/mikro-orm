@@ -1,7 +1,7 @@
 import { MikroORM, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2 } from './entities-sql';
 
 describe('EntityAssignerMySql', () => {
 
@@ -110,6 +110,24 @@ describe('EntityAssignerMySql', () => {
     jon.identities = ['1', '2'];
     wrap(jon).assign({ identities: ['3', '4'] }, { mergeObjects: true });
     expect(jon.identities).toEqual(['3', '4']);
+  });
+
+  test('assigning blobs (GH issue #1406)', async () => {
+    const bar = FooBar2.create('initial name');
+    bar.blob = Buffer.from('abcdefg');
+    await orm.em.fork().persistAndFlush(bar);
+
+    const em = orm.em.fork();
+    const existing = await em.findOneOrFail(FooBar2, bar);
+    em.assign(existing, {
+      name: 'updated name',
+      blob: Buffer.from('123456'),
+    }, { mergeObjects: true });
+    await em.flush();
+
+    const bar1 = await orm.em.fork().findOneOrFail(FooBar2, 1);
+    expect(bar1.name).toBe('updated name');
+    expect(bar1.blob!.toString()).toBe('123456');
   });
 
   afterAll(async () => orm.close(true));

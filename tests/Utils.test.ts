@@ -1,7 +1,7 @@
 import path from 'path';
 import { ObjectId } from 'mongodb';
-import { Collection, EntityMetadata, MikroORM, Utils } from '@mikro-orm/core';
-import { Author, Book } from './entities';
+import { compareObjects, EntityMetadata, MikroORM, Utils } from '@mikro-orm/core';
+import { Author } from './entities';
 import { initORMMongo, wipeDatabase, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
 
@@ -76,6 +76,8 @@ describe('Utils', () => {
     expect(Utils.equals({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toBe(true);
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(false);
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(true);
+    expect(compareObjects(null, undefined)).toBe(true);
+    expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
   });
 
   test('merge', () => {
