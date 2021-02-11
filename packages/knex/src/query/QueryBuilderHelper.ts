@@ -38,7 +38,7 @@ export class QueryBuilderHelper {
     if (prop?.customType && 'convertToJSValueSQL' in prop.customType) {
       const prefixed = this.prefix(field, true);
       /* istanbul ignore next */
-      return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + (alias ?? prop.name));
+      return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + this.platform.quoteIdentifier(alias ?? prop.name));
     }
 
     // do not wrap custom expressions
