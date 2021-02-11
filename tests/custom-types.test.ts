@@ -87,7 +87,7 @@ describe('custom types [mysql]', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`) values (ST_PointFromText(\'point(1.23 4.56)\'))');
     expect(mock.mock.calls[2][0]).toMatch('commit');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as point from `location` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as `point` from `location` as `e0` where `e0`.`id` = ? limit ?');
     expect(mock.mock.calls).toHaveLength(4);
     await orm.em.flush(); // ensure we do not fire queries when nothing changed
     expect(mock.mock.calls).toHaveLength(4);
