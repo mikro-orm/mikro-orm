@@ -182,7 +182,7 @@ const books = await booksRepository.find({ author: '...' }, {
   populate: ['author'],
   limit: 1,
   offset: 2,
-  sort: { title: QueryOrder.DESC },
+  orderBy: { title: QueryOrder.DESC },
 });
 
 console.log(books); // Book[]
