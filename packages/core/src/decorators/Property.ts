@@ -11,14 +11,17 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
     const name = options.name || propertyName;
 
-    if (propertyName !== name && !(desc.value instanceof Function)) {
-      Utils.renameKey(options, 'name', 'fieldName');
-    }
+    const prop = {
+      reference: ReferenceType.SCALAR,
+      ...options,
+      name: propertyName,
+      getter: !!desc.get,
+      setter: !!desc.set,
+    } as EntityProperty
 
-    options.name = propertyName;
-    const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
-    prop.getter = !!desc.get;
-    prop.setter = !!desc.set;
+     if (propertyName !== name && !(desc.value instanceof Function)) {
+      (prop as any).fieldName = options.name;
+    }
 
     if (desc.value instanceof Function) {
       prop.getter = true;
