@@ -313,6 +313,8 @@ export class MetadataDiscovery {
       prop.pivotTable = prop2.pivotTable;
       prop.fixedOrder = prop2.fixedOrder;
       prop.fixedOrderColumn = prop2.fixedOrderColumn;
+      prop.joinColumns = prop2.inverseJoinColumns;
+      prop.inverseJoinColumns = prop2.joinColumns;
     }
 
     if (!prop.referencedColumnNames) {
