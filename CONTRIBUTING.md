@@ -43,14 +43,15 @@ Before you submit your pull request consider the following guidelines:
 
 - Fork the project, install NPM dependencies and start docker to have all databases ready.
   [run-rs](https://www.npmjs.com/package/run-rs) is used to manage mongodb replica set.
-  On windows you might need to execute `run-rs` directly as well as adjust some configuration,
-  refer to their docs for more information. 
 
     ```sh
     yarn
     docker-compose up -d
     yarn run-rs
     ```
+
+  > On windows you might need to execute `run-rs` directly as well as adjust some configuration,
+  > refer to their docs for more information.
 
 - Run tests before you start working, to be sure they all pass and your setup is working correctly:
 
