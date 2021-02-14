@@ -39,7 +39,7 @@
   },
   "homepage": "https://mikro-orm.io",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap && husky install",
     "postinstall": "yarn bootstrap",
     "clean": "lerna run clean",
     "build": "lerna run build",
@@ -78,12 +78,6 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   },
   "lint-staged": {
     "*.ts": [
