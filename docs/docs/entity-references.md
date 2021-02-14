@@ -3,6 +3,9 @@ title: Entity References
 sidebar_label: Entity References and Reference<T> Wrapper
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 Every single entity relation is mapped to an entity reference. Reference is an entity that has
 only its identifier. This reference is stored in identity map so you will get the same object 
 reference when fetching the same document from database.
@@ -57,7 +60,40 @@ You can also use `get<K extends keyof T>(prop: K): Promise<T[K]>` helper, that w
 for you, making sure the entity is initialized first, then returning the value of given property 
 directly. 
 
-```typescript
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Book.ts"
+import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Author, { wrappedReference: true })
+  author: IdentifiedReference<Author>;
+
+  constructor(author: Author) {
+    this.author = Reference.create(author);
+  }
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
 
 @Entity()
@@ -67,14 +103,37 @@ export class Book {
   id!: number;
 
   @ManyToOne()
-  author!: IdentifiedReference<Author>;
+  author: IdentifiedReference<Author>;
 
   constructor(author: Author) {
     this.author = Reference.create(author);
   }
 
 }
+```
 
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Book.ts"
+export interface IBook {
+  id: number;
+  author: IdentifiedReference<Author>;
+}
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    id: { type: Number, primary: true },
+    author: { entity: () => Author, wrappedReference: true },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+```ts
 const book = await orm.em.findOne(Book, 1);
 console.log(book.author instanceof Reference); // true
 console.log(book.author.isInitialized()); // false
@@ -144,36 +203,60 @@ book.author.set(new Author(...));
 `IdentifiedReference` is an intersection type that adds primary key property to the `Reference` 
 interface. It allows to get the primary key from `Reference` instance directly.
 
-By default it defines the PK property as `id`, you can override this via second generic type
-argument.
+By default, we try to detect the PK by checking if a property with a known name exists.
+We check for those in order: `_id`, `uuid`, `id` - with a way to manually set the property
+name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`). 
+
+We can also override this via second generic type argument.
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns the PK
 ```
 
-You can also have non-standard primary key like `uuid`:
+You can also have non-standard primary key:
 
-```typescript
-@Entity()
-export class Book {
-
-  @PrimaryKey()
-  id!: number;
-
-  @ManyToOne()
-  author!: IdentifiedReference<Author, 'uuid'>;
-
-}
+```ts
+author: IdentifiedReference<Author, 'myPrimaryKey'>;
 
 const book = await orm.em.findOne(Book, 1);
-console.log(book.author.uuid); // ok, returns the PK
+console.log(book.author.myPrimaryKey); // ok, returns the PK
 ```
 
 For MongoDB, defined the PK generic type argument as `'id' | '_id'` to access both `string` 
 and `ObjectId` PK values:
 
-```typescript
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Book.ts"
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  _id!: ObjectId;
+
+  @SerializedPrimaryKey()
+  id!: string;
+
+  @ManyToOne(() => Author, { wrappedReference: true })
+  author!: IdentifiedReference<Author, 'id' | '_id'>;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
 @Entity()
 export class Book {
 
@@ -187,7 +270,32 @@ export class Book {
   author!: IdentifiedReference<Author, 'id' | '_id'>;
 
 }
+```
 
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Book.ts"
+export interface IBook {
+  _id: ObjectId;
+  id: string;
+  author: IdentifiedReference<IAuthor, 'id' | '_id'>;
+}
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    _id: { type: 'ObjectId', primary: true },
+    id: { type: String, serializedPrimaryKey: true },
+    author: { entity: 'Author', wrappedReference: true },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
+```ts
 const book = await orm.em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK

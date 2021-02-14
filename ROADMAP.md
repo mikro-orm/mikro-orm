@@ -16,7 +16,3 @@ discuss specifics.
 - Leverage async iterators for collections (node 10+)
 - Multi tenant support ([schema per tenant](https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation))
 - Use `bigint` type natively in `BigIntType` (node 12+)
-
-## Docs
-
-- Use code tabs https://docusaurus.io/docs/en/doc-markdown#language-specific-code-tabs

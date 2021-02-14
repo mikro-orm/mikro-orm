@@ -230,6 +230,10 @@
         },
         {
           "type": "doc",
+          "id": "version-4.4/usage-with-babel"
+        },
+        {
+          "type": "doc",
           "id": "version-4.4/entity-constructors"
         },
         {
@@ -289,6 +293,11 @@
           "type": "link",
           "label": "NextJS + MySQL",
           "href": "https://github.com/jonahallibone/mikro-orm-nextjs"
+        },
+        {
+          "type": "link",
+          "label": "GraphQL + PostgreSQL + Typescript",
+          "href": "https://github.com/driescroons/mikro-orm-graphql-example"
         }
       ]
     }

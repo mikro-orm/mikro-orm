@@ -176,14 +176,15 @@ MikroORM ships with a number of command line tools that are very helpful during 
 like `SchemaGenerator` and `EntityGenerator`. You can call this command from the NPM binary 
 directory or use `npx`:
 
-> To work with the CLI, first install `@mikro-orm/cli` package.
+> To work with the CLI, first install `@mikro-orm/cli` package locally.
 
 ```sh
+# manually
 $ node node_modules/.bin/mikro-orm
+# via npx
 $ npx mikro-orm
-
-# or when installed globally
-$ mikro-orm
+# or via yarn
+$ yarn mikro-orm
 ```
 
 For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that 
