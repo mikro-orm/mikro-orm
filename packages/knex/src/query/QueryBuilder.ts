@@ -548,6 +548,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       ret.push(this.helper.mapper(f, this.type) as string);
     });
 
+    const meta = this.metadata.find(this.entityName);
+    /* istanbul ignore next */
+    const requiresSQLConversion = (meta?.props || []).filter(p => p.customType?.convertToDatabaseValueSQL || p.customType?.convertToJSValueSQL);
+
+    if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.alias}.*`)) && requiresSQLConversion.length > 0) {
+      requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
+    }
+
     Object.keys(this._populateMap).forEach(f => {
       if (!fields.includes(f) && type === 'where') {
         ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
