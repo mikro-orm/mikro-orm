@@ -4,7 +4,6 @@ import {
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { User3 } from './entities-sql';
 
 import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
 const { Author3 } = require('./entities-js/index').Author3;
@@ -889,14 +888,6 @@ describe('EntityManagerSqlite', () => {
     await expect(driver.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(driver.execute('select id from author3, book_tag3')).rejects.toThrow(NonUniqueFieldNameException);
     await expect(driver.execute('select uuid from author3')).rejects.toThrow(InvalidFieldNameException);
-  });
-
-  test('GH xxx', async () => {
-    const a = new User3('n');
-    await orm.em.persistAndFlush(a);
-    const res = await orm.em.findOneOrFail(User3, { name: 'n' });
-    expect(res._id).not.toBeNull();
-    expect(res.id).not.toBeNull();
   });
 
   afterAll(async () => {
