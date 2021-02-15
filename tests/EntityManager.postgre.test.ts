@@ -5,7 +5,7 @@ import {
   NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
-import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2, User3 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
 
@@ -1702,6 +1702,14 @@ describe('EntityManagerPostgre', () => {
 
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
+  });
+
+  test('GH xxx', async () => {
+    const a = new User3('n');
+    await orm.em.persistAndFlush(a);
+    const res = await orm.em.findOneOrFail(User3, { name: 'n' });
+    expect(res._id).not.toBeNull();
+    expect(res.id).not.toBeNull();
   });
 
   afterAll(async () => orm.close(true));

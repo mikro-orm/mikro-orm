@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
+import { Author2, Book2, BookTag2, Publisher2, PublisherType, User3 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 
 describe('EntityManagerMariaDb', () => {
@@ -216,6 +216,14 @@ describe('EntityManagerMariaDb', () => {
     expect(lastBook[0].author).toBeInstanceOf(Author2);
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
+  });
+
+  test('GH xxx', async () => {
+    const a = new User3('n');
+    await orm.em.persistAndFlush(a);
+    const res = await orm.em.findOneOrFail(User3, { name: 'n' });
+    expect(res._id).not.toBeNull();
+    expect(res.id).not.toBeNull();
   });
 
   afterAll(async () => orm.close(true));

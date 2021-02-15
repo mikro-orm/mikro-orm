@@ -2,6 +2,7 @@ import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM,
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, Publisher4, PublisherType, Test4 } from './entities-schema';
+import { User3 } from './entities-sql';
 
 describe('EntityManagerSqlite2', () => {
 
@@ -1115,6 +1116,14 @@ describe('EntityManagerSqlite2', () => {
 
     taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
+  });
+
+  test('GH xxx', async () => {
+    const a = new User3('n');
+    await orm.em.persistAndFlush(a);
+    const res = await orm.em.findOneOrFail(User3, { name: 'n' });
+    expect(res._id).not.toBeNull();
+    expect(res.id).not.toBeNull();
   });
 
   afterAll(async () => {

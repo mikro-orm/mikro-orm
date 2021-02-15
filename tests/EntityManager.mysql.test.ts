@@ -10,7 +10,7 @@ import {
   NonUniqueFieldNameException, InvalidFieldNameException, expr,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2, User3 } from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
@@ -2541,6 +2541,14 @@ describe('EntityManagerMySql', () => {
 
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
+  });
+
+  test('GH xxx', async () => {
+    const a = new User3('n');
+    await orm.em.persistAndFlush(a);
+    const res = await orm.em.findOneOrFail(User3, { name: 'n' });
+    expect(res._id).not.toBeNull();
+    expect(res.id).not.toBeNull();
   });
 
   afterAll(async () => orm.close(true));

@@ -12,6 +12,7 @@ export * from './Address2';
 export * from './Car2';
 export * from './CarOwner2';
 export * from './User2';
+export * from './User3';
 export * from './BaseUser2';
 export * from './Employee2';
 export * from './Manager2';
