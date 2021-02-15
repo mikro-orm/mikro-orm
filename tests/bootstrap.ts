@@ -10,7 +10,7 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
-  Car2, CarOwner2, User2, BaseUser2,
+  Car2, CarOwner2, User2, BaseUser2, User3,
 } from './entities-sql';
 import { FooBaz } from './entities/FooBaz';
 import FooBar from './entities/FooBar';
@@ -91,7 +91,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, User3],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',
@@ -136,7 +136,7 @@ export async function initORMSqlite() {
 
 export async function initORMSqlite2() {
   const orm = await MikroORM.init<SqliteDriver>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, User3],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
