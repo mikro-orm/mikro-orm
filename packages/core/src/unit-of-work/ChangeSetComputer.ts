@@ -84,8 +84,8 @@ export class ChangeSetComputer {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
 
     // remove items from collection based on removeStack
-    if (target.isInitialized()) {
-      target.getItems()
+    if (target.isInitialized() && this.removeStack.size > 0) {
+      target.getItems(false)
         .filter(item => this.removeStack.has(item))
         .forEach(item => target.remove(item));
     }
