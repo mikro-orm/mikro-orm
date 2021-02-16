@@ -3543,10 +3543,10 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-jsdoc@32.0.0:
-  version "32.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-32.0.0.tgz#3e7b0dd452232845e9311442607c07c8787b933a"
-  integrity sha512-AfGe3gqJlcxyRKUjhLzPTUnEMlVVlWJCAh2N0leJndpMflyh0W7zP09+b6NQHBHk7GyR/JY0bXiSswN3QX9Lhg==
+eslint-plugin-jsdoc@32.0.1:
+  version "32.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-32.0.1.tgz#a3ab1a64a4e6ff550605706aa3fd0d092073da56"
+  integrity sha512-7T6cKNGJsJ1SxhG4vbEBi2fRmUL3DHzRNsiQZri4vkgIQjCoBb40ZNxSNwBqiVz16C7tW3qLncPoNXsiIFdzcg==
   dependencies:
     comment-parser "1.1.2"
     debug "^4.3.1"
