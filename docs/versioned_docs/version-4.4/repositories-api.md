@@ -108,10 +108,9 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 #### `remove(where: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): Promise<void>`
 
-When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
-otherwise it fires delete query with given `where` condition. 
+It queues entity for removal when flush or commit is called.
 
-This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.  
+This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
