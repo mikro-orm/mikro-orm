@@ -85,7 +85,7 @@ export class ChangeSetComputer {
 
     // remove items from collection based on removeStack
     if (target.isInitialized() && this.removeStack.size > 0) {
-      target.getItems()
+      target.getItems(false)
         .filter(item => this.removeStack.has(item))
         .forEach(item => target.remove(item));
     }
