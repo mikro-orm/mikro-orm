@@ -1,8 +1,18 @@
 import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
 import { inspect } from 'util';
 import {
-  Utils, Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, QueryOrderNumeric,
-  Platform, ReferenceType, LockMode, MetadataStorage, QueryOperator, OptimisticLockError,
+  Dictionary,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  LockMode,
+  MetadataStorage,
+  OptimisticLockError,
+  Platform,
+  QueryOperator,
+  QueryOrderNumeric,
+  ReferenceType,
+  Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import { JoinOptions } from '../typings';
@@ -36,9 +46,9 @@ export class QueryBuilderHelper {
     }
 
     if (prop?.customType && 'convertToJSValueSQL' in prop.customType) {
-      const prefixed = this.prefix(field, true);
+      const prefixed = this.prefix(field, true, true);
       /* istanbul ignore next */
-      return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + this.platform.quoteIdentifier(alias ?? prop.name));
+      return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
     }
 
     // do not wrap custom expressions
@@ -493,15 +503,22 @@ export class QueryBuilderHelper {
     return !!field.match(/[ ?<>=()]|^\d/);
   }
 
-  private prefix(field: string, always = false): string {
+  private prefix(field: string, always = false, quote = false): string {
+    let ret: string;
+
     if (!this.isPrefixed(field)) {
-      const alias = always ? this.platform.quoteIdentifier(this.alias) + '.' : '';
-      return alias + this.fieldName(field, this.alias);
+      const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
+      ret = alias + this.fieldName(field, this.alias);
+    } else {
+      const [a, f] = field.split('.');
+      ret = a + '.' + this.fieldName(f, a);
     }
 
-    const [a, f] = field.split('.');
+    if (quote) {
+      return this.platform.quoteIdentifier(ret);
+    }
 
-    return a + '.' + this.fieldName(f, a);
+    return ret;
   }
 
   private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
