@@ -71,7 +71,7 @@ example assumes that `Book.publisher` is set to `Cascade.REMOVE`:
 > for each entity in collection.
 
 ```typescript
-await orm.em.removeEntity(book); // this will also remove book.publisher
+await orm.em.remove(book); // this will also remove book.publisher
 ```
 
 Keep in mind that cascade remove **can be dangerous** when used on `@ManyToOne` fields, 
@@ -81,7 +81,7 @@ as cascade removed entity can stay referenced in another entities that were not 
 const publisher = new Publisher(...);
 // all books with same publisher
 book1.publisher = book2.publisher = book3.publisher = publisher;
-await orm.em.removeEntity(book1); // this will remove book1 and its publisher
+await orm.em.remove(book1); // this will remove book1 and its publisher
 
 // but we still have reference to removed publisher here
 console.log(book2.publisher, book3.publisher);
