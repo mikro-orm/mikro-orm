@@ -20,7 +20,7 @@ export class EntityHelper {
 
     const pk = meta.properties[meta.primaryKeys[0]];
 
-    if (pk.name === '_id') {
+    if (pk.name === '_id' && meta.serializedPrimaryKey === 'id') {
       EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
     }
 
