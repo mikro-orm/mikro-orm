@@ -81,7 +81,7 @@ as cascade removed entity can stay referenced in another entities that were not 
 const publisher = new Publisher(...);
 // all books with same publisher
 book1.publisher = book2.publisher = book3.publisher = publisher;
-await orm.em.remove(book1); // this will remove book1 and its publisher
+await orm.em.remove(book1).flush(); // this will remove book1 and its publisher
 
 // but we still have reference to removed publisher here
 console.log(book2.publisher, book3.publisher);
