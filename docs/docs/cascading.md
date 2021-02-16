@@ -71,7 +71,7 @@ example assumes that `Book.publisher` is set to `Cascade.REMOVE`:
 > for each entity in collection.
 
 ```typescript
-await orm.em.remove(book); // this will also remove book.publisher
+await orm.em.remove(book).flush(); // this will also remove book.publisher
 ```
 
 Keep in mind that cascade remove **can be dangerous** when used on `@ManyToOne` fields, 
