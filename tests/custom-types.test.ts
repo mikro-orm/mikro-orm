@@ -41,14 +41,20 @@ export class PointType extends Type<Point | undefined, string | undefined> {
 
 }
 
+export class ExtendedPointType extends PointType {
+}
+
 @Entity()
 export class Location {
 
   @PrimaryKey()
   id!: number;
 
-  @Property({ type: PointType })
+  @Property({ type: PointType, nullable: true })
   point?: Point;
+
+  @Property({ type: ExtendedPointType, nullable: true })
+  extendedPoint?: Point;
 
 }
 
@@ -80,14 +86,15 @@ describe('custom types [mysql]', () => {
 
     const loc = new Location();
     loc.point = new Point(1.23, 4.56);
+    loc.extendedPoint = new Point(5.23, 9.56);
     await orm.em.persistAndFlush(loc);
     orm.em.clear();
 
     const l1 = await orm.em.findOneOrFail(Location, loc);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`) values (ST_PointFromText(\'point(1.23 4.56)\'))');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`extended_point`, `point`) values (ST_PointFromText(\'point(5.23 9.56)\'), ST_PointFromText(\'point(1.23 4.56)\'))');
     expect(mock.mock.calls[2][0]).toMatch('commit');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as `point` from `location` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as `point`, ST_AsText(`e0`.extended_point) as `extendedPoint` from `location` as `e0` where `e0`.`id` = ? limit ?');
     expect(mock.mock.calls).toHaveLength(4);
     await orm.em.flush(); // ensure we do not fire queries when nothing changed
     expect(mock.mock.calls).toHaveLength(4);
@@ -102,14 +109,20 @@ describe('custom types [mysql]', () => {
 
     const qb1 = orm.em.createQueryBuilder(Location, 'l');
     const res1 = await qb1.select('*').where({ id: loc.id }).getSingleResult();
-    expect(mock.mock.calls[7][0]).toMatch('select `l`.*, ST_AsText(`l`.point) as `point` from `location` as `l` where `l`.`id` = ?');
+    expect(mock.mock.calls[7][0]).toMatch('select `l`.*, ST_AsText(`l`.point) as `point`, ST_AsText(`l`.extended_point) as `extendedPoint` from `location` as `l` where `l`.`id` = ?');
     expect(res1).toMatchObject(l1);
     orm.em.clear();
 
     const qb2 = orm.em.createQueryBuilder(Location);
     const res2 = await qb2.select(['e0.*']).where({ id: loc.id }).getSingleResult();
-    expect(mock.mock.calls[8][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as `point` from `location` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[8][0]).toMatch('select `e0`.*, ST_AsText(`e0`.point) as `point`, ST_AsText(`e0`.extended_point) as `extendedPoint` from `location` as `e0` where `e0`.`id` = ?');
     expect(res2).toMatchObject(l1);
+  });
+
+  test('extending custom types (gh issue 1442)', async () => {
+    const meta = orm.getMetadata().get('Location');
+    expect(meta.properties.point.customType).toBeInstanceOf(PointType);
+    expect(meta.properties.extendedPoint.customType).toBeInstanceOf(ExtendedPointType);
   });
 
 });

@@ -731,7 +731,8 @@ export class MetadataDiscovery {
       prop.customType = prop.type as unknown as Type<any>;
     }
 
-    if (Object.getPrototypeOf(prop.type) === Type && !prop.customType) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (Type.isPrototypeOf(prop.type) && !prop.customType) {
       prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
     }
 
