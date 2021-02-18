@@ -1,8 +1,8 @@
 import c from 'ansi-colors';
 import { Arguments, Argv, CommandModule } from 'yargs';
-import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
 import { Configuration, MikroORM, MikroORMOptions, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
@@ -13,6 +13,7 @@ export class MigrationCommandFactory {
     down: 'Migrate one step down',
     list: 'List all executed migrations',
     pending: 'List all pending migrations',
+    fresh: 'Clear the database and rerun all migrations',
   };
 
   static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
@@ -31,6 +32,10 @@ export class MigrationCommandFactory {
 
     if (['up', 'down'].includes(method)) {
       this.configureUpDownCommand(args, method);
+    }
+
+    if (method === 'fresh') {
+      this.configureFreshCommand(args);
     }
 
     return args;
@@ -95,9 +100,20 @@ export class MigrationCommandFactory {
       case 'up':
       case 'down':
         await this.handleUpDownCommand(args, migrator, method);
+        break;
+      case 'fresh':
+        await this.handleFreshCommand(args, migrator, orm);
     }
 
     await orm.close(true);
+  }
+
+  private static configureFreshCommand(args: Argv) {
+    args.option('seed', {
+      type: 'string',
+      desc: 'Allows to seed the database after dropping it and rerunning all migrations',
+      default: '',
+    });
   }
 
   private static async handleUpDownCommand(args: Arguments<Options>, migrator: Migrator, method: MigratorMethod) {
@@ -141,6 +157,22 @@ export class MigrationCommandFactory {
     CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
   }
 
+  private static async handleFreshCommand(args: Arguments<Options>, migrator: Migrator, orm: MikroORM<AbstractSqlDriver>) {
+    const generator = new SchemaGenerator(orm.em);
+    await generator.dropSchema();
+    CLIHelper.dump(c.green('Dropped schema successfully'));
+    const opts = MigrationCommandFactory.getUpDownOptions(args);
+    await migrator.up(opts as string[]);
+    const message = this.getUpDownSuccessMessage('up', opts);
+    CLIHelper.dump(c.green(message));
+    if (args.seed !== undefined) {
+      const seeder = orm.getSeeder();
+      const seederClass = args.seed || orm.config.get('seeder').defaultSeeder;
+      await seeder.seedString(seederClass);
+      CLIHelper.dump(c.green(`Database seeded successfully with seeder class ${seederClass}`));
+    }
+  }
+
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
       return { migrations: flags.only.split(/[, ]+/) };
@@ -182,7 +214,7 @@ export class MigrationCommandFactory {
 
 }
 
-type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending';
+type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean };
+type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string };
 type Options = GenerateOptions & CliUpDownOptions;

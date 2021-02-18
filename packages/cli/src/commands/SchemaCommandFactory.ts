@@ -10,15 +10,17 @@ export class SchemaCommandFactory {
     create: 'Create database schema based on current metadata',
     update: 'Update database schema based on current metadata',
     drop: 'Drop database schema based on current metadata',
+    fresh: 'Drop and recreate database schema based on current metadata',
   };
 
   static readonly SUCCESS_MESSAGES = {
     create: 'Schema successfully created',
     update: 'Schema successfully updated',
     drop: 'Schema successfully dropped',
+    fresh: 'Schema successfully dropped and recreated',
   };
 
-  static create<U extends Options = Options>(command: 'create' | 'update' | 'drop'): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
@@ -29,21 +31,31 @@ export class SchemaCommandFactory {
     };
   }
 
-  static configureSchemaCommand(args: Argv, command: 'create' | 'update' | 'drop') {
+  static configureSchemaCommand(args: Argv, command: SchemaMethod) {
     args.option('r', {
       alias: 'run',
       type: 'boolean',
       desc: 'Runs queries',
     });
-    args.option('d', {
-      alias: 'dump',
-      type: 'boolean',
-      desc: 'Dumps all queries to console',
-    });
-    args.option('fk-checks', {
-      type: 'boolean',
-      desc: 'Do not skip foreign key checks',
-    });
+    if (command !== 'fresh') {
+      args.option('d', {
+        alias: 'dump',
+        type: 'boolean',
+        desc: 'Dumps all queries to console',
+      });
+      args.option('fk-checks', {
+        type: 'boolean',
+        desc: 'Do not skip foreign key checks',
+      });
+    }
+
+    if (command === 'create' || command === 'fresh') {
+      args.option('seed', {
+        type: 'string',
+        desc: 'Allows to seed the database on create or drop and recreate',
+        default: '',
+      });
+    }
 
     if (command === 'update') {
       args.option('safe', {
@@ -72,7 +84,7 @@ export class SchemaCommandFactory {
     return args;
   }
 
-  static async handleSchemaCommand(args: Arguments<Options>, method: 'create' | 'update' | 'drop', successMessage: string) {
+  static async handleSchemaCommand(args: Arguments<Options>, method: SchemaMethod, successMessage: string) {
     if (!args.run && !args.dump) {
       yargs.showHelp();
       return;
@@ -86,16 +98,22 @@ export class SchemaCommandFactory {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
       const dump = await generator[m](...params);
       CLIHelper.dump(dump, orm.config);
+    } else if (method === 'fresh') {
+      await generator.dropSchema(...SchemaCommandFactory.getOrderedParams(args, 'drop'));
+      await generator.createSchema(...SchemaCommandFactory.getOrderedParams(args, 'create'));
     } else {
       const m = method + 'Schema';
       await generator[m](...params);
-      CLIHelper.dump(c.green(successMessage));
     }
-
+    if (args.seed !== undefined) {
+      const seeder = orm.getSeeder();
+      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder);
+    }
+    CLIHelper.dump(c.green(successMessage));
     await orm.close(true);
   }
 
-  private static getOrderedParams(args: Arguments<Options>, method: 'create' | 'update' | 'drop'): any[] {
+  private static getOrderedParams(args: Arguments<Options>, method: SchemaMethod): any[] {
     const ret: any[] = [!args.fkChecks];
 
     if (method === 'update') {
@@ -115,4 +133,5 @@ export class SchemaCommandFactory {
 
 }
 
-export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean; dropTables: boolean; safe: boolean };
+type SchemaMethod = 'create' | 'update' | 'drop' | 'fresh';
+export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean; dropTables: boolean; safe: boolean; seed: string };

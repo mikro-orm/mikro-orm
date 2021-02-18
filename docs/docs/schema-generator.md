@@ -20,7 +20,7 @@ You can use it via CLI:
 ```sh
 npx mikro-orm schema:create --dump   # Dumps create schema SQL
 npx mikro-orm schema:update --dump   # Dumps update schema SQL
-npx mikro-orm schema:drop --dump     # Dumps drop schema SQL
+npx mikro-orm schema:drop --dump     # Dumps drop schema SQL 
 ```
 
 > You can also use `--run` flag to fire all queries, but be careful as it might break your
@@ -35,6 +35,16 @@ well as column dropping.
 
 `schema:drop` will by default drop all database tables. You can use `--drop-db` flag to drop
 the whole database instead. 
+
+```shell
+npx mikro-orm schema:fresh --run     # !WARNING! Drops the database schema and recreates it
+```
+This command can be run with the `--seed` option to seed the database after it has been created again.
+```shell
+npx mikro-orm schema:fresh --run --seed              # seed the database with the default database seeder
+npx mikro-orm schema:fresh --run --seed=UsersSeeder  # seed the database with the UsersSeeder
+```
+> You can specify the default database seeder in the orm config with the key `config.seeder.defaultSeeder`
 
 ## Using SchemaGenerator programmatically
 

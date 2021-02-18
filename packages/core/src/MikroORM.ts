@@ -5,7 +5,7 @@ import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataP
 import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
-import { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
+import { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -141,6 +141,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
     return this.driver.getPlatform().getMigrator(this.em) as T;
+  }
+
+  getSeeder<T extends ISeedManager = ISeedManager>(): T {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { SeedManager } = require('@mikro-orm/seeder');
+    return new SeedManager(this);
   }
 
 }

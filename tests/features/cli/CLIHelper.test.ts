@@ -28,14 +28,18 @@ describe('CLIHelper', () => {
       'generate-entities',
       'database:create',
       'database:import',
+      'seeder:run',
+      'seeder:create',
       'schema:create',
       'schema:drop',
       'schema:update',
+      'schema:fresh',
       'migration:create',
       'migration:up',
       'migration:down',
       'migration:list',
       'migration:pending',
+      'migration:fresh',
       'debug',
     ]);
   });
@@ -206,6 +210,16 @@ describe('CLIHelper', () => {
     expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'boolean' });
     expect(args.option.mock.calls[4][0]).toBe('drop-tables');
     expect(args.option.mock.calls[4][1]).toMatchObject({ type: 'boolean' });
+  });
+
+  test('builder (schema fresh)', async () => {
+    const args = { option: jest.fn() };
+    SchemaCommandFactory.configureSchemaCommand(args as any, 'fresh');
+    expect(args.option.mock.calls.length).toBe(2);
+    expect(args.option.mock.calls[0][0]).toBe('r');
+    expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
+    expect(args.option.mock.calls[1][0]).toBe('seed');
+    expect(args.option.mock.calls[1][1]).toMatchObject({ type: 'string' });
   });
 
   test('dump', async () => {

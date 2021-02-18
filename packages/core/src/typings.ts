@@ -4,6 +4,7 @@ import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
 import { Configuration, EntityComparator, Utils } from './utils';
+import { EntityManager } from './EntityManager';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -501,4 +502,15 @@ export interface IHydrator {
 
 export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
+}
+
+export interface ISeedManager {
+  refreshDatabase(): Promise<void>;
+  seed(...seederClasses: { new(): Seeder }[]): Promise<void>;
+  seedString(...seederClasses: string[]): Promise<void>;
+  createSeeder(seederClass: string): Promise<void>;
+}
+
+export interface Seeder {
+  run(em: EntityManager): Promise<void>;
 }
