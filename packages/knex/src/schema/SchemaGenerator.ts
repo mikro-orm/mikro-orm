@@ -229,7 +229,18 @@ export class SchemaGenerator {
   }
 
   private createTable(meta: EntityMetadata, createdColumns: string[]): SchemaBuilder {
-    return this.knex.schema.createSchemaIfNotExists(this.connection.getSchema()).withSchema(this.connection.getSchema()).createTable(meta.collection, table => {
+    let schema = this.knex.schema;
+    if (this.connection.getSchema()) {
+      try {
+        schema = schema.createSchemaIfNotExists(this.connection.getSchema());
+      } catch (e) {
+        // only postresql supports schema at the moment (though mysql recently added it as an alias for database)
+        // mysql still supports schema like access `mydb1.user`, `mydb2.user`
+        // in future knex might support more
+      }
+      schema = schema.withSchema(this.connection.getSchema());
+    }
+    return schema.createTable(meta.collection, table => {
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => {
