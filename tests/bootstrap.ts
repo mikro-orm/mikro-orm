@@ -89,7 +89,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, schema?: string) {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, schema?: string, skipInit=false) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
     dbName: `mikro_orm_test`,
@@ -105,10 +105,9 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, s
     loadStrategy,
   });
 
-  try {
-    await orm.em.getConnection().execute(`drop schema ${orm.em.getConnection().getSchema()} cascade`);
-  } catch (e) {}
-
+  if (skipInit) {
+    return orm;
+  }
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
   await schemaGenerator.createSchema();

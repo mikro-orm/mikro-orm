@@ -38,11 +38,12 @@ export class MigrationStorage {
   async ensureTable(): Promise<void> {
     const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
 
-    if (tables.find(t => t.table_name === this.options.tableName!)) {
+    if (tables.find(t => t.table_name === this.options.tableName! && t.schema_name === this.connection.getSchema())) {
       return;
     }
 
-    await this.knex.schema.withSchema(this.connection.getSchema()).createTable(this.options.tableName!, table => {
+    await this.knex.schema.createSchemaIfNotExists(this.connection.getSchema())
+      .withSchema(this.connection.getSchema()).createTable(this.options.tableName!, table => {
       table.increments();
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());

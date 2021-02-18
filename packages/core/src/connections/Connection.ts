@@ -22,6 +22,10 @@ export abstract class Connection {
     }
   }
 
+  getSchema(): string|undefined {
+    return undefined;
+  }
+
   /**
    * Establishes connection to database
    */

@@ -48,10 +48,6 @@ export class SchemaGenerator {
     const createdColumns: string[] = [];
     let ret = '';
 
-    if (this.connection.getSchema()) {
-      ret += `create schema "${this.connection.getSchema()}"`;
-    }
-
     for (const meta of metadata) {
       ret += this.dump(this.createTable(meta, createdColumns));
     }
@@ -156,7 +152,8 @@ export class SchemaGenerator {
   }
 
   private getUpdateTableSQL(meta: EntityMetadata, schema: DatabaseSchema, safe: boolean, createdColumns: string[]): string {
-    const table = schema.getTable(meta.collection);
+    const tblName = this.connection.getSchema() ? this.connection.getSchema() + '.' + meta.collection : meta.collection;
+    const table = schema.getTable(tblName);
 
     if (!table) {
       return this.dump(this.createTable(meta, createdColumns));
@@ -166,7 +163,8 @@ export class SchemaGenerator {
   }
 
   private getUpdateTableFKsSQL(meta: EntityMetadata, schema: DatabaseSchema, createdColumns: string[]): string {
-    const table = schema.getTable(meta.collection);
+    const tblName = this.connection.getSchema() ? this.connection.getSchema() + '.' + meta.collection : meta.collection;
+    const table = schema.getTable(tblName);
 
     if (!table) {
       return this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => this.createForeignKeys(table, meta)));
@@ -182,7 +180,8 @@ export class SchemaGenerator {
   }
 
   private getUpdateTableIndexesSQL(meta: EntityMetadata, schema: DatabaseSchema): string {
-    const table = schema.getTable(meta.collection);
+    const tblName = this.connection.getSchema() ? this.connection.getSchema() + '.' + meta.collection : meta.collection;
+    const table = schema.getTable(tblName);
 
     if (!table) {
       return this.dump(this.knex.schema.withSchema(this.connection.getSchema()).alterTable(meta.collection, table => {
@@ -230,7 +229,7 @@ export class SchemaGenerator {
   }
 
   private createTable(meta: EntityMetadata, createdColumns: string[]): SchemaBuilder {
-    return this.knex.schema.withSchema(this.connection.getSchema()).createTable(meta.collection, table => {
+    return this.knex.schema.createSchemaIfNotExists(this.connection.getSchema()).withSchema(this.connection.getSchema()).createTable(meta.collection, table => {
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => {

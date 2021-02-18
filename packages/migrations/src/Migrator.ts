@@ -7,6 +7,8 @@ import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
 import { MigrationStorage } from './MigrationStorage';
 import { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
+import fspath from 'path';
+import fs from 'fs';
 
 export class Migrator {
 
@@ -50,13 +52,41 @@ export class Migrator {
       return { fileName: '', code: '', diff };
     }
 
-    const migration = await this.generator.generate(diff, path);
 
-    return {
+    const migration = await this.generator.generate(diff, path);
+    const result = {
       fileName: migration[1],
       code: migration[0],
       diff,
     };
+
+    const dir = this.config.get('migrations').path;
+    if (!result.fileName) {
+      return result;
+    }
+
+    const schema = this.config.getDriver().getConnection().getSchema();
+
+    if (!schema) {
+      return result;
+    }
+
+    const file = fspath.join(dir!, result.fileName);
+    let content = fs.readFileSync(file).toString();
+    const regex = new RegExp(`"${schema}"`, 'g');
+
+    content = content
+      .replace(/addSql\('/g, 'addSql(`')
+      .replace(/'\);/g, '`);')
+      .replace(regex, '"${schema}"');
+    content = content.replace(
+      'async up(): Promise<void> {',
+      'async up(): Promise<void> {\n    const schema = this.config.get(\'schema\' as any);\n'
+    );
+    fs.writeFileSync(file, content);
+
+    result.code = content;
+    return result;
   }
 
   async createInitialMigration(path?: string): Promise<MigrationResult> {
@@ -69,11 +99,38 @@ export class Migrator {
       await this.storage.logMigration(migration[1]);
     }
 
-    return {
+    const result = {
       fileName: migration[1],
       code: migration[0],
       diff,
     };
+    const dir = this.config.get('migrations').path;
+    if (!result.fileName) {
+      return result;
+    }
+
+    const schema = this.config.getDriver().getConnection().getSchema();
+    if (!schema) {
+      return result;
+    }
+
+    const file = fspath.join(dir!, result.fileName);
+
+    let content = fs.readFileSync(file).toString();
+    const regex = new RegExp(`"${schema}"`, 'g');
+
+    content = content
+      .replace(/addSql\('/g, 'addSql(`')
+      .replace(/'\);/g, '`);')
+      .replace(regex, '"${schema}"');
+    content = content.replace(
+      'async up(): Promise<void> {',
+      'async up(): Promise<void> {\n    const schema = this.config.get(\'schema\' as any);\n'
+    );
+    fs.writeFileSync(file, content);
+
+    result.code = content;
+    return result;
   }
 
   /**

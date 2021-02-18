@@ -16,7 +16,6 @@ export abstract class AbstractSqlConnection extends Connection {
 
   protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
-  knexSchemaGetter: (() => any) | undefined;
 
   constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
     super(config, options, type);
