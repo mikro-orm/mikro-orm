@@ -22,9 +22,6 @@ export abstract class AbstractSqlConnection extends Connection {
     this.patchKnexClient();
   }
 
-  /**
-  * this is required to support schemas for migrations
-  */
   getKnex(): Knex {
     return this.client;
   }

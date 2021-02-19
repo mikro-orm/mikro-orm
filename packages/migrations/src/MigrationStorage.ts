@@ -38,12 +38,22 @@ export class MigrationStorage {
   async ensureTable(): Promise<void> {
     const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
 
-    if (tables.find(t => t.table_name === this.options.tableName! && t.schema_name === this.connection.getSchema())) {
+    if (tables.find(t => t.table_name === this.options.tableName! && (!this.connection.getSchema() || t.schema_name === this.connection.getSchema()))) {
       return;
     }
 
-    await this.knex.schema.createSchemaIfNotExists(this.connection.getSchema())
-      .withSchema(this.connection.getSchema()).createTable(this.options.tableName!, table => {
+    let schema = this.knex.schema;
+    if (this.connection.getSchema()) {
+      try {
+        schema = schema.createSchemaIfNotExists(this.connection.getSchema());
+      } catch (e) {
+        // only postresql supports schema at the moment (though mysql recently added it as an alias for database)
+        // mysql still supports schema like access `mydb1.user`, `mydb2.user`
+        // in future knex might support more
+      }
+      schema = schema.withSchema(this.connection.getSchema());
+    }
+    await schema.createTable(this.options.tableName!, table => {
       table.increments();
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());

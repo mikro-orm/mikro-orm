@@ -110,7 +110,6 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, s
   }
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
-  await schemaGenerator.createSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
