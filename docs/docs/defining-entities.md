@@ -1536,7 +1536,7 @@ and other methods that are otherwise available via the `wrap()` helper.
 import { BaseEntity } from '@mikro-orm/core';
 
 @Entity()
-export class Book extends BaseEntity {
+export class Book extends BaseEntity<Book, 'id'> {
 
   @PrimaryKey()
   id!: number;
