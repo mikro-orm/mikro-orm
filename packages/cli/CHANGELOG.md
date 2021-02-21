@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.4](https://github.com/mikro-orm/mikro-orm/compare/v4.4.3...v4.4.4) (2021-02-21)
+
+
+### Bug Fixes
+
+* **cli:** fix debug command with file globs ([5ec60e2](https://github.com/mikro-orm/mikro-orm/commit/5ec60e20db8d13ed44d1b3f129fd48f3362cb893)), closes [#1465](https://github.com/mikro-orm/mikro-orm/issues/1465)
+
+
+
+
+
 ## [4.4.3](https://github.com/mikro-orm/mikro-orm/compare/v4.4.2...v4.4.3) (2021-02-14)
 
 **Note:** Version bump only for package @mikro-orm/cli
