@@ -44,7 +44,7 @@ export class DebugCommand implements CommandModule {
         CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
         if (paths.length > 0) {
-          await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'), true);
+          await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }
       }
 
@@ -59,7 +59,7 @@ export class DebugCommand implements CommandModule {
 
         /* istanbul ignore else */
         if (paths.length > 0) {
-          await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'), true);
+          await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }
       }
     } catch (e) {
@@ -67,11 +67,11 @@ export class DebugCommand implements CommandModule {
     }
   }
 
-  private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', baseDir?: string, onlyDirectories = false): Promise<void> {
+  private static async checkPaths(paths: string[], failedColor: 'red' | 'yellow', baseDir?: string): Promise<void> {
     for (let path of paths) {
       path = Utils.absolutePath(path, baseDir);
       path = Utils.normalizePath(path);
-      const found = await Utils.pathExists(path, { onlyDirectories });
+      const found = await Utils.pathExists(path);
 
       if (found) {
         CLIHelper.dump(`   - ${path} (${c.green('found')})`);
