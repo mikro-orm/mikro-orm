@@ -51,7 +51,7 @@
     "mysql2": "2.2.5"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.4.4"
+    "@mikro-orm/core": "4.4.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0"

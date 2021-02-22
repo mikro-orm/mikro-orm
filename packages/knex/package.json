@@ -52,7 +52,7 @@
     "sqlstring": "2.3.2"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.4.4"
+    "@mikro-orm/core": "4.4.4"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0",
