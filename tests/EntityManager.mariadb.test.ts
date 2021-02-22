@@ -218,6 +218,23 @@ describe('EntityManagerMariaDb', () => {
     await orm.em.getRepository(Book2).remove(lastBook[0]).flush();
   });
 
+  test('datetime is stored in correct timezone', async () => {
+    const author = new Author2('n', 'e');
+    author.createdAt = new Date('2000-01-01T00:00:00Z');
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select date_format(created_at, '%Y-%m-%d %T.%f') as created_at from author2 where id = ${author.id}`);
+    expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
+    const a = await orm.em.findOneOrFail(Author2, author.id);
+    expect(+a.createdAt!).toBe(+author.createdAt);
+    const a1 = await orm.em.findOneOrFail(Author2, { createdAt: { $eq: a.createdAt } });
+    expect(+a1.createdAt!).toBe(+author.createdAt);
+    expect(orm.em.merge(a1)).toBe(a1);
+    const a2 = await orm.em.findOneOrFail(Author2, { updatedAt: { $eq: a.updatedAt } });
+    expect(+a2.updatedAt!).toBe(+author.updatedAt);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

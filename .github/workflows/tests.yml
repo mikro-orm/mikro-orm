@@ -67,6 +67,8 @@ jobs:
         yarn run-rs-in-background
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
+      env:
+        TZ: Europe/Prague # use different timezone than UTC, because we need to validate that time zone shifting works
 
     - name: Release dev version for testing
       if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
