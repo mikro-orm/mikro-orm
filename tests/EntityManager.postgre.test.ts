@@ -1721,6 +1721,8 @@ describe('EntityManagerPostgre multiple schemas', () => {
   afterAll(async () => {
     await orm1.em.getConnection().execute(`drop schema ${orm1.em.getConnection().getSchema()} cascade`);
     await orm2.em.getConnection().execute(`drop schema ${orm2.em.getConnection().getSchema()} cascade`);
+    await orm1.close();
+    await orm2.close();
   });
 
   it('migrate correctly', async () => {
