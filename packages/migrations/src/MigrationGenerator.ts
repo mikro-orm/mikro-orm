@@ -30,6 +30,12 @@ export class MigrationGenerator {
   createStatement(sql: string, padLeft: number): string {
     if (sql) {
       const padding = ' '.repeat(padLeft);
+      const schema = this.driver.getConnection().getSchema();
+      if (schema) {
+        const regex = new RegExp(`"${schema}"`, 'g');
+        return `${padding}this.addSql(\`${sql.replace(/['\\]/g, '\\\'')
+          .replace(regex, '"${schema}"')}\`);\n`;
+      }
       return `${padding}this.addSql('${sql.replace(/['\\]/g, '\\\'')}');\n`;
     }
 
@@ -42,6 +48,10 @@ export class MigrationGenerator {
     ret += `const Migration = require('@mikro-orm/migrations').Migration;\n\n`;
     ret += `class ${className} extends Migration {\n\n`;
     ret += `  async up() {\n`;
+    const schema = this.driver.getConnection().getSchema();
+    if (schema) {
+      ret += `    const schema = this.config.get('schema');\n`;
+    }
     diff.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
     ret += `}\n`;
@@ -54,6 +64,10 @@ export class MigrationGenerator {
     let ret = `import { Migration } from '@mikro-orm/migrations';\n\n`;
     ret += `export class ${className} extends Migration {\n\n`;
     ret += `  async up(): Promise<void> {\n`;
+    const schema = this.driver.getConnection().getSchema();
+    if (schema) {
+      ret += `    const schema = this.config.get('schema' as any);\n`;
+    }
     diff.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
     ret += `}\n`;
