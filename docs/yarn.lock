@@ -6055,6 +6055,18 @@ handlebars@^4.7.6:
   optionalDependencies:
     uglify-js "^3.1.4"
 
+handlebars@^4.7.7:
+  version "4.7.7"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
+  integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
+  dependencies:
+    minimist "^1.2.5"
+    neo-async "^2.6.0"
+    source-map "^0.6.1"
+    wordwrap "^1.0.0"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
 has-ansi@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/has-ansi/-/has-ansi-2.0.0.tgz#34f5049ce1ecdf2b0649af3ef24e45ed35416d91"
@@ -7398,6 +7410,11 @@ lodash@^4.17.19, lodash@^4.17.20:
   version "4.17.20"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
   integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
+
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
 loglevel@^1.6.8:
   version "1.7.0"
@@ -11056,15 +11073,15 @@ typedoc-plugin-markdown@3.5.0:
   dependencies:
     handlebars "^4.7.6"
 
-typedoc@0.20.27:
-  version "0.20.27"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.20.27.tgz#66391dfe4c4d1add4a4ef95a8f19b6bc62fe3389"
-  integrity sha512-Y61T2wEpBo6x0t0zeMNH6CH0n2Jt8E1IHObcK4fGT9nK9Zq6+Rurf0A9WqVbhRmkGpu1wBsGl+4kSJdIN+AOtg==
+typedoc@0.20.28:
+  version "0.20.28"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.20.28.tgz#6c454904d864dd43a2de9228c44b91e3c53d98ce"
+  integrity sha512-8j0T8u9FuyDkoe+M/3cyoaGJSVgXCY9KwVoo7TLUnmQuzXwqH+wkScY530ZEdK6G39UZ2LFTYPIrL5eykWjx6A==
   dependencies:
     colors "^1.4.0"
     fs-extra "^9.1.0"
-    handlebars "^4.7.6"
-    lodash "^4.17.20"
+    handlebars "^4.7.7"
+    lodash "^4.17.21"
     lunr "^2.3.9"
     marked "^2.0.0"
     minimatch "^3.0.0"
