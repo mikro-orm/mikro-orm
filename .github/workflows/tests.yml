@@ -67,6 +67,7 @@ jobs:
         yarn run-rs-in-background
         yarn coverage > COVERAGE_RESULT
         echo "$(cat COVERAGE_RESULT)"
+        git status && git diff
 
     - name: Release dev version for testing
       if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'

@@ -12,3 +12,5 @@
 /mikro_orm_test.db
 *.tsbuildinfo
 .DS_Store
+COVERAGE_RESULT
+.npmrc
