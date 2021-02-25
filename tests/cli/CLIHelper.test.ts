@@ -2,6 +2,8 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
 jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm-async.config.js', () => (Promise.resolve({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
 const tsc = { compilerOptions: {} } as any;
@@ -110,6 +112,28 @@ describe('CLIHelper', () => {
     expect(conf).toBeInstanceOf(Configuration);
     expect(conf.get('dbName')).toBe('foo_bar');
     expect(conf.get('entities')).toEqual(['tests/foo']);
+    pathExistsMock.mockRestore();
+  });
+
+  test('gets ORM configuration [from package.json] with promise', async () => {
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'].configPaths = [`${process.cwd()}/mikro-orm-async.config.js`];
+    const conf = await CLIHelper.getConfiguration();
+    expect(conf).toBeInstanceOf(Configuration);
+    expect(conf.get('dbName')).toBe('foo_bar');
+    expect(conf.get('entities')).toEqual(['tests/foo']);
+    delete pkg['mikro-orm'].configPaths;
+    pathExistsMock.mockRestore();
+  });
+
+  test('gets ORM configuration [from package.json] with rejected promise', async () => {
+    expect.assertions(1);
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    pkg['mikro-orm'].configPaths = [`${process.cwd()}/mikro-orm-async-catch.config.js`];
+    await expect(CLIHelper.getConfiguration()).rejects.toEqual('FooError');
+    delete pkg['mikro-orm'].configPaths;
     pathExistsMock.mockRestore();
   });
 
