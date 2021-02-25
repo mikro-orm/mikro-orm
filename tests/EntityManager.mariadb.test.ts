@@ -8,7 +8,7 @@ describe('EntityManagerMariaDb', () => {
 
   let orm: MikroORM<MariaDbDriver>;
 
-  beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb'));
+  beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
   beforeEach(async () => wipeDatabaseMySql(orm.em));
 
   test('isConnected()', async () => {
