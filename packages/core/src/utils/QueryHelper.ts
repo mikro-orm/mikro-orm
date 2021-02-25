@@ -242,7 +242,7 @@ export class QueryHelper {
   }
 
   private static processJsonCondition<T>(o: FilterQuery<T>, value: Dictionary, path: string[], platform: Platform) {
-    if (Utils.isPlainObject(value)) {
+    if (Utils.isPlainObject(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
       Object.keys(value).forEach(k => {
         this.processJsonCondition(o, value[k], [...path, k], platform);
       });

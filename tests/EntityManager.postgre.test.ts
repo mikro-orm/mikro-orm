@@ -405,7 +405,7 @@ describe('EntityManagerPostgre', () => {
     orm.em.clear();
 
     const b1 = await orm.em.findOneOrFail(Book2, { meta: { category: 'god like' } });
-    const b2 = await orm.em.findOneOrFail(Book2, { meta: { category: 'god like', items: 3 } });
+    const b2 = await orm.em.findOneOrFail(Book2, { meta: { category: { $in: ['god like'] }, items: 3 } }); // supports operators (GH #1487)
     const b3 = await orm.em.findOneOrFail(Book2, { meta: { nested: { bar: 321 } } });
     const b4 = await orm.em.findOneOrFail(Book2, { meta: { nested: { foo: '123', bar: 321 } } });
     const b5 = await orm.em.findOneOrFail(Book2, { meta: { valid: true, nested: { foo: '123', bar: 321 } } });
