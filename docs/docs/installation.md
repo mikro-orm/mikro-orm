@@ -188,7 +188,12 @@ $ yarn mikro-orm
 ```
 
 For CLI to be able to access your database, you will need to create `mikro-orm.config.js` file that 
-exports your ORM configuration. TypeScript is also supported, just enable `useTsNode` flag in your
+exports your ORM configuration. 
+
+> Your ORM configuration file can export the Promise, like:
+> `export default Promise.resolve({...});`.
+
+TypeScript is also supported, just enable `useTsNode` flag in your
 `package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
 as well as use different file name:
 
