@@ -21,11 +21,15 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
         ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
       }
+
+      if (entity.profile1.identity.links != null) {
+        ret.profile1_identity_links = cloneEmbeddable(entity.profile1.identity.links);
+      }
     }
   }
 
-  if ('profile2' in entity) {
-    ret.profile2 = cloneEmbeddable({ ...entity.profile2 });
+  if (entity.profile2 != null) {
+    ret.profile2 = cloneEmbeddable(entity.profile2);
   }
 
   return ret;
@@ -33,7 +37,7 @@ exports[`embedded entities in postgres diffing 1`] = `
 `;
 
 exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
-"create table \\"user\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"profile1_username\\" varchar(255) not null, \\"profile1_identity_email\\" varchar(255) not null, \\"profile1_identity_meta_foo\\" varchar(255) null, \\"profile1_identity_meta_bar\\" varchar(255) null, \\"profile2\\" jsonb not null);
+"create table \\"user\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"profile1_username\\" varchar(255) not null, \\"profile1_identity_email\\" varchar(255) not null, \\"profile1_identity_meta_foo\\" varchar(255) null, \\"profile1_identity_links\\" jsonb not null, \\"profile1_identity_meta_bar\\" varchar(255) null, \\"profile2\\" jsonb not null);
 
 "
 `;

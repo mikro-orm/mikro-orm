@@ -3,13 +3,13 @@ version: "2"
 checks:
   file-lines:
     config:
-      threshold: 500
+      threshold: 1000
   method-lines:
     config:
-      threshold: 50
+      threshold: 200
   method-count:
     config:
-      threshold: 50
+      threshold: 100
   return-statements:
     config:
       threshold: 7

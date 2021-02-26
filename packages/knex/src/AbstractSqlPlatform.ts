@@ -70,4 +70,8 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.getSearchJsonPropertyKey(path.split('->'), type);
   }
 
+  cloneEmbeddable<T>(data: T): T {
+    return JSON.stringify(data) as unknown as T; // keep string to ease escaping
+  }
+
 }

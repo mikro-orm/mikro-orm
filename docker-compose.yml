@@ -5,6 +5,7 @@ services:
 
   mysql:
     image: mysql:5.7
+    platform: linux/x86_64
     restart: unless-stopped
     ports:
       - 3307:3306
@@ -33,5 +34,14 @@ services:
 
 volumes:
   mysql:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
   mariadb:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
   postgre:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

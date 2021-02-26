@@ -24,8 +24,8 @@ exports[`embedded entities in mongo diffing 1`] = `
     }
   }
 
-  if ('profile2' in entity) {
-    ret.profile2 = cloneEmbeddable({ ...entity.profile2 });
+  if (entity.profile2 != null) {
+    ret.profile2 = cloneEmbeddable(entity.profile2);
   }
 
   return ret;

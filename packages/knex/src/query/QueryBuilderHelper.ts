@@ -103,6 +103,7 @@ export class QueryBuilderHelper {
         data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform));
       }
 
+      /* istanbul ignore next */
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }

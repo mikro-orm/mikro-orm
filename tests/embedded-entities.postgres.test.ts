@@ -67,6 +67,9 @@ class User {
   @Embedded({ object: true })
   address4: Address1 = new Address1();
 
+  @Embedded(() => Address1, { array: true })
+  addresses: Address1[] = [];
+
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
 
@@ -142,6 +145,8 @@ describe('embedded entities in postgresql', () => {
     user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
     user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
+    user.addresses.push(new Address1('Downing street 13A', '10A', 'London 4A', 'UK 4A'));
+    user.addresses.push(new Address1('Downing street 13B', '10B', 'London 4B', 'UK 4B'));
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
@@ -149,7 +154,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_postal_code", "address1_street", "address4", "city", "country", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);

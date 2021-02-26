@@ -143,7 +143,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('clone', clone);
-    context.set('cloneEmbeddable', (o: any) => JSON.parse(JSON.stringify(o))); // do not clone prototypes
+    context.set('cloneEmbeddable', (o: any) => this.platform.cloneEmbeddable(o)); // do not clone prototypes
 
     if (meta.discriminatorValue) {
       lines.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
@@ -226,6 +226,11 @@ export class EntityComparator {
     const padding = ' '.repeat(level * 2);
     const cond = `entity.${path.join('.')} != null`;
     const ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
+
+    if (prop.object) {
+      return `${ret + padding}  ret.${prop.name} = cloneEmbeddable(entity.${path.join('.')});\n${padding}}`;
+    }
+
     return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
       if (childProp.reference === ReferenceType.EMBEDDED) {
         return this.getEmbeddedPropertySnapshot(meta, childProp, context, level + 1, [...path, childProp.embedded![1]]);
@@ -243,10 +248,6 @@ export class EntityComparator {
     }
 
     if (prop.reference === ReferenceType.EMBEDDED) {
-      if (prop.object) {
-        return ret + `    ret.${prop.name} = cloneEmbeddable({ ...entity.${prop.name} });\n  }\n`;
-      }
-
       return this.getEmbeddedPropertySnapshot(meta, prop, context) + '\n';
     }
 
