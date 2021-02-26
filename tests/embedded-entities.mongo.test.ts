@@ -1,17 +1,4 @@
-import {
-  assign,
-  Embeddable,
-  Embedded,
-  Entity,
-  EntitySchema,
-  Logger,
-  MikroORM, Platform,
-  PrimaryKey,
-  Property,
-  ReferenceType,
-  SerializedPrimaryKey,
-  Type,
-} from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, Platform, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import { ObjectId, MongoDriver, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 
 @Embeddable()

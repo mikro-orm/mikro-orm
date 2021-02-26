@@ -121,6 +121,16 @@ In SQL drivers, this will use a JSON column to store the value.
 > This part of documentation is highly inspired by [doctrine tutorial](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/tutorials/embeddables.html)
 > as the behaviour here is pretty much the same.
 
+## Array of embeddables
+
+Embedded arrays are always stored as JSON. It is possible to use them inside
+nested embeddables. 
+
+```ts
+  @Embedded(() => Address, { array: true })
+  addresses: Address[] = [];
+```
+
 ## Nested embeddables
 
 Starting with v4.4, we can also nest embeddables, both in inline mode and object mode:

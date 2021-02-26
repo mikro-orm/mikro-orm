@@ -18,6 +18,21 @@ class IdentityMeta {
 }
 
 @Embeddable()
+class IdentityLink {
+
+  @Property({ nullable: true })
+  url?: string;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+
+}
+
+@Embeddable()
 class Identity {
 
   @Property()
@@ -25,6 +40,9 @@ class Identity {
 
   @Embedded(() => IdentityMeta, { nullable: true })
   meta?: IdentityMeta;
+
+  @Embedded(() => IdentityLink, { array: true })
+  links: IdentityLink[] = [];
 
   constructor(email: string, meta?: IdentityMeta) {
     this.email = email;
@@ -72,7 +90,7 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User, Profile, Identity, IdentityMeta],
+      entities: [User, Profile, Identity, IdentityMeta, IdentityLink],
       type: 'postgresql',
       dbName: `mikro_orm_test_nested_embedddables`,
     });
@@ -104,7 +122,9 @@ describe('embedded entities in postgres', () => {
     const user2 = new User();
     user2.name = 'Uschi';
     user2.profile1 = new Profile('u3', new Identity('e3'));
+    user2.profile1.identity.links.push(new IdentityLink('l1'), new IdentityLink('l2'));
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
+    user2.profile2.identity.links.push(new IdentityLink('l3'), new IdentityLink('l4'));
 
     const mock = jest.fn();
     const logger = new Logger(mock, true);
@@ -112,17 +132,20 @@ describe('embedded entities in postgres', () => {
     await orm.em.persistAndFlush([user1, user2]);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2"}}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"}}}') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"links":[],"email":"e2","meta":{"foo":"f2","bar":"b2"}}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1"},{"url":"l2"}]', '{"username":"u4","identity":{"links":[{"url":"l3"},{"url":"l4"}],"email":"e4","meta":{"foo":"f4"}}}') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const u1 = await orm.em.findOneOrFail(User, user1.id);
     const u2 = await orm.em.findOneOrFail(User, user2.id);
     expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "user" as "e0" where "e0"."id" = 1 limit 1`);
     expect(u1.profile1).toBeInstanceOf(Profile);
+    expect(u1.profile1.identity).toBeInstanceOf(Identity);
+    expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
     expect(u1.profile1).toEqual({
       username: 'u1',
       identity: {
         email: 'e1',
+        links: [],
         meta: {
           bar: 'b1',
           foo: 'f1',
@@ -130,10 +153,13 @@ describe('embedded entities in postgres', () => {
       },
     });
     expect(u1.profile2).toBeInstanceOf(Profile);
+    expect(u1.profile2.identity).toBeInstanceOf(Identity);
+    expect(u1.profile2.identity.meta).toBeInstanceOf(IdentityMeta);
     expect(u1.profile2).toEqual({
       username: 'u2',
       identity: {
         email: 'e2',
+        links: [],
         meta: {
           bar: 'b2',
           foo: 'f2',
@@ -141,17 +167,24 @@ describe('embedded entities in postgres', () => {
       },
     });
     expect(u2.profile1).toBeInstanceOf(Profile);
+    expect(u2.profile1.identity).toBeInstanceOf(Identity);
+    expect(u2.profile1.identity.links[0]).toBeInstanceOf(IdentityLink);
     expect(u2.profile1).toEqual({
       username: 'u3',
       identity: {
         email: 'e3',
+        links: [{ url: 'l1' }, { url: 'l2' }],
       },
     });
     expect(u2.profile2).toBeInstanceOf(Profile);
+    expect(u2.profile2.identity).toBeInstanceOf(Identity);
+    expect(u2.profile2.identity.links[0]).toBeInstanceOf(IdentityLink);
+    expect(u2.profile2.identity.meta).toBeInstanceOf(IdentityMeta);
     expect(u2.profile2).toEqual({
       username: 'u4',
       identity: {
         email: 'e4',
+        links: [{ url: 'l3' }, { url: 'l4' }],
         meta: {
           foo: 'f4',
         },
@@ -165,8 +198,11 @@ describe('embedded entities in postgres', () => {
     u1.profile1!.identity.email = 'e123';
     u1.profile1!.identity.meta!.foo = 'foooooooo';
     u1.profile2!.identity.meta!.bar = 'bababar';
+    u1.profile2!.identity.links.push(new IdentityLink('l5'));
+    u2.profile1!.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
+    u2.profile2!.identity.links.push(new IdentityLink('l8'));
     await orm.em.flush();
-    expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "user" as "e0" where "e0"."id" = 1 limit 1`);
+    expect(mock.mock.calls[6][0]).toMatch(`update "user" set "profile1_identity_email" = case when ("id" = 1) then 'e123' else "profile1_identity_email" end, "profile1_identity_meta_foo" = case when ("id" = 1) then 'foooooooo' else "profile1_identity_meta_foo" end, "profile2" = case when ("id" = 1) then '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"bababar"},"links":[{"url":"l5"}]}}' when ("id" = 2) then '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3"},{"url":"l4"},{"url":"l8"}]}}' else "profile2" end, "profile1_identity_links" = case when ("id" = 2) then '[{"url":"l6"},{"url":"l7"}]' else "profile1_identity_links" end where "id" in (1, 2)`);
     orm.em.clear();
     mock.mock.calls.length = 0;
 

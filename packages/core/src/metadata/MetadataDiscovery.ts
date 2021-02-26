@@ -587,23 +587,34 @@ export class MetadataDiscovery {
       }
 
       const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+      const isParentObject: (prop: EntityProperty) => boolean = (prop: EntityProperty) => {
+        if (prop.object) {
+          return true;
+        }
+
+        return prop.embedded ? isParentObject(meta.properties[prop.embedded[0]]) : false;
+      };
       const rootProperty = getRootProperty(embeddedProp);
 
-      if (rootProperty.object) {
+      if (isParentObject(embeddedProp)) {
         embeddedProp.object = true;
         this.initFieldName(embeddedProp);
-        const path: string[] = [];
+        let path: string[] = [];
         let tmp = embeddedProp;
 
-        while (tmp.embedded) {
-          const fieldName = tmp.embedded![1];
-          path.unshift(fieldName);
+        while (tmp.embedded && tmp.object) {
+          path.unshift(tmp.embedded![1]);
           tmp = meta.properties[tmp.embedded[0]];
         }
 
-        path.unshift(this.namingStrategy.propertyToColumnName(rootProperty.name));
-        path.push(prop.name);
+        if (tmp === rootProperty) {
+          path.unshift(this.namingStrategy.propertyToColumnName(rootProperty.name));
+        } else {
+          path = [embeddedProp.fieldNames[0]];
+        }
 
+        path.push(prop.name);
+        meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
         meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }

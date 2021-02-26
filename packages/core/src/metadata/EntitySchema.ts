@@ -113,6 +113,11 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
   addEmbedded<K = unknown>(name: string & keyof T, options: EmbeddedOptions): void {
     Utils.defaultValue(options, 'prefix', true);
+
+    if (options.array) {
+      options.object = true; // force object mode for arrays
+    }
+
     this._meta.properties[name] = {
       name,
       type: this.normalizeType(options),

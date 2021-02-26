@@ -42,7 +42,6 @@ export class ObjectHydrator extends Hydrator {
       return exists;
     }
 
-    let tmpCounter = 0;
     const lines: string[] = [];
     const context = new Map<string, any>();
     const props = this.getProperties(meta, type);
@@ -70,22 +69,13 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const scalarHydrator = <T, U>(prop: EntityProperty<T>, object?: boolean, path: string[] = [prop.name]): string[] => {
+    const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const dataKey = object ? entityKey : prop.name;
       const preCond = preCondition(dataKey);
-      const convertorKey = path.join('_');
+      const convertorKey = path.join('_').replace(/\[idx]$/, '');
       const ret: string[] = [];
 
-      if (prop.reference === ReferenceType.EMBEDDED) {
-        context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
-        tmpCounter++;
-        ret.push(`  const tmp_${tmpCounter} = entity.${entityKey};`);
-        ret.push(`  entity.${entityKey} = Object.create(prototype_${convertorKey});`);
-        const children = meta.props.filter(p => p.embedded?.[0] === prop.name);
-        children.forEach(childProp => ret.push(...scalarHydrator(childProp, object || prop.object, [...path, childProp.embedded![1]])));
-        ret.push(`  if (Object.keys(entity.${entityKey}).filter(k => entity.${entityKey}[k] != null).length === 0) entity.${entityKey} = tmp_${tmpCounter}`);
-      } else if (prop.type.toLowerCase() === 'date') {
+      if (prop.type.toLowerCase() === 'date') {
         ret.push(
           `  if (${preCond}data.${dataKey}) entity.${entityKey} = new Date(data.${dataKey});`,
           `  else if (${preCond}data.${dataKey} === null) entity.${entityKey} = null;`,
@@ -112,93 +102,154 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    for (const prop of props) {
-      if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-        lines.push(`  if (data.${prop.name} === null) {\n    entity.${prop.name} = null;`);
-        lines.push(`  } else if (typeof data.${prop.name} !== 'undefined') {`);
-        lines.push(`    if (isPrimaryKey(data.${prop.name}, true)) {`);
+    const hydrateToOne = (prop: EntityProperty) => {
+      const ret: string[] = [];
 
-        if (prop.mapToPk) {
-          lines.push(`      entity.${prop.name} = data.${prop.name};`);
-        } else if (prop.wrappedReference) {
-          lines.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', data.${prop.name}, { merge: true }));`);
-        } else {
-          lines.push(`      entity.${prop.name} = factory.createReference('${prop.type}', data.${prop.name}, { merge: true });`);
+      ret.push(`  if (data.${prop.name} === null) {\n    entity.${prop.name} = null;`);
+      ret.push(`  } else if (typeof data.${prop.name} !== 'undefined') {`);
+      ret.push(`    if (isPrimaryKey(data.${prop.name}, true)) {`);
+
+      if (prop.mapToPk) {
+        ret.push(`      entity.${prop.name} = data.${prop.name};`);
+      } else if (prop.wrappedReference) {
+        ret.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', data.${prop.name}, { merge: true }));`);
+      } else {
+        ret.push(`      entity.${prop.name} = factory.createReference('${prop.type}', data.${prop.name}, { merge: true });`);
+      }
+
+      ret.push(`    } else if (data.${prop.name} && typeof data.${prop.name} === 'object') {`);
+
+      if (prop.mapToPk) {
+        ret.push(`      entity.${prop.name} = data.${prop.name};`);
+      } else if (prop.wrappedReference) {
+        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true }));`);
+      } else {
+        ret.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity });`);
+      }
+
+      ret.push(`    }`);
+      ret.push(`  }`);
+
+      if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
+        const meta2 = this.metadata.get(prop.type);
+        const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
+
+        if (prop2) {
+          ret.push(`  if (entity.${prop.name} && !entity.${prop.name}.${prop2.name}) {`);
+          ret.push(`    entity.${prop.name}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
+          ret.push(`  }`);
         }
+      }
 
-        lines.push(`    } else if (data.${prop.name} && typeof data.${prop.name} === 'object') {`);
+      if (prop.customType) {
+        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
-        if (prop.mapToPk) {
-          lines.push(`      entity.${prop.name} = data.${prop.name};`);
-        } else if (prop.wrappedReference) {
-          lines.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true }));`);
-        } else {
-          lines.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity });`);
-        }
+        ret.push(`  if (data.${prop.name} != null && convertCustomTypes) {`);
+        ret.push(`    data.${prop.name} = convertToDatabaseValue_${prop.name}(entity.${prop.name}.__helper.getPrimaryKey());`); // make sure the value is comparable
+        ret.push(`  }`);
+      }
 
-        lines.push(`    }`);
-        lines.push(`  }`);
+      return ret;
+    };
 
-        if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
-          const meta2 = this.metadata.get(prop.type);
-          const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
+    const hydrateToMany = (prop: EntityProperty) => {
+      const ret: string[] = [];
 
-          if (prop2) {
-            lines.push(`  if (entity.${prop.name} && !entity.${prop.name}.${prop2.name}) {`);
-            lines.push(`    entity.${prop.name}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
-            lines.push(`  }`);
-          }
-        }
+      ret.push(...this.createCollectionItemMapper(prop));
+      ret.push(`  if (Array.isArray(data.${prop.name})) {`);
+      ret.push(`     const items = data.${prop.name}.map(value => createCollectionItem_${prop.name}(value));`);
+      ret.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
+      ret.push(`     if (newEntity) {`);
+      ret.push(`       coll.setDirty();`);
+      ret.push(`     } else {`);
+      ret.push(`       coll.takeSnapshot();`);
+      ret.push(`     }`);
+      ret.push(`  } else if (!entity.${prop.name} && data.${prop.name} instanceof Collection) {`);
+      ret.push(`     entity.${prop.name} = data.${prop.name};`);
+      ret.push(`  } else if (!entity.${prop.name}) {`);
+      const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data.${prop.name} || newEntity);`);
+      ret.push(`    coll.setDirty(false);`);
+      ret.push(`  }`);
 
-        if (prop.customType) {
-          context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+      return ret;
+    };
 
-          lines.push(`  if (data.${prop.name} != null && convertCustomTypes) {`);
-          lines.push(`    data.${prop.name} = convertToDatabaseValue_${prop.name}(entity.${prop.name}.__helper.getPrimaryKey());`); // make sure the value is comparable
-          lines.push(`  }`);
-        }
-      } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
-        lines.push(...this.createCollectionItemMapper(prop));
-        lines.push(`  if (Array.isArray(data.${prop.name})) {`);
-        lines.push(`     const items = data.${prop.name}.map(value => createCollectionItem_${prop.name}(value));`);
-        lines.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
-        lines.push(`     if (newEntity) {`);
-        lines.push(`       coll.setDirty();`);
-        lines.push(`     } else {`);
-        lines.push(`       coll.takeSnapshot();`);
-        lines.push(`     }`);
-        lines.push(`  } else if (!entity.${prop.name} && data.${prop.name} instanceof Collection) {`);
-        lines.push(`     entity.${prop.name} = data.${prop.name};`);
-        lines.push(`  } else if (!entity.${prop.name}) {`);
-        const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-        lines.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data.${prop.name} || newEntity);`);
-        lines.push(`    coll.setDirty(false);`);
-        lines.push(`  }`);
-      } else if (prop.reference === ReferenceType.EMBEDDED) {
-        context.set(`prototype_${prop.name}`, prop.embeddable.prototype);
-        const conds: string[] = [];
+    const hydrateEmbedded = (prop: EntityProperty, object: boolean | undefined, path: string[], dataKey: string): string[] => {
+      const entityKey = path.join('.');
+      const convertorKey = path.join('_').replace(/\[idx]$/, '');
+      const ret: string[] = [];
+      const conds: string[] = [];
+      context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
 
-        if (prop.object) {
-          conds.push(`data.${prop.name} != null`);
-        } else {
-          meta.props
-            .filter(p => p.embedded?.[0] === prop.name)
-            .forEach(p => conds.push(`data.${p.name} != null`));
-        }
-
-        lines.push(`  if (${conds.join(' || ')}) {`);
-        lines.push(`    entity.${prop.name} = Object.create(prototype_${prop.name});`);
+      if (prop.object) {
+        conds.push(`data.${dataKey} != null`);
+      } else {
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(childProp => lines.push(...scalarHydrator(childProp, prop.object, [prop.name, childProp.embedded![1]]).map(l => '  ' + l)));
-        lines.push(`  }`);
+          .forEach(p => conds.push(`data.${p.name} != null`));
+      }
+
+      ret.push(`  if (${conds.join(' || ')}) {`);
+      ret.push(`    entity.${entityKey} = Object.create(prototype_${convertorKey});`);
+      meta.props
+        .filter(p => p.embedded?.[0] === prop.name)
+        .forEach(childProp => {
+          const childDataKey = prop.object ? dataKey + '.' + childProp.embedded![1] : childProp.name;
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
+        });
+      ret.push(`  }`);
+
+      return ret;
+    };
+
+    const hydrateEmbeddedArray = (prop: EntityProperty, path: string[]): string[] => {
+      const entityKey = path.join('.');
+      const dataKey = prop.fieldNames[0];
+      const convertorKey = path.join('_').replace(/\[idx]$/, '');
+      const ret: string[] = [];
+
+      context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
+      ret.push(`  if (Array.isArray(data.${dataKey})) {`);
+      ret.push(`    entity.${entityKey} = [];`);
+      ret.push(`    data.${dataKey}.forEach((_, idx) => {`);
+      const last = path.pop();
+      ret.push(...hydrateEmbedded(prop, true, [...path, last + '[idx]'], dataKey + '[idx]').map(l => '    ' + l));
+      ret.push(`    });`);
+      ret.push(`  }`);
+
+      return ret;
+    };
+
+    const hydrateProperty = (prop: EntityProperty, object = prop.object, path: string[] = [prop.name], dataKey?: string): string[] => {
+      const entityKey = path.join('.');
+      dataKey = dataKey ?? (object ? entityKey : prop.name);
+      const ret: string[] = [];
+
+      if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+        ret.push(...hydrateToOne(prop));
+      } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+        ret.push(...hydrateToMany(prop));
+      } else if (prop.reference === ReferenceType.EMBEDDED) {
+        if (prop.array) {
+          ret.push(...hydrateEmbeddedArray(prop, path));
+        } else {
+          ret.push(...hydrateEmbedded(prop, object, path, dataKey));
+        }
       } else { // ReferenceType.SCALAR
-        lines.push(...scalarHydrator(prop));
+        ret.push(...hydrateScalar(prop, object, path, dataKey));
       }
 
       if (this.config.get('forceUndefined')) {
-        lines.push(`  if (data.${prop.name} === null) entity.${prop.name} = undefined;`);
+        ret.push(`  if (data.${dataKey} === null) entity.${entityKey} = undefined;`);
       }
+
+      return ret;
+    };
+
+    for (const prop of props) {
+      lines.push(...hydrateProperty(prop));
     }
 
     const code = `return function(entity, data, factory, newEntity, convertCustomTypes) {\n${lines.join('\n')}\n}`;

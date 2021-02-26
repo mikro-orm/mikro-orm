@@ -201,6 +201,10 @@ export abstract class Platform {
     return value;
   }
 
+  cloneEmbeddable<T>(data: T): T {
+    return JSON.parse(JSON.stringify(data));
+  }
+
   setConfig(config: Configuration): void {
     this.config = config;
 
