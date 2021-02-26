@@ -2,15 +2,15 @@ import { pathExists } from 'fs-extra';
 import CliTable3, { Table } from 'cli-table3';
 import c from 'ansi-colors';
 
-import { Configuration, ConfigurationLoader, IDatabaseDriver, MikroORM, Utils } from '@mikro-orm/core';
+import { Configuration, ConfigurationLoader, IDatabaseDriver, MikroORM, Options, Utils } from '@mikro-orm/core';
 
 export class CLIHelper {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Configuration> = {}): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
     return ConfigurationLoader.getConfiguration(validate, options);
   }
 
-  static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Configuration> = {}): Promise<MikroORM> {
+  static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
     const settings = await ConfigurationLoader.getSettings();
     options.getLogger().setDebugMode(false);

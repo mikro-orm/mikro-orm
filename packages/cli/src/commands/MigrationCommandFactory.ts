@@ -1,7 +1,7 @@
 import c from 'ansi-colors';
 import { Arguments, Argv, CommandModule } from 'yargs';
 import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
-import { Configuration, MikroORM, Utils } from '@mikro-orm/core';
+import { Configuration, MikroORM, MikroORMOptions, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
@@ -78,7 +78,7 @@ export class MigrationCommandFactory {
   }
 
   static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
-    const options = { pool: { min: 1, max: 1 } } as Partial<Configuration>;
+    const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
     const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
     const migrator = new Migrator(orm.em);
 
