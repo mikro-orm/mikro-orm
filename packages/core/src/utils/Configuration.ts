@@ -119,6 +119,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
   }
 
+  getAll(): MikroORMOptions<D> {
+    return this.options;
+  }
+
   /**
    * Overrides specified configuration value.
    */

@@ -374,3 +374,70 @@ MikroORM.init({
   ...
 });
 ```
+
+## Using environment variables
+
+Since v4.5 it is possible to set most of the ORM options via environment variables.
+By default `.env` file from the root directory is loaded - it is also possible to
+set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.
+
+> Environment variables always have precedence.
+
+Example `.env` file:
+
+```dotenv
+MIKRO_ORM_TYPE = sqlite
+MIKRO_ORM_ENTITIES = ./dist/foo/*.entity.js, ./dist/bar/*.entity.js
+MIKRO_ORM_ENTITIES_TS = ./src/foo/*.entity.ts, ./src/bar/*.entity.ts
+MIKRO_ORM_DB_NAME = test.db
+MIKRO_ORM_MIGRATIONS_PATH = ./dist/migrations
+MIKRO_ORM_MIGRATIONS_PATTERN = ^[\w-]+\d+\.js$
+MIKRO_ORM_POPULATE_AFTER_FLUSH = true
+MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = true
+MIKRO_ORM_FORCE_UNDEFINED = true
+```
+
+Full list of supported options:
+
+| env variable | config key |
+|--------------|------------|
+| `MIKRO_ORM_BASE_DIR` | `baseDir` |
+| `MIKRO_ORM_TYPE` | `type` |
+| `MIKRO_ORM_ENTITIES` | `entities` |
+| `MIKRO_ORM_ENTITIES_TS` | `entitiesTs` |
+| `MIKRO_ORM_CLIENT_URL` | `clientUrl` |
+| `MIKRO_ORM_HOST` | `host` |
+| `MIKRO_ORM_PORT` | `port` |
+| `MIKRO_ORM_USER` | `user` |
+| `MIKRO_ORM_PASSWORD` | `password` |
+| `MIKRO_ORM_DB_NAME` | `dbName` |
+| `MIKRO_ORM_LOAD_STRATEGY` | `loadStrategy` |
+| `MIKRO_ORM_BATCH_SIZE` | `batchSize` |
+| `MIKRO_ORM_USE_BATCH_INSERTS` | `useBatchInserts` |
+| `MIKRO_ORM_USE_BATCH_UPDATES` | `useBatchUpdates` |
+| `MIKRO_ORM_STRICT` | `strict` |
+| `MIKRO_ORM_VALIDATE` | `validate` |
+| `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER` | `autoJoinOneToOneOwner` |
+| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER` | `propagateToOneOwner` |
+| `MIKRO_ORM_POPULATE_AFTER_FLUSH` | `populateAfterFlush` |
+| `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR` | `forceEntityConstructor` |
+| `MIKRO_ORM_FORCE_UNDEFINED` | `forceUndefined` |
+| `MIKRO_ORM_FORCE_UTC_TIMEZONE` | `forceUtcTimezone` |
+| `MIKRO_ORM_TIMEZONE` | `timezone` |
+| `MIKRO_ORM_ENSURE_INDEXES` | `ensureIndexes` |
+| `MIKRO_ORM_IMPLICIT_TRANSACTIONS` | `implicitTransactions` |
+| `MIKRO_ORM_DEBUG` | `debug` |
+| `MIKRO_ORM_VERBOSE` | `verbose` |
+| `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES` | `discovery.warnWhenNoEntities` |
+| `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY` | `discovery.requireEntitiesArray` |
+| `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES` | `discovery.alwaysAnalyseProperties` |
+| `MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS` | `discovery.disableDynamicFileAccess` |
+| `MIKRO_ORM_MIGRATIONS_TABLE_NAME` | `migrations.tableName` |
+| `MIKRO_ORM_MIGRATIONS_PATH` | `migrations.path` |
+| `MIKRO_ORM_MIGRATIONS_PATTERN` | `migrations.pattern` |
+| `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL` | `migrations.transactional` |
+| `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
+| `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING` | `migrations.allOrNothing` |
+| `MIKRO_ORM_MIGRATIONS_DROP_TABLES` | `migrations.dropTables` |
+| `MIKRO_ORM_MIGRATIONS_SAFE` | `migrations.safe` |
+| `MIKRO_ORM_MIGRATIONS_EMIT` | `migrations.emit` |

@@ -124,4 +124,28 @@ describe('MikroORM', () => {
     expect(await orm.isConnected()).toBe(false);
   });
 
+  test('should prefer environment variables', async () => {
+    process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
+    const orm = await MikroORM.init({ type: 'mongo' }, false);
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+
+    expect(orm).toBeInstanceOf(MikroORM);
+    expect(orm.em).toBeInstanceOf(EntityManager);
+    expect(orm.config.getAll()).toMatchObject({
+      type: 'sqlite', // env vars have preference
+      entities: [ './entities-schema' ],
+      host: '123.0.0.4',
+      port: 1234,
+      user: 'string',
+      password: 'lol',
+      dbName: ':memory:',
+      populateAfterFlush: true,
+      forceEntityConstructor: true,
+      forceUndefined: true,
+      discovery: {},
+      migrations: { path: './dist/migrations', pattern: /^[\w-]+\d+\.js$/ },
+    });
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
+  });
+
 });

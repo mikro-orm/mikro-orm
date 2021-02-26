@@ -2,7 +2,7 @@ import c from 'ansi-colors';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Logger, Options } from './utils';
+import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
 import { IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
@@ -23,11 +23,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+    const env = ConfigurationLoader.loadEnvironmentVars<D>(options);
+
     if (!options) {
       options = await ConfigurationLoader.getConfiguration<D>();
     }
 
-    const orm = new MikroORM<D>(options!);
+    options = options instanceof Configuration ? options.getAll() : options;
+    const orm = new MikroORM<D>(Utils.merge(options, env));
     const discovery = new MetadataDiscovery(new MetadataStorage(), orm.driver.getPlatform(), orm.config);
     orm.metadata = await discovery.discover(orm.config.get('tsNode'));
     orm.driver.setMetadata(orm.metadata);

@@ -95,6 +95,10 @@ describe('CLIHelper', () => {
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./mikro-orm.config.js']`);
+
+    process.env.MIKRO_ORM_ENV = __dirname + '/../mikro-orm.env';
+    await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
+    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
   test('registerTsNode works with tsconfig.json with comments', async () => {
@@ -276,6 +280,7 @@ describe('CLIHelper', () => {
     pkg['mikro-orm'] = undefined;
     pathExistsMock.mockResolvedValue(true);
     await expect(ConfigurationLoader.getSettings()).resolves.toEqual({});
+    await expect(ConfigurationLoader.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     pathExistsMock.mockRestore();
   });
 
