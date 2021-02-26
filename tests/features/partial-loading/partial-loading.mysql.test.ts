@@ -1,7 +1,7 @@
 import { MikroORM, Logger } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Book2, BookTag2 } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { Author2, Book2, BookTag2 } from '../../entities-sql';
+import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('partial loading (mysql)', () => {
 

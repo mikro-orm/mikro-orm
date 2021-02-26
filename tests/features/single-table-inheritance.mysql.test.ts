@@ -1,7 +1,7 @@
 import { Dictionary, Entity, Logger, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../entities-sql';
+import { initORMMySql, wipeDatabaseMySql } from '../bootstrap';
 
 describe('single table inheritance in mysql', () => {
 

@@ -1,7 +1,7 @@
 import { MikroORM, Logger } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { Author, Book, BookTag } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { Author, Book, BookTag } from '../../entities';
+import { initORMMongo, wipeDatabase } from '../../bootstrap';
 
 describe('partial loading (mongo)', () => {
 

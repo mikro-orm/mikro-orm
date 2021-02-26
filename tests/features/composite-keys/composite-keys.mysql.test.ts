@@ -1,7 +1,7 @@
 import { LoadStrategy, Logger, MikroORM, ValidationError, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
-import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
+import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('composite keys in mysql', () => {
 
