@@ -102,6 +102,14 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
+  getOnUpdateReferentialActions(): string[] {
+    return ['cascade', 'no action', 'set null', 'set default'];
+  }
+
+  getOnDeleteReferentialActions(): string[] {
+    return ['cascade', 'no action', 'set null', 'set default'];
+  }
+
   /**
    * Returns the default name of index for the given columns
    */

@@ -126,7 +126,14 @@ export abstract class AbstractSqlConnection extends Connection {
    */
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
-    await this.client.raw(buf.toString());
+    const sql = buf.toString();
+
+    const lines = sql.split('\n').filter(i => i.trim());
+
+    for (const line of lines) {
+      await this.client.raw(line);
+    }
+
   }
 
   protected logQuery(query: string, took?: number): void {

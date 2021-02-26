@@ -494,12 +494,23 @@ export class SchemaGenerator {
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
     const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(prop.referencedTableName);
 
+    const onDeleteActions = this.helper.getOnDeleteReferentialActions();
+    const onUpdateActions = this.helper.getOnUpdateReferentialActions();
+
     if (prop.onDelete || cascade || prop.nullable) {
-      col.onDelete(prop.onDelete || (cascade ? 'cascade' : 'set null'));
+      const onDeleteAction = prop.onDelete || (cascade ? 'cascade' : 'set null');
+
+      if (onDeleteActions.includes(onDeleteAction)) {
+        col.onDelete(onDeleteAction);
+      }
     }
 
     if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
-      col.onUpdate(prop.onUpdateIntegrity || 'cascade');
+      const onUpdateAction = prop.onUpdateIntegrity || 'cascade';
+
+      if (onUpdateActions.includes(onUpdateAction)) {
+        col.onUpdate(onUpdateAction);
+      }
     }
 
     col.withKeyName(this.helper.getIndexName(meta.collection, prop.fieldNames, 'foreign'));
@@ -614,7 +625,14 @@ export class SchemaGenerator {
 
   private dump(builder: SchemaBuilder, append = '\n\n'): string {
     const sql = builder.toQuery();
-    return sql.length > 0 ? `${sql};${append}` : '';
+
+    if (sql.length > 0)
+      if (sql.slice(-1) != ';')
+        return `${sql};${append}`
+      else
+        return `${sql}${append}`
+
+    return ''
   }
 
 }
