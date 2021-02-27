@@ -94,6 +94,10 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$nin`   | not contains       | Matches none of the values specified in an array. |
 | `$like`  | like               | Uses LIKE operator |
 | `$re`    | regexp             | Uses REGEXP operator |
+| `$ilike` | ilike              | (postgres only) |
+| `$overlap` | &&               | (postgres only) |
+| `$contains` | @>              | (postgres only) |
+| `$contained` | <@             | (postgres only) |
 
 ### Logical
 
