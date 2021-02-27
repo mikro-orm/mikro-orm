@@ -67,6 +67,8 @@ CLI command to check what paths are actually being used.
 
 > Since v4, you can also use file globs, like `./dist/app/**/entities/*.entity.js`.
 
+We can also set the configuration via [environment variables](configuration.md#using-environment-variables).
+
 > You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
 > The object will be deeply merged, overriding all internally used options.
 
@@ -181,8 +183,10 @@ directory or use `npx`:
 ```sh
 # manually
 $ node node_modules/.bin/mikro-orm
+
 # via npx
 $ npx mikro-orm
+
 # or via yarn
 $ yarn mikro-orm
 ```
@@ -198,6 +202,9 @@ TypeScript is also supported, just enable `useTsNode` flag in your
 as well as use different file name:
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
+
+> The `useTsNode` is used only when executing the CLI, it is not respected when 
+> running your app.
 
 MikroORM will always try to load the first available config file, based on the 
 order in `configPaths`. This means that if you specify the first item as the TS 
@@ -226,8 +233,19 @@ export default {
 };
 ```
 
+When we have `useTsNode` disabled and `ts-node` is not already registered and detected,
+TS config files will be ignored.
+
 Once you have the CLI config properly set up, you can omit the `MikroORM.init()` options
-parameter and the CLI config will be automatically used. 
+parameter, and the CLI config will be automatically used. This process may fail if you
+use bundlers that use tree shaking. As the config file is not referenced anywhere 
+statically, it would not be compiled - for that the best approach is to provide the config
+explicitly:
+
+```ts
+import config from './mikro-orm.config';
+const orm = await MikroORM.init(config);
+```
 
 > You can also use different names for this file, simply rename it in the `configPaths` array
 > your in `package.json`. You can also use `MIKRO_ORM_CLI` environment variable with the path
