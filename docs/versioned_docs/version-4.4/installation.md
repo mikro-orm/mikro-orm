@@ -283,6 +283,6 @@ To verify your setup, you can use `mikro-orm debug` command.
 > when calling `MikroORM.init()`.
 
 > Note: When importing a dump file you need `multipleStatements: true` in your
-> configuration. Please check the configuartion documentation for more information.
+> configuration. Please check the configuration documentation for more information.
 
 Now you can start [defining your entities](defining-entities.md).
