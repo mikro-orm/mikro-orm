@@ -13,7 +13,7 @@ method will throw error in this case.
 > cannot add new items to `Collection` this way. 
 
 ```typescript
-const author = orm.em.findOne(Author, '...', ['books']); // populating books collection
+const author = em.findOne(Author, '...', ['books']); // populating books collection
 
 // or we could lazy load books collection later via `init()` method
 await author.books.init();
@@ -47,7 +47,7 @@ console.log(author.books.getIdentifiers('_id')); // array of ObjectId
 console.log(author.books[1]); // Book
 console.log(author.books[12345]); // undefined, even if the collection is not initialized
 
-const author = orm.em.findOne(Author, '...'); // books collection has not been populated
+const author = em.findOne(Author, '...'); // books collection has not been populated
 const count = await author.books.loadCount(); // gets the count of collection items from database instead of counting loaded items
 console.log(author.books.getItems()); // throws because the collection has not been initialized
 // initialize collection if not already loaded and return its items as array
@@ -191,3 +191,30 @@ await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC
 ```
 
 > You should never modify partially loaded collection.
+
+## Filtering Collections
+
+Collections have a `matching` method that allows to slice parts of data from a collection.
+By default, it will return the list of entities based on the query. We can use the `store`
+boolean parameter to save this list into the collection items - this will mark the 
+collection as `readonly`, methods like `add` or `remove` will throw. 
+
+```ts
+const a = await em.findOneOrFail(Author, 1);
+
+// only loading the list of items
+const books = await a.books.matching({ limit: 3, offset: 10, orderBy: { title: 'asc' } });
+console.log(books); // [Book, Book, Book]
+console.log(a.books.isInitialized()); // false
+
+// storing the items in collection
+const tags = await books[0].tags.matching({
+  limit: 3,
+  offset: 5,
+  orderBy: { name: 'asc' },
+  store: true,
+});
+console.log(tags); // [BookTag, BookTag, BookTag]
+console.log(books[0].tags.isInitialized()); // true
+console.log(books[0].tags.getItems()); // [BookTag, BookTag, BookTag]
+```

@@ -85,6 +85,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(error, owner);
   }
 
+  static cannotModifyReadonlyCollection(owner: AnyEntity, property: EntityProperty): ValidationError {
+    return new ValidationError(`You cannot modify collection ${owner.constructor.name}.${property.name} as it is marked as readonly.`, owner);
+  }
+
   static invalidCompositeIdentifier(meta: EntityMetadata): ValidationError {
     return new ValidationError(`Composite key required for entity ${meta.className}.`);
   }
