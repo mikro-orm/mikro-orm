@@ -396,6 +396,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{ field: prop.pivotTable }]);
     const fields = this.buildFields(targetMeta, (options?.populate ?? []) as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!);
+
+    if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
+      qb.limit(options.limit, options.offset);
+    }
+
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
 
     const map: Dictionary<T[]> = {};

@@ -585,9 +585,8 @@ describe('EntityManagerSqlite2', () => {
     book2.tags.add(tag1, tag2, tag5);
     book3.tags.add(tag2, tag4, tag5);
 
-    await orm.em.persist(book1);
-    await orm.em.persist(book2);
-    await orm.em.persist(book3).flush();
+    orm.em.persist([book1, book2, book3]);
+    await orm.em.flush();
 
     expect(tag1.id).toBeDefined();
     expect(tag2.id).toBeDefined();
@@ -676,7 +675,39 @@ describe('EntityManagerSqlite2', () => {
     expect(book.tags.count()).toBe(0);
   });
 
-  test('disabling identity maap', async () => {
+  test('partial loading of collections', async () => {
+    const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
+
+    for (let i = 1; i <= 15; i++) {
+      const book = orm.em.create(Book4, { title: `book ${('' + i).padStart(2, '0')}` });
+      author.books.add(book);
+
+      for (let j = 1; j <= 15; j++) {
+        const tag1 = orm.em.create(BookTag4, { name: `tag ${('' + i).padStart(2, '0')}-${('' + j).padStart(2, '0')}` });
+        book.tags.add(tag1);
+      }
+    }
+
+    await orm.em.persist(author).flush();
+    orm.em.clear();
+
+    const a = await orm.em.findOneOrFail(Author4, author);
+    const books = await a.books.matching({ limit: 5, offset: 10, orderBy: { title: 'asc' } });
+    expect(books).toHaveLength(5);
+    expect(a.books.getItems(false)).not.toHaveLength(5);
+    expect(books.map(b => b.title)).toEqual(['book 11', 'book 12', 'book 13', 'book 14', 'book 15']);
+
+    const tags = await books[0].tags.matching({ limit: 5, offset: 5, orderBy: { name: 'asc' }, store: true });
+    expect(tags).toHaveLength(5);
+    expect(books[0].tags).toHaveLength(5);
+    expect(tags.map(t => t.name)).toEqual(['tag 11-06', 'tag 11-07', 'tag 11-08', 'tag 11-09', 'tag 11-10']);
+    expect(() => books[0].tags.add(orm.em.create(BookTag4, { name: 'new' }))).toThrowError('You cannot modify collection Book4.tags as it is marked as readonly.');
+    expect(wrap(books[0]).toObject()).toMatchObject({
+      tags: books[0].tags.getItems().map(t => ({ name: t.name })),
+    });
+  });
+
+  test('disabling identity map', async () => {
     const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
     const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1', author });
     const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2', author });

@@ -4,11 +4,20 @@ import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Reference } from './Reference';
+import { Transaction } from '../connections/Connection';
+import { FindOptions } from '../drivers/IDatabaseDriver';
+
+export interface MatchingOptions<T, P extends Populate<T> = Populate<T>> extends FindOptions<T, P> {
+  where?: FilterQuery<T>;
+  store?: boolean;
+  ctx?: Transaction;
+}
 
 export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private dirty = false;
+  private readonly?: boolean;
   private _populated = false;
   private _lazyInitialized = false;
 
@@ -52,14 +61,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
    * The value is cached, use `refresh = true` to force reload it.
    */
   async loadCount(refresh = false): Promise<number> {
-    const em = this.owner.__helper!.__em;
-
-    if (!em) {
-      throw ValidationError.entityNotManaged(this.owner);
-    }
+    const em = this.getEntityManager();
 
     if (refresh || !Utils.isDefined(this._count)) {
-      if (!em.getDriver().getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+      if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
         this._count = this.length;
       } else {
         this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
@@ -67,6 +72,28 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     return this._count!;
+  }
+
+  async matching(options: MatchingOptions<T>): Promise<T[]> {
+    const em = this.getEntityManager();
+    const { where, ctx, ...opts } = options;
+    opts.orderBy = this.createOrderBy(opts.orderBy);
+    let items: T[];
+
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], where, opts.orderBy, ctx, options);
+      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true));
+    } else {
+      items = await em.find(this.property.type, this.createCondition(where), opts);
+    }
+
+    if (options.store) {
+      this.hydrate(items);
+      this.populated();
+      this.readonly = true;
+    }
+
+    return items;
   }
 
   /**
@@ -165,13 +192,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>;
   async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
     const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
-    const em = this.owner.__helper!.__em;
+    const em = this.getEntityManager();
 
-    if (!em) {
-      throw ValidationError.entityNotManaged(this.owner);
-    }
-
-    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getDriver().getPlatform().usesPivotTable()) {
+    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
       this._lazyInitialized = true;
@@ -180,7 +203,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     // do not make db call if we know we will get no results
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getDriver().getPlatform().usesPivotTable()) && this.length === 0) {
+    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getPlatform().usesPivotTable()) && this.length === 0) {
       this.initialized = true;
       this.dirty = false;
       this._lazyInitialized = true;
@@ -227,6 +250,16 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return this.snapshot;
   }
 
+  private getEntityManager() {
+    const em = this.owner.__helper!.__em;
+
+    if (!em) {
+      throw ValidationError.entityNotManaged(this.owner);
+    }
+
+    return em;
+  }
+
   private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
@@ -265,8 +298,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
-      cond[key] = this.owner.__meta!.compositePK ? { $in : this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+      cond[key] = this.owner.__meta!.compositePK ? { $in: this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
     }
+
     return cond;
   }
 
@@ -314,6 +348,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   private validateModification(items: T[]): void {
+    if (this.readonly) {
+      throw ValidationError.cannotModifyReadonlyCollection(this.owner, this.property);
+    }
+
     // currently we allow persisting to inverse sides only in SQL drivers
     if (this.property.pivotTable || !this.property.mappedBy) {
       return;

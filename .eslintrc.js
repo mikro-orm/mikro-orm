@@ -122,7 +122,7 @@ module.exports = {
     'comma-dangle': ['error', 'always-multiline'],
     'dot-notation': 'error',
     'eol-last': 'error',
-    'eqeqeq': ['error', 'always'],
+    'eqeqeq': ['error', 'always', {"null": "ignore"}],
     'jsdoc/no-types': 'error',
     'no-console': 'error',
     'no-duplicate-imports': 'error',
