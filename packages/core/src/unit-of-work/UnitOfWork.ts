@@ -24,7 +24,7 @@ export class UnitOfWork {
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
-  private readonly platform = this.em.getDriver().getPlatform();
+  private readonly platform = this.em.getPlatform();
   private readonly eventManager = this.em.getEventManager();
   private readonly comparator = this.em.getComparator();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
@@ -213,6 +213,8 @@ export class UnitOfWork {
       throw ValidationError.cannotCommit();
     }
 
+    const oldTx = this.em.getTransactionContext();
+
     try {
       await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
       this.working = true;
@@ -229,7 +231,7 @@ export class UnitOfWork {
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
-        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), undefined, new TransactionEventBroadcaster(this.em, this));
+        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), oldTx, new TransactionEventBroadcaster(this.em, this));
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
@@ -237,6 +239,12 @@ export class UnitOfWork {
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
       this.postCommitCleanup();
+
+      if (oldTx) {
+        this.em.setTransactionContext(oldTx);
+      } else {
+        this.em.resetTransactionContext();
+      }
     }
   }
 
@@ -554,6 +562,10 @@ export class UnitOfWork {
   }
 
   private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, tx?: Transaction): Promise<void> {
+    if (tx) {
+      this.em.setTransactionContext(tx);
+    }
+
     const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 

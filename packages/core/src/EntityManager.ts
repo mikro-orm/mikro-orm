@@ -823,6 +823,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Sets the transaction context.
+   */
+  setTransactionContext(ctx: Transaction): void {
+    this.transactionContext = ctx;
+  }
+
+  /**
+   * Resets the transaction context.
+   */
+  resetTransactionContext(): void {
+    delete this.transactionContext;
+  }
+
+  /**
    * Gets the MetadataStorage.
    */
   getMetadata(): MetadataStorage {

@@ -32,12 +32,14 @@ class Author3 extends BaseEntity4 {
     this.termsAccepted = false;
   }
 
-  beforeCreate() {
+  async beforeCreate(args) {
     this.version = 1;
+    await args.em.findOne('Book3', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
   }
 
-  afterCreate() {
+  async afterCreate(args) {
     this.versionAsString = 'v' + this.version;
+    await args.em.findOne('Book3', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
   }
 
   beforeUpdate() {
