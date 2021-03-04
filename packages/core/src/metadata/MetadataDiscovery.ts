@@ -711,12 +711,18 @@ export class MetadataDiscovery {
   }
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!prop.version) {
-      return;
+    if (prop.version) {
+      meta.versionProperty = prop.name;
+      prop.defaultRaw = this.getDefaultVersionValue(prop);
     }
 
-    meta.versionProperty = prop.name;
-    prop.defaultRaw = this.getDefaultVersionValue(prop);
+    if (!meta.concurrencyCheckKeys) {
+      meta.concurrencyCheckKeys = [];
+    }
+
+    if (prop.concurrencyCheck) {
+      meta.concurrencyCheckKeys.push(prop.name);
+    }
   }
 
   private initCustomType(prop: EntityProperty): void {

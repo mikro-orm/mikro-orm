@@ -60,6 +60,7 @@ export type PropertyOptions<T> = {
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;
+  concurrencyCheck?: boolean;
 };
 
 export interface ReferenceOptions<T, O> extends PropertyOptions<O> {

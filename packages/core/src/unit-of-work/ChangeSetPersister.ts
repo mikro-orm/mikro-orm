@@ -177,14 +177,20 @@ export class ChangeSetPersister {
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
-    if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
+    if (meta.concurrencyCheckKeys.length === 0 && !meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
       return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
 
-    const cond = {
-      ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
-      [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
-    } as FilterQuery<T>;
+    const cond = Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys) as FilterQuery<T>;
+
+    if (meta.versionProperty) {
+      cond[meta.versionProperty as string] =
+        this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+    }
+
+    for (const key of meta.concurrencyCheckKeys) {
+      cond[key as string] = this.platform.quoteValue(changeSet.originalEntity![key]);
+    }
 
     return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false);
   }
