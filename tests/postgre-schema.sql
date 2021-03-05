@@ -19,6 +19,7 @@ drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
 drop table if exists "label2" cascade;
 drop table if exists "new_table" cascade;
+drop table if exists "concurrency_check_user" cascade;
 
 drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
@@ -116,5 +117,7 @@ alter table "author_to_friend" add constraint "author_to_friend_author2_2_id_for
 
 alter table "author2_following" add constraint "author2_following_author2_1_id_foreign" foreign key ("author2_1_id") references "author2" ("id") on update cascade on delete cascade;
 alter table "author2_following" add constraint "author2_following_author2_2_id_foreign" foreign key ("author2_2_id") references "author2" ("id") on update cascade on delete cascade;
+
+create table "concurrency_check_user" ("first_name" varchar(100) not null, "last_name" varchar(100) not null, "age" int4 null default null, primary key(first_name, last_name));
 
 set session_replication_role = 'origin';

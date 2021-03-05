@@ -8,6 +8,7 @@ import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
+import { ConcurrencyCheckUser } from './entities-sql/ConcurrencyCheckUser';
 
 describe('EntityManagerPostgre', () => {
 
@@ -1702,6 +1703,34 @@ describe('EntityManagerPostgre', () => {
 
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
+  });
+
+  describe('optimistic locking - concurrency check', () => {
+    test('should compare original to database value on entity update', async () => {
+      const mock = jest.fn();
+      const logger = new Logger(mock, ['query', 'query-params']);
+      Object.assign(orm.config, { logger });
+
+      const test = new ConcurrencyCheckUser('Jakub', 'Smith', 20);
+
+      await orm.em.persistAndFlush(test);
+      expect(mock.mock.calls[0][0]).toMatch('begin');
+      expect(mock.mock.calls[1][0]).toMatch('insert into "concurrency_check_user" ("age", "first_name", "last_name") values (20, \'Jakub\', \'Smith\')');
+
+      mock.mockReset();
+
+      test.age = 30;
+      await orm.em.persistAndFlush(test);
+      expect(mock.mock.calls[0][0]).toMatch('begin');
+      expect(mock.mock.calls[1][0]).toMatch('update "concurrency_check_user" set "age" = 30 where "first_name" = \'Jakub\' and "last_name" = \'Smith\' and "age" = 20');
+
+      mock.mockReset();
+
+      test.age = 40;
+      await orm.em.persistAndFlush(test);
+      expect(mock.mock.calls[0][0]).toMatch('begin');
+      expect(mock.mock.calls[1][0]).toMatch('update "concurrency_check_user" set "age" = 40 where "first_name" = \'Jakub\' and "last_name" = \'Smith\' and "age" = 30');
+    });
   });
 
   afterAll(async () => orm.close(true));
