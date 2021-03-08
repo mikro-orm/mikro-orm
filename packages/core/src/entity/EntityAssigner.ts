@@ -43,7 +43,11 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
+        if (options.updateNestedEntities && Utils.isEntity(entity[prop], false) && Utils.isPlainObject(value)) {
+          return EntityAssigner.assign(entity[prop], value, options);
+        }
+          return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
+
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
@@ -96,24 +100,20 @@ export class EntityAssigner {
   }
 
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
-    if (options.updateNestedEntities && Utils.isEntity(entity[prop.name], false) && Utils.isPlainObject(value)) {
-      EntityAssigner.assign(entity[prop.name], value, options);
+    if (Utils.isEntity(value, true)) {
+      entity[prop.name] = value;
+    } else if (Utils.isPrimaryKey(value, true)) {
+      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, false, options.convertCustomTypes), prop);
+    } else if (Utils.isPlainObject(value) && options.merge) {
+      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
+    } else if (Utils.isPlainObject(value)) {
+      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
     } else {
-      if (Utils.isEntity(value, true)) {
-        entity[prop.name] = value;
-      } else if (Utils.isPrimaryKey(value, true)) {
-        entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, false, options.convertCustomTypes), prop);
-      } else if (Utils.isPlainObject(value) && options.merge) {
-        entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
-      } else if (Utils.isPlainObject(value)) {
-        entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
-      } else {
-        const name = entity.constructor.name;
-        throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
-      }
-
-      EntityAssigner.autoWireOneToOne(prop, entity);
+      const name = entity.constructor.name;
+      throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
     }
+
+    EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
   private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
