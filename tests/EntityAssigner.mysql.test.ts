@@ -76,6 +76,24 @@ describe('EntityAssignerMySql', () => {
     expect(book2.tags.getIdentifiers()).toMatchObject([tag2.id]);
   });
 
+  test('assign() should update m:1 or 1:1 nested entities [mysql]', async () => {
+    const jon = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('Book2', jon);
+    const jon2 = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book2 = new Book2('Book2', jon2);
+    await orm.em.persistAndFlush(book1);
+    await orm.em.persistAndFlush(book2);
+    wrap(book1).assign({ author: { name: 'Jon Snow2' } });
+    expect(book1.author.name).toEqual('Jon Snow2');
+    expect(book1.author.email).toBeUndefined();
+    expect(book1.author).not.toEqual(jon);
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' } }, { updateNestedEntities: true });
+    expect(book2.author.name).toEqual('Jon Snow2');
+    expect(book2.author.email).toEqual('snow3@wall.st');
+    expect(book2.author).toEqual(jon2);
+  });
+
   test('assign() should update not initialized collection [mysql]', async () => {
     const other = new BookTag2('other');
     await orm.em.persistAndFlush(other);
