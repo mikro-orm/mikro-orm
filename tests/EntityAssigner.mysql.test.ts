@@ -1,4 +1,4 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
+import { MikroORM, NotNullConstraintViolationException, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2, FooBar2 } from './entities-sql';
