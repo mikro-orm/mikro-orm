@@ -43,7 +43,7 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-          return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
+        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
