@@ -9,9 +9,9 @@
     "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.b3b658f68",
-    "@docusaurus/plugin-client-redirects": "2.0.0-alpha.b3b658f68",
-    "@docusaurus/preset-classic": "2.0.0-alpha.b3b658f68",
+    "@docusaurus/core": "2.0.0-alpha.ffe8b6106",
+    "@docusaurus/plugin-client-redirects": "2.0.0-alpha.ffe8b6106",
+    "@docusaurus/preset-classic": "2.0.0-alpha.ffe8b6106",
     "classnames": "2.2.6",
     "docusaurus-plugin-typedoc": "0.11.0",
     "react": "16.14.0",
