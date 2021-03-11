@@ -50,7 +50,7 @@
     "@mikro-orm/knex": "^4.4.4",
     "@types/umzug": "2.3.0",
     "fs-extra": "9.1.0",
-    "knex": "0.21.19",
+    "knex": "0.95.2",
     "umzug": "2.3.0"
   },
   "devDependencies": {
