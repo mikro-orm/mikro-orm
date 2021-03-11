@@ -263,7 +263,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private initDriver(): D {
     if (!this.options.driver) {
-      const { className, module } = Configuration.PLATFORMS[this.options.type!];
+      const platform = Configuration.PLATFORMS[this.options.type!];
+      if (!platform) {
+        throw new Error(`Invalid specified platform \`${this.options.type}\`, please fill in a valid \`type\`. Available platforms types: ${inspect(Object.keys(Configuration.PLATFORMS))}`);
+      }
+      const { className, module } = platform;
       this.options.driver = module()[className];
     }
 
