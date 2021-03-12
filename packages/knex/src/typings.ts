@@ -1,4 +1,4 @@
-import { QueryBuilder as KnexQueryBuilder, Ref } from 'knex';
+import { Knex } from 'knex';
 import { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap } from '@mikro-orm/core';
 import { QueryType } from './query/enums';
 
@@ -7,11 +7,11 @@ export interface Table {
   schema_name?: string;
 }
 
-export type KnexStringRef = Ref<string, {
+export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-export type Field<T> = string | keyof T | KnexStringRef | KnexQueryBuilder;
+export type Field<T> = string | keyof T | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -97,7 +97,7 @@ export interface IQueryBuilder<T> {
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
-  withSubQuery(subQuery: KnexQueryBuilder, alias: string): this;
+  withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   andWhere(cond: QBFilterQuery<T>): this;

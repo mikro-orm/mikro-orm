@@ -1,4 +1,4 @@
-import { ColumnBuilder, CreateTableBuilder, SchemaBuilder, TableBuilder } from 'knex';
+import { Knex } from 'knex';
 import { Cascade, CommitOrderCalculator, EntityMetadata, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
 import { DatabaseSchema } from './DatabaseSchema';
 import { DatabaseTable } from './DatabaseTable';
@@ -225,7 +225,7 @@ export class SchemaGenerator {
     return ret;
   }
 
-  private createTable(meta: EntityMetadata, createdColumns: string[]): SchemaBuilder {
+  private createTable(meta: EntityMetadata, createdColumns: string[]): Knex.SchemaBuilder {
     return this.knex.schema.createTable(meta.collection, table => {
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
@@ -247,7 +247,7 @@ export class SchemaGenerator {
     });
   }
 
-  private createIndex(table: CreateTableBuilder, meta: EntityMetadata, index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean): void {
+  private createIndex(table: Knex.TableBuilder, meta: EntityMetadata, index: { name?: string | boolean; properties: string | string[]; type?: string }, unique: boolean): void {
     const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
     const name = Utils.isString(index.name) ? index.name : this.helper.getIndexName(meta.collection, properties, unique ? 'unique' : 'index');
 
@@ -258,14 +258,14 @@ export class SchemaGenerator {
     }
   }
 
-  private updateTable(meta: EntityMetadata, table: DatabaseTable, safe: boolean, createdColumns: string[]): SchemaBuilder[] {
+  private updateTable(meta: EntityMetadata, table: DatabaseTable, safe: boolean, createdColumns: string[]): Knex.SchemaBuilder[] {
     const { create, update, remove, rename } = this.computeTableDifference(meta, table, safe);
 
     if (create.length + update.length + remove.length + rename.length === 0) {
       return [];
     }
 
-    const ret: SchemaBuilder[] = [];
+    const ret: Knex.SchemaBuilder[] = [];
 
     for (const prop of rename) {
       ret.push(this.knex.schema.raw(this.helper.getRenameColumnSQL(table.name, prop.from, prop.to)));
@@ -333,7 +333,7 @@ export class SchemaGenerator {
     }
   }
 
-  private dropTable(name: string, schema?: string): SchemaBuilder {
+  private dropTable(name: string, schema?: string): Knex.SchemaBuilder {
     /* istanbul ignore next */
     let builder = this.knex.schema.dropTableIfExists(schema ? `${schema}.${name}` : name);
 
@@ -367,7 +367,7 @@ export class SchemaGenerator {
     return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
-  private createTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): ColumnBuilder[] {
+  private createTableColumn(table: Knex.TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): Knex.ColumnBuilder[] {
     if (prop.reference === ReferenceType.SCALAR || (prop.reference === ReferenceType.EMBEDDED && prop.object)) {
       return [this.createSimpleTableColumn(table, meta, prop, alter)];
     }
@@ -380,7 +380,7 @@ export class SchemaGenerator {
     });
   }
 
-  private createSimpleTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): ColumnBuilder {
+  private createSimpleTableColumn(table: Knex.TableBuilder, meta: EntityMetadata, prop: EntityProperty, alter?: IsSame): Knex.ColumnBuilder {
     if (prop.primary && !meta.compositePK && this.platform.isBigIntProperty(prop)) {
       return table.bigIncrements(prop.fieldNames[0]);
     }
@@ -398,7 +398,7 @@ export class SchemaGenerator {
     return this.configureColumn(meta, prop, col, prop.fieldNames[0], undefined, alter);
   }
 
-  private updateTableColumn(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, column: Column, diff: IsSame, createdColumns: string[]): void {
+  private updateTableColumn(table: Knex.TableBuilder, meta: EntityMetadata, prop: EntityProperty, column: Column, diff: IsSame, createdColumns: string[]): void {
     const equalDefinition = diff.sameTypes && diff.sameDefault && diff.sameNullable;
 
     if (column.fk && !diff.sameIndex) {
@@ -416,7 +416,7 @@ export class SchemaGenerator {
     this.createTableColumn(table, meta, prop, diff).map(col => col.alter());
   }
 
-  private dropTableColumn(table: TableBuilder, column: Column): void {
+  private dropTableColumn(table: Knex.TableBuilder, column: Column): void {
     if (column.fk) {
       table.dropForeign([column.fk.columnName], column.fk.constraintName);
     }
@@ -432,7 +432,7 @@ export class SchemaGenerator {
     table.dropColumn(column.name);
   }
 
-  private configureColumn<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, col: ColumnBuilder, columnName: string, pkProp = prop, alter?: IsSame) {
+  private configureColumn<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, col: Knex.ColumnBuilder, columnName: string, pkProp = prop, alter?: IsSame) {
     const nullable = (alter && this.platform.requiresNullableForAlteringColumn()) || prop.nullable!;
     const sameNullable = alter && 'sameNullable' in alter && alter.sameNullable;
     const indexed = 'index' in prop ? prop.index : (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference) && this.helper.indexForeignKeys());
@@ -464,14 +464,14 @@ export class SchemaGenerator {
     return this.helper.getIndexName(meta.collection, columnNames, type);
   }
 
-  private createForeignKeys(table: TableBuilder, meta: EntityMetadata, props?: EntityProperty[], createdColumns: string[] = []): void {
+  private createForeignKeys(table: Knex.TableBuilder, meta: EntityMetadata, props?: EntityProperty[], createdColumns: string[] = []): void {
     meta.relations
       .filter(prop => !props || props.includes(prop))
       .filter(prop => prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
       .forEach(prop => this.createForeignKey(table, meta, prop, createdColumns));
   }
 
-  private createForeignKey(table: TableBuilder, meta: EntityMetadata, prop: EntityProperty, createdColumns: string[], diff?: IsSame): void {
+  private createForeignKey(table: Knex.TableBuilder, meta: EntityMetadata, prop: EntityProperty, createdColumns: string[], diff?: IsSame): void {
     if (this.helper.supportsSchemaConstraints()) {
       this.createForeignKeyReference(table, prop, meta);
 
@@ -490,7 +490,7 @@ export class SchemaGenerator {
     // this.createForeignKeyReference(col, prop);
   }
 
-  private createForeignKeyReference(table: TableBuilder, prop: EntityProperty, meta: EntityMetadata): void {
+  private createForeignKeyReference(table: Knex.TableBuilder, prop: EntityProperty, meta: EntityMetadata): void {
     const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
     const col = table.foreign(prop.fieldNames).references(prop.referencedColumnNames).inTable(prop.referencedTableName);
 
@@ -612,7 +612,7 @@ export class SchemaGenerator {
     return calc.sort().map(cls => this.metadata.find(cls)!);
   }
 
-  private dump(builder: SchemaBuilder, append = '\n\n'): string {
+  private dump(builder: Knex.SchemaBuilder, append = '\n\n'): string {
     const sql = builder.toQuery();
     return sql.length > 0 ? `${sql};${append}` : '';
   }

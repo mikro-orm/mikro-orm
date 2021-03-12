@@ -1,4 +1,4 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
+import { Knex } from 'knex';
 import {
   AnyEntity,
   Dictionary,
@@ -61,7 +61,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   constructor(private readonly entityName: string,
               private readonly metadata: MetadataStorage,
               private readonly driver: AbstractSqlDriver,
-              private readonly context?: Transaction,
+              private readonly context?: Knex.Transaction,
               readonly alias = `e0`,
               private connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) {
@@ -152,7 +152,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return fields;
   }
 
-  withSubQuery(subQuery: KnexQueryBuilder, alias: string): this {
+  withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
     this.subQueries[alias] = subQuery.toString();
     return this;
   }
@@ -258,7 +258,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.knex.ref(field);
   }
 
-  raw(sql: string): Raw {
+  raw(sql: string): Knex.Raw {
     const raw = this.knex.raw(sql);
     (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
@@ -311,7 +311,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  getKnexQuery(): KnexQueryBuilder {
+  getKnexQuery(): Knex.QueryBuilder {
     this.finalize();
     const qb = this.getQueryBase();
 
@@ -352,7 +352,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * Returns the list of all parameters for this query.
    */
-  getParams(): readonly Value[] {
+  getParams(): readonly Knex.Value[] {
     return this.getKnexQuery().toSQL().toNative().bindings;
   }
 
@@ -456,7 +456,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Returns knex instance with sub-query aliased with given alias.
    * You can provide `EntityName.propName` as alias, then the field name will be used based on the metadata
    */
-  as(alias: string): KnexQueryBuilder {
+  as(alias: string): Knex.QueryBuilder {
     const qb = this.getKnexQuery();
 
     if (alias.includes('.')) {
@@ -481,7 +481,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return qb;
   }
 
-  getKnex(): KnexQueryBuilder {
+  getKnex(): Knex.QueryBuilder {
     const tableName = this.helper.getTableName(this.entityName) + (this.finalized && [QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
     const qb = this.knex(tableName);
 
@@ -533,7 +533,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return prop;
   }
 
-  private prepareFields<T extends AnyEntity<T>, U extends string | Raw = string | Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+  private prepareFields<T extends AnyEntity<T>, U extends string | Knex.Raw = string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
 
     fields.forEach(f => {
@@ -590,7 +590,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  private getQueryBase(): KnexQueryBuilder {
+  private getQueryBase(): Knex.QueryBuilder {
     const qb = this.getKnex();
 
     if (this._schema) {

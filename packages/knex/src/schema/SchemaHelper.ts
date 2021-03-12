@@ -1,4 +1,4 @@
-import { TableBuilder } from 'knex';
+import { Knex } from 'knex';
 import { Connection, Dictionary, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
 import { AbstractSqlConnection } from '../AbstractSqlConnection';
 import { Column, Index, IsSame } from '../typings';
@@ -13,7 +13,7 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  finalizeTable(table: TableBuilder, charset: string, collate?: string): void {
+  finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {
     //
   }
 
