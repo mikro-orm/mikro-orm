@@ -1,7 +1,7 @@
 // @ts-ignore
 import MySqlDialect from 'knex/lib/dialects/mysql';
 // @ts-ignore
-import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/tablecompiler';
+import PostgresDialectTableCompiler from 'knex/lib/dialects/postgres/schema/pg-tablecompiler';
 // @ts-ignore
 import Sqlite3Dialect from 'knex/lib/dialects/sqlite3';
 // @ts-ignore
