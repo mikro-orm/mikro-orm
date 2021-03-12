@@ -15,5 +15,5 @@ export * from './typings';
 export { SqlEntityManager as EntityManager } from './SqlEntityManager';
 export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository';
 
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 export { Knex };
