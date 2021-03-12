@@ -7,8 +7,8 @@ To generate entities from existing database schema, you can use `EntityGenerator
 You can use it via CLI: 
 
 ```sh
-npx mikro-orm generate-entities --dump  # Dumps all generated entities
-npx mikro-orm generate-entities --save --path=./my-entities  # Saves entities into given directory
+npx @mikro-orm/cli generate-entities --dump  # Dumps all generated entities
+npx @mikro-orm/cli generate-entities --save --path=./my-entities  # Saves entities into given directory
 ```
 
 Or you can create simple script where you initialize MikroORM like this:
