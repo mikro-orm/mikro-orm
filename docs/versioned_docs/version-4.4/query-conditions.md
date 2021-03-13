@@ -82,22 +82,23 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 
 ### Comparison
 
-| operator | name               | description |
-|----------|--------------------|-------------|
-| `$eq`	   | equals             | Matches values that are equal to a specified value. |
-| `$gt`	   | greater            | Matches values that are greater than a specified value. |
-| `$gte`   | greater or equal   | Matches values that are greater than or equal to a specified value. |
-| `$in`	   | contains           | Matches any of the values specified in an array. |
-| `$lt`	   | lower              | Matches values that are less than a specified value. |
-| `$lte`   | lower or equal     | Matches values that are less than or equal to a specified value. |
-| `$ne`	   | not equal          | Matches all values that are not equal to a specified value. |
-| `$nin`   | not contains       | Matches none of the values specified in an array. |
-| `$like`  | like               | Uses LIKE operator |
-| `$re`    | regexp             | Uses REGEXP operator |
-| `$ilike` | ilike              | (postgres only) |
-| `$overlap` | &&               | (postgres only) |
-| `$contains` | @>              | (postgres only) |
-| `$contained` | <@             | (postgres only) |
+| operator     | name             | description                                                         |
+|--------------|------------------|---------------------------------------------------------------------|
+| `$eq`        | equals           | Matches values that are equal to a specified value.                 |
+| `$gt`        | greater          | Matches values that are greater than a specified value.             |
+| `$gte`       | greater or equal | Matches values that are greater than or equal to a specified value. |
+| `$in`        | contains         | Matches any of the values specified in an array.                    |
+| `$lt`        | lower            | Matches values that are less than a specified value.                |
+| `$lte`       | lower or equal   | Matches values that are less than or equal to a specified value.    |
+| `$ne`        | not equal        | Matches all values that are not equal to a specified value.         |
+| `$nin`       | not contains     | Matches none of the values specified in an array.                   |
+| `$like`      | like             | Uses LIKE operator                                                  |
+| `$re`        | regexp           | Uses REGEXP operator                                                |
+| `$ilike`     | ilike            | (postgres only)                                                     |
+| `$overlap`   | &&               | (postgres only)                                                     |
+| `$contains`  | @>               | (postgres only)                                                     |
+| `$contained` | <@               | (postgres only)                                                     |
+| `$sameAs`    | ~=               | (postgres only)                                                     |
 
 ### Logical
 

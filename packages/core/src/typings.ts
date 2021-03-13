@@ -62,6 +62,7 @@ export type OperatorMap<T> = {
   $overlap?: string[];
   $contains?: string[];
   $contained?: string[];
+  $sameAs?: ExpandScalar<T>;
 };
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
