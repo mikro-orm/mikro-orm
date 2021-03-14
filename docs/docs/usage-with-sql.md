@@ -3,11 +3,26 @@ title: Usage with MySQL, MariaDB, PostgreSQL or SQLite
 sidebar_label: Usage with SQL Drivers
 ---
 
-To use `mikro-orm` with MySQL database, do not forget to install `mysql2` dependency and set 
-the type option to `mysql` when initializing ORM.
+To use `mikro-orm` with MySQL database, simply install the `@mikro-orm/mysql` dependency and set 
+the type option to `mysql` when initializing ORM. Since v4 it is no longer needed to install the `mysql2` package manually.
 
-Similarly for SQLite install `sqlite` dependency and provide `sqlite` database type. For 
-PostgreSQL install `pg` and provide `postgresql` type.
+```sh
+yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
+yarn add @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+yarn add @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+yarn add @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+```
+
+or
+
+```sh
+npm i -s @mikro-orm/core @mikro-orm/mongodb     # for mongo
+npm i -s @mikro-orm/core @mikro-orm/mysql       # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/mariadb     # for mysql/mariadb
+npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
+npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
+```
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
