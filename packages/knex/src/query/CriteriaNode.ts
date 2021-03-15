@@ -89,7 +89,7 @@ export class CriteriaNode {
 
     if (parentPath) {
       ret = parentPath + '.' + ret;
-    } else if (this.parent?.entityName && ret) {
+    } else if (this.parent?.entityName && ret && this.prop) {
       ret = this.parent.entityName + '.' + ret;
     }
 

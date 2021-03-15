@@ -1482,6 +1482,20 @@ describe('QueryBuilder', () => {
       'order by `e1`.`email` asc');
   });
 
+  test('select with auto-joining and $not (GH issue #1537)', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'a');
+    qb1.select('*').where({
+      $or: [
+        { author: { name: 'test' } },
+        { $not: { author: { name: 'wut' } } },
+      ],
+    });
+    expect(qb1.getQuery()).toEqual('select `a`.*, `a`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `a` ' +
+      'left join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+      'where (`e1`.`name` = ? or not (`e1`.`name` = ?))');
+  });
+
   test('select by PK via operator', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1.select('*').where({ $in: [1, 2] });
